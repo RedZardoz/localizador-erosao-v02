@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   Download,
@@ -18,21 +18,92 @@ import {
   CheckCircle2,
   ExternalLink,
   HelpCircle,
+  Building2,
+  ShieldCheck,
+  User,
+  Hash,
+  Edit3,
+  Save,
 } from "lucide-react";
 import { useErosionStore } from "@/lib/store/useErosionStore";
 import { formatToDMS, getGoogleEarthWebUrl, getGoogleMapsUrl } from "@/lib/utils/geoUtils";
 import { generateAuditPdf } from "@/lib/pdf/auditPdfGenerator";
+import { ErosionPoint } from "@/types/erosion";
 
 export const AuditDossierModal: React.FC = () => {
-  const { activeModal, closeAuditDossier, auditDossierPoint } = useErosionStore();
+  const { activeModal, closeAuditDossier, auditDossierPoint, allPoints, updatePointWithRealData } = useErosionStore();
   const [copiedScript, setCopiedScript] = useState(false);
   const [copiedCoords, setCopiedCoords] = useState(false);
+  const [localFundiario, setLocalFundiario] = useState<Partial<ErosionPoint> | null>(null);
 
-  if (activeModal !== "audit-dossier" || !auditDossierPoint) {
+  // Edição manual dos dados fundiários no Dossiê
+  const [editingTenure, setEditingTenure] = useState(false);
+  const [editOwner, setEditOwner] = useState("");
+  const [editProperty, setEditProperty] = useState("");
+  const [editDoc, setEditDoc] = useState("");
+  const [editIncra, setEditIncra] = useState("");
+
+  const rawPoint = auditDossierPoint;
+  const storePoint = allPoints.find((p) => p.id === rawPoint?.id);
+  const point: ErosionPoint | null = rawPoint
+    ? {
+        ...rawPoint,
+        ...(storePoint || {}),
+        ...(localFundiario || {}),
+      }
+    : null;
+
+  const handleSaveTenure = () => {
+    if (!point) return;
+    const patch: Partial<ErosionPoint> = {
+      ownerName: editOwner.trim() || undefined,
+      propertyName: editProperty.trim() || undefined,
+      ownerDocumentMasked: editDoc.trim() || undefined,
+      incraRegistry: editIncra.trim() || undefined,
+    };
+    updatePointWithRealData(point.id, patch);
+    setLocalFundiario((prev) => ({ ...prev, ...patch }));
+    setEditingTenure(false);
+  };
+
+  const isOwnerLocated = Boolean(
+    point?.ownerName &&
+    !point.ownerName.includes("Declarado no CAR") &&
+    !point.ownerName.includes("Protegido") &&
+    !point.ownerName.includes("Não Informado") &&
+    !point.ownerName.includes("Não Identificado") &&
+    !point.ownerName.includes("Titular Certificado no SIGEF/INCRA (ART")
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+    if (point && !point.propertyName && !point.carCode) {
+      fetch("/api/fundiario/match", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ latitude: point.latitude, longitude: point.longitude }),
+      })
+        .then((res) => res.json())
+        .then((json) => {
+          if (isMounted && json.success && json.data) {
+            const d = json.data;
+            if (d.carCode || d.propertyName || d.ownerName) {
+              setLocalFundiario(d);
+              updatePointWithRealData(point.id, d);
+            }
+          }
+        })
+        .catch(() => {});
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [point?.id, point?.latitude, point?.longitude, point?.propertyName, point?.carCode, updatePointWithRealData]);
+
+  if (activeModal !== "audit-dossier" || !point) {
     return null;
   }
 
-  const point = auditDossierPoint;
   const dmsLat = formatToDMS(point.latitude, true);
   const dmsLng = formatToDMS(point.longitude, false);
 
@@ -44,7 +115,7 @@ export const AuditDossierModal: React.FC = () => {
 
   const geeScript = `// =======================================================================
 // SCRIPT DE REVALIDAÇÃO CIENTÍFICA INDEPENDENTE - PPGTCA 2026
-// Ponto Amostral: ${point.code} (${point.municipality} - PR)
+// Ponto Amostral: ${point.code} (${point.municipality} - ${point.state || "PR"})
 // Coordenadas WGS84: ${point.latitude.toFixed(6)}, ${point.longitude.toFixed(6)}
 // =======================================================================
 
@@ -170,9 +241,9 @@ Map.addLayer(bsi, {min: -0.2, max: 0.5, palette: ['blue', 'yellow', 'orange', 'r
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="p-4 sm:p-6 space-y-5 overflow-y-auto custom-scrollbar flex-1 text-slate-800 dark:text-slate-200">
+        <div className="p-4 sm:p-6 space-y-5 overflow-y-auto custom-scrollbar flex-1 text-slate-800 dark:text-slate-200 printable-modal-body">
           {/* Identificação Geral e Resumo Executivo */}
-          <div className="p-4 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-4 print-avoid-break">
             <div className="md:col-span-2 space-y-1.5">
               <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Alvo Georreferenciado
@@ -181,7 +252,7 @@ Map.addLayer(bsi, {min: -0.2, max: 0.5, palette: ['blue', 'yellow', 'orange', 'r
                 <span>{point.name || `Ponto ${point.code}`}</span>
                 <span className="text-slate-400 font-normal">•</span>
                 <span className="font-normal text-slate-600 dark:text-slate-300">
-                  {point.municipality} — PR ({point.watershed})
+                  {point.municipality} — {point.state || "PR"} ({point.watershed})
                 </span>
               </div>
               <div className="text-xs font-mono text-slate-600 dark:text-slate-400 flex flex-wrap items-center gap-2 pt-0.5">
@@ -242,10 +313,208 @@ Map.addLayer(bsi, {min: -0.2, max: 0.5, palette: ['blue', 'yellow', 'orange', 'r
             </div>
           </div>
 
+          {/* Identificação Fundiária & Cadastro Rural (CAR / SICAR / SNCR) */}
+          <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/40 rounded-xl border border-emerald-300 dark:border-emerald-800/80 space-y-3 print-avoid-break">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                Identificação Fundiária &amp; Cadastro Ambiental Rural (CAR/SICAR - SNCR)
+              </h3>
+              <div className="flex items-center gap-2">
+                {!isOwnerLocated && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!editingTenure && point) {
+                        setEditOwner(point.ownerName || "");
+                        setEditProperty(point.propertyName || "");
+                        setEditDoc(point.ownerDocumentMasked || "");
+                        setEditIncra(point.incraRegistry || "");
+                      }
+                      setEditingTenure(!editingTenure);
+                    }}
+                    className="no-print text-[10px] font-semibold text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/70 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700 flex items-center gap-1 transition-colors cursor-pointer"
+                    title="Titular não localizado no SNCR - Informar manualmente"
+                  >
+                    <Edit3 className="w-2.5 h-2.5" />
+                    <span>{editingTenure ? "Cancelar" : "Informar Titular"}</span>
+                  </button>
+                )}
+                {isOwnerLocated && (
+                  <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-300 font-semibold px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/80 rounded border border-emerald-300 dark:border-emerald-700 flex items-center gap-1">
+                    <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
+                    Titular Oficial (SNCR / INCRA)
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {editingTenure ? (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-emerald-400 dark:border-emerald-600 space-y-2.5 shadow-sm animate-in fade-in duration-150">
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <Edit3 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Editar Informações do Produtor / Imóvel no Laudo</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-slate-500 font-semibold block">Nome do Titular / Produtor Rural:</label>
+                    <input
+                      type="text"
+                      value={editOwner}
+                      onChange={(e) => setEditOwner(e.target.value)}
+                      placeholder="Ex: João Carlos Fontana / Agropecuária Moreira Sales"
+                      className="w-full text-xs p-1.5 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-slate-500 font-semibold block">Denominação do Imóvel / Fazenda:</label>
+                    <input
+                      type="text"
+                      value={editProperty}
+                      onChange={(e) => setEditProperty(e.target.value)}
+                      placeholder="Ex: Fazenda Boa Esperança / Lote 07"
+                      className="w-full text-xs p-1.5 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-slate-500 font-semibold block">Doc (CPF/CNPJ):</label>
+                    <input
+                      type="text"
+                      value={editDoc}
+                      onChange={(e) => setEditDoc(e.target.value)}
+                      placeholder="Ex: 123.456.789-00"
+                      className="w-full text-xs p-1.5 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500 focus:outline-none font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-slate-500 font-semibold block">SNCR / Matrícula CRI:</label>
+                    <input
+                      type="text"
+                      value={editIncra}
+                      onChange={(e) => setEditIncra(e.target.value)}
+                      placeholder="Ex: Matrícula 36868 CRI"
+                      className="w-full text-xs p-1.5 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500 focus:outline-none font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setEditingTenure(false)}
+                    className="px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveTenure}
+                    className="px-4 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded shadow-sm flex items-center gap-1.5 transition-colors"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>Salvar no Laudo</span>
+                  </button>
+                </div>
+              </div>
+            ) : point.propertyName || point.carCode || point.ownerName ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5 flex flex-col justify-between">
+                  <div>
+                    <div className="text-[10px] text-slate-400 uppercase font-semibold flex items-center gap-1 mb-1">
+                      <Building2 className="w-3 h-3 text-emerald-500" />
+                      Denominação do Imóvel
+                    </div>
+                    <div className="font-bold text-slate-900 dark:text-white text-xs break-words leading-snug" title={point.propertyName}>
+                      {point.propertyName || "Não Identificado"}
+                    </div>
+                  </div>
+                  {point.municipality && (
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
+                      {point.municipality} - {point.state || "PR"}
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5 flex flex-col justify-between">
+                  <div>
+                    <div className="text-[10px] text-slate-400 uppercase font-semibold flex items-center gap-1 mb-1">
+                      <ShieldCheck className="w-3 h-3 text-cyan-500" />
+                      Código SICAR (CAR)
+                    </div>
+                    <div className="font-mono font-bold text-cyan-700 dark:text-cyan-300 text-[11px] break-all leading-tight" title={point.carCode}>
+                      {point.carCode || "Não Informado"}
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-slate-400 dark:text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800">
+                    Base Oficial SICAR / MMA
+                  </div>
+                </div>
+
+                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5 flex flex-col justify-between">
+                  <div>
+                    <div className="text-[10px] text-slate-400 uppercase font-semibold flex items-center justify-between gap-1 mb-1">
+                      <span className="flex items-center gap-1">
+                        <User className="w-3 h-3 text-indigo-500" />
+                        Titular / Proprietário
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditOwner(point.ownerName || "");
+                          setEditProperty(point.propertyName || "");
+                          setEditDoc(point.ownerDocumentMasked || "");
+                          setEditIncra(point.incraRegistry || "");
+                          setEditingTenure(true);
+                        }}
+                        className="text-[9px] text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-0.5 no-print cursor-pointer"
+                        title="Editar ou completar nome do titular"
+                      >
+                        <Edit3 className="w-2.5 h-2.5" /> Editar
+                      </button>
+                    </div>
+                    <div className="font-semibold text-slate-900 dark:text-white text-xs break-words leading-snug" title={point.ownerName}>
+                      {point.ownerName || "Não Informado"}
+                    </div>
+                  </div>
+                  {point.ownerDocumentMasked && (
+                    <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
+                      Doc: {point.ownerDocumentMasked}
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5 flex flex-col justify-between">
+                  <div>
+                    <div className="text-[10px] text-slate-400 uppercase font-semibold flex items-center gap-1 mb-1">
+                      <Hash className="w-3 h-3 text-amber-500" />
+                      SNCR / Cartório (CRI)
+                    </div>
+                    <div className="font-mono font-semibold text-slate-900 dark:text-white text-[11px] break-words leading-tight">
+                      {point.incraRegistry || "S/N"}
+                    </div>
+                  </div>
+                  {point.propertyAreaHa !== undefined && (
+                    <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 pt-1 border-t border-slate-100 dark:border-slate-800">
+                      Área: {point.propertyAreaHa} hectares
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="p-2.5 bg-white/80 dark:bg-slate-900/80 rounded-lg border border-dashed border-slate-300 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 italic">
+                Coordenada localizada fora de perímetro cadastrado no SICAR/SIGEF
+              </div>
+            )}
+          </div>
+
           {/* Linha do Tempo / Sequência Metodológica */}
           <div className="space-y-4">
             {/* ETAPA 1 */}
-            <div className="p-4 bg-white dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5">
+            <div className="p-4 bg-white dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5 print-avoid-break">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-cyan-100 dark:bg-cyan-950/80 text-cyan-700 dark:text-cyan-400 border border-cyan-300 dark:border-cyan-800 flex items-center justify-center text-xs font-bold">
@@ -296,7 +565,7 @@ Map.addLayer(bsi, {min: -0.2, max: 0.5, palette: ['blue', 'yellow', 'orange', 'r
             </div>
 
             {/* ETAPA 2 */}
-            <div className="p-4 bg-white dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div className="p-4 bg-white dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 print-avoid-break">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-400 border border-rose-300 dark:border-rose-800 flex items-center justify-center text-xs font-bold">
@@ -361,7 +630,7 @@ Map.addLayer(bsi, {min: -0.2, max: 0.5, palette: ['blue', 'yellow', 'orange', 'r
             </div>
 
             {/* ETAPA 3 */}
-            <div className="p-4 bg-white dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5">
+            <div className="p-4 bg-white dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5 print-avoid-break">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800 flex items-center justify-center text-xs font-bold">
@@ -412,7 +681,7 @@ Map.addLayer(bsi, {min: -0.2, max: 0.5, palette: ['blue', 'yellow', 'orange', 'r
             </div>
 
             {/* ETAPA 4 */}
-            <div className="p-4 bg-white dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5">
+            <div className="p-4 bg-white dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5 print-avoid-break">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-800 flex items-center justify-center text-xs font-bold">
@@ -452,7 +721,7 @@ Map.addLayer(bsi, {min: -0.2, max: 0.5, palette: ['blue', 'yellow', 'orange', 'r
             </div>
 
             {/* ETAPA 5 */}
-            <div className="p-4 bg-emerald-50/40 dark:bg-emerald-950/20 rounded-xl border border-emerald-300 dark:border-emerald-800/80 shadow-sm space-y-3">
+            <div className="p-4 bg-emerald-50/40 dark:bg-emerald-950/20 rounded-xl border border-emerald-300 dark:border-emerald-800/80 shadow-sm space-y-3 print-avoid-break">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 flex items-center justify-center text-xs font-bold">
@@ -503,7 +772,7 @@ Map.addLayer(bsi, {min: -0.2, max: 0.5, palette: ['blue', 'yellow', 'orange', 'r
             </div>
 
             {/* ETAPA 6 */}
-            <div className="p-4 bg-white dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div className="p-4 bg-white dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 print-avoid-break">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center text-xs font-bold">

@@ -66,18 +66,18 @@ export function generateAuditPdf(point: ErosionPoint): void {
       doc.setFontSize(6.8);
       doc.setTextColor(52, 211, 153); // emerald-400
       doc.text(
-        "Memória de Cálculo e Rastreabilidade Metodológica para Revalidação por Pares",
+        "Memória de Cálculo, Rastreabilidade Metodológica e Cadastro Fundiário",
         margin + 4,
-        y + 15.5
+        y + 14.8
       );
-      y += bannerHeight + 3.5;
+      y += bannerHeight + 3;
     } else {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8);
       doc.text(
         `PPGTCA 2026 — Dossiê de Auditoria Científica de Erosão • Ponto ${point.code} (Continuação)`,
         margin + 4,
-        y + 5.5
+        y + 5.0
       );
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
@@ -85,69 +85,71 @@ export function generateAuditPdf(point: ErosionPoint): void {
       doc.text(
         "Modelagem da Perda de Solo (RUSLE) e Roteiro de Revalidação no Google Earth Engine",
         margin + 4,
-        y + 10
+        y + 9.5
       );
-      y += bannerHeight + 4;
+      y += bannerHeight + 3.5;
     }
   };
 
   // Faixa de título de seção
   const drawSectionTitle = (stepNumber: number, title: string) => {
     doc.setFillColor(241, 245, 249); // slate-100
-    doc.rect(margin, y, contentWidth, 6.2, "F");
+    doc.rect(margin, y, contentWidth, 5.8, "F");
     doc.setFillColor(16, 185, 129); // emerald-500
-    doc.rect(margin, y, 3.5, 6.2, "F");
+    doc.rect(margin, y, 3.2, 5.8, "F");
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(7.8);
     doc.setTextColor(15, 23, 42); // slate-900
-    doc.text(`ETAPA ${stepNumber} — ${title.toUpperCase()}`, margin + 6, y + 4.4);
-    y += 8.5;
+    doc.text(`ETAPA ${stepNumber} — ${title.toUpperCase()}`, margin + 5.5, y + 4.1);
+    y += 7.8;
   };
 
   // ==========================================================================
-  // PÁGINA 1 — Sensoriamento Remoto, Topografia e Clima/Solo
+  // PÁGINA 1 — Sensoriamento Remoto, Cadastro Fundiário, Topografia e Clima/Solo
   // ==========================================================================
 
   // 1. Cabeçalho Principal
   drawHeaderBanner(false);
 
   // 2. Card de Identificação Geodésica do Ponto
-  const cardHeight = 32;
+  const cardHeight = 26.5;
   doc.setFillColor(248, 250, 252); // slate-50
   doc.setDrawColor(203, 213, 225); // slate-300
   doc.setLineWidth(0.3);
   doc.roundedRect(margin, y, contentWidth, cardHeight, 1.5, 1.5, "FD");
 
   // Divisão em 2 colunas: Esquerda (dados geográficos) e Direita (badges de resultado)
-  const leftColWidth = contentWidth - 48; // ~134 mm
-  const rightColX = margin + leftColWidth + 3; // ~151 mm
+  const leftColWidth = contentWidth - 46; // ~136 mm
+  const rightColX = margin + leftColWidth + 3; // ~153 mm
 
-  // Linha 1: Código e Nome do Ponto (com corte seguro de largura para evitar colisão)
+  // Linha 1: Código e Nome do Ponto (Medição de largura com fonte idêntica para ZERO encavalamento)
   doc.setTextColor(15, 23, 42);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9.5);
-  doc.text(`Ponto Amostral: ${point.code}`, margin + 4, y + 5.2);
+  doc.setFontSize(9);
+  const labelCode = `Ponto Amostral: ${point.code}`;
+  doc.text(labelCode, margin + 4, y + 4.8);
+  const codeWidth = doc.getTextWidth(labelCode);
 
   if (point.name && point.name !== point.code) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(71, 85, 105);
-    const codeWidth = doc.getTextWidth(`Ponto Amostral: ${point.code} `);
-    const nameMaxW = leftColWidth - codeWidth - 4;
+    const nameX = margin + 4 + codeWidth + 2.5;
+    const nameMaxW = leftColWidth - (codeWidth + 6.5);
     if (nameMaxW > 15) {
-      doc.text(`(${point.name})`, margin + 4 + codeWidth, y + 5.2, { maxWidth: nameMaxW });
+      doc.text(`(${point.name})`, nameX, y + 4.8, { maxWidth: nameMaxW });
     }
   }
 
   // Linha 2: Município e Bacia
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
+  doc.setFontSize(7.2);
   doc.setTextColor(51, 65, 85);
   doc.text(
-    `Município: ${point.municipality} — PR  |  Bacia Hidrográfica: ${point.watershed}`,
+    `Município: ${point.municipality} — ${point.state || "PR"}  |  Bacia Hidrográfica: ${point.watershed}`,
     margin + 4,
-    y + 10.5,
+    y + 9.5,
     { maxWidth: leftColWidth - 4 }
   );
 
@@ -157,7 +159,7 @@ export function generateAuditPdf(point: ErosionPoint): void {
   doc.text(
     `WGS84: ${point.latitude.toFixed(6)}°, ${point.longitude.toFixed(6)}°  |  DMS: ${dmsLat}, ${dmsLng}`,
     margin + 4,
-    y + 15.8,
+    y + 14.2,
     { maxWidth: leftColWidth - 4 }
   );
 
@@ -165,7 +167,7 @@ export function generateAuditPdf(point: ErosionPoint): void {
   doc.text(
     `Altitude Ortométrica: ${point.elevation} m  |  Classe Pedológica: ${point.soilType}`,
     margin + 4,
-    y + 21.1,
+    y + 18.9,
     { maxWidth: leftColWidth - 4 }
   );
 
@@ -180,19 +182,19 @@ export function generateAuditPdf(point: ErosionPoint): void {
       : "Amostragem Experimental";
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.2);
+  doc.setFontSize(7);
   doc.setTextColor(13, 148, 136); // teal-600
-  doc.text(`Origem do Dado: ${dataProv}`, margin + 4, y + 26.5, { maxWidth: leftColWidth - 4 });
+  doc.text(`Origem do Dado: ${dataProv}`, margin + 4, y + 23.6, { maxWidth: leftColWidth - 4 });
 
   // Divisória vertical sutil antes dos badges
   doc.setDrawColor(226, 232, 240); // slate-200
-  doc.line(rightColX - 3, y + 2, rightColX - 3, y + cardHeight - 2);
+  doc.line(rightColX - 2.5, y + 2, rightColX - 2.5, y + cardHeight - 2);
 
   // Coluna Direita: Badges de Severidade, Perda e Prioridade
-  const badgeY = y + 3;
-  // Badge Severidade
+  const badgeY = y + 2.5;
   const isCrit = point.severity === "Crítica";
   const isAlta = point.severity === "Alta";
+
   doc.setFillColor(
     isCrit ? 254 : isAlta ? 254 : 254,
     isCrit ? 242 : isAlta ? 243 : 252,
@@ -203,85 +205,179 @@ export function generateAuditPdf(point: ErosionPoint): void {
     isCrit ? 165 : isAlta ? 158 : 204,
     isCrit ? 165 : isAlta ? 11 : 21
   );
-  doc.roundedRect(rightColX, badgeY, 41, 7, 1.2, 1.2, "FD");
+  doc.roundedRect(rightColX, badgeY, 39, 6.2, 1, 1, "FD");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.2);
+  doc.setFontSize(6.8);
   doc.setTextColor(
     isCrit ? 190 : isAlta ? 180 : 161,
     isCrit ? 18 : isAlta ? 83 : 98,
     isCrit ? 60 : isAlta ? 9 : 7
   );
-  doc.text(`SEVERIDADE: ${point.severity.toUpperCase()}`, rightColX + 2.5, badgeY + 4.8);
+  doc.text(`SEVERIDADE: ${point.severity.toUpperCase()}`, rightColX + 2, badgeY + 4.2);
 
   // Badge Perda de Solo
   doc.setFillColor(240, 253, 244); // emerald-50
   doc.setDrawColor(187, 247, 208);
-  doc.roundedRect(rightColX, badgeY + 8.5, 41, 7, 1.2, 1.2, "FD");
+  doc.roundedRect(rightColX, badgeY + 7.4, 39, 6.2, 1, 1, "FD");
   doc.setTextColor(21, 128, 61); // emerald-700
-  doc.text(`Perda: ${point.estimatedSoilLoss} t/(ha·ano)`, rightColX + 2.5, badgeY + 13.3);
+  doc.text(`Perda: ${point.estimatedSoilLoss} t/(ha·ano)`, rightColX + 2, badgeY + 11.6);
 
   // Badge Score de Prioridade
   doc.setFillColor(238, 242, 255); // indigo-50
   doc.setDrawColor(199, 210, 254);
-  doc.roundedRect(rightColX, badgeY + 17, 41, 7, 1.2, 1.2, "FD");
+  doc.roundedRect(rightColX, badgeY + 14.8, 39, 6.2, 1, 1, "FD");
   doc.setTextColor(67, 56, 202); // indigo-700
-  doc.text(`Score de Risco: ${point.priorityScore} / 100`, rightColX + 2.5, badgeY + 21.8);
+  doc.text(`Score de Risco: ${point.priorityScore} / 100`, rightColX + 2, badgeY + 19.0);
 
-  y += cardHeight + 4;
+  y += cardHeight + 3.2;
 
-  // 3. ETAPA 1: Aquisição Sentinel-2
+  // 3. Card de Identificação Fundiária & Cadastro Rural (CAR/SICAR - SNCR)
+  const hasLandTenure = Boolean(point.propertyName || point.carCode || point.ownerName);
+  const fundiarioHeight = 25.5;
+
+  doc.setFillColor(240, 253, 244); // emerald-50/60
+  doc.setDrawColor(167, 243, 208); // emerald-200
+  doc.setLineWidth(0.3);
+  doc.roundedRect(margin, y, contentWidth, fundiarioHeight, 1.5, 1.5, "FD");
+
+  // Barra de título do Card Fundiário
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.5);
+  doc.setTextColor(6, 95, 70); // emerald-800
+  doc.text("IDENTIFICAÇÃO FUNDIÁRIA & CADASTRO AMBIENTAL RURAL (CAR/SICAR - SNCR)", margin + 3.5, y + 4.2);
+
+  // Badge no canto direito
+  doc.setFillColor(209, 250, 229); // emerald-100
+  doc.setDrawColor(110, 231, 183); // emerald-300
+  doc.roundedRect(margin + contentWidth - 44, y + 1.6, 41, 4.5, 0.8, 0.8, "FD");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(6);
+  doc.setTextColor(4, 120, 87);
+  doc.text("Imóvel Rural Registrado", margin + contentWidth - 23.5, y + 4.6, { align: "center" });
+
+  if (hasLandTenure) {
+    const colW = (contentWidth - 6) / 4; // ~44 mm por coluna
+    const subBoxY = y + 6.8;
+    const subBoxH = 16.5;
+
+    const fundiarioFields = [
+      {
+        label: "DENOMINAÇÃO DO IMÓVEL",
+        val: point.propertyName || "Não Identificado",
+        sub: point.municipality ? `${point.municipality} - ${point.state || "PR"}` : "",
+      },
+      {
+        label: "CÓDIGO SICAR (CAR)",
+        val: point.carCode || "Não Informado",
+        sub: "Base SICAR / MMA",
+      },
+      {
+        label: "TITULAR / PROPRIETÁRIO",
+        val: point.ownerName || "Não Informado",
+        sub: point.ownerDocumentMasked ? `Doc: ${point.ownerDocumentMasked}` : "Cadastro Certificado",
+      },
+      {
+        label: "SNCR / ÁREA TOTAL",
+        val: point.incraRegistry || "S/N",
+        sub: point.propertyAreaHa !== undefined ? `${point.propertyAreaHa} hectares` : "Área Não Declarada",
+      },
+    ];
+
+    fundiarioFields.forEach((item, i) => {
+      const fx = margin + 1.2 + i * (colW + 0.8);
+      doc.setFillColor(255, 255, 255);
+      doc.setDrawColor(209, 250, 229);
+      doc.roundedRect(fx, subBoxY, colW, subBoxH, 0.8, 0.8, "FD");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(5.2);
+      doc.setTextColor(100, 116, 139);
+      doc.text(item.label, fx + 2, subBoxY + 3.0);
+
+      doc.setFont(i === 1 ? "courier" : "helvetica", "bold");
+      doc.setFontSize(5.8);
+      doc.setTextColor(i === 1 ? 14 : 15, i === 1 ? 116 : 23, i === 1 ? 144 : 42);
+      const valLines: string[] = doc.splitTextToSize(item.val, colW - 3.5);
+      const displayValLines = valLines.slice(0, 3);
+      doc.text(displayValLines, fx + 2, subBoxY + 6.2);
+
+      if (item.sub) {
+        const subY = subBoxY + 6.2 + (displayValLines.length * 2.5) + 0.6;
+        if (subY <= subBoxY + subBoxH - 1.0) {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(4.8);
+          doc.setTextColor(100, 116, 139);
+          const subLines: string[] = doc.splitTextToSize(item.sub, colW - 3.5);
+          doc.text(subLines.slice(0, 2), fx + 2, subY);
+        }
+      }
+    });
+  } else {
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      "Coordenada localizada fora de perímetro cadastrado no SICAR/SIGEF (Área pública, não demarcada ou fora da base municipal)",
+      margin + 4,
+      y + 13
+    );
+  }
+
+  y += fundiarioHeight + 3.2;
+
+  // 4. ETAPA 1: Aquisição Sentinel-2
   drawSectionTitle(1, "Rastreabilidade e Aquisição Sentinel-2 MSI (Copernicus L2A BOA)");
 
-  const s2BoxHeight = 20;
+  const s2BoxHeight = 17;
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(226, 232, 240);
   doc.roundedRect(margin, y, contentWidth, s2BoxHeight, 1.5, 1.5, "FD");
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.2);
+  doc.setFontSize(6.8);
   doc.setTextColor(15, 23, 42);
-  doc.text("• Coleção GEE:", margin + 3, y + 4.2);
+  doc.text("• Coleção GEE:", margin + 3, y + 3.8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(51, 65, 85);
-  doc.text("COPERNICUS/S2_SR_HARMONIZED (Refletância de Superfície Nível 2A - BOA)", margin + 26, y + 4.2);
+  doc.text("COPERNICUS/S2_SR_HARMONIZED (Refletância de Superfície Nível 2A - BOA)", margin + 24, y + 3.8);
 
   doc.setFont("helvetica", "bold");
   doc.setTextColor(15, 23, 42);
-  doc.text("• ID da Cena ESA:", margin + 3, y + 8.4);
+  doc.text("• ID da Cena ESA:", margin + 3, y + 7.6);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(51, 65, 85);
   const sceneId =
     point.geeSourceImageId || "S2A_MSIL2A_HARMONIZED (Passagem com menor índice de nuvens nos últimos 120 dias)";
-  doc.text(sceneId, margin + 29, y + 8.4, { maxWidth: contentWidth - 32 });
+  doc.text(sceneId, margin + 27, y + 7.6, { maxWidth: contentWidth - 30 });
 
   doc.setFont("helvetica", "bold");
   doc.setTextColor(15, 23, 42);
-  doc.text("• Data do Cálculo:", margin + 3, y + 12.6);
+  doc.text("• Data do Cálculo:", margin + 3, y + 11.4);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(51, 65, 85);
   const compDate = point.geeComputedAt
     ? new Date(point.geeComputedAt).toLocaleString("pt-BR")
     : "Recém-calculado / Auditado";
-  doc.text(compDate, margin + 29, y + 12.6);
+  doc.text(compDate, margin + 27, y + 11.4);
 
   doc.setFont("helvetica", "bold");
   doc.setTextColor(15, 23, 42);
-  doc.text("• Controle de Nuvens:", margin + 3, y + 16.8);
+  doc.text("• Controle de Nuvens:", margin + 3, y + 15.2);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(51, 65, 85);
   doc.text(
     "Máscara SCL (Scene Classification Layer) descartando sombras (3), nuvens (8/9) e cirrus (10).",
-    margin + 34,
-    y + 16.8
+    margin + 32,
+    y + 15.2
   );
 
-  y += s2BoxHeight + 4;
+  y += s2BoxHeight + 3.2;
 
-  // 4. ETAPA 2: Assinatura Espectral (BSI e NDVI) — DIAGRAMAÇÃO AMPLA E PERFEITA
+  // 5. ETAPA 2: Assinatura Espectral (BSI e NDVI)
   drawSectionTitle(2, "Assinatura Espectral e Extração dos Índices Biofísicos (10m)");
 
-  const boxW = (contentWidth - 4) / 2; // 89 mm
-  const indexBoxHeight = 33; // altura confortável para todas as linhas
+  const boxW = (contentWidth - 3) / 2; // ~89.5 mm
+  const indexBoxHeight = 28;
 
   // Caixa BSI (Solo Exposto)
   doc.setFillColor(254, 242, 242); // red-50
@@ -290,123 +386,123 @@ export function generateAuditPdf(point: ErosionPoint): void {
 
   // Título BSI
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setTextColor(185, 28, 28);
-  doc.text("Bare Soil Index (BSI) — Solo Exposto", margin + 4, y + 4.5);
+  doc.text("Bare Soil Index (BSI) — Solo Exposto", margin + 3.5, y + 4.2);
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(6.5);
+  doc.setFontSize(6.2);
   doc.setTextColor(100, 116, 139);
-  doc.text("Equação Espectral Sentinel-2 MSI:", margin + 4, y + 8.5);
+  doc.text("Equação Espectral Sentinel-2 MSI:", margin + 3.5, y + 8.0);
 
-  // Caixa interna branca para a fórmula do BSI (centralizada e sem tocar bordas)
-  const innerBsiW = boxW - 8;
+  // Caixa interna branca para a fórmula do BSI
+  const innerBsiW = boxW - 7;
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(254, 202, 202);
-  doc.roundedRect(margin + 4, y + 10, innerBsiW, 6.2, 1, 1, "FD");
+  doc.roundedRect(margin + 3.5, y + 9.5, innerBsiW, 5.5, 0.8, 0.8, "FD");
 
   doc.setFont("courier", "bold");
-  doc.setFontSize(6.2);
+  doc.setFontSize(5.8);
   doc.setTextColor(15, 23, 42);
   doc.text(
     "BSI = [(B12+B4) - (B8+B2)] / [(B12+B4) + (B8+B2)]",
-    margin + 4 + innerBsiW / 2,
-    y + 14.2,
+    margin + 3.5 + innerBsiW / 2,
+    y + 13.3,
     { align: "center" }
   );
 
   // Valor Amostrado no Ponto
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.5);
+  doc.setFontSize(8);
   doc.setTextColor(185, 28, 28);
-  doc.text(`Valor no Ponto: ${point.bsi > 0 ? `+${point.bsi}` : point.bsi}`, margin + 4, y + 20.5);
+  doc.text(`Valor no Ponto: ${point.bsi > 0 ? `+${point.bsi}` : point.bsi}`, margin + 3.5, y + 18.8);
 
   // Bandas e Diagnóstico BSI
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(6);
+  doc.setFontSize(5.8);
   doc.setTextColor(71, 85, 105);
   doc.text(
     "Bandas: B12 (SWIR-2 2190nm), B8 (NIR 842nm), B4 (Red 665nm), B2 (Blue 490nm).",
-    margin + 4,
-    y + 25,
-    { maxWidth: boxW - 8 }
+    margin + 3.5,
+    y + 22.6,
+    { maxWidth: boxW - 7 }
   );
   doc.text(
-    "Diagnóstico: Valores > 0.0 confirmam solo mineral desprovido de cobertura protetora.",
-    margin + 4,
-    y + 29,
-    { maxWidth: boxW - 8 }
+    "Diagnóstico: Valores > 0.0 confirmam solo mineral desprovido de cobertura vegetal.",
+    margin + 3.5,
+    y + 25.8,
+    { maxWidth: boxW - 7 }
   );
 
   // Caixa NDVI (Vigor Vegetal)
-  const xNdvi = margin + boxW + 4;
+  const xNdvi = margin + boxW + 3;
   doc.setFillColor(240, 253, 244); // green-50
   doc.setDrawColor(187, 247, 208);
   doc.roundedRect(xNdvi, y, boxW, indexBoxHeight, 1.5, 1.5, "FD");
 
   // Título NDVI
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setTextColor(21, 128, 61);
-  doc.text("Normalized Difference Veg. Index (NDVI)", xNdvi + 4, y + 4.5);
+  doc.text("Normalized Difference Veg. Index (NDVI)", xNdvi + 3.5, y + 4.2);
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(6.5);
+  doc.setFontSize(6.2);
   doc.setTextColor(100, 116, 139);
-  doc.text("Equação Espectral de Vigor Fotossintético:", xNdvi + 4, y + 8.5);
+  doc.text("Equação Espectral de Vigor Fotossintético:", xNdvi + 3.5, y + 8.0);
 
   // Caixa interna branca para a fórmula do NDVI
-  const innerNdviW = boxW - 8;
+  const innerNdviW = boxW - 7;
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(187, 247, 208);
-  doc.roundedRect(xNdvi + 4, y + 10, innerNdviW, 6.2, 1, 1, "FD");
+  doc.roundedRect(xNdvi + 3.5, y + 9.5, innerNdviW, 5.5, 0.8, 0.8, "FD");
 
   doc.setFont("courier", "bold");
-  doc.setFontSize(6.8);
+  doc.setFontSize(6.2);
   doc.setTextColor(15, 23, 42);
   doc.text(
     "NDVI = (B8 - B4) / (B8 + B4)",
-    xNdvi + 4 + innerNdviW / 2,
-    y + 14.2,
+    xNdvi + 3.5 + innerNdviW / 2,
+    y + 13.3,
     { align: "center" }
   );
 
   // Valor Amostrado no Ponto
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.5);
+  doc.setFontSize(8);
   doc.setTextColor(21, 128, 61);
-  doc.text(`Valor no Ponto: ${point.ndvi}`, xNdvi + 4, y + 20.5);
+  doc.text(`Valor no Ponto: ${point.ndvi}`, xNdvi + 3.5, y + 18.8);
 
   // Bandas e Diagnóstico NDVI
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(6);
+  doc.setFontSize(5.8);
   doc.setTextColor(71, 85, 105);
   doc.text(
     "Contraste: Alta refletância no infravermelho (B8) contra absorção no vermelho (B4).",
-    xNdvi + 4,
-    y + 25,
-    { maxWidth: boxW - 8 }
+    xNdvi + 3.5,
+    y + 22.6,
+    { maxWidth: boxW - 7 }
   );
   doc.text(
-    "Diagnóstico: NDVI baixo (< 0.30) comprova ausência de dossel vegetal protetor.",
-    xNdvi + 4,
-    y + 29,
-    { maxWidth: boxW - 8 }
+    "Diagnóstico: NDVI reduzido (< 0.35) atesta ausência de cobertura foliar protetora.",
+    xNdvi + 3.5,
+    y + 25.8,
+    { maxWidth: boxW - 7 }
   );
 
-  y += indexBoxHeight + 4;
+  y += indexBoxHeight + 3.2;
 
-  // 5. ETAPA 3: Topografia e DEM
+  // 6. ETAPA 3: Topografia e DEM
   drawSectionTitle(3, "Geometria Topográfica e Hidrologia (Copernicus DEM GLO-30)");
 
-  const demBoxHeight = 24;
+  const demBoxHeight = 21;
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(226, 232, 240);
   doc.roundedRect(margin, y, contentWidth, demBoxHeight, 1.5, 1.5, "FD");
 
   // Grid de 4 parâmetros topográficos
   const paramW = (contentWidth - 6) / 4;
-  const pY = y + 2.2;
+  const pY = y + 1.8;
 
   const topParams = [
     { label: "Altitude Ortométrica", val: `${point.elevation} m`, sub: "SIRGAS 2000 / EGM96" },
@@ -416,40 +512,40 @@ export function generateAuditPdf(point: ErosionPoint): void {
   ];
 
   topParams.forEach((tp, i) => {
-    const px = margin + 2 + i * (paramW + 0.6);
+    const px = margin + 1.5 + i * (paramW + 0.8);
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(203, 213, 225);
-    doc.roundedRect(px, pY, paramW, 13.5, 1, 1, "FD");
+    doc.roundedRect(px, pY, paramW, 11.8, 0.8, 0.8, "FD");
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(6.2);
+    doc.setFontSize(5.8);
     doc.setTextColor(100, 116, 139);
-    doc.text(tp.label, px + paramW / 2, pY + 3.5, { align: "center" });
+    doc.text(tp.label, px + paramW / 2, pY + 3.2, { align: "center" });
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(15, 23, 42);
-    doc.text(tp.val, px + paramW / 2, pY + 8.2, { align: "center" });
+    doc.text(tp.val, px + paramW / 2, pY + 7.2, { align: "center" });
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(5.5);
+    doc.setFontSize(5.2);
     doc.setTextColor(148, 163, 184);
-    doc.text(tp.sub, px + paramW / 2, pY + 11.8, { align: "center" });
+    doc.text(tp.sub, px + paramW / 2, pY + 10.4, { align: "center" });
   });
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(6.2);
+  doc.setFontSize(5.8);
   doc.setTextColor(71, 85, 105);
   doc.text(
-    "Nota Metodológica: O cálculo topográfico utiliza projeção métrica EPSG:3857, eliminando distorções decorrentes de coordenadas em graus. A área de contribuição específica As é obtida via Flow Accumulation do HydroSHEDS 15ACC.",
+    "Nota Metodológica: O cálculo topográfico utiliza projeção métrica EPSG:3857, eliminando distorções de coordenadas em graus. A área de contribuição específica As é obtida via Flow Accumulation do HydroSHEDS 15ACC.",
     margin + 3,
-    y + 18,
+    y + 16.5,
     { maxWidth: contentWidth - 6 }
   );
 
-  y += demBoxHeight + 4;
+  y += demBoxHeight + 3.2;
 
-  // 6. ETAPA 4: TABELA ESTRUTURADA DE VARIÁVEIS CLIMATOLÓGICAS E PEDOLÓGICAS
+  // 7. ETAPA 4: TABELA ESTRUTURADA DE VARIÁVEIS CLIMATOLÓGICAS E PEDOLÓGICAS
   drawSectionTitle(4, "Variáveis Climatológicas e Erodibilidade Pedológica (Tabela de Parâmetros)");
 
   const rVal = point.rusleFactors?.r ?? 7850;
@@ -458,13 +554,12 @@ export function generateAuditPdf(point: ErosionPoint): void {
   const cVal = point.rusleFactors?.c ?? 0.28;
   const pVal = point.rusleFactors?.p ?? 1.0;
 
-  // Tabela com colunas rigorosamente demarcadas — ZERO sobreposição possível
   const tableX = margin;
-  const col1W = 46; // Parâmetro da RUSLE
-  const col2W = 28; // Valor Amostrado
-  const col3W = contentWidth - col1W - col2W; // 108 mm (Unidade & Fonte Metodológica)
-  const headerH = 5.5;
-  const rowH = 6.8;
+  const col1W = 46;
+  const col2W = 26;
+  const col3W = contentWidth - col1W - col2W; // 110 mm
+  const headerH = 5.0;
+  const rowH = 5.8;
 
   // Cabeçalho da Tabela
   doc.setFillColor(226, 232, 240); // slate-200
@@ -472,11 +567,11 @@ export function generateAuditPdf(point: ErosionPoint): void {
   doc.rect(tableX, y, contentWidth, headerH, "FD");
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(6.5);
+  doc.setFontSize(6.2);
   doc.setTextColor(30, 41, 59);
-  doc.text("PARÂMETRO DA RUSLE", tableX + 3, y + 3.8);
-  doc.text("VALOR", tableX + col1W + 3, y + 3.8);
-  doc.text("UNIDADE DE MEDIDA & FONTE METODOLÓGICA", tableX + col1W + col2W + 3, y + 3.8);
+  doc.text("PARÂMETRO DA RUSLE", tableX + 3, y + 3.5);
+  doc.text("VALOR", tableX + col1W + 3, y + 3.5);
+  doc.text("UNIDADE DE MEDIDA & FONTE METODOLÓGICA", tableX + col1W + col2W + 3, y + 3.5);
   y += headerH;
 
   const tableRows = [
@@ -508,19 +603,19 @@ export function generateAuditPdf(point: ErosionPoint): void {
     doc.rect(tableX, y, contentWidth, rowH, "FD");
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(6.5);
+    doc.setFontSize(6.2);
     doc.setTextColor(15, 23, 42);
-    doc.text(row.param, tableX + 3, y + 4.5);
+    doc.text(row.param, tableX + 3, y + 3.9);
 
     doc.setFont("courier", "bold");
-    doc.setFontSize(7.2);
+    doc.setFontSize(6.8);
     doc.setTextColor(16, 185, 129);
-    doc.text(row.val, tableX + col1W + 3, y + 4.5);
+    doc.text(row.val, tableX + col1W + 3, y + 3.9);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(6.2);
+    doc.setFontSize(5.8);
     doc.setTextColor(71, 85, 105);
-    doc.text(row.desc, tableX + col1W + col2W + 3, y + 4.5, { maxWidth: col3W - 4 });
+    doc.text(row.desc, tableX + col1W + col2W + 3, y + 3.9, { maxWidth: col3W - 4 });
 
     y += rowH;
   });
@@ -537,7 +632,7 @@ export function generateAuditPdf(point: ErosionPoint): void {
   // 2. ETAPA 5: Modelagem RUSLE Completa
   drawSectionTitle(5, "Modelagem da Equação Universal de Perda de Solo Revisada (RUSLE)");
 
-  const rusleBoxHeight = 36;
+  const rusleBoxHeight = 34;
   doc.setFillColor(241, 245, 249);
   doc.setDrawColor(203, 213, 225);
   doc.roundedRect(margin, y, contentWidth, rusleBoxHeight, 1.5, 1.5, "FD");
@@ -546,31 +641,31 @@ export function generateAuditPdf(point: ErosionPoint): void {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
   doc.setTextColor(15, 23, 42);
-  doc.text("A = R · K · LS · C · P   [ t / (ha · ano) ]", margin + 4, y + 6);
+  doc.text("A = R · K · LS · C · P   [ t / (ha · ano) ]", margin + 4, y + 5.5);
 
   // Substituição Numérica
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.8);
+  doc.setFontSize(7.5);
   doc.setTextColor(51, 65, 85);
   doc.text(
     `Substituição Numérica: A = (${rVal}) × (${kVal}) × (${lsVal}) × (${cVal}) × (${pVal})`,
     margin + 4,
-    y + 12
+    y + 11.5
   );
 
   // Perda Calculada
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(16, 185, 129); // emerald-600
   doc.text(
     `Perda de Solo Calculada: ${point.estimatedSoilLoss} toneladas / (hectare · ano)`,
     margin + 4,
-    y + 18.5
+    y + 17.5
   );
 
   // Grade comparativa de fatores individuais
   const fBoxW = (contentWidth - 8) / 5;
-  const fY = y + 22.5;
+  const fY = y + 21;
   const factors = [
     { label: "R (Chuva)", val: `${rVal}` },
     { label: "K (Solo)", val: `${kVal}` },
@@ -580,23 +675,23 @@ export function generateAuditPdf(point: ErosionPoint): void {
   ];
 
   factors.forEach((f, i) => {
-    const fx = margin + 2 + i * (fBoxW + 1);
+    const fx = margin + 1.5 + i * (fBoxW + 1.2);
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(203, 213, 225);
-    doc.roundedRect(fx, fY, fBoxW, 10, 1, 1, "FD");
+    doc.roundedRect(fx, fY, fBoxW, 9.5, 0.8, 0.8, "FD");
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(6);
+    doc.setFontSize(5.8);
     doc.setTextColor(100, 116, 139);
-    doc.text(f.label, fx + fBoxW / 2, fY + 3.5, { align: "center" });
+    doc.text(f.label, fx + fBoxW / 2, fY + 3.2, { align: "center" });
 
     doc.setFont("courier", "bold");
-    doc.setFontSize(7.2);
+    doc.setFontSize(7);
     doc.setTextColor(15, 23, 42);
-    doc.text(f.val, fx + fBoxW / 2, fY + 7.8, { align: "center" });
+    doc.text(f.val, fx + fBoxW / 2, fY + 7.4, { align: "center" });
   });
 
-  y += rusleBoxHeight + 6;
+  y += rusleBoxHeight + 5;
 
   // 3. ETAPA 6: Roteiro e Script de Revalidação Científica por Pares
   drawSectionTitle(6, "Guia de Revalidação Científica Independente por Pares");
@@ -612,7 +707,7 @@ export function generateAuditPdf(point: ErosionPoint): void {
   y += 4.5;
 
   const scriptLines = [
-    `// SCRIPT REPRODUZÍVEL GEE — Ponto ${point.code} (${point.municipality} - PR)`,
+    `// SCRIPT REPRODUZÍVEL GEE — Ponto ${point.code} (${point.municipality} - ${point.state || "PR"})`,
     `var ponto = ee.Geometry.Point([${point.longitude.toFixed(6)}, ${point.latitude.toFixed(6)}]);`,
     `var s2 = ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")`,
     `  .filterBounds(ponto).filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 40))`,
@@ -642,16 +737,48 @@ export function generateAuditPdf(point: ErosionPoint): void {
     scriptY += 3.4;
   });
 
-  y += scriptBoxH + 5;
+  y += scriptBoxH + 4.5;
 
   // Informações de Validação Cruzada
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(margin, y, contentWidth, 12, 1, 1, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(6.8);
+  doc.setTextColor(15, 23, 42);
+  doc.text("Plataformas de Validação Cruzada Georreferenciada:", margin + 3, y + 4.5);
+
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
+  doc.setFontSize(6.5);
   doc.setTextColor(71, 85, 105);
   doc.text(
-    `Links de Validação Cruzada: Google Earth Web 3D (lat: ${point.latitude.toFixed(5)}, lng: ${point.longitude.toFixed(5)}) e Google Maps Satélite.`,
-    margin + 2,
-    y
+    `Google Earth Web 3D: lat: ${point.latitude.toFixed(6)}, lng: ${point.longitude.toFixed(6)}, alt: ${point.elevation}m  |  Google Maps Satélite: Camada ortorretificada de alta resolução.`,
+    margin + 3,
+    y + 8.5,
+    { maxWidth: contentWidth - 6 }
+  );
+
+  y += 15;
+
+  // Termo de Rastreabilidade Metodológica
+  doc.setFillColor(240, 253, 244);
+  doc.setDrawColor(187, 247, 208);
+  doc.roundedRect(margin, y, contentWidth, 11, 1, 1, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(6.5);
+  doc.setTextColor(21, 128, 61);
+  doc.text("Conformidade e Rastreabilidade Acadêmica (PPGTCA 2026):", margin + 3, y + 4);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(5.8);
+  doc.setTextColor(51, 65, 85);
+  doc.text(
+    "Este laudo técnico foi estruturado com base em algoritmos vetoriais reprodutíveis e dados públicos abertos (Copernicus ESA, USGS, NASA POWER, SICAR/MMA, INCRA). Os resultados servem para validação por pares e suporte a decisões de conservação do solo.",
+    margin + 3,
+    y + 7.8,
+    { maxWidth: contentWidth - 6 }
   );
 
   // ==========================================================================
