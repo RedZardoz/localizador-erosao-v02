@@ -19,6 +19,7 @@
 9. [Exportação de Dados Científicos (ExportModal)](#9-exportação-de-dados-científicos-exportmodal)
 10. [Coleções e Projetos Salvos (SavedDatasetsModal)](#10-coleções-e-projetos-salvos-saveddatasetsmodal)
 11. [Diagnósticos e Logs de Integridade (SystemLogsModal)](#11-diagnósticos-e-logs-de-integridade-systemlogsmodal)
+12. [Procedimento de Download e Ingestão de Dados Fundiários (Todas as 27 UFs)](#12-procedimento-de-download-e-ingestão-de-dados-fundiários-todas-as-27-ufs)
 
 ---
 
@@ -319,3 +320,67 @@ Destinado à auditoria de conformidade e depuração acadêmica:
 ### 11.3. Ações de Diagnóstico
 - **Botão "Copiar Logs":** Copia todo o histórico de eventos formatado em texto para facilitar o envio de relatórios de erros ao suporte ou equipe de desenvolvimento.
 - **Botão "Limpar Logs":** Esvazia o histórico da sessão atual.
+
+---
+
+## 12. Procedimento de Download e Ingestão de Dados Fundiários (Todas as 27 UFs)
+
+A plataforma conta com um pipeline automatizado para ingestão cumulativa e cálculo de Bounding Box de dados fundiários de qualquer estado do Brasil. Inicialmente, o sistema já vem abastecido com dados oficiais de **Paraná (PR)**, **Santa Catarina (SC)** e **São Paulo (SP)**. Para estender a cobertura a qualquer outra UF, siga as instruções abaixo:
+
+### 12.1. Onde Baixar os Dados Oficiais Governamentais
+
+1. **SICAR (Cadastro Ambiental Rural):**
+   - **Portal:** [dados.gov.br](https://dados.gov.br) ou [car.gov.br](https://www.car.gov.br)
+   - **Camada:** "Área do Imóvel" (Shapefile por UF).
+   - **Arquivo esperado:** `AREA_IMOVEL_{UF}.zip` (ex: `AREA_IMOVEL_MS.zip`, `AREA_IMOVEL_BA.zip`).
+
+2. **SIGEF (Sistema de Gestão Fundiária - INCRA):**
+   - **Portal:** Acervo Fundiário do INCRA ([acervofundiario.incra.gov.br](https://acervofundiario.incra.gov.br))
+   - **Camada:** "Imóveis Certificados - Brasil / UF" (Shapefile).
+   - **Arquivo esperado:** `Sigef Brasil_{UF}.zip` (ex: `Sigef Brasil_MS.zip`).
+
+3. **SNCR (Sistema Nacional de Cadastro Rural - INCRA):**
+   - **Portal:** Portal de Dados Abertos do INCRA
+   - **Tabela:** Relação de Imóveis Rurais Cadastrados (CSV por UF).
+   - **Arquivo esperado:** `Imoveis_{UF}_*.csv` ou `Imoveis_{UF}.csv`.
+
+### 12.2. Onde Colocar os Arquivos Baixados
+
+Copie os arquivos baixados (mantendo a compactação `.zip` ou descompactados) para as pastas padronizadas na raiz do projeto:
+```
+geolocalizacao-erosao-propriedade/
+├── Dados SICAR/
+│   ├── AREA_IMOVEL_PR.zip
+│   ├── AREA_IMOVEL_MS.zip   <-- Coloque o arquivo aqui
+│   └── ...
+├── Dados SIGEF/
+│   ├── Sigef Brasil_PR.zip
+│   ├── Sigef Brasil_MS.zip  <-- Coloque o arquivo aqui
+│   └── ...
+└── Dados SNCR/
+    ├── Imoveis_PR_01_09_2026.csv
+    ├── Imoveis_MS_01_09_2026.csv  <-- Coloque o arquivo aqui
+    └── ...
+```
+
+### 12.3. Comandos de Ingestão
+
+#### Ingestão de uma UF Específica:
+Para ingerir apenas um estado:
+```bash
+python scripts/ingest_data.py --uf MS
+```
+*(Substitua `MS` pela sigla desejada: `AC`, `AL`, `AM`, `AP`, `BA`, `CE`, `DF`, `ES`, `GO`, `MA`, `MG`, `MS`, `MT`, `PA`, `PB`, `PE`, `PI`, `PR`, `RJ`, `RN`, `RO`, `RR`, `RS`, `SC`, `SE`, `SP`, `TO`)*.
+
+#### Ingestão Automatizada em Lote (Todas as UFs Baixadas):
+Para processar automaticamente todas as UFs que tiverem arquivos baixados nas pastas oficiais e gerar relatório estatístico consolidado:
+```bash
+python scripts/batch_ingest_all_ufs.py
+```
+
+### 12.4. Características do Processo
+
+- **Cumulativo e Seguro:** A ingestão adiciona os novos imóveis sem apagar ou sobrescrever os dados de outras UFs já ingeridas.
+- **Rastreabilidade Oficial:** Cada lote inserido registra automaticamente metadados na tabela `fontes_dados` (nome do arquivo, data-base do órgão e quantidade de registros).
+- **Indexação Espacial Imediata:** O sistema gera automaticamente os índices B-Tree e R-Tree nas coordenadas de Bounding Box para assegurar respostas em milissegundos nas consultas do mapa e na emissão de laudos.
+
