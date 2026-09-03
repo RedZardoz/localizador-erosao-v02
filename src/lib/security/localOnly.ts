@@ -13,6 +13,14 @@ const ALLOWED_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
  * quem consultou o quê (trilha de auditoria).
  */
 export function isLocalRequest(req: NextRequest): boolean {
+  const xForwardedFor = req.headers.get("x-forwarded-for");
+  if (xForwardedFor) {
+    const clientIp = xForwardedFor.split(",")[0].trim();
+    if (!ALLOWED_HOSTS.has(clientIp)) {
+      return false;
+    }
+  }
+
   const host = req.headers.get("host") ?? "";
   const hostname = host.replace(/:\d+$/, "").toLowerCase();
   return ALLOWED_HOSTS.has(hostname);

@@ -686,7 +686,7 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
                     type="text"
                     value={editDoc}
                     onChange={(e) => setEditDoc(e.target.value)}
-                    placeholder="Ex: 123.456.789-00"
+                    placeholder="Ex: 000.000.000-00"
                     className="w-full text-xs p-1.5 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500 focus:outline-none font-mono"
                   />
                 </div>

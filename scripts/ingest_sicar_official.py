@@ -136,7 +136,7 @@ def ingest_zip(conn: sqlite3.Connection, zip_path: str, uf_expected: str, batch_
 
             xmin, ymin, xmax, ymax = sh.bbox
             car = rec['cod_imovel']
-            mun = rec.get('municipio', 'Não Informado') or 'Não Informado'
+            mun = rec.get('municipio') or None
             uf = rec.get('cod_estado', uf_expected) or uf_expected
             area = float(rec.get('num_area') or 0.0)
             mod = float(rec.get('mod_fiscal') or 0.0)

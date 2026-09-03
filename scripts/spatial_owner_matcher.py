@@ -98,7 +98,7 @@ def carregar_fontes_dados(conn: sqlite3.Connection, uf: str) -> dict:
     try:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT base, arquivo_origem, data_base
+            SELECT sistema, arquivo_origem, data_base
             FROM fontes_dados
             WHERE uf = ?;
         """, (uf.upper(),))
