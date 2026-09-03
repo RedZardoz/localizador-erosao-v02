@@ -7,8 +7,6 @@
  * (tiles), processa cada lote em resolução nativa (10m) no GEE e agrega tudo em um
  * único resultado consolidado através de Thinning Espacial global e métricas RUSLE.
  */
-
-/* eslint-disable @typescript-eslint/no-var-requires */
 const { XMLHttpRequest } = require("xmlhttprequest");
 if (!(global as any).XMLHttpRequest) {
   (global as any).XMLHttpRequest = XMLHttpRequest;

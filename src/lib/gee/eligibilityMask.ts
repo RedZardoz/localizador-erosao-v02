@@ -14,8 +14,6 @@
  *
  * Este módulo só deve ser executado no ambiente de servidor (Node.js / API routes).
  */
-
-/* eslint-disable @typescript-eslint/no-var-requires */
 const { XMLHttpRequest } = require("xmlhttprequest");
 if (!(global as any).XMLHttpRequest) {
   (global as any).XMLHttpRequest = XMLHttpRequest;

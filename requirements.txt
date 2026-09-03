@@ -1,0 +1,4 @@
+# Dependências Python para Processamento Espacial Fundiário (CAR / SIGEF / SNCR)
+# Mestrado PPGTCA 2026 - Pesquisa de Erosão Laminar (Brasil)
+shapely>=2.0.0
+pyshp>=2.3.0

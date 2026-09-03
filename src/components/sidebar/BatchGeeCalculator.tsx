@@ -17,7 +17,7 @@ const MAX_BATCH_SIZE = 60; // trava de segurança contra estourar cota da API p�
  * isolada (ex.: ponto sem cena Sentinel-2 disponível) não derruba o lote.
  */
 export const BatchGeeCalculator: React.FC = () => {
-  const { geeSessionActive, updatePointWithRealData } = useErosionStore();
+  const { geeSessionActive, updatePointWithRealData, addSystemLog } = useErosionStore();
   const points = useFilteredPoints();
   const outdated = points.filter((p) => isPointSlopeOutdated(p));
   const uncalculated = points.filter((p) => p.dataProvenance !== "satellite-derived" && p.dataProvenance !== "gee-screened");
@@ -49,6 +49,12 @@ export const BatchGeeCalculator: React.FC = () => {
     setFailed(0);
     setTotal(targets.length);
 
+    addSystemLog({
+      severity: "info",
+      category: "GEE",
+      message: `Iniciando cálculo em lote via Google Earth Engine para ${targets.length} pontos amostrais.`,
+    });
+
     let cursor = 0;
     let failedCount = 0;
     let doneCount = 0;
@@ -68,14 +74,27 @@ export const BatchGeeCalculator: React.FC = () => {
           body: JSON.stringify({ latitude: point.latitude, longitude: point.longitude, soilType: point.soilType }),
         });
         const json = await res.json();
-        if (!res.ok || !json.success) throw new Error(json.error);
+        if (!res.ok || !json.success) throw new Error(json.error || "Falha na resposta do servidor");
         updatePointWithRealData(point.id, {
           ...json.data,
           calcEngineVersion: json.data.calcEngineVersion || GEE_CALC_ENGINE_VERSION,
         });
-      } catch {
+
+        const rf = json.data?.rusleFactors;
+        const lossVal = rf?.r && rf?.k && rf?.ls && rf?.c ? (rf.r * rf.k * rf.ls * rf.c * (rf.p ?? 1)).toFixed(2) : undefined;
+        addSystemLog({
+          severity: "success",
+          category: "GEE",
+          message: `Ponto ${point.code} recalculado com sucesso via GEE.${lossVal ? ` Perda: ${lossVal} t/ha·ano.` : ""}`,
+        });
+      } catch (err: any) {
         failedCount++;
         setFailed(failedCount);
+        addSystemLog({
+          severity: "error",
+          category: "GEE",
+          message: `Falha ao calcular ponto ${point.code} via GEE: ${err?.message || "Erro desconhecido"}`,
+        });
       } finally {
         doneCount++;
         setDone(doneCount);
@@ -84,6 +103,12 @@ export const BatchGeeCalculator: React.FC = () => {
 
     const workers = Array.from({ length: Math.min(MAX_CONCURRENT, targets.length) }, () => worker());
     await Promise.all(workers);
+
+    addSystemLog({
+      severity: "info",
+      category: "GEE",
+      message: `Cálculo em lote finalizado: ${targets.length - failedCount} sucessos, ${failedCount} falhas.`,
+    });
 
     setRunning(false);
   };

@@ -221,7 +221,7 @@ export const SavedDatasetsModal: React.FC = () => {
               </form>
             ) : (
               <p className="text-xs text-slate-500 dark:text-slate-400 py-1">
-                Não há pontos ativos no mapa no momento. Use o botão <strong>"Candidatos GEE"</strong> ou <strong>"Conexão & Dados"</strong> para gerar ou carregar pontos antes de salvar.
+                Não há pontos ativos no mapa no momento. Use o botão <strong>&ldquo;Candidatos GEE&rdquo;</strong> ou <strong>&ldquo;Conexão &amp; Dados&rdquo;</strong> para gerar ou carregar pontos antes de salvar.
               </p>
             )}
           </div>

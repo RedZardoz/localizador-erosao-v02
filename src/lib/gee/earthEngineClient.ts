@@ -30,12 +30,10 @@ import { GEE_CALC_ENGINE_VERSION, validateSlopePlausibility } from "./calcEngine
  *    - Área de contribuição específica As [m²·m⁻¹] para o Fator LS da RUSLE (README §2.2.C)
  */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { XMLHttpRequest } = require("xmlhttprequest");
 if (!(global as any).XMLHttpRequest) {
   (global as any).XMLHttpRequest = XMLHttpRequest;
 }
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const ee = require("@google/earthengine");
 
 export interface RealSatelliteVariables {
@@ -171,16 +169,24 @@ export async function computeRealVariablesForPoint(
   const combined = ee.Image.cat([bsi, ndvi, dem, slope]);
 
   const sceneMetadata: any = await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error("Timeout na busca de metadados Sentinel-2 no Earth Engine (limite de 30s excedido)."));
+    }, 30000);
     scene.toDictionary(["PRODUCT_ID", "system:time_start", "CLOUDY_PIXEL_PERCENTAGE"]).evaluate((result: any, error: any) => {
+      clearTimeout(timer);
       if (error) reject(new Error(`Nenhuma cena Sentinel-2 utilizável encontrada para este ponto nos últimos 120 dias: ${error}`));
       else resolve(result);
     });
   });
 
   const pixelValues: any = await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error("Timeout na amostragem de pixels no Earth Engine (limite de 30s excedido)."));
+    }, 30000);
     combined
       .reduceRegion({ reducer: ee.Reducer.first(), geometry: point, scale: 10, maxPixels: 1e9 })
       .evaluate((result: any, error: any) => {
+        clearTimeout(timer);
         if (error) reject(new Error(`Falha ao amostrar pixels no Earth Engine: ${error}`));
         else resolve(result);
       });
@@ -200,9 +206,15 @@ export async function computeRealVariablesForPoint(
     const flowAcc = ee.Image("WWF/HydroSHEDS/15ACC").select("b1");
     const cellSizeMeters = 463;
     const accValue: any = await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(new Error("Timeout HydroSHEDS"));
+      }, 10000);
       flowAcc
         .reduceRegion({ reducer: ee.Reducer.first(), geometry: point, scale: cellSizeMeters, maxPixels: 1e9 })
-        .evaluate((result: any, error: any) => (error ? reject(error) : resolve(result)));
+        .evaluate((result: any, error: any) => {
+          clearTimeout(timer);
+          error ? reject(error) : resolve(result);
+        });
     });
     const accCells = accValue?.b1;
     if (typeof accCells === "number" && accCells >= 0) {
