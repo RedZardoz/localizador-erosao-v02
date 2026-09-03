@@ -17,10 +17,13 @@ import argparse
 
 try:
     import shapefile
-    import shapely.geometry
 except ImportError:
     shapefile = None
-    shapely.geometry = None
+
+try:
+    import shapely.geometry
+except ImportError:
+    shapely = None
 
 
 def get_polygon_by_coords_or_car(db_path: str, lat: float = None, lon: float = None, car_code: str = None) -> dict:
@@ -37,7 +40,7 @@ def get_polygon_by_coords_or_car(db_path: str, lat: float = None, lon: float = N
                    area_ha, mod_fiscal, status, condicao, uf, municipio,
                    lat_min, lat_max, lon_min, lon_max, state_zip, shape_index
             FROM imoveis_fundiarios
-            WHERE cod_car = ?
+            WHERE cod_car = ? AND fonte IS NOT NULL
             LIMIT 1;
         """, (car_code,))
         row = cursor.fetchone()
@@ -67,13 +70,13 @@ def get_polygon_by_coords_or_car(db_path: str, lat: float = None, lon: float = N
                        area_ha, mod_fiscal, status, condicao, uf, municipio,
                        lat_min, lat_max, lon_min, lon_max, state_zip, shape_index
                 FROM imoveis_fundiarios
-                WHERE id IN ({placeholders});
+                WHERE id IN ({placeholders}) AND fonte IS NOT NULL;
             """, cand_ids)
             candidates = cursor.fetchall()
 
             if len(candidates) == 1:
                 row = candidates[0]
-            elif len(candidates) > 1 and shapely.geometry:
+            elif len(candidates) > 1 and shapely and hasattr(shapely, "geometry"):
                 pt = shapely.geometry.Point(lon, lat)
                 for c in candidates:
                     uf_c = c[9]
@@ -109,7 +112,7 @@ def get_polygon_by_coords_or_car(db_path: str, lat: float = None, lon: float = N
     # Extrai a geometria do shapefile em data/sicar_cache
     geometry = None
     shp_cache = os.path.join("data", "sicar_cache", f"{uf}.shp")
-    if shape_index is not None and os.path.exists(shp_cache) and shapefile and shapely.geometry:
+    if shape_index is not None and os.path.exists(shp_cache) and shapefile and shapely and hasattr(shapely, "geometry"):
         try:
             sf = shapefile.Reader(os.path.join("data", "sicar_cache", uf))
             sh = sf.shape(shape_index)

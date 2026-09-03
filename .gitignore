@@ -65,9 +65,12 @@ Dados INCRA/
 Dados SIGEF/
 Dados SNCR/
 data/*.db
+data/*.db.*
 data/*.db-journal
 data/*.db-wal
 data/*.db-shm
+data/*.bak
+*.bak
 data/shapes/
 data/sicar_cache/
 data/sigef_cache/

@@ -181,13 +181,15 @@ Ao clicar em qualquer marcador no mapa ou em um card na Sidebar, abre-se a janel
 - **Score de Prioridade:** Pontuação normalizada de $0$ a $100$.
 
 ### 5.4. Identificação Fundiária & Cadastro Rural (CAR / SIGEF / SNCR)
-O sistema executa um duplo cruzamento espacial e alfanumérico instantâneo (< 10ms) contra a base de quase 4,5M de registros oficiais:
-- **Imóvel Rural:** Denominação oficial da propriedade ou gleba registrada no SIGEF/INCRA (ex: *Fazenda Aliança - Parte 1* ou *Lote 07 - Gleba Jarau*).
-- **Código do CAR:** Código oficial do Cadastro Ambiental Rural (SICAR/MMA) com botão de cópia com 1 clique (ex: `PR-4116109-4ACF130A59D4406D8B32B1FEEC9FBDB4`).
-- **Titular / Proprietário:** Nome do proprietário resgatado via Database Merge alfanumérico com a base de dados abertos do SNCR / Receita Federal, acompanhado do selo verde `✓ SNCR / SICAR`.
-- **Botão [Editar / Completar]:** Permite ao pesquisador completar o sobrenome de proprietários (caso a base governamental contenha asteriscos de proteção fiscal) ou registrar anotações de entrevistas em campo.
-- **Registro INCRA & Área:** Código do imóvel no SNCR, número da **Matrícula no Cartório de Registro de Imóveis (CRI)** e área total da propriedade em hectares (ha).
-- **Botão [Visualizar Perímetro no Mapa (SICAR)]:** Projeta instantaneamente o polígono vetorial da fazenda contornado em verde-esmeralda sobre a cena de satélite e ajusta a câmera do mapa com `fitBounds` automático.
+O sistema executa um duplo cruzamento espacial e alfanumérico instantâneo contra a base oficial SQLite local (composta por mais de 1,46 milhão de imóveis rurais certificados nos estados do PR, SC e SP):
+- **Imóvel Rural:** Denominação oficial da propriedade registrada no SICAR ou SIGEF/INCRA. Caso não conste nas bases públicas, o sistema indica expressamente *"Denominação não consta na base pública consultada"*.
+- **Código do CAR:** Código oficial do Cadastro Ambiental Rural (SICAR/MMA) com botão de cópia com 1 clique (ex: `PR-4116109-4ACF130A59D4406D8B32B1FEEC9FBDB4`). Caso não localizado, exibe *"Não localizado"*.
+- **Titular / Proprietário:** Nome do titular reproduzido exatamente na forma em que é publicado pelo Sistema Nacional de Cadastro Rural (SNCR/INCRA).
+- **Proteção de Dados Pessoais (LGPD):** O nome do titular é reproduzido exatamente na forma mascarada (pseudonimização) em que é publicado pelo Sistema Nacional de Cadastro Rural (SNCR/INCRA), sem qualquer tentativa de reversão, complementação ou cruzamento com outras bases para reidentificação. O número de CPF/CNPJ não é divulgado. O tratamento observa a Lei nº 13.709/2018 (LGPD), art. 7º, IV, que autoriza o tratamento de dados pessoais para a realização de estudos por órgão de pesquisa. O acesso à base é restrito à execução local desta aplicação.
+- **Botão [Editar / Completar]:** Permite ao pesquisador registrar anotações de campo ou complementações manuais estritamente para o laudo em elaboração.
+- **Registro INCRA & Área:** Código do imóvel no SNCR/CRI e área total em hectares (ha).
+- **Cadeia de Consulta Oficial:** Rastreabilidade completa registrando critério de associação espacial, data da consulta, arquivos de origem e datas-base de SICAR, SIGEF e SNCR.
+- **Botão [Visualizar Perímetro no Mapa (SICAR)]:** Projeta o polígono vetorial oficial da propriedade sobre a imagem de satélite com `fitBounds` automático.
 
 ### 5.5. Botões de Ação Operacional
 1. **"Visualizar Perímetro no Mapa (SICAR)":** Alterna a exibição vetorial da divisa da fazenda sobreposta ao foco erosivo.

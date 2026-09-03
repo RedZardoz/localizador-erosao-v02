@@ -24,17 +24,19 @@ import {
   Hash,
   Edit3,
   Save,
+  Info,
 } from "lucide-react";
 import { useErosionStore } from "@/lib/store/useErosionStore";
 import { formatToDMS, getGoogleEarthWebUrl, getGoogleMapsUrl } from "@/lib/utils/geoUtils";
 import { generateAuditPdf } from "@/lib/pdf/auditPdfGenerator";
 import { ErosionPoint } from "@/types/erosion";
+import { RuralPropertyMatch } from "@/lib/fundiario/spatialMatcher";
 
 export const AuditDossierModal: React.FC = () => {
   const { activeModal, closeAuditDossier, auditDossierPoint, allPoints, updatePointWithRealData } = useErosionStore();
   const [copiedScript, setCopiedScript] = useState(false);
   const [copiedCoords, setCopiedCoords] = useState(false);
-  const [localFundiario, setLocalFundiario] = useState<Partial<ErosionPoint> | null>(null);
+  const [localFundiario, setLocalFundiario] = useState<RuralPropertyMatch | null>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
 
   // Edição manual dos dados fundiários no Dossiê
@@ -50,7 +52,26 @@ export const AuditDossierModal: React.FC = () => {
     ? {
         ...rawPoint,
         ...(storePoint || {}),
-        ...(localFundiario || {}),
+        ...(localFundiario
+          ? {
+              carCode: localFundiario.carCode,
+              propertyName: localFundiario.propertyName,
+              ownerName: localFundiario.ownerName,
+              incraRegistry: localFundiario.incraRegistry,
+              propertyAreaHa: localFundiario.propertyAreaHa,
+              ownerDocumentMasked: localFundiario.ownerDocumentMasked,
+              tenureStatus: localFundiario.status,
+              tenureUf: localFundiario.uf,
+              tenureQueryDate: localFundiario.dataConsulta,
+              tenureAssociationCriterion: localFundiario.criterioAssociacao,
+              sicarSourceFile: localFundiario.sicarArquivoOrigem,
+              sicarBaseDate: localFundiario.sicarDataBase,
+              sigefSourceFile: localFundiario.sigefArquivoOrigem,
+              sigefBaseDate: localFundiario.sigefDataBase,
+              sncrSourceFile: localFundiario.sncrArquivoOrigem,
+              sncrBaseDate: localFundiario.sncrDataBase,
+            }
+          : {}),
       }
     : null;
 
@@ -82,16 +103,35 @@ export const AuditDossierModal: React.FC = () => {
       fetch("/api/fundiario/match", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ latitude: point.latitude, longitude: point.longitude }),
+        body: JSON.stringify({
+          latitude: point.latitude,
+          longitude: point.longitude,
+          uf: point.state,
+        }),
       })
         .then((res) => res.json())
         .then((json) => {
           if (isMounted && json.success && json.data) {
             const d = json.data;
-            if (d.carCode || d.propertyName || d.ownerName) {
-              setLocalFundiario(d);
-              updatePointWithRealData(point.id, d);
-            }
+            setLocalFundiario(d);
+            updatePointWithRealData(point.id, {
+              carCode: d.carCode,
+              propertyName: d.propertyName,
+              ownerName: d.ownerName,
+              incraRegistry: d.incraRegistry,
+              propertyAreaHa: d.propertyAreaHa,
+              ownerDocumentMasked: d.ownerDocumentMasked,
+              tenureStatus: d.status,
+              tenureUf: d.uf,
+              tenureQueryDate: d.dataConsulta,
+              tenureAssociationCriterion: d.criterioAssociacao,
+              sicarSourceFile: d.sicarArquivoOrigem,
+              sicarBaseDate: d.sicarDataBase,
+              sigefSourceFile: d.sigefArquivoOrigem,
+              sigefBaseDate: d.sigefDataBase,
+              sncrSourceFile: d.sncrArquivoOrigem,
+              sncrBaseDate: d.sncrDataBase,
+            });
           }
         })
         .catch(() => {});
@@ -440,89 +480,124 @@ Map.addLayer(bsi, {min: -0.2, max: 0.5, palette: ['blue', 'yellow', 'orange', 'r
                   </button>
                 </div>
               </div>
+            ) : point.tenureStatus === "base-nao-disponivel" ? (
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-lg text-xs space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-amber-900 dark:text-amber-200">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Base territorial não disponível para {point.state || "esta UF"}</span>
+                </div>
+                <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                  A base SQLite local possui apenas dados oficiais de PR, SC e SP. Para consultar esta UF, ingira a base oficial do SICAR/SNCR via ingest_data.py.
+                </p>
+              </div>
+            ) : point.tenureStatus === "sem-correspondencia" ? (
+              <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
+                  <Info className="w-4 h-4 text-slate-500 shrink-0" />
+                  <span>Nenhum imóvel rural cadastrado sobreposto</span>
+                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Nenhum imóvel rural cadastrado nas bases oficiais do SICAR/SIGEF sobrepõe esta coordenada (área pública, não demarcada ou fora da base consultada).
+                </p>
+              </div>
             ) : point.propertyName || point.carCode || point.ownerName ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5 flex flex-col justify-between">
-                  <div>
-                    <div className="text-[10px] text-slate-400 uppercase font-semibold flex items-center gap-1 mb-1">
-                      <Building2 className="w-3 h-3 text-emerald-500" />
-                      Denominação do Imóvel
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                  <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5 flex flex-col justify-between">
+                    <div>
+                      <div className="text-[10px] text-slate-400 uppercase font-semibold flex items-center gap-1 mb-1">
+                        <Building2 className="w-3 h-3 text-emerald-500" />
+                        Denominação do Imóvel
+                      </div>
+                      <div className="font-bold text-slate-900 dark:text-white text-xs break-words leading-snug" title={point.propertyName}>
+                        {point.propertyName || "Denominação não consta na base pública consultada"}
+                      </div>
                     </div>
-                    <div className="font-bold text-slate-900 dark:text-white text-xs break-words leading-snug" title={point.propertyName}>
-                      {point.propertyName || "Não Identificado"}
+                    {point.municipality && (
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
+                        {point.municipality} - {point.state || "PR"}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5 flex flex-col justify-between">
+                    <div>
+                      <div className="text-[10px] text-slate-400 uppercase font-semibold flex items-center gap-1 mb-1">
+                        <ShieldCheck className="w-3 h-3 text-cyan-500" />
+                        Código SICAR (CAR)
+                      </div>
+                      <div className="font-mono font-bold text-cyan-700 dark:text-cyan-300 text-[11px] break-all leading-tight" title={point.carCode}>
+                        {point.carCode || "Não localizado"}
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-slate-400 dark:text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800">
+                      Base Oficial SICAR / MMA
                     </div>
                   </div>
-                  {point.municipality && (
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
-                      {point.municipality} - {point.state || "PR"}
+
+                  <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5 flex flex-col justify-between">
+                    <div>
+                      <div className="text-[10px] text-slate-400 uppercase font-semibold flex items-center justify-between gap-1 mb-1">
+                        <span className="flex items-center gap-1">
+                          <User className="w-3 h-3 text-indigo-500" />
+                          Titular / Proprietário
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditOwner(point.ownerName || "");
+                            setEditProperty(point.propertyName || "");
+                            setEditDoc(point.ownerDocumentMasked || "");
+                            setEditIncra(point.incraRegistry || "");
+                            setEditingTenure(true);
+                          }}
+                          className="text-[9px] text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-0.5 no-print cursor-pointer"
+                          title="Editar ou completar nome do titular"
+                        >
+                          <Edit3 className="w-2.5 h-2.5" /> Editar
+                        </button>
+                      </div>
+                      <div className="font-semibold text-slate-900 dark:text-white text-xs break-words leading-snug" title={point.ownerName}>
+                        {point.ownerName || "Titular não consta na base pública consultada (CAR/SICAR e SIGEF não publicam identidade do proprietário)"}
+                      </div>
                     </div>
-                  )}
+                    <div className="text-[10px] text-slate-400 dark:text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800">
+                      Máscara oficial SNCR/INCRA mantida (LGPD)
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5 flex flex-col justify-between">
+                    <div>
+                      <div className="text-[10px] text-slate-400 uppercase font-semibold flex items-center gap-1 mb-1">
+                        <Hash className="w-3 h-3 text-amber-500" />
+                        SNCR / Cartório (CRI)
+                      </div>
+                      <div className="font-mono font-semibold text-slate-900 dark:text-white text-[11px] break-words leading-tight">
+                        {point.incraRegistry || "Não localizado"}
+                      </div>
+                    </div>
+                    {point.propertyAreaHa !== undefined && (
+                      <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 pt-1 border-t border-slate-100 dark:border-slate-800">
+                        Área: {point.propertyAreaHa} hectares
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5 flex flex-col justify-between">
-                  <div>
-                    <div className="text-[10px] text-slate-400 uppercase font-semibold flex items-center gap-1 mb-1">
-                      <ShieldCheck className="w-3 h-3 text-cyan-500" />
-                      Código SICAR (CAR)
-                    </div>
-                    <div className="font-mono font-bold text-cyan-700 dark:text-cyan-300 text-[11px] break-all leading-tight" title={point.carCode}>
-                      {point.carCode || "Não Informado"}
-                    </div>
+                {/* Cadeia de Consulta e Rastreabilidade */}
+                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs space-y-1 text-slate-600 dark:text-slate-400">
+                  <div className="font-bold text-slate-800 dark:text-slate-200">
+                    Cadeia de Consulta Oficial:
                   </div>
-                  <div className="text-[10px] text-slate-400 dark:text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800">
-                    Base Oficial SICAR / MMA
-                  </div>
+                  <div className="text-[11px]"><b>Critério de Associação:</b> {point.tenureAssociationCriterion || "Contenção topológica estrita (Shapely)"}</div>
+                  <div className="text-[11px]"><b>Data da Consulta:</b> {point.tenureQueryDate || new Date().toLocaleDateString("pt-BR")}</div>
+                  <div className="text-[11px]"><b>SICAR:</b> {point.sicarSourceFile || "AREA_IMOVEL"} ({point.sicarBaseDate || "2026"}) | <b>SIGEF:</b> {point.sigefSourceFile || "Sigef Brasil"} | <b>SNCR:</b> {point.sncrSourceFile || "SNCR"}</div>
                 </div>
 
-                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5 flex flex-col justify-between">
-                  <div>
-                    <div className="text-[10px] text-slate-400 uppercase font-semibold flex items-center justify-between gap-1 mb-1">
-                      <span className="flex items-center gap-1">
-                        <User className="w-3 h-3 text-indigo-500" />
-                        Titular / Proprietário
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditOwner(point.ownerName || "");
-                          setEditProperty(point.propertyName || "");
-                          setEditDoc(point.ownerDocumentMasked || "");
-                          setEditIncra(point.incraRegistry || "");
-                          setEditingTenure(true);
-                        }}
-                        className="text-[9px] text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-0.5 no-print cursor-pointer"
-                        title="Editar ou completar nome do titular"
-                      >
-                        <Edit3 className="w-2.5 h-2.5" /> Editar
-                      </button>
-                    </div>
-                    <div className="font-semibold text-slate-900 dark:text-white text-xs break-words leading-snug" title={point.ownerName}>
-                      {point.ownerName || "Não Informado"}
-                    </div>
-                  </div>
-                  {point.ownerDocumentMasked && (
-                    <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
-                      Doc: {point.ownerDocumentMasked}
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5 flex flex-col justify-between">
-                  <div>
-                    <div className="text-[10px] text-slate-400 uppercase font-semibold flex items-center gap-1 mb-1">
-                      <Hash className="w-3 h-3 text-amber-500" />
-                      SNCR / Cartório (CRI)
-                    </div>
-                    <div className="font-mono font-semibold text-slate-900 dark:text-white text-[11px] break-words leading-tight">
-                      {point.incraRegistry || "S/N"}
-                    </div>
-                  </div>
-                  {point.propertyAreaHa !== undefined && (
-                    <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 pt-1 border-t border-slate-100 dark:border-slate-800">
-                      Área: {point.propertyAreaHa} hectares
-                    </div>
-                  )}
-                </div>
+                {/* Nota de conformidade LGPD */}
+                <p className="text-[10.5px] text-slate-500 dark:text-slate-400 leading-relaxed italic border-t border-slate-200 dark:border-slate-800 pt-2">
+                  <b>Proteção de dados pessoais:</b> O nome do titular é reproduzido exatamente na forma mascarada (pseudonimização) em que é publicado pelo Sistema Nacional de Cadastro Rural (SNCR/INCRA), sem qualquer tentativa de reversão, complementação ou cruzamento com outras bases para reidentificação. O número de CPF/CNPJ não é divulgado. O tratamento observa a Lei nº 13.709/2018 (LGPD), art. 7º, IV, que autoriza o tratamento de dados pessoais para a realização de estudos por órgão de pesquisa. O acesso à base é restrito à execução local desta aplicação.
+                </p>
               </div>
             ) : (
               <div className="p-2.5 bg-white/80 dark:bg-slate-900/80 rounded-lg border border-dashed border-slate-300 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 italic">

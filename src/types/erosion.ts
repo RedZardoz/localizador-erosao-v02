@@ -77,10 +77,20 @@ export interface ErosionPoint {
   // Atributos Fundiários e Cadastro Rural (CAR / SICAR / SNCR / CNIR)
   carCode?: string;             // Código do CAR (ex: BR-PR-4105404-000123-A)
   propertyName?: string;        // Nome da propriedade (ex: Fazenda Santa Maria)
-  ownerName?: string;           // Nome completo do proprietário/titular principal
+  ownerName?: string;           // Nome completo do proprietário/titular principal (máscara oficial SNCR)
   incraRegistry?: string;       // Registro numérico do INCRA (ex: 950.041.054.123-1)
   propertyAreaHa?: number;      // Área total do imóvel em hectares (ha)
-  ownerDocumentMasked?: string; // CPF/CNPJ mascarado do proprietário (ex: ***.123.456-**)
+  ownerDocumentMasked?: string; // CPF/CNPJ mascarado do proprietário
+  tenureStatus?: "encontrado" | "aproximado" | "sem-correspondencia" | "base-nao-disponivel";
+  tenureUf?: string;
+  tenureQueryDate?: string;
+  tenureAssociationCriterion?: string;
+  sicarSourceFile?: string;
+  sicarBaseDate?: string;
+  sigefSourceFile?: string;
+  sigefBaseDate?: string;
+  sncrSourceFile?: string;
+  sncrBaseDate?: string;
 }
 
 export interface RegionPreset {

@@ -32,11 +32,13 @@ import {
   EyeOff,
   Edit3,
   Save,
+  Info,
 } from "lucide-react";
 import { ErosionPoint } from "@/types/erosion";
 import { formatToDMS, getGoogleEarthWebUrl, getGoogleMapsUrl } from "@/lib/utils/geoUtils";
 import { useErosionStore } from "@/lib/store/useErosionStore";
 import { isPointSlopeOutdated, GEE_CALC_ENGINE_VERSION } from "@/lib/gee/calcEngineVersion";
+import { RuralPropertyMatch } from "@/lib/fundiario/spatialMatcher";
 
 interface PointPopupProps {
   point: ErosionPoint;
@@ -70,7 +72,7 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
   const [diagnostics, setDiagnostics] = useState<any>(null);
 
   const [copiedCar, setCopiedCar] = useState(false);
-  const [localProperty, setLocalProperty] = useState<Partial<ErosionPoint> | null>(null);
+  const [localProperty, setLocalProperty] = useState<RuralPropertyMatch | null>(null);
   const [loadingProperty, setLoadingProperty] = useState(false);
   const [loadingPolygon, setLoadingPolygon] = useState(false);
 
@@ -111,19 +113,36 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
     fetch("/api/fundiario/match", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ latitude: point.latitude, longitude: point.longitude }),
+      body: JSON.stringify({
+        latitude: point.latitude,
+        longitude: point.longitude,
+        uf: point.state,
+      }),
       signal: controller.signal,
     })
       .then((res) => res.json())
       .then((json) => {
         if (json.success && json.data) {
           const d = json.data;
-          if (d.carCode || d.propertyName || d.ownerName) {
-            setLocalProperty(d);
-            updatePointWithRealData(point.id, d);
-          } else {
-            setLocalProperty(null);
-          }
+          setLocalProperty(d);
+          updatePointWithRealData(point.id, {
+            carCode: d.carCode,
+            propertyName: d.propertyName,
+            ownerName: d.ownerName,
+            incraRegistry: d.incraRegistry,
+            propertyAreaHa: d.propertyAreaHa,
+            ownerDocumentMasked: d.ownerDocumentMasked,
+            tenureStatus: d.status,
+            tenureUf: d.uf,
+            tenureQueryDate: d.dataConsulta,
+            tenureAssociationCriterion: d.criterioAssociacao,
+            sicarSourceFile: d.sicarArquivoOrigem,
+            sicarBaseDate: d.sicarDataBase,
+            sigefSourceFile: d.sigefArquivoOrigem,
+            sigefBaseDate: d.sigefDataBase,
+            sncrSourceFile: d.sncrArquivoOrigem,
+            sncrBaseDate: d.sncrDataBase,
+          });
         }
       })
       .catch((err) => {
@@ -270,13 +289,19 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
     }
   };
 
+  const tenureStatus = point.tenureStatus || localProperty?.status;
+  const isBaseNotAvailable = tenureStatus === "base-nao-disponivel";
+  const isNoMatch = tenureStatus === "sem-correspondencia";
+  const isApproximate = tenureStatus === "aproximado";
+  const isFound = tenureStatus === "encontrado" || (!tenureStatus && Boolean(point.carCode));
+
   const currentPropName = point.propertyName || localProperty?.propertyName;
   const currentCarCode = point.carCode || localProperty?.carCode;
   const currentOwnerName = point.ownerName || localProperty?.ownerName;
   const currentIncra = point.incraRegistry || localProperty?.incraRegistry;
   const currentArea = point.propertyAreaHa !== undefined ? point.propertyAreaHa : localProperty?.propertyAreaHa;
   const currentDoc = point.ownerDocumentMasked || localProperty?.ownerDocumentMasked;
-  const hasRuralData = Boolean(currentPropName || currentCarCode || currentOwnerName);
+  const hasRuralData = Boolean(isFound || isApproximate || currentCarCode);
   const isShowingPolygon = Boolean(
     activeCarPolygon && (activeCarPolygon.id === currentCarCode || activeCarPolygon.properties?.carCode === currentCarCode)
   );
@@ -601,31 +626,27 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
               <span>ℹ️</span> Informações Fundiárias &amp; Cadastro Rural
             </span>
             <div className="flex items-center gap-1.5">
-              {!isOwnerLocated && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!editingTenure) {
-                      setEditOwner(currentOwnerName || "");
-                      setEditProperty(currentPropName || "");
-                      setEditDoc(currentDoc || "");
-                      setEditIncra(currentIncra || "");
-                    }
-                    setEditingTenure(!editingTenure);
-                  }}
-                  className="text-[10px] font-semibold text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/70 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700 flex items-center gap-1 transition-colors cursor-pointer"
-                  title="Titular não localizado no SNCR - Informar manualmente"
-                >
-                  <Edit3 className="w-2.5 h-2.5" />
-                  <span>{editingTenure ? "Cancelar" : "Informar Titular"}</span>
-                </button>
-              )}
-              {isOwnerLocated && (
+              {isBaseNotAvailable ? (
+                <span className="text-[10px] font-mono font-semibold text-rose-700 dark:text-rose-400 bg-rose-100 dark:bg-rose-950/80 px-2 py-0.5 rounded border border-rose-300 dark:border-rose-700 flex items-center gap-1">
+                  <AlertTriangle className="w-2.5 h-2.5 text-rose-600" />
+                  Base Não Disponível
+                </span>
+              ) : isNoMatch ? (
+                <span className="text-[10px] font-mono font-semibold text-slate-700 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700 flex items-center gap-1">
+                  <Info className="w-2.5 h-2.5 text-slate-500" />
+                  Sem Correspondência
+                </span>
+              ) : isApproximate ? (
+                <span className="text-[10px] font-mono font-semibold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700 flex items-center gap-1">
+                  <AlertTriangle className="w-2.5 h-2.5 text-amber-600" />
+                  Associação Aproximada
+                </span>
+              ) : isFound ? (
                 <span className="text-[10px] font-mono font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-700 flex items-center gap-1">
                   <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
-                  SNCR / SICAR
+                  Contenção Oficial
                 </span>
-              )}
+              ) : null}
             </div>
           </div>
 
@@ -699,10 +720,30 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
                 </button>
               </div>
             </div>
-          ) : loadingProperty && !hasRuralData ? (
+          ) : loadingProperty && !hasRuralData && !isBaseNotAvailable && !isNoMatch ? (
             <div className="p-3 bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30 rounded-lg text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-center gap-2 animate-pulse">
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
               <span>Cruzando coordenadas no SICAR / SIGEF...</span>
+            </div>
+          ) : isBaseNotAvailable ? (
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-lg text-xs space-y-1.5">
+              <div className="flex items-center gap-1.5 font-bold text-amber-900 dark:text-amber-200">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>Base territorial não disponível para {point.state || localProperty?.uf || "esta UF"}</span>
+              </div>
+              <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                A base SQLite local possui apenas dados oficiais de PR, SC e SP. Para consultar esta UF, ingira a base oficial do SICAR/SNCR via ingest_data.py.
+              </p>
+            </div>
+          ) : isNoMatch ? (
+            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs space-y-1.5">
+              <div className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
+                <Info className="w-4 h-4 text-slate-500 shrink-0" />
+                <span>Nenhum imóvel cadastrado sobreposto</span>
+              </div>
+              <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                Nenhum imóvel rural cadastrado nas bases oficiais do SICAR/SIGEF sobrepõe esta coordenada (área pública, não demarcada ou fora da base consultada).
+              </p>
             </div>
           ) : hasRuralData ? (
             <div className="space-y-1.5 text-xs">
@@ -713,7 +754,7 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
                   <span>Imóvel Rural:</span>
                 </div>
                 <div className="font-bold text-slate-900 dark:text-slate-100 text-xs break-words pl-4">
-                  {currentPropName || "Não Identificado"}
+                  {currentPropName || "Denominação não consta na base pública consultada"}
                 </div>
               </div>
 
@@ -736,7 +777,7 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
                   )}
                 </div>
                 <div className="font-mono font-bold text-xs text-cyan-700 dark:text-cyan-300 break-all pl-4">
-                  {currentCarCode || "Não Informado"}
+                  {currentCarCode || "Não localizado"}
                 </div>
               </div>
 
@@ -764,7 +805,7 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
                   </button>
                 </div>
                 <div className="font-bold text-slate-900 dark:text-slate-100 text-xs break-words leading-relaxed pl-4">
-                  {currentOwnerName || "Não Informado"}
+                  {currentOwnerName || "Titular não consta na base pública consultada (CAR/SICAR e SIGEF não publicam identidade do proprietário)"}
                 </div>
                 {currentDoc && (
                   <div className="text-[10px] font-mono text-slate-400 dark:text-slate-500 pl-4">
@@ -780,7 +821,7 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
                   <span>Registro INCRA & Área:</span>
                 </div>
                 <div className="font-mono text-xs text-slate-900 dark:text-slate-100 break-words pl-4">
-                  <span className="font-bold">{currentIncra || "S/N"}</span>
+                  <span className="font-bold">{currentIncra || "Não localizado"}</span>
                   {currentArea !== undefined && (
                     <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold">
                       ({currentArea} ha)
@@ -788,6 +829,23 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
                   )}
                 </div>
               </div>
+
+              {/* Cadeia de Consulta Fundiária */}
+              <div className="p-2 bg-slate-50 dark:bg-slate-950/60 rounded-lg border border-slate-200 dark:border-slate-800 text-[10px] space-y-1 text-slate-600 dark:text-slate-400">
+                <div className="font-bold text-slate-700 dark:text-slate-300">
+                  Cadeia de Consulta Oficial:
+                </div>
+                <div><b>Critério:</b> {point.tenureAssociationCriterion || localProperty?.criterioAssociacao || (isFound ? "Contenção topológica estrita (Shapely)" : "Associação por proximidade")}</div>
+                <div><b>Data Consulta:</b> {point.tenureQueryDate || localProperty?.dataConsulta || new Date().toLocaleDateString("pt-BR")}</div>
+                <div><b>SICAR:</b> {point.sicarSourceFile || localProperty?.sicarArquivoOrigem || "AREA_IMOVEL"} ({point.sicarBaseDate || localProperty?.sicarDataBase || "2026"})</div>
+                <div><b>SIGEF:</b> {point.sigefSourceFile || localProperty?.sigefArquivoOrigem || "Sigef Brasil"}</div>
+                <div><b>SNCR:</b> {point.sncrSourceFile || localProperty?.sncrArquivoOrigem || "SNCR"}</div>
+              </div>
+
+              {/* Nota LGPD */}
+              <p className="text-[9.5px] text-slate-500 dark:text-slate-400 leading-relaxed italic border-t border-slate-200 dark:border-slate-800 pt-1.5">
+                <b>Proteção de dados:</b> O titular é reproduzido na forma mascarada (pseudonimização) publicada pelo SNCR/INCRA sem reversão (LGPD art. 7º, IV). Acesso restrito à execução local.
+              </p>
 
               {/* Botão de Exibição do Perímetro Oficial no Mapa */}
               <button

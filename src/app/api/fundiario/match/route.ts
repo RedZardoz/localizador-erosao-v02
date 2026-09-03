@@ -6,6 +6,7 @@ import { isLocalRequest } from "@/lib/security/localOnly";
 const RequestSchema = z.object({
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
+  uf: z.string().length(2).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsed = RequestSchema.parse(body);
 
-    const match = await matchRuralProperty(parsed.latitude, parsed.longitude);
+    const match = await matchRuralProperty(parsed.latitude, parsed.longitude, parsed.uf);
 
     return NextResponse.json({
       success: true,

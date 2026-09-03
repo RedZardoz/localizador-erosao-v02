@@ -244,54 +244,78 @@ export function generateAuditPdf(point: ErosionPoint): void {
   y += cardHeight + 3.2;
 
   // 3. Card de Identificação Fundiária & Cadastro Rural (CAR/SICAR - SNCR)
-  const hasLandTenure = Boolean(point.propertyName || point.carCode || point.ownerName);
-  const fundiarioHeight = 25.5;
+  const isBaseNotAvailable = point.tenureStatus === "base-nao-disponivel";
+  const isNoMatch = point.tenureStatus === "sem-correspondencia";
+  const isApproximate = point.tenureStatus === "aproximado";
+  const isFound = point.tenureStatus === "encontrado" || (!point.tenureStatus && Boolean(point.carCode));
+  const hasLandTenure = isFound || isApproximate;
+  const fundiarioHeight = hasLandTenure ? 30.5 : 22.0;
 
-  doc.setFillColor(240, 253, 244); // emerald-50/60
-  doc.setDrawColor(167, 243, 208); // emerald-200
+  doc.setFillColor(hasLandTenure ? 240 : 254, hasLandTenure ? 253 : 242, hasLandTenure ? 244 : 242);
+  doc.setDrawColor(hasLandTenure ? 167 : 252, hasLandTenure ? 243 : 165, hasLandTenure ? 208 : 165);
   doc.setLineWidth(0.3);
   doc.roundedRect(margin, y, contentWidth, fundiarioHeight, 1.5, 1.5, "FD");
 
   // Barra de título do Card Fundiário
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5);
-  doc.setTextColor(6, 95, 70); // emerald-800
-  doc.text("IDENTIFICAÇÃO FUNDIÁRIA & CADASTRO AMBIENTAL RURAL (CAR/SICAR - SNCR)", margin + 3.5, y + 4.2);
+  doc.setTextColor(hasLandTenure ? 6 : 153, hasLandTenure ? 95 : 27, hasLandTenure ? 70 : 27);
+  doc.text("IDENTIFICACAO FUNDIARIA & CADASTRO AMBIENTAL RURAL (CAR/SICAR - SNCR)", margin + 3.5, y + 4.2);
 
   // Badge no canto direito
-  doc.setFillColor(209, 250, 229); // emerald-100
-  doc.setDrawColor(110, 231, 183); // emerald-300
-  doc.roundedRect(margin + contentWidth - 44, y + 1.6, 41, 4.5, 0.8, 0.8, "FD");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6);
-  doc.setTextColor(4, 120, 87);
-  doc.text("Imóvel Rural Registrado", margin + contentWidth - 23.5, y + 4.6, { align: "center" });
+  if (isBaseNotAvailable) {
+    doc.setFillColor(254, 226, 226);
+    doc.setDrawColor(248, 113, 113);
+    doc.roundedRect(margin + contentWidth - 48, y + 1.6, 45, 4.5, 0.8, 0.8, "FD");
+    doc.setTextColor(153, 27, 27);
+    doc.text("Base Nao Disponivel", margin + contentWidth - 25.5, y + 4.6, { align: "center" });
+  } else if (isNoMatch) {
+    doc.setFillColor(241, 245, 249);
+    doc.setDrawColor(203, 213, 225);
+    doc.roundedRect(margin + contentWidth - 48, y + 1.6, 45, 4.5, 0.8, 0.8, "FD");
+    doc.setTextColor(100, 116, 139);
+    doc.text("Sem Correspondencia", margin + contentWidth - 25.5, y + 4.6, { align: "center" });
+  } else if (isApproximate) {
+    doc.setFillColor(254, 243, 199);
+    doc.setDrawColor(245, 158, 11);
+    doc.roundedRect(margin + contentWidth - 48, y + 1.6, 45, 4.5, 0.8, 0.8, "FD");
+    doc.setTextColor(180, 83, 9);
+    doc.text("Associacao Aproximada", margin + contentWidth - 25.5, y + 4.6, { align: "center" });
+  } else {
+    doc.setFillColor(209, 250, 229);
+    doc.setDrawColor(110, 231, 183);
+    doc.roundedRect(margin + contentWidth - 48, y + 1.6, 45, 4.5, 0.8, 0.8, "FD");
+    doc.setTextColor(4, 120, 87);
+    doc.text("Imovel Rural Registrado", margin + contentWidth - 25.5, y + 4.6, { align: "center" });
+  }
 
   if (hasLandTenure) {
     const colW = (contentWidth - 6) / 4; // ~44 mm por coluna
-    const subBoxY = y + 6.8;
-    const subBoxH = 16.5;
+    const subBoxY = y + 6.6;
+    const subBoxH = 15.5;
 
     const fundiarioFields = [
       {
-        label: "DENOMINAÇÃO DO IMÓVEL",
-        val: point.propertyName || "Não Identificado",
+        label: "DENOMINACAO DO IMOVEL",
+        val: point.propertyName || "Nao consta na base consultada",
         sub: point.municipality ? `${point.municipality} - ${point.state || "PR"}` : "",
       },
       {
-        label: "CÓDIGO SICAR (CAR)",
-        val: point.carCode || "Não Informado",
-        sub: "Base SICAR / MMA",
+        label: "CODIGO SICAR (CAR)",
+        val: point.carCode || "Nao localizado",
+        sub: "Base Oficial SICAR / MMA",
       },
       {
-        label: "TITULAR / PROPRIETÁRIO",
-        val: point.ownerName || "Não Informado",
-        sub: point.ownerDocumentMasked ? `Doc: ${point.ownerDocumentMasked}` : "Cadastro Certificado",
+        label: "TITULAR / PROPRIETARIO",
+        val: point.ownerName || "Nao consta na base consultada",
+        sub: "Mascara oficial SNCR/INCRA (LGPD art. 7, IV)",
       },
       {
-        label: "SNCR / ÁREA TOTAL",
-        val: point.incraRegistry || "S/N",
-        sub: point.propertyAreaHa !== undefined ? `${point.propertyAreaHa} hectares` : "Área Não Declarada",
+        label: "SNCR / AREA TOTAL",
+        val: point.incraRegistry || "Nao localizado",
+        sub: point.propertyAreaHa !== undefined ? `${point.propertyAreaHa} hectares` : "Area Nao Declarada",
       },
     ];
 
@@ -304,35 +328,75 @@ export function generateAuditPdf(point: ErosionPoint): void {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(5.2);
       doc.setTextColor(100, 116, 139);
-      doc.text(item.label, fx + 2, subBoxY + 3.0);
+      doc.text(item.label, fx + 2, subBoxY + 2.8);
 
       doc.setFont(i === 1 ? "courier" : "helvetica", "bold");
-      doc.setFontSize(5.8);
+      doc.setFontSize(5.6);
       doc.setTextColor(i === 1 ? 14 : 15, i === 1 ? 116 : 23, i === 1 ? 144 : 42);
       const valLines: string[] = doc.splitTextToSize(item.val, colW - 3.5);
-      const displayValLines = valLines.slice(0, 3);
-      doc.text(displayValLines, fx + 2, subBoxY + 6.2);
+      const displayValLines = valLines.slice(0, 2);
+      doc.text(displayValLines, fx + 2, subBoxY + 5.8);
 
       if (item.sub) {
-        const subY = subBoxY + 6.2 + (displayValLines.length * 2.5) + 0.6;
-        if (subY <= subBoxY + subBoxH - 1.0) {
+        const subY = subBoxY + 5.8 + (displayValLines.length * 2.4) + 0.5;
+        if (subY <= subBoxY + subBoxH - 0.8) {
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(4.8);
+          doc.setFontSize(4.6);
           doc.setTextColor(100, 116, 139);
           const subLines: string[] = doc.splitTextToSize(item.sub, colW - 3.5);
-          doc.text(subLines.slice(0, 2), fx + 2, subY);
+          doc.text(subLines.slice(0, 1), fx + 2, subY);
         }
       }
     });
-  } else {
+
+    // Linha de Cadeia de Consulta e Rastreabilidade
+    const chainY = subBoxY + subBoxH + 2.2;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(5.0);
+    doc.setTextColor(71, 85, 105);
+    const chainText = `Cadeia de Consulta (${point.tenureQueryDate || "Recente"}): Criterio: ${point.tenureAssociationCriterion || "Topologia estrita"} | SICAR: ${point.sicarSourceFile || "AREA_IMOVEL"} (${point.sicarBaseDate || "2026"}) | SIGEF: ${point.sigefSourceFile || "Sigef Brasil"} | SNCR: ${point.sncrSourceFile || "SNCR"}`;
+    doc.text(chainText, margin + 2, chainY, { maxWidth: contentWidth - 4 });
+
+    // Nota de conformidade LGPD
+    const lgpdY = chainY + 2.8;
     doc.setFont("helvetica", "italic");
-    doc.setFontSize(7);
+    doc.setFontSize(4.6);
     doc.setTextColor(100, 116, 139);
-    doc.text(
-      "Coordenada localizada fora de perímetro cadastrado no SICAR/SIGEF (Área pública, não demarcada ou fora da base municipal)",
-      margin + 4,
-      y + 13
-    );
+    doc.text("Protecao de dados: Titular pseudonimizado conforme publicado pelo SNCR/INCRA sem reversao (LGPD art. 7, IV). Acesso local restrito.", margin + 2, lgpdY, { maxWidth: contentWidth - 4 });
+  } else {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    if (isBaseNotAvailable) {
+      doc.setTextColor(163, 60, 40); // vermelho
+      doc.text(
+        `BASE FUNDIARIA NAO DISPONIVEL PARA ESTA UF (${point.state || "UF nao carregada"}). Bases oficiais locais cobrem apenas PR, SC e SP.`,
+        margin + 4,
+        y + 9
+      );
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(5.8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(
+        "Para habilitar a consulta nesta regiao, ingira os dados oficiais do SICAR e SNCR correspondentes via ingest_data.py.",
+        margin + 4,
+        y + 14
+      );
+    } else {
+      doc.setTextColor(163, 60, 40); // vermelho
+      doc.text(
+        "NENHUM IMOVEL RURAL CADASTRADO NAS BASES OFICIAIS SOBREPOE ESTA COORDENADA",
+        margin + 4,
+        y + 9
+      );
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(5.8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(
+        "Coordenada localizada fora de perimetro cadastrado no SICAR/SIGEF (Area publica, nao demarcada ou fora da base consultada).",
+        margin + 4,
+        y + 14
+      );
+    }
   }
 
   y += fundiarioHeight + 3.2;
