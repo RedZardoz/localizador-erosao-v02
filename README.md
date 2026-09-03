@@ -26,10 +26,16 @@ A plataforma web atua como o ambiente de **análise exploratória, visualizaçã
 > 4. **Coleções e Projetos Salvos:** Permite salvar seleções ativas no navegador, recarregar instantaneamente com enquadramento 3D automático, ou exportar/importar arquivos de projeto `.json`.
 > 5. **Ciclo de Validação de Campo (KoboToolbox):** Importa dados de campo do KoboToolbox, casa registros por proximidade/código, marca como `field-validated` e exporta o dataset rotulado para futuro treinamento do XGBoost/SHAP.
 > 6. **Dossiê de Auditoria Científica e Laudo em PDF:** Permite auditar qualquer ponto amostral contra o Earth Engine, detalhando a sequência das 6 etapas físico-matemáticas com valores numéricos reais, gerando script reproduzível para o GEE Code Editor e exportando Laudo Técnico oficial em PDF (A4 vetorial) para revalidação por pares.
+> 7. **Novo Pipeline Fundiário Integrado (Espacial + Alfanumérico):** Cruzamento espacial R\*Tree de altíssima performance (< 5ms) contra **quase 4,5 milhões de registros governamentais** no SQLite local:
+>    - **SICAR/MMA (1,46M imóveis):** Código CAR, situação cadastral e projeção vetorial interativa do perímetro da fazenda no mapa (`fitBounds`);
+>    - **SIGEF/INCRA (501K parcelas):** Denominação oficial da fazenda/gleba, Matrícula no Cartório de Registro de Imóveis (CRI) e ART do CREA;
+>    - **SNCR/Receita Federal (2,46M cadastros):** Database Merge alfanumérico instantâneo para identificação do titular/proprietário e condição jurídica;
+>    - **Edição Direta:** Opção de preenchimento e complemento manual de dados para o pesquisador registrar entrevistas de campo ou quando protegido por sigilo fiscal.
 > 
 > 📚 **Manuais de Uso e Documentação Técnica:**
-> - 🚀 [**Manual de Instalação e Execução**](./MANUAL_INSTALACAO.md): Guia passo a passo de clonagem, dependências, scripts do Windows e compilação.
-> - 🧭 [**Manual de Operação e Configuração**](./MANUAL_OPERACAO.md): Guia completo e detalhado de cada ferramenta, modal, botão e parâmetro do sistema.
+> - 🚀 [**Manual de Instalação e Execução**](./MANUAL_INSTALACAO.md): Guia passo a passo de clonagem, dependências, scripts do Windows, ingestão de dados e compilação.
+> - 🧭 [**Manual de Operação e Configuração**](./MANUAL_OPERACAO.md): Guia completo e detalhado de cada ferramenta, modal, botão, projeção de polígonos e laudos.
+> - 📊 [**Apresentação de Slides em PowerPoint (.pptx)**](./Apresentacao_Localizador_Erosao_PPGTCA.pptx): Apresentação acadêmica/executiva completa em 12 slides widescreen (16:9) pronta para bancas e seminários.
 > - 📐 [**Mapa de Documentação e Cálculos**](./MAPA_DOCUMENTACAO_CALCULOS.md): Mapeamento arquitetural das rotas, APIs e equações da RUSLE.
 
 ---

@@ -15,6 +15,7 @@ Este documento descreve o procedimento completo para instalação, compilação 
 | :--- | :--- | :--- | :--- |
 | **Node.js** | `v18.17.0` | `v20.x` LTS ou `v22.x` | Ambiente de execução JavaScript/TypeScript |
 | **npm** | `v9.x` | `v10.x` | Gerenciador de pacotes padrão |
+| **Python** | `v3.10+` | `v3.11` a `v3.14` | Processamento geoespacial local e merge fundiário |
 | **Git** | `v2.30+` | Mais recente | Controle de versão e clonagem do código |
 | **Navegador Web** | Moderno com suporte a WebGL 2.0 | Google Chrome, Edge, Firefox ou Brave | Renderização do mapa 3D (MapLibre GL JS) |
 
@@ -22,7 +23,7 @@ Este documento descreve o procedimento completo para instalação, compilação 
 - **Processador:** Dual-Core de 2.0 GHz ou superior (Intel Core i3/i5/i7, AMD Ryzen ou Apple Silicon).
 - **Memória RAM:** Mínimo de 4 GB (8 GB recomendados para renderização 3D suave e manipulação de tiles no GEE).
 - **Placa Gráfica (GPU):** Suporte a aceleração por hardware e WebGL 2.0 (placas integradas Intel UHD/Iris ou dedicadas NVIDIA/AMD).
-- **Armazenamento:** 500 MB de espaço em disco para o código-fonte, dependências (`node_modules`) e artefatos de compilação.
+- **Armazenamento:** 500 MB de espaço em disco para o código-fonte e dependências. Se desejar indexar as bases fundiárias completas (SICAR, SIGEF, SNCR), recomenda-se 5 GB de espaço livre em disco.
 - **Conexão com a Internet:** Banda larga estável para consulta e streaming de imagens Sentinel-2, DEM Copernicus e APIs da NASA POWER e ISRIC SoilGrids.
 
 ---
@@ -41,15 +42,37 @@ cd localizador-erosao-parana
 
 ---
 
-### Passo 2: Instalar as Dependências do Projeto
-No diretório raiz da aplicação, instale todas as dependências listadas no `package.json`:
+### Passo 2: Instalar as Dependências do Projeto (Node.js & Python)
+No diretório raiz da aplicação, instale todas as dependências JavaScript listadas no `package.json`:
 
 ```bash
 npm install
 ```
 
+Em seguida, instale as dependências Python para o motor espacial e geração de apresentações:
+```bash
+pip install pyshp shapely python-pptx
+```
+
 > [!NOTE]
-> O processo de instalação instalará o **Next.js 14**, **React 18**, **MapLibre GL**, **Zustand**, **Lucide React**, **jsPDF**, **TailwindCSS**, e as ferramentas de teste **Vitest**.
+> O processo de instalação instalará o **Next.js 14**, **React 18**, **MapLibre GL**, **Zustand**, **Lucide React**, **jsPDF**, **TailwindCSS**, e as ferramentas de teste **Vitest**. No Python, instala as bibliotecas para leitura de Shapefiles (`pyshp`), geometria computacional (`shapely`) e geração de slides (`python-pptx`).
+
+---
+
+### Passo 3: Ingestão das Bases Fundiárias Oficiais (Opcional, mas Recomendado)
+A plataforma possui um banco de dados local de alta velocidade (`data/fundiario_brasil.db`) indexado com SQLite R\*Tree. Caso você baixe os dados abertos oficiais dos órgãos governamentais:
+
+1. **SICAR (Cadastro Ambiental Rural - SFB/MMA):**
+   - Baixe os shapefiles estaduais (ex: PR, SC, SP) e coloque em `Dados SICAR/`.
+   - Execute: `python scripts/ingest_sicar_official.py` (indexa mais de 1,46M de propriedades).
+2. **SIGEF (Sistema de Gestão Fundiária - INCRA):**
+   - Baixe os shapefiles de parcelas certificadas no Acervo Fundiário e coloque em `Dados INCRA/`.
+   - Execute: `python scripts/ingest_sigef_official.py` (indexa mais de 501 mil parcelas certificadas com Matrícula CRI e ART).
+3. **SNCR (Sistema Nacional de Cadastro Rural - INCRA / Receita Federal):**
+   - Baixe os arquivos CSV de dados abertos e coloque em `Dados SNCR/`.
+   - Execute: `python scripts/ingest_sncr_official.py` (indexa mais de 2,46M de titulares para o Database Merge).
+4. **Gerar Apresentação em PowerPoint (PPTX):**
+   - Execute: `python scripts/generate_presentation.py` para gerar o arquivo `Apresentacao_Localizador_Erosao_PPGTCA.pptx`.
 
 ---
 

@@ -58,4 +58,24 @@ Laudo_Auditoria_Erosao_*.pdf
 
 # Pastas de documentacao interna e apresentacoes locais (nao subir ao Github)
 Analises e Planos de Alteração da Versão Atual/
+
+# Bases de dados locais espaciais e arquivos brutos governamentais (arquivos pesados de download)
+Dados SICAR/
+Dados INCRA/
+Dados SIGEF/
+Dados SNCR/
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+data/shapes/
+data/sicar_cache/
+data/sigef_cache/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+scripts/__pycache__/
+
 Descrição da versão atual/

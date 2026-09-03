@@ -180,12 +180,22 @@ Ao clicar em qualquer marcador no mapa ou em um card na Sidebar, abre-se a janel
 - **Taxa de Perda de Solo Calculada ($A$):** Valor resultante em $t/(ha\cdot ano)$.
 - **Score de Prioridade:** Pontuação normalizada de $0$ a $100$.
 
-### 5.4. Botões de Ação Operacional
-1. **"Ver em Ultra-Zoom (Z19)":** Dispara um voo instantâneo da câmera para nível de zoom 19 com $45^\circ$ de inclinação, permitindo inspecionar visualmente terraços, curvas de nível, sulcos e desagregação do solo.
-2. **"Auditar Cena Sentinel-2":** Consulta a API do GEE em tempo real, obtendo a passagem do Sentinel-2 com menor nebulosidade nos últimos 120 dias, aplicando máscara SCL e recalculando as variáveis no ponto exato.
-3. **"Substituir por Ponto Elegível (Re-eleger no GEE)":** Caso a inspeção visual mostre que o ponto caiu sobre elemento inadequado (ex: fragmento de mata ou mancha de sombra), essa função busca no GEE um novo ponto elegível no mesmo município/bacia, **preservando rigorosamente o mesmo código do candidato** (ex: `PR-CAND-042`).
-4. **"Dossiê & Laudo de Auditoria (PDF)":** Abre a tela modal com a sequência completa de validação científica por pares.
-5. **Links Externos:**
+### 5.4. Identificação Fundiária & Cadastro Rural (CAR / SIGEF / SNCR)
+O sistema executa um duplo cruzamento espacial e alfanumérico instantâneo (< 10ms) contra a base de quase 4,5M de registros oficiais:
+- **Imóvel Rural:** Denominação oficial da propriedade ou gleba registrada no SIGEF/INCRA (ex: *Fazenda Aliança - Parte 1* ou *Lote 07 - Gleba Jarau*).
+- **Código do CAR:** Código oficial do Cadastro Ambiental Rural (SICAR/MMA) com botão de cópia com 1 clique (ex: `PR-4116109-4ACF130A59D4406D8B32B1FEEC9FBDB4`).
+- **Titular / Proprietário:** Nome do proprietário resgatado via Database Merge alfanumérico com a base de dados abertos do SNCR / Receita Federal, acompanhado do selo verde `✓ SNCR / SICAR`.
+- **Botão [Editar / Completar]:** Permite ao pesquisador completar o sobrenome de proprietários (caso a base governamental contenha asteriscos de proteção fiscal) ou registrar anotações de entrevistas em campo.
+- **Registro INCRA & Área:** Código do imóvel no SNCR, número da **Matrícula no Cartório de Registro de Imóveis (CRI)** e área total da propriedade em hectares (ha).
+- **Botão [Visualizar Perímetro no Mapa (SICAR)]:** Projeta instantaneamente o polígono vetorial da fazenda contornado em verde-esmeralda sobre a cena de satélite e ajusta a câmera do mapa com `fitBounds` automático.
+
+### 5.5. Botões de Ação Operacional
+1. **"Visualizar Perímetro no Mapa (SICAR)":** Alterna a exibição vetorial da divisa da fazenda sobreposta ao foco erosivo.
+2. **"Ver em Ultra-Zoom (Z19)":** Dispara um voo instantâneo da câmera para nível de zoom 19 com $45^\circ$ de inclinação, permitindo inspecionar visualmente terraços, curvas de nível, sulcos e desagregação do solo.
+3. **"Auditar Cena Sentinel-2":** Consulta a API do GEE em tempo real, obtendo a passagem do Sentinel-2 com menor nebulosidade nos últimos 120 dias, aplicando máscara SCL e recalculando as variáveis no ponto exato.
+4. **"Substituir por Ponto Elegível (Re-eleger no GEE)":** Caso a inspeção visual mostre que o ponto caiu sobre elemento inadequado (ex: fragmento de mata ou mancha de sombra), essa função busca no GEE um novo ponto elegível no mesmo município/bacia, **preservando rigorosamente o mesmo código do candidato** (ex: `PR-CAND-042`).
+5. **"Dossiê & Laudo de Auditoria (PDF)":** Abre a tela modal com a sequência completa de validação científica por pares.
+6. **Links Externos:**
    - **Google Earth Web 3D:** Abre o ponto em 3D imersivo nos servidores do Google.
    - **Google Maps Satélite:** Abre o ponto em visualizador convencional com camada de tráfego e vias rurais.
 

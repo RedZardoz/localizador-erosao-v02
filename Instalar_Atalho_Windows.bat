@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 > nul
-title Instalador do Localizador de Erosao Laminar - Windows
+title Instalador do Localizador de Erosao ^& Propriedade - Windows
 
 echo ===============================================================================
-echo     INSTALADOR - LOCALIZADOR DE EROSAO LAMINAR (MESTRADO PPGTCA 2026)
+echo     INSTALADOR - LOCALIZADOR DE EROSAO ^& PROPRIEDADE (MESTRADO PPGTCA 2026)
 echo ===============================================================================
 echo.
 

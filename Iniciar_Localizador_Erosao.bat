@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 > nul
-title Localizador de Erosao Laminar - Mestrado PPGTCA 2026
+title Localizador de Erosao ^& Propriedade - Mestrado PPGTCA 2026
 
 echo ===============================================================================
-echo     LOCALIZADOR DE EROSAO LAMINAR (PARANA / BRASIL) - MESTRADO PPGTCA 2026
+echo     LOCALIZADOR DE EROSAO ^& PROPRIEDADE (BRASIL) - MESTRADO PPGTCA 2026
 echo ===============================================================================
 echo.
 echo [1/3] Verificando ambiente e dependencias...
