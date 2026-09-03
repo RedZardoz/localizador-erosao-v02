@@ -4,7 +4,7 @@ export const regionPresets: RegionPreset[] = [
   // Paraná - Estado Completo (Padrão)
   {
     id: "pr-all",
-    name: "Paraná (Todo o Estado - 150 Focos)",
+    name: "Paraná (Todo o Estado)",
     state: "PR",
     country: "Brasil",
     description: "Visão integral das principais bacias e zonas erosivas do Estado do Paraná.",

@@ -28,6 +28,12 @@ import { formatToDMS } from "@/lib/utils/geoUtils";
  */
 
 export function generateAuditPdf(point: ErosionPoint): void {
+  if ((point as any).dataProvenance === "mock") {
+    throw new Error(
+      "Recusa de emissao: ponto com proveniencia sintetica nao pode gerar laudo pericial."
+    );
+  }
+
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -172,18 +178,24 @@ export function generateAuditPdf(point: ErosionPoint): void {
   );
 
   // Linha 5: Proveniência
+  const PROVENANCE_PDF_LABEL: Record<string, string> = {
+    "satellite-derived": "Calculado via satelite / DEM (Google Earth Engine)",
+    "gee-screened": "Candidato triado no Earth Engine (variaveis fisicas reais)",
+    "field-validated": "Validado em campo (GNSS RTK / VANT)",
+    "user-upload": "Importado pelo usuario - valores conforme arquivo de origem",
+  };
+
   const dataProv =
-    point.dataProvenance === "satellite-derived"
-      ? "Calculado via satélite / DEM (Google Earth Engine)"
-      : point.dataProvenance === "gee-screened"
-      ? "Candidato Triado no GEE (Variáveis Físicas Reais)"
-      : point.dataProvenance === "field-validated"
-      ? "Validado em Campo"
-      : "Amostragem Experimental";
+    (point.dataProvenance && PROVENANCE_PDF_LABEL[point.dataProvenance]) ||
+    "PROVENIENCIA NAO DECLARADA";
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
-  doc.setTextColor(13, 148, 136); // teal-600
+  if (dataProv === "PROVENIENCIA NAO DECLARADA") {
+    doc.setTextColor(163, 60, 40); // vermelho
+  } else {
+    doc.setTextColor(13, 148, 136); // teal-600
+  }
   doc.text(`Origem do Dado: ${dataProv}`, margin + 4, y + 23.6, { maxWidth: leftColWidth - 4 });
 
   // Divisória vertical sutil antes dos badges

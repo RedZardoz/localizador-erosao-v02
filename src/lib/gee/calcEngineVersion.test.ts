@@ -78,8 +78,7 @@ describe("calcEngineVersion - Identificação de Pontos Desatualizados (isPointS
     expect(isPointSlopeOutdated(ptGee)).toBe(false);
   });
 
-  it("não deve marcar pontos mock, user-upload ou field-validated como desatualizados pelo motor GEE", () => {
-    expect(isPointSlopeOutdated({ dataProvenance: "mock" })).toBe(false);
+  it("não deve marcar pontos user-upload ou field-validated como desatualizados pelo motor GEE", () => {
     expect(isPointSlopeOutdated({ dataProvenance: "user-upload" })).toBe(false);
     expect(isPointSlopeOutdated({ dataProvenance: "field-validated" })).toBe(false);
   });

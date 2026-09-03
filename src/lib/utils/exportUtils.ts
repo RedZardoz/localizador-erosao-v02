@@ -293,7 +293,7 @@ export function exportTrainingDatasetCSV(points: ErosionPoint[]): string {
     p.estimatedSoilLoss,
     p.priorityScore,
     `"${p.severity}"`,
-    `"${p.dataProvenance || "mock"}"`,
+    `"${p.dataProvenance || ""}"`,
     p.dataProvenance === "field-validated" ? 1 : 0,
   ]);
 

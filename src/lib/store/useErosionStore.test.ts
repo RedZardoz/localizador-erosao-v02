@@ -90,10 +90,9 @@ describe("useErosionStore - SavedPointDataset (Salvar e Recarregar Focos)", () =
     // 3. Recarrega a coleção pelo ID
     useErosionStore.getState().loadDataset(datasetId);
 
-    const { allPoints, customPoints, dataSource } = useErosionStore.getState();
+    const { allPoints, customPoints } = useErosionStore.getState();
     expect(allPoints.length).toBe(2);
     expect(customPoints.length).toBe(2);
-    expect(dataSource).toBe("custom");
     expect(allPoints[1].municipality).toBe("Céu Azul");
   });
 
@@ -247,20 +246,16 @@ describe("useErosionStore - SavedPointDataset (Salvar e Recarregar Focos)", () =
     expect(state.auditDossierPoint).toBeNull();
   });
 
-  it("regenerateMockPoints restaura 150 pontos e dataSource mock mesmo estando em custom", () => {
-    // Simula mapa limpo ou modo custom
+  it("nao repovoa o mapa com dados sinteticos apos clearMap", () => {
     useErosionStore.getState().clearMap();
-    useErosionStore.setState({ dataSource: "custom", allPoints: [] });
-    expect(useErosionStore.getState().allPoints).toHaveLength(0);
-
-    // Chama regenerar pontos de demonstração
-    useErosionStore.getState().regenerateMockPoints();
-
     const state = useErosionStore.getState();
-    expect(state.allPoints.length).toBe(150);
-    expect(state.dataSource).toBe("mock");
-    expect(state.currentMockPoints.length).toBe(150);
-    expect(state.getFilteredPoints().length).toBeGreaterThan(0);
+    expect(state.allPoints).toHaveLength(0);
+    expect(state.getFilteredPoints()).toHaveLength(0);
+  });
+
+  it("estado inicial nao contem nenhum ponto pre-carregado", () => {
+    // Garante que o app nunca volte a abrir com dados que o usuario nao produziu
+    expect(useErosionStore.getInitialState().allPoints).toHaveLength(0);
   });
 
   it("importDataset adiciona à lista e imediatamente carrega os pontos no mapa", () => {

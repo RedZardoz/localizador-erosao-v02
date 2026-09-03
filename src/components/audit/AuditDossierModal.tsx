@@ -35,6 +35,7 @@ export const AuditDossierModal: React.FC = () => {
   const [copiedScript, setCopiedScript] = useState(false);
   const [copiedCoords, setCopiedCoords] = useState(false);
   const [localFundiario, setLocalFundiario] = useState<Partial<ErosionPoint> | null>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   // Edição manual dos dados fundiários no Dossiê
   const [editingTenure, setEditingTenure] = useState(false);
@@ -180,7 +181,12 @@ Map.addLayer(bsi, {min: -0.2, max: 0.5, palette: ['blue', 'yellow', 'orange', 'r
   };
 
   const handleDownloadPdf = () => {
-    generateAuditPdf(point);
+    setPdfError(null);
+    try {
+      generateAuditPdf(point);
+    } catch (err: any) {
+      setPdfError(err?.message || "Erro ao emitir laudo pericial em PDF.");
+    }
   };
 
   const handlePrint = () => {
@@ -190,6 +196,20 @@ Map.addLayer(bsi, {min: -0.2, max: 0.5, palette: ['blue', 'yellow', 'orange', 'r
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 dark:bg-slate-950/85 backdrop-blur-md animate-in fade-in transition-colors overflow-y-auto printable-modal">
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] shadow-2xl overflow-hidden flex flex-col my-auto printable-modal-content">
+        {pdfError && (
+          <div className="mx-4 mt-3 p-3 bg-rose-50 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 rounded-xl flex items-center justify-between text-xs text-rose-800 dark:text-rose-200 no-print">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+              <span>{pdfError}</span>
+            </div>
+            <button
+              onClick={() => setPdfError(null)}
+              className="text-rose-600 hover:text-rose-800 dark:hover:text-rose-100 font-bold ml-2 text-xs"
+            >
+              Fechar
+            </button>
+          </div>
+        )}
         {/* Modal Header */}
         <div className="p-4 sm:p-5 bg-slate-50 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3">

@@ -44,7 +44,6 @@ interface PointPopupProps {
 }
 
 const PROVENANCE_LABEL: Record<string, string> = {
-  mock: "Dado de demonstração (sintético)",
   "user-upload": "Importado pelo usuário",
   "satellite-derived": "Calculado via satélite/DEM (Earth Engine)",
   "gee-screened": "Candidato Triado (Earth Engine)",
@@ -474,7 +473,7 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
           <div className="flex items-center justify-between text-xs">
             <span className="text-slate-500 dark:text-slate-400 font-medium">Origem do Dado:</span>
             <span className="font-mono text-[11px] font-semibold text-cyan-600 dark:text-cyan-400">
-              {(point.dataProvenance && PROVENANCE_LABEL[point.dataProvenance]) || point.dataProvenance || "Candidato Triado"}
+              {(point.dataProvenance && PROVENANCE_LABEL[point.dataProvenance]) || "Proveniência não declarada"}
             </span>
           </div>
 

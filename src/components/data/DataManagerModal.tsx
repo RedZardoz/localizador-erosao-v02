@@ -24,7 +24,6 @@ import {
   ArrowRight,
   Eraser,
   Info,
-  RotateCcw,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useErosionStore, useFilteredPoints } from "@/lib/store/useErosionStore";
@@ -70,7 +69,6 @@ export const DataManagerModal: React.FC = () => {
     updatePointWithRealData,
     applyCandidatePoints,
     clearMap,
-    regenerateMockPoints,
   } = useErosionStore();
 
   const [activeTab, setActiveTab] = useState<DataManagerTab>("points");
@@ -500,29 +498,16 @@ export const DataManagerModal: React.FC = () => {
           {activeTab === "points" && (
             <div className="space-y-5">
               {currentPoints.length === 0 && (
-                <div className="p-4 bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
-                    <div>
-                      <h4 className="text-xs font-bold text-amber-950 dark:text-amber-200">
-                        O mapa está limpo / zerado no momento
-                      </h4>
-                      <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80">
-                        Nenhum foco está sendo exibido na tela. Você pode carregar uma coleção salva abaixo, importar arquivos ou restaurar a amostragem inicial.
-                      </p>
-                    </div>
+                <div className="p-4 bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-2xl flex items-center gap-2.5">
+                  <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+                  <div>
+                    <h4 className="text-xs font-bold text-amber-950 dark:text-amber-200">
+                      O mapa está limpo / zerado no momento
+                    </h4>
+                    <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80">
+                      Nenhum foco está sendo exibido na tela. Carregue uma coleção salva abaixo ou importe um arquivo de dados.
+                    </p>
                   </div>
-                  <button
-                    onClick={() => {
-                      regenerateMockPoints();
-                      setImportSuccess("Focos da região restaurados no mapa!");
-                      setTimeout(() => setImportSuccess(null), 3000);
-                    }}
-                    className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors shrink-0 cursor-pointer shadow-sm"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    Restaurar Focos da Região
-                  </button>
                 </div>
               )}
 

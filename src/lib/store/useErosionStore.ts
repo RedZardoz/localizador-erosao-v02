@@ -13,7 +13,6 @@ import {
   SeverityLevel,
   SystemLog,
 } from "@/types/erosion";
-import { generate150MockErosionPoints, mockErosionPoints } from "@/data/mockErosionPoints";
 import { regionPresets } from "@/data/regionsData";
 import { isPointInGeoJSON } from "../utils/geoUtils";
 
@@ -50,11 +49,7 @@ interface MapViewState {
 interface ErosionStoreState {
   // Data
   allPoints: ErosionPoint[];
-  dataSource: "mock" | "custom";
   customPoints: ErosionPoint[];
-  // Geração atual dos 150 pontos de demonstração (pode ser recarregada pelo
-  // usuário via `regenerateMockPoints` — ver botão "Recarregar Seleção").
-  currentMockPoints: ErosionPoint[];
   selectedPoint: ErosionPoint | null;
   activeRegion: RegionPreset;
   activeAOIPolygon: AOIPolygon | null;
@@ -99,14 +94,12 @@ interface ErosionStoreState {
   theme: "dark" | "light";
 
   // Actions
-  setDataSource: (source: "mock" | "custom") => void;
   setCustomPoints: (points: ErosionPoint[]) => void;
   applyCandidatePoints: (candidates: ErosionPoint[], replace?: boolean) => void;
   setSelectedPoint: (point: ErosionPoint | null) => void;
   updatePointWithRealData: (pointId: string, patch: Partial<ErosionPoint>) => void;
   replacePoint: (oldPointId: string, newPoint: ErosionPoint) => void;
   removePoint: (pointId: string) => void;
-  regenerateMockPoints: () => void;
   clearMap: () => void;
   setActiveRegion: (regionId: string) => void;
   setActiveAOIPolygon: (polygon: AOIPolygon | null) => void;
@@ -189,11 +182,9 @@ const initialFilters: FilterState = {
 export const useErosionStore = create<ErosionStoreState>()(
   persist(
     (set, get) => ({
-      // Data state (inicia com pontos de demonstração para nunca abrir com tela vazia caso não haja dados salvos)
-      allPoints: mockErosionPoints,
-      dataSource: "mock",
+      // Data state (mapa abre vazio conforme auditoria — nunca preencher com dados inventados)
+      allPoints: [],
       customPoints: [],
-      currentMockPoints: mockErosionPoints,
       selectedPoint: null,
       activeRegion: regionPresets[0],
       activeAOIPolygon: null,
@@ -246,18 +237,10 @@ export const useErosionStore = create<ErosionStoreState>()(
       theme: "dark",
 
       // Actions
-      setDataSource: (source) =>
-        set((state) => ({
-          dataSource: source,
-          allPoints: source === "mock" ? state.currentMockPoints : state.customPoints,
-          selectedPoint: null,
-        })),
-
       setCustomPoints: (points) =>
         set({
           customPoints: points,
           allPoints: points,
-          dataSource: "custom",
           selectedPoint: null,
         }),
 
@@ -357,12 +340,11 @@ export const useErosionStore = create<ErosionStoreState>()(
             points.map((pt) => (pt.id === pointId ? { ...pt, ...patch } : pt));
 
           const nextAllPoints = applyPatch(state.allPoints);
-          const nextCustomPoints = state.dataSource === "custom" ? applyPatch(state.customPoints) : state.customPoints;
+          const nextCustomPoints = applyPatch(state.customPoints);
 
           return {
             allPoints: nextAllPoints,
             customPoints: nextCustomPoints,
-            currentMockPoints: applyPatch(state.currentMockPoints),
             selectedPoint:
               state.selectedPoint?.id === pointId ? { ...state.selectedPoint, ...patch } : state.selectedPoint,
             auditDossierPoint:
@@ -370,8 +352,7 @@ export const useErosionStore = create<ErosionStoreState>()(
           };
         }),
 
-      // Substitui um ponto anulado por um novo candidato re-eleito,
-      // garantindo que ele assuma a mesma posição e identificação.
+      // Substitui um ponto individual
       replacePoint: (oldPointId, newPoint) =>
         set((state) => {
           const replaceInArray = (list: ErosionPoint[]) =>
@@ -380,10 +361,7 @@ export const useErosionStore = create<ErosionStoreState>()(
             );
 
           const nextAllPoints = replaceInArray(state.allPoints);
-          const nextCustomPoints =
-            state.dataSource === "custom"
-              ? replaceInArray(state.customPoints)
-              : state.customPoints;
+          const nextCustomPoints = replaceInArray(state.customPoints);
 
           return {
             allPoints: nextAllPoints,
@@ -392,34 +370,13 @@ export const useErosionStore = create<ErosionStoreState>()(
           };
         }),
 
-      // Remove um ponto individual (ex.: caiu sobre área urbana ou outro
-      // local que foge aos critérios de elegibilidade — README §3.3) sem
-      // precisar descartar a triagem inteira.
+      // Remove um ponto individual
       removePoint: (pointId) =>
         set((state) => ({
           allPoints: state.allPoints.filter((p) => p.id !== pointId),
           customPoints: state.customPoints.filter((p) => p.id !== pointId),
-          currentMockPoints: state.currentMockPoints.filter((p) => p.id !== pointId),
           selectedPoint: state.selectedPoint?.id === pointId ? null : state.selectedPoint,
         })),
-
-      // "Recarregar Seleção" / "Restaurar Focos da Região": gera uma nova rodada dos 150 pontos de
-      // demonstração (distribuição geográfica por município no Paraná) e garante que sejam exibidos no mapa.
-      regenerateMockPoints: () =>
-        set((state) => {
-          const seedOffset = Date.now() % 100000;
-          const regenerated = generate150MockErosionPoints(seedOffset);
-          return {
-            currentMockPoints: regenerated,
-            allPoints: regenerated,
-            dataSource: "mock",
-            selectedPoint: null,
-            filters: {
-              ...initialFilters,
-              topN: Math.max(initialFilters.topN, regenerated.length),
-            },
-          };
-        }),
 
       // "Zerar Mapa": remove todos os pontos, talhões/polígonos e AOIs ativas da tela,
       // resetando os filtros e a seleção para deixar a área de trabalho totalmente limpa.
@@ -435,7 +392,6 @@ export const useErosionStore = create<ErosionStoreState>()(
           return {
             allPoints: [],
             customPoints: [],
-            currentMockPoints: [],
             selectedPoint: null,
             drawnPolygons: [],
             selectedPolygon: null,
@@ -544,13 +500,9 @@ export const useErosionStore = create<ErosionStoreState>()(
           if (found) matchedRegion = found;
         }
 
-        const isMock = target.source === "mock" || points[0]?.dataProvenance === "mock";
-
-        set((prev) => ({
+        set({
           allPoints: points,
-          customPoints: isMock ? prev.customPoints : points,
-          currentMockPoints: isMock ? points : prev.currentMockPoints,
-          dataSource: isMock ? "mock" : "custom",
+          customPoints: points,
           activeRegion: matchedRegion,
           activeAOIPolygon: target.aoiPolygon || null,
           selectedPoint: null,
@@ -566,7 +518,7 @@ export const useErosionStore = create<ErosionStoreState>()(
             selectedSeverities: ["Moderada", "Alta", "Crítica"],
             topN: Math.max(initialFilters.topN, points.length, 500),
           },
-        }));
+        });
 
         // Auto-fly seguro para enquadrar os pontos no mapa
         let minLat = 90;
@@ -788,7 +740,7 @@ export const useErosionStore = create<ErosionStoreState>()(
 
       // Filtering logic
       getFilteredPoints: () => {
-        const { allPoints, filters, activeAOIPolygon, dataSource } = get();
+        const { allPoints, filters } = get();
 
         let result = allPoints.filter((pt) => {
           if (!pt) return false;
@@ -838,12 +790,6 @@ export const useErosionStore = create<ErosionStoreState>()(
             if (pt.watershed && !filters.selectedWatersheds.includes(pt.watershed)) {
               return false;
             }
-          }
-
-          // Spatial clip inside active AOI polygon only for mock demonstration data
-          if (activeAOIPolygon && dataSource === "mock" && activeAOIPolygon.geometry) {
-            const inside = isPointInGeoJSON(pt.latitude, pt.longitude, activeAOIPolygon.geometry);
-            if (!inside) return false;
           }
 
           return true;
@@ -905,7 +851,6 @@ export const useErosionStore = create<ErosionStoreState>()(
         drawnPolygons: state.drawnPolygons,
         allPoints: state.allPoints,
         customPoints: state.customPoints,
-        dataSource: state.dataSource,
         activeAOIPolygon: state.activeAOIPolygon,
         regionRequests: state.regionRequests,
         theme: state.theme,
@@ -919,28 +864,42 @@ export const useErosionStore = create<ErosionStoreState>()(
           flyToTarget: null,
         },
       }),
+      version: 2,
+      migrate: (persisted: any, fromVersion: number) => {
+        if (!persisted || fromVersion >= 2) return persisted;
+
+        // Identifica resíduo sintético da v1: proveniência "mock" ou o padrão de ID do gerador
+        // removido (ERO-PR-001 … ERO-PR-150, com code PR-2026-NNN).
+        const isSynthetic = (p: any) =>
+          p?.dataProvenance === "mock" ||
+          (typeof p?.id === "string" && /^ERO-PR-\d{3}$/.test(p.id));
+
+        const purge = (arr: any) => (Array.isArray(arr) ? arr.filter((p) => !isSynthetic(p)) : []);
+
+        const cleaned = {
+          ...persisted,
+          allPoints: purge(persisted.allPoints),
+          customPoints: purge(persisted.customPoints),
+          savedDatasets: Array.isArray(persisted.savedDatasets)
+            ? persisted.savedDatasets
+                .filter((d: any) => d?.source !== "mock")
+                .map((d: any) => ({ ...d, points: purge(d.points) }))
+                .filter((d: any) => !Array.isArray(d.points) || d.points.length > 0)
+            : [],
+        };
+
+        // Remove chaves da v1 que não existem mais no estado
+        delete cleaned.currentMockPoints;
+        delete cleaned.dataSource;
+
+        return cleaned;
+      },
       onRehydrateStorage: () => (state) => {
         if (!state) return;
-        // Se após reidratação do localStorage o mapa estiver vazio mas existirem coleções salvas,
-        // carrega automaticamente a coleção mais recente para que o mapa nunca abra zerado
-        if (state.allPoints.length === 0 && state.savedDatasets && state.savedDatasets.length > 0) {
-          const latest = state.savedDatasets[0];
-          state.loadDataset(latest.id);
-        } else if (state.allPoints.length === 0 && (!state.savedDatasets || state.savedDatasets.length === 0)) {
-          // Se não há coleções salvas nem pontos, inicializa com a base demonstrativa do Paraná
-          state.allPoints = mockErosionPoints;
-          state.currentMockPoints = mockErosionPoints;
-          state.dataSource = "mock";
-        } else if (state.dataSource === "mock" && state.allPoints.length > 0) {
-          // Migração automática de cache antigo: se os pontos no localStorage não possuem dados fundiários,
-          // atualiza para a versão demonstrativa enriquecida
-          const missingLandData = state.allPoints.every(
-            (p) => !p.propertyName && !p.carCode
-          );
-          if (missingLandData) {
-            state.allPoints = mockErosionPoints;
-            state.currentMockPoints = mockErosionPoints;
-          }
+        // Se o mapa está vazio mas existe uma coleção salva pelo usuário, recarrega a mais recente.
+        // Nunca preencher o mapa com dados que o usuário não produziu ou importou.
+        if (state.allPoints.length === 0 && state.savedDatasets?.length > 0) {
+          state.loadDataset(state.savedDatasets[0].id);
         }
       },
     }
@@ -955,11 +914,10 @@ export function useFilteredPoints(): ErosionPoint[] {
   const allPoints = useErosionStore((s) => s.allPoints);
   const filters = useErosionStore((s) => s.filters);
   const activeAOIPolygon = useErosionStore((s) => s.activeAOIPolygon);
-  const dataSource = useErosionStore((s) => s.dataSource);
   const getFilteredPoints = useErosionStore((s) => s.getFilteredPoints);
 
   return useMemo(() => {
     return getFilteredPoints();
-  }, [allPoints, filters, activeAOIPolygon, dataSource, getFilteredPoints]);
+  }, [allPoints, filters, activeAOIPolygon, getFilteredPoints]);
 }
 

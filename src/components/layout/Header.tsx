@@ -46,7 +46,6 @@ export const Header: React.FC = () => {
     filters,
     gcpCredentials,
     activeAOIPolygon,
-    dataSource,
     mapState,
     sidebarCollapsed,
     theme,

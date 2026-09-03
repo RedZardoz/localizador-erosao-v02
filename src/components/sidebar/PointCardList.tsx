@@ -12,14 +12,13 @@ import {
   Flame,
   Sparkles,
   Bookmark,
-  RotateCcw,
 } from "lucide-react";
 import { useErosionStore, useFilteredPoints } from "@/lib/store/useErosionStore";
 import { ErosionPoint } from "@/types/erosion";
 import { getGoogleEarthWebUrl } from "@/lib/utils/geoUtils";
 
 export const PointCardList: React.FC = () => {
-  const { selectedPoint, flyToPoint, setActiveModal, savedDatasets, loadDataset, regenerateMockPoints } = useErosionStore();
+  const { selectedPoint, flyToPoint, setActiveModal, savedDatasets, loadDataset } = useErosionStore();
   const points = useFilteredPoints();
 
   if (points.length === 0) {
@@ -29,7 +28,7 @@ export const PointCardList: React.FC = () => {
         <div>
           <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">Mapa limpo (0 focos)</h4>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs mx-auto mt-1">
-            Selecione uma área e processe os candidatos via Earth Engine, recarregue uma coleção salva ou use os dados de demonstração.
+            Selecione uma área e processe os candidatos via Earth Engine, importe um arquivo CSV/GeoJSON/KML, ou recarregue uma coleção salva.
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
@@ -48,14 +47,6 @@ export const PointCardList: React.FC = () => {
           >
             <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             Candidatos GEE
-          </button>
-          <button
-            onClick={regenerateMockPoints}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors shadow-sm cursor-pointer"
-            title="Carregar amostragem de demonstração do Paraná"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-amber-500" />
-            Demonstração (150)
           </button>
         </div>
       </div>

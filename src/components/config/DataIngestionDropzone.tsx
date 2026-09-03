@@ -17,12 +17,9 @@ import {
 import { useErosionStore } from "@/lib/store/useErosionStore";
 import { parseCSV, parseGeoJSON, parseKML, parseKMZ, ParsedDataResult } from "@/lib/utils/parsers";
 import { downloadFile, exportToCSV } from "@/lib/utils/exportUtils";
-import { mockErosionPoints } from "@/data/mockErosionPoints";
 
 export const DataIngestionDropzone: React.FC = () => {
   const {
-    dataSource,
-    setDataSource,
     customPoints,
     setCustomPoints,
     setActiveAOIPolygon,
@@ -90,51 +87,12 @@ export const DataIngestionDropzone: React.FC = () => {
   };
 
   const handleDownloadSampleCSV = () => {
-    const csvContent = exportToCSV(mockErosionPoints.slice(0, 5));
-    downloadFile(csvContent, "modelo_amostra_pontos_erosao_parana.csv", "text/csv;charset=utf-8;");
+    const csvContent = exportToCSV([]);
+    downloadFile(csvContent, "modelo_amostra_pontos_erosao.csv", "text/csv;charset=utf-8;");
   };
 
   return (
     <div className="space-y-4">
-      {/* Toggle between Mock Base & Custom Base */}
-      <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between transition-colors">
-        <div>
-          <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-            <Database className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            Fonte de Dados Ativa
-          </h4>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400">
-            Alterne entre a base padrão de 150 pontos do Paraná ou dados carregados.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-1 bg-slate-200/80 dark:bg-slate-950 p-1 rounded-lg border border-slate-200 dark:border-slate-800">
-          <button
-            onClick={() => setDataSource("mock")}
-            className={`px-2.5 py-1 rounded text-xs font-semibold transition-all ${
-              dataSource === "mock"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-            }`}
-          >
-            Padrão (150 Pontos PR)
-          </button>
-          <button
-            onClick={() => {
-              if (customPoints.length > 0) setDataSource("custom");
-              else setErrorMsg("Nenhum dado customizado carregado ainda. Faça o upload abaixo.");
-            }}
-            disabled={customPoints.length === 0}
-            className={`px-2.5 py-1 rounded text-xs font-semibold transition-all ${
-              dataSource === "custom"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 disabled:opacity-40"
-            }`}
-          >
-            Customizada ({customPoints.length})
-          </button>
-        </div>
-      </div>
 
       {/* Dropzone */}
       <div

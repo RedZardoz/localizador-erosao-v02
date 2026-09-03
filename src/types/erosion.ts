@@ -20,7 +20,6 @@ export type ErosionFeatureType =
 
 // Origem do dado: deixa explícito, em cada ponto, o quanto se pode confiar nele.
 export type DataProvenance =
-  | "mock" // gerado por pseudo-aleatoriedade para fins de demonstração da interface
   | "user-upload" // importado de CSV/GeoJSON/KML fornecido pelo usuário (valores como digitados no arquivo)
   | "satellite-derived" // BSI/NDVI/declividade/RUSLE calculados sob demanda via Google Earth Engine + fontes públicas
   | "gee-screened" // candidato triado pelo pipeline GEE (máscara de elegibilidade + estratificação + thinning)
