@@ -77,10 +77,11 @@ export async function POST(req: NextRequest) {
       data: result,
     });
   } catch (err: any) {
+    console.error("[GEE Error - select-candidates]", err);
     return NextResponse.json(
       {
         success: false,
-        error: `Falha na seleção de candidatos via Earth Engine: ${err?.message || err}`,
+        error: "Erro interno no processamento geoespacial via Earth Engine. Consulte os logs do servidor.",
       },
       { status: 502 }
     );

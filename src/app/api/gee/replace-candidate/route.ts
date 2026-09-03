@@ -72,10 +72,11 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (err: any) {
+    console.error("[GEE Error - replace-candidate]", err);
     return NextResponse.json(
       {
         success: false,
-        error: `Falha ao re-eleger candidato no Earth Engine: ${err?.message || err}`,
+        error: "Erro interno ao re-eleger candidato no Earth Engine. Consulte os logs do servidor.",
       },
       { status: 502 }
     );

@@ -39,8 +39,9 @@ export async function POST(req: NextRequest) {
       data: verification.data,
     });
   } catch (err: any) {
+    console.error("[GEE Test Error]", err);
     return NextResponse.json(
-      { success: false, error: `Erro ao processar credenciais: ${err.message || "Erro desconhecido"}` },
+      { success: false, error: "Erro interno ao processar credenciais. Consulte os logs do servidor." },
       { status: 500 }
     );
   }

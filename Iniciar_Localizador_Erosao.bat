@@ -17,21 +17,38 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
+where python >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [ERRO] Python nao encontrado no sistema!
+    echo Por favor, instale o Python 3.10 ou superior em: https://www.python.org/
+    echo Certifique-se de marcar a opcao "Add Python to PATH" durante a instalacao.
+    echo.
+    pause
+    exit /b 1
+)
+
 cd /d "%~dp0"
 
-echo [2/3] Iniciando servidor local do Localizador de Erosao...
-echo O sistema estara disponivel em: http://localhost:3000
+if not exist "data\fundiario_brasil.db" (
+    echo [AVISO] Banco fundiario local (data\fundiario_brasil.db) nao localizado.
+    echo As consultas cadastrais aos imoveis estarao desabilitadas ate a ingestao dos dados.
+    echo Para ingerir os dados, execute: python scripts/ingest_data.py --uf PR
+    echo.
+)
+
+echo [2/3] Iniciando servidor local seguro em interface de loopback (127.0.0.1)...
+echo O sistema estara disponivel em: http://127.0.0.1:3000
 echo.
 
 :: Abre o navegador padrao apos 3 segundos
-start "" cmd /c "timeout /t 3 /nobreak >nul & start http://localhost:3000"
+start "" cmd /c "timeout /t 3 /nobreak >nul & start http://127.0.0.1:3000"
 
-:: Inicia o servidor Next.js
-npm run start
+:: Inicia o servidor Next.js exclusivamente em 127.0.0.1
+npm run start -- -H 127.0.0.1
 if %errorlevel% neq 0 (
     echo.
     echo [AVISO] O servidor de producao requer build previo. Iniciando modo de desenvolvimento...
-    npm run dev
+    npm run dev -- -H 127.0.0.1
 )
 
 pause

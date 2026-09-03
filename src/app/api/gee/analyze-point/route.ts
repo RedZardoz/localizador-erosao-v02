@@ -128,8 +128,9 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (err: any) {
+    console.error("[GEE Error - analyze-point]", err);
     return NextResponse.json(
-      { success: false, error: `Falha ao consultar Earth Engine / APIs meteorológicas: ${err.message || err}` },
+      { success: false, error: "Erro interno no processamento geoespacial. Consulte os logs do servidor." },
       { status: 502 }
     );
   }

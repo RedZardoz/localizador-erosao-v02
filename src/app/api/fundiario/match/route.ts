@@ -28,13 +28,14 @@ export async function POST(req: NextRequest) {
       data: match,
     });
   } catch (err: any) {
+    console.error("[Fundiário Error - match]", err);
     return NextResponse.json(
       {
         success: false,
-        error: `Erro ao consultar dados fundiários: ${err?.message || err}`,
+        error: "Erro interno no processamento fundiário. Consulte os logs do servidor.",
         data: {},
       },
-      { status: 400 }
+      { status: 500 }
     );
   }
 }
