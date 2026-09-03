@@ -152,6 +152,17 @@ export function generate150MockErosionPoints(seedOffset = 0): ErosionPoint[] {
 
     const padId = String(i).padStart(3, "0");
 
+    // Amostras de dados fundiários cadastrais (SICAR/SNCR) para fins de demonstração
+    const sampleProperties = [
+      { name: "Fazenda Santa Maria", car: `BR-PR-4105404-${padId}123-A`, owner: "Maria Silva de Oliveira", doc: "***.482.919-**", incra: `950.041.${padId}.123-1`, area: Number((45 + seededRandom(seed + 11) * 280).toFixed(1)) },
+      { name: "Fazenda Boa Esperança", car: `BR-PR-4115200-${padId}452-B`, owner: "João Carlos Silveira", doc: "***.109.839-**", incra: `950.152.${padId}.452-8`, area: Number((80 + seededRandom(seed + 11) * 420).toFixed(1)) },
+      { name: "Sítio Alvorada", car: `BR-PR-4108309-${padId}789-C`, owner: "Pedro Henrique Zanin", doc: "***.324.779-**", incra: `950.083.${padId}.789-3`, area: Number((25 + seededRandom(seed + 11) * 75).toFixed(1)) },
+      { name: "Estância Primavera", car: `BR-PR-4127700-${padId}204-D`, owner: "Agrícola Campos Gerais Ltda", doc: "**.392.110/0001-**", incra: `950.277.${padId}.204-5`, area: Number((150 + seededRandom(seed + 11) * 650).toFixed(1)) },
+      { name: "Fazenda São José", car: `BR-PR-4104308-${padId}311-E`, owner: "Antônio Marcos Ferreira", doc: "***.891.229-**", incra: `950.043.${padId}.311-9`, area: Number((55 + seededRandom(seed + 11) * 190).toFixed(1)) },
+    ];
+    // Associa cada ponto a um imóvel rural do seu município para demonstração imediata
+    const prop = sampleProperties[(i - 1) % sampleProperties.length];
+
     points.push({
       id: `ERO-PR-${padId}`,
       code: `PR-2026-${padId}`,
@@ -175,6 +186,14 @@ export function generate150MockErosionPoints(seedOffset = 0): ErosionPoint[] {
       detectionDate: `2026-0${Math.floor(1 + seededRandom(seed + 9) * 7)}-${String(Math.floor(1 + seededRandom(seed + 10) * 28)).padStart(2, "0")}`,
       notes: `Candidato a talhão-piloto para amostragem em campo (GNSS RTK / VANT) e formação do dataset rotulado de treinamento do XGBoost — BSI de ${bsi} indica ${bsi > 0.4 ? "solo altamente exposto sem cobertura vegetal" : "cobertura parcial com risco de escoamento superficial"} (dado sintético de demonstração, não medido).`,
       dataProvenance: "mock",
+      ...(prop ? {
+        propertyName: prop.name,
+        carCode: prop.car,
+        ownerName: prop.owner,
+        ownerDocumentMasked: prop.doc,
+        incraRegistry: prop.incra,
+        propertyAreaHa: prop.area,
+      } : {}),
     });
   }
 

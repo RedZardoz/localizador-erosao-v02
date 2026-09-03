@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   ExternalLink,
@@ -23,6 +23,15 @@ import {
   TreePine,
   CheckCircle2,
   FileCheck2,
+  Building2,
+  ShieldCheck,
+  User,
+  Copy,
+  Check,
+  Hash,
+  EyeOff,
+  Edit3,
+  Save,
 } from "lucide-react";
 import { ErosionPoint } from "@/types/erosion";
 import { formatToDMS, getGoogleEarthWebUrl, getGoogleMapsUrl } from "@/lib/utils/geoUtils";
@@ -43,14 +52,96 @@ const PROVENANCE_LABEL: Record<string, string> = {
 };
 
 export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
-  const { geeSessionActive, updatePointWithRealData, removePoint, replacePoint, flyToLocation, addSystemLog, openAuditDossier } =
-    useErosionStore();
+  const {
+    geeSessionActive,
+    updatePointWithRealData,
+    removePoint,
+    replacePoint,
+    flyToLocation,
+    addSystemLog,
+    openAuditDossier,
+    activeCarPolygon,
+    setActiveCarPolygon,
+  } = useErosionStore();
 
   const [computing, setComputing] = useState(false);
   const [replacing, setReplacing] = useState(false);
   const [replaceSuccess, setReplaceSuccess] = useState<string | null>(null);
   const [computeError, setComputeError] = useState<string | null>(null);
   const [diagnostics, setDiagnostics] = useState<any>(null);
+
+  const [copiedCar, setCopiedCar] = useState(false);
+  const [localProperty, setLocalProperty] = useState<Partial<ErosionPoint> | null>(null);
+  const [loadingProperty, setLoadingProperty] = useState(false);
+  const [loadingPolygon, setLoadingPolygon] = useState(false);
+
+  // Edição manual do produtor/titular pelo usuário
+  const [editingTenure, setEditingTenure] = useState(false);
+  const [editOwner, setEditOwner] = useState("");
+  const [editProperty, setEditProperty] = useState("");
+  const [editDoc, setEditDoc] = useState("");
+  const [editIncra, setEditIncra] = useState("");
+
+  const handleCopyCar = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCar(true);
+    setTimeout(() => setCopiedCar(false), 2500);
+  };
+
+  // Consulta automática reativa ao banco local SQLite/SICAR se o ponto ainda não tiver dados fundiários
+  useEffect(() => {
+    if (point.propertyName || point.carCode) {
+      setLocalProperty({
+        propertyName: point.propertyName,
+        carCode: point.carCode,
+        ownerName: point.ownerName,
+        incraRegistry: point.incraRegistry,
+        propertyAreaHa: point.propertyAreaHa,
+        ownerDocumentMasked: point.ownerDocumentMasked,
+      });
+      setLoadingProperty(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+    setLocalProperty(null);
+    setLoadingProperty(true);
+
+    fetch("/api/fundiario/match", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ latitude: point.latitude, longitude: point.longitude }),
+      signal: controller.signal,
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          const d = json.data;
+          if (d.carCode || d.propertyName || d.ownerName) {
+            setLocalProperty(d);
+            updatePointWithRealData(point.id, d);
+          } else {
+            setLocalProperty(null);
+          }
+        }
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error("Erro ao buscar dados fundiários:", err);
+        }
+      })
+      .finally(() => {
+        clearTimeout(timeoutId);
+        setLoadingProperty(false);
+      });
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [point.id, point.latitude, point.longitude, point.carCode, point.propertyName, updatePointWithRealData]);
 
   const dmsLat = formatToDMS(point.latitude, true);
   const dmsLng = formatToDMS(point.longitude, false);
@@ -179,6 +270,82 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
       setReplacing(false);
     }
   };
+
+  const currentPropName = point.propertyName || localProperty?.propertyName;
+  const currentCarCode = point.carCode || localProperty?.carCode;
+  const currentOwnerName = point.ownerName || localProperty?.ownerName;
+  const currentIncra = point.incraRegistry || localProperty?.incraRegistry;
+  const currentArea = point.propertyAreaHa !== undefined ? point.propertyAreaHa : localProperty?.propertyAreaHa;
+  const currentDoc = point.ownerDocumentMasked || localProperty?.ownerDocumentMasked;
+  const hasRuralData = Boolean(currentPropName || currentCarCode || currentOwnerName);
+  const isShowingPolygon = Boolean(
+    activeCarPolygon && (activeCarPolygon.id === currentCarCode || activeCarPolygon.properties?.carCode === currentCarCode)
+  );
+
+  const handleToggleCarPolygon = async () => {
+    if (isShowingPolygon) {
+      setActiveCarPolygon(null);
+      return;
+    }
+
+    setLoadingPolygon(true);
+    try {
+      const res = await fetch("/api/fundiario/polygon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          latitude: point.latitude,
+          longitude: point.longitude,
+          carCode: currentCarCode,
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success && json.data) {
+        setActiveCarPolygon(json.data);
+      } else {
+        alert(json.error || "Não foi possível carregar o polígono deste imóvel.");
+      }
+    } catch (err: any) {
+      alert("Erro ao buscar polígono do imóvel no SICAR.");
+    } finally {
+      setLoadingPolygon(false);
+    }
+  };
+
+  const handleSaveTenure = () => {
+    const patch: Partial<ErosionPoint> = {
+      ownerName: editOwner.trim() || undefined,
+      propertyName: editProperty.trim() || undefined,
+      ownerDocumentMasked: editDoc.trim() || undefined,
+      incraRegistry: editIncra.trim() || undefined,
+    };
+    updatePointWithRealData(point.id, patch);
+    setLocalProperty((prev) => ({ ...prev, ...patch }));
+    setEditingTenure(false);
+  };
+
+  const handleOpenDossier = () => {
+    const mergedPoint: ErosionPoint = {
+      ...point,
+      ...(currentPropName ? { propertyName: currentPropName } : {}),
+      ...(currentCarCode ? { carCode: currentCarCode } : {}),
+      ...(currentOwnerName ? { ownerName: currentOwnerName } : {}),
+      ...(currentIncra ? { incraRegistry: currentIncra } : {}),
+      ...(currentArea !== undefined ? { propertyAreaHa: currentArea } : {}),
+      ...(currentDoc ? { ownerDocumentMasked: currentDoc } : {}),
+    };
+    openAuditDossier(mergedPoint);
+  };
+
+  const isOwnerLocated = Boolean(
+    currentOwnerName &&
+    !currentOwnerName.includes("Declarado no CAR") &&
+    !currentOwnerName.includes("Protegido") &&
+    !currentOwnerName.includes("Não Informado") &&
+    !currentOwnerName.includes("Não Identificado") &&
+    !currentOwnerName.includes("Titular Certificado no SIGEF/INCRA (ART")
+  );
 
   return (
     <div className="absolute top-4 right-4 z-20 w-80 sm:w-96 max-h-[calc(100vh-6rem)] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col animate-in fade-in slide-in-from-right-4 duration-200">
@@ -344,7 +511,7 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
 
           {/* Botão Principal de Laudo / Dossiê de Auditoria Científica */}
           <button
-            onClick={() => openAuditDossier(point)}
+            onClick={handleOpenDossier}
             className="w-full py-2 px-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
             title="Abrir tela popup com a memória de cálculo sequencial e baixar o Laudo em PDF"
           >
@@ -418,12 +585,248 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
                 {diagnostics.lsFactorApproximated ? " • Fator LS: aproximado (HydroSHEDS indisponível para este ponto)" : ""}
               </div>
               <button
-                onClick={() => openAuditDossier(point)}
+                onClick={handleOpenDossier}
                 className="w-full py-1 px-2 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 rounded font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors flex items-center justify-center gap-1 cursor-pointer text-[11px]"
               >
                 <FileCheck2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 <span>Visualizar Laudo Atualizado &amp; Baixar PDF</span>
               </button>
+            </div>
+          )}
+        </div>
+
+        {/* ℹ️ Informações Fundiárias & Cadastro Rural (CAR / SICAR / SNCR) */}
+        <div className="p-3 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent dark:from-emerald-500/15 dark:via-slate-900/40 rounded-xl border border-emerald-500/30 space-y-2.5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span>ℹ️</span> Informações Fundiárias &amp; Cadastro Rural
+            </span>
+            <div className="flex items-center gap-1.5">
+              {!isOwnerLocated && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!editingTenure) {
+                      setEditOwner(currentOwnerName || "");
+                      setEditProperty(currentPropName || "");
+                      setEditDoc(currentDoc || "");
+                      setEditIncra(currentIncra || "");
+                    }
+                    setEditingTenure(!editingTenure);
+                  }}
+                  className="text-[10px] font-semibold text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/70 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700 flex items-center gap-1 transition-colors cursor-pointer"
+                  title="Titular não localizado no SNCR - Informar manualmente"
+                >
+                  <Edit3 className="w-2.5 h-2.5" />
+                  <span>{editingTenure ? "Cancelar" : "Informar Titular"}</span>
+                </button>
+              )}
+              {isOwnerLocated && (
+                <span className="text-[10px] font-mono font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-700 flex items-center gap-1">
+                  <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                  SNCR / SICAR
+                </span>
+              )}
+            </div>
+          </div>
+
+          {editingTenure ? (
+            <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-emerald-400 dark:border-emerald-600 space-y-2 shadow-sm animate-in fade-in duration-150">
+              <div className="text-[11px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                <Edit3 className="w-3 h-3 text-emerald-600" />
+                <span>Identificação Manual do Produtor / Imóvel</span>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] text-slate-500 font-semibold block">Nome do Titular / Produtor Rural:</label>
+                <input
+                  type="text"
+                  value={editOwner}
+                  onChange={(e) => setEditOwner(e.target.value)}
+                  placeholder="Ex: João Carlos Fontana / Agropecuária Moreira Sales"
+                  className="w-full text-xs p-1.5 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] text-slate-500 font-semibold block">Denominação do Imóvel / Fazenda:</label>
+                <input
+                  type="text"
+                  value={editProperty}
+                  onChange={(e) => setEditProperty(e.target.value)}
+                  placeholder="Ex: Fazenda Boa Esperança / Lote 07"
+                  className="w-full text-xs p-1.5 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-slate-500 font-semibold block">Doc (CPF/CNPJ):</label>
+                  <input
+                    type="text"
+                    value={editDoc}
+                    onChange={(e) => setEditDoc(e.target.value)}
+                    placeholder="Ex: 123.456.789-00"
+                    className="w-full text-xs p-1.5 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500 focus:outline-none font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-slate-500 font-semibold block">SNCR / Matrícula CRI:</label>
+                  <input
+                    type="text"
+                    value={editIncra}
+                    onChange={(e) => setEditIncra(e.target.value)}
+                    placeholder="Ex: Matrícula 36868 CRI"
+                    className="w-full text-xs p-1.5 rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500 focus:outline-none font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-1.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setEditingTenure(false)}
+                  className="px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveTenure}
+                  className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold rounded shadow-sm flex items-center gap-1 transition-colors"
+                >
+                  <Save className="w-3 h-3" />
+                  <span>Salvar no Ponto</span>
+                </button>
+              </div>
+            </div>
+          ) : loadingProperty && !hasRuralData ? (
+            <div className="p-3 bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30 rounded-lg text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-center gap-2 animate-pulse">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
+              <span>Cruzando coordenadas no SICAR / SIGEF...</span>
+            </div>
+          ) : hasRuralData ? (
+            <div className="space-y-1.5 text-xs">
+              {/* Imóvel Rural */}
+              <div className="p-2 bg-white dark:bg-slate-900/90 rounded-lg border border-slate-200 dark:border-slate-800 space-y-0.5">
+                <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[10px] uppercase font-semibold">
+                  <Building2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>Imóvel Rural:</span>
+                </div>
+                <div className="font-bold text-slate-900 dark:text-slate-100 text-xs break-words pl-4">
+                  {currentPropName || "Não Identificado"}
+                </div>
+              </div>
+
+              {/* Código do CAR com botão Copiar */}
+              <div className="p-2 bg-white dark:bg-slate-900/90 rounded-lg border border-slate-200 dark:border-slate-800 space-y-0.5">
+                <div className="flex items-center justify-between gap-1 text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-3 h-3 text-cyan-600 dark:text-cyan-400 shrink-0" />
+                    <span>Código do CAR:</span>
+                  </div>
+                  {currentCarCode && (
+                    <button
+                      onClick={() => handleCopyCar(currentCarCode)}
+                      className="text-[10px] text-emerald-600 hover:text-emerald-500 font-sans flex items-center gap-1 cursor-pointer normal-case"
+                      title="Copiar Código do CAR"
+                    >
+                      {copiedCar ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      <span>{copiedCar ? "Copiado" : "Copiar"}</span>
+                    </button>
+                  )}
+                </div>
+                <div className="font-mono font-bold text-xs text-cyan-700 dark:text-cyan-300 break-all pl-4">
+                  {currentCarCode || "Não Informado"}
+                </div>
+              </div>
+
+              {/* Proprietário */}
+              <div className="p-2 bg-white dark:bg-slate-900/90 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1">
+                <div className="flex items-center justify-between gap-1 text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5">
+                    <User className="w-3 h-3 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <span>Titular / Proprietário:</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditOwner(currentOwnerName || "");
+                      setEditProperty(currentPropName || "");
+                      setEditDoc(currentDoc || "");
+                      setEditIncra(currentIncra || "");
+                      setEditingTenure(true);
+                    }}
+                    className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 font-sans flex items-center gap-1 cursor-pointer normal-case hover:underline"
+                    title="Editar ou completar o nome do titular"
+                  >
+                    <Edit3 className="w-2.5 h-2.5" />
+                    <span>Editar / Completar</span>
+                  </button>
+                </div>
+                <div className="font-bold text-slate-900 dark:text-slate-100 text-xs break-words leading-relaxed pl-4">
+                  {currentOwnerName || "Não Informado"}
+                </div>
+                {currentDoc && (
+                  <div className="text-[10px] font-mono text-slate-400 dark:text-slate-500 pl-4">
+                    Doc: {currentDoc}
+                  </div>
+                )}
+              </div>
+
+              {/* Registro INCRA / Área */}
+              <div className="p-2 bg-white dark:bg-slate-900/90 rounded-lg border border-slate-200 dark:border-slate-800 space-y-0.5">
+                <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[10px] uppercase font-semibold">
+                  <Hash className="w-3 h-3 text-amber-600 dark:text-amber-400 shrink-0" />
+                  <span>Registro INCRA & Área:</span>
+                </div>
+                <div className="font-mono text-xs text-slate-900 dark:text-slate-100 break-words pl-4">
+                  <span className="font-bold">{currentIncra || "S/N"}</span>
+                  {currentArea !== undefined && (
+                    <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold">
+                      ({currentArea} ha)
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Botão de Exibição do Perímetro Oficial no Mapa */}
+              <button
+                type="button"
+                onClick={handleToggleCarPolygon}
+                disabled={loadingPolygon}
+                className={`w-full mt-2 py-1.5 px-2.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer border ${
+                  isShowingPolygon
+                    ? "bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/80 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800"
+                    : "bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500"
+                }`}
+                title={
+                  isShowingPolygon
+                    ? "Clique para ocultar o perímetro do imóvel do mapa"
+                    : "Clique para projetar o polígono oficial do imóvel rural (SICAR) sobre a imagem de satélite"
+                }
+              >
+                {loadingPolygon ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Carregando Perímetro Oficial...</span>
+                  </>
+                ) : isShowingPolygon ? (
+                  <>
+                    <EyeOff className="w-3.5 h-3.5" />
+                    <span>Ocultar Perímetro CAR</span>
+                  </>
+                ) : (
+                  <>
+                    <Layers className="w-3.5 h-3.5 text-emerald-200" />
+                    <span>Visualizar Perímetro no Mapa (SICAR)</span>
+                  </>
+                )}
+              </button>
+            </div>
+          ) : (
+            <div className="p-2.5 bg-slate-100/70 dark:bg-slate-950/60 border border-dashed border-slate-300 dark:border-slate-800 rounded-lg text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed italic">
+              Coordenada localizada fora de perímetro cadastrado no SICAR/SIGEF
             </div>
           )}
         </div>

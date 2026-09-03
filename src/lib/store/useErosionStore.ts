@@ -69,6 +69,10 @@ interface ErosionStoreState {
   activeDrawingMode: boolean;
   drawingPoints: [number, number][];
 
+  // Polígono CAR Oficial do Imóvel para visualização no mapa
+  activeCarPolygon: any | null;
+  setActiveCarPolygon: (feature: any | null) => void;
+
   // Logs e Diagnósticos do Sistema
   systemLogs: SystemLog[];
 
@@ -201,6 +205,7 @@ export const useErosionStore = create<ErosionStoreState>()(
       selectedPolygon: null,
       activeDrawingMode: false,
       drawingPoints: [],
+      activeCarPolygon: null,
 
       // System Logs & Diagnóstico
       systemLogs: [
@@ -343,7 +348,8 @@ export const useErosionStore = create<ErosionStoreState>()(
           };
         }),
 
-      setSelectedPoint: (point) => set({ selectedPoint: point }),
+      setSelectedPoint: (point) => set({ selectedPoint: point, activeCarPolygon: null }),
+      setActiveCarPolygon: (feature) => set({ activeCarPolygon: feature }),
 
       updatePointWithRealData: (pointId, patch) =>
         set((state) => {
@@ -356,8 +362,11 @@ export const useErosionStore = create<ErosionStoreState>()(
           return {
             allPoints: nextAllPoints,
             customPoints: nextCustomPoints,
+            currentMockPoints: applyPatch(state.currentMockPoints),
             selectedPoint:
               state.selectedPoint?.id === pointId ? { ...state.selectedPoint, ...patch } : state.selectedPoint,
+            auditDossierPoint:
+              state.auditDossierPoint?.id === pointId ? { ...state.auditDossierPoint, ...patch } : state.auditDossierPoint,
           };
         }),
 
@@ -922,6 +931,16 @@ export const useErosionStore = create<ErosionStoreState>()(
           state.allPoints = mockErosionPoints;
           state.currentMockPoints = mockErosionPoints;
           state.dataSource = "mock";
+        } else if (state.dataSource === "mock" && state.allPoints.length > 0) {
+          // Migração automática de cache antigo: se os pontos no localStorage não possuem dados fundiários,
+          // atualiza para a versão demonstrativa enriquecida
+          const missingLandData = state.allPoints.every(
+            (p) => !p.propertyName && !p.carCode
+          );
+          if (missingLandData) {
+            state.allPoints = mockErosionPoints;
+            state.currentMockPoints = mockErosionPoints;
+          }
         }
       },
     }

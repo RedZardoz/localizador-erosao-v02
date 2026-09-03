@@ -29,6 +29,7 @@ export const MapViewer: React.FC = () => {
     addDrawingPoint,
     setSelectedPolygon,
     setActiveModal,
+    activeCarPolygon,
   } = useErosionStore();
 
   const filteredPoints = useFilteredPoints();
@@ -256,6 +257,33 @@ export const MapViewer: React.FC = () => {
             "#22D3EE",
           ],
           "line-width": 2.5,
+        },
+      });
+
+      // Add CAR Official Property Polygon Source & Layers
+      map.addSource("car-property-polygon", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      map.addLayer({
+        id: "car-property-polygon-fill",
+        type: "fill",
+        source: "car-property-polygon",
+        paint: {
+          "fill-color": "#10B981", // Emerald-500
+          "fill-opacity": 0.22,
+        },
+      });
+
+      map.addLayer({
+        id: "car-property-polygon-line",
+        type: "line",
+        source: "car-property-polygon",
+        paint: {
+          "line-color": "#34D399", // Emerald-400
+          "line-width": 2.8,
+          "line-opacity": 0.95,
         },
       });
 
@@ -532,6 +560,34 @@ export const MapViewer: React.FC = () => {
     });
   }, [drawnPolygons, mapLoaded]);
 
+  // Update CAR Official Property Polygon GeoJSON Source & Fit Bounds
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const source = mapRef.current.getSource("car-property-polygon") as maplibregl.GeoJSONSource;
+    if (!source) return;
+
+    if (activeCarPolygon) {
+      source.setData({
+        type: "FeatureCollection",
+        features: [activeCarPolygon],
+      });
+
+      // Se houver bbox [minX, minY, maxX, maxY], ajusta suavemente o enquadramento da câmera
+      if (activeCarPolygon.bbox && activeCarPolygon.bbox.length === 4) {
+        const [minX, minY, maxX, maxY] = activeCarPolygon.bbox;
+        mapRef.current.fitBounds(
+          [
+            [minX, minY],
+            [maxX, maxY],
+          ],
+          { padding: 75, maxZoom: 16.5, duration: 1200 }
+        );
+      }
+    } else {
+      source.setData({ type: "FeatureCollection", features: [] });
+    }
+  }, [activeCarPolygon, mapLoaded]);
+
   // Update Drawing in Progress GeoJSON Source
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
@@ -702,7 +758,7 @@ export const MapViewer: React.FC = () => {
 
       {/* Floating Inspector Popup when point is selected */}
       {selectedPoint && (
-        <PointPopup point={selectedPoint} onClose={() => setSelectedPoint(null)} />
+        <PointPopup key={selectedPoint.id} point={selectedPoint} onClose={() => setSelectedPoint(null)} />
       )}
     </div>
   );

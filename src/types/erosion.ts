@@ -74,6 +74,14 @@ export interface ErosionPoint {
   // de campo (KoboToolbox), guardadas como vieram do formulário — README §4.1
   fieldObservations?: Record<string, string>;
   fieldValidatedAt?: string;
+
+  // Atributos Fundiários e Cadastro Rural (CAR / SICAR / SNCR / CNIR)
+  carCode?: string;             // Código do CAR (ex: BR-PR-4105404-000123-A)
+  propertyName?: string;        // Nome da propriedade (ex: Fazenda Santa Maria)
+  ownerName?: string;           // Nome completo do proprietário/titular principal
+  incraRegistry?: string;       // Registro numérico do INCRA (ex: 950.041.054.123-1)
+  propertyAreaHa?: number;      // Área total do imóvel em hectares (ha)
+  ownerDocumentMasked?: string; // CPF/CNPJ mascarado do proprietário (ex: ***.123.456-**)
 }
 
 export interface RegionPreset {

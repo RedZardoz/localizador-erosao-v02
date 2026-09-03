@@ -85,7 +85,7 @@ export const Header: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5 whitespace-nowrap">
-                Localizador de Erosão
+                Localizador de Erosão &amp; Propriedade
                 <span className="text-[9px] font-bold uppercase bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.2 rounded border border-emerald-500/30">
                   2D / 3D
                 </span>

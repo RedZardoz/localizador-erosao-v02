@@ -12,6 +12,7 @@ import {
   calculateSeverity,
   calculateSoilLossRUSLE,
 } from "@/lib/rusle/rusleCalculator";
+import { matchRuralProperty } from "@/lib/fundiario/spatialMatcher";
 
 /**
  * ============================================================================
@@ -71,11 +72,12 @@ export async function POST(req: NextRequest) {
   const p = conservationPracticeFactor ?? 1.0;
 
   try {
-    // Consulta paralela aos servidores externos (GEE, NASA POWER, SoilGrids)
-    const [satellite, rainfall, kResult] = await Promise.all([
+    // Consulta paralela aos servidores externos (GEE, NASA POWER, SoilGrids) e base fundiária local (CAR/SNCR)
+    const [satellite, rainfall, kResult, ruralProperty] = await Promise.all([
       computeRealVariablesForPoint(credentials, latitude, longitude),
       estimateRainfallErosivity(latitude, longitude),
       getKFactorRealOrApproximate(latitude, longitude, soilType),
+      matchRuralProperty(latitude, longitude),
     ]);
 
     // Aplicação das equações da RUSLE e Fatores de Manejo e Relevo
@@ -102,6 +104,12 @@ export async function POST(req: NextRequest) {
         geeSourceImageId: satellite.sentinelSceneId,
         geeComputedAt: new Date().toISOString(),
         calcEngineVersion: satellite.calcEngineVersion || GEE_CALC_ENGINE_VERSION,
+        carCode: ruralProperty?.carCode,
+        propertyName: ruralProperty?.propertyName,
+        ownerName: ruralProperty?.ownerName,
+        incraRegistry: ruralProperty?.incraRegistry,
+        propertyAreaHa: ruralProperty?.propertyAreaHa,
+        ownerDocumentMasked: ruralProperty?.ownerDocumentMasked,
         rusleFactors: {
           r: rainfall.rFactor,
           k: kResult.kFactor,

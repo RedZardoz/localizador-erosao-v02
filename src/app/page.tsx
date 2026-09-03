@@ -57,7 +57,7 @@ export default function HomePage() {
           <Mountain className="w-10 h-10 animate-pulse" />
         </div>
         <h1 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
-          Localizador de Erosão | Paraná & Brasil
+          Localizador de Erosão &amp; Propriedade | Brasil
         </h1>
         <div className="w-6 h-6 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin mt-2" />
       </div>
