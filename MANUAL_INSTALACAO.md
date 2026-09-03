@@ -141,7 +141,9 @@ Após a inicialização do Next.js, o sistema informará:
 - Local:        http://localhost:3000
 - Environments: .env.local
 ```
-Abra o navegador e acesse: **`http://localhost:3000`**.
+Abra o navegador e acesse: **`http://localhost:3000`** (ou `http://127.0.0.1:3000`).
+
+> 🔒 **Segurança e Privacidade (LGPD):** A aplicação é configurada intencionalmente para vincular-se estritamente ao endereço de loopback (`127.0.0.1`), impedindo conexões externas advindas de outros dispositivos da rede local. Essa medida protege os dados cadastrais da base fundiária local (CAR/SICAR, SIGEF e SNCR) contra exposição indevida, em estrita observância à Lei Geral de Proteção de Dados (Lei nº 13.709/2018).
 
 ---
 

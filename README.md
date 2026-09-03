@@ -425,6 +425,8 @@ npm run start
 http://localhost:3000
 ```
 
+> 🔒 **Segurança e Proteção de Dados (LGPD):** O servidor web é intencionalmente configurado para executar exclusivamente em interface de loopback (`127.0.0.1:3000`). Dispositivos na mesma rede local não têm acesso às rotas nem aos dados da base fundiária (CAR/SICAR, SIGEF, SNCR), garantindo a proteção dos dados pessoais de titulares em estrita conformidade com o art. 7º, IV da Lei nº 13.709/2018 (LGPD).
+
 > 📖 **Guia Completo de Credenciais:** Para instruções passo a passo sobre como obter e configurar chaves do Google Earth Engine (GEE), Mapbox e Google Maps, consulte o documento [`GUIA_CONFIGURACAO_CREDENCIAIS.md`](./GUIA_CONFIGURACAO_CREDENCIAIS.md).
 
 ---
