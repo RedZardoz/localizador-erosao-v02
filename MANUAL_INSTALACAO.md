@@ -71,12 +71,18 @@ A plataforma possui um banco de dados local de alta velocidade (`data/fundiario_
 3. **SNCR (Sistema Nacional de Cadastro Rural - INCRA / Receita Federal):**
    - Baixe os arquivos CSV de dados abertos e coloque em `Dados SNCR/`.
    - Execute: `python scripts/ingest_sncr_official.py` (indexa mais de 2,46M de titulares para o Database Merge).
-4. **Gerar Apresentação em PowerPoint (PPTX):**
+4. **Auditoria de Cobertura e Integridade (Obrigatório após ingestão):**
+   - Execute: `python scripts/verificar_cobertura.py`
+   - O script confere as 27 UFs nas três camadas (SICAR, SIGEF, SNCR), a presença dos caches geométricos em disco (`data/sicar_cache/` e `data/sigef_cache/`) e valida que não existem registros órfãos ou desindexados no SQLite R*Tree. Retorna código de saída 0 se a base estiver íntegra.
+5. **Conferência de Metadados Oficiais das Fontes:**
+   - Execute: `python scripts/conferir_fontes.py`
+   - Confere se as contagens registradas em `fontes_dados` batem exatamente com as linhas reais das tabelas no banco de dados. Retorna código 0 com divergências: 0.
+6. **Gerar Apresentação em PowerPoint (PPTX):**
    - Execute: `python scripts/generate_presentation.py` para gerar o arquivo `Apresentacao_Localizador_Erosao_PPGTCA.pptx`.
 
 ---
 
-### Passo 3: Configurar Variáveis de Ambiente (Opcional)
+### Passo 4: Configurar Variáveis de Ambiente (Opcional)
 A plataforma foi projetada com arquitetura *zero-config*: ela funciona integralmente no modo padrão sem nenhuma chave de API obrigatória no arquivo `.env`.
 
 Se você desejar definir tokens prévios para serviços externos, copie o modelo de exemplo:
@@ -106,7 +112,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=sua_chave_aqui
 
 ---
 
-### Passo 4: Executar a Suíte de Testes Automatizados
+### Passo 5: Executar a Suíte de Testes Automatizados
 Antes de iniciar o servidor, verifique a integridade de todos os módulos de cálculo e rotas executando a suíte de testes unitários:
 
 ```bash

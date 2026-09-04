@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 """
 =============================================================================
-INGESTÃO DOS DADOS OFICIAIS DO SICAR (PR, SC, SP) COM INDEXAÇÃO R*TREE
+INGESTÃO DOS DADOS OFICIAIS DO SICAR (BRASIL - 27 UFs) COM INDEXAÇÃO R*TREE
 Mestrado PPGTCA 2026 - Pesquisa de Erosão Laminar (Brasil)
 =============================================================================
 Lê os arquivos oficiais AREA_IMOVEL_*.zip do SICAR (Ministério do Meio Ambiente),
 extrai os limites geográficos (Bounding Box) e atributos cadastrais e popula o
 banco SQLite local (data/fundiario_brasil.db) com índice espacial R*Tree para buscas
-sub-milissegundo em mais de 1,4 milhão de imóveis rurais.
+sub-milissegundo em imóveis rurais de qualquer UF brasileira.
+Gera também o cache geométrico vetorial em data/sicar_cache/{UF}.* para cruzamentos topológicos.
 """
 
 import zipfile
@@ -16,8 +17,17 @@ import io
 import os
 import sys
 import time
+import re
+import shutil
 import sqlite3
 import shapefile
+
+ALL_UFS = {
+    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+    "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+    "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+}
+
 
 def init_db(db_path: str) -> sqlite3.Connection:
     os.makedirs(os.path.dirname(os.path.abspath(db_path)), exist_ok=True)
@@ -59,6 +69,21 @@ def init_db(db_path: str) -> sqlite3.Connection:
         );
     """)
 
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS fontes_dados (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            orgao TEXT NOT NULL,
+            sistema TEXT NOT NULL,
+            uf TEXT NOT NULL,
+            arquivo_origem TEXT,
+            data_base TEXT,
+            data_download TEXT NOT NULL,
+            total_registros INTEGER,
+            criterio_associacao TEXT,
+            observacoes TEXT
+        );
+    """)
+
     # Adiciona colunas se a tabela já existia sem elas
     cursor = conn.cursor()
     cursor.execute("PRAGMA table_info(imoveis_fundiarios);")
@@ -82,17 +107,41 @@ def init_db(db_path: str) -> sqlite3.Connection:
     conn.commit()
     return conn
 
+
 def ingest_zip(conn: sqlite3.Connection, zip_path: str, uf_expected: str, batch_size: int = 10000):
     if not os.path.exists(zip_path):
         print(f"[PULADO] Arquivo não encontrado: {zip_path}")
         return 0
 
-    print(f"\n========================================================")
+    print("\n========================================================")
     print(f"-> Processando base oficial SICAR ({uf_expected}): {os.path.basename(zip_path)}")
-    print(f"========================================================")
+    print("========================================================")
 
-    t0 = time.time()
+    # Extrai para cache de geometrias rápidas data/sicar_cache/{UF}.* (A-7.4)
+    cache_dir = os.path.join("data", "sicar_cache")
+    os.makedirs(cache_dir, exist_ok=True)
+    cache_shp = os.path.join(cache_dir, f"{uf_expected}.shp")
+
     with zipfile.ZipFile(zip_path) as z:
+        if not os.path.exists(cache_shp):
+            total_uncompressed = sum(zinfo.file_size for zinfo in z.infolist())
+            try:
+                stat = shutil.disk_usage(cache_dir)
+                if stat.free < total_uncompressed * 1.2:
+                    print(f"[AVISO] Espaço em disco insuficiente para cache SICAR de {uf_expected} (requer {total_uncompressed/(1024**2):.1f}MB, livre: {stat.free/(1024**2):.1f}MB). Pulando extração de cache.")
+                else:
+                    print(f"Extraindo camadas vetoriais para cache local SICAR ({uf_expected})...")
+                    for ext in ['shp', 'shx', 'dbf', 'prj']:
+                        try:
+                            n = next(x for x in z.namelist() if x.lower().endswith('.' + ext))
+                            with open(os.path.join(cache_dir, f"{uf_expected}.{ext}"), 'wb') as f:
+                                f.write(z.read(n))
+                        except Exception:
+                            pass
+            except Exception as e:
+                print(f"[AVISO] Falha ao extrair cache SICAR: {e}")
+
+        t0 = time.time()
         shp_name = next((n for n in z.namelist() if n.lower().endswith('.shp')), None)
         dbf_name = next((n for n in z.namelist() if n.lower().endswith('.dbf')), None)
         shx_name = next((n for n in z.namelist() if n.lower().endswith('.shx')), None)
@@ -108,6 +157,16 @@ def ingest_zip(conn: sqlite3.Connection, zip_path: str, uf_expected: str, batch_
         sf = shapefile.Reader(shp=shp_io, dbf=dbf_io, shx=shx_io)
         total_shapes = len(sf)
         print(f"Total de imóveis rurais no arquivo: {total_shapes:,}")
+
+        # Validação cruzada prévia da primeira feição contra cod_estado do DBF
+        if total_shapes > 0:
+            first_rec = sf.record(0).as_dict()
+            first_uf = (first_rec.get('cod_estado') or '').strip().upper()
+            if first_uf and first_uf != uf_expected:
+                raise ValueError(
+                    f"Divergência cadastral crítica: arquivo {os.path.basename(zip_path)} esperado para '{uf_expected}', "
+                    f"mas o DBF contém cod_estado '{first_uf}'. Abortando ingestão da UF."
+                )
 
         # Remove dados anteriores desta UF para substituição limpa
         cursor = conn.cursor()
@@ -137,7 +196,14 @@ def ingest_zip(conn: sqlite3.Connection, zip_path: str, uf_expected: str, batch_
             xmin, ymin, xmax, ymax = sh.bbox
             car = rec['cod_imovel']
             mun = rec.get('municipio') or None
-            uf = rec.get('cod_estado', uf_expected) or uf_expected
+            uf_row = (rec.get('cod_estado') or uf_expected).strip().upper()
+
+            if uf_row != uf_expected:
+                raise ValueError(
+                    f"Divergência cadastral no registro {i} de {os.path.basename(zip_path)}: "
+                    f"cod_estado '{uf_row}' diverge do esperado '{uf_expected}'."
+                )
+
             area = float(rec.get('num_area') or 0.0)
             mod = float(rec.get('mod_fiscal') or 0.0)
             st = rec.get('ind_status', 'AT') or 'AT'
@@ -152,16 +218,16 @@ def ingest_zip(conn: sqlite3.Connection, zip_path: str, uf_expected: str, batch_
             }
             status_desc = status_map.get(st, st)
 
-            nome_imovel = f"Imóvel Rural em {mun} ({uf})"
+            nome_imovel = f"Imóvel Rural em {mun} ({uf_expected})" if mun else f"Imóvel Rural ({uf_expected})"
             proprietario = "Titular Declarado no CAR (SICAR/MMA)"
             doc = "***.***.***-** (Protegido por Sigilo Fiscal/LGPD)"
-            incra = f"SICAR-{uf} ({car.split('-')[1] if '-' in car else car[:8]})"
+            incra = f"SICAR-{uf_expected} ({car.split('-')[1] if '-' in car else car[:8]})"
             fonte = "SICAR Oficial (MMA/SFB)"
 
             prop_batch.append((
                 curr_id, car, nome_imovel, proprietario, incra,
                 area, mod, status_desc, cond, tipo, doc,
-                uf, mun, ymin, ymax, xmin, xmax, fonte,
+                uf_expected, mun, ymin, ymax, xmin, xmax, fonte,
                 rel_zip_path, i
             ))
 
@@ -207,27 +273,71 @@ def ingest_zip(conn: sqlite3.Connection, zip_path: str, uf_expected: str, batch_
             conn.commit()
             inserted_count += len(prop_batch)
 
+        # Atualiza tabela de metadados oficiais com contagem real
+        hoje = time.strftime("%Y-%m-%d")
+        cursor.execute("SELECT COUNT(*) FROM imoveis_fundiarios WHERE uf = ?;", (uf_expected,))
+        real_count = cursor.fetchone()[0]
+
+        cursor.execute("DELETE FROM fontes_dados WHERE sistema = 'SICAR' AND uf = ?;", (uf_expected,))
+        cursor.execute("""
+            INSERT INTO fontes_dados (
+                orgao, sistema, uf, arquivo_origem, data_base, data_download, total_registros, criterio_associacao, observacoes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+        """, ("MMA/SFB", "SICAR", uf_expected, os.path.basename(zip_path), None, hoje, real_count, None, None))
+        conn.commit()
+
         print(f"\r[SUCESSO] {inserted_count:,} imóveis de {uf_expected} indexados em {time.time() - t0:.1f}s!")
         return inserted_count
+
+
+def discover_sicar_zips(sicar_dir: str = "Dados SICAR") -> list[tuple[str, str]]:
+    """
+    Descobre dinamicamente arquivos AREA_IMOVEL_{UF}.zip para todas as 27 UFs.
+    Retorna lista de tuplas (UF, caminho_completo).
+    """
+    if not os.path.exists(sicar_dir):
+        return []
+
+    found_states = []
+    for fname in sorted(os.listdir(sicar_dir)):
+        if not fname.lower().endswith(".zip"):
+            continue
+        m = re.search(r"([A-Z]{2})\.zip$", fname, re.IGNORECASE)
+        if m:
+            uf = m.group(1).upper()
+            if uf in ALL_UFS:
+                found_states.append((uf, os.path.join(sicar_dir, fname)))
+            else:
+                print(f"[AVISO] Arquivo '{fname}' ignorado: '{uf}' não é uma UF válida.")
+        else:
+            print(f"[AVISO] Arquivo '{fname}' ignorado: nome não segue o padrão AREA_IMOVEL_{{UF}}.zip.")
+
+    return found_states
+
 
 def main():
     db_path = "data/fundiario_brasil.db"
     sicar_dir = "Dados SICAR"
 
     print("=============================================================================")
-    print("INICIANDO INGESTÃO DOS SHAPEFILES OFICIAIS DO SICAR (PR, SC, SP)")
+    print("INICIANDO INGESTÃO DOS SHAPEFILES OFICIAIS DO SICAR (BRASIL - 27 UFs)")
     print("=============================================================================")
+
+    if not os.path.exists(sicar_dir):
+        print(f"[ERRO] Diretório '{sicar_dir}' não encontrado.")
+        return
+
+    found_states = discover_sicar_zips(sicar_dir)
+    if not found_states:
+        print(f"[AVISO] Nenhum arquivo AREA_IMOVEL_{{UF}}.zip válido encontrado em '{sicar_dir}'.")
+        return
+
+    print(f"UFs identificadas para ingestão: {', '.join(uf for uf, _ in found_states)}")
 
     conn = init_db(db_path)
 
-    states = [
-        ("PR", os.path.join(sicar_dir, "AREA_IMOVEL_PR.zip")),
-        ("SC", os.path.join(sicar_dir, "AREA_IMOVEL_SC.zip")),
-        ("SP", os.path.join(sicar_dir, "AREA_IMOVEL_SP.zip")),
-    ]
-
     total_all = 0
-    for uf, fpath in states:
+    for uf, fpath in found_states:
         total_all += ingest_zip(conn, fpath, uf)
 
     # Otimização final do banco
@@ -241,11 +351,12 @@ def main():
     conn.close()
 
     print("\n=============================================================================")
-    print(f"CARGA CONCLUÍDA COM SUCESSO!")
+    print(f"CARGA SICAR CONCLUÍDA COM SUCESSO!")
     print(f"Total de imóveis indexados no banco: {total_db:,}")
     print(f"Estados cobertos: {total_ufs} | Polos municipais: {total_muns:,}")
     print(f"Banco de dados: {os.path.abspath(db_path)}")
     print("=============================================================================")
+
 
 if __name__ == "__main__":
     main()

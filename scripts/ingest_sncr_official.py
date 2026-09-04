@@ -2,26 +2,30 @@
 # -*- coding: utf-8 -*-
 """
 =============================================================================
-INGESTÃO DOS DADOS CADASTRAIS ABERTOS DO SNCR / INCRA (TITULARES E IMÓVEIS)
+INGESTÃO DA BASE OFICIAL DO SNCR/INCRA (BRASIL - 27 UFs)
 Mestrado PPGTCA 2026 - Pesquisa de Erosão Laminar (Brasil)
 =============================================================================
-Lê os arquivos CSV baixados do SNCR (Acervo Fundiário / Dados Abertos INCRA)
-em 'Dados SNCR/Imoveis_{UF}_01_09_2026.csv' e indexa na tabela cadastro_sncr
-do SQLite (data/fundiario_brasil.db).
-
-Permite o Database Merge Alfanumérico instantâneo:
-- Por código do imóvel SNCR (13 dígitos ou 9 dígitos)
-- Por número de matrícula do Cartório de Registro de Imóveis (CRI) dentro do município
-Retorna o Nome Real do Titular (com máscara oficial da Receita), a Condição Legal
-(Proprietário, Nu-proprietário, Posseiro) e a Denominação do Imóvel no SNCR.
+Lê os arquivos CSV de Dados Abertos do INCRA (Sistema Nacional de Cadastro Rural),
+extrai os dados cadastrais alfanuméricos com os nomes dos titulares já oficialmente
+pseudonimizados pelo órgão público (LGPD art. 7º, IV) e indexa na tabela cadastro_sncr.
+Identifica dinamicamente as UFs a partir do conteúdo do CSV, garantindo que UFs
+não presentes no arquivo jamais sejam acidentalmente excluídas.
 """
 
 import os
 import sys
-import glob
 import time
 import csv
+import glob
+import re
 import sqlite3
+
+ALL_UFS = {
+    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+    "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+    "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+}
+
 
 def init_sncr_table(conn: sqlite3.Connection):
     cursor = conn.cursor()
@@ -44,6 +48,20 @@ def init_sncr_table(conn: sqlite3.Connection):
         );
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS fontes_dados (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            orgao TEXT NOT NULL,
+            sistema TEXT NOT NULL,
+            uf TEXT NOT NULL,
+            arquivo_origem TEXT,
+            data_base TEXT,
+            data_download TEXT NOT NULL,
+            total_registros INTEGER,
+            criterio_associacao TEXT,
+            observacoes TEXT
+        );
+    """)
     conn.commit()
 
 
@@ -53,7 +71,16 @@ def create_sncr_indexes(conn: sqlite3.Connection):
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_sncr_cod ON cadastro_sncr(codigo_imovel);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_sncr_mun_den ON cadastro_sncr(municipio_ibge, denominacao);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_sncr_mun ON cadastro_sncr(municipio_ibge);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_sncr_uf ON cadastro_sncr(uf);")
     conn.commit()
+
+
+def data_base_from_filename(fname: str) -> str:
+    m = re.search(r"(\d{2})_(\d{2})_(\d{4})", fname)
+    if m:
+        d, mth, y = m.groups()
+        return f"{y}-{mth}-{d}"
+    return None
 
 
 def ingest_csv_file(conn: sqlite3.Connection, csv_path: str, batch_size: int = 50000):
@@ -62,15 +89,46 @@ def ingest_csv_file(conn: sqlite3.Connection, csv_path: str, batch_size: int = 5
     print(f"-> Ingerindo base cadastral do SNCR: {fname}")
     print(f"========================================================")
 
-    # Identifica a UF
-    uf = "PR"
-    for u in ["PR", "SC", "SP", "RS", "MG", "MS", "MT", "GO", "BA"]:
-        if f"_{u}_" in fname or fname.endswith(f"_{u}.csv"):
-            uf = u
-            break
+    # 1. Pré-leitura rigorosa para identificar as UFs reais presentes na coluna 5 (row[4])
+    ufs_no_csv = set()
+    with open(csv_path, "r", encoding="utf-8", errors="replace") as f:
+        reader = csv.reader(f, delimiter=";")
+        header = next(reader, None)
+        sample_count = 0
+        for row in reader:
+            if len(row) > 4:
+                u = row[4].strip().upper()
+                if u:
+                    ufs_no_csv.add(u)
+            sample_count += 1
+            if sample_count > 5000 and len(ufs_no_csv) > 0:
+                # Otimização: arquivos por estado contém uma única UF
+                break
 
+    if not ufs_no_csv:
+        # Se não detectou no topo, faz leitura completa para garantir
+        with open(csv_path, "r", encoding="utf-8", errors="replace") as f:
+            reader = csv.reader(f, delimiter=";")
+            header = next(reader, None)
+            for row in reader:
+                if len(row) > 4:
+                    u = row[4].strip().upper()
+                    if u:
+                        ufs_no_csv.add(u)
+
+    if not ufs_no_csv:
+        raise ValueError(f"Nenhuma UF válida identificada no CSV {fname}. Abortando sem alterar o banco.")
+
+    for u in ufs_no_csv:
+        if u not in ALL_UFS:
+            raise ValueError(f"UF inválida '{u}' identificada no CSV {fname}. Abortando sem alterar o banco.")
+
+    print(f"UFs identificadas no arquivo {fname}: {', '.join(sorted(ufs_no_csv))}")
+
+    # Remove do banco APENAS as UFs que constam no arquivo a ser ingerido
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM cadastro_sncr WHERE uf = ?;", (uf,))
+    for u in ufs_no_csv:
+        cursor.execute("DELETE FROM cadastro_sncr WHERE uf = ?;", (u,))
     conn.commit()
 
     t0 = time.time()
@@ -89,8 +147,10 @@ def ingest_csv_file(conn: sqlite3.Connection, csv_path: str, batch_size: int = 5
             denominacao = row[1].strip()
             mun_ibge = row[2].strip()
             municipio = row[3].strip()
-            row_uf = row[4].strip() or uf
-            
+            row_uf = row[4].strip().upper()
+            if not row_uf and len(ufs_no_csv) == 1:
+                row_uf = list(ufs_no_csv)[0]
+
             try:
                 area_total = float(row[5].replace(".", "").replace(",", "."))
             except Exception:
@@ -120,7 +180,7 @@ def ingest_csv_file(conn: sqlite3.Connection, csv_path: str, batch_size: int = 5
                 conn.commit()
                 inserted += len(batch)
                 batch.clear()
-                sys.stdout.write(f"\rProgresso: {inserted:,} registros ingeridos...")
+                sys.stdout.write(f"\rInseridos: {inserted:,} registros...")
                 sys.stdout.flush()
 
         if batch:
@@ -133,13 +193,32 @@ def ingest_csv_file(conn: sqlite3.Connection, csv_path: str, batch_size: int = 5
             conn.commit()
             inserted += len(batch)
 
-    print(f"\r[SUCESSO] {inserted:,} registros do SNCR ({uf}) importados em {time.time() - t0:.1f}s!")
+    # Registra metadados oficiais com contagens reais
+    hoje = time.strftime("%Y-%m-%d")
+    dt_base = data_base_from_filename(fname)
+
+    for u in ufs_no_csv:
+        cursor.execute("SELECT COUNT(*) FROM cadastro_sncr WHERE uf = ?;", (u,))
+        real_count = cursor.fetchone()[0]
+        cursor.execute("DELETE FROM fontes_dados WHERE sistema = 'SNCR' AND uf = ?;", (u,))
+        cursor.execute("""
+            INSERT INTO fontes_dados (
+                orgao, sistema, uf, arquivo_origem, data_base, data_download, total_registros, criterio_associacao, observacoes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+        """, ("INCRA/SNCR", "SNCR", u, fname, dt_base, hoje, real_count, None, None))
+    conn.commit()
+
+    print(f"\r[SUCESSO] {inserted:,} cadastros SNCR ({', '.join(sorted(ufs_no_csv))}) indexados em {time.time() - t0:.1f}s!")
     return inserted
 
 
 def main():
     sncr_dir = "Dados SNCR"
     db_path = "data/fundiario_brasil.db"
+
+    print("=============================================================================")
+    print("INICIANDO INGESTÃO DA BASE OFICIAL DO SNCR/INCRA (BRASIL - 27 UFs)")
+    print("=============================================================================")
 
     if not os.path.exists(sncr_dir):
         print(f"[ERRO] Diretório '{sncr_dir}' não encontrado.")

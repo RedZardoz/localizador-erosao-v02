@@ -2,21 +2,21 @@
 # -*- coding: utf-8 -*-
 """
 =============================================================================
-INGESTÃO DOS DADOS DO SIGEF/INCRA (PARCELAS CERTIFICADAS - LEI 10.267/2001)
+INGESTÃO DOS DADOS OFICIAIS DO SIGEF/INCRA (BRASIL - 27 UFs) COM R*TREE
 Mestrado PPGTCA 2026 - Pesquisa de Erosão Laminar (Brasil)
 =============================================================================
-Lê os shapefiles oficiais baixados do Acervo Fundiário do INCRA (SIGEF)
-em 'Dados INCRA/' (ou 'Dados SIGEF/'), indexa espacialmente com R*Tree e popula
-a tabela imoveis_sigef no banco SQLite local (data/fundiario_brasil.db).
-Fornece nomes reais de fazendas (nome_area), código SNCR e matrícula no Cartório (CRI).
+Lê os arquivos oficiais Sigef Brasil_*.zip do INCRA (Acervo Fundiário),
+extrai as parcelas certificadas com seus respectivos limites (Bounding Box)
+e armazena na tabela imoveis_sigef com R*Tree para validação topológica.
+Mantém também o cache local em data/sigef_cache/{UF}.* para consultas espaciais.
 """
 
 import zipfile
 import io
 import os
 import sys
-import glob
 import time
+import glob
 import sqlite3
 
 try:
@@ -27,16 +27,13 @@ except ImportError:
 
 
 UF_IBGE_MAP = {
-    41: "PR",
-    42: "SC",
-    35: "SP",
-    43: "RS",
-    31: "MG",
-    50: "MS",
-    51: "MT",
-    52: "GO",
-    29: "BA"
+    11: "RO", 12: "AC", 13: "AM", 14: "RR", 15: "PA", 16: "AP", 17: "TO",
+    21: "MA", 22: "PI", 23: "CE", 24: "RN", 25: "PB", 26: "PE", 27: "AL", 28: "SE", 29: "BA",
+    31: "MG", 32: "ES", 33: "RJ", 35: "SP",
+    41: "PR", 42: "SC", 43: "RS",
+    50: "MS", 51: "MT", 52: "GO", 53: "DF"
 }
+ALL_UFS = set(UF_IBGE_MAP.values())
 
 
 def init_sigef_tables(conn: sqlite3.Connection):
@@ -75,6 +72,21 @@ def init_sigef_tables(conn: sqlite3.Connection):
         );
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS fontes_dados (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            orgao TEXT NOT NULL,
+            sistema TEXT NOT NULL,
+            uf TEXT NOT NULL,
+            arquivo_origem TEXT,
+            data_base TEXT,
+            data_download TEXT NOT NULL,
+            total_registros INTEGER,
+            criterio_associacao TEXT,
+            observacoes TEXT
+        );
+    """)
+
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_sigef_nome_area ON imoveis_sigef(nome_area);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_sigef_codigo_imo ON imoveis_sigef(codigo_imo);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_sigef_uf ON imoveis_sigef(uf);")
@@ -88,10 +100,10 @@ def ingest_zip_file(conn: sqlite3.Connection, zip_path: str, batch_size: int = 1
     print(f"-> Processando base oficial SIGEF/INCRA: {os.path.basename(zip_path)}")
     print(f"========================================================")
 
-    # Descobre a UF pelo nome do arquivo
+    # Identifica a UF do arquivo dinamicamente a partir das 27 UFs oficiais
+    uf_hint = None
     fname = os.path.basename(zip_path).upper()
-    uf_hint = ""
-    for uf in ["PR", "SC", "SP", "RS", "MG", "MS", "MT", "GO", "BA"]:
+    for uf in sorted(ALL_UFS):
         if f"_{uf}" in fname or f"-{uf}" in fname or fname.endswith(f"{uf}.ZIP"):
             uf_hint = uf
             break
@@ -102,7 +114,7 @@ def ingest_zip_file(conn: sqlite3.Connection, zip_path: str, batch_size: int = 1
     if uf_hint:
         cache_shp = os.path.join(cache_dir, f"{uf_hint}.shp")
         if not os.path.exists(cache_shp):
-            print(f"Extraindo camadas vetoriais para cache local ({uf_hint})...")
+            print(f"Extraindo camadas vetoriais para cache local SIGEF ({uf_hint})...")
             with zipfile.ZipFile(zip_path) as z:
                 for ext in ['shp', 'shx', 'dbf', 'prj']:
                     try:
@@ -171,7 +183,18 @@ def ingest_zip_file(conn: sqlite3.Connection, zip_path: str, batch_size: int = 1
                 mun_ibge = 0
 
             uf_ibge = rec.get('uf_id')
-            uf = UF_IBGE_MAP.get(uf_ibge, uf_hint) or uf_hint
+            if uf_ibge and uf_ibge in UF_IBGE_MAP:
+                uf = UF_IBGE_MAP[uf_ibge]
+            elif mun_ibge and (mun_ibge // 100000) in UF_IBGE_MAP:
+                uf = UF_IBGE_MAP[mun_ibge // 100000]
+            else:
+                uf = uf_hint
+
+            if not uf:
+                raise ValueError(
+                    f"Não foi possível determinar a UF para a parcela {cod_parcela} "
+                    f"(municipio_ibge: {mun_ibge}, zip: {zip_path}). Abortando ingestão para evitar registros com UF nula."
+                )
 
             fonte = "SIGEF/INCRA Oficial (Lei 10.267/2001)"
 
@@ -221,27 +244,49 @@ def ingest_zip_file(conn: sqlite3.Connection, zip_path: str, batch_size: int = 1
             conn.commit()
             inserted += len(batch_props)
 
+        # Atualiza tabela de metadados oficiais com contagem real
+        if uf_hint:
+            hoje = time.strftime("%Y-%m-%d")
+            cursor.execute("SELECT COUNT(*) FROM imoveis_sigef WHERE uf = ?;", (uf_hint,))
+            real_count = cursor.fetchone()[0]
+
+            cursor.execute("DELETE FROM fontes_dados WHERE sistema = 'SIGEF' AND uf = ?;", (uf_hint,))
+            cursor.execute("""
+                INSERT INTO fontes_dados (
+                    orgao, sistema, uf, arquivo_origem, data_base, data_download, total_registros, criterio_associacao, observacoes
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+            """, ("INCRA/SIGEF", "SIGEF", uf_hint, os.path.basename(zip_path), None, hoje, real_count, None, None))
+            conn.commit()
+
         print(f"\r[SUCESSO] {inserted:,} parcelas do SIGEF ({uf_hint}) indexadas em {time.time() - t0:.1f}s!")
         return inserted
 
 
 def main():
-    incra_dirs = ["Dados INCRA", "Dados SIGEF"]
-    target_dir = next((d for d in incra_dirs if os.path.exists(d) and (glob.glob(os.path.join(d, "*.zip")) or glob.glob(os.path.join(d, "*.shp")))), None)
+    incra_dirs = [d for d in ["Dados INCRA", "Dados SIGEF"] if os.path.exists(d)]
     db_path = "data/fundiario_brasil.db"
 
     print("=============================================================================")
-    print("INICIANDO INGESTÃO DOS DADOS DO SIGEF/INCRA (PR, SC, SP)")
+    print("INICIANDO INGESTÃO DOS DADOS DO SIGEF/INCRA (BRASIL - 27 UFs)")
     print("=============================================================================")
 
-    if not target_dir:
-        print(f"[ERRO] Nenhum arquivo .zip encontrado em 'Dados INCRA/' nem 'Dados SIGEF/'.")
+    if not incra_dirs:
+        print(f"[ERRO] Nenhum diretório 'Dados INCRA/' nem 'Dados SIGEF/' encontrado.")
         return
 
     conn = sqlite3.connect(db_path)
     init_sigef_tables(conn)
 
-    zip_files = sorted(glob.glob(os.path.join(target_dir, "*.zip")))
+    zip_files = []
+    for d in incra_dirs:
+        zip_files.extend(glob.glob(os.path.join(d, "*.zip")))
+    zip_files = sorted(list(set(zip_files)))
+
+    if not zip_files:
+        print(f"[AVISO] Nenhum arquivo .zip encontrado em {incra_dirs}.")
+        conn.close()
+        return
+
     total_all = 0
     for zf in zip_files:
         total_all += ingest_zip_file(conn, zf)
