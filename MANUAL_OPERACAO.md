@@ -363,19 +363,24 @@ geolocalizacao-erosao-propriedade/
     └── ...
 ```
 
-### 12.3. Comandos de Ingestão
+### 12.3. Comandos de Ingestão Oficial
 
-#### Ingestão de uma UF Específica:
-Para ingerir apenas um estado:
+Execute os três scripts de ingestão oficial na ordem (eles descobrem automaticamente todas as UFs com arquivos presentes nas pastas):
 ```bash
-python scripts/ingest_data.py --uf MS
+# 1. Ingestão de polígonos e Bounding Boxes do SICAR (MMA/SFB)
+python scripts/ingest_sicar_official.py
+
+# 2. Ingestão de parcelas certificadas do SIGEF (INCRA)
+python scripts/ingest_sigef_official.py
+
+# 3. Ingestão de titulares e cadastros alfanuméricos do SNCR (INCRA)
+python scripts/ingest_sncr_official.py
 ```
-*(Substitua `MS` pela sigla desejada: `AC`, `AL`, `AM`, `AP`, `BA`, `CE`, `DF`, `ES`, `GO`, `MA`, `MG`, `MS`, `MT`, `PA`, `PB`, `PE`, `PI`, `PR`, `RJ`, `RN`, `RO`, `RR`, `RS`, `SC`, `SE`, `SP`, `TO`)*.
 
-#### Ingestão Automatizada em Lote (Todas as UFs Baixadas):
-Para processar automaticamente todas as UFs que tiverem arquivos baixados nas pastas oficiais e gerar relatório estatístico consolidado:
+#### Verificação de Cobertura Pós-Ingestão:
+Para auditar a cobertura e integridade das três camadas e dos caches espaciais por UF:
 ```bash
-python scripts/batch_ingest_all_ufs.py
+python scripts/verificar_cobertura.py
 ```
 
 ### 12.4. Características do Processo

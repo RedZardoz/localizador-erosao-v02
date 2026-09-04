@@ -405,16 +405,18 @@ def record_fonte_dados(
     orgao: str,
     sistema: str,
     uf: str,
-    arquivo_origem: str,
-    total_registros: int,
+    arquivo_origem: Optional[str],
+    tabela_alvo: str = "imoveis_fundiarios",
     data_base: Optional[str] = None
 ):
     """
-    Registra metadados oficiais da ingestão na tabela fontes_dados.
+    Registra metadados oficiais da ingestão na tabela fontes_dados a partir de contagem real.
     """
     cursor = conn.cursor()
     hoje = datetime.now().strftime("%Y-%m-%d")
-    base_date = data_base or hoje
+
+    cursor.execute(f"SELECT COUNT(*) FROM {tabela_alvo} WHERE uf = ?;", (uf,))
+    total_registros = cursor.fetchone()[0]
 
     # Remove registro prévio da mesma fonte e UF se houver
     cursor.execute("""
@@ -429,12 +431,12 @@ def record_fonte_dados(
         orgao,
         sistema,
         uf,
-        os.path.basename(arquivo_origem),
-        base_date,
+        os.path.basename(arquivo_origem) if arquivo_origem else None,
+        data_base,
         hoje,
         total_registros,
-        "Contenção topológica estrita via Bounding Box / Shapely",
-        "Ingestão automatizada oficial"
+        None,
+        None
     ))
     conn.commit()
 
@@ -497,6 +499,17 @@ def process_uf(conn: sqlite3.Connection, uf: str, batch_size: int = 5000, base_d
 
 
 def main():
+    print("=" * 70)
+    print("[BLOQUEADO] Este pipeline esta incompleto e NAO deve ser executado.")
+    print("Ele insere parcelas SIGEF na tabela imoveis_fundiarios e nao popula")
+    print("imoveis_sigef nem cadastro_sncr, quebrando a cadeia SICAR->SIGEF->SNCR.")
+    print("Use os ingestores oficiais:")
+    print("  python scripts/ingest_sicar_official.py")
+    print("  python scripts/ingest_sigef_official.py")
+    print("  python scripts/ingest_sncr_official.py")
+    print("=" * 70)
+    raise SystemExit(1)
+
     parser = argparse.ArgumentParser(
         description="Ingestão de dados fundiários oficiais (SICAR / SIGEF / SNCR) para SQLite indexado por Bounding Box."
     )
