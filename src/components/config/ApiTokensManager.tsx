@@ -1,20 +1,28 @@
 "use client";
 
 import React, { useState } from "react";
-import { KeyRound, CheckCircle2, AlertCircle, RefreshCw, Globe, Map } from "lucide-react";
+import { KeyRound, CheckCircle2, AlertCircle, RefreshCw, Globe, Map, Layers } from "lucide-react";
 import { useErosionStore } from "@/lib/store/useErosionStore";
 
 export const ApiTokensManager: React.FC = () => {
-  const { mapboxToken, setMapboxToken, googleMapsKey, setGoogleMapsKey } = useErosionStore();
+  const {
+    mapboxToken,
+    setMapboxToken,
+    googleMapsKey,
+    setGoogleMapsKey,
+    cartoApiKey,
+    setCartoApiKey,
+  } = useErosionStore();
 
   const [testStatus, setTestStatus] = useState<{
     mapbox?: { success: boolean; message: string };
     google?: { success: boolean; message: string };
+    carto?: { success: boolean; message: string };
   }>({});
 
-  const [loading, setLoading] = useState<{ mapbox?: boolean; google?: boolean }>({});
+  const [loading, setLoading] = useState<{ mapbox?: boolean; google?: boolean; carto?: boolean }>({});
 
-  const testToken = async (type: "mapbox" | "google", token: string) => {
+  const testToken = async (type: "mapbox" | "google" | "carto", token: string) => {
     if (!token.trim()) return;
 
     setLoading((prev) => ({ ...prev, [type]: true }));
@@ -150,6 +158,66 @@ export const ApiTokensManager: React.FC = () => {
               <AlertCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
             )}
             <span>{testStatus.google.message}</span>
+          </div>
+        )}
+      </div>
+
+      {/* CARTO Basemaps API Key Field */}
+      <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3 transition-colors">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+            <Layers className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            CARTO Basemaps API Key (Opcional)
+          </label>
+          <span className="text-[10px] text-slate-500 font-mono">cb1_...</span>
+        </div>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+          Remove a marca d&apos;água <i>&quot;API key required&quot;</i> das camadas raster da CARTO (Dark GIS, Voyager e Positron). Gratuito até 5 milhões de requisições/mês.{" "}
+          <a
+            href="https://carto.com/basemaps/apikey"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-amber-600 dark:text-amber-400 underline hover:text-amber-700 dark:hover:text-amber-300 font-medium inline-flex items-center gap-0.5"
+          >
+            Obter chave gratuita no site da CARTO
+          </a>
+        </p>
+
+        <div className="flex gap-2">
+          <input
+            type="password"
+            value={cartoApiKey}
+            onChange={(e) => setCartoApiKey(e.target.value)}
+            placeholder="cb1_... ou chave CARTO"
+            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-lg px-3 py-2 font-mono focus:outline-none focus:border-amber-500"
+          />
+          <button
+            onClick={() => testToken("carto", cartoApiKey)}
+            disabled={!cartoApiKey || loading.carto}
+            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-800 dark:text-slate-200 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-colors"
+          >
+            {loading.carto ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600 dark:text-amber-400" />
+            ) : (
+              "Testar"
+            )}
+          </button>
+        </div>
+
+        {testStatus.carto && (
+          <div
+            className={`p-2.5 rounded-lg border text-xs flex items-center gap-2 ${
+              testStatus.carto.success
+                ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300"
+                : "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-500/40 text-rose-800 dark:text-rose-300"
+            }`}
+          >
+            {testStatus.carto.success ? (
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            ) : (
+              <AlertCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+            )}
+            <span>{testStatus.carto.message}</span>
           </div>
         )}
       </div>

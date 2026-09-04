@@ -320,4 +320,14 @@ describe("useErosionStore - SavedPointDataset (Salvar e Recarregar Focos)", () =
     const filtered = state.getFilteredPoints();
     expect(filtered).toHaveLength(1);
   });
+
+  it("armazena e atualiza a chave da CARTO Basemaps API", () => {
+    expect(useErosionStore.getState().cartoApiKey).toBeDefined();
+
+    useErosionStore.getState().setCartoApiKey("cb1_2x3h_1_2ea5f3dd6101b19d45d96074");
+    expect(useErosionStore.getState().cartoApiKey).toBe("cb1_2x3h_1_2ea5f3dd6101b19d45d96074");
+
+    useErosionStore.getState().setCartoApiKey("");
+    expect(useErosionStore.getState().cartoApiKey).toBe("");
+  });
 });

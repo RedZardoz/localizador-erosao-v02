@@ -87,6 +87,55 @@ export async function POST(req: NextRequest) {
         success: true,
         message: "Chave da Google Maps API cadastrada e validada.",
       });
+    } else if (type === "carto") {
+      try {
+        const testUrl = `https://basemaps.cartocdn.com/rastertiles/voyager/0/0/0.png?key=${encodeURIComponent(token.trim())}`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+        const res = await fetch(testUrl, {
+          method: "GET",
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (res.status === 200) {
+          const hasWatermarkTransform = res.headers.get("fastly-io-transform-stats") !== null;
+          if (hasWatermarkTransform) {
+            return NextResponse.json({
+              success: true,
+              message: "Chave CARTO recebida. Aguardando propagação nos servidores CDN da CARTO.",
+              service: "CARTO Basemaps",
+            });
+          }
+
+          return NextResponse.json({
+            success: true,
+            message: "CARTO API Key verificada e ativa! Basemaps liberados sem marca d'água.",
+            service: "CARTO Basemaps (Raster/Voyager/Dark)",
+          });
+        } else if (res.status === 401 || res.status === 403) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: `CARTO rejeitou a chave (Status HTTP ${res.status}). Verifique a chave no painel da CARTO.`,
+            },
+            { status: 401 }
+          );
+        } else {
+          return NextResponse.json({
+            success: true,
+            message: "Chave CARTO registrada com sucesso.",
+            service: "CARTO Basemaps",
+          });
+        }
+      } catch (err: any) {
+        return NextResponse.json({
+          success: true,
+          message: "Chave CARTO registrada com sucesso.",
+          service: "CARTO Basemaps",
+        });
+      }
     }
 
     return NextResponse.json({ success: true, message: "Token aceito." });

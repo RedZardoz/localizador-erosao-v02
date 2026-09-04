@@ -101,7 +101,25 @@ Permite geocodificação reversa de endereços e integração direta com o Googl
 
 ---
 
-## 🔒 5. Segurança & Boas Práticas (Prevenção de Vazamento de Dados)
+## 🗺️ 5. CARTO Basemaps API Key (Opcional)
+
+Permite remover a marca d'água (*"API key required"*) das camadas de mapa base raster da CARTO (**CARTO Dark GIS** e **CARTO Voyager**). A cota gratuita cobre até 5 milhões de requisições de tiles por mês.
+
+### Como Obter:
+1. Acesse o formulário oficial em [https://carto.com/basemaps/apikey](https://carto.com/basemaps/apikey).
+2. Preencha seus dados de pesquisador ou desenvolvedor.
+3. Você receberá por e-mail sua chave de API (formato com prefixo `cb1_...`).
+
+### Como Inserir:
+- **Pela Interface Web**: No modal de **Configurações** (ícone de engrenagem) > aba **Tokens de Mapas**, cole a chave no campo *CARTO Basemaps API Key* e clique em *Testar*.
+- **Ou pelo `.env.local`**:
+  ```env
+  NEXT_PUBLIC_CARTO_API_KEY="cb1_..."
+  ```
+
+---
+
+## 🔒 6. Segurança & Boas Práticas (Prevenção de Vazamento de Dados)
 
 > [!IMPORTANT]
 > **Nunca comite chaves privadas ou tokens no repositório Git público:**

@@ -30,6 +30,7 @@ export const MapViewer: React.FC = () => {
     setSelectedPolygon,
     setActiveModal,
     activeCarPolygon,
+    cartoApiKey,
   } = useErosionStore();
 
   const filteredPoints = useFilteredPoints();
@@ -57,7 +58,22 @@ export const MapViewer: React.FC = () => {
       },
       "carto-dark": {
         type: "raster",
-        tiles: ["https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"],
+        tiles: [
+          cartoApiKey?.trim()
+            ? `https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png?key=${cartoApiKey.trim()}`
+            : "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+        ],
+        tileSize: 256,
+        maxzoom: 20,
+        attribution: "CARTO, OpenStreetMap",
+      },
+      "carto-voyager": {
+        type: "raster",
+        tiles: [
+          cartoApiKey?.trim()
+            ? `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png?key=${cartoApiKey.trim()}`
+            : "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
+        ],
         tileSize: 256,
         maxzoom: 20,
         attribution: "CARTO, OpenStreetMap",
@@ -115,6 +131,12 @@ export const MapViewer: React.FC = () => {
             id: "carto-dark-layer",
             type: "raster",
             source: "carto-dark",
+            paint: { "raster-opacity": 0.0 },
+          },
+          {
+            id: "carto-voyager-layer",
+            type: "raster",
+            source: "carto-voyager",
             paint: { "raster-opacity": 0.0 },
           },
         ],
@@ -665,6 +687,7 @@ export const MapViewer: React.FC = () => {
     const mapboxHdOpacity = isMapboxHd ? 1.0 : 0.0;
     const topoOpacity = mapState.basemap === "topo" ? 1.0 : 0.0;
     const darkOpacity = mapState.basemap === "dark" ? 1.0 : 0.0;
+    const voyagerOpacity = mapState.basemap === "voyager" ? 1.0 : 0.0;
 
     if (map.getLayer("esri-satellite-layer")) {
       map.setPaintProperty("esri-satellite-layer", "raster-opacity", satOpacity);
@@ -678,7 +701,34 @@ export const MapViewer: React.FC = () => {
     if (map.getLayer("carto-dark-layer")) {
       map.setPaintProperty("carto-dark-layer", "raster-opacity", darkOpacity);
     }
+    if (map.getLayer("carto-voyager-layer")) {
+      map.setPaintProperty("carto-voyager-layer", "raster-opacity", voyagerOpacity);
+    }
   }, [mapState.basemap, mapLoaded]);
+
+  // Update CARTO tile URLs dynamically when CARTO API Key is added or changed
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+
+    const darkSource = map.getSource("carto-dark") as maplibregl.RasterTileSource | undefined;
+    const darkUrl = cartoApiKey?.trim()
+      ? `https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png?key=${cartoApiKey.trim()}`
+      : "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png";
+
+    if (darkSource && typeof darkSource.setTiles === "function") {
+      darkSource.setTiles([darkUrl]);
+    }
+
+    const voyagerSource = map.getSource("carto-voyager") as maplibregl.RasterTileSource | undefined;
+    const voyagerUrl = cartoApiKey?.trim()
+      ? `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png?key=${cartoApiKey.trim()}`
+      : "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png";
+
+    if (voyagerSource && typeof voyagerSource.setTiles === "function") {
+      voyagerSource.setTiles([voyagerUrl]);
+    }
+  }, [cartoApiKey, mapLoaded]);
 
   // Update Layers Visibility
   useEffect(() => {

@@ -51,8 +51,9 @@ export const MapControls: React.FC = () => {
         ]
       : []),
     { id: "satellite", label: "Satélite Esri (Clarity)", icon: Satellite },
+    { id: "voyager", label: "CARTO Voyager", icon: Compass, badge: "CARTO" },
+    { id: "dark", label: "CARTO Dark GIS", icon: Moon, badge: "CARTO" },
     { id: "topo", label: "Relevo Topográfico", icon: Mountain },
-    { id: "dark", label: "Dark GIS Carto", icon: Moon },
   ];
 
   const resetToRegion = () => {

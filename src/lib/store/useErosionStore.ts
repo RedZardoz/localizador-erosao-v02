@@ -27,7 +27,7 @@ export type ModalType =
   | "diagnostics"
   | "audit-dossier"
   | null;
-export type BasemapType = "satellite" | "mapbox-hd" | "topo" | "dark" | "hybrid";
+export type BasemapType = "satellite" | "mapbox-hd" | "topo" | "dark" | "hybrid" | "voyager";
 
 interface MapViewState {
   basemap: BasemapType;
@@ -81,6 +81,7 @@ interface ErosionStoreState {
   gcpCredentials: GcpCredentials | null;
   mapboxToken: string;
   googleMapsKey: string;
+  cartoApiKey: string;
   credentialPersistMode: "session" | "local";
   // Sessão do Earth Engine no SERVIDOR (cookie httpOnly) — fonte de verdade de
   // se os cálculos reais estão disponíveis, não a presença de private_key no
@@ -151,6 +152,7 @@ interface ErosionStoreState {
   setGcpCredentials: (creds: GcpCredentials | null) => void;
   setMapboxToken: (token: string) => void;
   setGoogleMapsKey: (key: string) => void;
+  setCartoApiKey: (key: string) => void;
   setCredentialPersistMode: (mode: "session" | "local") => void;
   setGeeSessionActive: (active: boolean) => void;
 
@@ -227,6 +229,7 @@ export const useErosionStore = create<ErosionStoreState>()(
       gcpCredentials: null,
       mapboxToken: process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "",
       googleMapsKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || "",
+      cartoApiKey: process.env.NEXT_PUBLIC_CARTO_API_KEY || "",
       credentialPersistMode: "local",
       geeSessionActive: false,
 
@@ -727,6 +730,7 @@ export const useErosionStore = create<ErosionStoreState>()(
       setGcpCredentials: (creds) => set({ gcpCredentials: creds }),
       setMapboxToken: (token) => set({ mapboxToken: token }),
       setGoogleMapsKey: (key) => set({ googleMapsKey: key }),
+      setCartoApiKey: (key) => set({ cartoApiKey: key }),
       setCredentialPersistMode: (mode) => set({ credentialPersistMode: mode }),
       setGeeSessionActive: (active) => set({ geeSessionActive: active }),
 
@@ -846,6 +850,7 @@ export const useErosionStore = create<ErosionStoreState>()(
             : null,
         mapboxToken: state.credentialPersistMode === "local" ? state.mapboxToken : "",
         googleMapsKey: state.credentialPersistMode === "local" ? state.googleMapsKey : "",
+        cartoApiKey: state.credentialPersistMode === "local" ? state.cartoApiKey : "",
         credentialPersistMode: state.credentialPersistMode,
         savedDatasets: state.savedDatasets,
         drawnPolygons: state.drawnPolygons,
