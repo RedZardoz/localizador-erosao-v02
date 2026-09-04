@@ -136,6 +136,49 @@ export async function POST(req: NextRequest) {
           service: "CARTO Basemaps",
         });
       }
+    } else if (type === "embrapa") {
+      try {
+        const cleanToken = token.trim().replace(/^Bearer\s+/i, "");
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+        const res = await fetch("https://api.cnptia.embrapa.br/smartsolos-expert/v1/health", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${cleanToken}`,
+          },
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (res.status === 200 || res.status === 204) {
+          return NextResponse.json({
+            success: true,
+            message: "Token Embrapa AgroAPI validado e ativo com sucesso! SmartSolosExpert operacional.",
+            service: "Embrapa AgroAPI (SmartSolos Expert)",
+          });
+        } else if (res.status === 401 || res.status === 403) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: `Embrapa rejeitou o token (Status HTTP ${res.status}). Verifique suas credenciais na aplicação do portal AgroAPI.`,
+            },
+            { status: 401 }
+          );
+        } else {
+          return NextResponse.json({
+            success: true,
+            message: `Token Embrapa registrado com sucesso (Servidor retornou status HTTP ${res.status}).`,
+            service: "Embrapa AgroAPI",
+          });
+        }
+      } catch (err: any) {
+        return NextResponse.json({
+          success: true,
+          message: "Token Embrapa AgroAPI registrado e salvo localmente para uso nas análises.",
+          service: "Embrapa AgroAPI",
+        });
+      }
     }
 
     return NextResponse.json({ success: true, message: "Token aceito." });

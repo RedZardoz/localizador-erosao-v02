@@ -119,7 +119,26 @@ Permite remover a marca d'água (*"API key required"*) das camadas de mapa base 
 
 ---
 
-## 🔒 6. Segurança & Boas Práticas (Prevenção de Vazamento de Dados)
+## 🌿 6. Embrapa AgroAPI / SmartSolos Token (Opcional)
+
+Permite conexão direta com a API REST da **Embrapa Agricultura Digital** (SmartSolos Expert v1) para classificação taxonômica oficial segundo o SiBCS a partir de amostras de solo coletadas em campo.
+
+### Como Obter:
+1. Acesse o portal da [AgroAPI Embrapa](https://www.agroapi.cnptia.embrapa.br/).
+2. Crie sua conta gratuita de desenvolvedor/pesquisador.
+3. Em **Aplicações**, crie uma aplicação e inscreva-se na API **SmartSolosExpert** (cota gratuita de até 100 mil requisições/mês).
+4. Gere suas chaves e copie o **Access Token** (`Bearer ey...`).
+
+### Como Inserir:
+- **Pela Interface Web**: No modal de **Configurações** (ícone de engrenagem) > aba **Tokens de Mapas**, cole o token no campo *Embrapa AgroAPI / SmartSolos Token* e clique em *Testar*.
+- **Ou pelo `.env.local`**:
+  ```env
+  NEXT_PUBLIC_EMBRAPA_AGROAPI_TOKEN="Bearer ey..."
+  ```
+
+---
+
+## 🔒 7. Segurança & Boas Práticas (Prevenção de Vazamento de Dados)
 
 > [!IMPORTANT]
 > **Nunca comite chaves privadas ou tokens no repositório Git público:**

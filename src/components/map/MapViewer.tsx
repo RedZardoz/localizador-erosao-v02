@@ -78,6 +78,24 @@ export const MapViewer: React.FC = () => {
         maxzoom: 20,
         attribution: "CARTO, OpenStreetMap",
       },
+      "embrapa-solos": {
+        type: "raster",
+        tiles: [
+          "https://geoinfo.dados.embrapa.br/geoserver/ows?service=WMS&version=1.1.1&request=GetMap&layers=geonode:parana_solos_20201105&bbox={bbox-epsg-3857}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true",
+        ],
+        tileSize: 256,
+        maxzoom: 18,
+        attribution: "Embrapa Solos / PronaSolos",
+      },
+      "embrapa-erodibilidade": {
+        type: "raster",
+        tiles: [
+          "https://geoinfo.dados.embrapa.br/geoserver/ows?service=WMS&version=1.1.1&request=GetMap&layers=geonode:brasil_erodibilidade_solo&bbox={bbox-epsg-3857}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true",
+        ],
+        tileSize: 256,
+        maxzoom: 18,
+        attribution: "Embrapa Solos (RUSLE K)",
+      },
       "terrain-dem": {
         type: "raster-dem",
         tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
@@ -210,6 +228,27 @@ export const MapViewer: React.FC = () => {
           "line-width": 1.5,
           "line-opacity": 0.6,
         },
+      });
+
+      // Add Embrapa Solos (PronaSolos) & Erodibilidade (RUSLE K) WMS Layers
+      map.addLayer({
+        id: "embrapa-solos-layer",
+        type: "raster",
+        source: "embrapa-solos",
+        layout: {
+          visibility: mapState.showEmbrapaSolos ? "visible" : "none",
+        },
+        paint: { "raster-opacity": 0.65 },
+      });
+
+      map.addLayer({
+        id: "embrapa-erodibilidade-layer",
+        type: "raster",
+        source: "embrapa-erodibilidade",
+        layout: {
+          visibility: mapState.showEmbrapaErodibilidade ? "visible" : "none",
+        },
+        paint: { "raster-opacity": 0.65 },
       });
 
       // Add custom AOI Polygon source
@@ -761,7 +800,28 @@ export const MapViewer: React.FC = () => {
         mapState.showHeatmap ? "visible" : "none"
       );
     }
-  }, [mapState.showBoundary, mapState.showBasins, mapState.showHeatmap, mapLoaded]);
+    if (map.getLayer("embrapa-solos-layer")) {
+      map.setLayoutProperty(
+        "embrapa-solos-layer",
+        "visibility",
+        mapState.showEmbrapaSolos ? "visible" : "none"
+      );
+    }
+    if (map.getLayer("embrapa-erodibilidade-layer")) {
+      map.setLayoutProperty(
+        "embrapa-erodibilidade-layer",
+        "visibility",
+        mapState.showEmbrapaErodibilidade ? "visible" : "none"
+      );
+    }
+  }, [
+    mapState.showBoundary,
+    mapState.showBasins,
+    mapState.showHeatmap,
+    mapState.showEmbrapaSolos,
+    mapState.showEmbrapaErodibilidade,
+    mapLoaded,
+  ]);
 
   // Update 3D Terrain & Exaggeration
   useEffect(() => {

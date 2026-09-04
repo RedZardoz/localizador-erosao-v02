@@ -330,4 +330,20 @@ describe("useErosionStore - SavedPointDataset (Salvar e Recarregar Focos)", () =
     useErosionStore.getState().setCartoApiKey("");
     expect(useErosionStore.getState().cartoApiKey).toBe("");
   });
+
+  it("armazena e atualiza o token da Embrapa AgroAPI e alterna camadas Embrapa", () => {
+    expect(useErosionStore.getState().embrapaToken).toBeDefined();
+
+    useErosionStore.getState().setEmbrapaToken("Bearer eyJhbGciOi...");
+    expect(useErosionStore.getState().embrapaToken).toBe("Bearer eyJhbGciOi...");
+
+    // Alternar camadas Embrapa
+    expect(useErosionStore.getState().mapState.showEmbrapaSolos).toBe(false);
+    useErosionStore.getState().toggleLayer("showEmbrapaSolos");
+    expect(useErosionStore.getState().mapState.showEmbrapaSolos).toBe(true);
+
+    expect(useErosionStore.getState().mapState.showEmbrapaErodibilidade).toBe(false);
+    useErosionStore.getState().toggleLayer("showEmbrapaErodibilidade");
+    expect(useErosionStore.getState().mapState.showEmbrapaErodibilidade).toBe(true);
+  });
 });

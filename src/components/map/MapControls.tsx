@@ -137,7 +137,7 @@ export const MapControls: React.FC = () => {
           </button>
 
           {layersOpen && (
-            <div className="absolute top-full left-0 mt-1.5 w-52 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden p-2 z-30 space-y-1 animate-in fade-in zoom-in-95">
+            <div className="absolute top-full left-0 mt-1.5 w-60 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden p-2 z-30 space-y-1 animate-in fade-in zoom-in-95">
               <label className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 cursor-pointer text-xs text-slate-700 dark:text-slate-300">
                 <span className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
@@ -173,6 +173,38 @@ export const MapControls: React.FC = () => {
                   type="checkbox"
                   checked={mapState.showHeatmap}
                   onChange={() => toggleLayer("showHeatmap")}
+                  className="rounded bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-0 cursor-pointer"
+                />
+              </label>
+
+              <div className="pt-1 mt-1 border-t border-slate-200 dark:border-slate-800">
+                <span className="px-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  Geosserviços Embrapa
+                </span>
+              </div>
+
+              <label className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 cursor-pointer text-xs text-slate-700 dark:text-slate-300">
+                <span className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-700" />
+                  Solos PR (PronaSolos Embrapa)
+                </span>
+                <input
+                  type="checkbox"
+                  checked={mapState.showEmbrapaSolos}
+                  onChange={() => toggleLayer("showEmbrapaSolos")}
+                  className="rounded bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-0 cursor-pointer"
+                />
+              </label>
+
+              <label className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/80 cursor-pointer text-xs text-slate-700 dark:text-slate-300">
+                <span className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-600" />
+                  Erodibilidade (Embrapa RUSLE)
+                </span>
+                <input
+                  type="checkbox"
+                  checked={mapState.showEmbrapaErodibilidade}
+                  onChange={() => toggleLayer("showEmbrapaErodibilidade")}
                   className="rounded bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-emerald-600 focus:ring-0 cursor-pointer"
                 />
               </label>

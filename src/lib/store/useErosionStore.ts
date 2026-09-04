@@ -36,6 +36,8 @@ interface MapViewState {
   showBasins: boolean;
   showBoundary: boolean;
   showHeatmap: boolean;
+  showEmbrapaSolos: boolean;
+  showEmbrapaErodibilidade: boolean;
   flyToTarget: {
     lat: number;
     lng: number;
@@ -82,6 +84,7 @@ interface ErosionStoreState {
   mapboxToken: string;
   googleMapsKey: string;
   cartoApiKey: string;
+  embrapaToken: string;
   credentialPersistMode: "session" | "local";
   // Sessão do Earth Engine no SERVIDOR (cookie httpOnly) — fonte de verdade de
   // se os cálculos reais estão disponíveis, não a presença de private_key no
@@ -144,7 +147,7 @@ interface ErosionStoreState {
   setBasemap: (basemap: BasemapType) => void;
   toggleTerrain3D: () => void;
   setTerrainExaggeration: (exaggeration: number) => void;
-  toggleLayer: (layer: "showBasins" | "showBoundary" | "showHeatmap") => void;
+  toggleLayer: (layer: "showBasins" | "showBoundary" | "showHeatmap" | "showEmbrapaSolos" | "showEmbrapaErodibilidade") => void;
   flyToLocation: (target: MapViewState["flyToTarget"]) => void;
   flyToPoint: (point: ErosionPoint) => void;
 
@@ -153,6 +156,7 @@ interface ErosionStoreState {
   setMapboxToken: (token: string) => void;
   setGoogleMapsKey: (key: string) => void;
   setCartoApiKey: (key: string) => void;
+  setEmbrapaToken: (token: string) => void;
   setCredentialPersistMode: (mode: "session" | "local") => void;
   setGeeSessionActive: (active: boolean) => void;
 
@@ -222,6 +226,8 @@ export const useErosionStore = create<ErosionStoreState>()(
         showBasins: true,
         showBoundary: true,
         showHeatmap: false,
+        showEmbrapaSolos: false,
+        showEmbrapaErodibilidade: false,
         flyToTarget: null,
       },
 
@@ -230,6 +236,7 @@ export const useErosionStore = create<ErosionStoreState>()(
       mapboxToken: process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "",
       googleMapsKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || "",
       cartoApiKey: process.env.NEXT_PUBLIC_CARTO_API_KEY || "",
+      embrapaToken: process.env.NEXT_PUBLIC_EMBRAPA_AGROAPI_TOKEN || "",
       credentialPersistMode: "local",
       geeSessionActive: false,
 
@@ -731,6 +738,7 @@ export const useErosionStore = create<ErosionStoreState>()(
       setMapboxToken: (token) => set({ mapboxToken: token }),
       setGoogleMapsKey: (key) => set({ googleMapsKey: key }),
       setCartoApiKey: (key) => set({ cartoApiKey: key }),
+      setEmbrapaToken: (token) => set({ embrapaToken: token }),
       setCredentialPersistMode: (mode) => set({ credentialPersistMode: mode }),
       setGeeSessionActive: (active) => set({ geeSessionActive: active }),
 
@@ -851,6 +859,7 @@ export const useErosionStore = create<ErosionStoreState>()(
         mapboxToken: state.credentialPersistMode === "local" ? state.mapboxToken : "",
         googleMapsKey: state.credentialPersistMode === "local" ? state.googleMapsKey : "",
         cartoApiKey: state.credentialPersistMode === "local" ? state.cartoApiKey : "",
+        embrapaToken: state.credentialPersistMode === "local" ? state.embrapaToken : "",
         credentialPersistMode: state.credentialPersistMode,
         savedDatasets: state.savedDatasets,
         drawnPolygons: state.drawnPolygons,
@@ -866,6 +875,8 @@ export const useErosionStore = create<ErosionStoreState>()(
           showBasins: state.mapState.showBasins,
           showBoundary: state.mapState.showBoundary,
           showHeatmap: state.mapState.showHeatmap,
+          showEmbrapaSolos: state.mapState.showEmbrapaSolos,
+          showEmbrapaErodibilidade: state.mapState.showEmbrapaErodibilidade,
           flyToTarget: null,
         },
       }),
