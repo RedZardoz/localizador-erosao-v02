@@ -302,10 +302,9 @@ export function exportTrainingDatasetCSV(points: ErosionPoint[]): string {
 }
 
 /**
- * Dispara o download de um arquivo no navegador do usuário.
+ * Dispara o download de um Blob binário (ex: XLSX) no navegador do usuário.
  */
-export function downloadFile(content: string, fileName: string, contentType: string) {
-  const blob = new Blob([content], { type: contentType });
+export function downloadBlob(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -316,7 +315,15 @@ export function downloadFile(content: string, fileName: string, contentType: str
   URL.revokeObjectURL(url);
 }
 
-function escapeXml(unsafe: string): string {
+/**
+ * Dispara o download de um arquivo de texto no navegador do usuário.
+ */
+export function downloadFile(content: string, fileName: string, contentType: string) {
+  const blob = new Blob([content], { type: contentType });
+  downloadBlob(blob, fileName);
+}
+
+export function escapeXml(unsafe: string): string {
   return unsafe.replace(/[<>&'"]/g, (c) => {
     switch (c) {
       case "<":

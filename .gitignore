@@ -55,6 +55,8 @@ Thumbs.db
 /scratch/
 /tmp/
 Laudo_Auditoria_Erosao_*.pdf
+Tabela_Consolidada_*
+Tabela_Laudos_Erosao_*
 
 # Pastas de documentacao interna e apresentacoes locais (nao subir ao Github)
 Analises e Planos de Alteração da Versão Atual/
