@@ -24,17 +24,26 @@ import {
   ArrowRight,
   Eraser,
   Info,
+  Table2,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useErosionStore, useFilteredPoints } from "@/lib/store/useErosionStore";
 import { DrawnPolygon, PolygonCategory, SavedPointDataset, SeverityLevel } from "@/types/erosion";
 import {
+  downloadBlob,
   downloadFile,
   exportToCSV,
   exportToGeoJSON,
   exportToKML,
   exportTrainingDatasetCSV,
 } from "@/lib/utils/exportUtils";
+import {
+  exportAuditTableCSV,
+  exportAuditTableXLSX,
+  generateAuditTableFileName,
+  AuditTableMetadata,
+  FonteDadosItem,
+} from "@/lib/utils/auditTableExport";
 import {
   exportPolygonsToGeoJSON,
   exportPolygonsToKML,
@@ -69,6 +78,7 @@ export const DataManagerModal: React.FC = () => {
     updatePointWithRealData,
     applyCandidatePoints,
     clearMap,
+    filters,
   } = useErosionStore();
 
   const [activeTab, setActiveTab] = useState<DataManagerTab>("points");
@@ -94,6 +104,61 @@ export const DataManagerModal: React.FC = () => {
   const [exportingPoly, setExportingPoly] = useState(false);
 
   const [downloadedFormat, setDownloadedFormat] = useState<string | null>(null);
+  const [consolidatedSelection, setConsolidatedSelection] = useState<"filtered" | "all">("filtered");
+  const [isExportingConsolidated, setIsExportingConsolidated] = useState(false);
+
+  const targetConsolidatedPoints = consolidatedSelection === "filtered" ? currentPoints : allPoints;
+  const hasConsolidatedTarget = targetConsolidatedPoints.length > 0;
+
+  const handleExportConsolidated = async (format: "xlsx" | "csv") => {
+    if (!hasConsolidatedTarget) return;
+    setIsExportingConsolidated(true);
+
+    try {
+      if (format === "xlsx") {
+        let fontesDados: FonteDadosItem[] | null = null;
+        try {
+          const res = await fetch("/api/fundiario/fontes");
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data)) {
+              fontesDados = json.data;
+            }
+          }
+        } catch (e) {
+          console.warn("[Export] Falha ao consultar /api/fundiario/fontes:", e);
+        }
+
+        const meta: AuditTableMetadata = {
+          isFiltered: consolidatedSelection === "filtered",
+          totalLoaded: allPoints.length,
+          exportedCount: targetConsolidatedPoints.length,
+          activeRegion: activeRegion.name,
+          activeSeverities: filters.selectedSeverities,
+          topN: filters.topN,
+          aoiName: activeAOIPolygon ? (activeAOIPolygon.name || activeAOIPolygon.fileName) : null,
+          fontesDados,
+        };
+
+        const blob = await exportAuditTableXLSX(targetConsolidatedPoints, meta);
+        const fileName = generateAuditTableFileName(activeRegion.name, targetConsolidatedPoints.length, "xlsx");
+        downloadBlob(blob, fileName);
+        setDownloadedFormat("TABELA CONSOLIDADA (XLSX)");
+      } else {
+        const content = exportAuditTableCSV(targetConsolidatedPoints);
+        const fileName = generateAuditTableFileName(activeRegion.name, targetConsolidatedPoints.length, "csv");
+        downloadFile(content, fileName, "text/csv;charset=utf-8;");
+        setDownloadedFormat("TABELA CONSOLIDADA (CSV)");
+      }
+
+      confetti({ particleCount: 70, spread: 65, origin: { y: 0.6 } });
+      setTimeout(() => setDownloadedFormat(null), 3500);
+    } catch (err) {
+      console.error("[DataManagerModal] Erro ao exportar tabela consolidada:", err);
+    } finally {
+      setIsExportingConsolidated(false);
+    }
+  };
 
   const isModalOpen =
     activeModal === "data-manager" ||
@@ -912,6 +977,95 @@ export const DataManagerModal: React.FC = () => {
                     Exportado com sucesso!
                   </span>
                 )}
+              </div>
+
+              {/* Card de Destaque Pericial: Tabela Consolidada */}
+              <div className="p-4 bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-transparent border-2 border-emerald-500/40 rounded-2xl space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20">
+                      <Table2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                          Tabela Consolidada
+                        </h4>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 font-semibold">
+                          Pericial • PPGTCA 2026
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Exportação tabular completa com 54 colunas, rastreabilidade do laudo pericial, máscara oficial do SNCR e aba de metadados das fontes.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Seletor de Escopo: Filtrados vs Todos */}
+                  <div className="flex items-center gap-1 bg-slate-200/80 dark:bg-slate-800 p-1 rounded-xl self-start sm:self-auto shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setConsolidatedSelection("filtered")}
+                      className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-colors cursor-pointer ${
+                        consolidatedSelection === "filtered"
+                          ? "bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 shadow-sm"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                      }`}
+                    >
+                      Focos Atuais ({currentPoints.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConsolidatedSelection("all")}
+                      className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-colors cursor-pointer ${
+                        consolidatedSelection === "all"
+                          ? "bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 shadow-sm"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                      }`}
+                    >
+                      Todos Carregados ({allPoints.length})
+                    </button>
+                  </div>
+                </div>
+
+                {!hasConsolidatedTarget && (
+                  <div className="flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-800 dark:text-amber-300">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                    <span>Nenhum foco disponível no escopo selecionado para exportação da Tabela Consolidada.</span>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                  <button
+                    type="button"
+                    disabled={!hasConsolidatedTarget || isExportingConsolidated}
+                    onClick={() => handleExportConsolidated("xlsx")}
+                    className={`py-2 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+                      hasConsolidatedTarget && !isExportingConsolidated
+                        ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20 active:scale-95"
+                        : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed"
+                    }`}
+                    title="Exportar pasta de trabalho Excel (.xlsx) com aba de dados e aba de procedência/conformidade técnica"
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    {isExportingConsolidated ? "Gerando..." : "XLSX (Planilha Formatada)"}
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={!hasConsolidatedTarget || isExportingConsolidated}
+                    onClick={() => handleExportConsolidated("csv")}
+                    className={`py-2 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border transition-all cursor-pointer ${
+                      hasConsolidatedTarget && !isExportingConsolidated
+                        ? "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700 active:scale-95"
+                        : "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 border-transparent cursor-not-allowed"
+                    }`}
+                    title="Exportar CSV em UTF-8 com BOM e ponto-e-vírgula (compatível nativamente com Excel e R)"
+                  >
+                    <Download className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    CSV (Separador &quot;;&quot;, UTF-8 BOM)
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -36,19 +36,30 @@ if not exist "data\fundiario_brasil.db" (
     echo.
 )
 
-echo [2/3] Iniciando servidor local seguro em interface de loopback (127.0.0.1)...
-echo O sistema estara disponivel em: http://127.0.0.1:3000
+echo [2/3] Verificando e iniciando servidor local (127.0.0.1:3000)...
 echo.
+
+:: Verifica se o servidor ja esta em execucao na porta 3000
+netstat -ano | findstr 127.0.0.1:3000 | findstr LISTENING >nul
+if %errorlevel% equ 0 (
+    echo [INFO] O servidor ja esta em execucao em http://127.0.0.1:3000.
+    echo Abrindo navegador...
+    start http://127.0.0.1:3000
+    echo.
+    echo [3/3] Aplicacao pronta! Para manter o sistema ativo, nao feche a janela principal do servidor.
+    pause
+    exit /b 0
+)
 
 :: Abre o navegador padrao apos 3 segundos
 start "" cmd /c "timeout /t 3 /nobreak >nul & start http://127.0.0.1:3000"
 
 :: Inicia o servidor Next.js exclusivamente em 127.0.0.1
-npm run start -- -H 127.0.0.1
+npm run start
 if %errorlevel% neq 0 (
     echo.
     echo [AVISO] O servidor de producao requer build previo. Iniciando modo de desenvolvimento...
-    npm run dev -- -H 127.0.0.1
+    npm run dev
 )
 
 pause
