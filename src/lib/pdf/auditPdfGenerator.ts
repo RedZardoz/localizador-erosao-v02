@@ -27,7 +27,7 @@ import { formatToDMS } from "@/lib/utils/geoUtils";
  * - Rodapé Dinâmico com Numeração em Todas as Páginas
  */
 
-export function generateAuditPdf(point: ErosionPoint): void {
+export function buildAuditPdf(point: ErosionPoint): jsPDF {
   if ((point as any).dataProvenance === "mock") {
     throw new Error(
       "Recusa de emissao: ponto com proveniencia sintetica nao pode gerar laudo pericial."
@@ -882,7 +882,13 @@ export function generateAuditPdf(point: ErosionPoint): void {
     );
   }
 
+  return doc;
+}
+
+export function generateAuditPdf(point: ErosionPoint): void {
+  const doc = buildAuditPdf(point);
   // Download do arquivo PDF no navegador
   const fileName = `Laudo_Auditoria_Erosao_${point.code}_${new Date().toISOString().slice(0, 10)}.pdf`;
   doc.save(fileName);
 }
+
