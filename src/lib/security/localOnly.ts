@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-const ALLOWED_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
+const ALLOWED_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1", "0.0.0.0"]);
 
 /**
  * Defesa em profundidade para rotas que servem dados pessoais da base fundiaria

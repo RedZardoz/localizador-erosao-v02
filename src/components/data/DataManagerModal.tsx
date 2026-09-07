@@ -25,6 +25,10 @@ import {
   Eraser,
   Info,
   Table2,
+  Zap,
+  Loader2,
+  AlertTriangle,
+  Database,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useErosionStore, useFilteredPoints } from "@/lib/store/useErosionStore";
@@ -44,6 +48,7 @@ import {
   AuditTableMetadata,
   FonteDadosItem,
 } from "@/lib/utils/auditTableExport";
+import { enrichPointsBatch } from "@/lib/utils/batchEnrichment";
 import {
   exportPolygonsToGeoJSON,
   exportPolygonsToKML,
@@ -60,12 +65,16 @@ export const DataManagerModal: React.FC = () => {
     activeModal,
     setActiveModal,
     allPoints,
+    customPoints,
     savedDatasets,
     saveDataset,
     loadDataset,
     deleteDataset,
     importDataset,
     drawnPolygons,
+    selectedPolygon,
+    setSelectedPolygon,
+    addDrawnPolygon,
     removeDrawnPolygon,
     updateDrawnPolygon,
     setDrawingMode,
@@ -76,6 +85,7 @@ export const DataManagerModal: React.FC = () => {
     setCustomPoints,
     activeRegion,
     updatePointWithRealData,
+    updateMultiplePoints,
     applyCandidatePoints,
     clearMap,
     filters,
@@ -106,15 +116,115 @@ export const DataManagerModal: React.FC = () => {
   const [downloadedFormat, setDownloadedFormat] = useState<string | null>(null);
   const [consolidatedSelection, setConsolidatedSelection] = useState<"filtered" | "all">("filtered");
   const [isExportingConsolidated, setIsExportingConsolidated] = useState(false);
+  const [isProcessingConsolidatedBatch, setIsProcessingConsolidatedBatch] = useState(false);
+  const [autoCalculateRusle, setAutoCalculateRusle] = useState(true);
+  const [autoQueryTenure, setAutoQueryTenure] = useState(true);
+  const [forceRecalculateConsolidated, setForceRecalculateConsolidated] = useState(false);
+  const [processConsolidatedSuccess, setProcessConsolidatedSuccess] = useState<string | null>(null);
+  const [processConsolidatedError, setProcessConsolidatedError] = useState<string | null>(null);
+  const [enrichmentProgress, setEnrichmentProgress] = useState<{
+    current: number;
+    total: number;
+    message: string;
+  } | null>(null);
 
   const targetConsolidatedPoints = consolidatedSelection === "filtered" ? currentPoints : allPoints;
   const hasConsolidatedTarget = targetConsolidatedPoints.length > 0;
 
+  const rusleCalculatedCount = targetConsolidatedPoints.filter(
+    (p) => p.rusleFactors && typeof p.rusleFactors.r === "number" && typeof p.estimatedSoilLoss === "number"
+  ).length;
+
+  const tenureConsultedCount = targetConsolidatedPoints.filter(
+    (p) => p.tenureStatus !== undefined && p.tenureStatus !== null
+  ).length;
+
+  const tenureMatchedCount = targetConsolidatedPoints.filter(
+    (p) => p.carCode || (p.tenureStatus && p.tenureStatus !== "sem-correspondencia")
+  ).length;
+
+  const handleProcessConsolidatedBatch = async () => {
+    if (!hasConsolidatedTarget || isProcessingConsolidatedBatch || isExportingConsolidated) return;
+    setIsProcessingConsolidatedBatch(true);
+    setProcessConsolidatedSuccess(null);
+    setProcessConsolidatedError(null);
+    setEnrichmentProgress({
+      current: 0,
+      total: targetConsolidatedPoints.length,
+      message: "Iniciando processamento em lote...",
+    });
+
+    try {
+      const updatedPoints = await enrichPointsBatch(
+        targetConsolidatedPoints,
+        {
+          calculateRusle: true,
+          queryTenure: true,
+          forceRefresh: forceRecalculateConsolidated,
+        },
+        (curr, total, msg) => {
+          setEnrichmentProgress({ current: curr, total, message: msg });
+        }
+      );
+
+      updateMultiplePoints(updatedPoints);
+
+      const newRusleCount = updatedPoints.filter(
+        (p) => p.rusleFactors && typeof p.rusleFactors.r === "number"
+      ).length;
+      const newMatchedCount = updatedPoints.filter(
+        (p) => p.carCode || (p.tenureStatus && p.tenureStatus !== "sem-correspondencia")
+      ).length;
+
+      setProcessConsolidatedSuccess(
+        `Processamento concluído com sucesso! ${updatedPoints.length} focos enriquecidos (${newRusleCount} com RUSLE calculada, ${newMatchedCount} associados a imóveis rurais CAR/INCRA).`
+      );
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      setTimeout(() => setProcessConsolidatedSuccess(null), 8000);
+    } catch (err: any) {
+      console.error("[DataManagerModal] Erro ao processar dados em lote:", err);
+      setProcessConsolidatedError(
+        err?.message || "Ocorreu uma falha no processamento dos cálculos em lote. Verifique se o servidor local está ativo."
+      );
+    } finally {
+      setIsProcessingConsolidatedBatch(false);
+      setEnrichmentProgress(null);
+    }
+  };
+
   const handleExportConsolidated = async (format: "xlsx" | "csv") => {
     if (!hasConsolidatedTarget) return;
     setIsExportingConsolidated(true);
+    setProcessConsolidatedSuccess(null);
+    setProcessConsolidatedError(null);
+    setEnrichmentProgress(null);
 
     try {
+      let finalPoints = targetConsolidatedPoints;
+
+      if (autoCalculateRusle || autoQueryTenure) {
+        setEnrichmentProgress({
+          current: 0,
+          total: targetConsolidatedPoints.length,
+          message: "Verificando dados e aplicando cálculos pré-exportação...",
+        });
+
+        finalPoints = await enrichPointsBatch(
+          targetConsolidatedPoints,
+          {
+            calculateRusle: autoCalculateRusle,
+            queryTenure: autoQueryTenure,
+            forceRefresh: forceRecalculateConsolidated,
+          },
+          (curr, total, msg) => {
+            setEnrichmentProgress({ current: curr, total, message: msg });
+          }
+        );
+
+        // Atualiza os pontos no estado global do mapa/aplicação
+        updateMultiplePoints(finalPoints);
+      }
+
       if (format === "xlsx") {
         let fontesDados: FonteDadosItem[] | null = null;
         try {
@@ -132,7 +242,7 @@ export const DataManagerModal: React.FC = () => {
         const meta: AuditTableMetadata = {
           isFiltered: consolidatedSelection === "filtered",
           totalLoaded: allPoints.length,
-          exportedCount: targetConsolidatedPoints.length,
+          exportedCount: finalPoints.length,
           activeRegion: activeRegion.name,
           activeSeverities: filters.selectedSeverities,
           topN: filters.topN,
@@ -140,23 +250,27 @@ export const DataManagerModal: React.FC = () => {
           fontesDados,
         };
 
-        const blob = await exportAuditTableXLSX(targetConsolidatedPoints, meta);
-        const fileName = generateAuditTableFileName(activeRegion.name, targetConsolidatedPoints.length, "xlsx");
+        const blob = await exportAuditTableXLSX(finalPoints, meta);
+        const fileName = generateAuditTableFileName(activeRegion.name, finalPoints.length, "xlsx");
         downloadBlob(blob, fileName);
         setDownloadedFormat("TABELA CONSOLIDADA (XLSX)");
       } else {
-        const content = exportAuditTableCSV(targetConsolidatedPoints);
-        const fileName = generateAuditTableFileName(activeRegion.name, targetConsolidatedPoints.length, "csv");
+        const content = exportAuditTableCSV(finalPoints);
+        const fileName = generateAuditTableFileName(activeRegion.name, finalPoints.length, "csv");
         downloadFile(content, fileName, "text/csv;charset=utf-8;");
         setDownloadedFormat("TABELA CONSOLIDADA (CSV)");
       }
 
       confetti({ particleCount: 70, spread: 65, origin: { y: 0.6 } });
       setTimeout(() => setDownloadedFormat(null), 3500);
-    } catch (err) {
+    } catch (err: any) {
       console.error("[DataManagerModal] Erro ao exportar tabela consolidada:", err);
+      setProcessConsolidatedError(
+        `Erro na exportação: ${err?.message || "Falha inesperada ao gerar arquivo. Tente novamente."}`
+      );
     } finally {
       setIsExportingConsolidated(false);
+      setEnrichmentProgress(null);
     }
   };
 
@@ -1027,6 +1141,188 @@ export const DataManagerModal: React.FC = () => {
                     </button>
                   </div>
                 </div>
+
+                {/* Painel de Diagnóstico do Estado dos Dados no Escopo */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  {/* Badge RUSLE */}
+                  <div
+                    className={`p-2.5 rounded-xl border flex flex-col justify-between transition-colors ${
+                      rusleCalculatedCount === targetConsolidatedPoints.length && targetConsolidatedPoints.length > 0
+                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-200"
+                        : "bg-amber-500/10 border-amber-500/30 text-amber-950 dark:text-amber-200"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-semibold text-[11px] uppercase tracking-wide">Equação RUSLE</span>
+                      {rusleCalculatedCount === targetConsolidatedPoints.length && targetConsolidatedPoints.length > 0 ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      ) : (
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                      )}
+                    </div>
+                    <div className="text-sm font-black">
+                      {rusleCalculatedCount} / {targetConsolidatedPoints.length}
+                      <span className="text-[10px] font-normal ml-1">
+                        ({targetConsolidatedPoints.length > 0 ? Math.round((rusleCalculatedCount / targetConsolidatedPoints.length) * 100) : 0}%)
+                      </span>
+                    </div>
+                    <span className="text-[10px] opacity-80 mt-0.5">
+                      {rusleCalculatedCount === targetConsolidatedPoints.length && targetConsolidatedPoints.length > 0
+                        ? "Fatores R, K, LS, C, P calculados"
+                        : "Fatores pendentes de cálculo"}
+                    </span>
+                  </div>
+
+                  {/* Badge Fundiário */}
+                  <div
+                    className={`p-2.5 rounded-xl border flex flex-col justify-between transition-colors ${
+                      tenureConsultedCount === targetConsolidatedPoints.length && targetConsolidatedPoints.length > 0
+                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-200"
+                        : "bg-blue-500/10 border-blue-500/30 text-blue-950 dark:text-blue-200"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-semibold text-[11px] uppercase tracking-wide">Base Fundiária</span>
+                      {tenureConsultedCount === targetConsolidatedPoints.length && targetConsolidatedPoints.length > 0 ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      ) : (
+                        <Database className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                      )}
+                    </div>
+                    <div className="text-sm font-black">
+                      {tenureConsultedCount} / {targetConsolidatedPoints.length}
+                      <span className="text-[10px] font-normal ml-1">
+                        ({tenureMatchedCount} com CAR)
+                      </span>
+                    </div>
+                    <span className="text-[10px] opacity-80 mt-0.5">
+                      {tenureConsultedCount === targetConsolidatedPoints.length && targetConsolidatedPoints.length > 0
+                        ? "Cruzamento CAR/SIGEF/SNCR concluído"
+                        : "Consulta fundiária pendente"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* SEÇÃO DO BOTÃO OPCIONAL DE CÁLCULO EXPLÍCITO */}
+                <div className="p-3 bg-white/90 dark:bg-slate-900/90 border-2 border-emerald-400/80 dark:border-emerald-600/70 rounded-xl space-y-2.5 shadow-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      Cálculo & Cruzamento Fundiário dos Focos (Opcional):
+                    </span>
+                    <label className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={forceRecalculateConsolidated}
+                        onChange={(e) => setForceRecalculateConsolidated(e.target.checked)}
+                        className="w-3.5 h-3.5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
+                      />
+                      <span>Forçar recálculo</span>
+                    </label>
+                  </div>
+
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                    Calcule os fatores biofísicos da RUSLE e identifique os imóveis/proprietários no CAR e INCRA para todos os {targetConsolidatedPoints.length} focos agora mesmo, antes da exportação.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={handleProcessConsolidatedBatch}
+                    disabled={!hasConsolidatedTarget || isProcessingConsolidatedBatch || isExportingConsolidated}
+                    className="w-full py-2.5 px-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {isProcessingConsolidatedBatch ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-amber-300" />
+                        <span>Processando {enrichmentProgress?.current || 0} de {enrichmentProgress?.total || targetConsolidatedPoints.length}...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+                        <span>⚡ Processar e Calcular Dados dos {targetConsolidatedPoints.length} Focos Agora</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Mensagem de Sucesso */}
+                {processConsolidatedSuccess && (
+                  <div className="p-3 bg-emerald-100/90 dark:bg-emerald-950/80 border border-emerald-400 dark:border-emerald-700 text-emerald-900 dark:text-emerald-100 text-xs rounded-xl flex items-start gap-2 animate-in fade-in">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                    <div className="flex-1 font-medium">{processConsolidatedSuccess}</div>
+                  </div>
+                )}
+
+                {/* Mensagem de Erro */}
+                {processConsolidatedError && (
+                  <div className="p-3 bg-red-100/90 dark:bg-red-950/80 border border-red-400 dark:border-red-700 text-red-900 dark:text-red-100 text-xs rounded-xl flex items-start justify-between gap-2 animate-in fade-in">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                      <span className="font-medium">{processConsolidatedError}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setProcessConsolidatedError(null)}
+                      className="text-red-600 hover:text-red-800 dark:text-red-300 text-xs font-bold ml-2 cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
+                {/* Opções de Enriquecimento Automático Pré-Exportação */}
+                <div className="p-3 bg-white/70 dark:bg-slate-900/70 border border-emerald-300/70 dark:border-emerald-800/60 rounded-xl space-y-2">
+                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
+                    Ao Clicar em Exportar (Executar Automaticamente se Pendente):
+                  </span>
+                  <div className="space-y-1.5 text-xs">
+                    <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={autoCalculateRusle}
+                        onChange={(e) => setAutoCalculateRusle(e.target.checked)}
+                        className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
+                      />
+                      <span>
+                        Calcular fatores e perda de solo da RUSLE (R, K, LS, C, P)
+                      </span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={autoQueryTenure}
+                        onChange={(e) => setAutoQueryTenure(e.target.checked)}
+                        className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
+                      />
+                      <span>
+                        Executar cruzamento fundiário em lote (CAR, SIGEF, INCRA/SNCR)
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Feedback Visual / Barra de Progresso durante processamento */}
+                {enrichmentProgress && (
+                  <div className="p-3 bg-emerald-100/90 dark:bg-emerald-950/70 border border-emerald-400 dark:border-emerald-700 rounded-xl space-y-1.5 animate-in fade-in">
+                    <div className="flex justify-between items-center text-xs font-semibold text-emerald-900 dark:text-emerald-200">
+                      <span className="truncate">{enrichmentProgress.message}</span>
+                      <span className="shrink-0 ml-2 font-mono">
+                        {Math.round((enrichmentProgress.current / (enrichmentProgress.total || 1)) * 100)}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-emerald-200 dark:bg-emerald-900 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${Math.max(
+                            5,
+                            Math.min(100, Math.round((enrichmentProgress.current / (enrichmentProgress.total || 1)) * 100))
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {!hasConsolidatedTarget && (
                   <div className="flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-800 dark:text-amber-300">

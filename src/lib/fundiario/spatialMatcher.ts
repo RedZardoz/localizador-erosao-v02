@@ -138,3 +138,85 @@ export async function matchRuralProperty(
     }
   });
 }
+
+export interface BatchMatchItem {
+  id: string;
+  latitude: number;
+  longitude: number;
+  uf?: string;
+}
+
+/**
+ * Executa a consulta fundiária em lote para múltiplos pontos, abrindo uma única
+ * conexão SQLite e reaproveitando o índice R*Tree em alta velocidade.
+ */
+export async function batchMatchRuralProperties(
+  items: BatchMatchItem[],
+  customDbPath?: string
+): Promise<Record<string, RuralPropertyMatch>> {
+  if (!items || items.length === 0) {
+    return {};
+  }
+
+  return new Promise((resolve) => {
+    try {
+      const projectRoot = process.cwd();
+      const scriptPath = path.join(projectRoot, "scripts", "spatial_owner_matcher.py");
+      const dbPath = path.join(projectRoot, customDbPath || "data/fundiario_brasil.db");
+
+      if (!fs.existsSync(scriptPath) || !fs.existsSync(dbPath)) {
+        return resolve({});
+      }
+
+      const pythonCmd = process.env.PYTHON_PATH || "python";
+      const child = execFile(
+        pythonCmd,
+        [scriptPath, "--batch", "--db", dbPath],
+        {
+          cwd: projectRoot,
+          timeout: 45000,
+          windowsHide: true,
+          env: {
+            ...process.env,
+            PYTHONIOENCODING: "utf-8",
+          },
+        },
+        (error, stdout) => {
+          if (error) {
+            console.error("[batchMatchRuralProperties] Subprocess error:", error);
+            return resolve({});
+          }
+
+          try {
+            const trimmed = stdout.trim();
+            if (!trimmed) {
+              return resolve({});
+            }
+            const parsed = JSON.parse(trimmed) as Record<string, RuralPropertyMatch>;
+            return resolve(parsed || {});
+          } catch (jsonErr) {
+            console.error("[batchMatchRuralProperties] JSON parse error:", jsonErr);
+            return resolve({});
+          }
+        }
+      );
+
+      // Envia os itens via stdin no formato JSON esperado pelo script
+      const payload = items.map((it) => ({
+        id: it.id,
+        lat: it.latitude,
+        lon: it.longitude,
+        uf: it.uf,
+      }));
+
+      if (child.stdin) {
+        child.stdin.write(JSON.stringify(payload));
+        child.stdin.end();
+      }
+    } catch (err) {
+      console.error("[batchMatchRuralProperties] Unexpected error:", err);
+      return resolve({});
+    }
+  });
+}
+

@@ -1,0 +1,58 @@
+========================================================================================
+RELATÓRIO DE COBERTURA E INTEGRIDADE DA BASE FUNDIÁRIA NACIONAL
+Banco de dados: C:\Users\lalfr\Docs Fora do Ar\LUIS ALFREDO\01 - MESTRADO PPGTCA 2026\02 - PESQUISA EROSÃO LAMINAR\geolocalizacao-erosao-propriedade\data\fundiario_brasil.db
+========================================================================================
+
+----------------------------------------------------------------------------------------
+UF   |      SICAR |      SIGEF |       SNCR | Cache SICAR | Cache SIGEF | Status    
+----------------------------------------------------------------------------------------
+AC   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+AL   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+AP   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+AM   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+BA   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+CE   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+DF   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+ES   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+GO   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+MA   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+MT   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+MS   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+MG   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+PA   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+PB   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+PR   |    559,899 |    170,046 |    957,183 |     SIM     |     SIM     | COMPLETO  
+PE   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+PI   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+RJ   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+RN   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+RS   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+RO   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+RR   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+SC   |    433,498 |    111,747 |    625,516 |     SIM     |     SIM     | COMPLETO  
+SP   |    468,571 |    219,390 |    881,954 |     SIM     |     SIM     | COMPLETO  
+SE   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+TO   |          - |          - |          - |     NÃO     |     NÃO     | AUSENTE   
+----------------------------------------------------------------------------------------
+
+========================================================================================
+VERIFICAÇÕES DE INTEGRIDADE E RESUMO DO SISTEMA
+========================================================================================
+Tamanho do arquivo de banco em disco: 1.56 GB
+Total de registros SICAR (imoveis_fundiarios): 1,461,968
+Total de registros SIGEF (imoveis_sigef):      501,183
+Total de registros SNCR (cadastro_sncr):       2,464,653
+Total de registros consolidados:               4,427,804
+UFs: 3 completas, 0 parciais, 24 ausentes (Total: 27)
+Registros no índice espacial R*Tree SICAR (imoveis_fundiarios_rtree): 1,461,968
+  [OK] SICAR: Todos os registros de imoveis_fundiarios possuem entrada correspondente no R*Tree.
+  [OK] SICAR: Zero órfãos no R*Tree.
+Registros no índice espacial R*Tree SIGEF (imoveis_sigef_rtree): 501,183
+  [OK] SIGEF: Todos os registros de imoveis_sigef possuem entrada correspondente no R*Tree.
+  [OK] SIGEF: Zero órfãos no R*Tree.
+  [OK] Zero registros com fonte IS NULL.
+  [OK] Zero registros com UF nula ou vazia.
+Registros na tabela de auditoria de fontes (fontes_dados): 9
+========================================================================================
+[SUCESSO] Base de dados íntegra. Nenhuma inconsistência detectada.
+========================================================================================

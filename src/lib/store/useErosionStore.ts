@@ -102,6 +102,7 @@ interface ErosionStoreState {
   applyCandidatePoints: (candidates: ErosionPoint[], replace?: boolean) => void;
   setSelectedPoint: (point: ErosionPoint | null) => void;
   updatePointWithRealData: (pointId: string, patch: Partial<ErosionPoint>) => void;
+  updateMultiplePoints: (updatedPoints: ErosionPoint[]) => void;
   replacePoint: (oldPointId: string, newPoint: ErosionPoint) => void;
   removePoint: (pointId: string) => void;
   clearMap: () => void;
@@ -359,6 +360,30 @@ export const useErosionStore = create<ErosionStoreState>()(
               state.selectedPoint?.id === pointId ? { ...state.selectedPoint, ...patch } : state.selectedPoint,
             auditDossierPoint:
               state.auditDossierPoint?.id === pointId ? { ...state.auditDossierPoint, ...patch } : state.auditDossierPoint,
+          };
+        }),
+
+      updateMultiplePoints: (updatedPoints) =>
+        set((state) => {
+          if (!updatedPoints || updatedPoints.length === 0) return state;
+          const patchMap = new Map(updatedPoints.map((p) => [p.id, p]));
+          const applyUpdate = (points: ErosionPoint[]) =>
+            points.map((pt) => patchMap.get(pt.id) || pt);
+
+          const nextAllPoints = applyUpdate(state.allPoints);
+          const nextCustomPoints = applyUpdate(state.customPoints);
+
+          return {
+            allPoints: nextAllPoints,
+            customPoints: nextCustomPoints,
+            selectedPoint:
+              state.selectedPoint && patchMap.has(state.selectedPoint.id)
+                ? patchMap.get(state.selectedPoint.id)!
+                : state.selectedPoint,
+            auditDossierPoint:
+              state.auditDossierPoint && patchMap.has(state.auditDossierPoint.id)
+                ? patchMap.get(state.auditDossierPoint.id)!
+                : state.auditDossierPoint,
           };
         }),
 

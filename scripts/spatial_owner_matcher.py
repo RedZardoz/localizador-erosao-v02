@@ -24,6 +24,13 @@ import argparse
 import os
 from datetime import datetime
 
+# Garante I/O em UTF-8 mesmo em consoles Windows cp1252
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stdin, "reconfigure"):
+    sys.stdin.reconfigure(encoding="utf-8")
+
+
 # Import defensivo de bibliotecas geoespaciais
 try:
     import shapefile
@@ -317,12 +324,62 @@ def query_property_rtree(conn: sqlite3.Connection, lat: float, lon: float, uf_de
     return matched_result
 
 
+def query_property_with_conn(conn: sqlite3.Connection, cobertas: set, fontes_cache: dict, lat: float, lon: float, uf_hint: str = None) -> dict:
+    """
+    Executa a consulta fundiária para um único ponto reutilizando a conexão e cache de fontes.
+    """
+    uf_detectada = detectar_uf(lat, lon, uf_hint)
+
+    # Se detectou a UF e ela NÃO tem cobertura ingerida
+    if uf_detectada and uf_detectada not in cobertas:
+        if uf_detectada not in fontes_cache:
+            fontes_cache[uf_detectada] = carregar_fontes_dados(conn, uf_detectada)
+        fontes_info = dict(fontes_cache[uf_detectada])
+        res = {
+            "status": "base-nao-disponivel",
+            "uf": uf_detectada,
+            "mensagem": f"Base fundiária não disponível para {uf_detectada}. A base SQLite local contém apenas imóveis de {', '.join(sorted(cobertas))}. Para consultar esta UF, ingira a base oficial do SICAR/SNCR via ingest_data.py.",
+            "dataConsulta": datetime.now().strftime("%d/%m/%Y"),
+            "criterioAssociacao": "Base territorial não carregada",
+        }
+        res.update(fontes_info)
+        return res
+
+    res = query_property_rtree(conn, lat, lon, uf_detectada)
+    target_uf = (res.get("uf") if res else None) or uf_detectada
+
+    if not res or not res.get("carCode"):
+        # Coordenada em UF com base presente, mas sem imóvel sobreposto
+        if target_uf and target_uf not in fontes_cache:
+            fontes_cache[target_uf] = carregar_fontes_dados(conn, target_uf)
+        fontes_info = dict(fontes_cache.get(target_uf, {}))
+        no_match = {
+            "status": "sem-correspondencia",
+            "uf": target_uf,
+            "mensagem": "Nenhum imóvel rural cadastrado nas bases oficiais sobrepõe esta coordenada.",
+            "dataConsulta": datetime.now().strftime("%d/%m/%Y"),
+            "criterioAssociacao": "Nenhum perímetro compatível na base consultada",
+        }
+        no_match.update(fontes_info)
+        return no_match
+
+    # Imóvel encontrado ou aproximado
+    if target_uf and target_uf not in fontes_cache:
+        fontes_cache[target_uf] = carregar_fontes_dados(conn, target_uf)
+    fontes_info = dict(fontes_cache.get(target_uf, {}))
+    res.update(fontes_info)
+    res["dataConsulta"] = datetime.now().strftime("%d/%m/%Y")
+    res["criterioAssociacao"] = (
+        "Contenção topológica estrita via polígono vetorial (Shapely)"
+        if res.get("status") == "encontrado"
+        else "Interseção de Bounding Box / centroide com tolerância"
+    )
+    return res
+
+
 def query_property(db_path: str, lat: float, lon: float, uf_hint: str = None) -> dict:
     """
-    Roteador de busca cadastral fundiária:
-    1. Detecta UF da coordenada ou aceita hint.
-    2. Valida se a UF possui dados oficiais ingeridos.
-    3. Retorna status rigoroso: 'encontrado' | 'aproximado' | 'sem-correspondencia' | 'base-nao-disponivel'.
+    Roteador de busca cadastral fundiária para ponto único.
     """
     uf_detectada = detectar_uf(lat, lon, uf_hint)
 
@@ -339,45 +396,8 @@ def query_property(db_path: str, lat: float, lon: float, uf_hint: str = None) ->
     try:
         conn = sqlite3.connect(db_path, timeout=5.0)
         cobertas = ufs_com_cobertura(conn)
-
-        # Se detectou a UF e ela NÃO tem cobertura ingerida
-        if uf_detectada and uf_detectada not in cobertas:
-            fontes_info = carregar_fontes_dados(conn, uf_detectada)
-            res = {
-                "status": "base-nao-disponivel",
-                "uf": uf_detectada,
-                "mensagem": f"Base fundiária não disponível para {uf_detectada}. A base SQLite local contém apenas imóveis de {', '.join(sorted(cobertas))}. Para consultar esta UF, ingira a base oficial do SICAR/SNCR via ingest_data.py.",
-                "dataConsulta": datetime.now().strftime("%d/%m/%Y"),
-                "criterioAssociacao": "Base territorial não carregada",
-            }
-            res.update(fontes_info)
-            return res
-
-        res = query_property_rtree(conn, lat, lon, uf_detectada)
-        if not res or not res.get("carCode"):
-            # Coordenada em UF com base presente, mas sem imóvel sobreposto
-            fontes_info = carregar_fontes_dados(conn, uf_detectada)
-            no_match = {
-                "status": "sem-correspondencia",
-                "uf": uf_detectada,
-                "mensagem": "Nenhum imóvel rural cadastrado nas bases oficiais sobrepõe esta coordenada.",
-                "dataConsulta": datetime.now().strftime("%d/%m/%Y"),
-                "criterioAssociacao": "Nenhum perímetro compatível na base consultada",
-            }
-            no_match.update(fontes_info)
-            return no_match
-
-        # Imóvel encontrado ou aproximado
-        fontes_info = carregar_fontes_dados(conn, res.get("uf") or uf_detectada)
-        res.update(fontes_info)
-        res["dataConsulta"] = datetime.now().strftime("%d/%m/%Y")
-        res["criterioAssociacao"] = (
-            "Contenção topológica estrita via polígono vetorial (Shapely)"
-            if res.get("status") == "encontrado"
-            else "Interseção de Bounding Box / centroide com tolerância"
-        )
-        return res
-
+        fontes_cache = {}
+        return query_property_with_conn(conn, cobertas, fontes_cache, lat, lon, uf_hint)
     except Exception as e:
         sys.stderr.write(f"Erro na consulta fundiária: {str(e)}\n")
         return {
@@ -392,13 +412,78 @@ def query_property(db_path: str, lat: float, lon: float, uf_hint: str = None) ->
             conn.close()
 
 
+def query_properties_batch(db_path: str, items: list) -> dict:
+    """
+    Executa a busca cadastral fundiária para uma lista de pontos em lote.
+    items: list of dict com [{"id": "...", "lat": float, "lon": float, "uf": str?}, ...]
+    Retorna: dict { item_id: match_result }
+    """
+    if not os.path.exists(db_path):
+        return {
+            it["id"]: {
+                "status": "base-nao-disponivel",
+                "uf": it.get("uf"),
+                "mensagem": f"Base fundiária SQLite não encontrada em {db_path}.",
+                "dataConsulta": datetime.now().strftime("%d/%m/%Y"),
+                "criterioAssociacao": "Base territorial não carregada",
+            }
+            for it in items if "id" in it
+        }
+
+    results = {}
+    conn = None
+    try:
+        conn = sqlite3.connect(db_path, timeout=10.0)
+        cobertas = ufs_com_cobertura(conn)
+        fontes_cache = {}
+
+        for it in items:
+            item_id = it.get("id")
+            if not item_id:
+                continue
+            lat = it.get("lat") or it.get("latitude")
+            lon = it.get("lon") or it.get("longitude")
+            uf = it.get("uf")
+            if lat is None or lon is None:
+                results[item_id] = {
+                    "status": "sem-correspondencia",
+                    "mensagem": "Coordenadas ausentes ou inválidas.",
+                }
+                continue
+
+            try:
+                match = query_property_with_conn(conn, cobertas, fontes_cache, float(lat), float(lon), uf)
+                results[item_id] = match
+            except Exception as item_err:
+                results[item_id] = {
+                    "status": "sem-correspondencia",
+                    "mensagem": f"Erro ao processar coordenada: {str(item_err)}",
+                }
+
+        return results
+    except Exception as e:
+        sys.stderr.write(f"Erro no processamento em lote da base fundiária: {str(e)}\n")
+        return {
+            it["id"]: {
+                "status": "sem-correspondencia",
+                "mensagem": f"Erro no processamento em lote: {str(e)}",
+            }
+            for it in items if "id" in it
+        }
+    finally:
+        if conn:
+            conn.close()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Match spatial coordinates to official properties and owners across Brazil."
     )
-    parser.add_argument("--lat", type=float, required=True, help="Latitude of the query point")
-    parser.add_argument("--lon", type=float, required=True, help="Longitude of the query point")
+    parser.add_argument("--lat", type=float, default=None, help="Latitude of the query point")
+    parser.add_argument("--lon", type=float, default=None, help="Longitude of the query point")
     parser.add_argument("--uf", type=str, default=None, help="Optional UF hint (2 letters)")
+    parser.add_argument("--batch", action="store_true", help="Run in batch mode reading JSON from stdin")
+    parser.add_argument("--input", type=str, default=None, help="Path to input JSON file for batch mode")
     parser.add_argument(
         "--db",
         type=str,
@@ -407,13 +492,31 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    try:
-        match = query_property(args.db, args.lat, args.lon, args.uf)
-    except Exception as e:
-        sys.stderr.write(f"Erro no processador de cruzamento espacial: {str(e)}\n")
-        match = {
-            "status": "sem-correspondencia",
-            "mensagem": f"Erro interno: {str(e)}",
-        }
+    if args.batch:
+        try:
+            if args.input:
+                with open(args.input, "r", encoding="utf-8") as f:
+                    batch_data = json.load(f)
+            else:
+                batch_data = json.load(sys.stdin)
 
-    print(json.dumps(match, ensure_ascii=False))
+            results = query_properties_batch(args.db, batch_data)
+            print(json.dumps(results, ensure_ascii=False))
+        except Exception as e:
+            sys.stderr.write(f"Erro no modo lote: {str(e)}\n")
+            print(json.dumps({"error": str(e)}, ensure_ascii=False))
+    else:
+        if args.lat is None or args.lon is None:
+            sys.stderr.write("Parâmetros --lat e --lon são obrigatórios quando não executado com --batch.\n")
+            sys.exit(1)
+
+        try:
+            match = query_property(args.db, args.lat, args.lon, args.uf)
+        except Exception as e:
+            sys.stderr.write(f"Erro no processador de cruzamento espacial: {str(e)}\n")
+            match = {
+                "status": "sem-correspondencia",
+                "mensagem": f"Erro interno: {str(e)}",
+            }
+
+        print(json.dumps(match, ensure_ascii=False))

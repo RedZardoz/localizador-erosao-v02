@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { matchRuralProperty } from "@/lib/fundiario/spatialMatcher";
+import { matchRuralProperty, batchMatchRuralProperties } from "@/lib/fundiario/spatialMatcher";
 import { isLocalRequest } from "@/lib/security/localOnly";
 
-const RequestSchema = z.object({
+const SingleRequestSchema = z.object({
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   uf: z.string().length(2).optional(),
+});
+
+const BatchRequestSchema = z.object({
+  points: z.array(
+    z.object({
+      id: z.string(),
+      latitude: z.number().min(-90).max(90),
+      longitude: z.number().min(-180).max(180),
+      uf: z.string().length(2).optional(),
+    })
+  ).max(2000),
 });
 
 export async function POST(req: NextRequest) {
@@ -19,8 +30,17 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const parsed = RequestSchema.parse(body);
 
+    if (body && Array.isArray(body.points)) {
+      const parsedBatch = BatchRequestSchema.parse(body);
+      const results = await batchMatchRuralProperties(parsedBatch.points);
+      return NextResponse.json({
+        success: true,
+        data: results,
+      });
+    }
+
+    const parsed = SingleRequestSchema.parse(body);
     const match = await matchRuralProperty(parsed.latitude, parsed.longitude, parsed.uf);
 
     return NextResponse.json({
@@ -39,3 +59,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

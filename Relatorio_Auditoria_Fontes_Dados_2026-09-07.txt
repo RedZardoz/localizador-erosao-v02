@@ -1,0 +1,13 @@
+sistema uf   declarado       real  confere
+----------------------------------------------
+SICAR   PR     559,899    559,899  sim
+SICAR   SC     433,498    433,498  sim
+SICAR   SP     468,571    468,571  sim
+SIGEF   PR     170,046    170,046  sim
+SIGEF   SC     111,747    111,747  sim
+SIGEF   SP     219,390    219,390  sim
+SNCR    PR     957,183    957,183  sim
+SNCR    SC     625,516    625,516  sim
+SNCR    SP     881,954    881,954  sim
+
+divergencias: 0
