@@ -23,8 +23,15 @@ Este documento descreve o procedimento completo para instalação, compilação 
 - **Processador:** Dual-Core de 2.0 GHz ou superior (Intel Core i3/i5/i7, AMD Ryzen ou Apple Silicon).
 - **Memória RAM:** Mínimo de 4 GB (8 GB recomendados para renderização 3D suave e manipulação de tiles no GEE).
 - **Placa Gráfica (GPU):** Suporte a aceleração por hardware e WebGL 2.0 (placas integradas Intel UHD/Iris ou dedicadas NVIDIA/AMD).
-- **Armazenamento:** 500 MB de espaço em disco para o código-fonte e dependências. Se desejar indexar as bases fundiárias completas (SICAR, SIGEF, SNCR), recomenda-se 5 GB de espaço livre em disco.
+- **Armazenamento:** 500 MB de espaço em disco para o código-fonte e dependências. Para a base de dados fundiária compilada (`data/fundiario_brasil.db`), são necessários entre 3 GB e 5 GB de espaço livre em disco.
 - **Conexão com a Internet:** Banda larga estável para consulta e streaming de imagens Sentinel-2, DEM Copernicus e APIs da NASA POWER e ISRIC SoilGrids.
+
+### 1.3. Base de Dados Fundiária Local (SQLite)
+A plataforma conta com um módulo de inteligência fundiária para cruzamento espacial e identificação de imóveis rurais (SICAR, SIGEF e SNCR) com quase 4,5 milhões de registros unificados.
+
+Devido às diretrizes e limites estritos de tamanho de arquivo em repositórios Git (como o limite de 100 MB por arquivo do GitHub), tanto o banco de dados SQLite compilado e indexado com R\*Tree (`fundiario_brasil.db`) quanto os dados brutos governamentais originais (shapefiles e tabelas de dezenas de gigabytes) **não são versionados diretamente no Git**.
+
+Para que a plataforma execute o enriquecimento de propriedades e as consultas espaciais locais, o arquivo deve ser baixado externamente via Google Drive e alocado no diretório `data/fundiario_brasil.db`, conforme detalhado no [Passo 3](#passo-3-base-de-dados-fundiária-sqlite).
 
 ---
 
@@ -59,8 +66,43 @@ pip install pyshp shapely python-pptx
 
 ---
 
-### Passo 3: Ingestão das Bases Fundiárias Oficiais (Opcional, mas Recomendado)
-A plataforma possui um banco de dados local de alta velocidade (`data/fundiario_brasil.db`) indexado com SQLite R\*Tree. Caso você baixe os dados abertos oficiais dos órgãos governamentais:
+### Passo 3: Base de Dados Fundiária (SQLite)
+A plataforma possui um banco de dados local de alta velocidade (`data/fundiario_brasil.db`) indexado espacialmente via SQLite R\*Tree. O sistema espera encontrar este arquivo **exatamente no caminho `data/fundiario_brasil.db`** para realizar o enriquecimento de atributos e as consultas espaciais locais em milissegundos:
+- **SICAR (SFB/MMA):** Identificação de Código CAR, situação cadastral e extração vetorial do perímetro da propriedade;
+- **SIGEF (INCRA):** Identificação de parcelas certificadas, denominação oficial da gleba, Matrícula no Cartório de Registro de Imóveis (CRI) e código ART;
+- **SNCR (INCRA / Receita Federal):** Identificação do titular/proprietário e consolidação cadastral via Database Merge.
+
+Como o banco compilado e os dados brutos superam em larga escala o limite de tamanho do repositório Git, eles **não são versionados diretamente**.
+
+Você tem duas formas de configurar a base:
+
+#### Opção A: Download Direto da Base Compilada (Recomendado)
+Esta é a maneira mais rápida e prática de preparar o ambiente, dispensando processamento geoespacial pesado:
+
+1. Acesse o link oficial no Google Drive disponibilizado para a pesquisa:
+   - 🔗 **Download Oficial da Base:**  
+     [Download da Base Fundiária (Google Drive)](https://drive.google.com/drive/folders/1S6UsUYGM3dUh7w_hLrmvcsuh0nSfjyYR?usp=sharing)  
+     `https://drive.google.com/drive/folders/1S6UsUYGM3dUh7w_hLrmvcsuh0nSfjyYR?usp=sharing`
+2. Baixe o arquivo **`fundiario_brasil.db`**.
+3. Aloque o arquivo baixado exatamente no diretório **`data/`** na raiz do projeto:
+   ```text
+   localizador-erosao-parana/
+   ├── data/
+   │   └── fundiario_brasil.db    <-- Posicionar o arquivo exatamente aqui
+   ├── scripts/
+   ├── src/
+   ├── package.json
+   └── ...
+   ```
+   *(Caso a pasta `data/` ainda não exista na raiz do projeto, crie-a manualmente).*
+
+> [!IMPORTANT]
+> **Caminho Esperado:** O sistema espera encontrar o arquivo estritamente no caminho relativo `data/fundiario_brasil.db`. Sem ele, a aplicação funcionará para triagens espectrais e cálculos da RUSLE, porém as funcionalidades de enriquecimento cadastral e identificação fundiária (SICAR, SIGEF, SNCR) ficarão desativadas.
+
+---
+
+#### Opção B: Ingestão Manual a Partir dos Dados Brutos Oficiais (Avançado)
+Caso deseje reprocessar, atualizar ou compilar o banco a partir dos dados abertos originais fornecidos pelos órgãos governamentais:
 
 1. **SICAR (Cadastro Ambiental Rural - SFB/MMA):**
    - Baixe os shapefiles estaduais (ex: PR, SC, SP) e coloque em `Dados SICAR/`.
@@ -71,7 +113,7 @@ A plataforma possui um banco de dados local de alta velocidade (`data/fundiario_
 3. **SNCR (Sistema Nacional de Cadastro Rural - INCRA / Receita Federal):**
    - Baixe os arquivos CSV de dados abertos e coloque em `Dados SNCR/`.
    - Execute: `python scripts/ingest_sncr_official.py` (indexa mais de 2,46M de titulares para o Database Merge).
-4. **Auditoria de Cobertura e Integridade (Obrigatório após ingestão):**
+4. **Auditoria de Cobertura e Integridade (Obrigatório após ingestão manual):**
    - Execute: `python scripts/verificar_cobertura.py`
    - O script confere as 27 UFs nas três camadas (SICAR, SIGEF, SNCR), a presença dos caches geométricos em disco (`data/sicar_cache/` e `data/sigef_cache/`) e valida que não existem registros órfãos ou desindexados no SQLite R*Tree. Retorna código de saída 0 se a base estiver íntegra.
 5. **Conferência de Metadados Oficiais das Fontes:**
@@ -227,3 +269,17 @@ Caso deseje criar um atalho na Área de Trabalho com o ícone oficial da pesquis
 2. Verifique se a API **"Earth Engine API"** está com status **Enabled**.
 3. Gere uma nova chave de Service Account em formato `.json` e carregue-a na aplicação através do menu **Configurações > Conexão Earth Engine**.
 4. Consulte o documento [`GUIA_CONFIGURACAO_CREDENCIAIS.md`](./GUIA_CONFIGURACAO_CREDENCIAIS.md) para instruções detalhadas.
+
+---
+
+### Problema 5: Consultas Fundiárias Não Retornam Dados ou Alerta de Base Inexistente
+**Causa:** O arquivo `fundiario_brasil.db` não foi baixado ou foi alocado em diretório divergente. Ao inicializar a aplicação pelo script `Iniciar_Localizador_Erosao.bat`, o terminal exibirá a mensagem:
+```
+[AVISO] Banco fundiario local (data\fundiario_brasil.db) nao localizado.
+As consultas cadastrais aos imoveis estarao desabilitadas ate a ingestao dos dados.
+```
+**Solução:**
+1. Acesse o link oficial no [Google Drive](https://drive.google.com/drive/folders/1S6UsUYGM3dUh7w_hLrmvcsuh0nSfjyYR?usp=sharing) e faça o download do arquivo `fundiario_brasil.db`.
+2. Certifique-se de alocar o arquivo exatamente no caminho `data/fundiario_brasil.db` a partir da raiz do projeto.
+3. Reinicie a aplicação para que as consultas e índices R\*Tree sejam carregados com sucesso.
+
