@@ -58,6 +58,29 @@ if %errorlevel% equ 0 (
     exit /b 0
 )
 
+:: Verifica a atualidade do build de producao antes de iniciar o servidor
+call npm run check:build
+if %errorlevel% neq 0 (
+    echo.
+    echo [AVISO] O build de producao esta defasado ou ausente.
+    echo Executando build de producao antes de iniciar o servidor...
+    echo.
+    call npm run build
+    if %errorlevel% neq 0 (
+        echo.
+        echo [ERRO] Falha na compilacao do build de producao.
+        echo Tentando iniciar em modo de desenvolvimento...
+        echo.
+        start "Aguardando servidor" /min cmd /c call "%~f0" --aguardar-navegador
+        call npm run dev
+        echo.
+        echo [3/3] O servidor foi encerrado.
+        pause
+        exit /b 0
+    )
+    echo.
+)
+
 :: Abre o navegador assim que o servidor responder de fato (sem espera fixa).
 start "Aguardando servidor" /min cmd /c call "%~f0" --aguardar-navegador
 
