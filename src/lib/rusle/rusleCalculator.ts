@@ -15,8 +15,8 @@ import { SeverityLevel } from "@/types/erosion";
  * - Formulação do Score de Prioridade Global (0 a 100) — README §3.2
  *
  * Estas funções são puras e determinísticas, compartilhadas tanto pelo pipeline
- * de sensoriamento remoto real via Google Earth Engine quanto pelo gerador
- * de calibração/amostragem sintética.
+ * de sensoriamento remoto real via Google Earth Engine quanto pelas rotinas
+ * de cálculo e enriquecimento territorial.
  */
 
 /**
@@ -128,7 +128,8 @@ export function calculateSeverity(
   soilType: string
 ): SeverityResult {
   const isFragile = /Argissolo|Neossolo/i.test(soilType);
-  const psiSolo = isFragile ? 18.0 : 8.0;
+  const isIntermediate = /Cambissolo/i.test(soilType);
+  const psiSolo = isFragile ? 18.0 : isIntermediate ? 13.0 : 8.0;
   const phi = slopePercent * 0.4 + bsi * 50.0 + psiSolo;
 
   let severity: SeverityLevel = "Moderada";

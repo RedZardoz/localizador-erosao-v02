@@ -346,4 +346,61 @@ describe("useErosionStore - SavedPointDataset (Salvar e Recarregar Focos)", () =
     useErosionStore.getState().toggleLayer("showEmbrapaErodibilidade");
     expect(useErosionStore.getState().mapState.showEmbrapaErodibilidade).toBe(true);
   });
+
+  it("rastreia corretamente o estado de dados não salvos (hasUnsavedPoints)", () => {
+    // 1. Inicialmente limpo
+    useErosionStore.getState().clearMap();
+    expect(useErosionStore.getState().hasUnsavedPoints).toBe(false);
+
+    // 2. Ao carregar pontos customizados ou candidatos, hasUnsavedPoints vira true
+    useErosionStore.getState().setCustomPoints(mockSamplePoints);
+    expect(useErosionStore.getState().hasUnsavedPoints).toBe(true);
+
+    // 3. Ao salvar no histórico de datasets, hasUnsavedPoints vira false
+    useErosionStore.getState().saveDataset("Coleção Teste Salva");
+    expect(useErosionStore.getState().hasUnsavedPoints).toBe(false);
+
+    // 4. Ao aplicar candidatos de eleição, hasUnsavedPoints vira true
+    useErosionStore.getState().applyCandidatePoints(mockSamplePoints, true);
+    expect(useErosionStore.getState().hasUnsavedPoints).toBe(true);
+
+    // 5. Ao zerar o mapa, hasUnsavedPoints é resetado para false
+    useErosionStore.getState().clearMap();
+    expect(useErosionStore.getState().hasUnsavedPoints).toBe(false);
+  });
+
+  it("identifica e bloqueia pontos sintéticos ou legados de testes", () => {
+    const syntheticPoints: any[] = [
+      { ...mockSamplePoints[0], dataProvenance: "mock" },
+      { ...mockSamplePoints[0], dataProvenance: "synthetic" },
+      { ...mockSamplePoints[0], id: "ERO-PR-042" },
+      { ...mockSamplePoints[0], code: "PR-2026-042" },
+      { ...mockSamplePoints[0], dataSource: "mock" },
+    ];
+
+    // setCustomPoints deve purgar todos os pontos sintéticos e manter apenas pontos reais
+    useErosionStore.getState().setCustomPoints([...syntheticPoints, mockSamplePoints[0]]);
+    const current = useErosionStore.getState().allPoints;
+    expect(current).toHaveLength(1);
+    expect(current[0].code).toBe(mockSamplePoints[0].code);
+
+    // loadDataset recusa coleções compostas exclusivamente por pontos sintéticos
+    useErosionStore.setState({
+      savedDatasets: [
+        {
+          id: "ds-mock-legacy",
+          name: "Coleção Legada de Testes",
+          createdAt: "2026-01-01",
+          updatedAt: "2026-01-01",
+          pointsCount: 2,
+          points: syntheticPoints,
+        },
+      ],
+      allPoints: [],
+    });
+
+    useErosionStore.getState().loadDataset("ds-mock-legacy");
+    expect(useErosionStore.getState().allPoints).toHaveLength(0);
+  });
 });
+

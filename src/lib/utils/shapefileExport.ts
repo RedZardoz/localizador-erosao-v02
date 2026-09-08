@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { DrawnPolygon } from "@/types/erosion";
+import { DrawnPolygon, isSyntheticPoint } from "@/types/erosion";
 
 /**
  * Calculates geodesic/planar area (m² and ha) and perimeter (m) for a polygon ring [lng, lat][]
@@ -633,8 +633,15 @@ export async function exportPointsToShapefileZip(
   points: any[],
   zipBaseName: string = "pontos_erosao_parana"
 ): Promise<Blob> {
+  const validPoints = points.filter((p) => !isSyntheticPoint(p));
+  if (validPoints.length === 0 && points.length > 0) {
+    throw new Error(
+      "Recusa de exportação: todos os pontos selecionados possuem proveniência sintética (mock)."
+    );
+  }
+
   const zip = new JSZip();
-  const { shp, shx, dbf, prj } = generatePointShapefileBuffers(points);
+  const { shp, shx, dbf, prj } = generatePointShapefileBuffers(validPoints);
 
   zip.file(`${zipBaseName}.shp`, shp);
   zip.file(`${zipBaseName}.shx`, shx);
@@ -644,7 +651,7 @@ export async function exportPointsToShapefileZip(
   zip.file(
     "LEIAME_QGIS.txt",
     `Exportação de Focos de Erosão Laminar — Paraná (PPGTCA 2026)\r\n` +
-      `Total de Focos: ${points.length}\r\n` +
+      `Total de Focos: ${validPoints.length}\r\n` +
       `Sistema de Coordenadas: WGS84 (EPSG:4326)\r\n\r\n` +
       `Como abrir no QGIS:\r\n` +
       `1. Abra o QGIS.\r\n` +

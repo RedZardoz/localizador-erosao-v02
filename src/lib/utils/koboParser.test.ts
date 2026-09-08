@@ -4,8 +4,8 @@ import { ErosionPoint } from "@/types/erosion";
 
 function makePoint(overrides: Partial<ErosionPoint>): ErosionPoint {
   return {
-    id: "ERO-PR-001",
-    code: "PR-2026-001",
+    id: "PR-CAND-001",
+    code: "PR-CAND-001",
     name: "Foco 1",
     latitude: -23.42,
     longitude: -51.93,
@@ -24,6 +24,7 @@ function makePoint(overrides: Partial<ErosionPoint>): ErosionPoint {
     estimatedSoilLoss: 20,
     priorityScore: 60,
     detectionDate: "2026-01-01",
+    dataProvenance: "gee-screened",
     ...overrides,
   };
 }
@@ -31,10 +32,10 @@ function makePoint(overrides: Partial<ErosionPoint>): ErosionPoint {
 describe("parseAndMatchKoboExport", () => {
   it("casa um registro pelo código explícito do formulário", () => {
     const existing = [makePoint({})];
-    const csv = "code,_gps_latitude,_gps_longitude,pedestal_mm\nPR-2026-001,-23.5,-52.5,12";
+    const csv = "code,_gps_latitude,_gps_longitude,pedestal_mm\nPR-CAND-001,-23.5,-52.5,12";
     const result = parseAndMatchKoboExport(csv, existing);
     expect(result.matched).toHaveLength(1);
-    expect(result.matched[0].matchedPointId).toBe("ERO-PR-001");
+    expect(result.matched[0].matchedPointId).toBe("PR-CAND-001");
     expect(result.matched[0].fieldObservations.pedestal_mm).toBe("12");
   });
 

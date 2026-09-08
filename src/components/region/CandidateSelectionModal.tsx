@@ -16,13 +16,15 @@ import {
   Satellite,
   ShieldAlert,
   Bookmark,
+  FileSpreadsheet,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useErosionStore } from "@/lib/store/useErosionStore";
 import { ErosionPoint } from "@/types/erosion";
 import { WORLDCOVER_CLASSES } from "@/lib/gee/eligibilityConstants";
 import { STRATA_DEFINITIONS } from "@/lib/gee/stratification";
-import { exportToGeoJSON, exportToCSV, downloadFile } from "@/lib/utils/exportUtils";
+import { exportToGeoJSON, exportToCSV, downloadFile, downloadBlob } from "@/lib/utils/exportUtils";
+import { exportAuditTableXLSX, generateAuditTableFileName } from "@/lib/utils/auditTableExport";
 
 export const CandidateSelectionModal: React.FC = () => {
   const {
@@ -33,6 +35,7 @@ export const CandidateSelectionModal: React.FC = () => {
     geeSessionActive,
     applyCandidatePoints,
     saveDataset,
+    setHasUnsavedPoints,
     flyToPoint,
     flyToLocation,
   } = useErosionStore();
@@ -45,6 +48,7 @@ export const CandidateSelectionModal: React.FC = () => {
   const [minSlope, setMinSlope] = useState<number>(3.0);
   const [maxSlope, setMaxSlope] = useState<number>(20.0);
   const [waterBuffer, setWaterBuffer] = useState<number>(30);
+  const [urbanBuffer, setUrbanBuffer] = useState<number>(150);
   const [selectedClasses, setSelectedClasses] = useState<number[]>([30, 40, 60]);
 
   // Estado de execução
@@ -104,6 +108,7 @@ export const CandidateSelectionModal: React.FC = () => {
             minSlopePercent: minSlope,
             maxSlopePercent: maxSlope,
             waterBufferMeters: waterBuffer,
+            urbanBufferMeters: urbanBuffer,
             waterOccurrenceThreshold: 10,
           },
         }),
@@ -133,6 +138,15 @@ export const CandidateSelectionModal: React.FC = () => {
   const handleApplyToMap = (replace: boolean) => {
     if (!resultCandidates || resultCandidates.length === 0) return;
     applyCandidatePoints(resultCandidates, replace);
+
+    // Salva automaticamente a coleção no banco local para blindar contra qualquer perda acidental
+    const aoiLabel = activeAOIPolygon?.name || activeRegion.name;
+    const autoProjectName = `Eleição GEE ${aoiLabel} (${resultCandidates.length} focos) - ${new Date().toLocaleDateString("pt-BR")}`;
+    saveDataset(
+      autoProjectName,
+      `Amostragem estratificada GEE com resolução 10m, dados físicos reais (Copernicus DEM, Sentinel-2, RUSLE) e cruzamento fundiário oficial (CAR/SNCR/SIGEF).`
+    );
+    setHasUnsavedPoints(false);
 
     if (resultCandidates.length > 0) {
       let minLat = 90;
@@ -298,8 +312,8 @@ export const CandidateSelectionModal: React.FC = () => {
                 </div>
               </div>
 
-              {/* Declividade e Buffer de Água */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
+              {/* Declividade e Buffers de Proteção (Água e Urbano) */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
                 <div>
                   <label className="text-[11px] text-slate-500 dark:text-slate-400 block mb-1">Declividade Mín. (%)</label>
                   <input
@@ -323,7 +337,7 @@ export const CandidateSelectionModal: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-slate-500 dark:text-slate-400 block mb-1">Buffer Água (metros)</label>
+                  <label className="text-[11px] text-slate-500 dark:text-slate-400 block mb-1">Buffer Água (m)</label>
                   <input
                     type="number"
                     min="0"
@@ -333,16 +347,35 @@ export const CandidateSelectionModal: React.FC = () => {
                     className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
                   />
                 </div>
+                <div>
+                  <label className="text-[11px] text-slate-500 dark:text-slate-400 block mb-1" title="Buffer morfológico ao redor de áreas urbanizadas e edificações (ESA WorldCover classe 50)">
+                    Buffer Urbano (m)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="1000"
+                    step="50"
+                    value={urbanBuffer}
+                    onChange={(e) => setUrbanBuffer(Number(e.target.value))}
+                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white font-medium text-indigo-600 dark:text-indigo-400"
+                  />
+                </div>
               </div>
 
               {/* Classes Permitidas de Uso do Solo */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">
-                  Uso do Solo Elegível (ESA WorldCover 10m):
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">
+                    Uso do Solo Elegível (ESA WorldCover 10m):
+                  </label>
+                  <span className="text-[10px] text-slate-400">
+                    Áreas urbanas (50) e água (80) são excluídas via buffer
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {Object.values(WORLDCOVER_CLASSES)
-                    .filter((cls) => [10, 30, 40, 50, 60, 80].includes(cls.code))
+                    .filter((cls) => [30, 40, 60, 10].includes(cls.code))
                     .map((cls) => {
                       const isSelected = selectedClasses.includes(cls.code);
                       return (
@@ -365,6 +398,9 @@ export const CandidateSelectionModal: React.FC = () => {
                       );
                     })}
                 </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">Blindagem Perimetral:</span> O buffer urbano de {urbanBuffer}m conecta quadras urbanas e elimina lotes baldios, terraplenagens e praças intraurbanas. Candidatos em imóveis rurais (CAR) recebem prioridade estrita de seleção.
+                </p>
               </div>
 
               {error && (
@@ -504,6 +540,26 @@ export const CandidateSelectionModal: React.FC = () => {
           ) : (
             <div className="w-full flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const meta = {
+                      isFiltered: false,
+                      totalLoaded: resultCandidates.length,
+                      exportedCount: resultCandidates.length,
+                      activeRegion: activeRegion.name,
+                      aoiName: activeAOIPolygon?.name || activeRegion.name,
+                    };
+                    const blob = await exportAuditTableXLSX(resultCandidates, meta);
+                    const fileName = generateAuditTableFileName(activeAOIPolygon?.name || activeRegion.name, resultCandidates.length, "xlsx");
+                    downloadBlob(blob, fileName);
+                  }}
+                  className="px-3 py-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 rounded-xl border border-emerald-300 dark:border-emerald-700 flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Baixar Planilha Consolidada com Memória de Cálculo Completa (.xlsx)"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  Planilha (.xlsx)
+                </button>
                 <button
                   type="button"
                   onClick={() => {

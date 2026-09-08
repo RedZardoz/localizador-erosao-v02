@@ -12,6 +12,8 @@ export type SoilType =
   | "Cambissolo Háplico";
 
 export type ErosionFeatureType =
+  | "Erosão Laminar Incipiente"
+  | "Erosão Laminar Moderada"
   | "Erosão Laminar Severa"
   | "Sulcos de Erosão Acentuados"
   | "Ravina Ativa"
@@ -24,6 +26,19 @@ export type DataProvenance =
   | "satellite-derived" // BSI/NDVI/declividade/RUSLE calculados sob demanda via Google Earth Engine + fontes públicas
   | "gee-screened" // candidato triado pelo pipeline GEE (máscara de elegibilidade + estratificação + thinning)
   | "field-validated"; // confirmado em campo (GNSS RTK / VANT / KoboToolbox)
+
+/**
+ * Validação pericial estrita: identifica registros sintéticos ou legados de testes
+ * para blindar o mestrado contra contaminação por dados não-reais.
+ */
+export function isSyntheticPoint(p: any): boolean {
+  if (!p || typeof p !== "object") return true;
+  if (p.dataProvenance === "mock" || p.dataProvenance === "synthetic") return true;
+  if (typeof p.id === "string" && /^ERO-PR-\d{3}$/.test(p.id)) return true;
+  if (typeof p.code === "string" && /^PR-2026-\d{3}$/.test(p.code)) return true;
+  if (p.dataSource === "mock" || p.source === "mock") return true;
+  return false;
+}
 
 export interface RusleFactors {
   r?: number; // Erosividade da chuva (MJ.mm/ha.h.ano) — estimada via NASA POWER + eq. Lombardi Neto

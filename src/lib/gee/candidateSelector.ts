@@ -21,7 +21,12 @@ import {
   buildEligibilityMask,
   normalizeAoIToGeoJSON,
 } from "./eligibilityMask";
-import { buildStratificationBand, getStratumInfo } from "./stratification";
+import {
+  buildStratificationBand,
+  getStratumInfo,
+  inferPedologyClass,
+  classifyFeatureType,
+} from "./stratification";
 import { thinBySpacing } from "./spatialThinning";
 import { generateAOITiles } from "./aoiTiling";
 import {
@@ -31,8 +36,12 @@ import {
   calculateSeverity,
   calculateSoilLossRUSLE,
 } from "../rusle/rusleCalculator";
-import { estimateRainfallErosivity } from "../rusle/rainfallErosivity";
+import {
+  estimateRainfallErosivity,
+  getRegionalRFactorParana,
+} from "../rusle/rainfallErosivity";
 import { getKFactorRealOrApproximate } from "../rusle/soilErodibility";
+import { batchMatchRuralProperties, BatchMatchItem, RuralPropertyMatch } from "../fundiario/spatialMatcher";
 
 export interface CandidateSelectionParams {
   aoi: any; // GeoJSON Polygon / MultiPolygon ou AOIPolygon
@@ -59,6 +68,7 @@ export interface CandidateSelectionResult {
       landCoverEligiblePixels: number;
       slopeEligiblePixels: number;
       waterEligiblePixels: number;
+      urbanEligiblePixels?: number;
     };
   };
 }
@@ -77,6 +87,7 @@ interface TileSampleOutput {
     landCoverEligiblePixels: number;
     slopeEligiblePixels: number;
     waterEligiblePixels: number;
+    urbanEligiblePixels: number;
   };
 }
 
@@ -132,8 +143,23 @@ async function sampleTileGEE(
       }
     ).rename("SLOPE_PERCENT");
 
-    // 3. Estratificação (Banda 'stratum' 1..6)
-    const stratum = buildStratificationBand(slopePercent, bsi.gte(0.1)).unmask(4).rename("STRATUM");
+    // 3. Estratificação Pedológica Cruzada (OpenLandMap Sand/Clay Content 250m - README §3)
+    const sandImage = ee
+      .Image("OpenLandMap/SOL/SOL_SAND-WFRACTION_USDA-3A1A1A_M/v02")
+      .select("b0")
+      .unmask(35)
+      .rename("SAND");
+
+    const clayImage = ee
+      .Image("OpenLandMap/SOL/SOL_CLAY-WFRACTION_USDA-3A1A1A_M/v02")
+      .select("b0")
+      .unmask(40)
+      .rename("CLAY");
+
+    // Limiar pedológico SiBCS: solos arenosos (>50% de areia) = Grupo A (Argissolos/Neossolos - Alta erodibilidade)
+    // Solos mais argilosos (<=50% de areia) = Grupo B (Latossolos/Nitossolos - Média/Baixa erodibilidade)
+    const soilGroupImage = sandImage.gt(50).rename("SOIL_GROUP");
+    const stratum = buildStratificationBand(slopePercent, soilGroupImage).unmask(4).rename("STRATUM");
 
     // 4. Máscara de Elegibilidade e Diagnóstico (Passo 0)
     const eligibilityImage = buildEligibilityMask(fullAoiGeom, eligibilityOptions);
@@ -141,13 +167,15 @@ async function sampleTileGEE(
     const lcMask = eligibilityImage.select("landcover_eligible");
     const slopeEligible = eligibilityImage.select("slope_eligible");
     const waterEligible = eligibilityImage.select("water_eligible");
+    const urbanEligible = eligibilityImage.select("urban_eligible");
 
-    // Instrumentação diagnóstica do Passo 0 (Contagem dos 4 filtros na AOI)
+    // Instrumentação diagnóstica do Passo 0 (Contagem dos 5 filtros na AOI)
     const statsImage = ee.Image.cat([
       eligibilityBand.rename("eligible_sum"),
       lcMask.rename("lc_sum"),
       slopeEligible.rename("slope_sum"),
       waterEligible.rename("water_sum"),
+      urbanEligible.rename("urban_sum"),
     ]);
 
     const statsDict = statsImage.reduceRegion({
@@ -176,6 +204,7 @@ async function sampleTileGEE(
       landCoverEligiblePixels: Math.round(Number(evaluatedStats.lc_sum ?? 0)),
       slopeEligiblePixels: Math.round(Number(evaluatedStats.slope_sum ?? 0)),
       waterEligiblePixels: Math.round(Number(evaluatedStats.water_sum ?? 0)),
+      urbanEligiblePixels: Math.round(Number(evaluatedStats.urban_sum ?? 0)),
     };
 
     // 5. Empilhamento e mascaramento
@@ -185,6 +214,8 @@ async function sampleTileGEE(
       elevation,
       slopeDeg,
       slopePercent,
+      sandImage,
+      clayImage,
       stratum,
       eligibilityBand,
     ]);
@@ -254,6 +285,7 @@ export async function selectCandidatesWithGEE(
   let totalLC = 0;
   let totalSlope = 0;
   let totalWater = 0;
+  let totalUrban = 0;
 
   const chunkSize = 4;
 
@@ -270,6 +302,7 @@ export async function selectCandidatesWithGEE(
       totalLC += res.diagnostics.landCoverEligiblePixels;
       totalSlope += res.diagnostics.slopeEligiblePixels;
       totalWater += res.diagnostics.waterEligiblePixels;
+      totalUrban += res.diagnostics.urbanEligiblePixels;
     }
   }
 
@@ -278,11 +311,12 @@ export async function selectCandidatesWithGEE(
     landCoverEligiblePixels: totalLC,
     slopeEligiblePixels: totalSlope,
     waterEligiblePixels: totalWater,
+    urbanEligiblePixels: totalUrban,
   };
 
   if (allFeatures.length === 0) {
     throw new Error(
-      `Nenhum pixel elegível foi encontrado pelo Earth Engine para esta Área de Interesse (${municipality}). Diagnóstico de pixels (30m): Elegíveis: ${totalEligible}, Uso do Solo (LC 30/40/60): ${totalLC}, Declividade: ${totalSlope}, Fora de Água: ${totalWater}.`
+      `Nenhum pixel elegível foi encontrado pelo Earth Engine para esta Área de Interesse (${municipality}). Diagnóstico de pixels (30m): Elegíveis: ${totalEligible}, Uso do Solo (LC 30/40/60): ${totalLC}, Declividade: ${totalSlope}, Fora de Água: ${totalWater}, Fora de Áreas Urbanas: ${totalUrban}.`
     );
   }
 
@@ -302,11 +336,17 @@ export async function selectCandidatesWithGEE(
 
     validateSlopePlausibility(rawSlopeDeg);
 
-    // Mapeamento pedológico coerente com o estrato
-    const isGroupA = rawStratum >= 1 && rawStratum <= 3;
-    const soilType: SoilType = isGroupA
-      ? "Argissolo Vermelho-Amarelo"
-      : "Latossolo Vermelho Distroférrico";
+    const rawSand = props.SAND !== undefined ? Number(props.SAND) : undefined;
+    const rawClay = props.CLAY !== undefined ? Number(props.CLAY) : undefined;
+
+    // Mapeamento pedológico analítico no SiBCS (Santos et al., 2018 / IAT)
+    const soilType: SoilType = inferPedologyClass(
+      rawStratum,
+      rawSlopePercent,
+      rawSand,
+      rawClay,
+      rawElevation
+    );
 
     const { severity } = calculateSeverity(rawSlopePercent, rawBsi, soilType);
     const priorityScore = calculatePriorityScore(severity, rawBsi, rawSlopeDeg, 0);
@@ -327,30 +367,75 @@ export async function selectCandidatesWithGEE(
     };
   });
 
-  // Thinning Espacial Global por Distância Mínima sobre todos os lotes agregados
-  const thinned = thinBySpacing(rawCandidates, minSpacingKm, targetCount);
-
-  // Estimativa climatológica R
-  const avgLat = thinned.reduce((acc, p) => acc + p.latitude, 0) / (thinned.length || 1);
-  const avgLng = thinned.reduce((acc, p) => acc + p.longitude, 0) / (thinned.length || 1);
-
-  let rFactor = 6500;
+  // Cruzamento fundiário oficial em lote (CAR / SIGEF / SNCR) sobre os candidatos brutos
+  // para bonificação territorial de imóveis rurais cadastrados no CAR
+  let rawTenureMatches: Record<string, RuralPropertyMatch> = {};
   try {
-    const rainfall = await estimateRainfallErosivity(avgLat, avgLng);
-    rFactor = rainfall.rFactor;
-  } catch {
-    // Fallback regional
+    const rawBatchItems: BatchMatchItem[] = rawCandidates.map((pt) => ({
+      id: `RAW-${pt.index}`,
+      latitude: pt.latitude,
+      longitude: pt.longitude,
+      uf: state,
+    }));
+    rawTenureMatches = await batchMatchRuralProperties(rawBatchItems);
+  } catch (err) {
+    console.warn("[GEE CandidateSelector] Aviso: falha no cruzamento fundiário prévio:", err);
   }
+
+  // Candidatos com imóvel rural confirmado no CAR recebem prioridade de seleção (+25 no score)
+  // garantindo preferência por alvos em propriedades rurais legítimas sobre vazios periféricos
+  const prioritizedCandidates = rawCandidates.map((cand) => {
+    const match = rawTenureMatches[`RAW-${cand.index}`];
+    const isRuralConfirmed = match?.status === "encontrado";
+    const bonus = isRuralConfirmed ? 25 : 0;
+    return {
+      ...cand,
+      priorityScore: (cand.priorityScore ?? 50) + bonus,
+      tenureMatch: match,
+    };
+  });
+
+  // Thinning Espacial Global por Distância Mínima sobre todos os lotes agregados
+  const thinned = thinBySpacing(prioritizedCandidates, minSpacingKm, targetCount);
+
+  // Estimativa climatológica do Fator R resolvida por célula espacial da grade NASA MERRA-2 (~25-50km)
+  const uniqueGridCoords = new Map<string, { lat: number; lng: number }>();
+  for (const pt of thinned) {
+    const cellLat = Math.round(pt.latitude * 4) / 4;
+    const cellLng = Math.round(pt.longitude * 4) / 4;
+    const key = `${cellLat.toFixed(2)},${cellLng.toFixed(2)}`;
+    if (!uniqueGridCoords.has(key)) {
+      uniqueGridCoords.set(key, { lat: cellLat, lng: cellLng });
+    }
+  }
+
+  const cellRFactorMap = new Map<string, number>();
+  await Promise.all(
+    Array.from(uniqueGridCoords.entries()).map(async ([key, coord]) => {
+      try {
+        const rainfall = await estimateRainfallErosivity(coord.lat, coord.lng);
+        cellRFactorMap.set(key, rainfall.rFactor);
+      } catch {
+        cellRFactorMap.set(key, getRegionalRFactorParana(coord.lat, coord.lng));
+      }
+    })
+  );
 
   const today = new Date();
   const strataDistribution: Record<string, number> = {};
+
+  // Geração determinística antecipada de IDs
+  const candidateIds = thinned.map((_, i) => {
+    const idNum = String(i + 1).padStart(3, "0");
+    return `CAND-${state}-${today.getTime()}-${idNum}`;
+  });
 
   // Unificação metodológica de K e LS idêntica ao analyze-point
   const candidates: ErosionPoint[] = await Promise.all(
     thinned.map(async (pt, i) => {
       const idNum = String(i + 1).padStart(3, "0");
       const code = `${state}-CAND-${idNum}`;
-      const id = `CAND-${state}-${Date.now()}-${idNum}`;
+      const id = candidateIds[i];
       const name = `Candidato ${idNum} - ${municipality}`;
 
       const stratumInfo = getStratumInfo(pt.stratumCode);
@@ -367,13 +452,22 @@ export async function selectCandidatesWithGEE(
       const lsApproximated = true;
       const lsFactor = calculateLSFactor(specificCatchmentAreaM2PerM, pt.slopeDegrees);
 
+      const cellLat = Math.round(pt.latitude * 4) / 4;
+      const cellLng = Math.round(pt.longitude * 4) / 4;
+      const cellKey = `${cellLat.toFixed(2)},${cellLng.toFixed(2)}`;
+      const pointRFactor = cellRFactorMap.get(cellKey) ?? getRegionalRFactorParana(pt.latitude, pt.longitude);
+
       const cFactor = calculateCFactor(pt.ndvi, pt.bsi);
       const pFactor = 1.0;
-      const estimatedSoilLoss = calculateSoilLossRUSLE(rFactor, kFactor, lsFactor, cFactor, pFactor);
+      const estimatedSoilLoss = calculateSoilLossRUSLE(pointRFactor, kFactor, lsFactor, cFactor, pFactor);
 
       const estimatedFields: string[] = [];
       if (kFactorApproximated) estimatedFields.push("kFactor");
       if (lsApproximated) estimatedFields.push("lsFactor");
+
+      // Associação fundiária resolvida diretamente do cruzamento em lote
+      const match = (pt as any).tenureMatch || rawTenureMatches[`RAW-${pt.index}`];
+      const tenureStatus = match?.status || "sem-correspondencia";
 
       return {
         id,
@@ -391,23 +485,42 @@ export async function selectCandidatesWithGEE(
         macroRegion: "Área Amostral GEE",
         watershed: "Bacia Hidrográfica Local",
         soilType: pt.soilType,
-        featureType: pt.severity === "Crítica" ? "Erosão Laminar Severa" : "Sulcos de Erosão Acentuados",
+        featureType: classifyFeatureType(pt.severity, pt.slopePercent, pt.bsi),
         severity: pt.severity,
         estimatedSoilLoss,
         priorityScore: pt.priorityScore ?? 50,
         detectionDate: today.toISOString().slice(0, 10),
-        dataProvenance: "gee-screened",
+        dataProvenance: "satellite-derived",
         stratumId,
-        stratumName: stratumInfo?.name,
+        stratumName: stratumInfo
+          ? `Sub-estrato ${stratumId} (Declividade ${pt.slopePercent.toFixed(1)}% × ${stratumInfo.erodibilityCategory})`
+          : undefined,
         estimatedFields,
         rusleFactors: {
-          r: rFactor,
+          r: pointRFactor,
           k: kFactor,
           ls: lsFactor,
           c: cFactor,
           p: pFactor,
         },
+        carCode: match?.carCode,
+        propertyName: match?.propertyName,
+        ownerName: match?.ownerName,
+        incraRegistry: match?.incraRegistry,
+        propertyAreaHa: match?.propertyAreaHa,
+        ownerDocumentMasked: match?.ownerDocumentMasked,
+        tenureStatus,
+        tenureUf: match?.uf || state,
+        tenureQueryDate: match?.dataConsulta || today.toISOString().slice(0, 10),
+        tenureAssociationCriterion: match?.criterioAssociacao,
+        sicarSourceFile: match?.sicarArquivoOrigem,
+        sicarBaseDate: match?.sicarDataBase,
+        sigefSourceFile: match?.sigefArquivoOrigem,
+        sigefBaseDate: match?.sigefDataBase,
+        sncrSourceFile: match?.sncrArquivoOrigem,
+        sncrBaseDate: match?.sncrDataBase,
         notes: `Candidato selecionado via Earth Engine (Resolução 10m • Lote ${tiles.length > 1 ? `Grade ${tiles.length}x` : "Direto"} • Estrato ${stratumId} • Thinning ${minSpacingKm}km). Alvo preliminar pré-triado para validação em campo.`,
+        geeSourceImageId: "COPERNICUS/S2_SR_HARMONIZED (Mosaico Temporal de Menor Nebulosidade)",
         geeComputedAt: new Date().toISOString(),
         calcEngineVersion: GEE_CALC_ENGINE_VERSION,
       };

@@ -6,6 +6,7 @@ import {
   resolveBlockF,
   translateDataProvenance,
   formatRusleMemory,
+  formatStratumDescription,
   exportAuditTableCSV,
   exportAuditTableXLSX,
   generateAuditTableFileName,
@@ -353,6 +354,44 @@ describe("Exportação da Tabela Consolidada de Laudos (CSV & XLSX)", () => {
 
     const fileNameCsv = generateAuditTableFileName("São Paulo / Vale do Paraíba", 12, "csv");
     expect(fileNameCsv).toMatch(/^Tabela_Consolidada_Sao_Paulo_Vale_do_Paraiba_12focos_\d{4}-\d{2}-\d{2}\.csv$/);
+  });
+
+  // Teste extra: Declividade real formatada na descrição do estrato
+  it("deve substituir declividade genérica estática pela declividade real na descrição do estrato", () => {
+    const ptA3: ErosionPoint = {
+      ...samplePoint,
+      slopePercent: 19.8,
+      stratumId: "A3",
+      stratumName: "Sub-estrato A3 (Declividade > 12% × Alta Erodibilidade)",
+    };
+    expect(formatStratumDescription(ptA3, ",")).toBe(
+      "Sub-estrato A3 (Declividade 19,8% × Alta Erodibilidade)"
+    );
+    expect(formatStratumDescription(ptA3, ".")).toBe(
+      "Sub-estrato A3 (Declividade 19.8% × Alta Erodibilidade)"
+    );
+
+    const ptA2: ErosionPoint = {
+      ...samplePoint,
+      slopePercent: 7.42,
+      stratumId: "A2",
+      stratumName: "Sub-estrato A2 (Declividade 6-12% × Alta Erodibilidade)",
+    };
+    expect(formatStratumDescription(ptA2, ",")).toBe(
+      "Sub-estrato A2 (Declividade 7,4% × Alta Erodibilidade)"
+    );
+
+    // Caso onde o ponto não possuía stratumName prévio
+    const ptNovo: ErosionPoint = {
+      ...samplePoint,
+      slopePercent: 15.3,
+      stratumId: "A3",
+      stratumName: undefined,
+      soilType: "Argissolo Vermelho-Amarelo",
+    };
+    expect(formatStratumDescription(ptNovo, ",")).toBe(
+      "Sub-estrato A3 (Declividade 15,3% × Alta Erodibilidade)"
+    );
   });
 
   // Teste extra: Grava fixture CSV para conferência com Pandas

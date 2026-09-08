@@ -1,4 +1,4 @@
-import { AOIPolygon, ErosionPoint } from "@/types/erosion";
+import { AOIPolygon, ErosionPoint, isSyntheticPoint } from "@/types/erosion";
 import { formatToDMS } from "./geoUtils";
 
 /**
@@ -23,7 +23,12 @@ import { formatToDMS } from "./geoUtils";
  * @returns String JSON formatada do FeatureCollection.
  */
 export function exportToGeoJSON(points: ErosionPoint[], aoiPolygon?: AOIPolygon | null): string {
-  const features: GeoJSON.Feature[] = points.map((p) => ({
+  const validPoints = points.filter((p) => !isSyntheticPoint(p));
+  if (validPoints.length === 0 && points.length > 0) {
+    throw new Error("Recusa de exportação: todos os pontos possuem proveniência sintética (mock).");
+  }
+
+  const features: GeoJSON.Feature[] = validPoints.map((p) => ({
     type: "Feature",
     id: p.id,
     properties: {
@@ -81,6 +86,11 @@ export function exportToGeoJSON(points: ErosionPoint[], aoiPolygon?: AOIPolygon 
  * @returns Documento XML KML completo.
  */
 export function exportToKML(points: ErosionPoint[], aoiOrTitle?: AOIPolygon | string | null): string {
+  const validPoints = points.filter((p) => !isSyntheticPoint(p));
+  if (validPoints.length === 0 && points.length > 0) {
+    throw new Error("Recusa de exportação: todos os pontos possuem proveniência sintética (mock).");
+  }
+
   const getKmlColor = (severity: string) => {
     switch (severity) {
       case "Crítica":
@@ -92,7 +102,7 @@ export function exportToKML(points: ErosionPoint[], aoiOrTitle?: AOIPolygon | st
     }
   };
 
-  let placemarks = points
+  let placemarks = validPoints
     .map((p) => {
       const color = getKmlColor(p.severity);
       const dmsLat = formatToDMS(p.latitude, true);
@@ -188,6 +198,11 @@ export function exportToKML(points: ErosionPoint[], aoiOrTitle?: AOIPolygon | st
  * @returns Texto CSV codificado pronto para download.
  */
 export function exportToCSV(points: ErosionPoint[]): string {
+  const validPoints = points.filter((p) => !isSyntheticPoint(p));
+  if (validPoints.length === 0 && points.length > 0) {
+    throw new Error("Recusa de exportação: todos os pontos possuem proveniência sintética (mock).");
+  }
+
   const headers = [
     "Codigo",
     "Nome",
@@ -213,7 +228,7 @@ export function exportToCSV(points: ErosionPoint[]): string {
     "Observacoes",
   ];
 
-  const rows = points.map((p) => [
+  const rows = validPoints.map((p) => [
     `"${p.code || ""}"`,
     `"${(p.name || "").replace(/"/g, '""')}"`,
     p.latitude.toFixed(6),
@@ -249,6 +264,11 @@ export function exportToCSV(points: ErosionPoint[]): string {
  * @returns CSV formatado com features de satélite/DEM e target rotulado.
  */
 export function exportTrainingDatasetCSV(points: ErosionPoint[]): string {
+  const validPoints = points.filter((p) => !isSyntheticPoint(p));
+  if (validPoints.length === 0 && points.length > 0) {
+    throw new Error("Recusa de exportação: todos os pontos possuem proveniência sintética (mock).");
+  }
+
   const headers = [
     "point_id",
     "code",
@@ -273,7 +293,7 @@ export function exportTrainingDatasetCSV(points: ErosionPoint[]): string {
     "is_field_validated",
   ];
 
-  const rows = points.map((p) => [
+  const rows = validPoints.map((p) => [
     `"${p.id}"`,
     `"${p.code}"`,
     p.latitude.toFixed(6),

@@ -37,6 +37,7 @@ const RequestSchema = z.object({
       maxSlopePercent: z.number().optional(),
       waterOccurrenceThreshold: z.number().optional(),
       waterBufferMeters: z.number().optional(),
+      urbanBufferMeters: z.number().min(0).max(2000).optional(),
     })
     .optional(),
   seed: z.number().optional(),

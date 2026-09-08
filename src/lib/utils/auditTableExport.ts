@@ -1,6 +1,7 @@
-import { ErosionPoint, DataProvenance } from "@/types/erosion";
+import { ErosionPoint, DataProvenance, isSyntheticPoint } from "@/types/erosion";
 import { formatToDMS } from "./geoUtils";
 import { buildXlsxBlob, XlsxSheet, XlsxRowValue } from "./xlsxWriter";
+import { classifySoilGroup } from "@/lib/gee/stratificationConstants";
 
 export interface FonteDadosItem {
   sistema: string;
@@ -228,6 +229,39 @@ export function formatRusleMemory(point: ErosionPoint, decimalSeparator: "," | "
 }
 
 /**
+ * Formata a descrição do estrato incorporando a declividade real individual do ponto.
+ * Substitui o texto estático de classe (ex: > 12%) pelo valor percentual real medido.
+ */
+export function formatStratumDescription(
+  point: ErosionPoint,
+  decimalSeparator: "," | "." = ","
+): string {
+  const slope = point.slopePercent;
+  const stratumId = point.stratumId || "A3";
+  const rawName = point.stratumName?.trim() || "";
+
+  if (typeof slope === "number" && !isNaN(slope)) {
+    const slopeFormatted = slope.toFixed(1);
+    const slopeStr = decimalSeparator === "," ? slopeFormatted.replace(".", ",") : slopeFormatted;
+
+    // Se já possui stratumName com menção a declividade, substitui a classe estática pelo valor real
+    if (rawName.includes("Declividade")) {
+      return rawName.replace(
+        /Declividade\s*(?:>|<|>=|<=)?\s*\d+(?:[.,]\d+)?(?:-\d+)?%/i,
+        `Declividade ${slopeStr}%`
+      );
+    }
+
+    // Se não tinha descrição prévia, monta a descrição pericial completa
+    const erodGroup = classifySoilGroup(point.soilType || "");
+    const erodLabel = erodGroup === "A" ? "Alta Erodibilidade" : "Média/Baixa Erodibilidade";
+    return `Sub-estrato ${stratumId} (Declividade ${slopeStr}% × ${erodLabel})`;
+  }
+
+  return rawName;
+}
+
+/**
  * Extrai os valores de um ponto erosivo alinhados com AUDIT_TABLE_HEADERS.
  */
 function extractPointValues(point: ErosionPoint, isCsv: boolean) {
@@ -255,7 +289,7 @@ function extractPointValues(point: ErosionPoint, isCsv: boolean) {
     point.id || "",
     point.detectionDate || "",
     point.stratumId || "",
-    point.stratumName || "",
+    formatStratumDescription(point, decSep),
 
     // B. Localização
     fmtDec(point.latitude, 6),
@@ -339,6 +373,13 @@ function escapeCsvCell(val: any): string {
  * Exporta os pontos em formato CSV com UTF-8 BOM, delimitador ';' e vírgula decimal.
  */
 export function exportAuditTableCSV(points: ErosionPoint[], _meta?: AuditTableMetadata): string {
+  const synthetic = points.filter(isSyntheticPoint);
+  if (synthetic.length > 0) {
+    throw new Error(
+      `Recusa de exportação: foram detectados ${synthetic.length} foco(s) sintético(s)/mock na seleção. A exportação pericial exige estritamente dados reais de sensoriamento ou campo.`
+    );
+  }
+
   const headerLine = AUDIT_TABLE_HEADERS.map(escapeCsvCell).join(";");
   const dataLines = points.map((p) => {
     const vals = extractPointValues(p, true);
@@ -441,6 +482,13 @@ export async function exportAuditTableXLSX(
   points: ErosionPoint[],
   meta: AuditTableMetadata
 ): Promise<Blob> {
+  const synthetic = points.filter(isSyntheticPoint);
+  if (synthetic.length > 0) {
+    throw new Error(
+      `Recusa de exportação: foram detectados ${synthetic.length} foco(s) sintético(s)/mock na seleção. A exportação pericial exige estritamente dados reais de sensoriamento ou campo.`
+    );
+  }
+
   const dataHeaderRow: XlsxRowValue[] = AUDIT_TABLE_HEADERS.map((h) => ({
     value: h,
     bold: true,

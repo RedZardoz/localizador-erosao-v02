@@ -12,13 +12,36 @@ import {
   Flame,
   Sparkles,
   Bookmark,
+  RefreshCw,
 } from "lucide-react";
 import { useErosionStore, useFilteredPoints } from "@/lib/store/useErosionStore";
 import { ErosionPoint } from "@/types/erosion";
 import { getGoogleEarthWebUrl } from "@/lib/utils/geoUtils";
+import {
+  inferPedologyClass,
+  classifyFeatureType,
+  getStratumInfo,
+} from "@/lib/gee/stratificationConstants";
+import {
+  calculateCFactor,
+  calculateLSFactor,
+  calculatePriorityScore,
+  calculateSeverity,
+  calculateSoilLossRUSLE,
+} from "@/lib/rusle/rusleCalculator";
+import { getKFactor } from "@/lib/rusle/soilErodibility";
+import { getRegionalRFactorParana } from "@/lib/rusle/rainfallErosivity";
 
 export const PointCardList: React.FC = () => {
-  const { selectedPoint, flyToPoint, setActiveModal, savedDatasets, loadDataset } = useErosionStore();
+  const {
+    selectedPoint,
+    flyToPoint,
+    setActiveModal,
+    savedDatasets,
+    loadDataset,
+    updateMultiplePoints,
+    setHasUnsavedPoints,
+  } = useErosionStore();
   const points = useFilteredPoints();
 
   if (points.length === 0) {
@@ -53,21 +76,90 @@ export const PointCardList: React.FC = () => {
     );
   }
 
+  const handleRecalculateAll = () => {
+    if (!points || points.length === 0) return;
+
+    const updated = points.map((pt) => {
+      let stratumCode = 4;
+      if (pt.stratumId) {
+        const match = pt.stratumId.match(/([AB])(\d)/);
+        if (match) {
+          const isA = match[1].toUpperCase() === "A";
+          const num = parseInt(match[2], 10);
+          stratumCode = isA ? num : 3 + num;
+        }
+      } else {
+        const slopeCls = pt.slopePercent < 6 ? 0 : pt.slopePercent <= 12 ? 1 : 2;
+        stratumCode = (pt.bsi > 0.25 ? 1 : 4) + slopeCls;
+      }
+
+      const soilType = inferPedologyClass(stratumCode, pt.slopePercent);
+      const { severity } = calculateSeverity(pt.slopePercent, pt.bsi, soilType);
+      const featureType = classifyFeatureType(severity, pt.slopePercent, pt.bsi);
+      const priorityScore = calculatePriorityScore(severity, pt.bsi, pt.slopeDegrees, 0);
+
+      const kEntry = getKFactor(soilType);
+      const kFactor = kEntry.mean;
+      const lsFactor = pt.rusleFactors?.ls ?? calculateLSFactor(10.0, pt.slopeDegrees);
+      const cFactor = pt.rusleFactors?.c ?? calculateCFactor(pt.ndvi, pt.bsi);
+      const rFactor = getRegionalRFactorParana(pt.latitude, pt.longitude);
+      const pFactor = pt.rusleFactors?.p ?? 1.0;
+      const estimatedSoilLoss = calculateSoilLossRUSLE(rFactor, kFactor, lsFactor, cFactor, pFactor);
+
+      const stratumInfo = getStratumInfo(stratumCode);
+      const stratumId = stratumInfo?.id || (stratumCode <= 3 ? `A${stratumCode}` : `B${stratumCode - 3}`);
+
+      return {
+        ...pt,
+        soilType,
+        featureType,
+        severity,
+        priorityScore,
+        estimatedSoilLoss,
+        stratumId,
+        stratumName: stratumInfo
+          ? `Sub-estrato ${stratumId} (Declividade ${pt.slopePercent.toFixed(1)}% × ${stratumInfo.erodibilityCategory})`
+          : pt.stratumName,
+        rusleFactors: {
+          ...pt.rusleFactors,
+          k: kFactor,
+          ls: lsFactor,
+          c: cFactor,
+          r: rFactor,
+          p: pFactor,
+        },
+      };
+    });
+
+    updateMultiplePoints(updated);
+    setHasUnsavedPoints(true);
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between px-1 text-xs text-slate-500 dark:text-slate-400">
         <span className="font-semibold text-slate-800 dark:text-slate-300 flex items-center gap-1.5">
           <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          Focos Selecionados ({points.length})
+          Focos ({points.length})
         </span>
-        <button
-          onClick={() => setActiveModal("saved-datasets")}
-          className="flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 hover:underline cursor-pointer"
-          title="Salvar esta seleção de focos ou carregar coleções salvas"
-        >
-          <Bookmark className="w-3 h-3" />
-          Salvar / Carregar
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleRecalculateAll}
+            className="flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 hover:underline cursor-pointer"
+            title="Recalcular Tipo de Solo SiBCS, Severidade e Tipologia com a metodologia atualizada para os pontos em tela"
+          >
+            <RefreshCw className="w-3 h-3" />
+            Recalcular
+          </button>
+          <button
+            onClick={() => setActiveModal("saved-datasets")}
+            className="flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 hover:underline cursor-pointer"
+            title="Salvar esta seleção de focos ou carregar coleções salvas"
+          >
+            <Bookmark className="w-3 h-3" />
+            Salvar
+          </button>
+        </div>
       </div>
 
       <div className="space-y-1.5 max-h-[calc(100vh-490px)] min-h-[220px] overflow-y-auto pr-1 custom-scrollbar">

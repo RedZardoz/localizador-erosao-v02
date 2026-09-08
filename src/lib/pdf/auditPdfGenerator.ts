@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import { ErosionPoint } from "@/types/erosion";
+import { ErosionPoint, isSyntheticPoint } from "@/types/erosion";
 import { formatToDMS } from "@/lib/utils/geoUtils";
 
 /**
@@ -28,7 +28,7 @@ import { formatToDMS } from "@/lib/utils/geoUtils";
  */
 
 export function buildAuditPdf(point: ErosionPoint): jsPDF {
-  if ((point as any).dataProvenance === "mock") {
+  if (isSyntheticPoint(point)) {
     throw new Error(
       "Recusa de emissao: ponto com proveniencia sintetica nao pode gerar laudo pericial."
     );

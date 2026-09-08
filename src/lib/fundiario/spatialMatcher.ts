@@ -174,16 +174,17 @@ export async function batchMatchRuralProperties(
         [scriptPath, "--batch", "--db", dbPath],
         {
           cwd: projectRoot,
-          timeout: 45000,
+          timeout: 120000,
+          maxBuffer: 10 * 1024 * 1024,
           windowsHide: true,
           env: {
             ...process.env,
             PYTHONIOENCODING: "utf-8",
           },
         },
-        (error, stdout) => {
+        (error, stdout, stderr) => {
           if (error) {
-            console.error("[batchMatchRuralProperties] Subprocess error:", error);
+            console.error("[batchMatchRuralProperties] Subprocess error:", error, stderr || "");
             return resolve({});
           }
 

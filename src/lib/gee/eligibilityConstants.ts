@@ -36,6 +36,13 @@ export interface EligibilityMaskOptions {
    * Padrão: 30 metros (README §3.3.4 - Isolamento de Interferências de Borda).
    */
   waterBufferMeters?: number;
+
+  /**
+   * Raio do buffer de exclusão morfológica ao redor de áreas urbanizadas e edificações
+   * (ESA WorldCover classe 50 'Built-up') em metros.
+   * Padrão: 150 metros (conecta quadras urbanas, elimina vazios intraurbanos e isola sedes).
+   */
+  urbanBufferMeters?: number;
 }
 
 export interface LandCoverClassInfo {
@@ -71,6 +78,7 @@ export const DEFAULT_ELIGIBILITY_OPTIONS: Required<EligibilityMaskOptions> = {
   maxSlopePercent: 20.0,
   waterOccurrenceThreshold: 10,
   waterBufferMeters: 30,
+  urbanBufferMeters: 150,
 };
 
 /**
@@ -82,6 +90,7 @@ export function validateEligibilityOptions(options?: EligibilityMaskOptions): Re
   const maxSlope = options?.maxSlopePercent ?? DEFAULT_ELIGIBILITY_OPTIONS.maxSlopePercent;
   const waterOccurrence = options?.waterOccurrenceThreshold ?? DEFAULT_ELIGIBILITY_OPTIONS.waterOccurrenceThreshold;
   const waterBuffer = options?.waterBufferMeters ?? DEFAULT_ELIGIBILITY_OPTIONS.waterBufferMeters;
+  const urbanBuffer = options?.urbanBufferMeters ?? DEFAULT_ELIGIBILITY_OPTIONS.urbanBufferMeters;
   const allowedClasses = options?.allowedLandCoverClasses ?? DEFAULT_ELIGIBILITY_OPTIONS.allowedLandCoverClasses;
 
   if (typeof minSlope !== "number" || isNaN(minSlope) || minSlope < 0) {
@@ -96,6 +105,9 @@ export function validateEligibilityOptions(options?: EligibilityMaskOptions): Re
   if (typeof waterBuffer !== "number" || isNaN(waterBuffer) || waterBuffer < 0) {
     throw new Error(`Buffer de exclusão de corpos d'água não pode ser negativo (recebido: ${waterBuffer}m).`);
   }
+  if (typeof urbanBuffer !== "number" || isNaN(urbanBuffer) || urbanBuffer < 0) {
+    throw new Error(`Buffer de exclusão de áreas urbanas não pode ser negativo (recebido: ${urbanBuffer}m).`);
+  }
   if (!Array.isArray(allowedClasses) || allowedClasses.length === 0) {
     throw new Error("Pelo menos uma classe de cobertura do solo (Land Cover) deve ser informada como elegível.");
   }
@@ -106,6 +118,7 @@ export function validateEligibilityOptions(options?: EligibilityMaskOptions): Re
     maxSlopePercent: maxSlope,
     waterOccurrenceThreshold: waterOccurrence,
     waterBufferMeters: waterBuffer,
+    urbanBufferMeters: urbanBuffer,
   };
 }
 

@@ -7,7 +7,6 @@ import { RegionAndTopNSelector } from "./RegionAndTopNSelector";
 import { StatsOverview } from "./StatsOverview";
 import { FiltersPanel } from "./FiltersPanel";
 import { PointCardList } from "./PointCardList";
-import { BatchGeeCalculator } from "./BatchGeeCalculator";
 
 export const Sidebar: React.FC = () => {
   const { sidebarCollapsed, toggleSidebar, allPoints } = useErosionStore();
@@ -55,7 +54,7 @@ export const Sidebar: React.FC = () => {
               }`}
             >
               <Activity className="w-3.5 h-3.5" />
-              Painel &amp; Focos
+              Triagem &amp; Focos
             </button>
 
             <button
@@ -89,7 +88,6 @@ export const Sidebar: React.FC = () => {
           {activeTab === "triagem" ? (
             <>
               <StatsOverview />
-              <BatchGeeCalculator />
               <PointCardList />
             </>
           ) : (

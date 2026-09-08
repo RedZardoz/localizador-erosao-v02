@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { matchRuralProperty } from "./spatialMatcher";
+import { matchRuralProperty, batchMatchRuralProperties } from "./spatialMatcher";
 
 describe("matchRuralProperty", () => {
   it("deve encontrar uma propriedade rural oficial indexada no SQLite local", async () => {
@@ -41,4 +41,29 @@ describe("matchRuralProperty", () => {
     expect(result).toBeDefined();
     expect(Object.keys(result).length).toBe(0);
   }, 20000);
+
+  it("deve executar batchMatchRuralProperties em lote com alta performance para múltiplos pontos", async () => {
+    const batchItems = [
+      { id: "pt-1", latitude: -25.568434, longitude: -53.524454, uf: "PR" },
+      { id: "pt-2", latitude: -24.85, longitude: -51.5, uf: "PR" },
+      { id: "pt-3", latitude: 0.0, longitude: 0.0, uf: "PR" },
+    ];
+
+    const t0 = Date.now();
+    const results = await batchMatchRuralProperties(batchItems);
+    const durationMs = Date.now() - t0;
+
+    expect(results).toBeDefined();
+    expect(results["pt-1"]).toBeDefined();
+    expect(results["pt-1"].status).toBe("encontrado");
+    expect(results["pt-1"].carCode).toBeDefined();
+    expect(results["pt-2"]).toBeDefined();
+    expect(results["pt-2"].status).toBe("encontrado");
+    expect(results["pt-3"]).toBeDefined();
+    expect(results["pt-3"].status).toBe("sem-correspondencia");
+
+    // Deve executar rapidamente (menos de 5 segundos)
+    expect(durationMs).toBeLessThan(5000);
+  }, 20000);
 });
+

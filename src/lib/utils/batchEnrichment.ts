@@ -135,10 +135,12 @@ export async function enrichPointsBatch(
           const json = await response.json();
           if (json.success && json.data) {
             const matches = json.data as Record<string, any>;
+            let matchedCount = 0;
             for (let i = 0; i < enrichedPoints.length; i++) {
               const pt = enrichedPoints[i];
               const match = matches[pt.id];
               if (match) {
+                matchedCount++;
                 pt.tenureStatus = match.status || "sem-correspondencia";
                 pt.carCode = match.carCode || undefined;
                 pt.propertyName = match.propertyName || undefined;
@@ -157,7 +159,16 @@ export async function enrichPointsBatch(
                 pt.sncrBaseDate = match.sncrDataBase;
               }
             }
+            onProgress?.(
+              Math.floor(total * 0.5),
+              total,
+              `Cruzamento fundiário: ${matchedCount} focos identificados em bases oficiais.`
+            );
+          } else {
+            console.warn("[enrichPointsBatch] Resposta do cruzamento fundiário sem dados válidos:", json);
           }
+        } else {
+          console.warn("[enrichPointsBatch] Falha de comunicação com endpoint fundiário:", response?.status);
         }
       } catch (fundiarioErr) {
         console.warn("[enrichPointsBatch] Falha na consulta fundiária em lote:", fundiarioErr);

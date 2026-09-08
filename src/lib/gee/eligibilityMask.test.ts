@@ -14,6 +14,7 @@ describe("eligibilityMask - Configurações e Valores Padrão", () => {
     expect(DEFAULT_ELIGIBILITY_OPTIONS.maxSlopePercent).toBe(20.0);
     expect(DEFAULT_ELIGIBILITY_OPTIONS.waterOccurrenceThreshold).toBe(10);
     expect(DEFAULT_ELIGIBILITY_OPTIONS.waterBufferMeters).toBe(30);
+    expect(DEFAULT_ELIGIBILITY_OPTIONS.urbanBufferMeters).toBe(150);
   });
 
   it("deve mapear corretamente o catálogo de classes ESA WorldCover 10m", () => {
@@ -47,11 +48,13 @@ describe("validateEligibilityOptions - Validação de Parâmetros", () => {
     const opts = validateEligibilityOptions({
       minSlopePercent: 5,
       maxSlopePercent: 15,
+      urbanBufferMeters: 200,
     });
     expect(opts.minSlopePercent).toBe(5);
     expect(opts.maxSlopePercent).toBe(15);
     expect(opts.allowedLandCoverClasses).toEqual([30, 40, 60]);
     expect(opts.waterBufferMeters).toBe(30);
+    expect(opts.urbanBufferMeters).toBe(200);
     expect(opts.waterOccurrenceThreshold).toBe(10);
   });
 
@@ -89,6 +92,12 @@ describe("validateEligibilityOptions - Validação de Parâmetros", () => {
   it("deve rejeitar buffer de água negativo", () => {
     expect(() => validateEligibilityOptions({ waterBufferMeters: -10 })).toThrow(
       /Buffer de exclusão de corpos d'água não pode ser negativo/
+    );
+  });
+
+  it("deve rejeitar buffer de área urbana negativo", () => {
+    expect(() => validateEligibilityOptions({ urbanBufferMeters: -15 })).toThrow(
+      /Buffer de exclusão de áreas urbanas não pode ser negativo/
     );
   });
 

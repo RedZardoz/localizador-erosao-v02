@@ -5,6 +5,8 @@ import {
   classifySoilGroup,
   getStratumCode,
   getStratumInfo,
+  inferPedologyClass,
+  classifyFeatureType,
 } from "./stratificationConstants";
 
 describe("stratification - Definições e Matriz de Estratos", () => {
@@ -98,3 +100,52 @@ describe("getStratumCode e getStratumInfo - Cruzamento de Estratos", () => {
     expect(getStratumInfo("B1")?.samplingPriority).toBe("Controle");
   });
 });
+
+describe("inferPedologyClass - Classificação Pedológica SiBCS", () => {
+  it("classifica solos do Grupo A (Estratos 1 a 3) com base no relevo e textura", () => {
+    // Declividade > 20% ou areia > 75% -> Neossolos
+    expect(inferPedologyClass(3, 22.0)).toBe("Neossolo Regolítico");
+    expect(inferPedologyClass(3, 28.0)).toBe("Neossolo Litólico");
+    expect(inferPedologyClass(1, 4.0, 80)).toBe("Neossolo Regolítico");
+
+    // Declividade entre 12% e 20% -> Cambissolo Háplico
+    expect(inferPedologyClass(2, 14.0)).toBe("Cambissolo Háplico");
+
+    // Declividade <= 12% -> Argissolo Vermelho-Amarelo
+    expect(inferPedologyClass(1, 4.0)).toBe("Argissolo Vermelho-Amarelo");
+    expect(inferPedologyClass(2, 8.0)).toBe("Argissolo Vermelho-Amarelo");
+  });
+
+  it("classifica solos do Grupo B (Estratos 4 a 6) com base no relevo e argila", () => {
+    // Declividade > 12% -> Nitossolo Vermelho (horizonte B nítico estruturado)
+    expect(inferPedologyClass(6, 15.0)).toBe("Nitossolo Vermelho");
+
+    // Declividade 6% a 12%: muito argiloso (>55%) -> Nitossolo; médio -> Latossolo Vermelho Distroférrico
+    expect(inferPedologyClass(5, 8.0, 20, 60)).toBe("Nitossolo Vermelho");
+    expect(inferPedologyClass(5, 8.0, 30, 45)).toBe("Latossolo Vermelho Distroférrico");
+
+    // Declividade < 6%: muito argiloso (>50%) -> Latossolo Vermelho Eutroférrico; senão Distroférrico
+    expect(inferPedologyClass(4, 3.0, 15, 55)).toBe("Latossolo Vermelho Eutroférrico");
+    expect(inferPedologyClass(4, 3.0, 35, 40)).toBe("Latossolo Vermelho Distroférrico");
+  });
+});
+
+describe("classifyFeatureType - Tipologia Dinâmica da Feição Erosiva", () => {
+  it("classifica feições críticas", () => {
+    expect(classifyFeatureType("Crítica", 20.0, 0.45)).toBe("Voçoroca em Expansão");
+    expect(classifyFeatureType("Crítica", 14.0, 0.35)).toBe("Sulcos de Erosão Acentuados");
+    expect(classifyFeatureType("Crítica", 8.0, 0.35)).toBe("Erosão Laminar Severa");
+  });
+
+  it("classifica feições de alta severidade", () => {
+    expect(classifyFeatureType("Alta", 15.0, 0.25)).toBe("Sulcos de Erosão Acentuados");
+    expect(classifyFeatureType("Alta", 4.0, 0.30)).toBe("Depressão com Escoamento Concentrado");
+    expect(classifyFeatureType("Alta", 8.0, 0.25)).toBe("Erosão Laminar Severa");
+  });
+
+  it("classifica feições de moderada severidade", () => {
+    expect(classifyFeatureType("Moderada", 4.0, 0.15)).toBe("Erosão Laminar Incipiente");
+    expect(classifyFeatureType("Moderada", 8.0, 0.25)).toBe("Erosão Laminar Moderada");
+  });
+});
+

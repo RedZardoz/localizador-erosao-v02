@@ -130,21 +130,69 @@ export function buildWaterExclusionMask(
 }
 
 /**
- * Monta a ee.Image combinando os 3 filtros de elegibilidade:
- * (Uso do Solo Elegível) E (Declividade na Faixa de Risco) E (Fora de Água e do Buffer).
+ * Constrói a máscara de exclusão de áreas urbanizadas e edificadas a partir do ESA WorldCover 10m (v200).
+ * Extrai a classe 50 ('Built-up') e aplica buffer morfológico de dilatação (focalMax).
+ * Retorna 'urban_eligible' (1 = área rural segura sem edificações, 0 = mancha urbana ou dentro do buffer).
+ */
+export function buildUrbanExclusionMask(
+  aoiGeometry: any,
+  bufferMeters: number,
+  lcImageInput?: any
+): { urbanRaw: any; urbanExclusionZone: any; urbanEligible: any } {
+  let lcImage = lcImageInput;
+  if (!lcImage) {
+    const worldCoverCollection = ee.ImageCollection("ESA/WorldCover/v200");
+    const filtered = aoiGeometry ? worldCoverCollection.filterBounds(aoiGeometry) : worldCoverCollection;
+    lcImage = filtered.mosaic().select("Map");
+  }
+
+  // Classe 50 = Built-up (áreas urbanizadas, estruturas construídas, vias pavimentadas)
+  const builtUp = lcImage.eq(50);
+
+  let urbanExclusionZone = builtUp;
+  if (bufferMeters > 0) {
+    // Expande a mancha urbana pelo raio configurado em metros
+    urbanExclusionZone = builtUp.focalMax({
+      radius: bufferMeters,
+      units: "meters",
+      kernelType: "circle",
+    });
+  }
+
+  // Elegível onde NÃO é área urbana nem faixa de amortecimento: urbanExclusionZone == 0
+  const urbanEligible = urbanExclusionZone.unmask(0).eq(0).rename("urban_eligible");
+
+  return {
+    urbanRaw: builtUp.rename("urban_builtup_raw"),
+    urbanExclusionZone: urbanExclusionZone.rename("urban_exclusion_zone"),
+    urbanEligible,
+  };
+}
+
+/**
+ * Monta a ee.Image combinando os 4 filtros de elegibilidade:
+ * (Uso do Solo Agrícola) E (Declividade na Faixa de Risco) E (Fora de Água/Buffer) E (Fora de Áreas Urbanas/Buffer).
  *
  * Retorna uma ee.Image contendo:
  *  - 'eligibility': 1 para pixel elegível, 0 para inelegível
  *  - 'landcover_eligible': 1 ou 0
  *  - 'slope_eligible': 1 ou 0
  *  - 'water_eligible': 1 ou 0
+ *  - 'urban_eligible': 1 ou 0
  *  - 'slope_percent': valor contínuo da declividade calculada em %
  */
 export function buildEligibilityMask(aoi: any, options?: EligibilityMaskOptions): any {
   const validated = validateEligibilityOptions(options);
   const aoiGeom = aoi ? parseAoIToEeGeometry(aoi) : null;
 
-  const lcMask = buildWorldCoverMask(aoiGeom, validated.allowedLandCoverClasses);
+  const worldCoverCollection = ee.ImageCollection("ESA/WorldCover/v200");
+  const filtered = aoiGeom ? worldCoverCollection.filterBounds(aoiGeom) : worldCoverCollection;
+  const lcImage = filtered.mosaic().select("Map");
+
+  const fromList = validated.allowedLandCoverClasses;
+  const toList = validated.allowedLandCoverClasses.map(() => 1);
+  const lcMask = lcImage.remap(ee.List(fromList), ee.List(toList), 0).rename("landcover_eligible");
+
   const { slopePercent, slopeEligible } = buildSlopeMask(
     aoiGeom,
     validated.minSlopePercent,
@@ -155,11 +203,17 @@ export function buildEligibilityMask(aoi: any, options?: EligibilityMaskOptions)
     validated.waterOccurrenceThreshold,
     validated.waterBufferMeters
   );
+  const { urbanEligible } = buildUrbanExclusionMask(
+    aoiGeom,
+    validated.urbanBufferMeters,
+    lcImage
+  );
 
-  // Interseção lógica
+  // Interseção lógica quádrupla: Agrícola E Declividade E Fora de Água E Fora de Urbano
   const eligibility = lcMask.eq(1)
     .and(slopeEligible.eq(1))
     .and(waterEligible.eq(1))
+    .and(urbanEligible.eq(1))
     .rename("eligibility");
 
   const combined = ee.Image.cat([
@@ -167,6 +221,7 @@ export function buildEligibilityMask(aoi: any, options?: EligibilityMaskOptions)
     lcMask,
     slopeEligible,
     waterEligible,
+    urbanEligible,
     slopePercent,
   ]);
 

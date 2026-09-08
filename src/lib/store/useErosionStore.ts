@@ -7,6 +7,7 @@ import {
   ErosionPoint,
   FilterState,
   GcpCredentials,
+  isSyntheticPoint,
   NewRegionRequest,
   RegionPreset,
   SavedPointDataset,
@@ -53,6 +54,7 @@ interface ErosionStoreState {
   allPoints: ErosionPoint[];
   customPoints: ErosionPoint[];
   selectedPoint: ErosionPoint | null;
+  hasUnsavedPoints: boolean;
   activeRegion: RegionPreset;
   activeAOIPolygon: AOIPolygon | null;
   regionRequests: NewRegionRequest[];
@@ -106,6 +108,7 @@ interface ErosionStoreState {
   replacePoint: (oldPointId: string, newPoint: ErosionPoint) => void;
   removePoint: (pointId: string) => void;
   clearMap: () => void;
+  setHasUnsavedPoints: (unsaved: boolean) => void;
   setActiveRegion: (regionId: string) => void;
   setActiveAOIPolygon: (polygon: AOIPolygon | null) => void;
   addRegionRequest: (request: NewRegionRequest) => void;
@@ -193,6 +196,7 @@ export const useErosionStore = create<ErosionStoreState>()(
       allPoints: [],
       customPoints: [],
       selectedPoint: null,
+      hasUnsavedPoints: false,
       activeRegion: regionPresets[0],
       activeAOIPolygon: null,
       regionRequests: [],
@@ -248,12 +252,16 @@ export const useErosionStore = create<ErosionStoreState>()(
       theme: "dark",
 
       // Actions
-      setCustomPoints: (points) =>
+      setCustomPoints: (points) => {
+        const clean = points.filter((p) => !isSyntheticPoint(p));
         set({
-          customPoints: points,
-          allPoints: points,
+          customPoints: clean,
+          allPoints: clean,
           selectedPoint: null,
-        }),
+          hasUnsavedPoints: clean.length > 0,
+        });
+      },
+      setHasUnsavedPoints: (unsaved) => set({ hasUnsavedPoints: unsaved }),
 
       applyCandidatePoints: (candidates, replace = true) =>
         set((state) => {
@@ -328,6 +336,7 @@ export const useErosionStore = create<ErosionStoreState>()(
             allPoints: nextPoints,
             dataSource: "custom",
             selectedPoint: null,
+            hasUnsavedPoints: true,
             filters: {
               ...state.filters,
               searchQuery: "",
@@ -428,6 +437,7 @@ export const useErosionStore = create<ErosionStoreState>()(
             allPoints: [],
             customPoints: [],
             selectedPoint: null,
+            hasUnsavedPoints: false,
             drawnPolygons: [],
             selectedPolygon: null,
             activeAOIPolygon: null,
@@ -484,6 +494,7 @@ export const useErosionStore = create<ErosionStoreState>()(
         };
 
         set((prev) => ({
+          hasUnsavedPoints: false,
           savedDatasets: [newDataset, ...prev.savedDatasets.filter((d) => d.id !== newDataset.id)],
         }));
 
@@ -495,34 +506,43 @@ export const useErosionStore = create<ErosionStoreState>()(
         const target = state.savedDatasets.find((d) => d.id === datasetId);
         if (!target || !target.points || target.points.length === 0) return;
 
-        // Sanitiza todos os pontos para garantir números reais, integridade e ausência de NaNs
-        const points: ErosionPoint[] = target.points
-          .filter((p) => p && typeof p.latitude !== "undefined" && typeof p.longitude !== "undefined")
-          .map((p, idx) => ({
-            ...p,
-            id: p.id || `POINT-${idx + 1}`,
-            code: p.code || `PR-PONT-${String(idx + 1).padStart(3, "0")}`,
-            name: p.name || `Ponto ${idx + 1}`,
-            latitude: Number(p.latitude),
-            longitude: Number(p.longitude),
-            elevation: Number(p.elevation ?? 500),
-            slopePercent: Number(p.slopePercent ?? 15),
-            slopeDegrees: Number(p.slopeDegrees ?? 8.5),
-            bsi: Number(p.bsi ?? 0.3),
-            ndvi: Number(p.ndvi ?? 0.35),
-            severity: (p.severity || "Alta") as SeverityLevel,
-            priorityScore: Number(p.priorityScore ?? 60),
-            estimatedSoilLoss: Number(p.estimatedSoilLoss ?? 20),
-            municipality: p.municipality || target.regionName || "Paraná",
-            state: p.state || "PR",
-            macroRegion: p.macroRegion || "Paraná",
-            watershed: p.watershed || "Bacia Local",
-            soilType: p.soilType || "Latossolo Vermelho",
-            featureType: p.featureType || "Erosão Laminar",
-            detectionDate: p.detectionDate || new Date().toISOString().slice(0, 10),
-          }));
+        // Sanitiza todos os pontos para garantir números reais, integridade e ausência de NaNs e resíduos sintéticos
+        const validPoints = target.points.filter(
+          (p) => p && typeof p.latitude !== "undefined" && typeof p.longitude !== "undefined" && !isSyntheticPoint(p)
+        );
 
-        if (points.length === 0) return;
+        if (validPoints.length === 0) {
+          get().addSystemLog({
+            severity: "warning",
+            category: "Aplicação",
+            message: `Coleção "${target.name}" não pôde ser carregada pois continha apenas dados sintéticos/inválidos descartados pela auditoria.`,
+          });
+          return;
+        }
+
+        const points: ErosionPoint[] = validPoints.map((p, idx) => ({
+          ...p,
+          id: p.id || `POINT-${idx + 1}`,
+          code: p.code || `PR-PONT-${String(idx + 1).padStart(3, "0")}`,
+          name: p.name || `Ponto ${idx + 1}`,
+          latitude: Number(p.latitude),
+          longitude: Number(p.longitude),
+          elevation: Number(p.elevation ?? 500),
+          slopePercent: Number(p.slopePercent ?? 15),
+          slopeDegrees: Number(p.slopeDegrees ?? 8.5),
+          bsi: Number(p.bsi ?? 0.3),
+          ndvi: Number(p.ndvi ?? 0.35),
+          severity: (p.severity || "Alta") as SeverityLevel,
+          priorityScore: Number(p.priorityScore ?? 60),
+          estimatedSoilLoss: Number(p.estimatedSoilLoss ?? 20),
+          municipality: p.municipality || target.regionName || "Paraná",
+          state: p.state || "PR",
+          macroRegion: p.macroRegion || "Paraná",
+          watershed: p.watershed || "Bacia Local",
+          soilType: p.soilType || "Latossolo Vermelho",
+          featureType: p.featureType || "Erosão Laminar",
+          detectionDate: p.detectionDate || new Date().toISOString().slice(0, 10),
+        }));
 
         // Determina a região associada se houver correspondência
         let matchedRegion = state.activeRegion;
@@ -538,6 +558,7 @@ export const useErosionStore = create<ErosionStoreState>()(
         set({
           allPoints: points,
           customPoints: points,
+          hasUnsavedPoints: false,
           activeRegion: matchedRegion,
           activeAOIPolygon: target.aoiPolygon || null,
           selectedPoint: null,
@@ -887,6 +908,7 @@ export const useErosionStore = create<ErosionStoreState>()(
         embrapaToken: state.credentialPersistMode === "local" ? state.embrapaToken : "",
         credentialPersistMode: state.credentialPersistMode,
         savedDatasets: state.savedDatasets,
+        hasUnsavedPoints: state.hasUnsavedPoints,
         drawnPolygons: state.drawnPolygons,
         allPoints: state.allPoints,
         customPoints: state.customPoints,
@@ -905,17 +927,12 @@ export const useErosionStore = create<ErosionStoreState>()(
           flyToTarget: null,
         },
       }),
-      version: 2,
-      migrate: (persisted: any, fromVersion: number) => {
-        if (!persisted || fromVersion >= 2) return persisted;
+      version: 3,
+      migrate: (persisted: any, _fromVersion: number) => {
+        if (!persisted) return persisted;
 
-        // Identifica resíduo sintético da v1: proveniência "mock" ou o padrão de ID do gerador
-        // removido (ERO-PR-001 … ERO-PR-150, com code PR-2026-NNN).
-        const isSynthetic = (p: any) =>
-          p?.dataProvenance === "mock" ||
-          (typeof p?.id === "string" && /^ERO-PR-\d{3}$/.test(p.id));
-
-        const purge = (arr: any) => (Array.isArray(arr) ? arr.filter((p) => !isSynthetic(p)) : []);
+        const purge = (arr: any) =>
+          Array.isArray(arr) ? arr.filter((p) => !isSyntheticPoint(p)) : [];
 
         const cleaned = {
           ...persisted,
@@ -925,7 +942,7 @@ export const useErosionStore = create<ErosionStoreState>()(
             ? persisted.savedDatasets
                 .filter((d: any) => d?.source !== "mock")
                 .map((d: any) => ({ ...d, points: purge(d.points) }))
-                .filter((d: any) => !Array.isArray(d.points) || d.points.length > 0)
+                .filter((d: any) => Array.isArray(d.points) && d.points.length > 0)
             : [],
         };
 
@@ -937,15 +954,37 @@ export const useErosionStore = create<ErosionStoreState>()(
       },
       onRehydrateStorage: () => (state) => {
         if (!state) return;
-        // Se o mapa está vazio mas existe uma coleção salva pelo usuário, recarrega a mais recente.
-        // Nunca preencher o mapa com dados que o usuário não produziu ou importou.
-        if (state.allPoints.length === 0 && state.savedDatasets?.length > 0) {
-          state.loadDataset(state.savedDatasets[0].id);
+
+        // Purga ativa e incondicional contra qualquer resíduo sintético a cada abertura de aba
+        if (state.allPoints && state.allPoints.some(isSyntheticPoint)) {
+          state.allPoints = state.allPoints.filter((p) => !isSyntheticPoint(p));
+        }
+        if (state.customPoints && state.customPoints.some(isSyntheticPoint)) {
+          state.customPoints = state.customPoints.filter((p) => !isSyntheticPoint(p));
+        }
+        if (state.savedDatasets && state.savedDatasets.length > 0) {
+          state.savedDatasets = state.savedDatasets
+            .filter((d: any) => d?.source !== "mock")
+            .map((d: any) => ({
+              ...d,
+              points: Array.isArray(d.points) ? d.points.filter((p: any) => !isSyntheticPoint(p)) : [],
+            }))
+            .filter((d: any) => Array.isArray(d.points) && d.points.length > 0);
+        }
+
+        // Se o mapa está vazio mas existe uma coleção legítima salva pelo usuário, recarrega a mais recente.
+        if (state.allPoints.length === 0 && state.savedDatasets && state.savedDatasets.length > 0) {
+          const firstValid = state.savedDatasets[0];
+          if (firstValid?.points && firstValid.points.some((p: any) => !isSyntheticPoint(p))) {
+            state.loadDataset(firstValid.id);
+          }
         }
       },
     }
   )
 );
+
+export { isSyntheticPoint };
 
 /**
  * Hook reativo seguro e memoizado para obter os pontos filtrados

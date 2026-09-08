@@ -122,7 +122,7 @@ export const BatchGeeCalculator: React.FC = () => {
       <div className="flex items-center justify-between">
         <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
           <Satellite className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          Cálculo Real em Lote
+          Cálculo de Satélite em Lote (GEE)
         </span>
         <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
           {eligible.length} elegível(is)

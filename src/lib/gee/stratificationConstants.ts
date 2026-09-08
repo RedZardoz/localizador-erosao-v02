@@ -7,6 +7,8 @@
  * de declividade, erodibilidade pedológica e definição da matriz de estratos A1..B3.
  */
 
+import { SoilType, ErosionFeatureType, SeverityLevel } from "@/types/erosion";
+
 export type StratumId = "A1" | "A2" | "A3" | "B1" | "B2" | "B3";
 
 export interface StratumInfo {
@@ -131,3 +133,81 @@ export function getStratumInfo(codeOrId: number | string): StratumInfo | undefin
   const match = Object.values(STRATA_DEFINITIONS).find((s) => s.id === codeOrId);
   return match;
 }
+
+/**
+ * Classifica a ordem pedológica no Sistema Brasileiro de Classificação de Solos (SiBCS - Santos et al., 2018),
+ * integrando a classe de estrato (erodibilidade do solo), a declividade do terreno e frações texturais.
+ */
+export function inferPedologyClass(
+  stratumCode: number,
+  slopePercent: number,
+  sandPercent?: number,
+  clayPercent?: number,
+  _elevation?: number
+): SoilType {
+  const isGroupA = stratumCode >= 1 && stratumCode <= 3;
+
+  if (isGroupA) {
+    // Grupo A: Alta Erodibilidade (textura arenosa, gradiente textural ou solos rasos)
+    if (slopePercent > 20 || (sandPercent !== undefined && sandPercent > 75)) {
+      return slopePercent > 25 ? "Neossolo Litólico" : "Neossolo Regolítico";
+    }
+    if (slopePercent > 12) {
+      return "Cambissolo Háplico";
+    }
+    return "Argissolo Vermelho-Amarelo";
+  } else {
+    // Grupo B: Média/Baixa Erodibilidade (solos profundos e estruturados)
+    if (slopePercent > 12) {
+      return "Nitossolo Vermelho";
+    }
+    if (slopePercent >= 6) {
+      if (clayPercent !== undefined && clayPercent > 55) {
+        return "Nitossolo Vermelho";
+      }
+      return "Latossolo Vermelho Distroférrico";
+    }
+    // Baixa declividade (< 6%)
+    if (clayPercent !== undefined && clayPercent > 50) {
+      return "Latossolo Vermelho Eutroférrico";
+    }
+    return "Latossolo Vermelho Distroférrico";
+  }
+}
+
+/**
+ * Classifica a tipologia da feição erosiva conforme a severidade, declividade e índice de solo exposto.
+ * Alinhado à Matriz Metodológica do README §3 (Tabela de Sub-estratos e Feições).
+ */
+export function classifyFeatureType(
+  severity: SeverityLevel,
+  slopePercent: number,
+  bsi: number
+): ErosionFeatureType {
+  if (severity === "Crítica") {
+    if (slopePercent > 18 && bsi > 0.40) {
+      return "Voçoroca em Expansão";
+    }
+    if (slopePercent > 12) {
+      return "Sulcos de Erosão Acentuados";
+    }
+    return "Erosão Laminar Severa";
+  }
+
+  if (severity === "Alta") {
+    if (slopePercent > 12) {
+      return "Sulcos de Erosão Acentuados";
+    }
+    if (slopePercent < 6 && bsi > 0.25) {
+      return "Depressão com Escoamento Concentrado";
+    }
+    return "Erosão Laminar Severa";
+  }
+
+  // Moderada
+  if (slopePercent < 6 || bsi < 0.20) {
+    return "Erosão Laminar Incipiente";
+  }
+  return "Erosão Laminar Moderada";
+}
+

@@ -29,6 +29,8 @@ import {
   Loader2,
   AlertTriangle,
   Database,
+  Satellite,
+  ShieldAlert,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useErosionStore, useFilteredPoints } from "@/lib/store/useErosionStore";
@@ -88,7 +90,10 @@ export const DataManagerModal: React.FC = () => {
     updateMultiplePoints,
     applyCandidatePoints,
     clearMap,
+    hasUnsavedPoints,
+    setHasUnsavedPoints,
     filters,
+    geeSessionActive,
   } = useErosionStore();
 
   const [activeTab, setActiveTab] = useState<DataManagerTab>("points");
@@ -141,6 +146,19 @@ export const DataManagerModal: React.FC = () => {
 
   const tenureMatchedCount = targetConsolidatedPoints.filter(
     (p) => p.carCode || (p.tenureStatus && p.tenureStatus !== "sem-correspondencia")
+  ).length;
+
+  const geeCalculatedCount = targetConsolidatedPoints.filter(
+    (p) => p.dataProvenance === "satellite-derived" || p.dataProvenance === "gee-screened"
+  ).length;
+
+  const pointsWithEstimatedBio = targetConsolidatedPoints.filter(
+    (p) =>
+      p.estimatedFields &&
+      (p.estimatedFields.includes("slopePercent") ||
+        p.estimatedFields.includes("bsi") ||
+        p.estimatedFields.includes("severity") ||
+        p.estimatedFields.includes("estimatedSoilLoss"))
   ).length;
 
   const handleProcessConsolidatedBatch = async () => {
@@ -284,18 +302,23 @@ export const DataManagerModal: React.FC = () => {
 
   const handleClearMap = () => {
     const totalItems = currentPoints.length + drawnPolygons.length;
-    const msg =
-      totalItems > 0
-        ? `Deseja realmente zerar o mapa em tela? Isso removerá ${currentPoints.length} foco(s) e ${drawnPolygons.length} talhão(ões) visíveis no mapa.
 
-(Seus projetos salvos no navegador continuarão preservados).`
-        : "Deseja resetar a visualização e filtros do mapa?";
-
-    if (confirm(msg)) {
-      clearMap();
-      setImportSuccess("Mapa zerado com sucesso! Área de trabalho limpa para nova amostragem ou projeto.");
-      setTimeout(() => setImportSuccess(null), 4000);
+    // Se existem pontos na tela que ainda NÃO foram salvos em Projetos:
+    if (allPoints.length > 0 && hasUnsavedPoints) {
+      const warningMsg = `⚠️ ATENÇÃO: DADOS NÃO SALVOS EM PROJETOS!\n\nExistem ${allPoints.length} foco(s) amostrais com memórias de cálculo na tela que AINDA NÃO FORAM SALVOS em seus projetos!\n\nSe você zerar a tela agora, todos os dados calculados via satélite e vínculos fundiários serão PERDIDOS definitivamente.\n\nDeseja realmente descartar esses dados e zerar a tela sem salvar antes?\n\n(Clique em 'Cancelar' para voltar e clicar no botão 'Salvar Coleção Atual').`;
+      if (!confirm(warningMsg)) {
+        return;
+      }
+    } else if (totalItems > 0) {
+      const msg = `Deseja realmente zerar o mapa em tela? Isso removerá ${currentPoints.length} foco(s) e ${drawnPolygons.length} talhão(ões) visíveis no mapa.\n\n(Seus projetos salvos no navegador continuarão preservados).`;
+      if (!confirm(msg)) {
+        return;
+      }
     }
+
+    clearMap();
+    setImportSuccess("Mapa zerado com sucesso! Área de trabalho limpa para nova amostragem ou projeto.");
+    setTimeout(() => setImportSuccess(null), 4000);
   };
 
   const handleSaveCollection = (e: React.FormEvent) => {
@@ -306,6 +329,7 @@ export const DataManagerModal: React.FC = () => {
     const finalName = collectionName.trim() || defaultName;
 
     saveDataset(finalName, collectionDescription);
+    setHasUnsavedPoints(false);
     setSaveSuccessMsg(`Coleção "${finalName}" salva com sucesso!`);
     setCollectionName("");
     setCollectionDescription("");
@@ -632,6 +656,17 @@ export const DataManagerModal: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Indicador de Focos Não Salvos */}
+            {hasUnsavedPoints && allPoints.length > 0 && (
+              <span
+                className="h-8 px-2 text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 rounded-lg flex items-center gap-1 shrink-0"
+                title={`Existem ${allPoints.length} focos na tela que ainda não foram salvos em Projetos.`}
+              >
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                <span>Dados Não Salvos</span>
+              </span>
+            )}
+
             {/* Botão Zerar Mapa em Tela */}
             <button
               onClick={handleClearMap}
@@ -1142,8 +1177,100 @@ export const DataManagerModal: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Banner de Status do Google Earth Engine */}
+                {geeSessionActive ? (
+                  <div className="p-3 bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-400/60 dark:border-emerald-700/60 rounded-xl flex items-start justify-between gap-2.5">
+                    <div className="flex items-start gap-2.5">
+                      <div className="p-1.5 bg-emerald-600 text-white rounded-lg shrink-0 mt-0.5 shadow-xs">
+                        <Satellite className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
+                            Google Earth Engine: <span className="text-emerald-700 dark:text-emerald-400 font-extrabold uppercase">CONECTADO (ON)</span>
+                          </span>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
+                            Sessão Ativa
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
+                          {geeCalculatedCount === targetConsolidatedPoints.length && targetConsolidatedPoints.length > 0 ? (
+                            "Todos os focos possuem variáveis biofísicas reais extraídas diretamente do Sentinel-2 L2A e do Copernicus DEM 30m."
+                          ) : (
+                            <>
+                              <strong>{pointsWithEstimatedBio > 0 ? pointsWithEstimatedBio : targetConsolidatedPoints.length - geeCalculatedCount} de {targetConsolidatedPoints.length}</strong> foco(s) possuem variáveis de relevo/satélite estimadas por padrão (ex.: Declividade 16%, BSI 0,45). O GEE está ativo: utilize o <strong>Cálculo GEE em Lote</strong> na barra lateral se desejar substituir esses valores padrões por medições reais de satélite antes de exportar.
+                            </>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-amber-500/10 dark:bg-amber-950/40 border-2 border-amber-400/80 dark:border-amber-600/70 rounded-xl flex items-start justify-between gap-2.5 shadow-sm">
+                    <div className="flex items-start gap-2.5">
+                      <div className="p-1.5 bg-amber-500 text-white rounded-lg shrink-0 mt-0.5 shadow-xs">
+                        <ShieldAlert className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-amber-950 dark:text-amber-200">
+                            Aviso de Integridade: Google Earth Engine está <span className="text-amber-700 dark:text-amber-400 font-extrabold uppercase">DESCONECTADO (OFF)</span>
+                          </span>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                            OFF
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
+                          Focos importados sem colunas de satélite utilizam valores padrão genéricos (Declividade 16%, BSI 0,45) e são registrados como <em>&ldquo;Campos Estimados&rdquo;</em> para integridade pericial. Para gerar a planilha com medições físicas reais de cada coordenada (Copernicus DEM 30m e Sentinel-2 L2A), ative a sessão GEE.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveModal("settings")}
+                      className="shrink-0 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white rounded-lg text-[11px] font-bold shadow-sm transition-colors cursor-pointer"
+                    >
+                      Ativar GEE
+                    </button>
+                  </div>
+                )}
+
                 {/* Painel de Diagnóstico do Estado dos Dados no Escopo */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                  {/* Badge Sensoriamento GEE */}
+                  <div
+                    className={`p-2.5 rounded-xl border flex flex-col justify-between transition-colors ${
+                      geeCalculatedCount === targetConsolidatedPoints.length && targetConsolidatedPoints.length > 0
+                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-200"
+                        : geeSessionActive
+                        ? "bg-blue-500/10 border-blue-500/30 text-blue-950 dark:text-blue-200"
+                        : "bg-amber-500/10 border-amber-500/30 text-amber-950 dark:text-amber-200"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-semibold text-[11px] uppercase tracking-wide">Sensoriamento GEE</span>
+                      {geeCalculatedCount === targetConsolidatedPoints.length && targetConsolidatedPoints.length > 0 ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      ) : (
+                        <Satellite className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                      )}
+                    </div>
+                    <div className="text-sm font-black">
+                      {geeCalculatedCount} / {targetConsolidatedPoints.length}
+                      <span className="text-[10px] font-normal ml-1">
+                        ({targetConsolidatedPoints.length > 0 ? Math.round((geeCalculatedCount / targetConsolidatedPoints.length) * 100) : 0}%)
+                      </span>
+                    </div>
+                    <span className="text-[10px] opacity-80 mt-0.5">
+                      {geeCalculatedCount === targetConsolidatedPoints.length && targetConsolidatedPoints.length > 0
+                        ? "Medições reais satélite / DEM"
+                        : geeSessionActive
+                        ? "GEE ON • Focos pendentes"
+                        : "GEE OFF • Valores estimados"}
+                    </span>
+                  </div>
+
                   {/* Badge RUSLE */}
                   <div
                     className={`p-2.5 rounded-xl border flex flex-col justify-between transition-colors ${
