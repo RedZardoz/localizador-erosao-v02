@@ -3,7 +3,7 @@
  * Blocos Espaciais e Variograma Empírico — SAREL (PPGTCA 2026)
  * ============================================================================
  *
- * FUNDAMENTAÇÃO CIENTÍFICA (PLANO V2, §3.4 E CORREÇÃO DO ACHADO I4):
+ * FUNDAMENTAÇÃO CIENTÍFICA (PLANO V3, §3.7 E CORREÇÃO DO ACHADO I4):
  * Dados geoespaciais violam a hipótese de independência (IID). Validação cruzada
  * aleatória coloca vizinhos autocorrelacionados em treino e teste ao mesmo tempo,
  * inflando drasticamente as métricas de acurácia (Roberts et al., 2017; Ploton et al., 2020).
@@ -11,8 +11,11 @@
  * PROCEDIMENTO RIGOROSO:
  * 1. O tamanho do bloco espacial NÃO é arbitrado; ele é derivado do alcance do
  *    variograma empírico das features primárias (declividade, solo nu).
- * 2. Se o variograma for inconclusivo (poucos pares), adota-se 20 km com registro
- *    explícito de que é provisório.
+ * 2. Não há piso arbitrário de 10 km (corrigido achado S1-15).
+ * 3. Se o variograma for inconclusivo (poucos pares ou sem patamar nítido),
+ *    adota-se a aresta de fallback (ex.: P01 = 20 km) com registro explícito de que
+ *    é escolha provisória e sem atribuir falsamente o valor de 20 km a Roberts et al.
+ * 4. Parâmetros são passados explicitamente sem defaults numéricos na assinatura (Regra 9).
  */
 
 export interface PontoGeo {
@@ -51,25 +54,32 @@ export function calcularDistanciaKm(lat1: number, lon1: number, lat2: number, lo
   return R * c;
 }
 
+export interface ParametrosVariograma {
+  tamanhoPassoKm: number;
+  distanciaMaximaKm: number;
+  fallbackArestaKm: number; // P01 (ex.: 20 km provisório)
+}
+
 /**
  * Calcula o semivariograma empírico experimental:
  * gamma(h) = (1 / (2 * N(h))) * Sum ( (z(xi) - z(xj))^2 )
  */
 export function calcularSemivariogramaEmpirico(
   pontos: PontoGeo[],
-  tamanhoPassoKm: number = 2.0,
-  distanciaMaximaKm: number = 40.0
+  params: ParametrosVariograma
 ): ResultadoVariograma {
   const n = pontos.length;
+  const { tamanhoPassoKm, distanciaMaximaKm, fallbackArestaKm } = params;
+
   if (n < 15) {
     return {
       bins: [],
-      alcanceEstimadoKm: 20.0,
+      alcanceEstimadoKm: fallbackArestaKm,
       patamarEstimado: 0,
       efeitoPepitaEstimado: 0,
       ehConclusivo: false,
-      arestaBlocoAdotadaKm: 20.0,
-      justificativaAresta: `Amostra insuficiente (n = ${n} < 15) para ajuste de variograma empírico. Adotado bloco padrão de 20 km provisório (Roberts et al., 2017).`,
+      arestaBlocoAdotadaKm: fallbackArestaKm,
+      justificativaAresta: `Amostra insuficiente (n = ${n} < 15) para ajuste de variograma empírico. Adotada aresta de contingência de ${fallbackArestaKm} km (P01 provisório; Roberts et al., 2017 orientam derivar do alcance, mas não determinam 20 km).`,
     };
   }
 
@@ -78,9 +88,9 @@ export function calcularSemivariogramaEmpirico(
   const varianciaTotal = pontos.reduce((acc, p) => acc + Math.pow(p.valor - media, 2), 0) / (n - 1);
 
   const numBins = Math.floor(distanciaMaximaKm / tamanhoPassoKm);
-  const somaDiferencas: number[] = Array(numBins).fill(0);
-  const contagemPares: number[] = Array(numBins).fill(0);
-  const somaDistancias: number[] = Array(numBins).fill(0);
+  const somaDiferencas: number[] = new Array(numBins).fill(0);
+  const contagemPares: number[] = new Array(numBins).fill(0);
+  const somaDistancias: number[] = new Array(numBins).fill(0);
 
   // Varredura de todos os pares únicos
   for (let i = 0; i < n; i++) {
@@ -99,7 +109,7 @@ export function calcularSemivariogramaEmpirico(
   }
 
   const bins: SemivariogramaBin[] = [];
-  let alcanceEstimado = 20.0;
+  let alcanceEstimado = fallbackArestaKm;
   let concluiu = false;
 
   for (let b = 0; b < numBins; b++) {
@@ -113,17 +123,18 @@ export function calcularSemivariogramaEmpirico(
       });
 
       // Identifica alcance onde semivariância atinge ~95% da variância total
+      // Sem piso arbitrário de 10 km (achado S1-15 corrigido)
       if (!concluiu && semivar >= 0.95 * varianciaTotal) {
-        alcanceEstimado = Math.max(10, Math.ceil(distMedia));
+        alcanceEstimado = Math.ceil(distMedia);
         concluiu = true;
       }
     }
   }
 
-  const arestaAdotada = concluiu ? alcanceEstimado : 20.0;
+  const arestaAdotada = concluiu ? alcanceEstimado : fallbackArestaKm;
   const justificativa = concluiu
-    ? `Aresta de ${arestaAdotada} km adotada com base no alcance em que o semivariograma atinge o patamar (95% da variância total).`
-    : `Semivariograma empírico sem patamar nítido (efeito pepita ou alcance superior a ${distanciaMaximaKm} km). Adotado bloco conservador de 20 km provisório.`;
+    ? `Aresta de ${arestaAdotada} km adotada com base no alcance em que o semivariograma empírico atinge o patamar (95% da variância total) sem piso arbitrário.`
+    : `Semivariograma empírico sem patamar nítido (efeito pepita ou alcance superior a ${distanciaMaximaKm} km). Adotada aresta de contingência de ${fallbackArestaKm} km (P01 provisório).`;
 
   return {
     bins,
@@ -136,24 +147,29 @@ export function calcularSemivariogramaEmpirico(
   };
 }
 
+export interface ParametrosOrigemGrid {
+  origemLat: number; // Âncora meridional de referência (ex.: -26.5 para o Sul do Paraná)
+  origemLng: number; // Âncora ocidental de referência (ex.: -54.5 para o Oeste do Paraná)
+}
+
 /**
  * Atribui o identificador de bloco espacial regular (ex.: "BLOCO_R03_C05")
- * a um ponto geográfico, garantindo separação espacial rigorosa para validação cruzada.
+ * a um ponto geográfico, garantindo separação espacial determinística para validação cruzada.
+ * Aresta e origem devem ser informadas explicitamente sem defaults arbitrários.
  */
 export function atribuirBlocoEspacial(
   lat: number,
   lng: number,
-  arestaKm: number = 20.0,
-  origemLat: number = -26.5, // Sul do Paraná como âncora
-  origemLng: number = -54.5  // Oeste do Paraná como âncora
+  arestaKm: number,
+  origem: ParametrosOrigemGrid
 ): string {
   // 1 grau de latitude ≈ 111.13 km
   const kmPorGrauLat = 111.13;
-  // 1 grau de longitude no Paraná (~25°S) ≈ 111.13 * cos(25°) ≈ 100.7 km
+  // 1 grau de longitude no Paraná (~25.5°S) ≈ 111.13 * cos(25.5°) ≈ 100.3 km
   const kmPorGrauLng = 111.13 * Math.cos((-25.5 * Math.PI) / 180);
 
-  const deltaLatKm = (lat - origemLat) * kmPorGrauLat;
-  const deltaLngKm = (lng - origemLng) * kmPorGrauLng;
+  const deltaLatKm = (lat - origem.origemLat) * kmPorGrauLat;
+  const deltaLngKm = (lng - origem.origemLng) * kmPorGrauLng;
 
   const row = Math.floor(Math.abs(deltaLatKm) / arestaKm);
   const col = Math.floor(Math.abs(deltaLngKm) / arestaKm);

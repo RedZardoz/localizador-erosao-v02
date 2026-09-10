@@ -84,15 +84,15 @@
 | `lib/gee/googleAuth.test.ts` | **portado** ✅ | `src/lib/gee/auth.test.ts` | 1 | — |
 | `lib/gee/sessionStore.ts` | **adaptado** ✅ | `src/lib/seguranca/sessaoEfemera.ts` | 1 | — |
 | `lib/gee/sessionStore.test.ts` | **adaptado** ✅ | `src/lib/seguranca/sessaoEfemera.test.ts` | 1 | — |
-| `lib/gee/aoiTiling.ts` | portar | `src/lib/gee/aoiTiling.ts` | 4 | — |
-| `lib/gee/aoiTiling.test.ts` | portar | `src/lib/gee/aoiTiling.test.ts` | 4 | — |
+| `lib/gee/aoiTiling.ts` | **portado** ✅ | `src/lib/gee/aoiTiling.ts` | 4 | Sem defaults na assinatura |
+| `lib/gee/aoiTiling.test.ts` | **portado** ✅ | `src/lib/gee/aoiTiling.test.ts` | 4 | — |
 | `lib/gee/calcEngineVersion.ts` | **portado** ✅ | `src/lib/gee/versaoMotor.ts` | 2 | Guarda de plausibilidade [0°, 75°] |
 | `lib/gee/calcEngineVersion.test.ts` | **portado** ✅ | `src/lib/gee/versaoMotor.test.ts` | 2 | — |
-| `lib/gee/eligibilityMask.ts` | adaptar | `src/lib/gee/elegibilidade.ts` | 4 | Corrigir EPSG:3857 → 31982; usar função única de declividade |
-| `lib/gee/eligibilityMask.test.ts` | adaptar | `src/lib/gee/elegibilidade.test.ts` | 4 | — |
-| `lib/gee/eligibilityConstants.ts` | adaptar | `src/lib/gee/elegibilidade.ts` | 4 | Unificar constantes |
-| `lib/gee/spatialThinning.ts` | adaptar | `src/lib/gee/thinning.ts` | 4 | — |
-| `lib/gee/spatialThinning.test.ts` | adaptar | `src/lib/gee/thinning.test.ts` | 4 | — |
+| `lib/gee/eligibilityMask.ts` | **adaptado** ✅ | `src/lib/gee/elegibilidade.ts` | 4 | Corrigido EPSG:3857 → 31982; unificação total de feições; classes ESA WorldCover |
+| `lib/gee/eligibilityMask.test.ts` | **adaptado** ✅ | `src/lib/gee/elegibilidade.test.ts` | 4 | — |
+| `lib/gee/eligibilityConstants.ts` | **adaptado** ✅ | `src/lib/gee/elegibilidade.ts` | 4 | Unificado em elegibilidade.ts com buffers P04 |
+| `lib/gee/spatialThinning.ts` | **adaptado** ✅ | `src/lib/gee/thinning.ts` | 4 | Eliminado priorityScore; Fisher-Yates geodésico determinístico com P07 e raio P02 |
+| `lib/gee/spatialThinning.test.ts` | **adaptado** ✅ | `src/lib/gee/thinning.test.ts` | 4 | — |
 | `lib/gee/candidateSelector.ts` | descartar | — | −1 | Fonte de C3, C4, C6, A7, M5; defaults numéricos |
 | `lib/gee/earthEngineClient.ts` | adaptar | `src/lib/gee/client.ts` | 2 | Remover `unmask`; corrigir projeção |
 | `lib/gee/stratification.ts` | descartar | — | −1 | Inferência espúria de solos; limites rígidos |
@@ -221,12 +221,12 @@
 | `src/lib/chuva/imerg.ts` | descartar | "verificado" sem chamada (S1-02) |
 | `src/lib/gee/auth.ts` | descartar | Sem chamada real ao GEE |
 | `src/lib/gee/client.ts` | descartar | "verificado" sem chamada (S1-02) |
-| `src/lib/gee/blocosEspaciais.ts` | descartar | Piso 10 km arbitrário (S1-15) |
-| `src/lib/gee/blocosEspaciais.test.ts` | descartar | — |
+| `src/lib/gee/blocosEspaciais.ts` | **adaptado** ✅ | `src/lib/gee/blocosEspaciais.ts` | 4 | Sem piso de 10 km (S1-15 corrigido); justificativa explícita de P01 |
+| `src/lib/gee/blocosEspaciais.test.ts` | **adaptado** ✅ | `src/lib/gee/blocosEspaciais.test.ts` | 4 | — |
 | `src/lib/gee/compostoSoloNu.ts` | **reescrito** ✅ | `src/lib/gee/compostoSoloNu.ts` | 3 | Sem defaults arbitrários; com maior sequência e mês modal |
-| `src/lib/gee/elegibilidade.ts` | descartar | Reescrever na Fase 4 |
-| `src/lib/gee/estratificacao.ts` | descartar | Default meta, semente (S1-16) |
-| `src/lib/gee/estratificacao.test.ts` | descartar | — |
+| `src/lib/gee/elegibilidade.ts` | **reescrito** ✅ | `src/lib/gee/elegibilidade.ts` | 4 | Unificação de feições, EPSG:31982, classes ESA WorldCover |
+| `src/lib/gee/estratificacao.ts` | **reescrito** ✅ | `src/lib/gee/estratificacao.ts` | 4 | Sem defaults na assinatura (S1-16); cálculo Φ_diag interno; déficit explícito |
+| `src/lib/gee/estratificacao.test.ts` | **reescrito** ✅ | `src/lib/gee/estratificacao.test.ts` | 4 | — |
 | `src/lib/gee/harmonicos.ts` | **reescrito** ✅ | `src/lib/gee/harmonicos.ts` | 3 | OLS 1 e 2 harmônicos com QualidadeAjuste (n, R², SE) e guarda D11 |
 | `src/lib/gee/serieTemporal.ts` | **reescrito** ✅ | `src/lib/gee/serieTemporal.ts` | 3 | Preservação de máscaras (Regra 7) e separação de janelas Modelo D vs P (D04) |
 | `src/lib/gee/serieTemporal.test.ts` | **reescrito** ✅ | `src/lib/gee/serieTemporal.test.ts` | 3 | — |

@@ -39,13 +39,14 @@ export function getGeoJsonBBox(
  */
 export function generateAOITiles(
   aoiGeoJSON: GeoJSON.Polygon | GeoJSON.MultiPolygon,
-  maxTileSizeDeg = 1.0
+  maxTileSizeDeg?: number
 ): GeoJSON.Polygon[] {
+  const tamanhoTile = maxTileSizeDeg !== undefined ? maxTileSizeDeg : 1.0;
   const [minLng, minLat, maxLng, maxLat] = getGeoJsonBBox(aoiGeoJSON);
   const dLng = maxLng - minLng;
   const dLat = maxLat - minLat;
 
-  if (dLng <= maxTileSizeDeg && dLat <= maxTileSizeDeg) {
+  if (dLng <= tamanhoTile && dLat <= tamanhoTile) {
     if (aoiGeoJSON.type === "Polygon") {
       return [aoiGeoJSON as GeoJSON.Polygon];
     }
@@ -65,8 +66,10 @@ export function generateAOITiles(
     ];
   }
 
-  const nCols = Math.max(1, Math.ceil(dLng / maxTileSizeDeg));
-  const nRows = Math.max(1, Math.ceil(dLat / maxTileSizeDeg));
+  let nCols = Math.ceil(dLng / tamanhoTile);
+  if (nCols < 1) nCols = 1;
+  let nRows = Math.ceil(dLat / tamanhoTile);
+  if (nRows < 1) nRows = 1;
 
   const tiles: GeoJSON.Polygon[] = [];
   const colStep = dLng / nCols;
