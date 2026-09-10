@@ -5,7 +5,7 @@ import {
   MIN_PLAUSIBLE_SLOPE_DEG,
   validateSlopePlausibility,
   isPointSlopeOutdated,
-} from "./calcEngineVersion";
+} from "./versaoMotor";
 
 describe("calcEngineVersion - Guarda de Plausibilidade Física da Declividade", () => {
   it("deve aceitar valores de declividade em faixas terrestres plausíveis (0° a 75°)", () => {

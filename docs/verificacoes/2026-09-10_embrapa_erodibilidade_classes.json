@@ -1,0 +1,104 @@
+{
+  "fonte": "https://geoinfo.dados.embrapa.br/geoserver/ows",
+  "camada": "geonode:brasil_erodibilidade_solo",
+  "dataVerificacao": "2026-09-10T21:34:31.834Z",
+  "metodo": "Varredura exaustiva por CQL filter codnum=1..10 no WFS OGC oficial",
+  "dominioOficialCompleto": [
+    {
+      "ogc_fid": 34910,
+      "codnum": 1,
+      "classe": "Muito baixa"
+    },
+    {
+      "ogc_fid": 74660,
+      "codnum": 2,
+      "classe": "Baixa"
+    },
+    {
+      "ogc_fid": 4783,
+      "codnum": 3,
+      "classe": "Media"
+    },
+    {
+      "ogc_fid": 20654,
+      "codnum": 4,
+      "classe": "Alta"
+    },
+    {
+      "ogc_fid": 513,
+      "codnum": 5,
+      "classe": "Muito alta"
+    },
+    {
+      "ogc_fid": 4534,
+      "codnum": 6,
+      "classe": "Fase erodida"
+    },
+    {
+      "ogc_fid": 85364,
+      "codnum": 7,
+      "classe": "Dunas"
+    },
+    {
+      "ogc_fid": 1,
+      "codnum": 8,
+      "classe": "Afloramentos de rochas"
+    },
+    {
+      "ogc_fid": 34918,
+      "codnum": 9,
+      "classe": "Corpos dagua"
+    }
+  ],
+  "analiseD08_D09": {
+    "ordinaisNaturais": [
+      {
+        "codnum": 1,
+        "classe": "Muito baixa",
+        "sugestaoOrdinal": 1
+      },
+      {
+        "codnum": 2,
+        "classe": "Baixa",
+        "sugestaoOrdinal": 2
+      },
+      {
+        "codnum": 3,
+        "classe": "Media",
+        "sugestaoOrdinal": 3
+      },
+      {
+        "codnum": 4,
+        "classe": "Alta",
+        "sugestaoOrdinal": 4
+      },
+      {
+        "codnum": 5,
+        "classe": "Muito alta",
+        "sugestaoOrdinal": 5
+      }
+    ],
+    "classesEspeciaisNaoOrdinais": [
+      {
+        "codnum": 6,
+        "classe": "Fase erodida",
+        "observacao": "Área já erodida; erodibilidade do remanescente requer avaliação ou exclusão"
+      },
+      {
+        "codnum": 7,
+        "classe": "Dunas",
+        "observacao": "Formação arenosa instável; não se aplica modelo pedológico padrão"
+      },
+      {
+        "codnum": 8,
+        "classe": "Afloramentos de rochas",
+        "observacao": "Sem manto pedológico; erodibilidade nula ou não aplicável"
+      },
+      {
+        "codnum": 9,
+        "classe": "Corpos dagua",
+        "observacao": "Água superficial; fora do domínio de erosão de solo"
+      }
+    ]
+  }
+}

@@ -424,7 +424,7 @@ def query_property(db_path: str, lat: float, lon: float, uf_hint: str = None) ->
     except Exception as e:
         sys.stderr.write(f"Erro na consulta fundiária: {str(e)}\n")
         return {
-            "status": "sem-correspondencia",
+            "status": "erro-na-consulta",
             "uf": uf_detectada,
             "mensagem": f"Erro interno ao consultar base fundiária: {str(e)}",
             "dataConsulta": datetime.now().strftime("%d/%m/%Y"),
@@ -464,12 +464,12 @@ def query_properties_batch(db_path: str, items: list) -> dict:
             item_id = it.get("id")
             if not item_id:
                 continue
-            lat = it.get("lat") or it.get("latitude")
-            lon = it.get("lon") or it.get("longitude")
+            lat = it.get("lat") if it.get("lat") is not None else it.get("latitude")
+            lon = it.get("lon") if it.get("lon") is not None else it.get("longitude")
             uf = it.get("uf")
             if lat is None or lon is None:
                 results[item_id] = {
-                    "status": "sem-correspondencia",
+                    "status": "erro-na-consulta",
                     "mensagem": "Coordenadas ausentes ou inválidas.",
                 }
                 continue
@@ -479,7 +479,7 @@ def query_properties_batch(db_path: str, items: list) -> dict:
                 results[item_id] = match
             except Exception as item_err:
                 results[item_id] = {
-                    "status": "sem-correspondencia",
+                    "status": "erro-na-consulta",
                     "mensagem": f"Erro ao processar coordenada: {str(item_err)}",
                 }
 
@@ -488,7 +488,7 @@ def query_properties_batch(db_path: str, items: list) -> dict:
         sys.stderr.write(f"Erro no processamento em lote da base fundiária: {str(e)}\n")
         return {
             it["id"]: {
-                "status": "sem-correspondencia",
+                "status": "erro-na-consulta",
                 "mensagem": f"Erro no processamento em lote: {str(e)}",
             }
             for it in items if "id" in it
@@ -538,7 +538,7 @@ if __name__ == "__main__":
         except Exception as e:
             sys.stderr.write(f"Erro no processador de cruzamento espacial: {str(e)}\n")
             match = {
-                "status": "sem-correspondencia",
+                "status": "erro-na-consulta",
                 "mensagem": f"Erro interno: {str(e)}",
             }
 

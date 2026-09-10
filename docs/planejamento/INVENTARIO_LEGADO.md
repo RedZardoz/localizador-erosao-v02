@@ -86,8 +86,8 @@
 | `lib/gee/sessionStore.test.ts` | **adaptado** ✅ | `src/lib/seguranca/sessaoEfemera.test.ts` | 1 | — |
 | `lib/gee/aoiTiling.ts` | portar | `src/lib/gee/aoiTiling.ts` | 4 | — |
 | `lib/gee/aoiTiling.test.ts` | portar | `src/lib/gee/aoiTiling.test.ts` | 4 | — |
-| `lib/gee/calcEngineVersion.ts` | portar | `src/lib/gee/versaoMotor.ts` | 1 | — |
-| `lib/gee/calcEngineVersion.test.ts` | portar | `src/lib/gee/versaoMotor.test.ts` | 1 | — |
+| `lib/gee/calcEngineVersion.ts` | **portado** ✅ | `src/lib/gee/versaoMotor.ts` | 2 | Guarda de plausibilidade [0°, 75°] |
+| `lib/gee/calcEngineVersion.test.ts` | **portado** ✅ | `src/lib/gee/versaoMotor.test.ts` | 2 | — |
 | `lib/gee/eligibilityMask.ts` | adaptar | `src/lib/gee/elegibilidade.ts` | 4 | Corrigir EPSG:3857 → 31982; usar função única de declividade |
 | `lib/gee/eligibilityMask.test.ts` | adaptar | `src/lib/gee/elegibilidade.test.ts` | 4 | — |
 | `lib/gee/eligibilityConstants.ts` | adaptar | `src/lib/gee/elegibilidade.ts` | 4 | Unificar constantes |
@@ -123,8 +123,8 @@
 
 | Arquivo | Ação | Destino | Fase | Observação |
 |---|---|---|---|---|
-| `lib/fundiario/spatialMatcher.ts` | adaptar | `src/lib/fundiario/matcher.ts` | 2 | Nunca mascarar erro como "sem-correspondencia" |
-| `lib/fundiario/spatialMatcher.test.ts` | adaptar | `src/lib/fundiario/matcher.test.ts` | 2 | — |
+| `lib/fundiario/spatialMatcher.ts` | **adaptado** ✅ | `src/lib/fundiario/matcher.ts` | 2 | Preserva erro técnico vs sem correspondência (Invariante 5); suporte LGPD |
+| `lib/fundiario/spatialMatcher.test.ts` | **adaptado** ✅ | `src/lib/fundiario/matcher.test.ts` | 2 | 14 testes cobrindo todos os estados fundiários |
 
 ### Lib — Store
 
@@ -163,15 +163,14 @@
 
 | Arquivo | Ação | Destino | Fase | Observação |
 |---|---|---|---|---|
-| `lib/api/ibgeClient.ts` | adaptar | `src/lib/localizacao/municipio.ts` | 2 | — |
+| `lib/api/ibgeClient.ts` | **adaptado** ✅ | `src/lib/localizacao/municipio.ts` | 2 | API oficial IBGE Localidades e Malhas |
 
 ### Data
 
 | Arquivo | Ação | Destino | Fase | Observação |
 |---|---|---|---|---|
-| `data/paranaBasins.ts` | avaliar | `src/lib/localizacao/dados/` | 2 | Verificar proveniência |
-| `data/paranaBoundary.ts` | avaliar | `src/lib/localizacao/dados/` | 2 | — |
-| `data/regionsData.ts` | avaliar | `src/lib/localizacao/dados/` | 2 | — |
+| `data/paranaBasins.ts` | **portado** ✅ | `src/lib/localizacao/bacias.ts` | 2 | 6 macrobacias oficiais IAT / Águas Paraná |
+| `data/paranaBoundary.ts` | **adaptado** ✅ | `src/lib/localizacao/fronteira.ts` | 2 | Bbox envolvente estrito do Paraná |
 
 ---
 

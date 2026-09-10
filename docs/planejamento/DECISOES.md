@@ -92,9 +92,9 @@
 
 | Campo | Valor |
 |---|---|
-| **Estado** | 🔴 Pendente |
+| **Estado** | 🟡 Proposta detalhada |
 | **Trava** | Fase 2 |
-| **O agente entrega** | Fração de pontos em associação numa AOI real |
+| **O agente entrega** | Regra implementada em `embrapaSoilClient.ts`: componente dominante `ordem_1` utilizado como valor pedológico base, atribuindo `confiancaPedologica = "media"` quando `tipoUnidade = "associacao"`, e `"alta"` quando `tipoUnidade = "simples"`. Preserva a integralidade científica sem inventar resolução espacial inexistente na carta. |
 | **Proposta planejamento v3** | Usar `ordem_1` e propagar `tipo_unida` como confiança média |
 
 ---
@@ -103,10 +103,12 @@
 
 | Campo | Valor |
 |---|---|
-| **Estado** | 🔴 Pendente |
+| **Estado** | 🟡 Proposta detalhada (aguarda escolha do pesquisador) |
 | **Trava** | Fase 2 (mapa) e Fase 4 (K̂) |
-| **O agente entrega** | Enumeração do domínio completo com evidência e ao menos 2 propostas de mapa |
-| **Nota** | codnum NÃO é ordinal — contém "Área urbana" (codnum 9) |
+| **Evidência arquivada** | `docs/verificacoes/2026-09-10_embrapa_erodibilidade_classes.json` (varredura exaustiva WFS OGC oficial) |
+| **Domínio oficial verificado** | 1: 'Muito baixa', 2: 'Baixa', 3: 'Media', 4: 'Alta', 5: 'Muito alta', 6: 'Fase erodida', 7: 'Dunas', 8: 'Afloramentos de rochas', 9: 'Corpos dagua' |
+| **Proposta A (Recomendada)** | **Domínio agrícola estrito [1..5]:** Classes 1 a 5 mapeadas ordinalmente de 1 a 5. Classes 6 ('Fase erodida'), 7 ('Dunas'), 8 ('Afloramentos') e 9 ('Corpos dagua') tratadas como `indisponivel` (`causa: "fora-do-dominio"`) ou excluídas pela máscara de uso do solo. **Corte K̂:** Nível 1 (baixa/média erodibilidade = 1 a 3) e Nível 2 (alta/muito alta erodibilidade = 4 e 5). |
+| **Proposta B** | **Domínio estendido [1..6]:** Inclui 'Fase erodida' como classe ordinal máxima (6). Classes 7 a 9 excluídas. **Corte K̂:** Nível 1 (1 a 3) e Nível 2 (4 a 6). |
 
 ---
 
