@@ -223,13 +223,13 @@
 | `src/lib/gee/client.ts` | descartar | "verificado" sem chamada (S1-02) |
 | `src/lib/gee/blocosEspaciais.ts` | descartar | Piso 10 km arbitrário (S1-15) |
 | `src/lib/gee/blocosEspaciais.test.ts` | descartar | — |
-| `src/lib/gee/compostoSoloNu.ts` | descartar | Default limiarNdvi=0,25 (S1-16) |
+| `src/lib/gee/compostoSoloNu.ts` | **reescrito** ✅ | `src/lib/gee/compostoSoloNu.ts` | 3 | Sem defaults arbitrários; com maior sequência e mês modal |
 | `src/lib/gee/elegibilidade.ts` | descartar | Reescrever na Fase 4 |
 | `src/lib/gee/estratificacao.ts` | descartar | Default meta, semente (S1-16) |
 | `src/lib/gee/estratificacao.test.ts` | descartar | — |
-| `src/lib/gee/harmonicos.ts` | descartar | Reescrever com QualidadeAjuste |
-| `src/lib/gee/serieTemporal.ts` | descartar | Reescrever com preservação de máscara |
-| `src/lib/gee/serieTemporal.test.ts` | descartar | — |
+| `src/lib/gee/harmonicos.ts` | **reescrito** ✅ | `src/lib/gee/harmonicos.ts` | 3 | OLS 1 e 2 harmônicos com QualidadeAjuste (n, R², SE) e guarda D11 |
+| `src/lib/gee/serieTemporal.ts` | **reescrito** ✅ | `src/lib/gee/serieTemporal.ts` | 3 | Preservação de máscaras (Regra 7) e separação de janelas Modelo D vs P (D04) |
+| `src/lib/gee/serieTemporal.test.ts` | **reescrito** ✅ | `src/lib/gee/serieTemporal.test.ts` | 3 | — |
 | `src/lib/gee/terreno.ts` | descartar | Cortes silenciosos em TWI (S1-10); adquiridoEm = hoje (S1-11) |
 | `src/lib/gee/terreno.test.ts` | descartar | — |
 | `src/lib/planet/quota.ts` | descartar | Cota em memória, ciclo fixo (S1-14) |

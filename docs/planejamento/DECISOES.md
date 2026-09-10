@@ -51,9 +51,9 @@
 
 | Campo | Valor |
 |---|---|
-| **Estado** | 🔴 Pendente |
+| **Estado** | 🟡 Implementado em código (aguarda validação em campo) |
 | **Trava** | Janela da série (Fase 3) e montagem da matriz (Fase 6) |
-| **O agente entrega** | Demonstração da diferença de janela em um ponto real |
+| **O agente entrega** | Função `definirJanelasModelo` em `src/lib/gee/serieTemporal.ts`: isola a janela do Modelo D (série até o evento) da janela do Modelo P (série encerrada com guarda temporal pré-evento, ex.: 2 anos), impedindo vazamento temporal e garantindo integridade preditiva. |
 | **Sugestão planejamento v3** | Intervalo de guarda de 2 anos para Modelo P |
 
 ---
