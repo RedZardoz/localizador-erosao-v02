@@ -82,5 +82,9 @@ __pycache__/
 *.pyc
 *.pyo
 scripts/__pycache__/
+legado/**/__pycache__/
+
+# SAREL Local Ledgers
+data/planet/
 
 Descrição da versão atual/
