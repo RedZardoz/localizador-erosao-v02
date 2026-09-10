@@ -228,3 +228,9 @@ export async function buildXlsxBlob(sheets: XlsxSheet[]): Promise<Blob> {
     mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
 }
+
+export async function generateXlsxBuffer(sheets: XlsxSheet[]): Promise<Buffer> {
+  const blob = await buildXlsxBlob(sheets);
+  const arrayBuffer = await blob.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}

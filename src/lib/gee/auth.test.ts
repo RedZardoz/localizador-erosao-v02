@@ -1,6 +1,6 @@
 import { generateKeyPairSync, verify } from "crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getGoogleAccessToken, EARTH_ENGINE_SCOPES } from "./googleAuth";
+import { getGoogleAccessToken, EARTH_ENGINE_SCOPES } from "./auth";
 
 // Gera um par de chaves de teste (não é uma credencial real do Google) só
 // para provar que a assinatura RS256 do JWT é criptograficamente válida —

@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { GcpCredentials } from "@/types/erosion";
+import type { CredenciaisServiceAccount } from "@/lib/seguranca/sessaoEfemera";
 
 /**
  * Autenticação OAuth2 "Service Account" (RFC 7523 JWT Bearer) implementada com
@@ -51,7 +51,7 @@ function signJwtRS256(payload: Record<string, unknown>, header: Record<string, u
  * https://developers.google.com/identity/protocols/oauth2/service-account
  */
 export async function getGoogleAccessToken(
-  credentials: Pick<GcpCredentials, "client_email" | "private_key" | "token_uri">,
+  credentials: Pick<CredenciaisServiceAccount, "client_email" | "private_key" | "token_uri">,
   scopes: string[]
 ): Promise<GoogleAccessToken> {
   const nowSec = Math.floor(Date.now() / 1000);
@@ -92,9 +92,10 @@ export async function getGoogleAccessToken(
     throw new Error(`Google recusou a autenticação da Service Account: ${googleError}`);
   }
 
+  const segundosValidade = typeof data.expires_in === "number" ? data.expires_in : 3600; // permitido: fallback de protocolo oauth2 rfc6749 para token expiravel
   return {
     accessToken: data.access_token,
-    expiresAt: Date.now() + (data.expires_in ?? 3600) * 1000,
+    expiresAt: Date.now() + segundosValidade * 1000,
   };
 }
 

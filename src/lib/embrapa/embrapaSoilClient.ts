@@ -18,11 +18,15 @@
  * 2. geonode:brasil_erodibilidade_solo
  *    Classes qualitativas de erodibilidade do solo. Cobertura: Brasil.
  *
- * CAPACIDADE VERIFICADA EM 08/09/2026
+ * CAPACIDADE VERIFICADA EM 2026-09-10
+ * VERIFICADO 2026-09-10 — evidência: docs/verificacoes/2026-09-10_embrapa_capabilities.xml
  * - GetCapabilities declara GetFeatureInfo com application/json.
  * - Ambas as camadas expõem queryable="1".
  * - Consulta combinada (query_layers com as duas camadas) retorna as duas
  *   feições em uma única requisição, discrimináveis pelo prefixo de `id`.
+ * - Amostras reais arquivadas em docs/verificacoes/2026-09-10_embrapa_featureinfo_oeste.json,
+ *   docs/verificacoes/2026-09-10_embrapa_featureinfo_noroeste.json e
+ *   docs/verificacoes/2026-09-10_embrapa_featureinfo_oceano.json.
  *
  * PRINCÍPIO DE PROJETO — DADO VERDADEIRO OU AUSÊNCIA DECLARADA
  * Este módulo NUNCA inventa, estima ou infere um valor. Em qualquer situação

@@ -80,10 +80,10 @@
 
 | Arquivo | Ação | Destino | Fase | Observação |
 |---|---|---|---|---|
-| `lib/gee/googleAuth.ts` | portar | `src/lib/gee/auth.ts` | 1 | JWT RS256 nativo |
-| `lib/gee/googleAuth.test.ts` | portar | `src/lib/gee/auth.test.ts` | 1 | — |
-| `lib/gee/sessionStore.ts` | adaptar | `src/lib/seguranca/sessaoEfemera.ts` | 1 | — |
-| `lib/gee/sessionStore.test.ts` | adaptar | `src/lib/seguranca/sessaoEfemera.test.ts` | 1 | — |
+| `lib/gee/googleAuth.ts` | **portado** ✅ | `src/lib/gee/auth.ts` | 1 | JWT RS256 nativo |
+| `lib/gee/googleAuth.test.ts` | **portado** ✅ | `src/lib/gee/auth.test.ts` | 1 | — |
+| `lib/gee/sessionStore.ts` | **adaptado** ✅ | `src/lib/seguranca/sessaoEfemera.ts` | 1 | — |
+| `lib/gee/sessionStore.test.ts` | **adaptado** ✅ | `src/lib/seguranca/sessaoEfemera.test.ts` | 1 | — |
 | `lib/gee/aoiTiling.ts` | portar | `src/lib/gee/aoiTiling.ts` | 4 | — |
 | `lib/gee/aoiTiling.test.ts` | portar | `src/lib/gee/aoiTiling.test.ts` | 4 | — |
 | `lib/gee/calcEngineVersion.ts` | portar | `src/lib/gee/versaoMotor.ts` | 1 | — |
@@ -104,8 +104,8 @@
 
 | Arquivo | Ação | Destino | Fase | Observação |
 |---|---|---|---|---|
-| `lib/security/localOnly.ts` | portar | `src/lib/seguranca/localOnly.ts` | 1 | — |
-| `lib/security/localOnly.test.ts` | portar | `src/lib/seguranca/localOnly.test.ts` | 1 | — |
+| `lib/security/localOnly.ts` | **portado** ✅ | `src/lib/seguranca/localOnly.ts` | 1 | — |
+| `lib/security/localOnly.test.ts` | **portado** ✅ | `src/lib/seguranca/localOnly.test.ts` | 1 | — |
 
 ### Lib — RUSLE
 
@@ -137,11 +137,11 @@
 
 | Arquivo | Ação | Destino | Fase | Observação |
 |---|---|---|---|---|
-| `lib/utils/xlsxWriter.ts` | portar | `src/lib/export/xlsxWriter.ts` | 1 | — |
-| `lib/utils/auditTableExport.ts` | adaptar | `src/lib/export/planilha.ts` e `csv.ts` | 1 | Aba dupla (valor+origem); regras §16 |
-| `lib/utils/auditTableExport.test.ts` | adaptar | `src/lib/export/planilha.test.ts` | 1 | — |
-| `lib/utils/geoUtils.ts` | adaptar | `src/lib/export/dms.ts` e `localizacao/` | 1 | Corrigir rollover 60,0" |
-| `lib/utils/geoUtils.test.ts` | adaptar | `src/lib/export/dms.test.ts` | 1 | — |
+| `lib/utils/xlsxWriter.ts` | **portado** ✅ | `src/lib/export/xlsxWriter.ts` | 1 | Buffer nativo OpenXML/JSZip |
+| `lib/utils/auditTableExport.ts` | **adaptado** ✅ | `src/lib/export/planilha.ts` e `csv.ts` | 1 | Aba dupla (valor+origem); regras §16 |
+| `lib/utils/auditTableExport.test.ts` | **adaptado** ✅ | `src/lib/export/planilha.test.ts` | 1 | — |
+| `lib/utils/geoUtils.ts` | **adaptado** ✅ | `src/lib/export/dms.ts` e `localizacao/` | 1 | Rollover 60,0" corrigido |
+| `lib/utils/geoUtils.test.ts` | **adaptado** ✅ | `src/lib/export/dms.test.ts` | 1 | — |
 | `lib/utils/koboParser.ts` | adaptar | `src/lib/rotulos/ingestaoKobo.ts` | 6 | — |
 | `lib/utils/koboParser.test.ts` | adaptar | `src/lib/rotulos/ingestaoKobo.test.ts` | 6 | — |
 | `lib/utils/exportUtils.ts` | avaliar | — | 1 | Verificar o que é útil |
