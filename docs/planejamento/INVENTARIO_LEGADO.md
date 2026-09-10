@@ -232,8 +232,12 @@
 | `src/lib/gee/serieTemporal.test.ts` | **reescrito** ✅ | `src/lib/gee/serieTemporal.test.ts` | 3 | — |
 | `src/lib/gee/terreno.ts` | descartar | Cortes silenciosos em TWI (S1-10); adquiridoEm = hoje (S1-11) |
 | `src/lib/gee/terreno.test.ts` | descartar | — |
-| `src/lib/planet/quota.ts` | descartar | Cota em memória, ciclo fixo (S1-14) |
-| `src/lib/planet/dataApi.ts` | descartar | Fração limpa 80% sem justificativa (S1-14) |
+| `src/lib/planet/quota.ts` | **adaptado** ✅ | `src/lib/planet/quota.ts` | 5 | Livro-razão persistente no disco; resolve achado S1-14 |
+| `src/lib/planet/dataApi.ts` | **adaptado** ✅ | `src/lib/planet/dataApi.ts` | 5 | Filtro UDM2 estritamente na AOI do alvo; limiar P06 por argumento |
+| `src/lib/planet/ordersApi.ts` | **adaptado** ✅ | `src/lib/planet/ordersApi.ts` | 5 | Clipping obrigatório, harmonização Sentinel-2 e bloqueio sem confirmação do usuário |
+| `src/lib/planet/paresEvento.ts` | **adaptado** ✅ | `src/lib/planet/paresEvento.ts` | 5 | Montagem física (T-, T0, T+), comparabilidade geométrica e script de viabilidade |
+| `src/lib/planet/tiles.ts` | **adaptado** ✅ | `src/lib/planet/tiles.ts` | 5 | Camadas de visualização da Fase A faturando cota de Scene Tiles |
+| `src/lib/gee/sentinel1.ts` | **novo** ✅ | `src/lib/gee/sentinel1.ts` | 5 | Radar Sentinel-1 GRD banda C para T0 sob nuvem |
 | `src/store/useSarelStore.ts` | descartar | Usa pontosExemplo (S1-01) |
 | `src/store/useSarelStore.test.ts` | descartar | — |
 | `docs/AUDITORIA_INTEGRIDADE_2026.md` | descartar | Auto-auditoria incorreta (S1-17) |
