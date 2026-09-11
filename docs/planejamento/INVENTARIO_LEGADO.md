@@ -195,9 +195,12 @@
 | `src/lib/rotulos/ingestaoInterpretacao.ts` | **adaptado** ✅ | `src/lib/rotulos/ingestaoInterpretacao.ts` | 6 | Fotointerpretação independente, cálculo Kappa integrado |
 | `src/lib/rotulos/ingestaoDrone.ts` | **adaptado** ✅ | `src/lib/rotulos/ingestaoDrone.ts` | 6 | Segregação estrita como held-out (nunca no treino) |
 | `src/lib/rotulos/taxaErro.ts` | **novo** ✅ | `src/lib/rotulos/taxaErro.ts` | 6 | Matriz de confusão A x B e taxa de erro por classe da fotointerpretação |
-| `src/components/inspetor/InspetorPonto.tsx` | adaptar | `src/components/inspetor/InspetorPonto.tsx` | 7 | Esboço; selos de proveniência |
-| `src/components/inspetor/SeloProveniencia.tsx` | adaptar | `src/components/inspetor/SeloProveniencia.tsx` | 7 | — |
-| `src/components/inspetor/GraficoSerieTemporal.tsx` | adaptar | `src/components/inspetor/GraficoSerieTemporal.tsx` | 7 | Lacunas como lacunas |
+| `src/components/inspetor/InspetorPonto.tsx` | **adaptado** ✅ | `src/components/inspetor/InspetorPonto.tsx` | 7 | Tela central com 4 selos de proveniência e coordenadas DMS |
+| `src/components/inspetor/SeloProveniencia.tsx` | **adaptado** ✅ | `src/components/inspetor/SeloProveniencia.tsx` | 7 | ● medido, ◊ modelado, □ tabelado, ○ indisponível com causa |
+| `src/components/inspetor/GraficoSerieTemporal.tsx` | **adaptado** ✅ | `src/components/inspetor/GraficoSerieTemporal.tsx` | 7 | Lacunas reais desenhadas estritamente como descontinuidades |
+| `src/components/mapa/MapaAmostral.tsx` | **adaptado** ✅ | `src/components/mapa/MapaAmostral.tsx` | 7 | Coloração exclusiva por estrato; sem severidade |
+| `src/components/matriz/PainelMatrizTreino.tsx` | **adaptado** ✅ | `src/components/matriz/PainelMatrizTreino.tsx` | 7 | Prévia supervisionada sem vazamento de coordenadas |
+| `src/components/campanha/PainelCampanha.tsx` | **adaptado** ✅ | `src/components/campanha/PainelCampanha.tsx` | 7 | Exportação cega por perfil (Invariante 2) |
 | `src/lib/export/planilha.ts` | adaptar | `src/lib/export/planilha.ts` | 1 | Referência para colunas duplas |
 | `src/lib/export/planilha.test.ts` | adaptar | `src/lib/export/planilha.test.ts` | 1 | — |
 | `src/lib/export/geoConversao.ts` | adaptar | `src/lib/export/dms.ts` | 1 | Conferir rollover 60,0" |
