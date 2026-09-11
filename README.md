@@ -5,40 +5,80 @@
 
 ---
 
-## Estado Atual: Em Reconstrução (Branch `sarel/v2`)
+## Visão Geral
 
-O sistema está passando por reconstrução metodológica e de engenharia conforme estabelecido nos documentos de planejamento:
-- [Plano de Implementação v3](docs/planejamento/implementation_plan_v3.md)
-- [Prompt de Reconstrução e Lei Fundamental](docs/planejamento/PROMPT_RECONSTRUCAO_SAREL_2026-09-10.md)
-- [Planejamento de Pesquisa v3](docs/planejamento/PLANEJAMENTO_PESQUISA_v3_2026-09-08.md)
-- [Registro de Decisões Metodológicas](docs/planejamento/DECISOES.md)
-- [Inventário do Código Legado em Quarentena](docs/planejamento/INVENTARIO_LEGADO.md)
+O **SAREL** é um sistema computacional concebido para garantir o rigor científico, a reprodutibilidade metodológica e a integridade de dados na geração de matrizes de treino e campanhas de validação de erosão laminar.
 
----
-
-## O que o SAREL faz
-
-1. **Propõe onde observar:** Desenho amostral estratificado e espacialmente disperso ($18$ estratos multivariados $\hat{S} \times \hat{E} \times \hat{K}$).
-2. **Extrai features verificáveis:** Sensoriamento remoto multiespectral (Sentinel-2 L2A / Landsat), DEM Copernicus GLO-30, cartas pedológicas da Embrapa GeoInfo e dados pluviométricos (CHIRPS / GPM IMERG) com proveniência estrita.
-3. **Gerencia a campanha de rotulagem:** Exporta planos cegos de interpretação, campo e voo de drone, ingere rótulos de observação humana e consolida a matriz de treino para modelagem supervisionada externa.
-
-*O SAREL não classifica erosão: o rótulo provém exclusivamente de observadores humanos.*
+O sistema opera sob as **9 Regras Invioláveis da Lei Fundamental** (`docs/planejamento/PROMPT_RECONSTRUCAO_SAREL_2026-09-10.md`), garantindo que:
+- **Nada calculado vira rótulo:** O rótulo de erosão provém exclusivamente de observadores humanos e sensores primários (campo, fotointerpretação PlanetScope, ortomosaicos de drone).
+- **Sem valores fabricados ou defaults disfarçados:** Parâmetros ausentes permanecem como `indisponivel` acompanhados da causa real.
+- **Rastreabilidade e proveniência científica total:** Cada variável do sistema possui selo de proveniência (`● medido`, `◊ modelado`, `□ tabelado`, `○ indisponível`).
+- **Segregação cega e proteção LGPD:** Dados fundiários mascarados byte a byte e exportações cegas por perfil operacional (`planilha`, `interpretacao-cega`, `campo-cego`, `voo-cego`, `matriz-treino`).
 
 ---
 
-## Como usar o Localizador de Erosão (Legado) durante a transição
+## Arquitetura e Módulos Principais
 
-O código do Localizador anterior está congelado na tag `legado-pre-sarel`. Para executá-lo:
+1. **Amostragem e Blocos Espaciais (`src/lib/gee/`):**
+   - Estratificação multivariada em 18 estratos $\hat{S} \times \hat{E} \times \hat{K}$ com garantia de candidatos à classe negativa.
+   - *Spatial Thinning* geodésico determinístico (Fisher-Yates) com raio mínimo de 1,0 km (P02).
+   - Validação cruzada espacial com blocos espaciais determinados por variograma empírico sem cortes artificiais.
+2. **Sensoriamento e Harmonização:**
+   - Decomposição harmônica multivariada (OLS de 1 e 2 harmônicos) com métricas de qualidade de ajuste ($R^2$, erro-padrão).
+   - Frequência de solo exposto ($\hat{E}$), maior sequência temporal de solo nu e mês modal de exposição.
+   - Modelagem de pares de eventos ($T_-$, $T_0$, $T_+$) PlanetScope e radar Sentinel-1 GRD banda C para datas chuvosas sob nuvem.
+3. **Controle de Cotas PlanetScope (`src/lib/planet/quota.ts`):**
+   - Livro-razão persistente em disco (`livroRazao.json`) com segregação de cotas de download e tiles, e política estrita de recusa a sobretaxa (`OVERAGE: OFF`).
+4. **Linha de Base RUSLE (`src/lib/rusle/`):**
+   - Fator C regional tropical por **Durigon et al. (2014)**: $C = (1 - \text{NDVI}) / 2$, com análise de sensibilidade por **van der Knijff et al. (2000)**.
+   - Fator P tabelado ($1{,}0$) por **Renard et al. (1997)**.
+   - Guardas ativas para decisões metodológicas pendentes (D13 para Fator R, D14 para Fator K, D15 para Fator LS), com perda de solo estritamente vinculada ao Invariante 1.
+5. **Ingestão e Matriz de Treino (`src/lib/rotulos/`, `src/lib/matriz/`):**
+   - Concordância entre intérpretes via Kappa de Cohen com alerta bloqueante para $\kappa < 0{,}60$.
+   - Segregação mandatória de voos de drone como conjunto de teste independente (*held-out*).
+   - Invariantes 1 a 7 verificados em tempo de execução antes de qualquer exportação de arquivo.
 
+---
+
+## Execução e Testes
+
+### Pré-requisitos
+- Node.js $\ge 18.17.0$
+- npm
+
+### Instalação
 ```bash
-git switch --detach legado-pre-sarel
-npm run build && npm run start
+npm install
 ```
 
-Para retornar à reconstrução do SAREL:
-
+### Disciplina dos "Três Verdes"
+O projeto adota verificação contínua automatizada:
 ```bash
-git switch sarel/v2
+# 1. Suíte de testes unitários e de integração (Vitest)
+npm run test
+
+# 2. Verificação estrita de tipagem TypeScript
+npm run typecheck
+
+# 3. Linter sem advertências
+npm run lint
+
+# 4. Compilação de produção
+npm run build
 ```
 
-Os manuais de operação e documentação histórica do Localizador estão arquivados em `docs/legado/`.
+### Executar em Desenvolvimento
+```bash
+npm run dev
+```
+Acesse a aplicação em `http://127.0.0.1:3000`.
+
+---
+
+## Preservação Histórica
+
+O código legado original do Localizador e protótipos prévios encontram-se permanentemente arquivados e congelados na tag Git:
+```bash
+git checkout legado-pre-sarel
+```
+A documentação metodológica, relatórios de auditoria e históricos de planejamento estão organizados no diretório `docs/`.

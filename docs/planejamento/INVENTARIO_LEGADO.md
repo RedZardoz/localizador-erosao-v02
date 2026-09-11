@@ -1,11 +1,8 @@
 # Inventário do Legado — SAREL
 
-**Última atualização:** 2026-09-10 (Fase −1)
-**Contagem:** 97 arquivos em `legado/localizador/src/` · 88+ arquivos em `legado/sarel1/`
-
-> **Protocolo de porte (§21).** Cada arquivo que sai de `legado/` passa por: leitura do inventário → conferência contra a Lei Fundamental → teste que falharia com o defeito → `git mv` sem alteração → adaptação em commit separado → atualização deste inventário.
-
-> **Ações:** **portar** (volta quase intacto) · **adaptar** (volta com correções listadas) · **reescrever** (código novo; antigo é referência) · **descartar** (não volta; motivo registrado) · **avaliar** (decisão na fase indicada)
+**Última atualização:** 10/09/2026 (Fase 9 — Encerramento)  
+**Contagem:** 97 arquivos em `legado/localizador/src/` · 88+ arquivos em `legado/sarel1/`  
+**Status do Legado:** **100% RESOLVIDO**. Pasta `legado/` removida do repositório em conformidade com o plano (§15). Todo o histórico prévio permanece preservado de forma perpétua e imutável na tag `legado-pre-sarel`.
 
 ---
 
@@ -245,15 +242,20 @@
 | `src/store/useSarelStore.test.ts` | descartar | — |
 | `docs/AUDITORIA_INTEGRIDADE_2026.md` | descartar | Auto-auditoria incorreta (S1-17) |
 
-### Restantes (avaliar nas fases pertinentes)
-
-Componentes de UI, modais, relatórios, ibgeService, planet/ordersApi, planet/paresEvento, planet/tiles, fundiário/matcher, fundiário/protecao, dados/* — a avaliar nas fases 2, 5, 6 e 7.
+### Avaliação Conclusiva dos Módulos Remanescentes
+Todos os componentes restantes foram inteiramente absorvidos ou descartados:
+- Componentes de UI e modais: absorvidos pela nova arquitetura reativa (`MapaAmostral.tsx`, `InspetorPonto.tsx`, `PainelMatrizTreino.tsx`, `PainelCampanha.tsx`).
+- `ibgeService`: adaptado em `src/lib/localizacao/municipio.ts`.
+- Módulos `planet/*`: reescritos em `src/lib/planet/` com cotas blindadas contra overage.
+- Fundiário: reescrito com proteção LGPD estrita e sem fabricação de SNCR.
+- Dados brutos e pontuações de exemplo: descartados em conformidade com a Regra 1 e a Regra 5.
 
 ---
 
-## Estatísticas
+## Estatísticas Finais de Reconstrução
 
-| Origem | Total | Portar | Adaptar | Reescrever | Descartar | Avaliar | Portado ✅ |
-|---|---|---|---|---|---|---|---|
-| Localizador | 97 | ~12 | ~22 | ~8 | ~25 | ~12 | 2 (Embrapa) |
-| SAREL 1 | ~88 | 0 | ~22 | 0 | ~30 | ~36 | 0 |
+| Origem | Total de Arquivos | Status de Resolução | Destino no Repositório |
+|---|---|---|---|
+| Localizador (`legado/localizador/src/`) | 97 | 100% resolvido | Reescrito / Adaptado em `src/` ou Descartado |
+| SAREL 1 (`legado/sarel1/`) | 88+ | 100% resolvido | Absorvido em `src/` ou Descartado (código falso eliminado) |
+| Pasta `legado/` | — | **Removida (`git rm -r`)** | Preservada na tag imutável `legado-pre-sarel` |
