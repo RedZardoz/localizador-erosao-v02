@@ -189,3 +189,5 @@ export const PARAMETROS: Record<string, Decisao<any>> = {
     justificativa: "maskS2Clouds sem unmask em bandas físicas",
   },
 };
+
+export const REGISTRO_DECISOES = DECISOES;

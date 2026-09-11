@@ -216,8 +216,8 @@
 | `src/lib/dados/pontosExemplo.ts` | descartar | Geração de dados falsos no navegador (S1-01) |
 | `src/lib/fundiario/cadastre_service.py` | descartar | Duplicava matcher; fabricava SNCR (S1-18) |
 | `src/lib/fundiario/cadastreService.test.ts` | descartar | — |
-| `src/lib/rusle/fatores.ts` | descartar | R inventado (S1-08); NDVI fabricado (S1-06); cortes (S1-10) |
-| `src/lib/rusle/baseline.test.ts` | descartar | Testes de fórmulas inventadas |
+| `src/lib/rusle/fatores.ts` | **substituído** ✅ | `src/lib/rusle/fatorC.ts` e `linhaDeBase.ts` | 8 | Fator C por Durigon et al. (2014) D01; P por Renard et al. (1997); R, K e LS travados com causa "decisao-pendente" D13/D14/D15 |
+| `src/lib/rusle/baseline.test.ts` | **substituído** ✅ | `src/lib/rusle/rusle.test.ts` | 8 | Testes estritos de domínio, monotonicidade, P tabelado e Invariante 1 |
 | `src/lib/chuva/eventos.ts` | descartar | Erosividade inventada (S1-09); limiar sem referência |
 | `src/lib/chuva/eventos.test.ts` | descartar | — |
 | `src/lib/chuva/chirps.ts` | descartar | "verificado" sem chamada (S1-02); adquiridoEm = hoje (S1-11) |
