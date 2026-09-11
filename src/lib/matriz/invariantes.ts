@@ -27,6 +27,36 @@ export const LISTA_NEGRA_LITERAIS_GEOGRAFICOS = [
   "parana",
 ];
 
+export const CAMPOS_PROIBIDOS_MATRIZ_TREINO = [
+  "phiDiag",
+  "quantilPhi",
+  "phi",
+  "estratoId",
+  "tercilS",
+  "tercilE",
+  "nivelK",
+  "scorePrioridade",
+  "severidade",
+  "tipologia",
+  "perdaSolo",
+  "rusle_perdaSolo",
+  "rusle_fatorR",
+  "rusle_fatorK",
+  "rusle_fatorLS",
+  "rusle_fatorC",
+  "rusle_fatorP",
+  "fatorR",
+  "fatorK",
+  "fatorLS",
+  "fatorC",
+  "fatorP",
+  "latitude",
+  "longitude",
+  "codigoCar",
+  "titularMascarado",
+  "documentoMascarado",
+] as const;
+
 /**
  * Invariante 3: Deriva com precisão a lista de campos científicos cujo estado NÃO é "medido".
  */

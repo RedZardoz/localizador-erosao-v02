@@ -187,14 +187,14 @@
 | `src/lib/seguranca/guardaSintetico.test.ts` | adaptar | `src/lib/seguranca/guardaSintetico.test.ts` | 1 | — |
 | `src/lib/matriz/invariantes.ts` | adaptar | `src/lib/matriz/invariantes.ts` | 1 | Corrigir Inv. 7 (S1-12): percorrer todas as colunas; vazios não desativam |
 | `src/lib/matriz/invariantes.test.ts` | adaptar | `src/lib/matriz/invariantes.test.ts` | 1 | Adicionar meta-teste |
-| `src/lib/matriz/montagem.ts` | adaptar | `src/lib/matriz/montagem.ts` | 6 | — |
-| `src/lib/matriz/montagem.test.ts` | adaptar | `src/lib/matriz/montagem.test.ts` | 6 | — |
-| `src/lib/rotulos/concordancia.ts` | adaptar | `src/lib/rotulos/concordancia.ts` | 6 | Corrigir S1-13: Kappa null sem pares; pₑ=1 → null |
-| `src/lib/rotulos/concordancia.test.ts` | adaptar | `src/lib/rotulos/concordancia.test.ts` | 6 | — |
-| `src/lib/rotulos/ingestaoKobo.ts` | adaptar | `src/lib/rotulos/ingestaoKobo.ts` | 6 | — |
-| `src/lib/rotulos/ingestaoInterpretacao.ts` | adaptar | `src/lib/rotulos/ingestaoInterpretacao.ts` | 6 | — |
-| `src/lib/rotulos/ingestaoDrone.ts` | adaptar | `src/lib/rotulos/ingestaoDrone.ts` | 6 | — |
-| `src/lib/rotulos/ingestao.test.ts` | adaptar | — | 6 | — |
+| `src/lib/matriz/montagem.ts` | **adaptado** ✅ | `src/lib/matriz/montagem.ts` | 6 | Projeção matriz-treino, isolamento de chaves de coordenadas, segregação de drone |
+| `src/lib/matriz/montagem.test.ts` | **adaptado** ✅ | `src/lib/rotulos/rotulos.test.ts` | 6 | — |
+| `src/lib/rotulos/concordancia.ts` | **adaptado** ✅ | `src/lib/rotulos/concordancia.ts` | 6 | Corrigido S1-13: Kappa null sem pares; pe=1 → null; desempate |
+| `src/lib/rotulos/concordancia.test.ts` | **adaptado** ✅ | `src/lib/rotulos/rotulos.test.ts` | 6 | — |
+| `src/lib/rotulos/ingestaoKobo.ts` | **adaptado** ✅ | `src/lib/rotulos/ingestaoKobo.ts` | 6 | Casamento de coordenadas com tolerância geodésica P03 |
+| `src/lib/rotulos/ingestaoInterpretacao.ts` | **adaptado** ✅ | `src/lib/rotulos/ingestaoInterpretacao.ts` | 6 | Fotointerpretação independente, cálculo Kappa integrado |
+| `src/lib/rotulos/ingestaoDrone.ts` | **adaptado** ✅ | `src/lib/rotulos/ingestaoDrone.ts` | 6 | Segregação estrita como held-out (nunca no treino) |
+| `src/lib/rotulos/taxaErro.ts` | **novo** ✅ | `src/lib/rotulos/taxaErro.ts` | 6 | Matriz de confusão A x B e taxa de erro por classe da fotointerpretação |
 | `src/components/inspetor/InspetorPonto.tsx` | adaptar | `src/components/inspetor/InspetorPonto.tsx` | 7 | Esboço; selos de proveniência |
 | `src/components/inspetor/SeloProveniencia.tsx` | adaptar | `src/components/inspetor/SeloProveniencia.tsx` | 7 | — |
 | `src/components/inspetor/GraficoSerieTemporal.tsx` | adaptar | `src/components/inspetor/GraficoSerieTemporal.tsx` | 7 | Lacunas como lacunas |
