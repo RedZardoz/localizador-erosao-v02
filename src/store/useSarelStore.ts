@@ -365,7 +365,7 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
 
   // Visualização Cartográfica
   mapState: {
-    basemap: "satellite",
+    basemap: "google-earth",
     terreno3d: true,
     exageracao3d: 1.5,
     mostrarBacias: false,

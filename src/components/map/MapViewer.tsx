@@ -38,6 +38,22 @@ export const MapViewer: React.FC = () => {
       style: {
         version: 8,
         sources: {
+          "google-earth": {
+            type: "raster",
+            tiles: [
+              "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+            ],
+            tileSize: 256,
+            attribution: "Google Earth / Google Maps",
+          },
+          "google-hybrid": {
+            type: "raster",
+            tiles: [
+              "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+            ],
+            tileSize: 256,
+            attribution: "Google Earth / Google Maps",
+          },
           "esri-satellite": {
             type: "raster",
             tiles: [
@@ -70,10 +86,22 @@ export const MapViewer: React.FC = () => {
         },
         layers: [
           {
+            id: "google-earth-layer",
+            type: "raster",
+            source: "google-earth",
+            paint: { "raster-opacity": 1.0 },
+          },
+          {
+            id: "google-hybrid-layer",
+            type: "raster",
+            source: "google-hybrid",
+            paint: { "raster-opacity": 0.0 },
+          },
+          {
             id: "esri-satellite-layer",
             type: "raster",
             source: "esri-satellite",
-            paint: { "raster-opacity": 1.0 },
+            paint: { "raster-opacity": 0.0 },
           },
           {
             id: "osm-topo-layer",
@@ -268,18 +296,46 @@ export const MapViewer: React.FC = () => {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
 
-    const satOpacity = mapState.basemap === "satellite" ? 1.0 : 0.0;
-    const topoOpacity = mapState.basemap === "topo" ? 1.0 : 0.0;
-    const darkOpacity = mapState.basemap === "dark" ? 1.0 : 0.0;
+    const isGoogleEarth = mapState.basemap === "google-earth";
+    const isGoogleHybrid = mapState.basemap === "google-hybrid";
+    const isEsriSat = mapState.basemap === "satellite" || mapState.basemap === "mapbox-hd";
+    const isTopo = mapState.basemap === "topo";
+    const isDark = mapState.basemap === "dark" || mapState.basemap === "voyager";
 
+    if (map.getLayer("google-earth-layer")) {
+      map.setPaintProperty(
+        "google-earth-layer",
+        "raster-opacity",
+        isGoogleEarth ? 1.0 : 0.0
+      );
+    }
+    if (map.getLayer("google-hybrid-layer")) {
+      map.setPaintProperty(
+        "google-hybrid-layer",
+        "raster-opacity",
+        isGoogleHybrid ? 1.0 : 0.0
+      );
+    }
     if (map.getLayer("esri-satellite-layer")) {
-      map.setPaintProperty("esri-satellite-layer", "raster-opacity", satOpacity);
+      map.setPaintProperty(
+        "esri-satellite-layer",
+        "raster-opacity",
+        isEsriSat ? 1.0 : 0.0
+      );
     }
     if (map.getLayer("osm-topo-layer")) {
-      map.setPaintProperty("osm-topo-layer", "raster-opacity", topoOpacity);
+      map.setPaintProperty(
+        "osm-topo-layer",
+        "raster-opacity",
+        isTopo ? 1.0 : 0.0
+      );
     }
     if (map.getLayer("carto-dark-layer")) {
-      map.setPaintProperty("carto-dark-layer", "raster-opacity", darkOpacity);
+      map.setPaintProperty(
+        "carto-dark-layer",
+        "raster-opacity",
+        isDark ? 1.0 : 0.0
+      );
     }
   }, [mapState.basemap, mapLoaded]);
 

@@ -18,6 +18,8 @@ export const MapControls: React.FC = () => {
   const [menuBasemapAberto, setMenuBasemapAberto] = useState(false);
 
   const basemaps: { id: BasemapType; label: string }[] = [
+    { id: "google-earth", label: "Google Earth (Satélite)" },
+    { id: "google-hybrid", label: "Google Earth (Híbrido)" },
     { id: "satellite", label: "Satélite Esri" },
     { id: "mapbox-hd", label: "Mapbox HD" },
     { id: "topo", label: "Topográfico OSM" },

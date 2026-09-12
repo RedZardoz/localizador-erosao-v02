@@ -25,6 +25,8 @@ export type ModalType =
   | null;
 
 export type BasemapType =
+  | "google-earth"
+  | "google-hybrid"
   | "satellite"
   | "mapbox-hd"
   | "topo"
