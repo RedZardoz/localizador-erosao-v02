@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * Serviço de Integração com a API de Malhas & Localidades do IBGE — SAREL (PPGTCA 2026)
  * ============================================================================
@@ -12,6 +12,12 @@
  * Nunca inferir ou inventar códigos municipais ou nomes. Em caso de falha de rede
  * ou ausência, retorna erro explícito ou null.
  */
+
+export interface EstadoIbge {
+  id: number;
+  sigla: string;
+  nome: string;
+}
 
 export interface MunicipioIbge {
   id: number;
@@ -37,6 +43,25 @@ const DEFAULT_TIMEOUT_MS = 15000;
 
 const cacheMunicipiosPorUf: Record<string, MunicipioIbge[]> = {};
 const cacheMalhasGeoJson: Record<string, GeoJSON.GeoJsonObject> = {};
+let cacheEstados: EstadoIbge[] | null = null;
+
+/**
+ * Consulta a lista oficial de todas as 27 Unidades Federativas via API do IBGE.
+ */
+export async function listarEstadosIbge(timeoutMs = DEFAULT_TIMEOUT_MS): Promise<EstadoIbge[]> {
+  if (cacheEstados) return cacheEstados;
+
+  const url = `${IBGE_LOCALIDADES_BASE}/estados?orderBy=nome`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+
+  if (!res.ok) {
+    throw new Error(`Falha ao obter lista de estados no IBGE (status HTTP ${res.status}).`);
+  }
+
+  const data: EstadoIbge[] = await res.json();
+  cacheEstados = data;
+  return data;
+}
 
 /**
  * Consulta a lista oficial de municípios de uma Unidade Federativa via API do IBGE.
@@ -60,6 +85,30 @@ export async function listarMunicipiosPorUf(
   const data: MunicipioIbge[] = await res.json();
   cacheMunicipiosPorUf[ufNormalizada] = data;
   return data;
+}
+
+/**
+ * Obtém a malha vetorial GeoJSON oficial de um estado (UF) pelo seu código ou sigla (ex: "PR" ou 41).
+ */
+export async function obterMalhaEstadoGeoJson(
+  ufOuId: string | number,
+  timeoutMs = DEFAULT_TIMEOUT_MS
+): Promise<GeoJSON.FeatureCollection | GeoJSON.Feature | GeoJSON.Geometry> {
+  const chave = `estado_${ufOuId}`;
+  if (cacheMalhasGeoJson[chave]) {
+    return cacheMalhasGeoJson[chave] as GeoJSON.FeatureCollection;
+  }
+
+  const url = `${IBGE_MALHAS_BASE}/estados/${ufOuId}?formato=application/vnd.geo+json`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+
+  if (!res.ok) {
+    throw new Error(`Falha ao obter malha vetorial do estado ${ufOuId} no IBGE (status HTTP ${res.status}).`);
+  }
+
+  const geojson = await res.json();
+  cacheMalhasGeoJson[chave] = geojson;
+  return geojson;
 }
 
 /**
