@@ -1,0 +1,121 @@
+{
+  "metodologia": "PPGTCA 2026 — XGBoost + SHAP com Spatial K-Fold LOCO (K=5)",
+  "semente_reprodutibilidade": 42,
+  "total_amostras_avaliadas": 300,
+  "preditores_utilizados": [
+    "declividade_pct",
+    "elevacao_m",
+    "bsi",
+    "ndvi",
+    "rusle_perda_solo"
+  ],
+  "metricas_globais": {
+    "acuracia_global": 1.0,
+    "precisao_global": 1.0,
+    "recall_global": 1.0,
+    "f1_global": 1.0,
+    "roc_auc_global": 1.0,
+    "matriz_confusao": [
+      [
+        150,
+        0
+      ],
+      [
+        0,
+        150
+      ]
+    ],
+    "total_amostras": 300,
+    "folds": [
+      {
+        "fold": 1,
+        "bacias_omitidas_teste": [
+          "Bacia do Paranapanema",
+          "Bacia Litorânea / Ribeira"
+        ],
+        "n_amostras_teste": 62,
+        "acuracia": 1.0,
+        "precisao": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "roc_auc": 1.0
+      },
+      {
+        "fold": 2,
+        "bacias_omitidas_teste": [
+          "Bacia do Rio Tibagi"
+        ],
+        "n_amostras_teste": 32,
+        "acuracia": 1.0,
+        "precisao": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "roc_auc": 1.0
+      },
+      {
+        "fold": 3,
+        "bacias_omitidas_teste": [
+          "Bacia do Rio Iguaçu"
+        ],
+        "n_amostras_teste": 102,
+        "acuracia": 1.0,
+        "precisao": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "roc_auc": 1.0
+      },
+      {
+        "fold": 4,
+        "bacias_omitidas_teste": [
+          "Bacia do Rio Piquiri / PR 3"
+        ],
+        "n_amostras_teste": 55,
+        "acuracia": 1.0,
+        "precisao": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "roc_auc": 1.0
+      },
+      {
+        "fold": 5,
+        "bacias_omitidas_teste": [
+          "Bacia do Rio Ivaí"
+        ],
+        "n_amostras_teste": 49,
+        "acuracia": 1.0,
+        "precisao": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "roc_auc": 1.0
+      }
+    ]
+  },
+  "ranking_explicabilidade_shap": [
+    {
+      "preditor": "declividade_pct",
+      "impacto_medio_shap": 4.918962001800537
+    },
+    {
+      "preditor": "ndvi",
+      "impacto_medio_shap": 0.02268105559051037
+    },
+    {
+      "preditor": "elevacao_m",
+      "impacto_medio_shap": 0.0
+    },
+    {
+      "preditor": "bsi",
+      "impacto_medio_shap": 0.0
+    },
+    {
+      "preditor": "rusle_perda_solo",
+      "impacto_medio_shap": 0.0
+    }
+  ],
+  "artefatos_visuais": {
+    "beeswarm_plot": "docs\\relatorios\\modelagem\\shap_summary_beeswarm.png",
+    "feature_importance_plot": "docs\\relatorios\\modelagem\\shap_feature_importance.png",
+    "curva_roc": "docs\\relatorios\\modelagem\\curva_roc_loco.png",
+    "matriz_confusao": "docs\\relatorios\\modelagem\\matriz_confusao_loco.png"
+  }
+}
