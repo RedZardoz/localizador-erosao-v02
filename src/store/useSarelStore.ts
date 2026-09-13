@@ -403,6 +403,7 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
     mostrarLimites: false,
     mostrarSolosEmbrapa: false,
     mostrarErodibilidade: false,
+    mostrarSitiosPadraoOuro: true,
     flyToTarget: null,
   },
 

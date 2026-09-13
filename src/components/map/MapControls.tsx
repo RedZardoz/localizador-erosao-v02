@@ -133,6 +133,21 @@ export const MapControls: React.FC = () => {
               />
               <span>Solos Embrapa (WMS Oficial)</span>
             </label>
+
+            <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+              <input
+                type="checkbox"
+                checked={mapState.mostrarSitiosPadraoOuro !== false}
+                onChange={(e) =>
+                  setMapState({ mostrarSitiosPadraoOuro: e.target.checked })
+                }
+                className="accent-cyan-600 rounded"
+              />
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-sm bg-cyan-500 inline-block" />
+                Sítios Padrão-Ouro (Céu Azul / Medianeira)
+              </span>
+            </label>
           </div>
         )}
       </div>

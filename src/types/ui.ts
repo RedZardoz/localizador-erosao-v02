@@ -56,6 +56,7 @@ export interface MapViewState {
   mostrarLimites: boolean;
   mostrarSolosEmbrapa: boolean;
   mostrarErodibilidade: boolean;
+  mostrarSitiosPadraoOuro?: boolean;
   flyToTarget?: {
     lat: number;
     lng: number;

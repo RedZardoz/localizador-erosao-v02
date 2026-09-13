@@ -11,9 +11,21 @@ describe("Registro de Decisões — Mecanismo e Integridade", () => {
     expect(DECISOES.D01.referencia).toBeDefined();
   });
 
-  it("Decisões pendentes (D02 a D19) devem lançar ErroDecisaoPendente ao serem exigidas", () => {
-    const pendentes = Object.values(DECISOES).filter((d) => d.id !== "D01");
-    expect(pendentes.length).toBe(18);
+  it("Decisões formalizadas na metodologia devem estar decididas e retornar valor válido", () => {
+    const decididas = ["D01", "D02", "D03", "D06", "D10"];
+    for (const id of decididas) {
+      const d = DECISOES[id];
+      expect(d.estado).toBe("decidida");
+      expect(exigirDecisao(d)).toBeDefined();
+      expect(d.decididoPor).toBeDefined();
+      expect(d.decididoEm).toBeDefined();
+      expect(d.referencia).toBeDefined();
+    }
+  });
+
+  it("Decisões pendentes devem lançar ErroDecisaoPendente ao serem exigidas", () => {
+    const pendentes = Object.values(DECISOES).filter((d) => d.estado === "pendente");
+    expect(pendentes.length).toBe(Object.values(DECISOES).length - 5);
 
     for (const d of pendentes) {
       expect(d.estado).toBe("pendente");

@@ -8,6 +8,7 @@ import { MapControls } from "./MapControls";
 import { DrawingToolbar } from "@/components/polygon/DrawingToolbar";
 import { PointPopup } from "./PointPopup";
 import { PARANA_BASINS_GEOJSON } from "@/lib/localizacao/bacias";
+import { SITIOS_PADRAO_OURO_GEOJSON } from "@/lib/padraoOuro/sitiosReferencia";
 
 export const MapViewer: React.FC = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -160,6 +161,38 @@ export const MapViewer: React.FC = () => {
           "line-color": ["get", "color"],
           "line-width": 1.5,
           "line-dasharray": [3, 2],
+        },
+      });
+
+      // 1.1 Sítios de Referência Padrão-Ouro (Céu Azul e Medianeira — 10 a 50 ha)
+      map.addSource("sitios-padrao-ouro-source", {
+        type: "geojson",
+        data: SITIOS_PADRAO_OURO_GEOJSON,
+      });
+
+      map.addLayer({
+        id: "sitios-padrao-ouro-fill",
+        type: "fill",
+        source: "sitios-padrao-ouro-source",
+        layout: {
+          visibility: mapState.mostrarSitiosPadraoOuro !== false ? "visible" : "none",
+        },
+        paint: {
+          "fill-color": "#06B6D4",
+          "fill-opacity": 0.2,
+        },
+      });
+
+      map.addLayer({
+        id: "sitios-padrao-ouro-line",
+        type: "line",
+        source: "sitios-padrao-ouro-source",
+        layout: {
+          visibility: mapState.mostrarSitiosPadraoOuro !== false ? "visible" : "none",
+        },
+        paint: {
+          "line-color": "#0891B2",
+          "line-width": 2.5,
         },
       });
 
@@ -389,6 +422,20 @@ export const MapViewer: React.FC = () => {
     }
   }, [mapState.mostrarBacias, mapLoaded]);
 
+  // Visibilidade de Camadas (Sítios Padrão-Ouro — Céu Azul e Medianeira)
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+    const vis = mapState.mostrarSitiosPadraoOuro !== false ? "visible" : "none";
+
+    if (map.getLayer("sitios-padrao-ouro-fill")) {
+      map.setLayoutProperty("sitios-padrao-ouro-fill", "visibility", vis);
+    }
+    if (map.getLayer("sitios-padrao-ouro-line")) {
+      map.setLayoutProperty("sitios-padrao-ouro-line", "visibility", vis);
+    }
+  }, [mapState.mostrarSitiosPadraoOuro, mapLoaded]);
+
   // Atualização de Áreas e Polígonos de Amostragem Persistentes
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
@@ -535,6 +582,13 @@ export const MapViewer: React.FC = () => {
           <div className="flex items-center gap-1.5">
             <span className="font-medium text-slate-600 dark:text-slate-400 text-[11px]">Em Avaliação</span>
             <span className="text-[9px] text-slate-400 font-mono">Transição / Sem dados</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 pt-1.5 border-t border-slate-200/60 dark:border-slate-800">
+          <span className="w-3.5 h-2 rounded bg-cyan-500/30 border border-cyan-500 shrink-0" />
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold text-cyan-700 dark:text-cyan-400 text-[11px]">Sítios Padrão-Ouro</span>
+            <span className="text-[9px] text-slate-400 font-mono">10-50 ha (VANT/Drone)</span>
           </div>
         </div>
       </div>

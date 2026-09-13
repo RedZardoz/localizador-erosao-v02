@@ -41,12 +41,22 @@ export const DECISOES: Record<string, Decisao<any>> = {
   D02: {
     id: "D02",
     titulo: "Critérios observacionais de presente/ausente e negativo explícito",
-    estado: "pendente" as EstadoDecisao,
+    estado: "decidida" as EstadoDecisao,
+    valor: "Amostragem estratificada pura: Classe 1 (Erosão: BSI > 0.10 e NDVI < 0.40) vs Classe 0 (Controle/SPD: BSI < 0.00 e NDVI > 0.65)",
+    justificativa: "Critérios biofísicos objetivos e reprodutíveis validados no Sentinel-2 e PlanetScope.",
+    referencia: "Metodologia PPGTCA 2026, Seção 3.1 e Tabela 1",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-13",
   },
   D03: {
     id: "D03",
     titulo: "Escala do rótulo (binária ou ordinal)",
-    estado: "pendente" as EstadoDecisao,
+    estado: "decidida" as EstadoDecisao,
+    valor: "Binária (0: Controle/Não-Erosão, 1: Erosão Laminar Ativa)",
+    justificativa: "Classificação supervisionada com XGBoost binary:logistic e validação de alta resolução.",
+    referencia: "Metodologia PPGTCA 2026, Seções 3.1 e 5",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-13",
   },
   D04: {
     id: "D04",
@@ -61,7 +71,12 @@ export const DECISOES: Record<string, Decisao<any>> = {
   D06: {
     id: "D06",
     titulo: "Unidade de predição: pixel 10m, 30m ou talhão",
-    estado: "pendente" as EstadoDecisao,
+    estado: "decidida" as EstadoDecisao,
+    valor: "Pixel Sentinel-2 de 10m com calibração sub-métrica por VANT/Drone (GSD 5-10 cm) em polígonos contínuos de 10 a 50 ha (Céu Azul e Medianeira)",
+    justificativa: "Elimina subjetividade de vetorização manual e permite captura do gradiente topo-sequencial completo da paisagem agrícola.",
+    referencia: "Metodologia PPGTCA 2026, Seções 3.1 e 3.2",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-13",
   },
   D07: {
     id: "D07",
@@ -81,7 +96,12 @@ export const DECISOES: Record<string, Decisao<any>> = {
   D10: {
     id: "D10",
     titulo: "Limiar de NDVI para solo descoberto",
-    estado: "pendente" as EstadoDecisao,
+    estado: "decidida" as EstadoDecisao,
+    valor: "NDVI < 0.40 combinado com BSI > 0.10",
+    justificativa: "Separação física entre solo exposto degradado e solo protegido por palhada residual no Sistema Plantio Direto.",
+    referencia: "Metodologia PPGTCA 2026, Seções 2.1 e 3.1",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-13",
   },
   D11: {
     id: "D11",
