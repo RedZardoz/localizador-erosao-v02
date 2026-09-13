@@ -44,6 +44,12 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
   const ndviP50Num = valorOuNulo(point.temporal.D?.serie.estatisticas["B8_p50"]);
   const ndviP50 = ndviP50Num !== null ? ndviP50Num.toFixed(2) : "—";
 
+  const bsiNum = valorOuNulo(point.espectral?.bsi);
+  const ndviNum = valorOuNulo(point.espectral?.ndvi);
+  const bsiStr = bsiNum !== null ? bsiNum.toFixed(2) : "—";
+  const ndviStr = ndviNum !== null ? ndviNum.toFixed(2) : "—";
+  const classeAmostral = point.classeAmostral ?? "indefinido";
+
   // Base Fundiária
   const car = point.fundiario?.codigoCar;
   const titular = point.fundiario?.titularMascarado || "Não informado";
@@ -69,9 +75,9 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
   };
 
   return (
-    <div className="absolute top-16 right-4 z-20 w-96 max-w-[calc(100vw-2rem)] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-4 space-y-3.5 text-slate-800 dark:text-slate-200 animate-in fade-in slide-in-from-right-4">
+    <div className="absolute top-16 right-4 z-20 w-96 max-w-[calc(100vw-2rem)] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-4 space-y-3 text-slate-800 dark:text-slate-200 animate-in fade-in slide-in-from-right-4">
       {/* Header do Popup */}
-      <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+      <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
         <div>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-mono">
@@ -93,6 +99,50 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
         >
           <X className="w-4 h-4" />
         </button>
+      </div>
+
+      {/* Banner de Classificação Biofísica da Pesquisa (PPGTCA 2026) */}
+      <div
+        className={`p-2.5 rounded-xl border flex items-center justify-between text-xs ${
+          classeAmostral === "erosao"
+            ? "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900/50 text-red-900 dark:text-red-200"
+            : classeAmostral === "controle"
+            ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900/50 text-emerald-900 dark:text-emerald-200"
+            : "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-200"
+        }`}
+      >
+        <div className="flex items-center gap-2">
+          <span
+            className={`w-3 h-3 rounded-full shrink-0 ${
+              classeAmostral === "erosao"
+                ? "bg-red-500"
+                : classeAmostral === "controle"
+                ? "bg-emerald-500"
+                : "bg-amber-500"
+            }`}
+          />
+          <div>
+            <div className="font-bold text-[11px] uppercase tracking-wider">
+              {classeAmostral === "erosao"
+                ? "Erosão Laminar (Classe 1)"
+                : classeAmostral === "controle"
+                ? "Controle / SPD (Classe 0)"
+                : "Amostra em Avaliação"}
+            </div>
+            <div className="text-[10px] opacity-80">
+              {classeAmostral === "erosao"
+                ? "BSI > 0.10 e NDVI < 0.40"
+                : classeAmostral === "controle"
+                ? "BSI < 0.00 e NDVI > 0.65"
+                : "Transição ou sem medição"}
+            </div>
+          </div>
+        </div>
+
+        <div className="text-right font-mono text-[10px]">
+          <div>BSI: <span className="font-bold">{bsiStr}</span></div>
+          <div>NDVI: <span className="font-bold">{ndviStr}</span></div>
+        </div>
       </div>
 
       {/* Coordenadas e Altimetria */}

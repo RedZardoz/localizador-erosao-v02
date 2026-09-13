@@ -127,6 +127,26 @@ export const FiltersPanel: React.FC = () => {
         </select>
       </div>
 
+      {/* Classe da Pesquisa (PPGTCA 2026) */}
+      <div className="space-y-1">
+        <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+          Classe da Pesquisa (Biofísica)
+        </label>
+        <select
+          value={filtros.classeAmostral}
+          onChange={(e) =>
+            setFiltros({
+              classeAmostral: e.target.value as "todas" | "erosao" | "controle",
+            })
+          }
+          className="w-full py-1.5 px-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
+        >
+          <option value="todas">Todas as amostras</option>
+          <option value="erosao">🔴 Apenas Erosão Laminar (Classe 1)</option>
+          <option value="controle">🟢 Apenas Controle / SPD (Classe 0)</option>
+        </select>
+      </div>
+
       {/* Declividade Mínima */}
       <div className="space-y-1">
         <div className="flex justify-between text-[11px] text-slate-600 dark:text-slate-400 font-semibold">

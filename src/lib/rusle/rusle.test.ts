@@ -12,7 +12,7 @@ import { REGISTRO_DECISOES } from "@/config/decisoes";
 describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
   describe("14.1 Fator C (Durigon et al., 2014)", () => {
     it("C decresce estritamente com o NDVI", () => {
-      const cs = [-0.2, 0.05, 0.2, 0.4, 0.6, 0.8, 0.95].map(calcularFatorC);
+      const cs = [-0.2, 0.05, 0.2, 0.4, 0.6, 0.8, 0.95].map((n) => calcularFatorC(n));
       for (let i = 1; i < cs.length; i++) {
         expect(cs[i]).toBeLessThan(cs[i - 1]);
       }
@@ -39,8 +39,20 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
       expect(() => calcularFatorC(Infinity)).toThrow(ErroForaDoDominio);
     });
 
-    it("não aceita BSI — a extensão legada foi removida", () => {
-      expect(calcularFatorC.length).toBe(1);
+    it("calcula a formulação híbrida SPD modulada por BSI: C = ((1 - NDVI)/2) * (1 + BSI)", () => {
+      // Caso base (sem BSI ou BSI = 0): reduz a Durigon
+      expect(calcularFatorC(0.2, 0)).toBeCloseTo(0.4, 6);
+
+      // Solo exposto lavado (BSI positivo = 0.5): fator C aumenta
+      expect(calcularFatorC(0.2, 0.5)).toBeCloseTo(0.6, 6);
+
+      // Solo protegido com palhada (BSI negativo = -0.2): fator C diminui
+      expect(calcularFatorC(0.7, -0.2)).toBeCloseTo(0.12, 6);
+    });
+
+    it("BSI fora do domínio [-1, 1] lança erro em vez de corte silencioso", () => {
+      expect(() => calcularFatorC(0.4, 1.5)).toThrow(ErroForaDoDominio);
+      expect(() => calcularFatorC(0.4, -1.2)).toThrow(ErroForaDoDominio);
     });
 
     it("encapsula proveniência corretamente e trata fora-do-dominio sem quebrar", () => {
@@ -91,7 +103,7 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
       const alpha = 2;
       const beta = 1;
       const ndvis = [0.15, 0.35, 0.55, 0.75];
-      const durigonC = ndvis.map(calcularFatorC);
+      const durigonC = ndvis.map((n) => calcularFatorC(n));
       const knijffC = ndvis.map((n) => calcularFatorCVanDerKnijff(n, alpha, beta));
 
       // Ambas são estritamente decrescentes

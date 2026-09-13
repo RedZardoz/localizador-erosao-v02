@@ -25,6 +25,7 @@ import type {
   SystemLogEntry,
 } from "@/types/ui";
 import { PARANA_BASINS_GEOJSON } from "@/lib/localizacao/bacias";
+import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
 
 export type AbaAtiva = "mapa" | "inspetor" | "matriz" | "campanha" | "decisoes";
 
@@ -35,6 +36,7 @@ export interface FiltrosState {
   declividadeMax: number | null;
   situacaoFundiaria: "todas" | "com-car" | "sem-car";
   rotulado: "todos" | "rotulado" | "nao-rotulado";
+  classeAmostral: "todas" | "erosao" | "controle";
   buscaTexto: string;
 }
 
@@ -177,8 +179,35 @@ const FILTROS_INICIAIS: FiltrosState = {
   declividadeMax: null,
   situacaoFundiaria: "todas",
   rotulado: "todos",
+  classeAmostral: "todas",
   buscaTexto: "",
 };
+
+function harmonizarClasseAmostral(ponto: PontoAmostral): PontoAmostral {
+  if (ponto.classeAmostral && ponto.classeAmostral !== "indefinido") {
+    return ponto;
+  }
+
+  const bsiVal = valorOuNulo(ponto.espectral?.bsi);
+  const ndviVal = valorOuNulo(ponto.espectral?.ndvi);
+  if (bsiVal !== null && ndviVal !== null) {
+    return {
+      ...ponto,
+      classeAmostral: classificarPontoEspectral(bsiVal, ndviVal),
+    };
+  }
+
+  // Se o ponto tiver rótulo de observador de campo
+  const rotulo = ponto.rotulo?.final?.classe?.toLowerCase();
+  if (rotulo?.includes("erosao") || rotulo?.includes("erosão") || rotulo === "1") {
+    return { ...ponto, classeAmostral: "erosao" };
+  }
+  if (rotulo?.includes("controle") || rotulo?.includes("spd") || rotulo === "0") {
+    return { ...ponto, classeAmostral: "controle" };
+  }
+
+  return { ...ponto, classeAmostral: ponto.classeAmostral || "indefinido" };
+}
 
 export const useSarelStore = create<SarelStoreState>((set, get) => ({
   // Abas e Modais
@@ -207,17 +236,19 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
 
   carregarPontos: (novosPontos) => {
     assegurarApenasPontosReais(novosPontos);
+    const harmonizados = novosPontos.map(harmonizarClasseAmostral);
     set({
-      pontos: novosPontos,
-      pontoSelecionadoId: novosPontos.length > 0 ? novosPontos[0].id : null,
+      pontos: harmonizados,
+      pontoSelecionadoId: harmonizados.length > 0 ? harmonizados[0].id : null,
     });
   },
 
   carregarPontosProvisorios: (novosPontos) => {
     assegurarApenasPontosReais(novosPontos);
+    const harmonizados = novosPontos.map(harmonizarClasseAmostral);
     set({
-      pontosProvisorios: novosPontos,
-      pontoSelecionadoId: novosPontos.length > 0 ? novosPontos[0].id : null,
+      pontosProvisorios: harmonizados,
+      pontoSelecionadoId: harmonizados.length > 0 ? harmonizados[0].id : null,
     });
   },
 
@@ -478,6 +509,11 @@ export function usePontosVisiveis(): PontoAmostral[] {
       if (!p.rotulo?.final) return false;
     } else if (filtros.rotulado === "nao-rotulado") {
       if (p.rotulo?.final) return false;
+    }
+    if (filtros.classeAmostral === "erosao") {
+      if (p.classeAmostral !== "erosao") return false;
+    } else if (filtros.classeAmostral === "controle") {
+      if (p.classeAmostral !== "controle") return false;
     }
     if (filtros.buscaTexto) {
       const q = filtros.buscaTexto.toLowerCase();

@@ -233,16 +233,30 @@ export const MapViewer: React.FC = () => {
           "circle-radius": [
             "case",
             ["==", ["get", "selecionado"], true],
-            9,
-            6,
+            10,
+            6.5,
           ],
           "circle-color": [
-            "case",
-            ["==", ["get", "rotulado"], true],
-            "#059669",
-            "#F59E0B",
+            "match",
+            ["get", "classeAmostral"],
+            "erosao",
+            "#EF4444",
+            "controle",
+            "#10B981",
+            /* fallback */
+            [
+              "case",
+              ["==", ["get", "rotulado"], true],
+              "#059669",
+              "#F59E0B",
+            ],
           ],
-          "circle-stroke-width": 2,
+          "circle-stroke-width": [
+            "case",
+            ["==", ["get", "selecionado"], true],
+            3,
+            1.5,
+          ],
           "circle-stroke-color": "#ffffff",
         },
       });
@@ -454,6 +468,7 @@ export const MapViewer: React.FC = () => {
         id: p.id,
         codigo: p.codigo,
         estratoId: p.estratoId,
+        classeAmostral: p.classeAmostral ?? "indefinido",
         rotulado: !!p.rotulo,
         selecionado: p.id === pontoSelecionadoId,
       },
@@ -495,6 +510,34 @@ export const MapViewer: React.FC = () => {
 
       {/* Controles Flutuantes de Mapa */}
       <MapControls />
+
+      {/* Legenda Metodológica de Classes Biofísicas (PPGTCA 2026) */}
+      <div className="absolute bottom-6 left-6 z-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl text-xs space-y-1.5 pointer-events-auto select-none">
+        <div className="text-[10px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400">
+          Classes da Pesquisa (PPGTCA 2026)
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-red-500 border border-white shadow-sm shrink-0" />
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold text-slate-800 dark:text-slate-200 text-[11px]">Erosão (Classe 1)</span>
+            <span className="text-[9px] text-slate-400 font-mono">BSI &gt; 0.10 | NDVI &lt; 0.40</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-emerald-500 border border-white shadow-sm shrink-0" />
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold text-slate-800 dark:text-slate-200 text-[11px]">Controle / SPD (Classe 0)</span>
+            <span className="text-[9px] text-slate-400 font-mono">BSI &lt; 0.00 | NDVI &gt; 0.65</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-amber-500 border border-white shadow-sm shrink-0" />
+          <div className="flex items-center gap-1.5">
+            <span className="font-medium text-slate-600 dark:text-slate-400 text-[11px]">Em Avaliação</span>
+            <span className="text-[9px] text-slate-400 font-mono">Transição / Sem dados</span>
+          </div>
+        </div>
+      </div>
 
       {/* Pop-up Flutuante de Inspeção quando um Ponto está Selecionado */}
       {pontoSelecionado && (

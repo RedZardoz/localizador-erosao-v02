@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { execFile } from "child_process";
 import path from "path";
 import fs from "fs";
@@ -12,6 +12,7 @@ import { matchRuralProperty, toContextoFundiario } from "@/lib/fundiario/matcher
 import { identificarBacia } from "@/lib/localizacao/bacias";
 import { pontoEmGeoJson } from "@/lib/localizacao/municipio";
 import { montarLinhaDeBaseRUSLE } from "@/lib/rusle/linhaDeBase";
+import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
 import type { PontoAmostral } from "@/types/ponto";
 import type { AreaEstudo } from "@/types/ui";
 import { getGeoJsonBBox } from "@/lib/gee/aoiTiling";
@@ -176,7 +177,7 @@ export async function POST(request: NextRequest) {
 
     const listaParaAmostragem = imoveisFiltrados.length > 0 ? imoveisFiltrados : imoveisReais;
 
-    // 4. Parâmetros e Variáveis Físicas Geodésicas
+    // 4. Parâmetros e Variáveis Físicas Geodésicas Reais
     const dataConsultaAtual = new Date().toISOString().split("T")[0];
     const semente = 42;
 
@@ -195,31 +196,17 @@ export async function POST(request: NextRequest) {
 
     let idx = 1;
     for (const im of listaParaAmostragem) {
-      // Altitude física real e declividade topográfica no terreno da coordenada
-      const elevacaoBase = 320 + Math.abs(Math.round((im.lat * 43 + im.lng * 29) % 550));
-      const declivEstimada = declividadeMin + (Math.abs((im.lat * 123 + im.lng * 77) % 100) / 100.0) * (declividadeMax - declividadeMin);
-      const declivGraus = (Math.atan(declivEstimada / 100) * 180) / Math.PI;
-
-      // Frequência de solo exposto observada na coordenada
-      const freqExposta = Math.min(
-        Math.max(frequenciaSoloNuMin + (Math.abs((im.lng * 180) % 55) / 100.0), frequenciaSoloNuMin),
-        0.80
-      );
-
-      // Nível de erodibilidade K (1: Baixa/Média, 2: Alta/Muito Alta)
-      const nivelK: 1 | 2 = Math.abs(Math.round(im.lat * 10)) % 2 === 0 ? 1 : 2;
-
       candidatosProcessados.push({
         id: "cand-" + (idx++),
         codigoCar: im.cod_car,
         municipio: im.municipio,
         latitude: Number(im.lat.toFixed(6)),
         longitude: Number(im.lng.toFixed(6)),
-        declividadePct: Number(declivEstimada.toFixed(2)),
-        declividadeGraus: Number(declivGraus.toFixed(2)),
-        elevacao: elevacaoBase,
-        frequenciaSoloNu: Number(freqExposta.toFixed(3)),
-        nivelK,
+        declividadePct: declividadeMin,
+        declividadeGraus: Number(((Math.atan(declividadeMin / 100) * 180) / Math.PI).toFixed(2)),
+        elevacao: 0,
+        frequenciaSoloNu: frequenciaSoloNuMin,
+        nivelK: 1,
       });
     }
 
@@ -297,6 +284,7 @@ export async function POST(request: NextRequest) {
           longitude: bruto.longitude,
           origemSintetica: false,
           blocoEspacial: null,
+          classeAmostral: "indefinido",
           estratoId: pe.estratoId,
           criterioSelecao: pe.criterioSelecao,
           localizacao: {
@@ -324,23 +312,19 @@ export async function POST(request: NextRequest) {
           },
           terreno: {
             elevacao: {
-              estado: "medido",
-              valor: bruto.elevacao,
-              fonte: "Copernicus GLO-30 DEM",
-              adquiridoEm: "2021-01-01",
-              consultadoEm: dataConsultaAtual,
+              estado: "indisponivel",
+              causa: "nao-calculado",
+              motivo: "Altitude Copernicus DEM aguarda redução pontual no Earth Engine.",
             },
             declividadePct: {
-              estado: "modelado",
-              valor: bruto.declividadePct,
-              modelo: "tan(rad) * 100 em EPSG:31982",
-              insumos: ["Copernicus DEM 30m"],
+              estado: "indisponivel",
+              causa: "nao-calculado",
+              motivo: "Declividade aguarda redução pontual no Earth Engine.",
             },
             declividadeGraus: {
-              estado: "modelado",
-              valor: bruto.declividadeGraus,
-              modelo: "arctan(pct/100) * (180/PI)",
-              insumos: ["Copernicus DEM 30m"],
+              estado: "indisponivel",
+              causa: "nao-calculado",
+              motivo: "Declividade aguarda redução pontual no Earth Engine.",
             },
             curvaturaPerfil: {
               estado: "indisponivel",
@@ -431,18 +415,15 @@ export async function POST(request: NextRequest) {
                 harmonicos: {},
                 estatisticas: {
                   B8_p50: {
-                    estado: "medido",
-                    valor: Number((0.35 + (Math.abs(bruto.latitude * 100) % 25) / 100).toFixed(3)),
-                    fonte: "Sentinel-2 L2A Harmonized (mediana temporal)",
-                    adquiridoEm: "2023-12-31",
-                    consultadoEm: dataConsultaAtual,
+                    estado: "indisponivel",
+                    causa: "nao-calculado",
+                    motivo: "Mediana temporal de reflectância B8 aguarda extração de série no Earth Engine.",
                   },
                 },
                 frequenciaSoloNu: {
-                  estado: "modelado",
-                  valor: bruto.frequenciaSoloNu,
-                  modelo: "Contagem de passagens com BSI > limiar / total observações válidas",
-                  insumos: ["Sentinel-2 BSI", "SCL Cloud Mask"],
+                  estado: "indisponivel",
+                  causa: "nao-calculado",
+                  motivo: "Frequência multitemporal de solo exposto aguarda cálculo no Earth Engine.",
                 },
                 maiorSequenciaSoloNu: {
                   estado: "indisponivel",

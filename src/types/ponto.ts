@@ -54,6 +54,8 @@ export interface LinhaDeBaseRUSLE {
   memoriaCalculo: string | null;
 }
 
+export type ClasseAmostral = "erosao" | "controle" | "indefinido";
+
 export interface PontoAmostral {
   id: string;                                 // estavel, gerado uma vez
   codigo: string;                             // legivel: "PR-2026-0001"; nao repetir o id em outra coluna
@@ -61,6 +63,15 @@ export interface PontoAmostral {
   longitude: number;
   origemSintetica: boolean;                   // obrigatorio
   blocoEspacial: string | null;               // null ate o variograma (plano secao 3.7)
+  classeAmostral?: ClasseAmostral;            // Classe biofísica amostral (Erosão / Controle / Indefinido)
+  espectral?: {
+    ndvi?: Proveniencia<number>;
+    bsi?: Proveniencia<number>;
+    b2?: Proveniencia<number>;
+    b4?: Proveniencia<number>;
+    b8?: Proveniencia<number>;
+    b12?: Proveniencia<number>;
+  };
 
   // Criterio interno de amostragem — NUNCA feature, NUNCA rotulo, NUNCA em perfil cego
   estratoId: string;

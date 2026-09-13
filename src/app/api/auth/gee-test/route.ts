@@ -5,6 +5,8 @@ import {
   SAREL_SESSION_COOKIE,
 } from "@/lib/seguranca/sessaoEfemera";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
     const sessionId = request.cookies.get(SAREL_SESSION_COOKIE)?.value;

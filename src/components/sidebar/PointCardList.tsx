@@ -48,31 +48,47 @@ export const PointCardList: React.FC = () => {
           const isSelected = p.id === pontoSelecionadoId;
           const temCar = !!p.fundiario?.codigoCar;
           const rotulado = !!p.rotulo;
+          const classe = p.classeAmostral ?? "indefinido";
+
+          const cardBorderColor = isSelected
+            ? classe === "erosao"
+              ? "bg-red-50/90 dark:bg-red-950/30 border-red-500 shadow-md ring-1 ring-red-500/50"
+              : classe === "controle"
+              ? "bg-emerald-50/90 dark:bg-emerald-950/30 border-emerald-500 shadow-md ring-1 ring-emerald-500/50"
+              : "bg-amber-50/90 dark:bg-amber-950/30 border-amber-500 shadow-md ring-1 ring-amber-500/50"
+            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60";
 
           return (
             <div
               key={p.id}
               onClick={() => handleCardClick(p)}
-              className={`p-3 rounded-xl border transition-all cursor-pointer ${
-                isSelected
-                  ? "bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-500 shadow-md ring-1 ring-emerald-500/50"
-                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
+              className={`p-3 rounded-xl border transition-all cursor-pointer ${cardBorderColor}`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <span className="font-mono font-bold text-xs text-slate-900 dark:text-white">
                     {p.codigo}
                   </span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-mono">
-                    {p.estratoId}
-                  </span>
+                  {/* Badge de Classe Amostral da Pesquisa */}
+                  {classe === "erosao" ? (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-900/60 font-mono">
+                      EROSÃO
+                    </span>
+                  ) : classe === "controle" ? (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60 font-mono">
+                      CONTROLE
+                    </span>
+                  ) : (
+                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 font-mono">
+                      {p.estratoId}
+                    </span>
+                  )}
                 </div>
 
-                {/* Badge de Rotulagem */}
+                {/* Badge de Rotulagem de Campo / Observação */}
                 {p.rotulo?.final ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300">
+                    <CheckCircle2 className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                     {p.rotulo.final.classe}
                   </span>
                 ) : (

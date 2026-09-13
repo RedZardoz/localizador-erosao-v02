@@ -50,7 +50,21 @@ export interface LinhaMatrizTreino {
   nEventosErosivos: number | null;
   indiceMecanismo: number | null;
 
-  // Rótulo Humano
+  // Bandas e Índices Espectrais (Metodologia Mestrado PPGTCA 2026, Seção 5)
+  bandaB2: number | null;
+  bandaB4: number | null;
+  bandaB8: number | null;
+  bandaB12: number | null;
+  ndvi: number | null;
+  bsi: number | null;
+
+  // Preditores Físicos da RUSLE (Física Informada / Data Fusion)
+  fatorK: number | null;
+  fatorR: number | null;
+  perdaSoloRUSLE: number | null;
+
+  // Alvo Supervisionado
+  classeAlvoBinaria: 0 | 1;
   rotuloClasse: string;
   rotuloModalidade: string;
 }
@@ -121,6 +135,15 @@ export function montarMatrizTreino(
 
     const janelaTemporal = ponto.temporal?.[opcoes.modeloJanela];
 
+    // Determinação do alvo supervisionado binário (1: Erosão, 0: Controle)
+    const rotuloNorm = rotulo.classe.toLowerCase();
+    const ehErosao =
+      rotuloNorm.includes("erosao") ||
+      rotuloNorm.includes("erosão") ||
+      rotuloNorm === "1" ||
+      ponto.classeAmostral === "erosao";
+    const classeAlvoBinaria: 0 | 1 = ehErosao ? 1 : 0;
+
     const linha: LinhaMatrizTreino = {
       pontoId: ponto.id,
       blocoEspacial: ponto.blocoEspacial ?? "BLOCO_INDEFINIDO",
@@ -148,7 +171,21 @@ export function montarMatrizTreino(
       nEventosErosivos: valorOuNulo(janelaTemporal?.chuva?.nEventosErosivos),
       indiceMecanismo: valorOuNulo(janelaTemporal?.chuva?.indiceMecanismo),
 
-      // Rótulo
+      // Bandas e Índices Espectrais (Mestrado PPGTCA 2026, Seção 5)
+      bandaB2: valorOuNulo(ponto.espectral?.b2),
+      bandaB4: valorOuNulo(ponto.espectral?.b4),
+      bandaB8: valorOuNulo(ponto.espectral?.b8),
+      bandaB12: valorOuNulo(ponto.espectral?.b12),
+      ndvi: valorOuNulo(ponto.espectral?.ndvi),
+      bsi: valorOuNulo(ponto.espectral?.bsi),
+
+      // Preditores Físicos da RUSLE (Física Informada / Data Fusion)
+      fatorK: valorOuNulo(ponto.linhaDeBase?.fatorK),
+      fatorR: valorOuNulo(ponto.linhaDeBase?.fatorR),
+      perdaSoloRUSLE: valorOuNulo(ponto.linhaDeBase?.perdaSolo),
+
+      // Rótulo e Alvo
+      classeAlvoBinaria,
       rotuloClasse: rotulo.classe,
       rotuloModalidade: rotulo.modalidade,
     };
