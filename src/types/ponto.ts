@@ -42,6 +42,7 @@ export interface BlocoTemporal {
   janela: { inicio: string; fim: string };
   serie: BlocoSerie;
   chuva: BlocoChuva;
+  observacoes?: Array<{ data: string; ndvi: number | null; bsi: number | null }>;
 }
 
 export interface LinhaDeBaseRUSLE {

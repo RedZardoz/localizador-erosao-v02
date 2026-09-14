@@ -182,7 +182,19 @@ export function InspetorPonto() {
 
       {/* Gráfico da Série Temporal */}
       <GraficoSerieTemporal
-        dados={[]}
+        dados={
+          janelaAtiva?.observacoes && janelaAtiva.observacoes.length > 0
+            ? janelaAtiva.observacoes
+            : ponto.espectral?.ndvi?.estado === "medido" && ponto.rastreio?.calculadoEm
+            ? [
+                {
+                  data: ponto.rastreio.calculadoEm.split("T")[0],
+                  ndvi: ponto.espectral.ndvi.valor,
+                  bsi: ponto.espectral.bsi?.estado === "medido" ? ponto.espectral.bsi.valor : null,
+                },
+              ]
+            : []
+        }
         modeloAtivo={modeloAtivo}
         onModeloChange={setModeloAtivo}
         dataReferencia={ponto.rastreio?.calculadoEm?.split("T")[0] || "2026-01-01"}
