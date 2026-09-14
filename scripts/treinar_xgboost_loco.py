@@ -149,23 +149,80 @@ def carregar_dados_reais(caminho_arquivo: str) -> pd.DataFrame:
     return df
 
 
-def balancear_com_pontos_controle_reais(df_erosao: pd.DataFrame, semente: int = 42) -> pd.DataFrame:
+def auditar_variancia_preditores(X: pd.DataFrame) -> list[str]:
     """
-    Gera pontos de Controle / SPD (Classe 0) a partir de imóveis rurais reais da base oficial
-    (data/fundiario_brasil.db) situados nas mesmas bacias dos focos de erosão, atribuindo
-    características estritas de Sistema Plantio Direto (NDVI > 0.65, BSI < 0.00).
-    Garante a paridade 50%/50% exigida pela Tabela 1 da metodologia.
+    Audita se alguma variável preditora possui variância zero ou nula.
+    Alerta formalmente contra datasets estáticos com valores congelados.
     """
-    print("[BALANCEAMENTO] Complementando base monofásica com pontos de Controle / SPD (Classe 0)...")
-    db_path = os.path.join(os.getcwd(), 'data', 'fundiario_brasil.db')
-    np.random.seed(semente)
+    alertas = []
+    for c in X.columns:
+        serie = X[c].dropna()
+        if len(serie) > 0:
+            std = float(serie.std())
+            if std == 0.0 or pd.isna(std):
+                alertas.append(
+                    f"Variável '{c}' possui desvio padrão ZERO (todos os {len(serie)} valores são idênticos a {serie.iloc[0]}). "
+                    f"Valores estáticos produzem artefatos de separabilidade artificial e invalidam inferências biofísicas."
+                )
+    return alertas
 
+
+def balancear_com_pontos_controle(
+    df_erosao: pd.DataFrame,
+    caminho_controles: str | None = None,
+    permitir_dryrun_sintetico: bool = False,
+    semente: int = 42
+) -> tuple[pd.DataFrame, bool]:
+    """
+    Equilibra o conjunto de dados com amostras de Controle / SPD (Classe 0).
+
+    RIGOR CIENTÍFICO (PPGTCA 2026 - LEI FUNDAMENTAL):
+    - Se caminho_controles for fornecido, carrega pontos de controle reais com atributos medidos.
+    - Se a base for monofásica e nenhum arquivo for fornecido:
+      - Se permitir_dryrun_sintetico == False (PADRÃO CIENTÍFICO): Levanta ValueError impeditivo.
+      - Se permitir_dryrun_sintetico == True: Permite benchmarking computacional com advertência explícita.
+    """
     df_erosao = df_erosao.copy()
     if 'Classe_Alvo_Binaria' not in df_erosao.columns:
         df_erosao['Classe_Alvo_Binaria'] = 1
     else:
         df_erosao['Classe_Alvo_Binaria'] = df_erosao['Classe_Alvo_Binaria'].fillna(1).astype(int)
 
+    # 1. Caso haja arquivo externo de controles empíricos reais
+    if caminho_controles and os.path.exists(caminho_controles):
+        print(f"[BALANCEAMENTO] Carregando controles reais de '{os.path.basename(caminho_controles)}'...")
+        df_ctrl = carregar_dados_reais(caminho_controles)
+        df_ctrl['Classe_Alvo_Binaria'] = 0
+        df_bal = pd.concat([df_erosao, df_ctrl], ignore_index=True)
+        df_bal = df_bal.loc[:, ~df_bal.columns.duplicated()]
+        return df_bal, False
+
+    # 2. Bloqueio Anti-Mock Estrito em Execução Científica
+    if not permitir_dryrun_sintetico:
+        raise ValueError(
+            "\n" + "=" * 80 + "\n"
+            "  [ERRO DE INTEGRIDADE CIENTÍFICA (ANTI-MOCK - METODOLOGIA PPGTCA 2026)]\n"
+            "  A base de entrada contém apenas amostras de Erosão (Classe 1).\n"
+            "  Para fins de publicação e defesa de mestrado, é TERMINANTEMENTE PROIBIDO\n"
+            "  gerar atributos biofísicos fictícios para balancear a base de dados.\n\n"
+            "  Soluções aceitas:\n"
+            "    1. Forneça uma planilha com ambas as classes (coluna 'Classe_Alvo_Binaria' com 0 e 1);\n"
+            "    2. Forneça controles empíricos reais via '--controles caminho_controles.xlsx';\n"
+            "    3. Se você deseja APENAS testar a infraestrutura computacional do pipeline\n"
+            "       (dry-run sem valor probatório para a dissertação), utilize a flag explícita:\n"
+            "       --permitir-dryrun-sintetico\n"
+            + "=" * 80
+        )
+
+    # 3. Modo Dry-Run Excepcional e Rastreável (Apenas para Benchmark de Código)
+    print("\n" + "!" * 80)
+    print("  [AVISO CRÍTICO] MODO DRY-RUN DE INFRAESTRUTURA ATIVADO!")
+    print("  Atributos da Classe 0 foram sintetizados exclusivamente para teste do pipeline.")
+    print("  ESTES RESULTADOS NÃO POSSUEM VALIDADE CIENTÍFICA PARA A DISSERTAÇÃO DE MESTRADO!")
+    print("!" * 80 + "\n")
+
+    db_path = os.path.join(os.getcwd(), 'data', 'fundiario_brasil.db')
+    np.random.seed(semente)
     n_necessario = len(df_erosao)
     registros_controle = []
 
@@ -190,15 +247,19 @@ def balancear_com_pontos_controle_reais(df_erosao: pd.DataFrame, semente: int = 
             if lat is None or lon is None:
                 continue
 
-            # Valores característicos de Sistema Plantio Direto (Classe 0 do método: BSI < 0.0 e NDVI > 0.65)
+            # permitido: geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
             bsi_spd = float(np.random.uniform(-0.25, -0.02))
+            # permitido: geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
             ndvi_spd = float(np.random.uniform(0.68, 0.88))
+            # permitido: geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
             decliv = float(np.random.uniform(3.0, 14.0))
+            # permitido: geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
             elev = float(np.random.uniform(350, 750))
+            # permitido: geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
             perda_solo_spd = float(np.random.uniform(0.5, 4.5))
 
             registros_controle.append({
-                'Codigo': f"CTRL-{idx+1:04d}",
+                'Codigo': f"CTRL-DRYRUN-{idx+1:04d}",
                 'Latitude': round(lat, 6),
                 'Longitude': round(lon, 6),
                 'Municipio': mun or 'Paraná',
@@ -207,7 +268,7 @@ def balancear_com_pontos_controle_reais(df_erosao: pd.DataFrame, semente: int = 
                 'bsi': round(bsi_spd, 3),
                 'ndvi': round(ndvi_spd, 3),
                 'rusle_perda_solo': round(perda_solo_spd, 2),
-                'Tipologia_Feicao': 'Controle / SPD',
+                'Tipologia_Feicao': 'Controle / SPD (Dry-Run)',
                 'Classe_Alvo_Binaria': 0,
             })
 
@@ -216,15 +277,21 @@ def balancear_com_pontos_controle_reais(df_erosao: pd.DataFrame, semente: int = 
     df_balanceado = pd.concat([df_erosao, df_controle], ignore_index=True)
     df_balanceado = df_balanceado.loc[:, ~df_balanceado.columns.duplicated()]
     df_balanceado['Classe_Alvo_Binaria'] = df_balanceado['Classe_Alvo_Binaria'].fillna(0).astype(int)
-    print(f"[BALANCEAMENTO] Base equilibrada com sucesso: {len(df_erosao)} Erosão (1) + {len(df_controle)} Controle (0) = {len(df_balanceado)} Total.")
-    return df_balanceado
+    print(f"[BALANCEAMENTO DRY-RUN] Base equilibrada com marca d'agua: {len(df_erosao)} Erosão + {len(df_controle)} Controle.")
+    return df_balanceado, True
 
 
-def preparar_matriz_preditores(df: pd.DataFrame, semente: int = 42) -> tuple[pd.DataFrame, pd.Series, pd.Series, list[str]]:
+def preparar_matriz_preditores(
+    df: pd.DataFrame,
+    caminho_controles: str | None = None,
+    permitir_dryrun_sintetico: bool = False,
+    semente: int = 42
+) -> tuple[pd.DataFrame, pd.Series, pd.Series, list[str], bool, list[str]]:
     """
-    Padroniza nomes de colunas, identifica a bacia real e harmoniza a variável alvo Y.
+    Padroniza nomes de colunas, identifica a bacia real, audita variância e harmoniza a variável alvo Y.
     """
     df = df.copy()
+    eh_dryrun = False
 
     # Mapeamento flexível de colunas
     mapeamento = {
@@ -270,7 +337,9 @@ def preparar_matriz_preditores(df: pd.DataFrame, semente: int = 42) -> tuple[pd.
         if df['Classe_Alvo_Binaria'].nunique() > 1:
             y_series = df['Classe_Alvo_Binaria'].fillna(0).astype(int)
         else:
-            df = balancear_com_pontos_controle_reais(df, semente=semente)
+            df, eh_dryrun = balancear_com_pontos_controle(
+                df, caminho_controles=caminho_controles, permitir_dryrun_sintetico=permitir_dryrun_sintetico, semente=semente
+            )
             df = df.rename(columns={k: v for k, v in mapeamento.items() if k in df.columns})
             df['bloco_loco'] = [identificar_bacia_real(lat, lon) for lat, lon in zip(df['Latitude'], df['Longitude'])]
             y_series = df['Classe_Alvo_Binaria'].fillna(0).astype(int)
@@ -279,7 +348,9 @@ def preparar_matriz_preditores(df: pd.DataFrame, semente: int = 42) -> tuple[pd.
         if y_mapped.notna().any() and y_mapped.nunique() > 1:
             y_series = y_mapped.fillna(0).astype(int)
         else:
-            df = balancear_com_pontos_controle_reais(df, semente=semente)
+            df, eh_dryrun = balancear_com_pontos_controle(
+                df, caminho_controles=caminho_controles, permitir_dryrun_sintetico=permitir_dryrun_sintetico, semente=semente
+            )
             df = df.rename(columns={k: v for k, v in mapeamento.items() if k in df.columns})
             df['bloco_loco'] = [identificar_bacia_real(lat, lon) for lat, lon in zip(df['Latitude'], df['Longitude'])]
             y_series = df['Classe_Alvo_Binaria'].fillna(0).astype(int)
@@ -287,7 +358,9 @@ def preparar_matriz_preditores(df: pd.DataFrame, semente: int = 42) -> tuple[pd.
         tip_lower = df['Tipologia_Feicao'].astype(str).str.lower()
         if (tip_lower.str.contains('eros|severa|sulco|laminar')).all():
             # Dataset possui apenas a classe positiva (focos de erosão) -> balancear
-            df = balancear_com_pontos_controle_reais(df, semente=semente)
+            df, eh_dryrun = balancear_com_pontos_controle(
+                df, caminho_controles=caminho_controles, permitir_dryrun_sintetico=permitir_dryrun_sintetico, semente=semente
+            )
             df = df.rename(columns={k: v for k, v in mapeamento.items() if k in df.columns})
             df['bloco_loco'] = [identificar_bacia_real(lat, lon) for lat, lon in zip(df['Latitude'], df['Longitude'])]
             y_series = df['Classe_Alvo_Binaria'].fillna(0).astype(int)
@@ -295,7 +368,9 @@ def preparar_matriz_preditores(df: pd.DataFrame, semente: int = 42) -> tuple[pd.
             y_series = tip_lower.apply(lambda t: 1 if ('eros' in t or 'severa' in t or 'sulco' in t) else 0)
 
     if y_series is None or len(y_series.unique()) < 2:
-        df = balancear_com_pontos_controle_reais(df, semente=semente)
+        df, eh_dryrun = balancear_com_pontos_controle(
+            df, caminho_controles=caminho_controles, permitir_dryrun_sintetico=permitir_dryrun_sintetico, semente=semente
+        )
         df = df.rename(columns={k: v for k, v in mapeamento.items() if k in df.columns})
         df = df.loc[:, ~df.columns.duplicated()]
         df['bloco_loco'] = [identificar_bacia_real(lat, lon) for lat, lon in zip(df['Latitude'], df['Longitude'])]
@@ -338,7 +413,15 @@ def preparar_matriz_preditores(df: pd.DataFrame, semente: int = 42) -> tuple[pd.
     print(f"[AMOSTRAS] Distribuição do Alvo: {dict(y_series.value_counts())} (0: Controle, 1: Erosão)")
     print(f"[MACROBACIAS] Distribuição por Bacia do Paraná: {dict(blocos.value_counts())}")
 
-    return X, y_series, blocos, preditores_disponiveis
+    # Auditoria de Variância dos Preditores
+    alertas_variancia = auditar_variancia_preditores(X)
+    if alertas_variancia:
+        print("\n[AUDITORIA DE DADOS - ALERTAS DE RIGOR METODOLÓGICO]")
+        for a in alertas_variancia:
+            print(f"  [!] {a}")
+        print()
+
+    return X, y_series, blocos, preditores_disponiveis, eh_dryrun, alertas_variancia
 
 
 def executar_spatial_kfold_loco(
@@ -482,7 +565,8 @@ def gerar_graficos_e_explicabilidade_shap(
     X: pd.DataFrame,
     y_real: np.ndarray,
     y_prob: np.ndarray,
-    diretorio_saida: str
+    diretorio_saida: str,
+    eh_dryrun: bool = False
 ) -> dict:
     """Gera visualizações científicas completas: SHAP Beeswarm, Bar Plot, ROC e Confusão."""
     os.makedirs(diretorio_saida, exist_ok=True)
@@ -497,6 +581,8 @@ def gerar_graficos_e_explicabilidade_shap(
     plt.figure(figsize=(10, 6))
     shap.summary_plot(shap_values, X_imputado, show=False)
     plt.title("Contribuição Marginal das Variáveis na Predição de Erosão Laminar (SHAP)", fontsize=12, pad=15)
+    if eh_dryrun:
+        plt.suptitle("[AVISO: BENCHMARK DE INFRAESTRUTURA - DADOS NÃO EMPÍRICOS]", color='#DC2626', fontsize=9, weight='bold')
     caminho_beeswarm = os.path.join(diretorio_saida, "shap_summary_beeswarm.png")
     plt.tight_layout()
     plt.savefig(caminho_beeswarm, dpi=300, bbox_inches='tight')
@@ -507,6 +593,8 @@ def gerar_graficos_e_explicabilidade_shap(
     plt.figure(figsize=(9, 5))
     shap.plots.bar(shap_values, show=False)
     plt.title("Ranking de Importância Global dos Preditores (|SHAP value| médio)", fontsize=12, pad=15)
+    if eh_dryrun:
+        plt.suptitle("[AVISO: BENCHMARK DE INFRAESTRUTURA - DADOS NÃO EMPÍRICOS]", color='#DC2626', fontsize=9, weight='bold')
     caminho_bar = os.path.join(diretorio_saida, "shap_feature_importance.png")
     plt.tight_layout()
     plt.savefig(caminho_bar, dpi=300, bbox_inches='tight')
@@ -525,6 +613,8 @@ def gerar_graficos_e_explicabilidade_shap(
     plt.xlabel('Taxa de Falsos Positivos (1 - Especificidade)', fontsize=11)
     plt.ylabel('Taxa de Verdadeiros Positivos (Sensibilidade)', fontsize=11)
     plt.title('Curva ROC — Validação Cruzada Espacial LOCO (K=5)', fontsize=12, pad=12)
+    if eh_dryrun:
+        plt.suptitle("[AVISO: BENCHMARK DE INFRAESTRUTURA - DADOS NÃO EMPÍRICOS]", color='#DC2626', fontsize=9, weight='bold')
     plt.legend(loc="lower right", frameon=True)
     plt.grid(True, linestyle=':', alpha=0.6)
     caminho_roc = os.path.join(diretorio_saida, "curva_roc_loco.png")
@@ -543,6 +633,8 @@ def gerar_graficos_e_explicabilidade_shap(
                 yticklabels=['Controle (0)', 'Erosão (1)'],
                 annot_kws={"size": 13, "weight": "bold"})
     plt.title('Matriz de Confusão Normalizada (LOCO)', fontsize=12, pad=12)
+    if eh_dryrun:
+        plt.suptitle("[AVISO: BENCHMARK DE INFRAESTRUTURA - DADOS NÃO EMPÍRICOS]", color='#DC2626', fontsize=9, weight='bold')
     plt.ylabel('Classe Real Observada', fontsize=11)
     plt.xlabel('Classe Predita pelo XGBoost', fontsize=11)
     caminho_cm = os.path.join(diretorio_saida, "matriz_confusao_loco.png")
@@ -572,6 +664,10 @@ def main():
     parser = argparse.ArgumentParser(description="Treinamento XGBoost e SHAP LOCO — PPGTCA 2026")
     parser.add_argument('--dados', type=str, default="Tabela_Consolidada_Parana_Todo_o_Estado_150focos_2026-09-04.xlsx",
                         help="Caminho do arquivo de dados reais (Excel, CSV ou JSON)")
+    parser.add_argument('--controles', type=str, default=None,
+                        help="Caminho do arquivo com amostras de Controle / SPD reais (Classe 0)")
+    parser.add_argument('--permitir-dryrun-sintetico', action='store_true', default=False,
+                        help="Permite balanceamento sintético APENAS para benchmark de software (inválido para dissertação)")
     parser.add_argument('--saida', type=str, default=os.path.join("docs", "relatorios", "modelagem"),
                         help="Diretório de saída para os artefatos analíticos e gráficos")
     parser.add_argument('--k_blocos', type=int, default=5, help="Número de blocos/folds no Spatial K-Fold")
@@ -579,7 +675,12 @@ def main():
     args = parser.parse_args()
 
     df = carregar_dados_reais(args.dados)
-    X, y, blocos, features = preparar_matriz_preditores(df, semente=args.semente)
+    X, y, blocos, features, eh_dryrun, alertas_variancia = preparar_matriz_preditores(
+        df,
+        caminho_controles=args.controles,
+        permitir_dryrun_sintetico=args.permitir_dryrun_sintetico,
+        semente=args.semente
+    )
     resultado_cv = executar_spatial_kfold_loco(X, y, blocos, k_blocos=args.k_blocos, random_state=args.semente)
 
     resultado_shap = gerar_graficos_e_explicabilidade_shap(
@@ -587,7 +688,8 @@ def main():
         X,
         resultado_cv['y_real'],
         resultado_cv['y_prob'],
-        args.saida
+        args.saida,
+        eh_dryrun=eh_dryrun
     )
 
     relatorio_final = {
@@ -595,6 +697,11 @@ def main():
         'semente_reprodutibilidade': args.semente,
         'total_amostras_avaliadas': len(y),
         'preditores_utilizados': features,
+        'auditoria_cientifica': {
+            'dados_100pct_empiricos': not eh_dryrun and len(alertas_variancia) == 0,
+            'natureza_execucao': 'BENCHMARK_INFRAESTRUTURA_DRY_RUN' if eh_dryrun else 'PROBATORIO_CIENTIFICO',
+            'alertas_rigor': alertas_variancia + (['Atributos da Classe 0 gerados artificialmente para dry-run. Não utilizável na dissertação.'] if eh_dryrun else []),
+        },
         'metricas_globais': resultado_cv['metricas'],
         'ranking_explicabilidade_shap': resultado_shap['ranking_features'],
         'artefatos_visuais': {

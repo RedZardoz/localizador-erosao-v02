@@ -26,12 +26,23 @@ const REGEX_PADROES = [
   { id: "parametro-com-default-numerico", regex: /:\s*number\s*=\s*\d+(\.\d+)?\b/ },
   { id: "corte-math-max-min-com-literal", regex: /Math\.(max|min)\s*\([^)]*\b\d+(\.\d+)?\b[^)]*\)/ },
   { id: "adquiridoEm-com-new-date", regex: /adquiridoEm\s*:\s*(new\s+Date|Date\.now)/ },
+  {
+    id: "sintese-aleatoria-atributos-fisicos",
+    regex: /(bsi|ndvi|decliv|slope|elev|perda|fator)[a-z_0-9]*\s*=\s*(float\()?((np\.)?random\.(uniform|normal|random|choice)|random\.(uniform|random|choice))/i,
+  },
 ];
 
 export function varrerLinha(linha: string, numeroLinha: number, arquivo: string): ViolacaoPadrao[] {
-  // Exceção permitida somente com comentário explícito
-  if (linha.includes("// permitido:") && linha.indexOf("// permitido:") + 14 < linha.length) {
-    const motivo = linha.slice(linha.indexOf("// permitido:") + 14).trim();
+  // Exceção permitida somente com comentário explícito (TS // permitido: ou Python # permitido:)
+  const marcadorTs = "// permitido:";
+  const marcadorPy = "# permitido:";
+  const idxTs = linha.indexOf(marcadorTs);
+  const idxPy = linha.indexOf(marcadorPy);
+  const idxMarcador = idxTs !== -1 ? idxTs : idxPy;
+  const tamMarcador = idxTs !== -1 ? marcadorTs.length : marcadorPy.length;
+
+  if (idxMarcador !== -1 && idxMarcador + tamMarcador < linha.length) {
+    const motivo = linha.slice(idxMarcador + tamMarcador).trim();
     if (motivo.length >= 20) {
       return [];
     }
@@ -55,6 +66,19 @@ export function varrerCodigo(codigo: string, nomeArquivo: string): ViolacaoPadra
   const linhas = codigo.split("\n");
   const violacoes: ViolacaoPadrao[] = [];
   linhas.forEach((linha, idx) => {
+    // Verifica se a linha anterior continha autorização explícita com justificativa >= 20 caracteres
+    const linhaAnterior = idx > 0 ? linhas[idx - 1] : "";
+    const idxAntTs = linhaAnterior.indexOf("// permitido:");
+    const idxAntPy = linhaAnterior.indexOf("# permitido:");
+    const idxAnt = idxAntTs !== -1 ? idxAntTs : idxAntPy;
+    const tamAnt = idxAntTs !== -1 ? 14 : 13;
+    if (idxAnt !== -1 && idxAnt + tamAnt < linhaAnterior.length) {
+      const motivo = linhaAnterior.slice(idxAnt + tamAnt).trim();
+      if (motivo.length >= 20) {
+        return;
+      }
+    }
+
     violacoes.push(...varrerLinha(linha, idx + 1, nomeArquivo));
   });
   return violacoes;
@@ -110,6 +134,18 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
       const v = varrerCodigo(code, "teste.ts");
       expect(v.length).toBeGreaterThan(0);
     });
+
+    it("detecta síntese aleatória de atributos físicos em Python sem comentário permitido", () => {
+      const code = `decliv = float(np.random.uniform(3.0, 14.0))`;
+      const v = varrerCodigo(code, "teste.py");
+      expect(v.some((x) => x.padrao === "sintese-aleatoria-atributos-fisicos")).toBe(true);
+    });
+
+    it("permite síntese em Python quando acompanhada de justificativa >= 20 chars com # permitido:", () => {
+      const code = `decliv = float(np.random.uniform(3.0, 14.0)) # permitido: geracao explicita de benchmark de pipeline quando solicitado via flag dry-run`;
+      const v = varrerCodigo(code, "teste.py");
+      expect(v.length).toBe(0);
+    });
   });
 
   describe("Varredura no código científico ativo em src/lib/", () => {
@@ -144,6 +180,46 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
           .map((v) => `  ${v.arquivo}:${v.linha} [${v.padrao}] -> ${v.trecho}`)
           .join("\n");
         expect.fail(`Violações de padrões proibidos encontradas em código ativo:\n${msg}`);
+      }
+      expect(todasViolacoes).toHaveLength(0);
+    });
+  });
+
+  describe("Varredura no código científico em scripts/ (Python e Node)", () => {
+    function listarArquivosScripts(dir: string): string[] {
+      if (!fs.existsSync(dir)) return [];
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      const arquivos: string[] = [];
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory() && entry.name !== "__pycache__" && entry.name !== ".git") {
+          arquivos.push(...listarArquivosScripts(fullPath));
+        } else if (
+          entry.isFile() &&
+          (fullPath.endsWith(".py") || fullPath.endsWith(".mjs") || fullPath.endsWith(".ts"))
+        ) {
+          arquivos.push(fullPath);
+        }
+      }
+      return arquivos;
+    }
+
+    it("nenhum script em scripts/ deve conter geração sintética não documentada ou padrões proibidos", () => {
+      const raizScripts = path.resolve(process.cwd(), "scripts");
+      const arquivos = listarArquivosScripts(raizScripts);
+      const todasViolacoes: ViolacaoPadrao[] = [];
+
+      for (const arq of arquivos) {
+        const conteudo = fs.readFileSync(arq, "utf-8");
+        const v = varrerCodigo(conteudo, path.relative(process.cwd(), arq));
+        todasViolacoes.push(...v);
+      }
+
+      if (todasViolacoes.length > 0) {
+        const msg = todasViolacoes
+          .map((v) => `  ${v.arquivo}:${v.linha} [${v.padrao}] -> ${v.trecho}`)
+          .join("\n");
+        expect.fail(`Violações de padrões proibidos encontradas em scripts/:\n${msg}`);
       }
       expect(todasViolacoes).toHaveLength(0);
     });

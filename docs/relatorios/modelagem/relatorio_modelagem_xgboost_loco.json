@@ -9,6 +9,13 @@
     "ndvi",
     "rusle_perda_solo"
   ],
+  "auditoria_cientifica": {
+    "dados_100pct_empiricos": false,
+    "natureza_execucao": "BENCHMARK_INFRAESTRUTURA_DRY_RUN",
+    "alertas_rigor": [
+      "Atributos da Classe 0 gerados artificialmente para dry-run. Não utilizável na dissertação."
+    ]
+  },
   "metricas_globais": {
     "acuracia_global": 1.0,
     "precisao_global": 1.0,
@@ -33,7 +40,7 @@
           "Bacia do Paranapanema",
           "Bacia Litorânea / Ribeira"
         ],
-        "n_amostras_teste": 62,
+        "n_amostras_teste": 67,
         "acuracia": 1.0,
         "precisao": 1.0,
         "recall": 1.0,
@@ -45,7 +52,7 @@
         "bacias_omitidas_teste": [
           "Bacia do Rio Tibagi"
         ],
-        "n_amostras_teste": 32,
+        "n_amostras_teste": 28,
         "acuracia": 1.0,
         "precisao": 1.0,
         "recall": 1.0,
@@ -57,7 +64,7 @@
         "bacias_omitidas_teste": [
           "Bacia do Rio Iguaçu"
         ],
-        "n_amostras_teste": 102,
+        "n_amostras_teste": 101,
         "acuracia": 1.0,
         "precisao": 1.0,
         "recall": 1.0,
@@ -69,7 +76,7 @@
         "bacias_omitidas_teste": [
           "Bacia do Rio Piquiri / PR 3"
         ],
-        "n_amostras_teste": 55,
+        "n_amostras_teste": 61,
         "acuracia": 1.0,
         "precisao": 1.0,
         "recall": 1.0,
@@ -81,7 +88,7 @@
         "bacias_omitidas_teste": [
           "Bacia do Rio Ivaí"
         ],
-        "n_amostras_teste": 49,
+        "n_amostras_teste": 43,
         "acuracia": 1.0,
         "precisao": 1.0,
         "recall": 1.0,
