@@ -1,202 +1,173 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  Search,
-  SlidersHorizontal,
-  RotateCcw,
-  Percent,
-  TrendingUp,
-  Map,
-  ArrowUpDown,
-  ChevronDown,
-  Layers,
-} from "lucide-react";
-import { useErosionStore } from "@/lib/store/useErosionStore";
+import React from "react";
+import { Search, RotateCcw, Filter } from "lucide-react";
+import { useSarelStore } from "@/store/useSarelStore";
+import { PARANA_BASINS_GEOJSON } from "@/lib/localizacao/bacias";
 
-const paranaWatersheds = [
-  "Rio Tibagi",
-  "Rio Ivaí",
-  "Rio Paranapanema",
-  "Rio Iguaçu",
-  "Rio Piquiri",
-  "Rio Pirapó",
-  "Rio Paraná",
-  "Litoral",
+const ORDENS_SOLO_EMBRAPA = [
+  "LATOSSOLO",
+  "ARGISSOLO",
+  "NITOSSOLO",
+  "NEOSSOLO",
+  "CAMBISSOLO",
+  "GLEISSOLO",
+  "ORGANOSSOLO",
 ];
 
 export const FiltersPanel: React.FC = () => {
-  const {
-    filters,
-    setSearchQuery,
-    setSlopeRange,
-    setBsiRange,
-    toggleWatershed,
-    setSorting,
-    resetFilters,
-  } = useErosionStore();
+  const { filtros, setFiltros, limparFiltros } = useSarelStore();
 
-  const [expanded, setExpanded] = useState(true);
+  const bacias = PARANA_BASINS_GEOJSON.features.map((f) => f.properties.name);
 
   return (
-    <div className="p-3.5 bg-white dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3.5 shadow-sm transition-colors">
-      {/* Header & Reset */}
+    <div className="space-y-3.5 p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800">
       <div className="flex items-center justify-between">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+          <Filter className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+          Filtros Detalhados
+        </span>
         <button
-          onClick={() => setExpanded(!expanded)}
-          className="text-xs font-semibold text-slate-800 dark:text-slate-300 flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors"
-        >
-          <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          Filtros Geoespaciais
-          <ChevronDown
-            className={`w-3.5 h-3.5 text-slate-400 dark:text-slate-500 transition-transform ${
-              expanded ? "rotate-180" : ""
-            }`}
-          />
-        </button>
-
-        <button
-          onClick={resetFilters}
-          className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 flex items-center gap-1 transition-colors"
-          title="Resetar todos os filtros para os valores iniciais"
+          onClick={limparFiltros}
+          className="text-[11px] text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 flex items-center gap-1 font-medium cursor-pointer"
+          title="Limpar todos os filtros"
         >
           <RotateCcw className="w-3 h-3" />
-          Resetar
+          Limpar
         </button>
       </div>
 
-      {/* Search Bar */}
+      {/* Busca textual */}
       <div className="relative">
-        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
           type="text"
-          value={filters.searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Buscar por ID, município, solo..."
-          className="w-full bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-200 text-xs rounded-lg pl-8 pr-3 py-2 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+          value={filtros.buscaTexto}
+          onChange={(e) => setFiltros({ buscaTexto: e.target.value })}
+          placeholder="Buscar código, município ou CAR..."
+          className="w-full pl-8 pr-3 py-1.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
         />
-        {filters.searchQuery && (
-          <button
-            onClick={() => setSearchQuery("")}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-white text-xs"
-          >
-            ×
-          </button>
-        )}
       </div>
 
-      {expanded && (
-        <div className="space-y-3 pt-1">
-          {/* Slope Slider (%) */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1 text-[11px]">
-                <TrendingUp className="w-3 h-3 text-amber-500 dark:text-amber-400" />
-                Declividade Mínima (%)
-              </span>
-              <span className="font-mono text-amber-600 dark:text-amber-400 font-bold text-xs">
-                ≥ {filters.minSlope}%
-              </span>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={60}
-              step={1}
-              value={filters.minSlope}
-              onChange={(e) => setSlopeRange(Number(e.target.value), filters.maxSlope)}
-              className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
-            />
-            <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-              <span>0% (Plano)</span>
-              <span>20% (Ondulado)</span>
-              <span>≥ 60% (Montanhoso)</span>
-            </div>
-          </div>
+      {/* Bacia Hidrográfica */}
+      <div className="space-y-1">
+        <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+          Macrobacia Hidrográfica
+        </label>
+        <select
+          value={filtros.bacia || ""}
+          onChange={(e) => setFiltros({ bacia: e.target.value || null })}
+          className="w-full py-1.5 px-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
+        >
+          <option value="">Todas as macrobacias</option>
+          {bacias.map((b) => (
+            <option key={b} value={b}>
+              {b}
+            </option>
+          ))}
+        </select>
+      </div>
 
-          {/* Bare Soil Index (BSI) Slider */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1 text-[11px]">
-                <Percent className="w-3 h-3 text-rose-500 dark:text-rose-400" />
-                BSI Mínimo (Solo Exposto)
-              </span>
-              <span className="font-mono text-rose-600 dark:text-rose-400 font-bold text-xs">
-                ≥ {filters.minBsi > 0 ? `+${filters.minBsi.toFixed(2)}` : filters.minBsi.toFixed(2)}
-              </span>
-            </div>
-            <input
-              type="range"
-              min={-0.8}
-              max={0.8}
-              step={0.05}
-              value={filters.minBsi}
-              onChange={(e) => setBsiRange(Number(e.target.value), filters.maxBsi)}
-              className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-rose-500"
-            />
-            <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-              <span>-0.8 (Veg. Densa)</span>
-              <span>0.0 (Misto)</span>
-              <span>+0.8 (Exposto Total)</span>
-            </div>
-          </div>
+      {/* Tipo de Solo Embrapa */}
+      <div className="space-y-1">
+        <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+          Ordem de Solo (Embrapa SiBCS)
+        </label>
+        <select
+          value={filtros.solo || ""}
+          onChange={(e) => setFiltros({ solo: e.target.value || null })}
+          className="w-full py-1.5 px-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
+        >
+          <option value="">Todos os solos</option>
+          {ORDENS_SOLO_EMBRAPA.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </div>
 
-          {/* Watershed (Bacia Hidrográfica) Filter Pills */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] text-slate-600 dark:text-slate-400 font-medium flex items-center gap-1">
-              <Map className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
-              Filtrar por Bacia Hidrográfica
-            </label>
-            <div className="flex flex-wrap gap-1">
-              {paranaWatersheds.map((basin) => {
-                const isSelected = filters.selectedWatersheds.includes(basin);
-                return (
-                  <button
-                    key={basin}
-                    onClick={() => toggleWatershed(basin)}
-                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition-all ${
-                      isSelected
-                        ? "bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-500/50"
-                        : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60 hover:text-slate-900 dark:hover:text-slate-200"
-                    }`}
-                  >
-                    {basin}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+      {/* Situação Fundiária */}
+      <div className="space-y-1">
+        <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+          Situação Fundiária (SICAR / SNCR)
+        </label>
+        <select
+          value={filtros.situacaoFundiaria}
+          onChange={(e) =>
+            setFiltros({
+              situacaoFundiaria: e.target.value as "todas" | "com-car" | "sem-car",
+            })
+          }
+          className="w-full py-1.5 px-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
+        >
+          <option value="todas">Todas as situações</option>
+          <option value="com-car">Com Imóvel CAR Identificado</option>
+          <option value="sem-car">Sem CAR (Área Não Cadastrada)</option>
+        </select>
+      </div>
 
-          {/* Sort By Dropdown */}
-          <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
-            <span className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1 shrink-0">
-              <ArrowUpDown className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-              Ordenar:
-            </span>
-            <div className="flex items-center gap-1.5 w-full">
-              <select
-                value={filters.sortBy}
-                onChange={(e) => setSorting(e.target.value as any, filters.sortOrder)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-[11px] rounded-lg px-2 py-1 focus:outline-none focus:border-emerald-500 cursor-pointer"
-              >
-                <option value="priority">Score de Prioridade</option>
-                <option value="bsi">Índice BSI (Solo Exposto)</option>
-                <option value="slope">Declividade (%)</option>
-                <option value="soilLoss">Perda de Solo (t/ha)</option>
-                <option value="municipality">Município (A-Z)</option>
-              </select>
+      {/* Status de Rotulagem */}
+      <div className="space-y-1">
+        <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+          Status de Rotulagem
+        </label>
+        <select
+          value={filtros.rotulado}
+          onChange={(e) =>
+            setFiltros({
+              rotulado: e.target.value as "todos" | "rotulado" | "nao-rotulado",
+            })
+          }
+          className="w-full py-1.5 px-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
+        >
+          <option value="todos">Todos os pontos</option>
+          <option value="rotulado">Rotulados (Campo / Fotointerpretação)</option>
+          <option value="nao-rotulado">Ainda Não Rotulados</option>
+        </select>
+      </div>
 
-              <button
-                onClick={() => setSorting(filters.sortBy, filters.sortOrder === "asc" ? "desc" : "asc")}
-                className="p-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg text-xs font-mono px-2"
-                title="Inverter Ordem (Crescente / Decrescente)"
-              >
-                {filters.sortOrder === "desc" ? "DESC" : "ASC"}
-              </button>
-            </div>
-          </div>
+      {/* Classe da Pesquisa (PPGTCA 2026) */}
+      <div className="space-y-1">
+        <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+          Classe da Pesquisa (Biofísica)
+        </label>
+        <select
+          value={filtros.classeAmostral}
+          onChange={(e) =>
+            setFiltros({
+              classeAmostral: e.target.value as "todas" | "erosao" | "controle",
+            })
+          }
+          className="w-full py-1.5 px-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
+        >
+          <option value="todas">Todas as amostras</option>
+          <option value="erosao">🔴 Apenas Erosão Laminar (Classe 1)</option>
+          <option value="controle">🟢 Apenas Controle / SPD (Classe 0)</option>
+        </select>
+      </div>
+
+      {/* Declividade Mínima */}
+      <div className="space-y-1">
+        <div className="flex justify-between text-[11px] text-slate-600 dark:text-slate-400 font-semibold">
+          <span>Declividade Mínima DEM</span>
+          <span className="font-mono">
+            {filtros.declividadeMin !== null ? `${filtros.declividadeMin}%` : "Livre"}
+          </span>
         </div>
-      )}
+        <input
+          type="range"
+          min="0"
+          max="30"
+          step="1"
+          value={filtros.declividadeMin ?? 0}
+          onChange={(e) => {
+            const val = Number(e.target.value);
+            setFiltros({ declividadeMin: val > 0 ? val : null });
+          }}
+          className="w-full accent-emerald-600 cursor-pointer"
+        />
+      </div>
     </div>
   );
 };

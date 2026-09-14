@@ -1,249 +1,171 @@
 "use client";
 
 import React, { useState } from "react";
-import { Check, X, Undo2, Layers, Sparkles, MapPin } from "lucide-react";
-import { useErosionStore } from "@/lib/store/useErosionStore";
-import { calculatePolygonMetrics } from "@/lib/utils/shapefileExport";
-import { PolygonCategory, SeverityLevel } from "@/types/erosion";
+import {
+  PenTool,
+  RotateCcw,
+  X,
+  Check,
+  Layers,
+  Save,
+} from "lucide-react";
+import { useSarelStore } from "@/store/useSarelStore";
 
 export const DrawingToolbar: React.FC = () => {
   const {
-    activeDrawingMode,
-    setDrawingMode,
-    drawingPoints,
-    setDrawingPoints,
-    addDrawnPolygon,
-    drawnPolygons,
-  } = useErosionStore();
+    modoDesenhoAtivo,
+    setModoDesenhoAtivo,
+    poligonoDesenhando,
+    desfazerVerticeDesenho,
+    cancelarDesenho,
+    concluirDesenhoTalhao,
+    areas,
+  } = useSarelStore();
 
-  const [isSaving, setIsSaving] = useState(false);
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState<PolygonCategory>("Talhão Agrícola");
-  const [severity, setSeverity] = useState<SeverityLevel | "Nenhuma">("Nenhuma");
-  const [notes, setNotes] = useState("");
+  const [modalSalvarAberto, setModalSalvarAberto] = useState(false);
+  const [nomeTalhao, setNomeTalhao] = useState("");
+  const [categoria, setCategoria] = useState("Talhão Agrícola");
 
-  if (!activeDrawingMode) return null;
+  const numVertices = poligonoDesenhando.length;
+  const talhoesExistentes = areas.filter((a) => a.tipo === "talhao");
 
-  const count = drawingPoints.length;
-  const metrics = calculatePolygonMetrics(drawingPoints);
-
-  const handleUndo = () => {
-    if (drawingPoints.length > 0) {
-      setDrawingPoints(drawingPoints.slice(0, -1));
-    }
+  const abrirSalvar = () => {
+    if (numVertices < 3) return;
+    setNomeTalhao(`Talhão ${talhoesExistentes.length + 1}`);
+    setModalSalvarAberto(true);
   };
 
-  const handleCancel = () => {
-    setDrawingMode(false);
-    setIsSaving(false);
-  };
-
-  const handleOpenSaveDialog = () => {
-    if (count < 3) return;
-    const defaultNum = String(drawnPolygons.length + 1).padStart(2, "0");
-    setName(`Talhão ${defaultNum} - Delimitação`);
-    setIsSaving(true);
-  };
-
-  const handleConfirmSave = (e: React.FormEvent) => {
+  const confirmarSalvar = (e: React.FormEvent) => {
     e.preventDefault();
-    if (count < 3) return;
-
-    // Ensure ring is closed
-    const ring = [...drawingPoints];
-    if (
-      ring[0][0] !== ring[ring.length - 1][0] ||
-      ring[0][1] !== ring[ring.length - 1][1]
-    ) {
-      ring.push([ring[0][0], ring[0][1]]);
-    }
-
-    const newPolygon = {
-      id: `POLY-${Date.now()}`,
-      name: name.trim() || `Talhão ${drawnPolygons.length + 1}`,
-      category,
-      severity: severity === "Nenhuma" ? undefined : severity,
-      notes: notes.trim(),
-      areaM2: metrics.areaM2,
-      areaHa: metrics.areaHa,
-      perimeterM: metrics.perimeterM,
-      createdAt: new Date().toISOString(),
-      geometry: {
-        type: "Polygon" as const,
-        coordinates: [ring],
-      },
-    };
-
-    addDrawnPolygon(newPolygon);
-    setIsSaving(false);
-    setDrawingMode(false);
+    concluirDesenhoTalhao(nomeTalhao, categoria);
+    setModalSalvarAberto(false);
   };
 
   return (
     <>
-      {/* Floating Toolbar on Top Center of Map */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 p-2 px-4 bg-slate-900/95 backdrop-blur-md rounded-2xl border border-cyan-500/80 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-200">
-        <div className="flex items-center gap-2 pr-3 border-r border-slate-700">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
-          </span>
-          <span className="text-xs font-bold text-white whitespace-nowrap">
-            Desenhando Talhão / Polígono
-          </span>
-        </div>
-
-        <div className="text-xs text-slate-300 font-mono flex items-center gap-2">
-          <span>
-            Vértices: <b className="text-cyan-400">{count}</b>/3+
-          </span>
-          {count >= 3 && (
-            <span className="text-emerald-400 font-semibold">
-              ({metrics.areaHa} ha)
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1.5 pl-2 border-l border-slate-700">
+      {/* Barra flutuante superior de desenho */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+        {!modoDesenhoAtivo ? (
           <button
-            onClick={handleUndo}
-            disabled={count === 0}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Desfazer último vértice"
+            onClick={() => setModoDesenhoAtivo(true)}
+            className="px-3.5 py-2 bg-white/95 dark:bg-slate-900/95 hover:bg-emerald-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 hover:border-emerald-500 rounded-xl shadow-lg backdrop-blur-md text-xs font-bold transition-all flex items-center gap-2 cursor-pointer group"
           >
-            <Undo2 className="w-4 h-4" />
+            <PenTool className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+            <span>Delimitar Talhão / Polígono</span>
+            {talhoesExistentes.length > 0 && (
+              <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.2 rounded font-mono font-bold">
+                {talhoesExistentes.length}
+              </span>
+            )}
           </button>
+        ) : (
+          <div className="flex items-center gap-2 bg-slate-900/95 text-white border border-emerald-500/50 px-3.5 py-2 rounded-xl shadow-2xl backdrop-blur-md text-xs font-semibold animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-2 border-r border-slate-700 pr-3">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span>Desenhando na Tela</span>
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800">
+                {numVertices} {numVertices === 1 ? "vértice" : "vértices"}
+              </span>
+            </div>
 
-          <button
-            onClick={handleCancel}
-            className="px-2.5 py-1 text-xs text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-          >
-            Cancelar
-          </button>
+            <button
+              onClick={desfazerVerticeDesenho}
+              disabled={numVertices === 0}
+              className="p-1.5 hover:bg-slate-800 disabled:opacity-40 rounded-lg text-slate-300 hover:text-white transition-colors cursor-pointer"
+              title="Desfazer último vértice"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
 
-          <button
-            onClick={handleOpenSaveDialog}
-            disabled={count < 3}
-            className="px-3.5 py-1 text-xs font-bold text-white bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg shadow-md transition-all flex items-center gap-1.5"
-          >
-            <Check className="w-3.5 h-3.5" />
-            Concluir &amp; Salvar
-          </button>
-        </div>
+            <button
+              onClick={cancelarDesenho}
+              className="px-2.5 py-1 hover:bg-rose-950/50 text-slate-300 hover:text-rose-400 rounded-lg transition-colors cursor-pointer"
+            >
+              Cancelar
+            </button>
+
+            <button
+              onClick={abrirSalvar}
+              disabled={numVertices < 3}
+              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:hover:bg-emerald-600 text-white font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>Concluir &amp; Salvar</span>
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Save Modal Dialog */}
-      {isSaving && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-850 flex items-center justify-between">
+      {/* Modal para nomear e salvar o talhão delimitado */}
+      {modalSalvarAberto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Layers className="w-4 h-4 text-cyan-500" />
-                Salvar Polígono / Talhão
+                <Save className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                Salvar Talhão / Polígono Delimitado
               </h3>
               <button
-                onClick={() => setIsSaving(false)}
-                className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white"
+                onClick={() => setModalSalvarAberto(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleConfirmSave} className="p-5 space-y-4">
-              {/* Computed Geometry Preview */}
-              <div className="p-3 bg-cyan-50 dark:bg-cyan-950/40 rounded-xl border border-cyan-200 dark:border-cyan-800/80 flex items-center justify-between text-xs font-mono">
-                <div>
-                  <span className="text-slate-500 block text-[10px]">Área Calculada:</span>
-                  <span className="text-cyan-700 dark:text-cyan-300 font-bold text-sm">
-                    {metrics.areaHa} hectares
-                  </span>
-                  <span className="text-[10px] text-slate-400 ml-1">
-                    ({metrics.areaM2.toLocaleString("pt-BR")} m²)
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block text-[10px]">Perímetro:</span>
-                  <span className="text-slate-800 dark:text-slate-200 font-semibold">
-                    {metrics.perimeterM.toLocaleString("pt-BR")} m
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Nome do Talhão / Área
+            <form onSubmit={confirmarSalvar} className="space-y-3.5">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Nome ou Identificação do Talhão
                 </label>
                 <input
                   type="text"
                   required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Ex: Talhão 01 - Céu Azul (Área com Erosão)"
-                  className="w-full text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-cyan-500 outline-none"
+                  value={nomeTalhao}
+                  onChange={(e) => setNomeTalhao(e.target.value)}
+                  placeholder="Ex: Talhão 01 - Fazenda Rio Bonito"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Categoria
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as PolygonCategory)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white"
-                  >
-                    <option value="Talhão Agrícola">Talhão Agrícola</option>
-                    <option value="Mancha de Erosão Laminar">Mancha de Erosão Laminar</option>
-                    <option value="Sulcos / Ravina">Sulcos / Ravina</option>
-                    <option value="Área de Preservação / Palhada">Área de Preservação / Palhada</option>
-                    <option value="Outro">Outro</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Severidade (Opcional)
-                  </label>
-                  <select
-                    value={severity}
-                    onChange={(e) => setSeverity(e.target.value as any)}
-                    className="w-full text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white"
-                  >
-                    <option value="Nenhuma">Nenhuma</option>
-                    <option value="Moderada">Moderada</option>
-                    <option value="Alta">Alta</option>
-                    <option value="Crítica">Crítica</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Notas / Observações
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Categoria
                 </label>
-                <textarea
-                  rows={2}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Ex: Talhão preparado para plantio com declividade acentuada e perda de horizonte superficial visível."
-                  className="w-full text-xs p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-cyan-500 outline-none"
-                />
+                <select
+                  value={categoria}
+                  onChange={(e) => setCategoria(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="Talhão Agrícola">Talhão Agrícola (Lavoura)</option>
+                  <option value="Foco de Erosão">Foco de Erosão / Ravina</option>
+                  <option value="Área de Pastagem">Área de Pastagem</option>
+                  <option value="Reserva / APP">Reserva Legal / APP</option>
+                  <option value="Outro">Outro Polígono de Estudo</option>
+                </select>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2">
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800/40 text-[11px] text-emerald-800 dark:text-emerald-300">
+                <p>
+                  ✓ Este polígono permanecerá renderizado na tela e servirá de máscara delimitadora na próxima <strong>Amostragem GEE</strong>.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setIsSaving(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
+                  onClick={() => setModalSalvarAberto(false)}
+                  className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold cursor-pointer"
                 >
-                  Continuar Desenhando
+                  Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-bold text-white bg-cyan-600 hover:bg-cyan-500 rounded-xl shadow-md transition-all flex items-center gap-1.5"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/30 cursor-pointer"
                 >
-                  <Check className="w-3.5 h-3.5" />
                   Salvar Talhão
                 </button>
               </div>

@@ -60,13 +60,13 @@ if %errorlevel% equ 0 (
 
 :: Verifica a atualidade do build de producao antes de iniciar o servidor
 call npm run check:build
-if %errorlevel% neq 0 (
+if errorlevel 1 (
     echo.
     echo [AVISO] O build de producao esta defasado ou ausente.
     echo Executando build de producao antes de iniciar o servidor...
     echo.
     call npm run build
-    if %errorlevel% neq 0 (
+    if errorlevel 1 (
         echo.
         echo [ERRO] Falha na compilacao do build de producao.
         echo Tentando iniciar em modo de desenvolvimento...
@@ -88,7 +88,7 @@ start "Aguardando servidor" /min cmd /c call "%~f0" --aguardar-navegador
 :: O "call" e obrigatorio: sem ele o cmd transfere o controle para o npm.cmd e nunca
 :: retorna, tornando o fallback e o pause abaixo codigo morto (a janela fecharia sozinha).
 call npm run start
-if %errorlevel% neq 0 (
+if errorlevel 1 (
     echo.
     echo [AVISO] O servidor de producao falhou ^(build ausente ou desatualizado^).
     echo Iniciando modo de desenvolvimento...

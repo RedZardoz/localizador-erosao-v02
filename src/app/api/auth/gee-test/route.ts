@@ -1,48 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GcpCredentialsSchema } from "@/types/erosion";
-import { verifyEarthEngineAccess } from "@/lib/gee/verifyEarthEngineAccess";
+import { getGoogleAccessToken, EARTH_ENGINE_SCOPES } from "@/lib/gee/auth";
+import {
+  obterSessao,
+  SAREL_SESSION_COOKIE,
+} from "@/lib/seguranca/sessaoEfemera";
 
-/**
- * Testa uma Service Account contra o Google DE VERDADE, sem persistir nada no
- * servidor (para isso, ver /api/auth/gee-session). Útil para validar um
- * credentials.json antes de decidir usá-lo.
- *
- * Antes desta implementação, esta rota só validava o FORMATO do JSON e
- * sempre retornava sucesso ("handshake simulado"). Agora qualquer falha é um
- * erro real relatado pelo Google.
- */
-export async function POST(req: NextRequest) {
+export const dynamic = "force-dynamic";
+
+export async function GET(request: NextRequest) {
   try {
-    const body = await req.json();
+    const sessionId = request.cookies.get(SAREL_SESSION_COOKIE)?.value;
+    const sessao = obterSessao(sessionId);
 
-    const parseResult = GcpCredentialsSchema.safeParse(body);
-    if (!parseResult.success) {
+    if (!sessao?.gee) {
       return NextResponse.json(
         {
-          success: false,
-          error: "Estrutura do JSON de credenciais inválida.",
-          details: parseResult.error.errors.map((e) => `${e.path.join(".")}: ${e.message}`),
+          ok: false,
+          active: false,
+          error: "Nenhuma credencial do Google Earth Engine encontrada na sessão ativa.",
         },
-        { status: 400 }
+        { status: 401 }
       );
     }
 
-    const verification = await verifyEarthEngineAccess(parseResult.data as any);
-
-    if (!verification.success) {
-      return NextResponse.json({ success: false, error: verification.error }, { status: verification.status || 400 });
-    }
+    // Re-valida o token OAuth2 em tempo real contra o Google
+    const token = await getGoogleAccessToken(
+      {
+        client_email: sessao.gee.client_email,
+        private_key: sessao.gee.private_key,
+        token_uri: sessao.gee.token_uri,
+      },
+      EARTH_ENGINE_SCOPES
+    );
 
     return NextResponse.json({
-      success: true,
-      message: "Autenticação real da Service Account validada com o Google Earth Engine!",
-      data: verification.data,
+      ok: true,
+      active: true,
+      project_id: sessao.gee.project_id,
+      client_email: sessao.gee.client_email,
+      expiresAt: token.expiresAt,
+      message: "Sessão do Google Earth Engine verificada e ativa no Google Cloud.",
     });
-  } catch (err: any) {
-    console.error("[GEE Test Error]", err);
+  } catch (error: any) {
+    console.error("Erro no teste de sessão GEE:", error);
     return NextResponse.json(
-      { success: false, error: "Erro interno ao processar credenciais. Consulte os logs do servidor." },
-      { status: 500 }
+      {
+        ok: false,
+        active: false,
+        error: error.message || "Erro ao verificar conexão com o Google Earth Engine.",
+      },
+      { status: 401 }
     );
   }
 }

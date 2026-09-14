@@ -1,3 +1,12 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": "next/core-web-vitals",
+  "ignorePatterns": ["legado/"],
+  "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": ["**/legado/**", "legado/*"]
+      }
+    ]
+  }
 }

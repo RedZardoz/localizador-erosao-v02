@@ -1,0 +1,34 @@
+{
+  "fonte": "IBGE - Instituto Brasileiro de Geografia e Estatística",
+  "dataVerificacao": "2026-09-10T21:38:14.016Z",
+  "municipioConsultado": {
+    "codigo": 4103206,
+    "nome": "Bom Sucesso",
+    "microrregiao": "Faxinal",
+    "uf": "PR"
+  },
+  "tipoGeometria": "Polygon",
+  "numeroPontosPoligono": 384,
+  "amostraCoordenadas": [
+    [
+      -51.695,
+      -23.7043
+    ],
+    [
+      -51.6963,
+      -23.7044
+    ],
+    [
+      -51.6989,
+      -23.7014
+    ],
+    [
+      -51.6996,
+      -23.6988
+    ],
+    [
+      -51.7014,
+      -23.6975
+    ]
+  ]
+}

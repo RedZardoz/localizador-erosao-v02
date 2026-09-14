@@ -1,569 +1,373 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import {
   X,
   Sparkles,
-  Layers,
-  MapPin,
-  RefreshCw,
-  CheckCircle2,
   AlertTriangle,
-  Sliders,
-  Compass,
-  Download,
-  Eye,
-  Satellite,
-  ShieldAlert,
-  Bookmark,
+  Key,
+  ShieldCheck,
+  Save,
+  FileSpreadsheet,
+  Trash2,
+  CheckCircle2,
+  RefreshCw,
+  Layers,
 } from "lucide-react";
-import confetti from "canvas-confetti";
-import { useErosionStore } from "@/lib/store/useErosionStore";
-import { ErosionPoint } from "@/types/erosion";
-import { WORLDCOVER_CLASSES } from "@/lib/gee/eligibilityConstants";
-import { STRATA_DEFINITIONS } from "@/lib/gee/stratification";
-import { exportToGeoJSON, exportToCSV, downloadFile } from "@/lib/utils/exportUtils";
+import { useSarelStore } from "@/store/useSarelStore";
+import type { PontoAmostral } from "@/types/ponto";
+import { gerarPlanilhaXLSX } from "@/lib/export/planilha";
 
 export const CandidateSelectionModal: React.FC = () => {
   const {
-    activeModal,
-    setActiveModal,
-    activeAOIPolygon,
-    activeRegion,
-    geeSessionActive,
-    applyCandidatePoints,
-    saveDataset,
-    flyToPoint,
-    flyToLocation,
-  } = useErosionStore();
+    modalAtiva,
+    setModalAtiva,
+    credenciais,
+    areas,
+    alternarAreaAtiva,
+    pontosProvisorios,
+    carregarPontosProvisorios,
+    salvarPontosProvisorios,
+    descartarPontosProvisorios,
+    adicionarLog,
+  } = useSarelStore();
 
-  const [savedCollection, setSavedCollection] = useState(false);
+  const [tamanhoAmostra, setTamanhoAmostra] = useState<number>(50);
+  const [raioThinningKm, setRaioThinningKm] = useState<number>(5.0);
+  const [frequenciaSoloNuMin, setFrequenciaSoloNuMin] = useState<number>(0.15);
+  const [declividadeMin, setDeclividadeMin] = useState<number>(3.0);
+  const [declividadeMax, setDeclividadeMax] = useState<number>(20.0);
+  const [processando, setProcessando] = useState(false);
+  const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
 
-  // Configuração dos parâmetros
-  const [targetCount, setTargetCount] = useState<number>(40);
-  const [minSpacingKm, setMinSpacingKm] = useState<number>(1.0);
-  const [minSlope, setMinSlope] = useState<number>(3.0);
-  const [maxSlope, setMaxSlope] = useState<number>(20.0);
-  const [waterBuffer, setWaterBuffer] = useState<number>(30);
-  const [selectedClasses, setSelectedClasses] = useState<number[]>([30, 40, 60]);
+  if (modalAtiva !== "candidates") return null;
 
-  // Estado de execução
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [resultCandidates, setResultCandidates] = useState<ErosionPoint[] | null>(null);
-  const [summaryData, setSummaryData] = useState<any>(null);
+  const geeAtivo = credenciais.geeSessionActive;
+  const areasAtivas = areas.filter((a) => a.ativa);
 
-  if (activeModal !== "candidates") return null;
-
-  // AOI ativa ou fallback de região
-  const currentAOI = activeAOIPolygon?.geometry || {
-    type: "Polygon",
-    coordinates: [
-      [
-        [activeRegion.bounds[0][0], activeRegion.bounds[0][1]],
-        [activeRegion.bounds[0][0], activeRegion.bounds[1][1]],
-        [activeRegion.bounds[1][0], activeRegion.bounds[1][1]],
-        [activeRegion.bounds[1][0], activeRegion.bounds[0][1]],
-        [activeRegion.bounds[0][0], activeRegion.bounds[0][1]],
-      ],
-    ],
-  };
-
-  const aoiName = activeAOIPolygon?.name || `${activeRegion.name} (Bbox)`;
-
-  const toggleClass = (code: number) => {
-    if (selectedClasses.includes(code)) {
-      if (selectedClasses.length === 1) return; // Não permitir desmarcar todas
-      setSelectedClasses(selectedClasses.filter((c) => c !== code));
-    } else {
-      setSelectedClasses([...selectedClasses, code]);
+  const executarEleicaoAmostral = async () => {
+    if (!geeAtivo) return;
+    if (areasAtivas.length === 0) {
+      setErro("Nenhuma área ativada. Ative ao menos uma área abaixo.");
+      return;
     }
-  };
-
-  const handleRunSelection = async () => {
-    if (!geeSessionActive) {
-      setError("É necessário ativar uma sessão com Service Account do GEE em Configurações.");
+    if (declividadeMax <= declividadeMin) {
+      setErro("Declividade máxima deve ser estritamente maior que a declividade mínima.");
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    setProcessando(true);
+    setErro(null);
+    setMensagemSucesso(null);
 
     try {
       const res = await fetch("/api/gee/select-candidates", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          aoi: currentAOI,
-          targetCount,
-          minSpacingKm,
-          municipalityName: aoiName,
-          stateName: activeRegion.state || "PR",
-          eligibilityOptions: {
-            allowedLandCoverClasses: selectedClasses,
-            minSlopePercent: minSlope,
-            maxSlopePercent: maxSlope,
-            waterBufferMeters: waterBuffer,
-            waterOccurrenceThreshold: 10,
-          },
+          tamanhoAmostra,
+          raioThinningKm,
+          frequenciaSoloNuMin,
+          declividadeMin,
+          declividadeMax,
+          areas: areasAtivas.map((a) => ({
+            id: a.id,
+            tipo: a.tipo,
+            nome: a.nome,
+            geometry: a.geometry,
+            codigoIbge: a.codigoIbge,
+          })),
         }),
       });
 
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || `Falha na requisição ao Earth Engine (HTTP ${res.status})`);
-      }
+      const dados = await res.json().catch(() => null);
 
-      if (!json.data?.candidates || json.data.candidates.length === 0) {
+      if (res.ok && dados?.pontos && Array.isArray(dados.pontos)) {
+        carregarPontosProvisorios(dados.pontos);
+        setMensagemSucesso(
+          dados.pontos.length + " pontos eleitos com sucesso e mantidos em Memória Provisória."
+        );
+      } else {
         throw new Error(
-          "Nenhum candidato elegível foi gerado pelo Earth Engine para os parâmetros configurados nesta AOI. Tente relaxar o espaçamento mínimo (ex: 0.5 km) ou incluir mais classes de uso da terra."
+          dados?.error ||
+            "Falha na execução do script Earth Engine no servidor. Verifique a sessão do GEE."
         );
       }
-
-      setResultCandidates(json.data.candidates);
-      setSummaryData(json.data.summary);
-      confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
     } catch (err: any) {
-      setError(err.message || "Erro desconhecido ao processar seleção no GEE.");
+      setErro(err.message || "Erro durante o processamento da amostragem.");
+      adicionarLog("error", "GEE-Sampling", err.message || "Erro na amostragem.");
     } finally {
-      setLoading(false);
+      setProcessando(false);
     }
   };
 
-  const handleApplyToMap = (replace: boolean) => {
-    if (!resultCandidates || resultCandidates.length === 0) return;
-    applyCandidatePoints(resultCandidates, replace);
-
-    if (resultCandidates.length > 0) {
-      let minLat = 90;
-      let maxLat = -90;
-      let minLng = 180;
-      let maxLng = -180;
-      for (const p of resultCandidates) {
-        if (p.latitude < minLat) minLat = p.latitude;
-        if (p.latitude > maxLat) maxLat = p.latitude;
-        if (p.longitude < minLng) minLng = p.longitude;
-        if (p.longitude > maxLng) maxLng = p.longitude;
-      }
-      flyToLocation({
-        lat: (minLat + maxLat) / 2,
-        lng: (minLng + maxLng) / 2,
-        zoom: resultCandidates.length > 50 ? 7.2 : 9.5,
-        pitch: 45,
+  const handleImprimirPlanilha = async () => {
+    if (pontosProvisorios.length === 0) return;
+    try {
+      const buffer = await gerarPlanilhaXLSX(pontosProvisorios);
+      const blob = new Blob([buffer as any], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "sarel_amostras_provisorias_" + Date.now() + ".xlsx";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
     }
-
-    confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
-    setActiveModal(null);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+      <div className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-950/60">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-              <Sparkles className="w-5 h-5" />
-            </div>
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/80">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                Seleção de Candidatos via Earth Engine
-                <span className="text-[10px] font-mono font-bold bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
-                  GEE Screened
-                </span>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                Eleição Amostral no Google Earth Engine (GEE)
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Máscara de Elegibilidade (10m) • Estratificação Cruzada (A1..B3) • Thinning Espacial
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Estratificação cruzada (Solo ⊗ Relevo ⊗ Freq. Solo Nu), Thinning e Blocos Espaciais
               </p>
             </div>
           </div>
-
           <button
-            onClick={() => setActiveModal(null)}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            onClick={() => setModalAtiva(null)}
+            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content Body */}
-        <div className="p-5 overflow-y-auto space-y-5 custom-scrollbar flex-1">
-          {/* AOI Context Card */}
-          <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-xs">
-              <MapPin className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-              <div>
-                <span className="text-slate-500 dark:text-slate-400">Área de Interesse Ativa: </span>
-                <span className="font-semibold text-slate-900 dark:text-white">{aoiName}</span>
+        {/* Conteúdo */}
+        <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+          {/* AVISO OBRIGATÓRIO: API CONECTADA E ATIVA (Requisito Estrito) */}
+          {!geeAtivo && (
+            <div className="p-4 rounded-xl border border-amber-300 dark:border-amber-800/80 bg-amber-50 dark:bg-amber-950/40 text-xs text-amber-900 dark:text-amber-200 space-y-2">
+              <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                <span>Atenção: Conexão com o Google Earth Engine Desativada</span>
               </div>
-            </div>
-            {!activeAOIPolygon && (
-              <span className="text-[11px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">
-                Dica: selecione um município na aba Região
-              </span>
-            )}
-          </div>
-
-          {/* Earth Engine Session Alert */}
-          {!geeSessionActive && (
-            <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-xl flex items-start gap-3">
-              <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-              <div className="text-xs text-amber-900 dark:text-amber-200 space-y-1">
-                <p className="font-semibold">Sessão do Earth Engine não detectada no servidor</p>
-                <p className="text-amber-700 dark:text-amber-300">
-                  Para processar os dados satelitais reais (WorldCover, Copernicus DEM, JRC Water),
-                  é necessário carregar o JSON da Service Account em{" "}
-                  <button
-                    onClick={() => setActiveModal("settings")}
-                    className="underline font-bold hover:text-amber-900 dark:hover:text-amber-100"
-                  >
-                    Configurações → GEE Service Account
-                  </button>
-                  .
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Configuration Form (quando não há resultado ainda) */}
-          {!resultCandidates && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Quantidade de Candidatos */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Quantidade Alvo de Candidatos
-                    </label>
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="number"
-                        min="5"
-                        max="500"
-                        value={targetCount}
-                        onChange={(e) => setTargetCount(Math.max(5, Math.min(500, Number(e.target.value) || 10)))}
-                        className="w-16 px-1.5 py-0.5 text-right font-mono font-bold text-xs bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-indigo-600 dark:text-indigo-400 focus:outline-none focus:border-indigo-500"
-                      />
-                      <span className="text-xs text-slate-500 font-medium">pts</span>
-                    </div>
-                  </div>
-                  <input
-                    type="range"
-                    min="10"
-                    max="500"
-                    step="10"
-                    value={targetCount}
-                    onChange={(e) => setTargetCount(Number(e.target.value))}
-                    className="w-full accent-indigo-600"
-                  />
-                  <div className="flex items-center justify-between gap-1">
-                    {[25, 50, 100, 150, 250, 500].map((preset) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={() => setTargetCount(preset)}
-                        className={`text-[10px] px-2 py-0.5 rounded font-mono transition-colors ${
-                          targetCount === preset
-                            ? "bg-indigo-600 text-white font-bold"
-                            : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
-                        }`}
-                      >
-                        {preset}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Espaçamento Mínimo (Thinning) */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                    <span>Espaçamento Mínimo (Thinning)</span>
-                    <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">{minSpacingKm.toFixed(1)} km</span>
-                  </label>
-                  <input
-                    type="range"
-                    min="0.2"
-                    max="5.0"
-                    step="0.2"
-                    value={minSpacingKm}
-                    onChange={(e) => setMinSpacingKm(Number(e.target.value))}
-                    className="w-full accent-indigo-600"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-400 font-mono">
-                    <span>0.2 km</span>
-                    <span>1.0 km</span>
-                    <span>5.0 km</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Declividade e Buffer de Água */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
-                <div>
-                  <label className="text-[11px] text-slate-500 dark:text-slate-400 block mb-1">Declividade Mín. (%)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="30"
-                    value={minSlope}
-                    onChange={(e) => setMinSlope(Number(e.target.value))}
-                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-slate-500 dark:text-slate-400 block mb-1">Declividade Máx. (%)</label>
-                  <input
-                    type="number"
-                    min="5"
-                    max="60"
-                    value={maxSlope}
-                    onChange={(e) => setMaxSlope(Number(e.target.value))}
-                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-slate-500 dark:text-slate-400 block mb-1">Buffer Água (metros)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="200"
-                    value={waterBuffer}
-                    onChange={(e) => setWaterBuffer(Number(e.target.value))}
-                    className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              {/* Classes Permitidas de Uso do Solo */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">
-                  Uso do Solo Elegível (ESA WorldCover 10m):
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {Object.values(WORLDCOVER_CLASSES)
-                    .filter((cls) => [10, 30, 40, 50, 60, 80].includes(cls.code))
-                    .map((cls) => {
-                      const isSelected = selectedClasses.includes(cls.code);
-                      return (
-                        <button
-                          key={cls.code}
-                          type="button"
-                          onClick={() => toggleClass(cls.code)}
-                          className={`p-2 rounded-lg border text-left text-xs transition-all ${
-                            isSelected
-                              ? "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-900 dark:text-indigo-200 font-semibold"
-                              : "bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 text-slate-500 opacity-60"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span>{cls.name}</span>
-                            <span className="text-[10px] font-mono opacity-70">({cls.code})</span>
-                          </div>
-                          <span className="text-[10px] block opacity-70">{cls.description}</span>
-                        </button>
-                      );
-                    })}
-                </div>
-              </div>
-
-              {error && (
-                <div className="p-3 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Results View */}
-          {resultCandidates && (
-            <div className="space-y-4">
-              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                  <div>
-                    <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-200">
-                      {resultCandidates.length} Candidatos Elegíveis Selecionados
-                    </h4>
-                    <p className="text-xs text-emerald-700 dark:text-emerald-400">
-                      Amostragem estratificada com sucesso no GEE (espaçamento mín.: {minSpacingKm} km).
-                    </p>
-                  </div>
-                </div>
-
+              <p className="text-[11px] leading-relaxed">
+                Os pontos somente podem ser eleitos com as APIs conectadas e ativas.
+                Para garantir dados verdadeiros e auditáveis sem fabricação sintética,
+                é necessário ativar a Service Account GCP antes de disparar a eleição.
+              </p>
+              <div className="pt-1">
                 <button
-                  onClick={() => setResultCandidates(null)}
-                  className="text-xs font-semibold px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg border border-emerald-300 dark:border-emerald-700 transition-colors"
+                  onClick={() => setModalAtiva("settings")}
+                  className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  Nova Seleção
+                  <Key className="w-3.5 h-3.5" />
+                  Ir para Conexão &amp; Chaves API
                 </button>
               </div>
+            </div>
+          )}
 
-              {/* Strata Distribution Badges */}
-              {summaryData?.strataDistribution && (
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">
-                    Distribuição Amostral por Sub-Estrato (README §3):
-                  </label>
-                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                    {["A1", "A2", "A3", "B1", "B2", "B3"].map((stId) => {
-                      const count = summaryData.strataDistribution[stId] || 0;
-                      return (
-                        <div
-                          key={stId}
-                          className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-center"
-                        >
-                          <span className="text-[11px] font-mono font-bold text-indigo-600 dark:text-indigo-400 block">
-                            Estrato {stId}
-                          </span>
-                          <span className="text-lg font-bold text-slate-900 dark:text-white">{count}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Lista Prévia dos Candidatos */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">
-                  Amostra dos Candidatos Selecionados:
-                </label>
-                <div className="max-h-48 overflow-y-auto space-y-1.5 custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-xl p-2 bg-slate-50 dark:bg-slate-950/40">
-                  {resultCandidates.slice(0, 15).map((cand) => (
-                    <div
-                      key={cand.id}
-                      className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{cand.code}</span>
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
-                          Estrato {cand.stratumId}
-                        </span>
-                        <span className="text-slate-500 dark:text-slate-400">
-                          {cand.slopePercent.toFixed(1)}% decl. • BSI {cand.bsi.toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                            cand.severity === "Crítica"
-                              ? "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400"
-                              : cand.severity === "Alta"
-                              ? "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400"
-                              : "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/60 dark:text-yellow-400"
-                          }`}
-                        >
-                          Score {cand.priorityScore}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  {resultCandidates.length > 15 && (
-                    <p className="text-center text-[10px] text-slate-400 py-1">
-                      ... e mais {resultCandidates.length - 15} candidatos selecionados
-                    </p>
+          {/* Seção de Áreas Ativáveis / Desativáveis */}
+          <div className="p-3.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+            <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              Áreas Incluídas na Eleição Amostral ({areasAtivas.length} ativas)
+            </span>
+            <div className="flex flex-wrap gap-2 max-h-28 overflow-y-auto custom-scrollbar pt-1">
+              {areas.map((a) => (
+                <label
+                  key={a.id}
+                  className={"px-2.5 py-1.5 rounded-lg border text-xs flex items-center gap-2 cursor-pointer transition-all " + (
+                    a.ativa
+                      ? "bg-white dark:bg-slate-800 border-emerald-500 font-semibold text-slate-900 dark:text-white shadow-sm"
+                      : "bg-slate-100 dark:bg-slate-950 border-slate-300 dark:border-slate-800 text-slate-500 opacity-60"
                   )}
-                </div>
+                >
+                  <input
+                    type="checkbox"
+                    checked={a.ativa}
+                    onChange={() => alternarAreaAtiva(a.id)}
+                    className="accent-emerald-600 h-3.5 w-3.5 rounded"
+                  />
+                  <span>{a.nome}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Parâmetros Metodológicos */}
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="space-y-1">
+              <label className="font-semibold text-slate-700 dark:text-slate-300">
+                Quantidade de Candidatos
+              </label>
+              <input
+                type="number"
+                min="10"
+                max="500"
+                value={tamanhoAmostra}
+                onChange={(e) => setTamanhoAmostra(Number(e.target.value))}
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-semibold text-slate-700 dark:text-slate-300">
+                Raio de Thinning Espacial (km)
+              </label>
+              <input
+                type="number"
+                step="0.5"
+                min="1.0"
+                max="25.0"
+                value={raioThinningKm}
+                onChange={(e) => setRaioThinningKm(Number(e.target.value))}
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-semibold text-slate-700 dark:text-slate-300">
+                Frequência Solo Nu Mínima (0 a 1)
+              </label>
+              <input
+                type="number"
+                step="0.05"
+                min="0.05"
+                max="0.80"
+                value={frequenciaSoloNuMin}
+                onChange={(e) => setFrequenciaSoloNuMin(Number(e.target.value))}
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-semibold text-slate-700 dark:text-slate-300">
+                Declividade Mínima DEM (%)
+              </label>
+              <input
+                type="number"
+                step="1"
+                min="0"
+                max="30"
+                value={declividadeMin}
+                onChange={(e) => setDeclividadeMin(Number(e.target.value))}
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <div className="space-y-1 col-span-2 sm:col-span-1">
+              <label className="font-semibold text-slate-700 dark:text-slate-300">
+                Declividade Máxima DEM (%)
+              </label>
+              <input
+                type="number"
+                step="1"
+                min="1"
+                max="60"
+                value={declividadeMax}
+                onChange={(e) => setDeclividadeMax(Number(e.target.value))}
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+          </div>
+
+          {/* Feedback de Sucesso ou Erro */}
+          {mensagemSucesso && (
+            <div className="p-3 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>{mensagemSucesso}</span>
+            </div>
+          )}
+
+          {erro && (
+            <div className="p-3 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 text-xs text-rose-800 dark:text-rose-300 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span>{erro}</span>
+            </div>
+          )}
+
+          {/* SEÇÃO DE MEMÓRIA PROVISÓRIA (Requisito Estrito) */}
+          {pontosProvisorios.length > 0 && (
+            <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
+                  <Save className="w-4 h-4" />
+                  {pontosProvisorios.length} Pontos em Memória Provisória (Não Salvos)
+                </span>
+                <span className="text-[10px] font-mono text-slate-500">
+                  Dados voláteis
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                Os dados eleitos permanecem nesta tela até você decidir salvar na base,
+                imprimir em planilha de dissertação ou descartar/limpar a tela.
+              </p>
+
+              <div className="flex flex-wrap gap-2 pt-1">
+                <button
+                  onClick={salvarPontosProvisorios}
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  Salvar em Projeto
+                </button>
+
+                <button
+                  onClick={handleImprimirPlanilha}
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  Imprimir em Planilha XLSX
+                </button>
+
+                <button
+                  onClick={descartarPontosProvisorios}
+                  className="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/70 dark:hover:bg-rose-900/70 text-rose-700 dark:text-rose-300 rounded-lg font-semibold text-xs flex items-center gap-1.5 border border-rose-300 dark:border-rose-800 cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Limpar Tela / Descartar
+                </button>
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer Actions */}
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 flex items-center justify-between gap-3">
-          {!resultCandidates ? (
-            <>
-              <button
-                type="button"
-                onClick={() => setActiveModal(null)}
-                className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleRunSelection}
-                disabled={loading || !geeSessionActive}
-                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition-all"
-              >
-                {loading ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    Processando no Earth Engine...
-                  </>
-                ) : (
-                  <>
-                    <Satellite className="w-4 h-4" />
-                    Executar Seleção GEE
-                  </>
-                )}
-              </button>
-            </>
-          ) : (
-            <div className="w-full flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const content = exportToGeoJSON(resultCandidates, activeAOIPolygon);
-                    downloadFile(content, `candidatos_gee_${Date.now()}.geojson`, "application/geo+json");
-                  }}
-                  className="px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 transition-colors"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  GeoJSON
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const content = exportToCSV(resultCandidates);
-                    downloadFile(content, `candidatos_gee_${Date.now()}.csv`, "text/csv;charset=utf-8;");
-                  }}
-                  className="px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 transition-colors"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  CSV
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    applyCandidatePoints(resultCandidates, true);
-                    const name = `Candidatos GEE ${activeAOIPolygon?.name || activeRegion.name} (${resultCandidates.length} focos)`;
-                    saveDataset(name, `Amostragem estratificada GEE com espaçamento de ${minSpacingKm} km.`);
-                    setSavedCollection(true);
-                  }}
-                  className={`px-3 py-2 text-xs font-semibold rounded-xl border flex items-center gap-1.5 transition-all ${
-                    savedCollection
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800"
-                      : "text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700"
-                  }`}
-                >
-                  <Bookmark className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  {savedCollection ? "Coleção Salva!" : "Salvar Coleção"}
-                </button>
-              </div>
+        {/* Footer com Botão de Processar Bloqueado sem API */}
+        <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/80">
+          <div className="text-[11px] text-slate-500 flex items-center gap-1">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>Regras 1 a 9 ativas: Zero dados sintéticos</span>
+          </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleApplyToMap(false)}
-                  className="px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors"
-                >
-                  Adicionar ao Mapa
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleApplyToMap(true)}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-lg shadow-indigo-600/20 transition-all"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  Substituir Pontos do Mapa
-                </button>
-              </div>
-            </div>
-          )}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setModalAtiva(null)}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold cursor-pointer"
+            >
+              Fechar
+            </button>
+            <button
+              onClick={executarEleicaoAmostral}
+              disabled={!geeAtivo || processando}
+              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:hover:bg-indigo-600 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-600/30 flex items-center gap-2 cursor-pointer"
+            >
+              {processando ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>Processando no GEE...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Eleger Pontos Reais no GEE</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

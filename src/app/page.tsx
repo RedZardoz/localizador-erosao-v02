@@ -7,15 +7,15 @@ import { Sidebar } from "@/components/sidebar/Sidebar";
 import { SettingsModal } from "@/components/config/SettingsModal";
 import { RegionRequestModal } from "@/components/region/RegionRequestModal";
 import { CandidateSelectionModal } from "@/components/region/CandidateSelectionModal";
-import { DataManagerModal } from "@/components/data/DataManagerModal";
-import { SystemLogsModal } from "@/components/diagnostics/SystemLogsModal";
-import { SystemLogCapture } from "@/components/diagnostics/SystemLogCapture";
 import { AuditDossierModal } from "@/components/audit/AuditDossierModal";
-import { Mountain } from "lucide-react";
+import { PainelCampanhaModal } from "@/components/campanha/PainelCampanhaModal";
+import { PainelMatrizModal } from "@/components/matriz/PainelMatrizModal";
+import { DecisoesModal } from "@/components/decisoes/DecisoesModal";
+import { ExportModal } from "@/components/export/ExportModal";
+import { SystemLogsModal } from "@/components/diagnostics/SystemLogsModal";
+import { useSarelStore } from "@/store/useSarelStore";
 
-import { useErosionStore } from "@/lib/store/useErosionStore";
-
-// Dynamic import of MapViewer to guarantee WebGL / window availability in browser
+// Carregamento dinâmico do MapViewer com WebGL desabilitando SSR
 const MapViewer = dynamic(
   () => import("@/components/map/MapViewer").then((mod) => mod.MapViewer),
   {
@@ -23,24 +23,24 @@ const MapViewer = dynamic(
     loading: () => (
       <div className="flex-1 flex items-center justify-center bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 gap-3">
         <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
-        <span className="text-sm font-medium">Inicializando WebGL Canvas 3D...</span>
+        <span className="text-xs font-semibold">Inicializando Canvas WebGL 3D do SAREL...</span>
       </div>
     ),
   }
 );
 
 export default function HomePage() {
-  const [mounted, setMounted] = useState(false);
-  const { theme } = useErosionStore();
+  const [montado, setMontado] = useState(false);
+  const { tema } = useSarelStore();
 
   useEffect(() => {
-    setMounted(true);
+    setMontado(true);
   }, []);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
       const root = document.documentElement;
-      if (theme === "dark") {
+      if (tema === "dark") {
         root.classList.add("dark");
         root.classList.remove("light");
       } else {
@@ -48,43 +48,43 @@ export default function HomePage() {
         root.classList.add("light");
       }
     }
-  }, [theme]);
+  }, [tema]);
 
-  if (!mounted) {
+  if (!montado) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-300 gap-3">
-        <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-600 dark:text-emerald-400">
-          <Mountain className="w-10 h-10 animate-pulse" />
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-900 text-white gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 font-black text-white text-xl shadow-lg shadow-emerald-600/40 animate-pulse">
+          S
         </div>
-        <h1 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
-          Localizador de Erosão &amp; Propriedade | Brasil
+        <h1 className="text-sm font-bold tracking-tight">
+          SAREL v2.0 — Sistema de Amostragem e Rotulagem para Erosão Laminar
         </h1>
-        <div className="w-6 h-6 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin mt-2" />
+        <div className="w-6 h-6 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin mt-1" />
       </div>
     );
   }
 
   return (
     <main className="h-screen w-screen flex flex-col overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
-      {/* Global Background Log Capture (silent) */}
-      <SystemLogCapture />
-
-      {/* Top Header */}
+      {/* 1. Header Superior com Identidade, AOI e Centrais */}
       <Header />
 
-      {/* Main Workspace Layout: Sidebar + 3D Map */}
+      {/* 2. Workspace Principal: Sidebar Lateral + Visualizador 3D */}
       <div className="flex-1 flex relative overflow-hidden">
         <Sidebar />
         <MapViewer />
       </div>
 
-      {/* Modals & Dialogs */}
+      {/* 3. Modais e Centrais de Trabalho */}
       <SettingsModal />
       <RegionRequestModal />
       <CandidateSelectionModal />
-      <DataManagerModal />
-      <SystemLogsModal />
       <AuditDossierModal />
+      <PainelCampanhaModal />
+      <PainelMatrizModal />
+      <DecisoesModal />
+      <ExportModal />
+      <SystemLogsModal />
     </main>
   );
 }

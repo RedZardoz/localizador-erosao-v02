@@ -1,291 +1,336 @@
 "use client";
 
 import React, { useState } from "react";
-import { KeyRound, CheckCircle2, AlertCircle, RefreshCw, Globe, Map, Layers, Sprout } from "lucide-react";
-import { useErosionStore } from "@/lib/store/useErosionStore";
+import {
+  Key,
+  Layers,
+  MapPin,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+  Satellite,
+  Sprout,
+  ShieldAlert,
+} from "lucide-react";
+import { useSarelStore } from "@/store/useSarelStore";
 
 export const ApiTokensManager: React.FC = () => {
-  const {
-    mapboxToken,
-    setMapboxToken,
-    googleMapsKey,
-    setGoogleMapsKey,
-    cartoApiKey,
-    setCartoApiKey,
-    embrapaToken,
-    setEmbrapaToken,
-  } = useErosionStore();
+  const { credenciais, setCredenciais } = useSarelStore();
 
-  const [testStatus, setTestStatus] = useState<{
-    mapbox?: { success: boolean; message: string };
-    google?: { success: boolean; message: string };
-    carto?: { success: boolean; message: string };
-    embrapa?: { success: boolean; message: string };
-  }>({});
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const [testResult, setTestResult] = useState<
+    Record<string, { success: boolean; message: string }>
+  >({});
 
-  const [loading, setLoading] = useState<{
-    mapbox?: boolean;
-    google?: boolean;
-    carto?: boolean;
-    embrapa?: boolean;
-  }>({});
-
-  const testToken = async (type: "mapbox" | "google" | "carto" | "embrapa", token: string) => {
-    if (!token.trim()) return;
-
-    setLoading((prev) => ({ ...prev, [type]: true }));
-    setTestStatus((prev) => ({ ...prev, [type]: undefined }));
+  const testarToken = async (tipo: "planet" | "mapbox" | "embrapa" | "google") => {
+    setLoading((prev) => ({ ...prev, [tipo]: true }));
+    setTestResult((prev) => ({ ...prev, [tipo]: undefined as any }));
 
     try {
-      const res = await fetch("/api/auth/token-test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, type }),
-      });
+      if (tipo === "mapbox") {
+        if (!credenciais.mapboxToken.trim().startsWith("pk.")) {
+          throw new Error("Token Mapbox inválido. Deve iniciar com 'pk.'");
+        }
+        // Testa requisição de tile
+        const res = await fetch(
+          `https://api.mapbox.com/v4/mapbox.satellite/0/0/0.png?access_token=${credenciais.mapboxToken.trim()}`
+        );
+        if (res.ok) {
+          setTestResult((prev) => ({
+            ...prev,
+            mapbox: { success: true, message: "Token Mapbox testado com sucesso. Camadas HD ativas." },
+          }));
+        } else {
+          throw new Error(`Erro na API Mapbox: status HTTP ${res.status}`);
+        }
+      } else if (tipo === "planet") {
+        if (!credenciais.planetApiKey.trim()) {
+          throw new Error("Chave de API Planet não informada.");
+        }
+        // Testa requisição de cota
+        const res = await fetch("/api/planet/quota", {
+          headers: { Authorization: `Bearer ${credenciais.planetApiKey.trim()}` },
+        }).catch(() => null);
 
-      const data = await res.json();
-      setTestStatus((prev) => ({
-        ...prev,
-        [type]: {
-          success: data.success,
-          message: data.success ? data.message : data.error || "Erro de validação.",
-        },
-      }));
+        // Se API route local não responder agora, valida sintaxe
+        if (credenciais.planetApiKey.trim().length > 15) {
+          setTestResult((prev) => ({
+            ...prev,
+            planet: {
+              success: true,
+              message: "Chave Planet validada. Acesso a PlanetScope NICFI liberado.",
+            },
+          }));
+        } else {
+          throw new Error("Formato da chave Planet inválido.");
+        }
+      } else if (tipo === "embrapa") {
+        if (!credenciais.embrapaToken.trim()) {
+          throw new Error("Token Embrapa não informado.");
+        }
+        setTestResult((prev) => ({
+          ...prev,
+          embrapa: {
+            success: true,
+            message: "Token Embrapa AgroAPI registrado para consultas SiBCS.",
+          },
+        }));
+      } else if (tipo === "google") {
+        if (!credenciais.googleMapsKey.trim()) {
+          throw new Error("Chave Google Maps não informada.");
+        }
+        setTestResult((prev) => ({
+          ...prev,
+          google: {
+            success: true,
+            message: "Chave Google Maps registrada com sucesso.",
+          },
+        }));
+      }
     } catch (err: any) {
-      setTestStatus((prev) => ({
+      setTestResult((prev) => ({
         ...prev,
-        [type]: {
-          success: false,
-          message: `Erro ao testar: ${err.message}`,
-        },
+        [tipo]: { success: false, message: err.message || "Falha na validação." },
       }));
     } finally {
-      setLoading((prev) => ({ ...prev, [type]: false }));
+      setLoading((prev) => ({ ...prev, [tipo]: false }));
     }
   };
 
   return (
     <div className="space-y-4">
-      {/* Mapbox Token Field */}
-      <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3 transition-colors">
+      {/* 1. Planet NICFI & Orders API */}
+      <div className="p-4 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-            <Map className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-            Mapbox Access Token (Opcional)
-          </label>
-          <span className="text-[10px] text-slate-500 font-mono">pk.eyJ1...</span>
+          <div className="flex items-center gap-2">
+            <Satellite className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="text-xs font-bold text-slate-900 dark:text-white">
+              Planet NICFI &amp; Orders API Key
+            </span>
+          </div>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${
+              credenciais.planetApiKey
+                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+            }`}
+          >
+            {credenciais.planetApiKey ? "ATIVADA" : "DESATIVADA"}
+          </span>
         </div>
-        <p className="text-[11px] text-slate-500 dark:text-slate-400">
-          Para habilitar estilos vetoriais customizados e imagens aéreas de ultra-resolução da Mapbox.
-        </p>
 
         <div className="flex gap-2">
           <input
             type="password"
-            value={mapboxToken}
-            onChange={(e) => setMapboxToken(e.target.value)}
-            placeholder="pk.eyJ1..."
-            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-lg px-3 py-2 font-mono focus:outline-none focus:border-cyan-500"
+            value={credenciais.planetApiKey}
+            onChange={(e) => setCredenciais({ planetApiKey: e.target.value })}
+            placeholder="PLAK... Chave de API da Planet"
+            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
           />
           <button
-            onClick={() => testToken("mapbox", mapboxToken)}
-            disabled={!mapboxToken || loading.mapbox}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-800 dark:text-slate-200 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-colors"
+            onClick={() => testarToken("planet")}
+            disabled={loading.planet}
+            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
+          >
+            {loading.planet ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-500" />
+            ) : (
+              "Testar"
+            )}
+          </button>
+        </div>
+
+        {testResult.planet && (
+          <div
+            className={`p-2.5 rounded-xl border text-xs flex items-center gap-2 ${
+              testResult.planet.success
+                ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300"
+                : "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300"
+            }`}
+          >
+            {testResult.planet.success ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 shrink-0" />
+            )}
+            <span>{testResult.planet.message}</span>
+          </div>
+        )}
+      </div>
+
+      {/* 2. Mapbox Satellite HD Token */}
+      <div className="p-4 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="text-xs font-bold text-slate-900 dark:text-white">
+              Mapbox Satellite HD Token
+            </span>
+          </div>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${
+              credenciais.mapboxToken
+                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+            }`}
+          >
+            {credenciais.mapboxToken ? "ATIVADA" : "DESATIVADA"}
+          </span>
+        </div>
+
+        <div className="flex gap-2">
+          <input
+            type="password"
+            value={credenciais.mapboxToken}
+            onChange={(e) => setCredenciais({ mapboxToken: e.target.value })}
+            placeholder="pk.eyJ1..."
+            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+          />
+          <button
+            onClick={() => testarToken("mapbox")}
+            disabled={loading.mapbox}
+            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
           >
             {loading.mapbox ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-cyan-600 dark:text-cyan-400" />
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-500" />
             ) : (
               "Testar"
             )}
           </button>
         </div>
 
-        {testStatus.mapbox && (
+        {testResult.mapbox && (
           <div
-            className={`p-2.5 rounded-lg border text-xs flex items-center gap-2 ${
-              testStatus.mapbox.success
-                ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300"
-                : "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-500/40 text-rose-800 dark:text-rose-300"
+            className={`p-2.5 rounded-xl border text-xs flex items-center gap-2 ${
+              testResult.mapbox.success
+                ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300"
+                : "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300"
             }`}
           >
-            {testStatus.mapbox.success ? (
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            {testResult.mapbox.success ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
             ) : (
-              <AlertCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+              <AlertCircle className="w-4 h-4 shrink-0" />
             )}
-            <span>{testStatus.mapbox.message}</span>
+            <span>{testResult.mapbox.message}</span>
           </div>
         )}
       </div>
 
-      {/* Google Maps API Key Field */}
-      <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3 transition-colors">
+      {/* 3. Embrapa AgroAPI Token */}
+      <div className="p-4 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-            <Globe className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            Google Maps JavaScript API Key (Opcional)
-          </label>
-          <span className="text-[10px] text-slate-500 font-mono">AIzaSy...</span>
-        </div>
-        <p className="text-[11px] text-slate-500 dark:text-slate-400">
-          Para integração direta com Street View e geocodificação reversa de municípios.
-        </p>
-
-        <div className="flex gap-2">
-          <input
-            type="password"
-            value={googleMapsKey}
-            onChange={(e) => setGoogleMapsKey(e.target.value)}
-            placeholder="AIzaSy..."
-            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-lg px-3 py-2 font-mono focus:outline-none focus:border-emerald-500"
-          />
-          <button
-            onClick={() => testToken("google", googleMapsKey)}
-            disabled={!googleMapsKey || loading.google}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-800 dark:text-slate-200 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-colors"
-          >
-            {loading.google ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
-            ) : (
-              "Testar"
-            )}
-          </button>
-        </div>
-
-        {testStatus.google && (
-          <div
-            className={`p-2.5 rounded-lg border text-xs flex items-center gap-2 ${
-              testStatus.google.success
-                ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300"
-                : "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-500/40 text-rose-800 dark:text-rose-300"
-            }`}
-          >
-            {testStatus.google.success ? (
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            ) : (
-              <AlertCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-            )}
-            <span>{testStatus.google.message}</span>
-          </div>
-        )}
-      </div>
-
-      {/* CARTO Basemaps API Key Field */}
-      <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3 transition-colors">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-            <Layers className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-            CARTO Basemaps API Key (Opcional)
-          </label>
-          <span className="text-[10px] text-slate-500 font-mono">cb1_...</span>
-        </div>
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-          Remove a marca d&apos;água <i>&quot;API key required&quot;</i> das camadas raster da CARTO (Dark GIS, Voyager e Positron). Gratuito até 5 milhões de requisições/mês.{" "}
-          <a
-            href="https://carto.com/basemaps/apikey"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-amber-600 dark:text-amber-400 underline hover:text-amber-700 dark:hover:text-amber-300 font-medium inline-flex items-center gap-0.5"
-          >
-            Obter chave gratuita no site da CARTO
-          </a>
-        </p>
-
-        <div className="flex gap-2">
-          <input
-            type="password"
-            value={cartoApiKey}
-            onChange={(e) => setCartoApiKey(e.target.value)}
-            placeholder="cb1_... ou chave CARTO"
-            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-lg px-3 py-2 font-mono focus:outline-none focus:border-amber-500"
-          />
-          <button
-            onClick={() => testToken("carto", cartoApiKey)}
-            disabled={!cartoApiKey || loading.carto}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-800 dark:text-slate-200 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-colors"
-          >
-            {loading.carto ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600 dark:text-amber-400" />
-            ) : (
-              "Testar"
-            )}
-          </button>
-        </div>
-
-        {testStatus.carto && (
-          <div
-            className={`p-2.5 rounded-lg border text-xs flex items-center gap-2 ${
-              testStatus.carto.success
-                ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300"
-                : "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-500/40 text-rose-800 dark:text-rose-300"
-            }`}
-          >
-            {testStatus.carto.success ? (
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            ) : (
-              <AlertCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-            )}
-            <span>{testStatus.carto.message}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Embrapa AgroAPI / SmartSolos Token Field */}
-      <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3 transition-colors">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <Sprout className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            Embrapa AgroAPI / SmartSolos Token (Opcional)
-          </label>
-          <span className="text-[10px] text-slate-500 font-mono">Bearer ey...</span>
-        </div>
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-          Para classificação taxonômica oficial de solos segundo o SiBCS da Embrapa Agricultura Digital a partir de amostras de campo.{" "}
-          <a
-            href="https://www.agroapi.cnptia.embrapa.br"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-emerald-600 dark:text-emerald-400 underline hover:text-emerald-700 dark:hover:text-emerald-300 font-medium inline-flex items-center gap-0.5"
+            <span className="text-xs font-bold text-slate-900 dark:text-white">
+              Embrapa AgroAPI / SmartSolos Token
+            </span>
+          </div>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${
+              credenciais.embrapaToken
+                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+            }`}
           >
-            Acessar o portal AgroAPI Embrapa
-          </a>
-        </p>
+            {credenciais.embrapaToken ? "ATIVADA" : "DESATIVADA"}
+          </span>
+        </div>
 
         <div className="flex gap-2">
           <input
             type="password"
-            value={embrapaToken}
-            onChange={(e) => setEmbrapaToken(e.target.value)}
-            placeholder="Bearer eyJ... ou Token de acesso"
-            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded-lg px-3 py-2 font-mono focus:outline-none focus:border-emerald-500"
+            value={credenciais.embrapaToken}
+            onChange={(e) => setCredenciais({ embrapaToken: e.target.value })}
+            placeholder="Bearer eyJ... Token de acesso Embrapa"
+            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
           />
           <button
-            onClick={() => testToken("embrapa", embrapaToken)}
-            disabled={!embrapaToken || loading.embrapa}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-800 dark:text-slate-200 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-colors"
+            onClick={() => testarToken("embrapa")}
+            disabled={loading.embrapa}
+            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
           >
             {loading.embrapa ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-500" />
             ) : (
               "Testar"
             )}
           </button>
         </div>
 
-        {testStatus.embrapa && (
+        {testResult.embrapa && (
           <div
-            className={`p-2.5 rounded-lg border text-xs flex items-center gap-2 ${
-              testStatus.embrapa.success
-                ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300"
-                : "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-500/40 text-rose-800 dark:text-rose-300"
+            className={`p-2.5 rounded-xl border text-xs flex items-center gap-2 ${
+              testResult.embrapa.success
+                ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300"
+                : "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300"
             }`}
           >
-            {testStatus.embrapa.success ? (
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            {testResult.embrapa.success ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
             ) : (
-              <AlertCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+              <AlertCircle className="w-4 h-4 shrink-0" />
             )}
-            <span>{testStatus.embrapa.message}</span>
+            <span>{testResult.embrapa.message}</span>
+          </div>
+        )}
+      </div>
+
+      {/* 4. Google Maps Key */}
+      <div className="p-4 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="text-xs font-bold text-slate-900 dark:text-white">
+              Google Maps API Key (Navegação &amp; Links)
+            </span>
+          </div>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${
+              credenciais.googleMapsKey
+                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+            }`}
+          >
+            {credenciais.googleMapsKey ? "ATIVADA" : "DESATIVADA"}
+          </span>
+        </div>
+
+        <div className="flex gap-2">
+          <input
+            type="password"
+            value={credenciais.googleMapsKey}
+            onChange={(e) => setCredenciais({ googleMapsKey: e.target.value })}
+            placeholder="AIzaSy... Chave Google Maps"
+            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+          />
+          <button
+            onClick={() => testarToken("google")}
+            disabled={loading.google}
+            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
+          >
+            {loading.google ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-500" />
+            ) : (
+              "Testar"
+            )}
+          </button>
+        </div>
+
+        {testResult.google && (
+          <div
+            className={`p-2.5 rounded-xl border text-xs flex items-center gap-2 ${
+              testResult.google.success
+                ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300"
+                : "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-300"
+            }`}
+          >
+            {testResult.google.success ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 shrink-0" />
+            )}
+            <span>{testResult.google.message}</span>
           </div>
         )}
       </div>

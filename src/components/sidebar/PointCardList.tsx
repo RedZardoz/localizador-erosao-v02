@@ -3,156 +3,132 @@
 import React from "react";
 import {
   MapPin,
-  ExternalLink,
-  Compass,
+  Mountain,
   TrendingUp,
-  Percent,
-  Layers,
-  ChevronRight,
-  Flame,
-  Sparkles,
-  Bookmark,
+  FileCheck,
+  Building,
+  CheckCircle2,
+  Clock,
 } from "lucide-react";
-import { useErosionStore, useFilteredPoints } from "@/lib/store/useErosionStore";
-import { ErosionPoint } from "@/types/erosion";
-import { getGoogleEarthWebUrl } from "@/lib/utils/geoUtils";
+import { useSarelStore, usePontosVisiveis } from "@/store/useSarelStore";
+import type { PontoAmostral } from "@/types/ponto";
+import { valorOuNulo } from "@/types/proveniencia";
 
 export const PointCardList: React.FC = () => {
-  const { selectedPoint, flyToPoint, setActiveModal, savedDatasets, loadDataset } = useErosionStore();
-  const points = useFilteredPoints();
+  const pontosVisiveis = usePontosVisiveis();
+  const { pontoSelecionadoId, selecionarPonto, setMapState } = useSarelStore();
 
-  if (points.length === 0) {
-    return (
-      <div className="p-6 text-center bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-dashed border-slate-300 dark:border-slate-800 space-y-3">
-        <MapPin className="w-7 h-7 text-slate-400 dark:text-slate-600 mx-auto" />
-        <div>
-          <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">Mapa limpo (0 focos)</h4>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs mx-auto mt-1">
-            Selecione uma área e processe os candidatos via Earth Engine, importe um arquivo CSV/GeoJSON/KML, ou recarregue uma coleção salva.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-          {savedDatasets.length > 0 && (
-            <button
-              onClick={() => loadDataset(savedDatasets[0].id)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 rounded-lg border border-emerald-200 dark:border-emerald-800 transition-colors shadow-sm cursor-pointer"
-            >
-              <Bookmark className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              Carregar: {savedDatasets[0].name.slice(0, 18)}
-            </button>
-          )}
-          <button
-            onClick={() => setActiveModal("candidates")}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 rounded-lg border border-indigo-200 dark:border-indigo-800 transition-colors shadow-sm cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-            Candidatos GEE
-          </button>
-        </div>
-      </div>
-    );
+  if (pontosVisiveis.length === 0) {
+    return null;
   }
+
+  const handleCardClick = (ponto: PontoAmostral) => {
+    selecionarPonto(ponto.id);
+    setMapState((prev) => ({
+      ...prev,
+      flyToTarget: {
+        lat: ponto.latitude,
+        lng: ponto.longitude,
+        zoom: 16,
+        pitch: 55,
+      },
+    }));
+  };
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between px-1 text-xs text-slate-500 dark:text-slate-400">
-        <span className="font-semibold text-slate-800 dark:text-slate-300 flex items-center gap-1.5">
-          <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          Focos Selecionados ({points.length})
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Lista de Amostras ({pontosVisiveis.length})
         </span>
-        <button
-          onClick={() => setActiveModal("saved-datasets")}
-          className="flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 hover:underline cursor-pointer"
-          title="Salvar esta seleção de focos ou carregar coleções salvas"
-        >
-          <Bookmark className="w-3 h-3" />
-          Salvar / Carregar
-        </button>
       </div>
 
-      <div className="space-y-1.5 max-h-[calc(100vh-490px)] min-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
-        {points.map((pt, idx) => {
-          const isSelected = selectedPoint?.id === pt.id;
+      <div className="space-y-2 max-h-[calc(100vh-380px)] overflow-y-auto pr-1 custom-scrollbar">
+        {pontosVisiveis.map((p) => {
+          const isSelected = p.id === pontoSelecionadoId;
+          const temCar = !!p.fundiario?.codigoCar;
+          const rotulado = !!p.rotulo;
+          const classe = p.classeAmostral ?? "indefinido";
 
-          const severityBadgeClass =
-            pt.severity === "Crítica"
-              ? "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-500/20 dark:text-rose-300 dark:border-rose-500/40"
-              : pt.severity === "Alta"
-              ? "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40"
-              : "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-500/20 dark:text-yellow-300 dark:border-yellow-500/40";
+          const cardBorderColor = isSelected
+            ? classe === "erosao"
+              ? "bg-red-50/90 dark:bg-red-950/30 border-red-500 shadow-md ring-1 ring-red-500/50"
+              : classe === "controle"
+              ? "bg-emerald-50/90 dark:bg-emerald-950/30 border-emerald-500 shadow-md ring-1 ring-emerald-500/50"
+              : "bg-amber-50/90 dark:bg-amber-950/30 border-amber-500 shadow-md ring-1 ring-amber-500/50"
+            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60";
 
           return (
             <div
-              key={pt.id}
-              onClick={() => flyToPoint(pt)}
-              className={`p-3 rounded-xl border transition-all cursor-pointer relative group ${
-                isSelected
-                  ? "bg-emerald-50/70 dark:bg-slate-800/95 border-emerald-500 shadow-md ring-1 ring-emerald-500"
-                  : "bg-white dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-800/60 border-slate-200 dark:border-slate-800/90 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm"
-              }`}
+              key={p.id}
+              onClick={() => handleCardClick(p)}
+              className={`p-3 rounded-xl border transition-all cursor-pointer ${cardBorderColor}`}
             >
-              {/* Card Top Row: Code, Name & Priority Score */}
-              <div className="flex items-start justify-between gap-2 mb-1.5">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-[10px] font-mono font-bold bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 px-2 py-0.5 rounded border border-cyan-200 dark:border-cyan-800/80 shrink-0">
-                    {pt.code}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono font-bold text-xs text-slate-900 dark:text-white">
+                    {p.codigo}
                   </span>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors truncate">
-                    {pt.name || pt.municipality}
-                  </h4>
+                  {/* Badge de Classe Amostral da Pesquisa */}
+                  {classe === "erosao" ? (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-900/60 font-mono">
+                      EROSÃO
+                    </span>
+                  ) : classe === "controle" ? (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60 font-mono">
+                      CONTROLE
+                    </span>
+                  ) : (
+                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 font-mono">
+                      {p.estratoId}
+                    </span>
+                  )}
                 </div>
 
-                {/* Priority Score badge */}
-                <div className="flex items-center gap-1 shrink-0">
-                  <span
-                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${severityBadgeClass}`}
-                  >
-                    {pt.severity}
+                {/* Badge de Rotulagem de Campo / Observação */}
+                {p.rotulo?.final ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300">
+                    <CheckCircle2 className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                    {p.rotulo.final.classe}
                   </span>
-                  <span
-                    className="text-[10px] font-mono font-extrabold bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 px-1.5 py-0.5 rounded shadow-sm"
-                    title={`#${idx + 1} no ranking de prioridade (${pt.priorityScore}/100 pts)`}
-                  >
-                    {pt.priorityScore} pts
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
+                    <Clock className="w-3 h-3" />
+                    Amostra
                   </span>
-                </div>
+                )}
               </div>
 
-              {/* Feature type & Watershed */}
-              <div className="text-[11px] text-slate-600 dark:text-slate-400 mb-2 truncate flex items-center gap-1.5">
-                <span className="text-slate-800 dark:text-slate-300 font-medium">{pt.featureType}</span>
-                <span className="text-slate-400 dark:text-slate-600">•</span>
-                <span className="text-slate-600 dark:text-slate-400 truncate">{pt.watershed}</span>
+              {/* Localização */}
+              <div className="mt-1 flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
+                <MapPin className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="truncate">
+                  {valorOuNulo(p.localizacao?.municipio) || "—"} — {valorOuNulo(p.localizacao?.bacia) || "—"}
+                </span>
               </div>
 
-              {/* Stats pill row */}
-              <div className="grid grid-cols-3 gap-1 pt-1.5 border-t border-slate-100 dark:border-slate-800/80 text-[10px] font-mono">
-                <div className="flex items-center gap-1 text-amber-700 dark:text-amber-300/90 bg-amber-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-amber-200/50 dark:border-transparent">
-                  <TrendingUp className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400" />
-                  <span>{pt.slopePercent}%</span>
+              {/* Métricas do Ponto */}
+              <div className="mt-2 grid grid-cols-3 gap-1 pt-1.5 border-t border-slate-100 dark:border-slate-800 text-[11px] font-mono">
+                <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
+                  <TrendingUp className="w-3 h-3 text-amber-500" />
+                  <span>
+                    {valorOuNulo(p.terreno?.declividadePct) !== null
+                      ? `${valorOuNulo(p.terreno?.declividadePct)?.toFixed(1)}%`
+                      : "—"}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1 text-rose-700 dark:text-rose-300/90 bg-rose-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-rose-200/50 dark:border-transparent">
-                  <Percent className="w-2.5 h-2.5 text-rose-500 dark:text-rose-400" />
-                  <span>BSI {pt.bsi > 0 ? `+${pt.bsi}` : pt.bsi}</span>
+                <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
+                  <Mountain className="w-3 h-3 text-emerald-500" />
+                  <span>
+                    {valorOuNulo(p.terreno?.elevacao) !== null
+                      ? `${Math.round(valorOuNulo(p.terreno?.elevacao)!)}m`
+                      : "—"}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1 text-cyan-700 dark:text-cyan-300/90 bg-cyan-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-cyan-200/50 dark:border-transparent">
-                  <Layers className="w-2.5 h-2.5 text-cyan-500 dark:text-cyan-400" />
-                  <span>{pt.estimatedSoilLoss} t/ha</span>
+                <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400 truncate">
+                  <Building className="w-3 h-3 text-cyan-500" />
+                  <span className="truncate">{temCar ? "CAR ✓" : "S/ CAR"}</span>
                 </div>
-              </div>
-
-              {/* Floating Action Button for Google Earth */}
-              <div className="absolute right-2.5 bottom-2.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <a
-                  href={getGoogleEarthWebUrl(pt.latitude, pt.longitude, pt.elevation)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="p-1 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-300 rounded border border-slate-200 dark:border-slate-700 flex items-center gap-1 text-[10px] shadow-sm"
-                  title="Abrir no Google Earth Web 3D"
-                >
-                  <ExternalLink className="w-2.5 h-2.5" />
-                </a>
               </div>
             </div>
           );

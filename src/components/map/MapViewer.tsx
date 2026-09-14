@@ -3,13 +3,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useErosionStore, useFilteredPoints } from "@/lib/store/useErosionStore";
-import { paranaBoundaryGeoJSON } from "@/data/paranaBoundary";
-import { paranaBasinsGeoJSON } from "@/data/paranaBasins";
-import { PointPopup } from "./PointPopup";
+import { useSarelStore, usePontosVisiveis } from "@/store/useSarelStore";
 import { MapControls } from "./MapControls";
-import { DrawingToolbar } from "../polygon/DrawingToolbar";
-import { ErosionPoint } from "@/types/erosion";
+import { DrawingToolbar } from "@/components/polygon/DrawingToolbar";
+import { PointPopup } from "./PointPopup";
+import { PARANA_BASINS_GEOJSON } from "@/lib/localizacao/bacias";
+import { SITIOS_PADRAO_OURO_GEOJSON } from "@/lib/padraoOuro/sitiosReferencia";
 
 export const MapViewer: React.FC = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -17,128 +16,94 @@ export const MapViewer: React.FC = () => {
   const [mapLoaded, setMapLoaded] = useState(false);
 
   const {
-    selectedPoint,
-    setSelectedPoint,
-    activeAOIPolygon,
     mapState,
-    activeRegion,
-    mapboxToken,
-    drawnPolygons,
-    activeDrawingMode,
-    drawingPoints,
-    addDrawingPoint,
-    setSelectedPolygon,
-    setActiveModal,
-    activeCarPolygon,
-    cartoApiKey,
-  } = useErosionStore();
+    areas,
+    modoDesenhoAtivo,
+    poligonoDesenhando,
+    adicionarVerticeDesenho,
+    pontoSelecionadoId,
+    selecionarPonto,
+    obterPontoSelecionado,
+    credenciais,
+  } = useSarelStore();
 
-  const filteredPoints = useFilteredPoints();
+  const pontosVisiveis = usePontosVisiveis();
+  const pontoSelecionado = obterPontoSelecionado();
 
-  // Initialize MapLibre with Ultra-High Resolution (Zoom up to 22) and Global 3D DEM
+  // Inicialização do MapLibre GL
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
-
-    const sourcesConfig: any = {
-      "esri-satellite": {
-        type: "raster",
-        tiles: [
-          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        ],
-        tileSize: 256,
-        maxzoom: 22,
-        attribution: "Esri, Maxar, Earthstar Geographics",
-      },
-      "osm-topo": {
-        type: "raster",
-        tiles: ["https://tile.opentopomap.org/{z}/{x}/{y}.png"],
-        tileSize: 256,
-        maxzoom: 18,
-        attribution: "OpenTopoMap, OpenStreetMap",
-      },
-      "carto-dark": {
-        type: "raster",
-        tiles: [
-          cartoApiKey?.trim()
-            ? `https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png?key=${cartoApiKey.trim()}`
-            : "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-        ],
-        tileSize: 256,
-        maxzoom: 20,
-        attribution: "CARTO, OpenStreetMap",
-      },
-      "carto-voyager": {
-        type: "raster",
-        tiles: [
-          cartoApiKey?.trim()
-            ? `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png?key=${cartoApiKey.trim()}`
-            : "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png",
-        ],
-        tileSize: 256,
-        maxzoom: 20,
-        attribution: "CARTO, OpenStreetMap",
-      },
-      "embrapa-solos": {
-        type: "raster",
-        tiles: [
-          "https://geoinfo.dados.embrapa.br/geoserver/ows?service=WMS&version=1.1.1&request=GetMap&layers=geonode:parana_solos_20201105&bbox={bbox-epsg-3857}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true",
-        ],
-        tileSize: 256,
-        maxzoom: 18,
-        attribution: "Embrapa Solos / PronaSolos",
-      },
-      "embrapa-erodibilidade": {
-        type: "raster",
-        tiles: [
-          "https://geoinfo.dados.embrapa.br/geoserver/ows?service=WMS&version=1.1.1&request=GetMap&layers=geonode:brasil_erodibilidade_solo&bbox={bbox-epsg-3857}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true",
-        ],
-        tileSize: 256,
-        maxzoom: 18,
-        attribution: "Embrapa Solos (RUSLE K)",
-      },
-      "terrain-dem": {
-        type: "raster-dem",
-        tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
-        encoding: "terrarium",
-        tileSize: 256,
-        maxzoom: 15,
-      },
-    };
-
-    if (mapboxToken) {
-      sourcesConfig["mapbox-satellite-hd"] = {
-        type: "raster",
-        tiles: [
-          `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.jpg90?access_token=${mapboxToken.trim()}`,
-        ],
-        tileSize: 512,
-        maxzoom: 22,
-        attribution: "© Mapbox, © Maxar",
-      };
-    }
 
     const map = new maplibregl.Map({
       container: mapContainer.current,
       style: {
         version: 8,
-        sources: sourcesConfig,
+        sources: {
+          "google-earth": {
+            type: "raster",
+            tiles: [
+              "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+            ],
+            tileSize: 256,
+            attribution: "Google Earth / Google Maps",
+          },
+          "google-hybrid": {
+            type: "raster",
+            tiles: [
+              "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+            ],
+            tileSize: 256,
+            attribution: "Google Earth / Google Maps",
+          },
+          "esri-satellite": {
+            type: "raster",
+            tiles: [
+              "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            ],
+            tileSize: 256,
+            attribution: "Esri, Maxar, Earthstar Geographics",
+          },
+          "osm-topo": {
+            type: "raster",
+            tiles: ["https://a.tile.opentopomap.org/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            attribution: "OpenTopoMap",
+          },
+          "carto-dark": {
+            type: "raster",
+            tiles: ["https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"],
+            tileSize: 256,
+            attribution: "CARTO",
+          },
+          "terrain-dem": {
+            type: "raster-dem",
+            tiles: [
+              "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+            ],
+            encoding: "terrarium",
+            tileSize: 256,
+            maxzoom: 15,
+          },
+        },
         layers: [
+          {
+            id: "google-earth-layer",
+            type: "raster",
+            source: "google-earth",
+            paint: { "raster-opacity": 1.0 },
+          },
+          {
+            id: "google-hybrid-layer",
+            type: "raster",
+            source: "google-hybrid",
+            paint: { "raster-opacity": 0.0 },
+          },
           {
             id: "esri-satellite-layer",
             type: "raster",
             source: "esri-satellite",
-            paint: { "raster-opacity": 1.0 },
+            paint: { "raster-opacity": 0.0 },
           },
-          ...(mapboxToken
-            ? [
-                {
-                  id: "mapbox-satellite-hd-layer",
-                  type: "raster" as const,
-                  source: "mapbox-satellite-hd",
-                  paint: { "raster-opacity": 0.0 },
-                },
-              ]
-            : []),
           {
             id: "osm-topo-layer",
             type: "raster",
@@ -151,514 +116,367 @@ export const MapViewer: React.FC = () => {
             source: "carto-dark",
             paint: { "raster-opacity": 0.0 },
           },
-          {
-            id: "carto-voyager-layer",
-            type: "raster",
-            source: "carto-voyager",
-            paint: { "raster-opacity": 0.0 },
-          },
         ],
-        sky: {
-          "sky-color": "#0B0F17",
-          "horizon-color": "#1E293B",
-          "fog-color": "#0F172A",
-        },
       },
-      center: activeRegion.center,
-      zoom: activeRegion.zoom,
-      pitch: mapState.terrain3d ? 45 : 0,
-      bearing: 0,
+      center: [-51.5, -24.8], // Centro geográfico do Paraná
+      zoom: 7.2,
+      pitch: 35,
       maxPitch: 85,
-      maxZoom: 22, // Permite aproximação ultra-profunda para visualização detalhada de sulcos e talhões
     });
 
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "bottom-right");
+    map.addControl(
+      new maplibregl.NavigationControl({ visualizePitch: true }),
+      "bottom-right"
+    );
     map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
 
     map.on("load", () => {
-      mapRef.current = map;
-
-      // Enable 3D Terrain
-      if (mapState.terrain3d) {
-        map.setTerrain({
-          source: "terrain-dem",
-          exaggeration: mapState.terrainExaggeration,
-        });
-      }
-
-      // Add Boundary and Basins layers
-      map.addSource("parana-boundary", {
+      // 1. Fonte e camadas de Macrobacias Hidrográficas do Paraná
+      map.addSource("parana-basins-source", {
         type: "geojson",
-        data: paranaBoundaryGeoJSON,
-      });
-
-      map.addLayer({
-        id: "parana-boundary-line",
-        type: "line",
-        source: "parana-boundary",
-        paint: {
-          "line-color": "#10B981",
-          "line-width": 2.5,
-          "line-dasharray": [2, 1],
-          "line-opacity": 0.8,
-        },
-      });
-
-      map.addSource("parana-basins", {
-        type: "geojson",
-        data: paranaBasinsGeoJSON,
+        data: PARANA_BASINS_GEOJSON as any,
       });
 
       map.addLayer({
         id: "parana-basins-fill",
         type: "fill",
-        source: "parana-basins",
+        source: "parana-basins-source",
+        layout: {
+          visibility: mapState.mostrarBacias ? "visible" : "none",
+        },
         paint: {
           "fill-color": ["get", "color"],
-          "fill-opacity": 0.15,
+          "fill-opacity": 0.08,
         },
       });
 
       map.addLayer({
         id: "parana-basins-line",
         type: "line",
-        source: "parana-basins",
+        source: "parana-basins-source",
+        layout: {
+          visibility: mapState.mostrarBacias ? "visible" : "none",
+        },
         paint: {
           "line-color": ["get", "color"],
           "line-width": 1.5,
-          "line-opacity": 0.6,
+          "line-dasharray": [3, 2],
         },
       });
 
-      // Add Embrapa Solos (PronaSolos) & Erodibilidade (RUSLE K) WMS Layers
-      map.addLayer({
-        id: "embrapa-solos-layer",
-        type: "raster",
-        source: "embrapa-solos",
-        layout: {
-          visibility: mapState.showEmbrapaSolos ? "visible" : "none",
-        },
-        paint: { "raster-opacity": 0.65 },
-      });
-
-      map.addLayer({
-        id: "embrapa-erodibilidade-layer",
-        type: "raster",
-        source: "embrapa-erodibilidade",
-        layout: {
-          visibility: mapState.showEmbrapaErodibilidade ? "visible" : "none",
-        },
-        paint: { "raster-opacity": 0.65 },
-      });
-
-      // Add custom AOI Polygon source
-      map.addSource("custom-aoi", {
+      // 1.1 Sítios de Referência Padrão-Ouro (Céu Azul e Medianeira — 10 a 50 ha)
+      map.addSource("sitios-padrao-ouro-source", {
         type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
+        data: SITIOS_PADRAO_OURO_GEOJSON,
       });
 
       map.addLayer({
-        id: "custom-aoi-fill",
+        id: "sitios-padrao-ouro-fill",
         type: "fill",
-        source: "custom-aoi",
-        paint: { "fill-color": "#06B6D4", "fill-opacity": 0.25 },
-      });
-
-      map.addLayer({
-        id: "custom-aoi-line",
-        type: "line",
-        source: "custom-aoi",
-        paint: {
-          "line-color": "#22D3EE",
-          "line-width": 3,
-          "line-dasharray": [3, 1],
+        source: "sitios-padrao-ouro-source",
+        layout: {
+          visibility: mapState.mostrarSitiosPadraoOuro !== false ? "visible" : "none",
         },
-      });
-
-      // Add Drawn Polygons Source & Layers
-      map.addSource("drawn-polygons", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-      });
-
-      map.addLayer({
-        id: "drawn-polygons-fill",
-        type: "fill",
-        source: "drawn-polygons",
         paint: {
-          "fill-color": [
-            "match",
-            ["get", "severity"],
-            "Crítica",
-            "#F43F5E",
-            "Alta",
-            "#F59E0B",
-            "Moderada",
-            "#EAB308",
-            "#06B6D4",
-          ],
-          "fill-opacity": 0.35,
+          "fill-color": "#06B6D4",
+          "fill-opacity": 0.2,
         },
       });
 
       map.addLayer({
-        id: "drawn-polygons-line",
+        id: "sitios-padrao-ouro-line",
         type: "line",
-        source: "drawn-polygons",
+        source: "sitios-padrao-ouro-source",
+        layout: {
+          visibility: mapState.mostrarSitiosPadraoOuro !== false ? "visible" : "none",
+        },
         paint: {
-          "line-color": [
-            "match",
-            ["get", "severity"],
-            "Crítica",
-            "#FB7185",
-            "Alta",
-            "#FBBF24",
-            "Moderada",
-            "#FDE047",
-            "#22D3EE",
-          ],
+          "line-color": "#0891B2",
           "line-width": 2.5,
         },
       });
 
-      // Add CAR Official Property Polygon Source & Layers
-      map.addSource("car-property-polygon", {
+      // 2. Fonte de Áreas Ativas e Polígonos de Amostragem Persistentes
+      map.addSource("areas-estudo-source", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
       });
 
       map.addLayer({
-        id: "car-property-polygon-fill",
+        id: "areas-estudo-fill",
         type: "fill",
-        source: "car-property-polygon",
+        source: "areas-estudo-source",
         paint: {
-          "fill-color": "#10B981", // Emerald-500
-          "fill-opacity": 0.22,
+          "fill-color": ["get", "cor"],
+          "fill-opacity": 0.15,
         },
       });
 
       map.addLayer({
-        id: "car-property-polygon-line",
+        id: "areas-estudo-line",
         type: "line",
-        source: "car-property-polygon",
+        source: "areas-estudo-source",
         paint: {
-          "line-color": "#34D399", // Emerald-400
-          "line-width": 2.8,
-          "line-opacity": 0.95,
+          "line-color": ["get", "cor"],
+          "line-width": 2.5,
         },
       });
 
-      // Add Drawing in Progress Source & Layers
-      map.addSource("drawing-in-progress", {
+      // 3. Desenho em Progresso (linhas e vértices)
+      map.addSource("desenho-progresso-source", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
       });
 
       map.addLayer({
-        id: "drawing-polygon-fill",
-        type: "fill",
-        source: "drawing-in-progress",
-        paint: { "fill-color": "#22D3EE", "fill-opacity": 0.25 },
-      });
-
-      map.addLayer({
-        id: "drawing-polygon-line",
+        id: "desenho-progresso-line",
         type: "line",
-        source: "drawing-in-progress",
+        source: "desenho-progresso-source",
         paint: {
-          "line-color": "#06B6D4",
+          "line-color": "#10B981",
           "line-width": 2.5,
           "line-dasharray": [2, 1],
         },
       });
 
       map.addLayer({
-        id: "drawing-polygon-points",
+        id: "desenho-progresso-points",
         type: "circle",
-        source: "drawing-in-progress",
+        source: "desenho-progresso-source",
         paint: {
           "circle-radius": 5,
-          "circle-color": "#06B6D4",
-          "circle-stroke-color": "#FFFFFF",
+          "circle-color": "#10B981",
           "circle-stroke-width": 2,
+          "circle-stroke-color": "#ffffff",
         },
+        filter: ["==", "$type", "Point"],
       });
 
-      // Add Points GeoJSON Source
-      map.addSource("erosion-points", {
+      // 4. Pontos Amostrais Reais
+      map.addSource("pontos-amostrais-source", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
       });
 
-      // Heatmap Layer
       map.addLayer({
-        id: "erosion-heatmap",
-        type: "heatmap",
-        source: "erosion-points",
-        layout: {
-          visibility: mapState.showHeatmap ? "visible" : "none",
-        },
-        paint: {
-          "heatmap-weight": ["interpolate", ["linear"], ["get", "priorityScore"], 0, 0, 100, 1],
-          "heatmap-intensity": 1.2,
-          "heatmap-color": [
-            "interpolate",
-            ["linear"],
-            ["heatmap-density"],
-            0,
-            "rgba(0,0,0,0)",
-            0.2,
-            "#38BDF8",
-            0.5,
-            "#FACC15",
-            0.8,
-            "#F97316",
-            1,
-            "#EF4444",
-          ],
-          "heatmap-radius": 35,
-          "heatmap-opacity": 0.8,
-        },
-      });
-
-      // Point Glow Layer
-      map.addLayer({
-        id: "erosion-points-glow",
+        id: "pontos-amostrais-circle",
         type: "circle",
-        source: "erosion-points",
+        source: "pontos-amostrais-source",
         paint: {
           "circle-radius": [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            6,
-            7,
-            12,
-            14,
-            16,
-            24,
+            "case",
+            ["==", ["get", "selecionado"], true],
+            10,
+            6.5,
           ],
           "circle-color": [
             "match",
-            ["get", "severity"],
-            "Crítica",
-            "#F43F5E",
-            "Alta",
-            "#F59E0B",
-            "#EAB308",
-          ],
-          "circle-opacity": 0.35,
-          "circle-blur": 0.6,
-        },
-      });
-
-      // Point Core Layer
-      map.addLayer({
-        id: "erosion-points-core",
-        type: "circle",
-        source: "erosion-points",
-        paint: {
-          "circle-radius": [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            6,
-            3.5,
-            12,
-            6,
-            16,
-            9,
-          ],
-          "circle-color": [
-            "match",
-            ["get", "severity"],
-            "Crítica",
+            ["get", "classeAmostral"],
+            "erosao",
             "#EF4444",
-            "Alta",
-            "#F97316",
-            "#FACC15",
+            "controle",
+            "#10B981",
+            /* fallback */
+            [
+              "case",
+              ["==", ["get", "rotulado"], true],
+              "#059669",
+              "#F59E0B",
+            ],
           ],
-          "circle-stroke-color": "#FFFFFF",
-          "circle-stroke-width": 1.8,
-          "circle-opacity": 1.0,
+          "circle-stroke-width": [
+            "case",
+            ["==", ["get", "selecionado"], true],
+            3,
+            1.5,
+          ],
+          "circle-stroke-color": "#ffffff",
         },
       });
 
-      // Click event on points
-      const handlePointClick = (
-        e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }
-      ) => {
-        if (useErosionStore.getState().activeDrawingMode) return;
+      // Interação de clique no ponto
+      map.on("click", "pontos-amostrais-circle", (e) => {
         if (!e.features || e.features.length === 0) return;
-        const feat = e.features[0];
-        const pointProps = (feat.properties || {}) as any;
-        const targetId = String(feat.id || pointProps.id || "");
-
-        const livePoints = useErosionStore.getState().allPoints;
-        // 1. Busca estrita por ID único do ponto
-        let foundPoint = livePoints.find((p) => String(p.id) === targetId);
-
-        // 2. Se não encontrar por ID, busca por proximidade geográfica exata das coordenadas do clique
-        if (!foundPoint && feat.geometry && feat.geometry.type === "Point") {
-          const coords = (feat.geometry as any).coordinates as [number, number];
-          const [lng, lat] = coords;
-          foundPoint = livePoints.find(
-            (p) => Math.abs(p.latitude - lat) < 0.0001 && Math.abs(p.longitude - lng) < 0.0001
-          );
-        }
-
-        if (foundPoint) {
-          useErosionStore.getState().setSelectedPoint(foundPoint);
-          useErosionStore.getState().flyToPoint(foundPoint);
-        }
-      };
-
-      map.on("click", "erosion-points-core", handlePointClick);
-      map.on("click", "erosion-points-glow", handlePointClick);
-
-      // Click event on Drawn Polygons
-      map.on("click", "drawn-polygons-fill", (e) => {
-        if (useErosionStore.getState().activeDrawingMode) return;
-        if (!e.features || e.features.length === 0) return;
-        const polyId = e.features[0].id || e.features[0].properties?.id;
-        const poly = useErosionStore.getState().drawnPolygons.find((p) => p.id === polyId);
-        if (poly) {
-          useErosionStore.getState().setSelectedPolygon(poly);
-          useErosionStore.getState().setActiveModal("polygons");
+        const id = e.features[0].properties?.id;
+        if (id) {
+          selecionarPonto(id);
         }
       });
 
-      // Global Map Click handler (for polygon drawing)
-      map.on("click", (e) => {
-        const store = useErosionStore.getState();
-        if (store.activeDrawingMode) {
-          store.addDrawingPoint([e.lngLat.lng, e.lngLat.lat]);
-        }
+      map.on("mouseenter", "pontos-amostrais-circle", () => {
+        map.getCanvas().style.cursor = "pointer";
       });
 
-      // Hover cursor
-      map.on("mouseenter", "erosion-points-core", () => {
-        if (!useErosionStore.getState().activeDrawingMode) map.getCanvas().style.cursor = "pointer";
-      });
-      map.on("mouseleave", "erosion-points-core", () => {
-        if (!useErosionStore.getState().activeDrawingMode) map.getCanvas().style.cursor = "";
+      map.on("mouseleave", "pontos-amostrais-circle", () => {
+        map.getCanvas().style.cursor = "";
       });
 
-      map.on("mouseenter", "drawn-polygons-fill", () => {
-        if (!useErosionStore.getState().activeDrawingMode) map.getCanvas().style.cursor = "pointer";
-      });
-      map.on("mouseleave", "drawn-polygons-fill", () => {
-        if (!useErosionStore.getState().activeDrawingMode) map.getCanvas().style.cursor = "";
-      });
+      // Ativa terreno 3D se habilitado
+      if (mapState.terreno3d) {
+        map.setTerrain({
+          source: "terrain-dem",
+          exaggeration: mapState.exageracao3d,
+        });
+      }
 
       setMapLoaded(true);
     });
+
+    // Clique no mapa para desenhar vértices de talhões
+    map.on("click", (e) => {
+      const state = useSarelStore.getState();
+      if (state.modoDesenhoAtivo) {
+        state.adicionarVerticeDesenho([e.lngLat.lng, e.lngLat.lat]);
+      }
+    });
+
+    mapRef.current = map;
 
     return () => {
       map.remove();
       mapRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update cursor when drawing mode changes
-  useEffect(() => {
-    if (!mapRef.current) return;
-    mapRef.current.getCanvas().style.cursor = activeDrawingMode ? "crosshair" : "";
-  }, [activeDrawingMode]);
-
-  // Update Points GeoJSON Source
+  // Alternador de Basemap Opacity
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
-    const source = mapRef.current.getSource("erosion-points") as maplibregl.GeoJSONSource;
-    if (!source) return;
+    const map = mapRef.current;
 
-    source.setData({
-      type: "FeatureCollection",
-      features: filteredPoints
-        .filter((p) => p && isFinite(Number(p.longitude)) && isFinite(Number(p.latitude)))
-        .map((p) => ({
-          type: "Feature",
-          id: p.id,
-          properties: {
-            id: p.id,
-            code: p.code,
-            name: p.name,
-            municipality: p.municipality,
-            severity: p.severity,
-            slopePercent: p.slopePercent,
-            bsi: p.bsi,
-            priorityScore: p.priorityScore,
-            elevation: Number(p.elevation ?? 500),
-          },
-          geometry: {
-            type: "Point",
-            coordinates: [Number(p.longitude), Number(p.latitude)],
-          },
-        })),
-    });
-  }, [filteredPoints, mapLoaded]);
+    const isGoogleEarth = mapState.basemap === "google-earth";
+    const isGoogleHybrid = mapState.basemap === "google-hybrid";
+    const isEsriSat = mapState.basemap === "satellite" || mapState.basemap === "mapbox-hd";
+    const isTopo = mapState.basemap === "topo";
+    const isDark = mapState.basemap === "dark" || mapState.basemap === "voyager";
 
-  // Update Drawn Polygons GeoJSON Source
-  useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
-    const source = mapRef.current.getSource("drawn-polygons") as maplibregl.GeoJSONSource;
-    if (!source) return;
-
-    source.setData({
-      type: "FeatureCollection",
-      features: drawnPolygons.map((p) => ({
-        type: "Feature",
-        id: p.id,
-        properties: {
-          id: p.id,
-          name: p.name,
-          category: p.category,
-          severity: p.severity || "Nenhuma",
-          areaHa: p.areaHa,
-        },
-        geometry: p.geometry,
-      })),
-    });
-  }, [drawnPolygons, mapLoaded]);
-
-  // Update CAR Official Property Polygon GeoJSON Source & Fit Bounds
-  useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
-    const source = mapRef.current.getSource("car-property-polygon") as maplibregl.GeoJSONSource;
-    if (!source) return;
-
-    if (activeCarPolygon) {
-      source.setData({
-        type: "FeatureCollection",
-        features: [activeCarPolygon],
-      });
-
-      // Se houver bbox [minX, minY, maxX, maxY], ajusta suavemente o enquadramento da câmera
-      if (activeCarPolygon.bbox && activeCarPolygon.bbox.length === 4) {
-        const [minX, minY, maxX, maxY] = activeCarPolygon.bbox;
-        mapRef.current.fitBounds(
-          [
-            [minX, minY],
-            [maxX, maxY],
-          ],
-          { padding: 75, maxZoom: 16.5, duration: 1200 }
-        );
-      }
-    } else {
-      source.setData({ type: "FeatureCollection", features: [] });
+    if (map.getLayer("google-earth-layer")) {
+      map.setPaintProperty(
+        "google-earth-layer",
+        "raster-opacity",
+        isGoogleEarth ? 1.0 : 0.0
+      );
     }
-  }, [activeCarPolygon, mapLoaded]);
+    if (map.getLayer("google-hybrid-layer")) {
+      map.setPaintProperty(
+        "google-hybrid-layer",
+        "raster-opacity",
+        isGoogleHybrid ? 1.0 : 0.0
+      );
+    }
+    if (map.getLayer("esri-satellite-layer")) {
+      map.setPaintProperty(
+        "esri-satellite-layer",
+        "raster-opacity",
+        isEsriSat ? 1.0 : 0.0
+      );
+    }
+    if (map.getLayer("osm-topo-layer")) {
+      map.setPaintProperty(
+        "osm-topo-layer",
+        "raster-opacity",
+        isTopo ? 1.0 : 0.0
+      );
+    }
+    if (map.getLayer("carto-dark-layer")) {
+      map.setPaintProperty(
+        "carto-dark-layer",
+        "raster-opacity",
+        isDark ? 1.0 : 0.0
+      );
+    }
+  }, [mapState.basemap, mapLoaded]);
 
-  // Update Drawing in Progress GeoJSON Source
+  // Atualização do Relevo DEM 3D
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
-    const source = mapRef.current.getSource("drawing-in-progress") as maplibregl.GeoJSONSource;
+    const map = mapRef.current;
+
+    if (mapState.terreno3d) {
+      map.setTerrain({
+        source: "terrain-dem",
+        exaggeration: mapState.exageracao3d,
+      });
+    } else {
+      map.setTerrain(null as any);
+    }
+  }, [mapState.terreno3d, mapState.exageracao3d, mapLoaded]);
+
+  // Visibilidade de Camadas (Macrobacias)
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+
+    if (map.getLayer("parana-basins-fill")) {
+      map.setLayoutProperty(
+        "parana-basins-fill",
+        "visibility",
+        mapState.mostrarBacias ? "visible" : "none"
+      );
+    }
+    if (map.getLayer("parana-basins-line")) {
+      map.setLayoutProperty(
+        "parana-basins-line",
+        "visibility",
+        mapState.mostrarBacias ? "visible" : "none"
+      );
+    }
+  }, [mapState.mostrarBacias, mapLoaded]);
+
+  // Visibilidade de Camadas (Sítios Padrão-Ouro — Céu Azul e Medianeira)
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+    const vis = mapState.mostrarSitiosPadraoOuro !== false ? "visible" : "none";
+
+    if (map.getLayer("sitios-padrao-ouro-fill")) {
+      map.setLayoutProperty("sitios-padrao-ouro-fill", "visibility", vis);
+    }
+    if (map.getLayer("sitios-padrao-ouro-line")) {
+      map.setLayoutProperty("sitios-padrao-ouro-line", "visibility", vis);
+    }
+  }, [mapState.mostrarSitiosPadraoOuro, mapLoaded]);
+
+  // Atualização de Áreas e Polígonos de Amostragem Persistentes
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const source = mapRef.current.getSource(
+      "areas-estudo-source"
+    ) as maplibregl.GeoJSONSource;
+    if (!source) return;
+
+    // Filtra apenas áreas marcadas como ATIVAS
+    const areasAtivas = areas.filter((a) => a.ativa);
+
+    const features: GeoJSON.Feature[] = areasAtivas.map((a) => ({
+      type: "Feature",
+      id: a.id,
+      properties: {
+        id: a.id,
+        nome: a.nome,
+        tipo: a.tipo,
+        cor: a.cor || "#10B981",
+      },
+      geometry: a.geometry,
+    }));
+
+    source.setData({
+      type: "FeatureCollection",
+      features,
+    });
+  }, [areas, mapLoaded]);
+
+  // Atualização do Desenho em Progresso
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const source = mapRef.current.getSource(
+      "desenho-progresso-source"
+    ) as maplibregl.GeoJSONSource;
     if (!source) return;
 
     const features: GeoJSON.Feature[] = [];
 
-    // Points vertices
-    drawingPoints.forEach((pt) => {
+    poligonoDesenhando.forEach((pt) => {
       features.push({
         type: "Feature",
         geometry: { type: "Point", coordinates: pt },
@@ -666,179 +484,55 @@ export const MapViewer: React.FC = () => {
       });
     });
 
-    // Polygon line / fill if >= 2 points
-    if (drawingPoints.length >= 2) {
+    if (poligonoDesenhando.length >= 2) {
       features.push({
         type: "Feature",
         geometry: {
           type: "LineString",
-          coordinates: drawingPoints,
+          coordinates: poligonoDesenhando,
         },
         properties: {},
       });
     }
 
-    if (drawingPoints.length >= 3) {
-      features.push({
-        type: "Feature",
-        geometry: {
-          type: "Polygon",
-          coordinates: [[...drawingPoints, drawingPoints[0]]],
-        },
-        properties: {},
-      });
-    }
+    source.setData({
+      type: "FeatureCollection",
+      features,
+    });
+  }, [poligonoDesenhando, mapLoaded]);
 
-    source.setData({ type: "FeatureCollection", features });
-  }, [drawingPoints, mapLoaded]);
-
-  // Update AOI Polygon source
+  // Atualização dos Pontos Amostrais no Mapa
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
-    const source = mapRef.current.getSource("custom-aoi") as maplibregl.GeoJSONSource;
+    const source = mapRef.current.getSource(
+      "pontos-amostrais-source"
+    ) as maplibregl.GeoJSONSource;
     if (!source) return;
 
-    if (activeAOIPolygon) {
-      source.setData({
-        type: "FeatureCollection",
-        features: [
-          {
-            type: "Feature",
-            id: activeAOIPolygon.id,
-            properties: { name: activeAOIPolygon.name },
-            geometry: activeAOIPolygon.geometry,
-          },
-        ],
-      });
-    } else {
-      source.setData({ type: "FeatureCollection", features: [] });
-    }
-  }, [activeAOIPolygon, mapLoaded]);
+    const features: GeoJSON.Feature[] = pontosVisiveis.map((p) => ({
+      type: "Feature",
+      id: p.id,
+      properties: {
+        id: p.id,
+        codigo: p.codigo,
+        estratoId: p.estratoId,
+        classeAmostral: p.classeAmostral ?? "indefinido",
+        rotulado: !!p.rotulo,
+        selecionado: p.id === pontoSelecionadoId,
+      },
+      geometry: {
+        type: "Point",
+        coordinates: [p.longitude, p.latitude],
+      },
+    }));
 
-  // Update Basemap Opacity (with Mapbox HD support)
-  useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
-    const map = mapRef.current;
+    source.setData({
+      type: "FeatureCollection",
+      features,
+    });
+  }, [pontosVisiveis, pontoSelecionadoId, mapLoaded]);
 
-    const isMapboxHd = mapState.basemap === "mapbox-hd";
-    const satOpacity =
-      mapState.basemap === "satellite" || mapState.basemap === "hybrid" ? 1.0 : 0.0;
-    const mapboxHdOpacity = isMapboxHd ? 1.0 : 0.0;
-    const topoOpacity = mapState.basemap === "topo" ? 1.0 : 0.0;
-    const darkOpacity = mapState.basemap === "dark" ? 1.0 : 0.0;
-    const voyagerOpacity = mapState.basemap === "voyager" ? 1.0 : 0.0;
-
-    if (map.getLayer("esri-satellite-layer")) {
-      map.setPaintProperty("esri-satellite-layer", "raster-opacity", satOpacity);
-    }
-    if (map.getLayer("mapbox-satellite-hd-layer")) {
-      map.setPaintProperty("mapbox-satellite-hd-layer", "raster-opacity", mapboxHdOpacity);
-    }
-    if (map.getLayer("osm-topo-layer")) {
-      map.setPaintProperty("osm-topo-layer", "raster-opacity", topoOpacity);
-    }
-    if (map.getLayer("carto-dark-layer")) {
-      map.setPaintProperty("carto-dark-layer", "raster-opacity", darkOpacity);
-    }
-    if (map.getLayer("carto-voyager-layer")) {
-      map.setPaintProperty("carto-voyager-layer", "raster-opacity", voyagerOpacity);
-    }
-  }, [mapState.basemap, mapLoaded]);
-
-  // Update CARTO tile URLs dynamically when CARTO API Key is added or changed
-  useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
-    const map = mapRef.current;
-
-    const darkSource = map.getSource("carto-dark") as maplibregl.RasterTileSource | undefined;
-    const darkUrl = cartoApiKey?.trim()
-      ? `https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png?key=${cartoApiKey.trim()}`
-      : "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png";
-
-    if (darkSource && typeof darkSource.setTiles === "function") {
-      darkSource.setTiles([darkUrl]);
-    }
-
-    const voyagerSource = map.getSource("carto-voyager") as maplibregl.RasterTileSource | undefined;
-    const voyagerUrl = cartoApiKey?.trim()
-      ? `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png?key=${cartoApiKey.trim()}`
-      : "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png";
-
-    if (voyagerSource && typeof voyagerSource.setTiles === "function") {
-      voyagerSource.setTiles([voyagerUrl]);
-    }
-  }, [cartoApiKey, mapLoaded]);
-
-  // Update Layers Visibility
-  useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
-    const map = mapRef.current;
-
-    if (map.getLayer("parana-boundary-line")) {
-      map.setLayoutProperty(
-        "parana-boundary-line",
-        "visibility",
-        mapState.showBoundary ? "visible" : "none"
-      );
-    }
-    if (map.getLayer("parana-basins-fill")) {
-      map.setLayoutProperty(
-        "parana-basins-fill",
-        "visibility",
-        mapState.showBasins ? "visible" : "none"
-      );
-      map.setLayoutProperty(
-        "parana-basins-line",
-        "visibility",
-        mapState.showBasins ? "visible" : "none"
-      );
-    }
-    if (map.getLayer("erosion-heatmap")) {
-      map.setLayoutProperty(
-        "erosion-heatmap",
-        "visibility",
-        mapState.showHeatmap ? "visible" : "none"
-      );
-    }
-    if (map.getLayer("embrapa-solos-layer")) {
-      map.setLayoutProperty(
-        "embrapa-solos-layer",
-        "visibility",
-        mapState.showEmbrapaSolos ? "visible" : "none"
-      );
-    }
-    if (map.getLayer("embrapa-erodibilidade-layer")) {
-      map.setLayoutProperty(
-        "embrapa-erodibilidade-layer",
-        "visibility",
-        mapState.showEmbrapaErodibilidade ? "visible" : "none"
-      );
-    }
-  }, [
-    mapState.showBoundary,
-    mapState.showBasins,
-    mapState.showHeatmap,
-    mapState.showEmbrapaSolos,
-    mapState.showEmbrapaErodibilidade,
-    mapLoaded,
-  ]);
-
-  // Update 3D Terrain & Exaggeration
-  useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
-    const map = mapRef.current;
-
-    if (mapState.terrain3d) {
-      map.setTerrain({
-        source: "terrain-dem",
-        exaggeration: mapState.terrainExaggeration,
-      });
-    } else {
-      map.setTerrain(null as any);
-    }
-  }, [mapState.terrain3d, mapState.terrainExaggeration, mapLoaded]);
-
-  // Handle Fly-To camera movements
+  // Animação de Câmera Fly-To
   useEffect(() => {
     if (!mapRef.current || !mapLoaded || !mapState.flyToTarget) return;
 
@@ -847,28 +541,66 @@ export const MapViewer: React.FC = () => {
     mapRef.current.flyTo({
       center: [lng, lat],
       zoom: zoom ?? 14,
-      pitch: pitch ?? 60,
+      pitch: pitch ?? 50,
       bearing: bearing ?? 0,
       speed: 1.2,
-      curve: 1.4,
       essential: true,
     });
   }, [mapState.flyToTarget, mapLoaded]);
 
   return (
     <div className="relative w-full h-full flex-1 bg-slate-100 dark:bg-slate-950 overflow-hidden">
-      {/* MapLibre WebGL Canvas Container */}
+      {/* Contêiner WebGL MapLibre */}
       <div ref={mapContainer} className="w-full h-full" />
 
-      {/* Drawing Toolbar on Top */}
+      {/* Barra de Ferramentas de Desenho Superior */}
       <DrawingToolbar />
 
-      {/* Map Overlays & Controls */}
+      {/* Controles Flutuantes de Mapa */}
       <MapControls />
 
-      {/* Floating Inspector Popup when point is selected */}
-      {selectedPoint && (
-        <PointPopup key={selectedPoint.id} point={selectedPoint} onClose={() => setSelectedPoint(null)} />
+      {/* Legenda Metodológica de Classes Biofísicas (PPGTCA 2026) */}
+      <div className="absolute bottom-6 left-6 z-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl text-xs space-y-1.5 pointer-events-auto select-none">
+        <div className="text-[10px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400">
+          Classes da Pesquisa (PPGTCA 2026)
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-red-500 border border-white shadow-sm shrink-0" />
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold text-slate-800 dark:text-slate-200 text-[11px]">Erosão (Classe 1)</span>
+            <span className="text-[9px] text-slate-400 font-mono">BSI &gt; 0.10 | NDVI &lt; 0.40</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-emerald-500 border border-white shadow-sm shrink-0" />
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold text-slate-800 dark:text-slate-200 text-[11px]">Controle / SPD (Classe 0)</span>
+            <span className="text-[9px] text-slate-400 font-mono">BSI &lt; 0.00 | NDVI &gt; 0.65</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-amber-500 border border-white shadow-sm shrink-0" />
+          <div className="flex items-center gap-1.5">
+            <span className="font-medium text-slate-600 dark:text-slate-400 text-[11px]">Em Avaliação</span>
+            <span className="text-[9px] text-slate-400 font-mono">Transição / Sem dados</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 pt-1.5 border-t border-slate-200/60 dark:border-slate-800">
+          <span className="w-3.5 h-2 rounded bg-cyan-500/30 border border-cyan-500 shrink-0" />
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold text-cyan-700 dark:text-cyan-400 text-[11px]">Sítios Padrão-Ouro</span>
+            <span className="text-[9px] text-slate-400 font-mono">10-50 ha (VANT/Drone)</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Pop-up Flutuante de Inspeção quando um Ponto está Selecionado */}
+      {pontoSelecionado && (
+        <PointPopup
+          key={pontoSelecionado.id}
+          point={pontoSelecionado}
+          onClose={() => selecionarPonto(null)}
+        />
       )}
     </div>
   );

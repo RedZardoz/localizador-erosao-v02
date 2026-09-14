@@ -125,6 +125,39 @@ def carregar_fontes_dados(conn: sqlite3.Connection, uf: str) -> dict:
     return info
 
 
+# Cache global de leitores de Shapefile para reaproveitamento em lote sem reabrir arquivos
+GLOBAL_SHP_READERS = {}
+TABLE_EXISTENCE_CACHE = {}
+
+
+def table_exists(conn: sqlite3.Connection, table_name: str) -> bool:
+    if table_name not in TABLE_EXISTENCE_CACHE:
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?;", (table_name,))
+            TABLE_EXISTENCE_CACHE[table_name] = bool(cur.fetchone())
+        except Exception:
+            return False
+    return TABLE_EXISTENCE_CACHE[table_name]
+
+
+def get_shapefile_reader(uf: str):
+    if not uf or not shapefile:
+        return None
+    uf_upper = uf.upper()
+    if uf_upper not in GLOBAL_SHP_READERS:
+        shp_cache = os.path.join("data", "sicar_cache", f"{uf_upper}.shp")
+        if os.path.exists(shp_cache):
+            try:
+                # Passa explicitamente o arquivo .shp para evitar que o pyshp abra o .dbf de 1.45 GB
+                GLOBAL_SHP_READERS[uf_upper] = shapefile.Reader(shp_cache)
+            except Exception:
+                GLOBAL_SHP_READERS[uf_upper] = None
+        else:
+            GLOBAL_SHP_READERS[uf_upper] = None
+    return GLOBAL_SHP_READERS.get(uf_upper)
+
+
 def query_property_rtree(conn: sqlite3.Connection, lat: float, lon: float, uf_detectada: str = None) -> dict:
     """
     Consulta utilizando a Virtual Table R*Tree do SQLite (minX, maxX, minY, maxY)
@@ -132,8 +165,7 @@ def query_property_rtree(conn: sqlite3.Connection, lat: float, lon: float, uf_de
     """
     cursor = conn.cursor()
 
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='imoveis_fundiarios_rtree';")
-    if not cursor.fetchone():
+    if not table_exists(conn, "imoveis_fundiarios_rtree"):
         return {}
 
     is_approximate = False
@@ -184,18 +216,11 @@ def query_property_rtree(conn: sqlite3.Connection, lat: float, lon: float, uf_de
             pt = None
 
     if pt and shapefile:
-        readers = {}
         for c in candidates:
             c_uf = c[7]
             s_idx = c[14]
-            shp_cache = os.path.join("data", "sicar_cache", f"{c_uf}.shp")
-            if s_idx is not None and os.path.exists(shp_cache):
-                if c_uf not in readers:
-                    try:
-                        readers[c_uf] = shapefile.Reader(os.path.join("data", "sicar_cache", c_uf))
-                    except Exception:
-                        readers[c_uf] = None
-                sf = readers.get(c_uf)
+            if s_idx is not None:
+                sf = get_shapefile_reader(c_uf)
                 if sf:
                     try:
                         sh = sf.shape(s_idx)
@@ -232,8 +257,7 @@ def query_property_rtree(conn: sqlite3.Connection, lat: float, lon: float, uf_de
 
     # 3. Consulta complementar ao SIGEF/INCRA (se disponível) para obter nome real da área
     try:
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='imoveis_sigef_rtree';")
-        if cursor.fetchone():
+        if table_exists(conn, "imoveis_sigef_rtree"):
             cursor.execute("""
                 SELECT id FROM imoveis_sigef_rtree
                 WHERE minX <= ? AND maxX >= ? AND minY <= ? AND maxY >= ?
@@ -270,8 +294,7 @@ def query_property_rtree(conn: sqlite3.Connection, lat: float, lon: float, uf_de
 
                     # 4. Etapa Alfanumérica (Database Merge) com o cadastro oficial do SNCR
                     try:
-                        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='cadastro_sncr';")
-                        if cursor.fetchone():
+                        if table_exists(conn, "cadastro_sncr"):
                             target_cod = (s_incra or "").strip()
                             target_matr = (s_matr or "").strip()
                             target_mun = str(s_mun_ibge or "").strip()
@@ -401,7 +424,7 @@ def query_property(db_path: str, lat: float, lon: float, uf_hint: str = None) ->
     except Exception as e:
         sys.stderr.write(f"Erro na consulta fundiária: {str(e)}\n")
         return {
-            "status": "sem-correspondencia",
+            "status": "erro-na-consulta",
             "uf": uf_detectada,
             "mensagem": f"Erro interno ao consultar base fundiária: {str(e)}",
             "dataConsulta": datetime.now().strftime("%d/%m/%Y"),
@@ -441,12 +464,12 @@ def query_properties_batch(db_path: str, items: list) -> dict:
             item_id = it.get("id")
             if not item_id:
                 continue
-            lat = it.get("lat") or it.get("latitude")
-            lon = it.get("lon") or it.get("longitude")
+            lat = it.get("lat") if it.get("lat") is not None else it.get("latitude")
+            lon = it.get("lon") if it.get("lon") is not None else it.get("longitude")
             uf = it.get("uf")
             if lat is None or lon is None:
                 results[item_id] = {
-                    "status": "sem-correspondencia",
+                    "status": "erro-na-consulta",
                     "mensagem": "Coordenadas ausentes ou inválidas.",
                 }
                 continue
@@ -456,7 +479,7 @@ def query_properties_batch(db_path: str, items: list) -> dict:
                 results[item_id] = match
             except Exception as item_err:
                 results[item_id] = {
-                    "status": "sem-correspondencia",
+                    "status": "erro-na-consulta",
                     "mensagem": f"Erro ao processar coordenada: {str(item_err)}",
                 }
 
@@ -465,7 +488,7 @@ def query_properties_batch(db_path: str, items: list) -> dict:
         sys.stderr.write(f"Erro no processamento em lote da base fundiária: {str(e)}\n")
         return {
             it["id"]: {
-                "status": "sem-correspondencia",
+                "status": "erro-na-consulta",
                 "mensagem": f"Erro no processamento em lote: {str(e)}",
             }
             for it in items if "id" in it
@@ -515,7 +538,7 @@ if __name__ == "__main__":
         except Exception as e:
             sys.stderr.write(f"Erro no processador de cruzamento espacial: {str(e)}\n")
             match = {
-                "status": "sem-correspondencia",
+                "status": "erro-na-consulta",
                 "mensagem": f"Erro interno: {str(e)}",
             }
 

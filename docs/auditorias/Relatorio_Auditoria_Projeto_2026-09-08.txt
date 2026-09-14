@@ -1,0 +1,205 @@
+================================================================================================
+RELATÓRIO GERAL DE AUDITORIA DO PROJETO
+Projeto:  Localizador de Erosão Laminar — PPGTCA 2026
+Branch:   correcoes/auditoria-2026-09   (HEAD ec31669, árvore limpa)
+Data:     08/09/2026
+Escopo:   Saúde do build, testes, tipagem, segurança, arquitetura de dados, conformidade
+          metodológica e proteção de dados pessoais.
+Complemento: a verificação coluna a coluna das 54 variáveis exportadas está no relatório
+          Relatorio_Auditoria_Tabela_Consolidada_2026-09-08.txt (emitido nesta mesma auditoria).
+Alteração de código: NENHUMA. Auditoria estritamente somente-leitura.
+================================================================================================
+
+
+1. VERIFICAÇÕES AUTOMÁTICAS EXECUTADAS
+------------------------------------------------------------------------------------------------
+Comando                      Resultado
+--------------------------   -------------------------------------------------------------------
+npx vitest run               APROVADO — 20 arquivos, 156 testes, 156 passando, 0 falhas (9,72 s)
+npx tsc --noEmit             APROVADO — 0 erros de tipagem
+npx next lint                APROVADO com 4 avisos — nenhum erro
+git status                   Árvore de trabalho limpa, sem alterações pendentes
+
+Avisos do ESLint (todos react-hooks/exhaustive-deps, nenhum bloqueante):
+  src/components/audit/AuditDossierModal.tsx:142      dependência ausente: 'point'
+  src/components/map/MapViewer.tsx:561                 9 dependências ausentes
+  src/components/map/PointPopup.tsx:162                5 dependências ausentes
+  src/lib/store/useErosionStore.ts:1001                dependências desnecessárias em useMemo
+
+
+2. INVENTÁRIO
+------------------------------------------------------------------------------------------------
+112 arquivos em src/ e scripts/. Next.js 14.2.35 (App Router), React 18.3, TypeScript 5.6,
+Zustand 5, Vitest 4.1, MapLibre GL 4.7, jsPDF 4.2, Zod 3.23.
+Rotas de API: 11 (4 GEE, 4 fundiário, 3 autenticação).
+Scripts Python: 12 (ingestão SICAR/SIGEF/SNCR, matcher espacial, conferência de fontes).
+Base fundiária local: data/fundiario_brasil.db — 1,68 GB, mais dois backups (.bak 1,63 GB e
+.bak2 1,68 GB), totalizando ~4,9 GB no diretório data/.
+
+
+3. SEGURANÇA E PROTEÇÃO DE DADOS
+------------------------------------------------------------------------------------------------
+CONFORME:
+• Todas as rotas fundiárias são fechadas por isLocalRequest() antes de qualquer processamento
+  (api/fundiario/match, batch-match, fontes, polygon), com 403 e mensagem explícita.
+  Módulo localOnly.ts coberto por testes.
+• Credenciais da Service Account do GCP nunca são persistidas em disco: ficam em sessão de
+  servidor efêmera referenciada por cookie httpOnly (sessionStore.ts, testado).
+• Nenhum segredo versionado. .env.example contém apenas placeholders comentados; todas as
+  variáveis são opcionais e a aplicação funciona sem nenhuma delas.
+• Subprocessos Python são invocados por execFile() com array de argumentos — sem shell, sem
+  interpolação de string. Não há superfície de injeção de comando.
+• Entrada das rotas validada por esquemas Zod com limites de domínio (lat -90..90, lon -180..180,
+  lote máximo de 2000 pontos).
+• Erros internos não vazam stack trace ao cliente; a mensagem detalhada fica no log do servidor.
+• LGPD: o nome do titular é reproduzido exatamente na máscara publicada pelo SNCR, sem tentativa
+  de reversão; CPF/CNPJ nunca é divulgado; a fundamentação legal (art. 7º, IV) e a nota de
+  pseudonimização constam da aba de procedência do XLSX e são cobertas por teste.
+• Guarda antissintético (isSyntheticPoint) aplicada em TODAS as rotas de saída — tabela
+  consolidada CSV e XLSX, laudo PDF, GeoJSON, KML, CSV simples e shapefile — e também na
+  hidratação e reidratação do store Zustand. Não foi encontrada brecha.
+
+RESSALVA:
+• O bloco de fundamentação LGPD existe apenas na aba 2 do XLSX. A exportação em CSV chama
+  exportAuditTableCSV(points) sem o parâmetro de metadados, e sai sem nenhuma informação de
+  procedência ou de proteção de dados (ver M1 no relatório da Tabela Consolidada).
+• data/*.db.bak e *.db.bak2 (3,3 GB) contêm dados pessoais pseudonimizados e permanecem no
+  diretório de trabalho. Verificar se o .gitignore os cobre antes de qualquer publicação do
+  repositório.
+
+
+4. ACHADOS DE VERACIDADE DO DADO (resumo — detalhamento no relatório da Tabela Consolidada)
+------------------------------------------------------------------------------------------------
+Sete achados críticos, comprovados por leitura de código e por conferência do artefato real
+Tabela_Consolidada_Parana_Todo_o_Estado_150focos_2026-09-04.xlsx (150 linhas):
+
+C1  Perda de solo produzida por regra ad-hoc (declividade × 2,2 no GeoJSON, × 2,1 no CSV), fora
+    da RUSLE e ausente de toda a metodologia. No artefato: 150/150 linhas com 35,2 t/ha/ano
+    (= 16 × 2,2), enquanto a coluna de memória de cálculo da mesma linha declara "Cálculo RUSLE
+    não executado" e os cinco fatores R, K, LS, C, P estão vazios.
+    parsers.ts (GeoJSON ~223, CSV ~126)
+
+C2  Fator C da RUSLE invertido em relação ao BSI. Como a base da potência é menor que 1, BSI
+    negativo reduz o expoente e AUMENTA o C. Medido com NDVI fixo em 0,70:
+    BSI -0,9 → C 0,8272 | BSI 0,0 → C 0,1500 | BSI +0,9 → C 0,0272.
+    Efeito prático: um pixel vegetado (NDVI 0,85 / BSI -0,70) recebe 87,84 t/ha/ano contra
+    57,69 do solo nu (NDVI 0,10 / BSI +0,50). A fórmula consta também do README §2.1.C, logo a
+    correção é decisão metodológica, não apenas de código.
+    rusleCalculator.ts:calculateCFactor
+
+C3  Bônus de +25 por imóvel confirmado no CAR é gravado no priorityScore e exportado. Rompe a
+    escala 10–100 do README §3.2 (verificado: score 100 vira 125) e insere critério cadastral em
+    índice de risco físico. Não documentado.
+    candidateSelector.ts:~390 e ~455
+
+C4  Falha de consulta fundiária (erro de SQLite, coordenada inválida, exceção por item, retorno
+    vazio) é convertida em status "sem-correspondencia", e a tabela então afirma
+    "Sem correspondência — nenhum imóvel nesta coordenada". O estado correto
+    ("base-nao-disponivel") existe no tipo e é tratado por resolveBlockF, mas nunca é atribuído
+    nesses caminhos. O campo `mensagem`, que carrega a causa real, não é exportado.
+    candidateSelector.ts:~445 e spatial_owner_matcher.py:427,472,482,491,541
+
+C5  A coluna Campos_Estimados não reflete o que foi estimado, em quatro rotas distintas:
+    o parser omite ndvi/soilType/elevation/município/bacia; analyze-point conhece
+    kFactorApproximated e lsFactorApproximated mas não os grava; batchEnrichment marca a tabela
+    SiBCS como `approximated: false` contradizendo soilErodibility.ts; e o recálculo GEE não
+    limpa flags obsoletos.
+
+C6  No pipeline GEE em lote, unmask() repõe constantes nos pixels mascarados por nuvem
+    (BSI 0,0 / NDVI 0,5 / areia 35 / argila 40 / estrato 4) DEPOIS da máscara de nuvem. Como
+    stratifiedSample roda com dropNulls:true, o unmask impede o descarte e esses pixels são
+    amostrados carregando valores fabricados, sem qualquer sinalização.
+    candidateSelector.ts:126-160
+
+C7  batchEnrichment substitui NDVI/BSI/declividade ausentes por 0,32 / 0,45 / 8,0° e alimenta
+    com eles o Fator C, o Fator LS e a perda de solo, sem registrá-los como estimados.
+    batchEnrichment.ts:~205
+
+Oito achados de alta relevância (A1–A8) e oito de relevância média (M1–M8) estão detalhados nas
+seções 4 e 5 do relatório da Tabela Consolidada. Os de maior impacto para a dissertação:
+  A1  Bloco F suprime CAR e titular reais quando analyze-point não devolve tenureStatus.
+  A3  Coerção `||` faz zero legítimo (declividade 0%, BSI 0) virar default, sem sinalização.
+  A4  Defaults divergentes entre CSV e GeoJSON: o mesmo ponto gera tabelas diferentes.
+  A5  Tipo_Solo distingue Distroférrico × Eutroférrico por teor de argila — critério que na
+      classificação SiBCS depende de saturação por bases (V%), não de granulometria.
+  M5  Declividade calculada em EPSG:3857: na latitude do Paraná o fator de escala do Mercator
+      (~1,10) subestima a declividade em cerca de 9–10%, de forma sistemática, propagando para
+      LS, severidade, score e perda de solo.
+
+
+5. ARQUITETURA E QUALIDADE
+------------------------------------------------------------------------------------------------
+PONTOS FORTES:
+• Separação limpa: cálculo (lib/rusle, lib/gee) isolado de apresentação (components) e de
+  transporte (app/api). Funções puras e determinísticas, testáveis sem mock.
+• Documentação inline de alto padrão: cada módulo de cálculo declara servidor externo acessado,
+  coleção/produto consumido, fórmula aplicada e referência à seção do README. É prática rara e
+  deve ser mantida.
+• Rastreabilidade versionada: GEE_CALC_ENGINE_VERSION com guarda de plausibilidade
+  (validateSlopePlausibility) e detecção de pontos desatualizados (isPointSlopeOutdated).
+• Escrita de XLSX própria, sem dependência pesada, com escape XML por inlineStr — o arquivo
+  gerado foi aberto e lido sem erro por leitor externo.
+• Fallbacks graciosos em toda integração externa (NASA POWER, SoilGrids, HydroSHEDS): a
+  aplicação nunca quebra por indisponibilidade de terceiro.
+
+FRAGILIDADES ESTRUTURAIS:
+• Três cadeias paralelas produzem os MESMOS campos com regras diferentes: parsers.ts (import),
+  analyze-point (ponto a ponto), candidateSelector.ts (lote GEE) e batchEnrichment.ts
+  (enriquecimento). K resolvido por duas funções distintas; R por três; LS por duas; estimativa
+  registrada de quatro maneiras. É a raiz comum de C5, A4 e A6 — não há fonte única de verdade
+  por variável.
+• O fallback é a regra silenciosa do projeto: quando um dado externo falta, o sistema substitui
+  por constante e segue adiante. É excelente para disponibilidade e péssimo para uso pericial,
+  porque o consumidor da tabela não distingue medição de reposição.
+• candidateSelector.ts tem 651 linhas, concentra a maior parte da lógica que popula a tabela e
+  não possui arquivo de teste.
+• Cobertura de testes: 21 módulos sem teste, incluindo candidateSelector.ts,
+  earthEngineClient.ts, stratificationConstants.ts, exportUtils.ts, xlsxWriter.ts e as 11 rotas
+  de API. Os 156 testes existentes verificam formato e estrutura; nenhum verifica se o valor
+  exportado é verdadeiro.
+
+
+6. CONFORMIDADE ENTRE CÓDIGO E DOCUMENTAÇÃO
+------------------------------------------------------------------------------------------------
+CONFEREM:
+  README §2.5  A = R·K·LS·C·P                      → calculateSoilLossRUSLE   OK
+  README §2.4  EI30 = 67,355·(p²/P)^0,85           → estimateRainfallErosivity OK
+  README §2.2.C LS = (As/22,13)^m·(sin β/0,0896)^n → calculateLSFactor         OK
+  README §3.1  Φ = S%·0,40 + BSI·50 + Ψ_solo       → calculateSeverity         OK (limiares 28/48)
+  README §2.3  Tabela de K por ordem SiBCS         → K_FACTOR_TABLE            OK
+
+DIVERGEM:
+  README §3.2  PriorityScore limitado a 10–100     → o bônus CAR de +25 não está documentado e
+                                                     permite exportar até 125 (achado C3).
+  README §2.5  A = R·K·LS·C·P                      → parsers.ts grava perda = declividade × 2,2
+                                                     sem passar pela equação (achado C1).
+  Docstring de calculateCFactor afirma "BSI negativo → C aproxima-se de 0"; o código produz o
+  oposto (achado C2). A fórmula em si confere com o README — o erro está na interpretação
+  declarada e no comportamento físico resultante.
+  Docstring de calculateSeverity omite Ψ = 13,0 (Cambissolo), que o código aplica.
+  MAPA_DOCUMENTACAO_CALCULOS.md é de 01/09/2026 e antecede as alterações posteriores do motor
+  de cálculo — recomenda-se conferi-lo antes de citá-lo na dissertação.
+
+
+7. CONCLUSÃO
+------------------------------------------------------------------------------------------------
+A engenharia do projeto está sólida: build limpo, tipagem sem erro, 156 testes passando,
+segurança local bem fechada, tratamento de dados pessoais rigoroso e uma guarda antissintético
+sem brecha em todas as saídas. O arcabouço de rastreabilidade — proveniência por ponto, versão
+do motor de cálculo, cadeia de consulta fundiária, aba de procedência — é notavelmente maduro.
+
+O problema não é de engenharia, é de veracidade do dado. O sistema está preparado para dizer a
+verdade — tem os campos, os estados e os textos certos — mas em vários caminhos não os usa:
+preenche lacuna com constante e apresenta o resultado como medição. O caso mais grave está no
+artefato já emitido: 150 linhas anunciando 35,2 t/ha/ano de perda de solo, produzidas por uma
+multiplicação arbitrária, ao lado da própria coluna que declara que a RUSLE não foi executada.
+
+Recomendação: antes de qualquer uso da Tabela Consolidada como peça de dissertação ou como
+subsídio pericial, tratar C1, C4 e C3 — nessa ordem — e reemitir o arquivo. C2 e M5 exigem
+decisão metodológica com o orientador, porque afetam o README e a formulação, não apenas o
+código.
+
+================================================================================================
+FIM DO RELATÓRIO GERAL
+Nenhum arquivo de código, configuração ou dado do projeto foi modificado nesta auditoria.
+================================================================================================
