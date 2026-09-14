@@ -4,17 +4,36 @@
  * PPGTCA 2026 — Pesquisa de Mestrado em Erosão Laminar
  * ============================================================================
  *
- * ESPECIFICAÇÃO METODOLÓGICA (SEÇÃO 3.2 DO PDF):
- * - Ortomosaico multiespectral por drone de altíssima resolução (GSD de 5 a 10 cm).
- * - Calibração e validação sobreposta à grade orbital de 10 m do Sentinel-2/XGBoost.
- * - Sítios contínuos de 10 a 50 hectares (Céu Azul e Medianeira).
- * - Métricas estatísticas de concordância espacial e pericial:
+ * O QUÊ ESTE MÓDULO EXECUTA:
+ * - Realiza a validação cruzada espacial de altíssima resolução espacial, confrontando
+ *   a classificação predita pelo modelo orbital (Sentinel-2 / XGBoost na grade de 10 m)
+ *   contra a verdade terrestre de alta fidelidade gerada por aerolevantamento com VANT/Drone
+ *   (GSD de 5 a 10 cm) em sítios contínuos de 10 a 50 hectares (Céu Azul e Medianeira).
+ * - Calcula as métricas de concordância espacial e pericial:
  *   1. Matriz de Confusão Pixel-a-Pixel (TP, FP, FN, TN)
  *   2. Acurácia Global (Overall Accuracy - OA)
  *   3. Coeficiente Kappa de Cohen (κ)
- *   4. F1-Score e Precisão/Sensibilidade
- *   5. Índice de Jaccard / Intersection over Union (IoU) para feições erosivas ativas
- * - INVARIANTE INVIOLÁVEL: Dados da modalidade "drone" são estritamente HELD-OUT.
+ *   4. F1-Score, Precisão e Sensibilidade (Recall)
+ *   5. Índice de Jaccard / Intersection over Union (IoU) para manchas ativas
+ *   6. Estratificação por compartimento topo-sequencial (topo, encosta, baixada)
+ *
+ * POR QUÊ ESTE PROTOCOLO É OBRIGATÓRIO NA DISSERTAÇÃO (SEÇÃO 3.2 DO MÉTODO):
+ * 1. O Problema da Agregação Espacial e Resolução Mista (10 m vs 5-10 cm):
+ *    Um pixel orbital do Sentinel-2 cobre 100 m² (10 x 10 m). Feições iniciais de
+ *    erosão laminar e microrravinas possuem largura de 20 a 80 cm, ocupando apenas
+ *    uma fração do pixel. O VANT (GSD 5 a 10 cm) produz de 10.000 a 40.000 sub-pixels
+ *    dentro de uma única célula orbital, permitindo integrar a fração contínua real
+ *    de solo erodido e auditar rigorosamente o comportamento da IA.
+ * 2. Inviolabilidade do Conjunto Held-Out (Regra 4 do SAREL):
+ *    Os dados de drone e os sítios de Céu Azul/Medianeira são estritamente mantidos
+ *    como teste cego held-out. Eles NUNCA entram na matriz de treino do XGBoost,
+ *    garantindo que o desempenho reportado represente a capacidade real de generalização
+ *    do modelo em bacias agrícolas sem vazamento de dados.
+ * 3. Por que o Índice de Jaccard / IoU é Indispensável:
+ *    Em bacias hidrográficas sob plantio direto, feições de erosão severa ocupam tipicamente
+ *    menos de 15% da área cultivada. A métrica de Acurácia Global pode apresentar um falso
+ *    otimismo (ex.: 85% de acerto prevendo apenas controle). O IoU [TP / (TP + FP + FN)]
+ *    mede a sobreposição geométrica estrita da mancha degradada, punindo qualquer falso positivo.
  */
 
 export interface PixelValidacao {

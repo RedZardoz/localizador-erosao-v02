@@ -3,10 +3,28 @@
  * Ingestão de Formulários KoboToolbox de Campo — SAREL (PPGTCA 2026)
  * ============================================================================
  *
- * ESPECIFICAÇÃO (PLANO V3, §12.1):
- * - Ingestão de respostas brutas de campo da Fase B.
- * - Casamento por código e por coordenada com tolerância geodésica P03 (ex.: 150 m).
- * - Preserva respostas como vieram do formulário, sem inventar valores.
+ * O QUÊ ESTE MÓDULO REALIZA:
+ * - Realiza a ingestão, validação geodésica e estruturação das respostas de campo
+ *   coletadas em dispositivos móveis via formulários KoboToolbox / ODK (Fase B).
+ * - Realiza o casamento biunívoco entre a coordenada GPS registrada in-situ pelo
+ *   aplicativo e a coordenada teórica planejada pelo SAREL na malha amostral.
+ * - Valida os metadados periciais: identificador do ponto, classe observada,
+ *   nome do avaliador, data/hora da inspeção e protocolo cego.
+ *
+ * POR QUÊ ESTE PROCEDIMENTO É EXIGIDO NA METODOLOGIA (SEÇÃO 3.3 & REGRA 4):
+ * 1. Tolerância Geodésica de Campo (Parâmetro P03 - Raio de 150 m):
+ *    No campo real, obstáculos físicos (cercas, curvas de nível, carreadores com lama
+ *    ou culturas altas) frequentemente impedem o operador de pisar exatamente no centróide
+ *    do pixel de 10 m. O cálculo geodésico de Haversine audita a distância real: se o
+ *    operador esteve a até 150 m da feição, o registro é aceito com registro do desvio;
+ *    se a distância exceder o limite, o registro é rejeitado para impedir falsas atribuições.
+ * 2. Inviolabilidade do Rótulo Humano (Regra 4 do SAREL):
+ *    A classe de campo ("erosao" vs "controle") constitui a verdade terrestre primária.
+ *    O sistema jamais pode alterar, imputar ou recalcular esse rótulo por heurísticas.
+ * 3. Base para Análise de Concordância Inter-Avaliadores:
+ *    A validação por protocolo cego com múltiplos técnicos avaliando os mesmos pontos
+ *    permite calcular o Coeficiente Kappa de Cohen de campo, demonstrando à banca
+ *    examinadora que o conceito de "erosão laminar ativa" é reprodutível entre peritos.
  */
 
 import { Rotulo } from "@/types/rotulo";

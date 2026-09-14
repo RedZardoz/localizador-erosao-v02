@@ -53,6 +53,22 @@ export interface OpcoesPersistencia {
 /**
  * Analisa a trajetoria multitemporal de um ponto para separar formalmente
  * pousio agricola transitorio de erosao laminar severa persistente.
+ *
+ * O QUÊ FAZ:
+ * Examina a trajetória fenológico-espectral multianual de um ponto amostral (série Sentinel-2 2016-2026),
+ * calculando a frequência de exposição de solo nu (E >= 0.25), a duração máxima contínua de episódios de
+ * solo exposto em dias, a taxa de recuperação do dossel vegetal (NDVI >= 0.65), o vigor vegetativo de
+ * pico histórico (percentil 90 de NDVI) e a taxa de declive temporal no infravermelho SWIR (Banda B12).
+ *
+ * POR QUE FAZ:
+ * Uma imagem de satélite isolada é biofisicamente incapaz de separar solo recém-gradeado ou em dessecação
+ * pré-plantio de uma feição erodida: ambos exibem forte reflectância em superfície e BSI elevado (> 0.10).
+ * A análise de persistência temporal contínua (CCDC) desfaz essa ambiguidade espectral:
+ * 1. O pousio agrícola é um estado efêmero e cíclico (<= 120 dias) com rápida recuperação do vigor
+ *    vegetativo subsequente (NDVI >= 0.65);
+ * 2. A erosão laminar crônica expõe o horizonte subsuperficial B, causando atrofia perene do dossel
+ *    (NDVI_max < 0.55), alta frequência temporal de solo nu safra após safra (E >= 0.25) e tendência
+ *    de aumento na reflectância do SWIR B12 (enriquecimento relativo em óxidos de ferro e perda de água do solo).
  */
 export function analisarPersistenciaTemporal(
   cenas: ObservacaoCena[],

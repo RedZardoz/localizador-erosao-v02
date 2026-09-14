@@ -1,3 +1,36 @@
+/**
+ * ============================================================================
+ * Mineração e Seleção de Candidatos Orbitais no Google Earth Engine (GEE)
+ * SAREL v2.0 — Metodologia PPGTCA 2026 (Seções 3.1 e 3.2)
+ * ============================================================================
+ *
+ * O QUÊ ESTE ENDPOINT ORQUESTRA:
+ * - Conecta-se à infraestrutura de computação distribuída do Google Earth Engine (GEE)
+ *   utilizando credenciais corporativas (Service Account OAuth2).
+ * - Processa coleções orbitais Sentinel-2 MSI L2A (BOA Harmonized) para a janela 2016-2026,
+ *   aplicando filtragem de nuvens e sombras pela máscara SCL (Scene Classification Layer).
+ * - Extrai a assinatura espectral de superfície (B2, B4, B8, B11, B12), calculando NDVI e BSI.
+ * - Integra com a malha fundiária real do SICAR/CAR e executa o Thinning Geodésico Haversine
+ *   para descorrelacionar as amostras no espaço geográfico.
+ *
+ * POR QUÊ ESTE PROCESSAMENTO É ENVIADO PARA CÁLCULO EXTERNO NO GEE:
+ * 1. Escala de Dados Petabyte: As séries temporais de 10 anos cobrindo as bacias do Paraná
+ *    (Paraná 3, Tibagi, Arenito Caiuá) ultrapassam centenas de gigabytes por cena.
+ *    O GEE realiza a redução matricial e cálculo de índices nos servidores do Google,
+ *    evitando o download de terabytes de imagens brutas e devolvendo apenas os centróides
+ *    comprovadamente elegíveis.
+ * 2. Mitigação da Autocorrelação Espacial (Thinning Geodésico):
+ *    Pela Primeira Lei da Geografia de Tobler (1970), pixels contíguos no mesmo talhão
+ *    compartilham propriedades pedológicas e espectrais quase idênticas. Treinar o modelo
+ *    com pixels vizinhos geraria inflação artificial da acurácia e pseudorrepetição amostral.
+ *    O thinning geodésico (raio de 0,2 a 5,0 km) força uma distância mínima obrigatória
+ *    entre amostras, garantindo representatividade regional e variância real no aprendizado.
+ * 3. Amarração Fundiária Auditável (SICAR/CAR):
+ *    A chamada ao script Python `query_real_properties.py` ancora cada ponto amostral a um
+ *    imóvel rural pericialmente registrado no SICAR/SNCR, garantindo legitimidade forense
+ *    e impedindo amostragem em faixas de domínio rodoviário, corpos d'água ou áreas urbanas.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { execFile } from "child_process";
 import path from "path";

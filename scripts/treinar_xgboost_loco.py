@@ -98,7 +98,17 @@ BACIAS_PARANA = {
 
 
 def ponto_em_poligono(lon: float, lat: float, anel: list[list[float]]) -> bool:
-    """Ray-casting simples para verificação de ponto em polígono."""
+    """
+    Ray-casting simples para verificação de ponto em polígono.
+
+    O QUÊ FAZ:
+    Determina geometricamente se uma coordenada geográfica (longitude, latitude) está contida no interior
+    de um anel poligonal fechado através do algoritmo clássico de contagem de cruzamento de raios (ray-casting).
+
+    POR QUE FAZ:
+    Permite atribuir cada ponto de amostragem biofísica à sua respectiva bacia hidrográfica geográfica
+    de forma puramente determinística e independente de serviços de rede externos.
+    """
     dentro = False
     n = len(anel)
     for i in range(n):
@@ -111,7 +121,20 @@ def ponto_em_poligono(lon: float, lat: float, anel: list[list[float]]) -> bool:
 
 
 def identificar_bacia_real(lat: float, lon: float) -> str:
-    """Identifica a macrobacia oficial do IAT correspondente à coordenada."""
+    """
+    Identifica a macrobacia oficial do IAT correspondente à coordenada.
+
+    O QUÊ FAZ:
+    Associa uma coordenada geográfica a uma das 6 macrobacias hidrográficas oficiais do Estado
+    do Paraná (Tibagi, Ivaí, Paranapanema, Iguaçu, Piquiri/PR3 e Litorânea/Ribeira) com base nos
+    limites vetoriais simplificados do Instituto Água e Terra (IAT).
+
+    POR QUE FAZ:
+    A validação cruzada espacial Leave-One-Catchment-Out (LOCO) exige que a unidade de bloqueio seja
+    uma bacia hidrográfica regional completa. Bacias hidrográficas compartilham compartimentos geomorfológicos,
+    padrões pedológicos e regimes climáticos coerentes. Esse agrupamento físico é indispensável para evitar
+    a contaminação de dados por autocorrelação espacial durante a modelagem preditiva.
+    """
     for nome, anel in BACIAS_PARANA.items():
         if ponto_em_poligono(lon, lat, anel):
             return nome
@@ -131,7 +154,18 @@ def identificar_bacia_real(lat: float, lon: float) -> str:
 
 
 def carregar_dados_reais(caminho_arquivo: str) -> pd.DataFrame:
-    """Carrega dados tabulares a partir de arquivo Excel, CSV ou JSON."""
+    """
+    Carrega dados tabulares a partir de arquivo Excel, CSV ou JSON.
+
+    O QUÊ FAZ:
+    Executa a ingestão dos dados empíricos de campo e sensoriamento remoto, convertendo estruturas
+    tabulares heterogêneas em um DataFrame unificado para modelagem biofísica.
+
+    POR QUE FAZ:
+    A reprodutibilidade científica e a integridade de dados exigem a preservação estrita dos valores
+    medidos (in situ e orbitais). A ingestão padronizada assegura que nenhuma coluna seja alterada
+    ou descartada arbitrariamente durante o processo de modelagem.
+    """
     if not os.path.exists(caminho_arquivo):
         raise FileNotFoundError(f"Arquivo de dados não encontrado: {caminho_arquivo}")
 
@@ -152,7 +186,16 @@ def carregar_dados_reais(caminho_arquivo: str) -> pd.DataFrame:
 def auditar_variancia_preditores(X: pd.DataFrame) -> list[str]:
     """
     Audita se alguma variável preditora possui variância zero ou nula.
-    Alerta formalmente contra datasets estáticos com valores congelados.
+
+    O QUÊ FAZ:
+    Examina a dispersão estatística (desvio padrão) de cada variável preditora físico-informada,
+    sinalizando colunas que contenham valores estáticos ou invariantes em todas as amostras.
+
+    POR QUE FAZ:
+    Na modelagem biofísica por árvores de decisão (XGBoost), preditores com variância zero produzem
+    separabilidade artificial espúria ou recebem importância nula incorreta. Preditores constantes
+    são indicativos de datasets com valores preenchidos artificialmente (mock/congelados). A auditoria
+    preventiva assegura a validade físico-científica das inferências antes de prosseguir com o treinamento.
     """
     alertas = []
     for c in X.columns:
@@ -176,11 +219,19 @@ def balancear_com_pontos_controle(
     """
     Equilibra o conjunto de dados com amostras de Controle / SPD (Classe 0).
 
-    RIGOR CIENTÍFICO (PPGTCA 2026 - LEI FUNDAMENTAL):
-    - Se caminho_controles for fornecido, carrega pontos de controle reais com atributos medidos.
-    - Se a base for monofásica e nenhum arquivo for fornecido:
-      - Se permitir_dryrun_sintetico == False (PADRÃO CIENTÍFICO): Levanta ValueError impeditivo.
-      - Se permitir_dryrun_sintetico == True: Permite benchmarking computacional com advertência explícita.
+    O QUÊ FAZ:
+    Harmoniza o conjunto amostral garantindo a presença simultânea das duas classes fundamentais da
+    pesquisa: feições ativas de erosão laminar (Classe 1) e áreas de manejo conservacionista sob
+    Sistema Plantio Direto estável (Classe 0). Caso a base fornecida contenha apenas focos de erosão,
+    exige um arquivo de controles reais ou, exclusivamente sob solicitação de benchmark computacional,
+    gera dados de infraestrutura com advertência indelével de dry-run.
+
+    POR QUE FAZ:
+    Modelos de classificação binária supervisionada requerem contraste biofísico entre o fenômeno de
+    degradação e o estado de equilíbrio da paisagem. Treinar um classificador sem amostras negativas
+    reais invalida completamente a estimativa de fronteiras de decisão e curvas ROC. Sob o imperativo
+    do rigor pericial do mestrado PPGTCA 2026, é proibido mascarar dados sintéticos como se fossem
+    medições de campo, impondo-se o bloqueio estrito (Anti-Mock) para resguardar a integridade da dissertação.
     """
     df_erosao = df_erosao.copy()
     if 'Classe_Alvo_Binaria' not in df_erosao.columns:
@@ -289,6 +340,20 @@ def preparar_matriz_preditores(
 ) -> tuple[pd.DataFrame, pd.Series, pd.Series, list[str], bool, list[str]]:
     """
     Padroniza nomes de colunas, identifica a bacia real, audita variância e harmoniza a variável alvo Y.
+
+    O QUÊ FAZ:
+    Estrutura a matriz final de características multivariadas (X), o vetor de rótulos binários (y) e
+    o vetor de agrupamento geográfico por macrobacias hidrográficas do Paraná (blocos_loco), auditando
+    a integridade das variáveis físico-informadas e aplicando verificações de variância mínima.
+
+    POR QUE FAZ:
+    A modelagem orientada pela física da erosão hídrica exige a conjugação de três esferas da paisagem:
+    (i) Reflectância de superfície e índices espectrais do Sentinel-2 MSI (B2, B4, B8, B12, NDVI, BSI),
+    capturando o horizonte B exposto, teor de óxidos de ferro e vigor do dossel vegetal;
+    (ii) Fatores topográficos de terreno derivados do ALOS PALSAR/SRTM (declividade e elevação), governando
+    a energia potencial e velocidade do deflúvio superficial;
+    (iii) Mecanismos morfopedológicos da equação RUSLE (fatores K, R e perda de solo estimada A).
+    A preparação assegura que apenas preditores fundamentados sejam alimentados ao modelo.
     """
     df = df.copy()
     eh_dryrun = False
@@ -432,8 +497,20 @@ def executar_spatial_kfold_loco(
     random_state: int = 42
 ) -> dict:
     """
-    Executa a Validação Cruzada Espacial Leave-One-Catchment-Out (LOCO, K=5)
-    com XGBoost e hiperparâmetros oficiais da pesquisa.
+    Executa a Validação Cruzada Espacial Leave-One-Catchment-Out (LOCO, K=5) com XGBoost.
+
+    O QUÊ FAZ:
+    Treina e avalia iterativamente modelos XGBoost calibrados particionando os dados em blocos
+    espaciais baseados nas macrobacias hidrográficas do Paraná, calculando métricas de acurácia,
+    precisão, sensibilidade (recall), F1-Score e ROC-AUC para cada bacia omitida e globalmente.
+
+    POR QUE FAZ:
+    A validação cruzada k-fold tradicional assume independência e distribuição idêntica (i.i.d.) das
+    amostras, premissa violada em dados geoespaciais devido à autocorrelação espacial (amostras próximas
+    possuem clima, solo e relevo semelhantes). Avaliar um modelo com amostras vizinhas de treino e teste
+    produz métricas artificialmente infladas (superestimação otimista). A estratégia LOCO (Leave-One-Catchment-Out)
+    isola geograficamente bacias hidrográficas inteiras para teste, garantindo que o algoritmo seja
+    submetido à prova de generalização regional em condições reais de extrapolação espacial no Paraná.
     """
     blocos_unicos = np.array(sorted(blocos.unique()))
     n_splits = min(k_blocos, len(blocos_unicos))
@@ -568,7 +645,22 @@ def gerar_graficos_e_explicabilidade_shap(
     diretorio_saida: str,
     eh_dryrun: bool = False
 ) -> dict:
-    """Gera visualizações científicas completas: SHAP Beeswarm, Bar Plot, ROC e Confusão."""
+    """
+    Gera visualizações científicas completas: SHAP Beeswarm, Bar Plot, ROC e Confusão.
+
+    O QUÊ FAZ:
+    Calcula a contribuição marginal de cada preditor físico-informado através de valores de Shapley
+    utilizando a formulação exata para árvores de decisão (SHAP TreeExplainer), renderizando figuras em
+    alta resolução (300 DPI) para publicação científica e dissertação de mestrado.
+
+    POR QUE FAZ:
+    Algoritmos de Gradient Boosting baseados em árvores são frequentemente tratados como caixas-pretas
+    opacas. Na pesquisa pericial e acadêmica de solos, é imperativo demonstrar a aderência das decisões
+    do modelo às leis físicas estabelecidas na literatura de erosão hídrica. A decomposição SHAP revela
+    se o modelo está priorizando variáveis corretas (ex.: se o aumento do BSI e da declividade elevam o
+    risco de erosão, e se o alto NDVI exerce papel protetivo mitigador), conferindo transparência,
+    auditabilidade e validade teórica ao arcabouço preditivo.
+    """
     os.makedirs(diretorio_saida, exist_ok=True)
 
     print(f"\n[SHAP] Calculando valores de Shapley (TreeExplainer)...")

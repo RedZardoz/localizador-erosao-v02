@@ -1,15 +1,29 @@
 /**
+ * ============================================================================
  * Sítios de Referência Padrão-Ouro (VANT/Drone) — SAREL (PPGTCA 2026)
+ * ============================================================================
  *
- * ESPECIFICAÇÃO METODOLÓGICA (SEÇÃO 3.2 DO PDF):
- * - Polígonos contínuos de 10 a 50 hectares em propriedades agrícolas estratégicas
- *   nos municípios de Céu Azul e Medianeira (Bacia Hidrográfica do Paraná 3).
- * - Cobertura do gradiente topo-sequencial completo:
- *   1. Topo estável (divisor de águas)
- *   2. Encosta de escoamento (zona crítica de transporte/erosão)
- *   3. Baixada de deposição de colúvio
- * - Resolução do VANT/Drone: GSD de 5 a 10 cm, sobreposta à grade de 10 m do satélite.
- * - Papel no sistema: Conjunto estritamente HELD-OUT (validação cega e calibração).
+ * O QUÊ ESTE MÓDULO DEFINE:
+ * - Cadastra os polígonos contínuos de referência territorial (10 a 50 hectares cada)
+ *   em propriedades rurais reais extraídas da base oficial do SICAR/CAR nos municípios
+ *   de Céu Azul e Medianeira (Bacia Hidrográfica do Paraná 3).
+ * - Mapeia as geometrias vetoriais, os perímetros cadastrais e os três compartimentos
+ *   do gradiente topo-sequencial (topo, encosta, baixada) para missões com drone.
+ *
+ * POR QUÊ POLÍGONOS CONTÍNUOS DE 10 A 50 HA FORAM ESCOLHIDOS (SEÇÃO 3.2):
+ * 1. Superação da Falácia da Microparcela:
+ *    Estudos clássicos de erosão frequentemente apoiam-se em parcelas experimentais
+ *    reduzidas (ex.: padrão Wischmeier de 22 x 4 m), que desconsideram o comportamento
+ *    real da enxurrada na escala da paisagem agrícola. Polígonos de 10 a 50 ha englobam
+ *    o comprimento de rampa real, a confluência de fluxos, terraços agrícolas e carreadores.
+ * 2. Captura da Catena Completa (Gradiente Topo-Sequencial):
+ *    A erosão laminar não é um evento pontual estático; ela é um processo dinâmico
+ *    que se intensifica no terço médio da rampa (8 a 18% de declividade) e desacelera
+ *    no sopé, gerando leques de deposição coluvial. Apenas áreas contínuas permitem
+ *    validar se a IA é capaz de distinguir o ponto de desprendimento do ponto de acúmulo.
+ * 3. Base Fundiária e Pericial Real:
+ *    A extração direta do SICAR/CAR vincula cada polígono a um código imobiliário oficial,
+ *    conferindo autenticidade jurídica e pericial aos experimentos da dissertação.
  */
 
 export interface CompartimentoTopoSequencial {

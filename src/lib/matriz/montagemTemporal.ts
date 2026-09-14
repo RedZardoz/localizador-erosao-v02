@@ -1,24 +1,24 @@
 /**
  * ============================================================================
- * Montagem de Preditores Multitemporais (Time-Series Stacking) ? SAREL
- * PPGTCA 2026 ? Pesquisa de Mestrado em Eros?o Laminar
+ * Montagem de Preditores Multitemporais (Time-Series Stacking) — SAREL
+ * PPGTCA 2026 — Pesquisa de Mestrado em Erosão Laminar
  * ============================================================================
  *
- * ESPECIFICA??O METODOL?GICA (SE??O 4 E 6 DO PROJETO DE PESQUISA):
- * 1. Segrega??o Temporal Modelo D vs Modelo P (Decis?o D04):
- *    - MODELO D (Detec??o contempor?nea):
- *      S?rie temporal at? a data do evento / valida??o (t0).
- *      Mapeia o estado contempor?neo de degrada??o da fei??o.
- *    - MODELO P (Progn?stico Preditivo / Suscetibilidade Antecipada 6 a 12 meses):
- *      S?rie temporal encerrada antes da data do evento com Intervalo de Guarda (>= 12 meses).
+ * ESPECIFICAÇÃO METODOLÓGICA (SEÇÃO 4 E 6 DO PROJETO DE PESQUISA):
+ * 1. Segregação Temporal Modelo D vs Modelo P (Decisão D04):
+ *    - MODELO D (Detecção contemporânea):
+ *      Série temporal até a data do evento / validação (t0).
+ *      Mapeia o estado contemporâneo de degradação da feição.
+ *    - MODELO P (Prognóstico Preditivo / Suscetibilidade Antecipada 6 a 12 meses):
+ *      Série temporal encerrada antes da data do evento com Intervalo de Guarda (>= 12 meses).
  *      Elimina o vazamento temporal (data leakage), garantindo que o modelo prediga
- *      o risco futuro com base no hist?rico de manejo e vulnerabilidade f?sica pr?via.
+ *      o risco futuro com base no histórico de manejo e vulnerabilidade física prévia.
  * 2. Time-Series Stacking com Lags Multitemporais:
  *    - Lags temporais de NDVI e BSI: t-12m (mesma safra no ano anterior), t-6m, t-3m.
- * 3. Estat?sticas Robustas e Harm?nicos:
+ * 3. Estatísticas Robustas e Harmônicos:
  *    - Percentis (p10, p50, p90) de NDVI e BSI.
- *    - Tend?ncia de degrada??o linear no SWIR (B12).
- *    - Frequ?ncia multianual de solo exposto (E^).
+ *    - Tendência de degradação linear no SWIR (B12).
+ *    - Frequência multianual de solo exposto (E^).
  */
 
 import { ObservacaoCena, calcularNdvi, calcularBsi, definirJanelasModelo, filtrarSeriePorJanela } from "../gee/serieTemporal";
@@ -31,13 +31,13 @@ export interface PreditoresTemporaisPonto {
   janelaInicio: string;
   janelaFim: string;
   nObservacoesValidas: number;
-  // Estat?sticas agregadas
+  // Estatísticas agregadas
   ndvi_p10: number | null;
   ndvi_p50: number | null;
   ndvi_p90: number | null;
   bsi_p50: number | null;
   frequenciaSoloNu: number;
-  // Harm?nicos e tend?ncias
+  // Harmônicos e tendências
   tendenciaSwirB12: number | null;
   amplitudeAnualNdvi: number | null;
   // Lags temporais (Time-Series Stacking)
@@ -47,15 +47,15 @@ export interface PreditoresTemporaisPonto {
   lag_ndvi_t12m: number | null;
   lag_bsi_t0: number | null;
   lag_bsi_t12m: number | null;
-  // Regime fenol?gico derivado
+  // Regime fenológico derivado
   regimePersistencia: string;
 }
 
 export interface OpcoesMontagemTemporal {
   dataReferencia: string; // Data t0 (YYYY-MM-DD)
-  intervaloGuardaMeses?: number; // Para Modelo P (Padr?o: 12 meses)
-  duracaoJanelaAnos?: number;   // Padr?o: 3 anos
-  limiarNdviSoloNu?: number;    // Padr?o: 0.40 (D10)
+  intervaloGuardaMeses?: number; // Para Modelo P (Padrão: 12 meses)
+  duracaoJanelaAnos?: number;   // Padrão: 3 anos
+  limiarNdviSoloNu?: number;    // Padrão: 0.40 (D10)
 }
 
 const TOLERANCIA_BUSCA_CENA_DIAS = 45;
@@ -82,6 +82,21 @@ function buscarCenaMaisProxima(
 /**
  * Monta o vetor completo de preditores temporais e lags para um ponto,
  * respeitando o isolamento entre Modelo D e Modelo P.
+ *
+ * O QUÊ FAZ:
+ * Constrói o vetor estruturado de características multitemporais (Time-Series Stacking)
+ * agregando percentis espectrais (p10, p50, p90 de NDVI e BSI), frequência multianual de solo nu,
+ * componentes harmônicos sazonais, taxa linear de variação do SWIR B12 e lags retrospectivos
+ * (t0, t-3m, t-6m, t-12m) a partir da trajetória de reflectância do satélite Sentinel-2.
+ *
+ * POR QUE FAZ:
+ * A predição e detecção de erosão dependem criticamente do histórico de uso e cobertura do solo.
+ * Sob o Modelo D (Detecção contemporânea), mapeia-se a feição no momento t0 da observação.
+ * Sob o Modelo P (Prognóstico preventivo), é mandatório isolar a série temporal através de uma
+ * janela de guarda rigorosa (>= 12 meses antes do evento erosivo). Esse isolamento impede o
+ * vazamento temporal de informação (data leakage), garantindo que o algoritmo preveja o surgimento
+ * de erosão exclusivamente a partir de fraquezas históricas de manejo e vulnerabilidades físicas
+ * antecedentes à manifestação do dano pericial.
  */
 export function montarPreditoresTemporais(
   cenas: ObservacaoCena[],
@@ -157,18 +172,18 @@ export function montarPreditoresTemporais(
   const ndvi_p90 = Number(ndvis[p90Idx].toFixed(4));
   const bsi_p50 = bsis.length > 0 ? Number(bsis[Math.floor(bsis.length * 0.5)].toFixed(4)) : null;
 
-  // Frequ?ncia de solo nu (E^)
+  // Frequência de solo nu (E^)
   const nSoloNu = ndvis.filter((v) => v < limiarNdviSoloNu).length;
   const frequenciaSoloNu = Number((nSoloNu / nValidas).toFixed(4));
 
-  // Harm?nicos do SWIR B12 (tend?ncia de degrada??o)
+  // Harmônicos do SWIR B12 (tendência de degradação)
   let tendenciaSwirB12: number | null = null;
   const coefSwir = ajustarHarmonicosBanda(cenasJanela, "b12");
   if (coefSwir.tendencia.estado === "modelado") {
     tendenciaSwirB12 = coefSwir.tendencia.valor;
   }
 
-  // Harm?nicos do NDVI (amplitude sazonal de biomassa)
+  // Harmônicos do NDVI (amplitude sazonal de biomassa)
   let amplitudeAnualNdvi: number | null = null;
   const coefB8 = ajustarHarmonicosBanda(cenasJanela, "b8");
   if (coefB8.amplitudeAnual.estado === "modelado") {
@@ -186,7 +201,7 @@ export function montarPreditoresTemporais(
   const obsT6m = buscarCenaMaisProxima(serieProcessada, dataCorteMs - ms6m, TOLERANCIA_BUSCA_CENA_DIAS);
   const obsT12m = buscarCenaMaisProxima(serieProcessada, dataCorteMs - ms12m, TOLERANCIA_BUSCA_CENA_DIAS);
 
-  // Diagn?stico de Persist?ncia Temporal
+  // Diagnóstico de Persistência Temporal
   const diag = analisarPersistenciaTemporal(cenasJanela, {
     limiarNdviSoloNu,
     limiarNdviDosselFechado: 0.65,
