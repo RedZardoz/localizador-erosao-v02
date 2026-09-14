@@ -8,6 +8,7 @@ import { formatToDMS } from "@/lib/export/dms";
 
 export function InspetorPonto() {
   const { obterPontoSelecionado, rotulosConsolidados, pontos, selecionarPonto } = useSarelStore();
+  const [modeloAtivo, setModeloAtivo] = React.useState<"D" | "P">("D");
   const ponto = obterPontoSelecionado();
 
   if (!ponto) {
@@ -38,7 +39,7 @@ export function InspetorPonto() {
   const rotuloFinal = rotuloConsolidado?.final;
   const soloAssociacao = ponto.solo?.tipoUnidade?.estado === "medido" && ponto.solo.tipoUnidade.valor === "associacao";
 
-  const janelaD = ponto.temporal?.D;
+  const janelaAtiva = modeloAtivo === "D" ? ponto.temporal?.D : ponto.temporal?.P;
 
   return (
     <div className="space-y-6">
@@ -150,16 +151,16 @@ export function InspetorPonto() {
           <div className="grid grid-cols-2 gap-3">
             <SeloProveniencia
               label="Frequência Solo Nu (Ê)"
-              proveniencia={janelaD?.serie?.frequenciaSoloNu}
+              proveniencia={janelaAtiva?.serie?.frequenciaSoloNu}
             />
             <SeloProveniencia
               label="Maior Sequência Nu"
-              proveniencia={janelaD?.serie?.maiorSequenciaSoloNu}
+              proveniencia={janelaAtiva?.serie?.maiorSequenciaSoloNu}
               unidade="cenas"
             />
             <SeloProveniencia
               label="Mês Modal Exposição"
-              proveniencia={janelaD?.serie?.mesModalExposicao}
+              proveniencia={janelaAtiva?.serie?.mesModalExposicao}
             />
           </div>
         </div>
@@ -170,17 +171,22 @@ export function InspetorPonto() {
             PRECIPITAÇÃO & EROSIVIDADE (CHIRPS & GPM IMERG)
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            <SeloProveniencia label="Acumulado 30d" proveniencia={janelaD?.chuva?.precipAcum30d} unidade="mm" />
-            <SeloProveniencia label="Acumulado 90d" proveniencia={janelaD?.chuva?.precipAcum90d} unidade="mm" />
-            <SeloProveniencia label="I30 Máximo" proveniencia={janelaD?.chuva?.i30Max} unidade="mm/h" />
-            <SeloProveniencia label="Nº Eventos Erosivos" proveniencia={janelaD?.chuva?.nEventosErosivos} />
-            <SeloProveniencia label="Índice Mecanismo" proveniencia={janelaD?.chuva?.indiceMecanismo} />
+            <SeloProveniencia label="Acumulado 30d" proveniencia={janelaAtiva?.chuva?.precipAcum30d} unidade="mm" />
+            <SeloProveniencia label="Acumulado 90d" proveniencia={janelaAtiva?.chuva?.precipAcum90d} unidade="mm" />
+            <SeloProveniencia label="I30 Máximo" proveniencia={janelaAtiva?.chuva?.i30Max} unidade="mm/h" />
+            <SeloProveniencia label="Nº Eventos Erosivos" proveniencia={janelaAtiva?.chuva?.nEventosErosivos} />
+            <SeloProveniencia label="Índice Mecanismo" proveniencia={janelaAtiva?.chuva?.indiceMecanismo} />
           </div>
         </div>
       </div>
 
       {/* Gráfico da Série Temporal */}
-      <GraficoSerieTemporal dados={[]} />
+      <GraficoSerieTemporal
+        dados={[]}
+        modeloAtivo={modeloAtivo}
+        onModeloChange={setModeloAtivo}
+        dataReferencia={ponto.rastreio?.calculadoEm?.split("T")[0] || "2026-01-01"}
+      />
 
       {/* Bloco de Rótulo Humano e Fundiário */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

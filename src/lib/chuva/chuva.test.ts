@@ -1,7 +1,7 @@
-﻿import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vitest";
 import { calcularAcumuladosChuva, criarProvenienciaChirps } from "./chirps";
 import { extrairI30Maximo, criarProvenienciaImerg } from "./imerg";
-import { construirBlocoChuva } from "./eventos";
+import { construirBlocoChuva, calcularIndiceMecanismo } from "./eventos";
 
 describe("CHIRPS Acumulados Diários", () => {
   it("deve calcular acumulados de 30 e 90 dias com dados suficientes", () => {
@@ -92,5 +92,57 @@ describe("BlocoChuva e Decisão D13 (Invariante 5)", () => {
       expect(bloco.indiceMecanismo.causa).toBe("decisao-pendente");
       expect(bloco.indiceMecanismo.motivo).toContain("D13");
     }
+  });
+
+  it("deve calcular índice de mecanismo acoplado quando série de solo for fornecida", () => {
+    // 3 dias de chuva de 10mm
+    const serieDiaria = [
+      { data: "2026-01-10", precipitacaoMm: 10.0 },
+      { data: "2026-01-11", precipitacaoMm: 15.0 },
+      { data: "2026-01-20", precipitacaoMm: 20.0 },
+    ];
+
+    // Cena de satélite indicando solo descoberto (D10: NDVI < 0.40) em 10/01
+    // e dossel fechado em 20/01
+    const serieSolo = [
+      { data: "2026-01-10", ehSoloNu: true, ndvi: 0.25 },
+      { data: "2026-01-20", ehSoloNu: false, ndvi: 0.72 },
+    ];
+
+    const val = calcularIndiceMecanismo(serieDiaria, serieSolo, 5);
+    // Dias 10 e 11 pareiam com cena de 10/01 (solo nu = true): 10 + 15 = 25 mm
+    // Dia 20 pareia com cena de 20/01 (solo nu = false): 0 mm
+    expect(val).toBe(25.0);
+
+    const bloco = construirBlocoChuva({
+      serieDiariaChirps: serieDiaria,
+      serieImerg: [{ timestamp: "2026-01-10T14:00:00Z", taxaMmH: 22.0 }],
+      serieSoloNu: serieSolo,
+    });
+
+    expect(bloco.indiceMecanismo.estado).toBe("modelado");
+    if (bloco.indiceMecanismo.estado === "modelado") {
+      expect(bloco.indiceMecanismo.valor).toBe(25.0);
+      expect(bloco.indiceMecanismo.modelo).toContain("Sigma_t");
+      expect(bloco.indiceMecanismo.insumos).toContain("CHIRPS (DAILY)");
+    }
+  });
+
+  it("deve retornar 0 para o índice de mecanismo se o solo esteve sempre protegido por vegetação", () => {
+    const serieDiaria = [{ data: "2026-01-10", precipitacaoMm: 50.0 }];
+    const serieSolo = [{ data: "2026-01-10", ehSoloNu: false, ndvi: 0.80 }];
+
+    const val = calcularIndiceMecanismo(serieDiaria, serieSolo);
+    expect(val).toBe(0.0);
+  });
+
+  it("deve retornar null se entradas forem vazias ou sem pareamento temporal", () => {
+    expect(calcularIndiceMecanismo([], [])).toBeNull();
+    const valForaJanela = calcularIndiceMecanismo(
+      [{ data: "2026-01-01", precipitacaoMm: 20.0 }],
+      [{ data: "2026-06-01", ehSoloNu: true }],
+      15 // Tolerância de 15 dias para pareamento
+    );
+    expect(valForaJanela).toBeNull();
   });
 });

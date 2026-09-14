@@ -61,7 +61,12 @@ export const DECISOES: Record<string, Decisao<any>> = {
   D04: {
     id: "D04",
     titulo: "Modelo D (detecção), Modelo P (predição) ou ambos, e intervalo de guarda",
-    estado: "pendente" as EstadoDecisao,
+    estado: "decidida" as EstadoDecisao,
+    valor: "Ambos os modelos integrados: Modelo D para detecção contemporânea de feições ativas (t0) e Modelo P para prognóstico preditivo (suscetibilidade 6 a 12 meses) com intervalo de guarda temporal >= 12 meses antes do evento para eliminar vazamento temporal (data leakage).",
+    justificativa: "A segregação estrita garante predição preventiva de risco de erosão sem contaminação por imagens pós-evento, atendendo à modelagem preditiva da dissertação.",
+    referencia: "Metodologia PPGTCA 2026, Seções 4 e 6",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-13",
   },
   D05: {
     id: "D05",
@@ -106,7 +111,12 @@ export const DECISOES: Record<string, Decisao<any>> = {
   D11: {
     id: "D11",
     titulo: "Cobertura temporal mínima (nº mínimo de observações válidas)",
-    estado: "pendente" as EstadoDecisao,
+    estado: "decidida" as EstadoDecisao,
+    valor: "Mínimo de 6 observações orbitais válidas (sem nuvem/sombra) por ponto/janela temporal para análise de persistência temporal e time-series stacking.",
+    justificativa: "Critério biofísico necessário para estimar com significância a taxa de degradação linear no SWIR B12, a recuperação do dossel vegetal e a frequência de solo exposto.",
+    referencia: "Metodologia PPGTCA 2026, Seção 6.1",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-13",
   },
   D12: {
     id: "D12",
