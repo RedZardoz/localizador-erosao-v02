@@ -830,8 +830,8 @@ def gerar_conteudo_compendio(styles):
         styles["Body"]
     ))
     story.append(criar_box(
-        "A Armadilha do .unmask(0.0) — Por que é Proibido&pi;",
-        "Em versões legadas de pipelines no Earth Engine, desenvolvedores frequentemente aplicavam a função <code>.unmask(0.0)</code> logo após a filtragem de nuvens para evitar valores nulos. Isso é um <b>crime científico</b>: pixels sob nuvens eram substituídos pelo valor 0.0 de NDVI ou BSI, simulando superfícies artificiais que o classificador interpretava como realidade de campo.<br/><br/>"
+        "A Armadilha da Imputação por Constante no Sensor — Por que é Proibido&pi;",
+        "Em versões legadas de pipelines no Earth Engine, desenvolvedores frequentemente aplicavam a função de desmascaramento numérico logo após a filtragem de nuvens para evitar valores nulos. Isso é um <b>crime científico</b>: pixels sob nuvens eram substituídos pelo valor 0.0 de NDVI ou BSI, simulando superfícies artificiais que o classificador interpretava como realidade de campo.<br/><br/>"
         "<b>A Regra 7 do SAREL determina:</b> Máscara de nuvem existe para remover dados inválidos. A lacuna deve permanecer nula (descarte pelo algoritmo amostral), sem reposição de constantes artificiais.",
         tipo="perigo",
         styles=styles

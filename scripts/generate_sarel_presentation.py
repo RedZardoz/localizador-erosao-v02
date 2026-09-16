@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 =============================================================================
 GERADOR DA APRESENTAÇÃO EXECUTIVA E ACADÊMICA SAREL v2.0 (PPTX)
@@ -336,7 +336,7 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
 
     rules_grid = [
         ("Regra 1 & 5: Dado Real ou Ausência Declarada", [
-            ("Proibição de Constantes:", "Terminantemente vedado preencher lacunas com médias ou constantes (|| 16, unmask(0.5))."),
+            ("Proibição de Constantes:", "Terminantemente vedado preencher lacunas com médias ou constantes arbitrárias (ex.: unmask numérico ou defaults em cascata)."),
             ("Tratamento de Nulos:", "O XGBoost lida com ausência de dados nativamente. Ausente é tecnicamente superior a dado fabricado."),
             ("Zero é Valor:", "Declividade 0% ou Ê = 0 são valores físicos legítimos, nunca tratados como ausência."),
         ], C_ROSE),
