@@ -47,6 +47,30 @@ describe("Rotulagem, Concordância e Matriz de Treino (Fase 6 — SAREL)", () =>
       expect(res.kappa).toBe(1.0);
       expect(res.grau).toBe("quase-perfeita");
       expect(res.operacional).toBe(true);
+      expect(res.intervaloConfianca95).toBeDefined();
+      expect(res.intervaloConfianca95?.[0]).toBe(1.0);
+      expect(res.intervaloConfianca95?.[1]).toBe(1.0);
+    });
+
+    it("calcula intervalo de confiança de 95% e erro padrão em dados com discordância parcial", () => {
+      const pares = [
+        { observador1: "ausente", observador2: "ausente" },
+        { observador1: "ausente", observador2: "ausente" },
+        { observador1: "moderada", observador2: "moderada" },
+        { observador1: "moderada", observador2: "severa" },
+        { observador1: "severa", observador2: "severa" },
+        { observador1: "severa", observador2: "severa" },
+        { observador1: "ausente", observador2: "moderada" },
+        { observador1: "moderada", observador2: "moderada" },
+      ];
+      const res = calcularKappaCohen(pares, CLASSES_4);
+      expect(res.kappa).toBeGreaterThan(0.5);
+      expect(res.intervaloConfianca95).toBeDefined();
+      const [inf, sup] = res.intervaloConfianca95!;
+      expect(inf).toBeLessThanOrEqual(res.kappa!);
+      expect(sup).toBeGreaterThanOrEqual(res.kappa!);
+      expect(inf).toBeGreaterThanOrEqual(-1.0);
+      expect(sup).toBeLessThanOrEqual(1.0);
     });
 
     it("emite alerta bloqueante quando Kappa é inferior a 0.60", () => {

@@ -61,7 +61,6 @@ export interface LinhaMatrizTreino {
   // Preditores Físicos da RUSLE (Física Informada / Data Fusion)
   fatorK: number | null;
   fatorR: number | null;
-  perdaSoloRUSLE: number | null;
 
   // Alvo Supervisionado
   classeAlvoBinaria: 0 | 1;
@@ -182,7 +181,6 @@ export function montarMatrizTreino(
       // Preditores Físicos da RUSLE (Física Informada / Data Fusion)
       fatorK: valorOuNulo(ponto.linhaDeBase?.fatorK),
       fatorR: valorOuNulo(ponto.linhaDeBase?.fatorR),
-      perdaSoloRUSLE: valorOuNulo(ponto.linhaDeBase?.perdaSolo),
 
       // Rótulo e Alvo
       classeAlvoBinaria,

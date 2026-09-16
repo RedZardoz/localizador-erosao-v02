@@ -43,6 +43,20 @@ export const CAMPOS_PROIBIDOS_MATRIZ_TREINO = [
   "codigoCar",
   "titularMascarado",
   "documentoMascarado",
+  "perdaSoloRUSLE",
+  "RUSLE_Perda_Solo",
+] as const;
+
+/**
+ * Colunas expressamente tabeladas da RUSLE que possuem valor de literatura legítimo
+ * uniforme quando as práticas conservacionistas são desconhecidas (Renard et al., 1997).
+ * Excluídas da verificação de constante disfarçada do Invariante 7.
+ */
+export const COLUNAS_EXCECAO_CONSTANTE_TABELADA = [
+  "RUSLE_Fator_P",
+  "rusle_fator_p",
+  "Fator_P",
+  "RUSLE_Fator_P_Origem",
 ] as const;
 
 /**
@@ -154,8 +168,12 @@ export function validarInvariantesArtefato(artefato: ArtefatoProjetado): Resulta
   // quando há >= 21 valores não vazios.
   // Percorre TODAS as colunas numéricas do artefato projetado.
   // Valores vazios NÃO desativam o detector.
+  // Exceção: colunas tabeladas legítimas da RUSLE (ex.: RUSLE_Fator_P = 1.0)
   // ==========================================================================
   for (const col of cabecalho) {
+    if ((COLUNAS_EXCECAO_CONSTANTE_TABELADA as readonly string[]).includes(col)) {
+      continue;
+    }
     const valoresNaoVazios: number[] = [];
     for (const linha of linhas) {
       const v = linha[col];
