@@ -50,9 +50,14 @@ export const CRITERIOS_ESPECTRAIS = {
 /**
  * Classifica um ponto amostral estritamente segundo os limiares espectrais da pesquisa.
  *
- * O QUÊ: Mapeia o par (BSI, NDVI) medido pelo Sentinel-2 para a classe supervisionada.
- * POR QUÊ: Garante que apenas amostras de alta certeza biofísica alimentem a matriz
- * de treinamento do XGBoost, resguardando a integridade estatística da dissertação.
+ * O QUÊ: Mapeia o par (BSI, NDVI) medido pelo Sentinel-2 para um indicativo de triagem visual (UI).
+ *
+ * PRINCÍPIO DE DEMARCAÇÃO & REGRA 4 (BLINDAGEM CONTRA CIRCULARIDADE):
+ * Esta classificação espectral NÃO define o rótulo da matriz de treinamento e NUNCA
+ * substitui a verdade terrestre. A matriz de treinamento supervisionado aceita
+ * EXCLUSIVAMENTE rótulos consolidados de observadores humanos (interpretação visual
+ * cega na Fase A, campo na Fase B ou drone na Fase D). O papel deste módulo é
+ * exclusivamente de auditoria física e triagem preliminar de candidatos no mapa.
  */
 export function classificarPontoEspectral(
   bsi: number | null | undefined,

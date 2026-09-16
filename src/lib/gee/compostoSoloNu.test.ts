@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vitest";
 import { extrairMetricasSoloExposto } from "./compostoSoloNu";
 import { ObservacaoCena } from "./serieTemporal";
 
@@ -152,6 +152,44 @@ describe("Composto de Solo Exposto e Frequência Ê (Decisão D10)", () => {
     expect(metricas.frequenciaSoloNu.estado).toBe("indisponivel");
     if (metricas.frequenciaSoloNu.estado === "indisponivel") {
       expect(metricas.frequenciaSoloNu.causa).toBe("insuficiente");
+    }
+  });
+
+  it("deve discriminar palhada residual seca de solo mineral quando limiarMinBsi for fornecido", () => {
+    // Cena com palhada residual em SPD: NDVI baixo (< 0.25), mas BSI negativo ou baixo (< 0.05)
+    // BSI = ((B11 + B4) - (B8 + B2)) / ((B11 + B4) + (B8 + B2))
+    const cenasMistas: ObservacaoCena[] = [
+      // Cena 1: Palhada residual seca (NDVI = 0.20 < 0.25, porém BSI = (0.20+0.20 - 0.30+0.15) / ... = -0.058 < 0.05)
+      {
+        data: "2024-05-10",
+        tAnos: 2024.36,
+        productId: "PALHADA_1",
+        nuvemSombra: false,
+        b2: 0.15, b3: 0.16, b4: 0.20, b5: 0.22, b6: 0.24, b7: 0.25,
+        b8: 0.30, // NDVI = (0.30 - 0.20) / 0.50 = 0.20
+        b8a: 0.30, b11: 0.20, b12: 0.18,
+      },
+      // Cena 2: Solo mineral exposto ativo (NDVI = 0.15 < 0.25, BSI = (0.35+0.20 - 0.25+0.10) / 0.90 = +0.22 >= 0.05)
+      {
+        data: "2024-06-10",
+        tAnos: 2024.44,
+        productId: "SOLO_MINERAL_1",
+        nuvemSombra: false,
+        b2: 0.10, b3: 0.12, b4: 0.20, b5: 0.22, b6: 0.24, b7: 0.25,
+        b8: 0.25, // NDVI = (0.25 - 0.20) / 0.45 = 0.11
+        b8a: 0.25, b11: 0.35, b12: 0.30,
+      },
+    ];
+
+    // Sem filtro BSI: ambas as cenas viram solo nu (Ê = 2/2 = 1.0)
+    const semBsi = extrairMetricasSoloExposto(cenasMistas, 0.25);
+    expect(semBsi.nObservacoesSoloNu).toBe(2);
+
+    // Com filtro BSI (limiarMinBsi = 0.05): palhada é descartada, restando apenas solo mineral (Ê = 1/2 = 0.5)
+    const comBsi = extrairMetricasSoloExposto(cenasMistas, 0.25, { limiarMinBsi: 0.05 });
+    expect(comBsi.nObservacoesSoloNu).toBe(1);
+    if (comBsi.frequenciaSoloNu.estado === "modelado") {
+      expect(comBsi.frequenciaSoloNu.valor).toBe(0.5);
     }
   });
 });

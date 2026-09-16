@@ -121,6 +121,9 @@ describe("Validação Matricial Padrão-Ouro (VANT/Drone vs Satélite)", () => {
       expect(resultado.iouErosao).toBe(0.7143);
       // F1-Score: 2 * 0.8333 * 0.8333 / (0.8333 + 0.8333) = 0.8333
       expect(resultado.f1Score).toBe(0.8333);
+      expect(resultado.intervaloConfianca95).toBeDefined();
+      expect(resultado.intervaloConfianca95![0]).toBeLessThanOrEqual(resultado.kappaCohen);
+      expect(resultado.intervaloConfianca95![1]).toBeGreaterThanOrEqual(resultado.kappaCohen);
 
       // Razão de sub-pixel: (10m / 0.075m)^2 = (133.33)^2 ≈ 17.778
       expect(resultado.razaoEscalaSubpixel).toBe(17778);

@@ -71,6 +71,7 @@ export interface MetricasValidacaoMatricial {
   matrizConfusao: MatrizConfusaoPixel;
   acuraciaGlobal: number; // OA
   kappaCohen: number; // κ
+  intervaloConfianca95?: [number, number]; // IC 95% do Kappa (Cohen, 1960; Fleiss, 1969)
   precisao: number;
   sensibilidade: number; // Recall
   especificidade: number;
@@ -185,6 +186,17 @@ export function executarValidacaoMatricial(
     tp + fp + fn > 0 ? Number((tp / (tp + fp + fn)).toFixed(4)) : 0;
 
   const kappa = calcularKappaCohen(tp, fp, fn, tn);
+  const p0 = (tp + tn) / total;
+  const pSim = ((tp + fp) * (tp + fn)) / (total * total);
+  const pNao = ((tn + fn) * (tn + fp)) / (total * total);
+  const pe = pSim + pNao;
+  const varBruta = pe < 1 ? (p0 * (1 - p0)) / (total * Math.pow(1 - pe, 2)) : 0;
+  const seKappa = varBruta > 0 ? Math.sqrt(varBruta) : 0;
+  let ciInf = Number((kappa - 1.96 * seKappa).toFixed(4));
+  if (ciInf < -1) ciInf = -1;
+  let ciSup = Number((kappa + 1.96 * seKappa).toFixed(4));
+  if (ciSup > 1) ciSup = 1;
+  const intervaloConfianca95: [number, number] = [ciInf, ciSup];
 
   // Quebra por compartimento topo-sequencial
   const porCompartimento: MetricasValidacaoMatricial["porCompartimento"] = {};
@@ -217,6 +229,7 @@ export function executarValidacaoMatricial(
     matrizConfusao: matriz,
     acuraciaGlobal,
     kappaCohen: kappa,
+    intervaloConfianca95,
     precisao,
     sensibilidade,
     especificidade,
