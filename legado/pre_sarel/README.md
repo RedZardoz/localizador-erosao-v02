@@ -1,4 +1,4 @@
-﻿# Artefatos Pré-SAREL (Histórico e Preservação)
+# Artefatos Pré-SAREL (Histórico e Preservação)
 
 Este diretório armazena artefatos, scripts e planilhas de rascunho utilizados durante as etapas exploratórias e protótipos anteriores à reconstrução metodológica do **SAREL v2.0**.
 
@@ -21,3 +21,9 @@ Eles foram mantidos exclusivamente para preservação histórica da pesquisa e i
 
 4. **`generate_plano_hibrido_pdf.py` & `generate_plano_hibrido_pptx.py`:**
    - Scripts preliminares de plano de amostragem híbrido.
+
+5. **`generate_presentation.py`:**
+   - Script antecessor que gerava a apresentação com retórica não auditada. Substituído por `scripts/gerar_apresentacao_pdf.py` e `scripts/generate_sarel_presentation.py`.
+
+6. **`create_shortcut.ps1`:**
+   - Script PowerShell legado de criação de atalho na Área de Trabalho com o nome do protótipo anterior ("Localizador de Erosao"). Substituído por `scripts/install_shortcut.ps1`.
