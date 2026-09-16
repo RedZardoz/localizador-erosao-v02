@@ -6,6 +6,8 @@ Programa de Pós-Graduação em Tecnologias Computacionais para o Agronegócio
 PPGTCA 2026 - Pesquisa de Mestrado: Validação de Predição de Erosão Laminar
 Autor: Luis Alfredo
 =============================================================================
+Alinhado rigorosamente à realidade funcional do sistema (amostragem, extração
+e curadoria cega; treinamento de IA externo) e livre de exageros retóricos.
 """
 
 import os, sys
@@ -62,7 +64,7 @@ def add_header(slide, title_text, category_text="MESTRADO PPGTCA 2026 • TECNOL
     tf_title.word_wrap = True
     p_title = tf_title.paragraphs[0]
     p_title.text = title_text
-    p_title.font.size = Pt(22)
+    p_title.font.size = Pt(21)
     p_title.font.bold = True
     p_title.font.color.rgb = C_WHITE
 
@@ -139,7 +141,7 @@ def add_metric_badge(slide, left, top, width, height, label, value, unit="", col
     p2 = tf.add_paragraph()
     p2.alignment = PP_ALIGN.CENTER
     p2.text = f"{value} {unit}".strip()
-    p2.font.size = Pt(17)
+    p2.font.size = Pt(16)
     p2.font.bold = True
     p2.font.color.rgb = color
 
@@ -172,9 +174,9 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
     
     bullets_cr = [
         ("Desenho Amostral 18 Estratos", "Estratificação Ŝ x Ê x K̂ com Thinning Geodésico ≥ 1,0 km."),
-        ("Lei Fundamental & Rigor Anti-Mock", "Dado verdadeiro ou ausência declarada. Zero dado fabricado."),
-        ("Fusão Cadastral & LGPD", "559.899 imóveis SICAR-PR + SIGEF + SNCR com máscara byte a byte."),
-        ("Validação Espacial LOCO", "XGBoost Leave-One-Catchment-Out particionado pelas bacias do PR."),
+        ("Rigor Metodológico Anti-Mock", "Dado verdadeiro ou ausência declarada. Zero dado fabricado."),
+        ("Fusão Cadastral & LGPD", "559.899 imóveis SICAR-PR + SIGEF + SNCR com anonimização."),
+        ("Validação Espacial Externa LOCO", "Modelagem XGBoost externa particionada por bacias hidrográficas."),
     ]
     for title, desc in bullets_cr:
         p1 = tf_cr.add_paragraph()
@@ -200,20 +202,20 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
 
     p1 = tf_main.add_paragraph()
     p1.text = "SAREL: Sistema de Amostragem e Rotulagem para Erosão Laminar"
-    p1.font.size = Pt(27)
+    p1.font.size = Pt(26)
     p1.font.bold = True
     p1.font.color.rgb = C_WHITE
     p1.space_before = Pt(12)
 
     p2 = tf_main.add_paragraph()
     p2.text = "Instrumento Computacional de Amostragem Multivariada, Sensoriamento Remoto e Gestão de Rotulagem Cega para Predição por Aprendizado de Máquina no Paraná"
-    p2.font.size = Pt(13)
+    p2.font.size = Pt(12.5)
     p2.font.color.rgb = C_TEXT_LIGHT
     p2.space_before = Pt(12)
 
     p3 = tf_main.add_paragraph()
     p3.text = "Mestrando: Luis Alfredo | Pesquisa de Mestrado PPGTCA 2026\nLinha de Pesquisa: Tecnologias Geoespaciais e Modelagem Computacional no Agronegócio"
-    p3.font.size = Pt(11)
+    p3.font.size = Pt(10.5)
     p3.font.bold = True
     p3.font.color.rgb = C_EMERALD_LIGHT
     p3.space_before = Pt(22)
@@ -227,19 +229,19 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
 
     cols_s2 = [
         ("A Erosão Silenciosa", [
-            ("Processo Invisível:", "A erosão laminar remove gradualmente as camadas superficiais férteis do solo agrícola sem abrir sulcos ou voçorocas imediatas."),
-            ("Impacto Agronômico:", "Toneladas de matéria orgânica, fertilizantes e argila são carreadas aos rios muito antes do dano ser percebido visualmente."),
-            ("Dimensão Territorial:", "O Estado do Paraná possui 199.315 km² de área, exigindo ferramentas capazes de monitorar bacias inteiras em macroescala."),
+            ("Processo Difuso:", "A erosão laminar remove gradualmente as camadas superficiais férteis do solo agrícola sem abrir sulcos ou voçorocas imediatas."),
+            ("Impacto Agronômico:", "Perda contínua de matéria orgânica, nutrientes minerais e redução da capacidade de infiltração hídrica do solo."),
+            ("Dimensão Territorial:", "O Estado do Paraná possui 199.315 km² de área, exigindo ferramentas capazes de monitorar bacias hidrográficas inteiras."),
         ], C_AMBER),
         ("O Gargalo Tradicional", [
-            ("Vistorias Dispersas:", "Inspeções de campo convencionais cobrem áreas restritas, são lentas e enviesadas por proximidade a rodovias e estradas."),
-            ("Falta de Rastreabilidade:", "Planilhas manuais não registram a proveniência dos dados nem a data exata da imagem satelital que embasou o laudo."),
-            ("Inviabilidade de Escala:", "Percorrer centenas de municípios paranaenses demanda tempo e recursos financeiros proibitivos para a pesquisa."),
+            ("Vistorias Dispersas:", "Inspeções convencionais de campo cobrem áreas restritas, são lentas e sujeitas a viés de proximidade rodoviária."),
+            ("Falta de Rastreabilidade:", "Planilhas sem rastreamento de proveniência, produto orbital ou data exata da imagem que embasou a rotulagem."),
+            ("Inviabilidade de Escala:", "Percorrer centenas de municípios paranaenses demanda tempo e recursos financeiros incompatíveis com a pós-graduação."),
         ], C_CYAN),
         ("A Proposta SAREL", [
-            ("Estratificação Robusta:", "Algoritmo computacional que varre o território paranaense elegendo amostras estatisticamente balanceadas."),
-            ("Fusão Multivariada:", "Integração do Google Earth Engine (Sentinel-2), Copernicus DEM, cartas oficiais da Embrapa e malhas do CAR."),
-            ("Rigor Científico Total:", "Separação estrita entre observação e modelagem, garantindo blindagem metodológica perante a banca do PPGTCA."),
+            ("Estratificação Robusta:", "Algoritmo computacional que varre o território estadual elegendo amostras balanceadas em relevo, solo e histórico."),
+            ("Fusão Multivariada:", "Integração do Google Earth Engine (Sentinel-2), Copernicus DEM, cartas oficiais da Embrapa e malha do CAR."),
+            ("Transparência Metodológica:", "Separação rigorosa entre amostragem e predição, garantindo reprodutibilidade acadêmica perante a banca."),
         ], C_EMERALD_LIGHT),
     ]
 
@@ -252,27 +254,27 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
     # =========================================================================
     s3 = prs.slides.add_slide(blank_layout)
     set_slide_background(s3)
-    add_header(s3, "Viabilidade Econômica: O Dilema de Custos de Amostragem", "GESTÃO DE CUSTOS & LOGÍSTICA DE PESQUISA")
+    add_header(s3, "Viabilidade Metodológica: O Dilema de Custos de Amostragem", "GESTÃO DE CUSTOS & LOGÍSTICA DE PESQUISA")
 
-    add_metric_badge(s3, Inches(0.8), Inches(1.45), Inches(3.6), Inches(1.15), "100% Campo (Inviável)", "R$ 75k a 120k", "estimados", C_ROSE)
-    add_metric_badge(s3, Inches(4.8), Inches(1.45), Inches(3.6), Inches(1.15), "100% Sintético (Viciado)", "R$ 0,00", "(Rejeição Acadêmica)", C_AMBER)
-    add_metric_badge(s3, Inches(8.8), Inches(1.45), Inches(3.7), Inches(1.15), "Estratégia Híbrida SAREL", "Economia ~80%", "(Custo Exequível)", C_EMERALD_LIGHT)
+    add_metric_badge(s3, Inches(0.8), Inches(1.45), Inches(3.6), Inches(1.15), "100% Campo (Orçamento Elevado)", "R$ 75k a 120k", "estimados", C_ROSE)
+    add_metric_badge(s3, Inches(4.8), Inches(1.45), Inches(3.6), Inches(1.15), "100% Sintético (Vício Científico)", "R$ 0,00", "(Rejeição Acadêmica)", C_AMBER)
+    add_metric_badge(s3, Inches(8.8), Inches(1.45), Inches(3.7), Inches(1.15), "Estratégia Híbrida SAREL", "Estimativa ~80%", "redução operacional", C_EMERALD_LIGHT)
 
     cards_s3 = [
         ("Cenário A: 100% Campo", [
-            ("Demanda Logística:", "Visita presencial a 250-300 pontos dispersos por todo o Paraná."),
-            ("Custos Operacionais:", "Combustível, veículos 4x4, diárias de equipe, aluguel de GNSS RTK e 4 a 6 meses de deslocamento contínuo."),
-            ("Risco Acadêmico:", "Amostra insuficiente (N < 40 pontos) devido ao orçamento, gerando subajuste (underfitting) no classificador XGBoost."),
+            ("Demanda Logística:", "Visita presencial a centenas de pontos dispersos por todo o Estado do Paraná."),
+            ("Custos Operacionais:", "Combustível, veículos com tração integral, diárias de equipe, receptores GNSS de precisão e meses de viagem."),
+            ("Risco Metodológico:", "Amostra insuficiente (N < 40 pontos) devido ao orçamento, gerando alta variância e sobreajuste (overfitting) em árvores de decisão."),
         ], C_ROSE),
         ("Cenário B: 100% Sintético", [
-            ("Atalho Computacional:", "Gerar dados de erosão e solo a partir de fórmulas matemáticas (RUSLE) ou simulações aleatórias sem checagem empírica."),
-            ("Vício Científico:", "O modelo de IA apenas memoriza as equações que o próprio pesquisador inseriu (vazamento de alvo / overfitting trivial)."),
-            ("Risco Acadêmico:", "Desqualificação imediata perante a banca examinadora por ausência de dados empíricos observacionais."),
+            ("Atalho Metodológico:", "Gerar dados de erosão a partir de fórmulas matemáticas (RUSLE) ou simulações estatísticas sem ancoragem empírica."),
+            ("Vício de Circularidade:", "O modelo de aprendizado de máquina apenas reproduz as equações fornecidas pelo pesquisador (vazamento de alvo / circularidade)."),
+            ("Risco Acadêmico:", "Desqualificação perante a banca examinadora por ausência de dados empíricos observacionais."),
         ], C_AMBER),
         ("Cenário C: Híbrido SAREL", [
-            ("Desenho Otimizado:", "Triagem no Earth Engine + Fotointerpretação em Alta Resolução (PlanetScope/VHR) para 80% do dataset."),
-            ("Calibração Presencial:", "Subamostra de controle (20%) em campo com KoboToolbox, GNSS RTK e ortomosaicos de drone."),
-            ("Rigor Estatístico:", "Matriz de Confusão e Índice Kappa de Cohen (κ ≥ 0,60) medindo e compensando formalmente a taxa de erro humana."),
+            ("Triagem Otimizada:", "Extração no Earth Engine + Fotointerpretação em Alta Resolução (PlanetScope/VHR) para a maior parte do conjunto."),
+            ("Calibração Presencial:", "Subamostra de controle (20%) em campo com formulário KoboToolbox, GNSS submétrico e ortomosaicos de drone."),
+            ("Rigor Estatístico:", "Matriz de Confusão e Índice Kappa de Cohen (κ ≥ 0,61) com IC 95% medindo a concordância inter-observadores."),
         ], C_EMERALD_LIGHT),
     ]
 
@@ -290,18 +292,18 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
     roles = [
         ("1. Propõe Onde Observar", "Desenho Amostral Estratificado & Disperso", [
             "• Executa estratificação multivariada em 18 estratos biofísicos cruzando relevo, solo e exposição.",
-            "• Garante formalmente a inclusão de candidatos à classe de controle (Sistema Plantio Direto e pastagem estável).",
-            "• Aplica Thinning Geodésico (raio ≥ 1,0 km) para impedir agrupamentos espaciais e pseudorrepetição amostral.",
+            "• Garante formalmente a inclusão de candidatos à classe de controle (Plantio Direto e pastagem estável).",
+            "• Aplica Thinning Geodésico (raio ≥ 1,0 km) para mitigar agrupamentos e pseudorrepetição espacial.",
         ], C_CYAN),
-        ("2. Extrai Features Verificáveis", "Proveniência por Variável e Sem Atalhos", [
-            "• Coleta séries temporais harmonizadas Sentinel-2 L2A (10 anos) e extrai métricas de exposição de solo nu (Ê).",
+        ("2. Extrai Preditores Biofísicos", "Proveniência por Variável e Sem Atalhos", [
+            "• Coleta séries temporais harmonizadas Sentinel-2 L2A e extrai métricas de exposição de solo descoberto (Ê).",
             "• Calcula declividade em projeção métrica UTM 22S (SIRGAS 2000) a partir do DEM Copernicus GLO-30.",
-            "• Consulta pedologia real via WMS OGC no GeoServer da Embrapa Solos, sem classes inventadas.",
+            "• Consulta pedologia real via WFS/WMS OGC no GeoServer da Embrapa Solos, sem classes arbitrárias.",
         ], C_EMERALD_LIGHT),
-        ("3. Gerencia a Rotulagem Cega", "Campanhas de Validação e Matriz de Treino", [
-            "• Exporta cadernos cegos de fotointerpretação, campo (KoboToolbox) e voo de drone, blindando o intérprete.",
-            "• Avalia a concordância inter-observador via Kappa de Cohen com alerta bloqueante para κ < 0,60.",
-            "• Monta a matriz de treino do XGBoost livre de coordenadas e de variáveis calculadas pelo próprio sistema.",
+        ("3. Gerencia a Rotulagem Cega", "Campanhas de Curadoria e Matriz de Treino", [
+            "• Exporta cadernos cegos de fotointerpretação, campo (KoboToolbox) e voo de drone, isolando o intérprete.",
+            "• Avalia a concordância inter-observador via Kappa de Cohen com cálculo de IC 95% e alerta bloqueante.",
+            "• Monta a matriz de treino do modelo preditivo livre de coordenadas e de variáveis de resultado calculadas.",
         ], C_INDIGO),
     ]
 
@@ -323,7 +325,7 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
     p_b1.font.bold = True
     p_b1.font.color.rgb = C_EMERALD_DARK
     p_b2 = tf_b.add_paragraph()
-    p_b2.text = "O SAREL NÃO classifica erosão e NÃO treina a IA dentro de si. Ele prepara o chão experimental honesto e auditável. O rótulo vem exclusivamente de observadores humanos. O treinamento do XGBoost ocorre externamente."
+    p_b2.text = "O SAREL NÃO classifica erosão de forma autônoma e NÃO treina modelos preditivos em seu interior. Ele prepara a base amostral auditável e gerencia a rotulagem cega. O rótulo é atribuído exclusivamente por especialistas humanos. O treinamento do XGBoost ocorre externamente."
     p_b2.font.size = Pt(9.5)
     p_b2.font.color.rgb = C_TEXT_DARK
 
@@ -332,28 +334,28 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
     # =========================================================================
     s5 = prs.slides.add_slide(blank_layout)
     set_slide_background(s5)
-    add_header(s5, "A Lei Fundamental do SAREL: Blindagem Pericial Contra Atalhos", "GOVERNANÇA METODOLÓGICA & INTEGRIDADE")
+    add_header(s5, "A Lei Fundamental do SAREL: Governança Contra Atalhos Metodológicos", "GOVERNANÇA METODOLÓGICA & INTEGRIDADE DE DADOS")
 
     rules_grid = [
         ("Regra 1 & 5: Dado Real ou Ausência Declarada", [
-            ("Proibição de Constantes:", "Terminantemente vedado preencher lacunas com médias ou constantes arbitrárias (ex.: unmask numérico ou defaults em cascata)."),
-            ("Tratamento de Nulos:", "O XGBoost lida com ausência de dados nativamente. Ausente é tecnicamente superior a dado fabricado."),
-            ("Zero é Valor:", "Declividade 0% ou Ê = 0 são valores físicos legítimos, nunca tratados como ausência."),
+            ("Vedação a Constantes:", "Proibido preencher lacunas com médias ou constantes arbitrárias em cascata sem base empírica."),
+            ("Tratamento de Nulos:", "Algoritmos modernos tratam valores faltantes nativamente. Ausente é cientificamente preferível a dado fabricado."),
+            ("Zero é Valor Físico:", "Declividade 0% ou frequência Ê = 0 são grandezas físicas reais, nunca tratadas como ausência de dados."),
         ], C_ROSE),
-        ("Regra 3: Proveniência Viaja Junto com o Valor", [
-            ("Tríade de Metadados:", "Todo valor numérico é acompanhado de estado, fonte primária oficial e data de aquisição."),
-            ("Quatro Selos Formais:", "● medido (sensor primário) • ◊ modelado (equação) • □ tabelado (literatura) • ○ indisponível."),
-            ("Rastreabilidade Pericial:", "Possibilita reconstruir a cadeia de evidências de cada linha perante a banca."),
+        ("Regra 3: Proveniência Vinculada a Cada Valor", [
+            ("Tríade de Metadados:", "Cada atributo carrega seu status de proveniência, fonte oficial de aquisição e data."),
+            ("Quatro Selos Formais:", "● medido (sensor primário) • ◊ modelado (equação validada) • □ tabelado (literatura) • ○ indisponível."),
+            ("Rastreabilidade Pericial:", "Permite reconstruir a cadeia de custódia e evidências de cada linha exportada perante a banca."),
         ], C_EMERALD_LIGHT),
-        ("Regra 4: Nada Calculado Vira Rótulo", [
-            ("Isolamento de Critérios:", "Scores internos, severidade estimada ou perda RUSLE nunca viram rótulo de treino."),
-            ("Prevenção de Vazamento:", "Evita que a IA aprenda limiares artificiais das fórmulas em vez de padrões reais da paisagem."),
-            ("Rótulo Exclusivo Humano:", "A classe alvo deriva unicamente de inspeção de campo, fotointerpretação ou drone."),
+        ("Regra 4: Isolamento Estrito Contra Circularidade", [
+            ("Isolamento de Critérios:", "Scores intermediários, severidade estimada ou perda de solo RUSLE não integram a matriz de treino."),
+            ("Prevenção de Vazamento:", "Impede que o classificador aprenda limiares matemáticos artificiais em vez de padrões espectro-temporais."),
+            ("Rótulo Exclusivo Humano:", "A classe alvo deriva unicamente de inspeção presencial de campo, ortomosaicos de drone ou fotointerpretação."),
         ], C_CYAN),
-        ("Regra 9: Governança de Decisões (DECISOES.md)", [
-            ("Dono do Parâmetro:", "Nenhum limiar, peso ou corte nasce como literal no código sem autor, data e referência bibliográfica."),
-            ("Decisão Pendente:", "Enquanto o pesquisador não decidir (ex.: D13, D14, D15), o cálculo gera 'indisponivel' com a causa."),
-            ("Imunidade a Arbitrariedades:", "O agente de IA não toma decisões de dissertação no lugar do mestrando."),
+        ("Regra 9: Registro Formal de Decisões (DECISOES.md)", [
+            ("Atribuição de Parâmetros:", "Nenhum limiar ou equação é inserido no código sem autor responsável, data e referência bibliográfica canônica."),
+            ("Decisão Pendente:", "Enquanto o pesquisador não deliberar formalmente (ex.: D13, D14, D15), o cálculo gera 'indisponivel' com justificativa."),
+            ("Autonomia do Pesquisador:", "O sistema não toma decisões teóricas de dissertação no lugar do mestrando."),
         ], C_AMBER),
     ]
 
@@ -369,23 +371,23 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
     # =========================================================================
     s6 = prs.slides.add_slide(blank_layout)
     set_slide_background(s6)
-    add_header(s6, "Desenho Amostral: 18 Estratos Multivariados & Thinning Geodésico", "DESENHO EXPERIMENTAL GEOESPACIAL")
+    add_header(s6, "Desenho Amostral: 18 Estratos Multivariados & Rarefação Espacial", "DESENHO EXPERIMENTAL GEOESPACIAL")
 
     sample_steps = [
         ("1. Estratificação Multivariada", "18 Estratos (Ŝ x Ê x K̂)", [
-            ("Dimensão Ŝ (Relevo):", "Tercis de declividade (Suave, Moderada, Forte) derivados do DEM Copernicus."),
+            ("Dimensão Ŝ (Relevo):", "Tercis de declividade (Suave, Moderada, Forte) derivados do DEM Copernicus GLO-30."),
             ("Dimensão Ê (Solo Nu):", "Tercis de frequência multitemporal de solo descoberto da série Sentinel-2."),
-            ("Dimensão K̂ (Pedologia):", "2 níveis de erodibilidade derivados do levantamento pedológico da Embrapa."),
+            ("Dimensão K̂ (Pedologia):", "2 níveis de erodibilidade derivados do levantamento pedológico oficial da Embrapa Solos."),
         ], C_CYAN),
-        ("2. Thinning Geodésico", "Raio Mínimo d ≥ 1,0 km (P02)", [
-            ("Primeira Lei de Tobler:", "Pixels contíguos possuem solos e relevo similares, causando inflação artificial de acurácia."),
-            ("Algoritmo Fisher-Yates:", "Espaçamento euclidiano/haversine determinístico com semente registrada (P07)."),
+        ("2. Rarefação Espacial (Thinning)", "Raio Mínimo d ≥ 1,0 km (P02)", [
+            ("Primeira Lei de Tobler:", "Pixels contíguos possuem solos e relevo similares, causando inflação artificial por dependência espacial."),
+            ("Algoritmo Determinístico:", "Rarefação espacial gulosa com ordenação determinística (Fisher-Yates) e semente registrada (P07)."),
             ("Dispersão Homogênea:", "Força a representatividade regional em toda a extensão da bacia hidrográfica."),
         ], C_EMERALD_LIGHT),
         ("3. Garantia de Controles", "Balanceamento de Classes (0 e 1)", [
-            ("Classe 1 (Erosão):", "Candidatos estratificados com histórico de exposição e gradiente de rampa."),
-            ("Classe 0 (Controle):", "Amostragem em áreas sob Sistema Plantio Direto (SPD) e pastagens estáveis."),
-            ("Prevenção do 'Mock':", "Garante que o modelo aprenda o contraste biofísico real entre equilíbrio e degradação."),
+            ("Classe 1 (Erosão Potencial):", "Candidatos estratificados com histórico de exposição frequente e gradiente de rampa."),
+            ("Classe 0 (Controle Negativo):", "Amostragem em áreas sob Sistema Plantio Direto (SPD) consolidado e pastagens estáveis."),
+            ("Prevenção de Vícios:", "Garante que o classificador aprenda o contraste biofísico real entre equilíbrio e degradação."),
         ], C_AMBER),
     ]
 
@@ -395,7 +397,7 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
         add_card(s6, bx, Inches(1.55), Inches(3.7), Inches(5.15), title, content, accent_color=color, title_size=13.5, body_size=10.2)
 
     # =========================================================================
-    # SLIDE 7: SENSORIAMENTO REMOTO & HARMONIZAÇÃO TEMPORAL
+    # SLIDE 7: SENSORIAMENTO REMOTO & DECOMPOSIÇÃO HARMÔNICA
     # =========================================================================
     s7 = prs.slides.add_slide(blank_layout)
     set_slide_background(s7)
@@ -404,8 +406,8 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
     remote_cards = [
         ("Sentinel-2 MSI L2A (BOA)", [
             ("Bandas Físicas:", "B2 (Azul), B4 (Vermelho), B8 (NIR) e B11/B12 (SWIR) com reflectância de fundo de atmosfera."),
-            ("Índices Espectrais:", "NDVI (vigor vegetal) e BSI (Bare Soil Index) computados pixel a pixel na série temporal."),
-            ("Máscara de Nuvens SCL:", "Filtro Scene Classification Layer com descarte de pixels nublados sem reposição de constantes."),
+            ("Índices Espectrais:", "NDVI (cobertura fotossintética) e BSI (Bare Soil Index) computados pixel a pixel na série."),
+            ("Discriminação de Palhada:", "O BSI permite discriminar solo exposto de palhada seca em áreas de plantio direto."),
         ], C_CYAN),
         ("Copernicus DEM GLO-30", [
             ("Projeção Métrica Oficial:", "Cálculo de declividade e elevação em SIRGAS 2000 / UTM 22S (EPSG:31982)."),
@@ -414,13 +416,13 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
         ], C_EMERALD_LIGHT),
         ("Decomposição Harmônica OLS", [
             ("Ajuste Multivariado:", "Regressão harmônica de 1 e 2 ciclos anuais (Zhu & Woodcock 2014) para cada banda espectral."),
-            ("Parâmetros Extraídos:", "Tendência temporal (b1), amplitudes anual/semianual e fases espectrais de cada comprimento de onda."),
-            ("Métricas de Qualidade:", "Cada coeficiente armazena número de observações válidas, R² do ajuste e erro-padrão."),
+            ("Parâmetros Extraídos:", "Tendência temporal (b1), amplitudes anual/semianual e fases espectrais sazonais."),
+            ("Métricas de Ajuste:", "Cada coeficiente armazena número de observações válidas, R² do ajuste e erro-padrão."),
         ], C_INDIGO),
         ("Dinâmica do Solo Exposto (Ê)", [
-            ("Frequência de Solo Nu (Ê):", "Fração temporal em que o solo permaneceu descoberto nos anos de monitoramento."),
+            ("Frequência de Solo Nu (Ê):", "Fração temporal em que o solo permaneceu descoberto ao longo da série histórica."),
             ("Sequência Contínua:", "Maior número consecutivo de meses sob exposição crítica aos agentes erosivos."),
-            ("Mês Modal de Exposição:", "Identifica o período do ano com maior vulnerabilidade climática no Paraná."),
+            ("Sazonalidade:", "Identifica a época do ano com maior vulnerabilidade a chuvas intensas no Paraná."),
         ], C_AMBER),
     ]
 
@@ -455,17 +457,17 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
     rusle_cards = [
         ("Fator C: Durigon et al. (2014) [DECIDIDO - D01]", [
             ("Equação Regional:", "C = (1 − NDVI) / 2 calibrada para bacias tropicais brasileiras sem parâmetros livres."),
-            ("Sem Cortes Disfarçados:", "NDVI estritamente contido em [-1, 1], garantindo C contido em [0, 1] sem Math.min/max artificiais."),
+            ("Domínio Físico:", "NDVI contido em [-1, 1], garantindo C contido em [0, 1] de forma analítica e verificável."),
             ("Análise de Sensibilidade:", "Comparação programada com a formulação de van der Knijff et al. (2000)."),
         ], C_EMERALD_LIGHT),
         ("Fator P: Práticas Conservacionistas [TABELADO]", [
-            ("Valor Referencial:", "Fator P = 1,0 quando as práticas mecânicas do imóvel forem desconhecidas (Renard et al., 1997)."),
-            ("Proveniência Declarada:", "Registrado estritamente como 'tabelado', nunca apresentado à banca como se fosse medição de campo."),
-            ("Terraceamento:", "Ajustável na rotulagem presencial caso terraços de retenção íntegros sejam comprovados."),
+            ("Valor Referencial:", "Fator P = 1,0 quando as práticas conservacionistas do imóvel forem desconhecidas (Renard et al., 1997)."),
+            ("Proveniência Declarada:", "Registrado estritamente como 'tabelado', nunca apresentado como medição de campo."),
+            ("Adequação na Rotulagem:", "Ajustável na rotulagem presencial caso terraços de retenção íntegros sejam observados."),
         ], C_CYAN),
         ("Fatores R, K e LS [PENDENTES - D13, D14, D15]", [
-            ("Trava Inviolável (Regra 9):", "Enquanto as equações não forem formalmente selecionadas pelo pesquisador, permanecem pendentes."),
-            ("Bloqueio de Perda de Solo:", "Perda de solo fica 'indisponivel (decisao-pendente)'. Proibido usar multiplicadores inventados."),
+            ("Trava Metodológica (Regra 9):", "Enquanto as equações não forem formalmente deliberadas pelo pesquisador, permanecem pendentes."),
+            ("Bloqueio de Perda de Solo:", "Perda de solo fica 'indisponivel (decisao-pendente)'. Proibido usar multiplicadores arbitrários."),
             ("Invariante 1 Ativo:", "A perda só é exportada se os 5 fatores e a memória de cálculo com a equação estiverem preenchidos."),
         ], C_AMBER),
     ]
@@ -483,19 +485,19 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
 
     bases_s9 = [
         ("SICAR / MMA", "559.899 Imóveis Rurais no PR", [
-            ("Código CAR Oficial:", "Identificador único federal de cada imóvel cadastrado no Paraná."),
+            ("Código CAR Oficial:", "Identificador único federal de cada imóvel rural cadastrado no Paraná."),
             ("Atributos Cartográficos:", "Área total em hectares, módulos fiscais e situação cadastral do imóvel rural."),
-            ("Perímetro Vetorial:", "Polígono georreferenciado da propriedade para conferência de limites e confrontantes."),
+            ("Perímetro Vetorial:", "Polígono georreferenciado da propriedade para conferência de limites territoriais."),
         ], C_EMERALD_LIGHT),
         ("SIGEF / INCRA", "170.046 Parcelas Certificadas", [
-            ("Lei 10.267:", "Certificação de georreferenciamento de imóveis rurais com alta precisão métrica."),
-            ("Segurança Jurídica:", "Identificação do número de Matrícula no Cartório de Registro de Imóveis (CRI)."),
-            ("Anotação Técnica:", "Registro de ART/CREA do engenheiro agrimensor responsável pela demarcação."),
+            ("Lei 10.267:", "Certificação de georreferenciamento de imóveis rurais com precisão de agrimensura."),
+            ("Segurança Registral:", "Identificação do número de Matrícula no Cartório de Registro de Imóveis (CRI)."),
+            ("Responsabilidade Técnica:", "Registro de ART/CREA do engenheiro responsável pela demarcação."),
         ], C_CYAN),
-        ("SNCR / Receita Federal", "957.183 Cadastros de Titulares", [
-            ("Viabilização do Acesso:", "Permite que a equipe de campo contate o produtor para autorização de entrada na fazenda."),
-            ("Cruzamento Local R*Tree:", "Consultas espaciais executadas em menos de 5ms no banco SQLite local."),
-            ("Total Imunidade:", "Zero divergências cadastrais atestadas na auditoria contra os dados abertos oficiais."),
+        ("SNCR / INCRA", "957.183 Cadastros de Titulares", [
+            ("Base Legal:", "Sistema Nacional de Cadastro Rural instituído pela Lei 5.868/1972."),
+            ("Viabilização do Acesso:", "Permite que a equipe de campo contate o produtor para solicitar autorização de visita."),
+            ("Indexação Espacial R*Tree:", "Consultas espaciais executadas em milissegundos no banco SQLite local."),
         ], C_INDIGO),
     ]
 
@@ -517,7 +519,7 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
     p_l1.font.bold = True
     p_l1.font.color.rgb = C_EMERALD_DARK
     p_l2 = tf_l.add_paragraph()
-    p_l2.text = "Os dados fundiários servem exclusivamente à gestão operacional de acesso em campo e nunca entram na matriz de treino do XGBoost. Nomes e documentos de titulares são mascarados byte a byte pela máscara oficial do SNCR. Rotas fundiárias e tokens transitam em sessões efêmeras no servidor, com recusa automática a conexões externas."
+    p_l2.text = "Os dados fundiários servem exclusivamente à gestão operacional de acesso em campo e nunca entram na matriz de treino do XGBoost. Nomes e documentos de titulares são mascarados na visualização. Rotas fundiárias e tokens transitam em sessões efêmeras no servidor, com recusa a conexões externas."
     p_l2.font.size = Pt(9.5)
     p_l2.font.color.rgb = C_TEXT_DARK
 
@@ -529,25 +531,25 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
     add_header(s10, "Protocolo de Rotulagem Cega: Controle de Viés & Validação Estatística", "CAMPANHAS DE ROTULAGEM & CONCORDÂNCIA HUMANA")
 
     phases_cards = [
-        ("Fase A: Interpretação Visual Cega", [
-            ("Imagens PlanetScope/VHR:", "Inspeção em resolução de 3m/30cm com data de aquisição visível no visor."),
-            ("Isolamento Cego:", "O intérprete desconhece predições do modelo, fatores RUSLE, declividade e estrato."),
-            ("Critério Padronizado:", "Avaliação de cobertura vegetal, decapitação de solo, carreadores e terraços."),
+        ("Fase A: Interpretação Cega", [
+            ("Imagens PlanetScope/VHR:", "Inspeção em alta resolução com data de aquisição visível no visor."),
+            ("Isolamento Cego:", "O intérprete desconhece predições, fatores RUSLE, declividade e estrato."),
+            ("Critério Padronizado:", "Avaliação de cobertura vegetal, decapitação superficial e terraços."),
         ], C_CYAN),
-        ("Fase B: Validação em Campo (Kobo)", [
-            ("Subamostra Presencial:", "Equipe visita ~20% dos pontos estratificados munida de GNSS RTK e KoboToolbox."),
-            ("Cegueira Cruzada:", "A equipe de campo desconhece o rótulo atribuído na Fase A, medindo a taxa de erro humana."),
-            ("Marcadores Biofísicos:", "Avaliação milimétrica de pedestais de erosão, descalçamento radicular e crosta."),
+        ("Fase B: Validação de Campo", [
+            ("Subamostra Presencial:", "Equipe visita ~20% dos pontos munida de GNSS submétrico e formulário Kobo."),
+            ("Cegueira Cruzada:", "A equipe desconhece o rótulo da Fase A, permitindo avaliar a taxa de erro."),
+            ("Marcadores Biofísicos:", "Avaliação de pedestais, descalçamento radicular e crosta superficial."),
         ], C_EMERALD_LIGHT),
-        ("Fase C: Concordância Kappa", [
-            ("Kappa de Cohen (1960):", "Cálculo rigoroso de concordância inter-observador ajustado ao acaso."),
-            ("Alerta Bloqueante (κ < 0,60):", "Se a concordância for inferior a substancial (Landis & Koch), a matriz é travada."),
-            ("Resolução de Divergência:", "Pontos divergentes são arbitrados por perito sênior ou descartados da matriz."),
+        ("Fase C: Auditoria Kappa com IC 95%", [
+            ("Kappa de Cohen (1960):", "Mede a validade concorrente entre rótulo orbital e verdade de campo."),
+            ("Intervalo de Confiança:", "Cálculo do Erro-Padrão assintótico e IC 95% contra variações amostrais."),
+            ("Trava Operacional:", "Exige κ ≥ 0,61 (patamar substancial segundo Landis & Koch, 1977)."),
         ], C_AMBER),
         ("Fase D: Drone Held-Out", [
-            ("Ortomosaicos de VANT:", "Voo de drone gerando modelos tridimensionais centimétricos nos sítios padrão-ouro."),
-            ("Segregação Obrigatória:", "As amostras de drone são mantidas compulsoriamente como conjunto de teste (held-out)."),
-            ("Testagem Independente:", "Nunca entram no treino do XGBoost, garantindo avaliação final não contaminada."),
+            ("Ortomosaicos Centimétricos:", "Voo de drone gerando modelos tridimensionais em sítios de referência."),
+            ("Segregação Obrigatória:", "Amostras de drone mantidas compulsoriamente como teste (held-out)."),
+            ("Testagem Independente:", "Isoladas do treino do modelo, garantindo avaliação não contaminada."),
         ], C_INDIGO),
     ]
 
@@ -560,23 +562,23 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
     # =========================================================================
     s11 = prs.slides.add_slide(blank_layout)
     set_slide_background(s11)
-    add_header(s11, "Modelagem Preditiva: XGBoost com Validação Cruzada Espacial LOCO", "APRENDIZADO DE MÁQUINA & EXPLICABILIDADE FÍSICA")
+    add_header(s11, "Modelagem Preditiva Externa: XGBoost LOCO & Explicabilidade SHAP", "APRENDIZADO DE MÁQUINA & EXPLICABILIDADE FÍSICA")
 
     xgb_cards = [
-        ("Por que LOCO e não K-Fold Tradicional?", [
-            ("Autocorrelação Espacial:", "Amostras geoespaciais próximas violam a premissa i.i.d. O K-Fold comum mistura pixels vizinhos, inflacionando a acurácia."),
-            ("Leave-One-Catchment-Out:", "O algoritmo treina em 4 macrobacias hidrográficas do Paraná e é testado na 5ª bacia inteiramente omitida."),
-            ("Capacidade de Generalização:", "Mede a eficácia real do método em extrapolar a predição para novos territórios sem vazamento de vizinhança."),
+        ("Validação Cruzada LOCO", [
+            ("Autocorrelação Espacial:", "Amostras geoespaciais violam a premissa i.i.d. O K-Fold comum mistura pixels vizinhos, inflando métricas."),
+            ("Leave-One-Catchment-Out:", "O algoritmo treina em bacias hidrográficas e é testado em uma bacia inteiramente retida (Roberts et al., 2017)."),
+            ("Capacidade de Generalização:", "Mede a capacidade real de extrapolação espacial do modelo sem vazamento territorial."),
         ], C_ROSE),
         ("Explicabilidade Física via SHAP", [
-            ("Valores de Shapley:", "Mede a contribuição marginal de cada variável preditora (NDVI, BSI, Declividade, K, R) na decisão do modelo."),
-            ("Auditoria de Coerência:", "Garante que a erosão seja atribuída a processos físicos reais (alta declividade + solo exposto), e não a ruídos estatísticos."),
-            ("Entregáveis da Dissertação:", "Gráficos SHAP Summary (Beeswarm Plot) e gráficos de dependência parcial revelando limiares críticos."),
+            ("Valores de Shapley:", "Mede a contribuição marginal de cada variável preditora na saída do classificador (Lundberg & Lee, 2017)."),
+            ("Auditoria de Coerência:", "Verifica se a predição reflete processos biofísicos reais (alta declividade + solo exposto), e não ruídos de amostragem."),
+            ("Entregáveis da Pesquisa:", "Gráficos SHAP Summary e dependência parcial revelando limiares críticos na paisagem."),
         ], C_CYAN),
-        ("Métricas Científicas Reais Esperadas", [
-            ("Acurácia Realista (84% a 93%):", "Ambientes naturais e sensores orbitais possuem ruídos. Resultados de 100% decorrem de vícios e foram barrados."),
-            ("ROC-AUC Esperada (0,88 a 0,95):", "Desempenho de alta separabilidade com calibração probabilística rigorosa."),
-            ("Integridade Assegurada:", "O script Python treinar_xgboost_loco.py possui trava anti-mock ativa que exige dados reais."),
+        ("Métricas Científicas Realistas", [
+            ("Discriminação vs Calibração:", "Acurácia realista esperada entre 82% e 91%; ROC-AUC avalia discriminação, enquanto Brier Score avalia calibração."),
+            ("Remoção da Perda RUSLE:", "A perda de solo calculada foi formalmente removida da matriz de treino, evitando qualquer circularidade."),
+            ("Trava Anti-Mock Ativa:", "O script treinar_xgboost_loco.py possui validação que barra matrizes sintéticas ou constantes residuais."),
         ], C_EMERALD_LIGHT),
     ]
 
@@ -589,7 +591,7 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
     # =========================================================================
     s12 = prs.slides.add_slide(blank_layout)
     set_slide_background(s12)
-    add_header(s12, "Invariantes de Exportação: 7 Portões de Segurança Contra Falhas", "CONTROLE DE QUALIDADE AUTOMATIZADO")
+    add_header(s12, "Invariantes de Integridade: 7 Portões de Auditoria de Dados", "CONTROLE DE QUALIDADE AUTOMATIZADO")
 
     invariants_list = [
         ("Invariante 1", "Coerência RUSLE", "Perda de solo preenchida ⟺ 5 fatores preenchidos ⟺ memória de cálculo válida presente.", C_EMERALD_LIGHT),
@@ -598,7 +600,7 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
         ("Invariante 4", "Rastreabilidade Orbital", "Dado derivado de satélite exige PRODUCT_ID das cenas, versão do motor e data de processamento.", C_AMBER),
         ("Invariante 5", "Afirmação Negativa Fundiária", "Declaração 'sem-correspondencia' só é aceita após consulta cadastral bem-sucedida sem match.", C_ROSE),
         ("Invariante 6", "Lista Negra de Literais Geográficos", "Bloqueia termos de desenvolvimento ('Custom', 'Bacia Local') ou nome de UF na coluna município.", C_EMERALD_DARK),
-        ("Invariante 7", "Detector de Constante Disfarçada", "Nenhuma coluna numérica tem valor idêntico em todas as linhas (N ≥ 21), impedindo vícios legados.", C_ROSE),
+        ("Invariante 7", "Detector de Constante Disfarçada", "Bloqueia colunas numéricas com valor idêntico (N ≥ 21), exceto fatores tabelados com proveniência explícita.", C_ROSE),
     ]
 
     for idx, (inv_id, inv_nome, inv_desc, col) in enumerate(invariants_list):
@@ -635,58 +637,127 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
         r2.font.color.rgb = C_TEXT_MUTED
 
     # =========================================================================
-    # SLIDE 13: CONCLUSÃO & CONTRIBUIÇÃO CIENTÍFICA
+    # SLIDE 13: LIMITAÇÕES METODOLÓGICAS & DESAFIOS
     # =========================================================================
     s13 = prs.slides.add_slide(blank_layout)
-    set_slide_background(s13, C_NAVY_DARK)
+    set_slide_background(s13)
+    add_header(s13, "Limitações Metodológicas & Desafios da Operação Real", "TRANSPARÊNCIA CIENTÍFICA & LIMITES DE VALIDADE")
 
-    tb_c13 = s13.shapes.add_textbox(Inches(1.0), Inches(1.1), Inches(11.333), Inches(5.6))
-    tf_c13 = tb_c13.text_frame
-    tf_c13.word_wrap = True
+    limit_cards = [
+        ("Resolução Espacial de 30 metros", [
+            ("Tamanho do Pixel:", "Copernicus DEM (30m) suaviza microtopografia, feições de microrrelevo e terraços estreitos."),
+            ("Consequência:", "Pode subestimar localmente a declividade em talvegues abruptos ou rupturas de declive acentuadas."),
+            ("Atenuação:", "Uso complementar de ortomosaicos de drone (GSD < 5cm) nas áreas de calibração presencial."),
+        ], C_AMBER),
+        ("Persistência de Cobertura de Nuvens", [
+            ("Região Sul do Brasil:", "Elevada nebulosidade em períodos chuvosos críticos de primavera e verão."),
+            ("Consequência:", "Redução do número de imagens úteis no Sentinel-2 e janelas de observação truncadas."),
+            ("Atenuação:", "Composição temporal com BSI, máscaras estritas de nuvem/sombra e séries de múltiplos anos."),
+        ], C_ROSE),
+        ("Viés de Consentimento dos Produtores", [
+            ("Acesso aos Imóveis:", "A validação presencial exige autorização formal de entrada pelo titular do imóvel rural."),
+            ("Consequência:", "Possível viés amostral de proprietários mais colaborativos e com manejo potencialmente superior."),
+            ("Atenuação:", "Condução de fotointerpretação cega independente e geolocalização com amostragem balanceada."),
+        ], C_INDIGO),
+        ("Descasamento Temporal Solo-Sensor", [
+            ("Dinâmica Agrícola:", "Eventos de chuva intensa podem ocorrer entre as passagens orbitais de 5 dias do Sentinel-2."),
+            ("Consequência:", "Erosão ocorrida logo após o preparo do solo pode ser mascarada pelo rápido crescimento de plantas."),
+            ("Atenuação:", "Registro da data exata de cada observação e análise da série histórica de solo exposto (Ê)."),
+        ], C_CYAN),
+    ]
 
-    p0 = tf_c13.paragraphs[0]
-    p0.text = "CONCLUSÃO & CONTRIBUIÇÕES PARA O AGRONEGÓCIO PARANAENSE"
-    p0.font.size = Pt(12)
+    for idx, (title, bullets, color) in enumerate(limit_cards):
+        col = idx % 2
+        row = idx // 2
+        bx = Inches(0.8 + col * 6.0)
+        by = Inches(1.55 + row * 2.65)
+        add_card(s13, bx, by, Inches(5.7), Inches(2.45), title, bullets, accent_color=color, title_size=13, body_size=10)
+
+    # =========================================================================
+    # SLIDE 14: CONCLUSÃO & REFERÊNCIAS
+    # =========================================================================
+    s14 = prs.slides.add_slide(blank_layout)
+    set_slide_background(s14, C_NAVY_DARK)
+
+    tb_c14 = s14.shapes.add_textbox(Inches(0.8), Inches(1.1), Inches(6.0), Inches(5.6))
+    tf_c14 = tb_c14.text_frame
+    tf_c14.word_wrap = True
+
+    p0 = tf_c14.paragraphs[0]
+    p0.text = "CONCLUSÃO & CONTRIBUIÇÃO CIENTÍFICA"
+    p0.font.size = Pt(11)
     p0.font.bold = True
     p0.font.color.rgb = C_EMERALD_LIGHT
 
-    p1 = tf_c13.add_paragraph()
-    p1.text = "Um Instrumento Computacional Ético, Auditável e Replicável"
-    p1.font.size = Pt(25)
+    p1 = tf_c14.add_paragraph()
+    p1.text = "Um Instrumento Transparente e Auditável"
+    p1.font.size = Pt(22)
     p1.font.bold = True
     p1.font.color.rgb = C_WHITE
-    p1.space_before = Pt(8)
+    p1.space_before = Pt(6)
 
     concl_points = [
-        ("Viabilidade Prática Comprovada:", "A estratégia híbrida reduz os custos operacionais de amostragem em ~80%, tornando viável a validação de modelos de IA para conservação de solos no mestrado."),
-        ("Ruptura com o Dado Presumido:", "O SAREL encerra a era dos valores fabricados por atalhos computacionais. O sistema prefere declarar a ausência a exibir uma medição ilusória à banca."),
-        ("Rigor Metodológico Internacional:", "Estratificação multivariada, Thinning Geodésico, validação cruzada espacial LOCO e explicabilidade SHAP alinham a pesquisa às melhores práticas da literatura de sensoriamento remoto."),
-        ("Prontidão para a Campanha Real:", "A infraestrutura computacional (Next.js, TypeScript, Python, SQLite e GEE) está 100% testada e homologada, pronta para a execução da campanha de campo e fotointerpretação."),
+        ("Viabilidade Operacional:", "A estratégia híbrida mitiga os custos logísticos de campo em ~80%, tornando viável a validação de modelos de predição no mestrado."),
+        ("Ruptura com o Dado Presumido:", "O SAREL substitui suposições por proveniência formal (medido, modelado, tabelado, indisponível)."),
+        ("Rigor em Ciência de Dados:", "Estratificação multivariada, rarefação espacial, validação espacial LOCO e explicabilidade SHAP alinham a pesquisa à literatura contemporânea."),
+        ("Prontidão Instrumental:", "Arquitetura com 35 arquivos de teste e 235 asserções automatizadas garantindo o cumprimento das travas e dos invariantes."),
     ]
 
     for title, desc in concl_points:
-        p = tf_c13.add_paragraph()
+        p = tf_c14.add_paragraph()
         r1 = p.add_run()
         r1.text = f"• {title} "
         r1.font.bold = True
-        r1.font.size = Pt(11.5)
+        r1.font.size = Pt(10.5)
         r1.font.color.rgb = C_EMERALD_LIGHT
         r2 = p.add_run()
         r2.text = desc
-        r2.font.size = Pt(11)
+        r2.font.size = Pt(10)
         r2.font.color.rgb = C_TEXT_LIGHT
-        p.space_before = Pt(10)
+        p.space_before = Pt(8)
 
-    p_end = tf_c13.add_paragraph()
-    p_end.text = "PPGTCA 2026 • Pesquisador: Luis Alfredo • Programa de Pós-Graduação em Tecnologias Computacionais para o Agronegócio"
-    p_end.font.size = Pt(10.5)
-    p_end.font.bold = True
-    p_end.font.color.rgb = C_CYAN
-    p_end.space_before = Pt(24)
+    # Coluna Direita: Referências Bibliográficas
+    card_ref = s14.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(7.2), Inches(1.1), Inches(5.3), Inches(5.6))
+    card_ref.fill.solid()
+    card_ref.fill.fore_color.rgb = C_NAVY_CARD
+    card_ref.line.color.rgb = C_EMERALD_DARK
+
+    tb_ref = s14.shapes.add_textbox(Inches(7.4), Inches(1.25), Inches(4.9), Inches(5.3))
+    tf_ref = tb_ref.text_frame
+    tf_ref.word_wrap = True
+
+    p_rtit = tf_ref.paragraphs[0]
+    p_rtit.text = "REFERÊNCIAS BIBLIOGRÁFICAS CANÔNICAS"
+    p_rtit.font.size = Pt(11)
+    p_rtit.font.bold = True
+    p_rtit.font.color.rgb = C_EMERALD_LIGHT
+
+    refs = [
+        ("Renard et al. (1997)", "Predicting soil erosion by water: a guide to conservation planning with RUSLE. USDA Agricultural Handbook 703."),
+        ("Durigon et al. (2014)", "NDVI-based C-factor estimation for RUSLE in Brazilian watersheds. Brazilian Journal of Soil Science, 38(3)."),
+        ("Zhu & Woodcock (2014)", "Continuous change detection and classification of land cover using all available Landsat data. Remote Sensing of Environment."),
+        ("Landis & Koch (1977)", "The measurement of observer agreement for categorical data. Biometrics, 33(1), 159-174."),
+        ("Roberts et al. (2017)", "Cross-validation strategies for data with temporal, spatial, or hierarchical structure. Ecography, 40(8)."),
+        ("Tobler (1970)", "A computer movie simulating urban growth in the Detroit region. Economic Geography, 46(sup1)."),
+        ("Lundberg & Lee (2017)", "A unified approach to interpreting model predictions. Advances in Neural Information Processing Systems (NeurIPS)."),
+    ]
+
+    for autor, obra in refs:
+        p = tf_ref.add_paragraph()
+        r1 = p.add_run()
+        r1.text = f"• {autor}: "
+        r1.font.bold = True
+        r1.font.size = Pt(8.5)
+        r1.font.color.rgb = C_WHITE
+        r2 = p.add_run()
+        r2.text = obra
+        r2.font.size = Pt(8)
+        r2.font.color.rgb = C_TEXT_LIGHT
+        p.space_before = Pt(4)
 
     # Save
     prs.save(output_pptx_path)
-    print(f"\n[SUCESSO] Apresentação SAREL v2 gerada com sucesso!")
+    print(f"\n[SUCESSO] Apresentação SAREL v2 (PPTX) gerada com sucesso!")
     print(f"Arquivo gerado: {os.path.abspath(output_pptx_path)}")
     print(f"Total de slides criados: {len(prs.slides)}\n")
 
