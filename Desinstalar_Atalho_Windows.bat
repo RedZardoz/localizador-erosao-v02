@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 > nul
-title Desinstalador de Atalhos - Localizador de Erosao Laminar
+title Desinstalador de Atalhos - SAREL
 
 echo ===============================================================================
-echo     DESINSTALADOR DE ATALHOS - LOCALIZADOR DE EROSAO LAMINAR
+echo     DESINSTALADOR DE ATALHOS - SAREL
 echo ===============================================================================
 echo.
 
