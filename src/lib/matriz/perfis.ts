@@ -152,7 +152,6 @@ export const PERFIS_EXPORTACAO: Record<PerfilExportacao, { descricao: string; co
       "BSI",
       "RUSLE_Fator_K",
       "RUSLE_Fator_R",
-      "RUSLE_Perda_Solo",
       "Precip_Acum_30d_mm",
       "Precip_Acum_90d_mm",
       "I30_Max_mm_h",

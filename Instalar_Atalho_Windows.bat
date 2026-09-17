@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 > nul
-title Instalador do Localizador de Erosao ^& Propriedade - Windows
+title Instalador do SAREL - Windows
 
 echo ===============================================================================
-echo     INSTALADOR - LOCALIZADOR DE EROSAO ^& PROPRIEDADE (MESTRADO PPGTCA 2026)
+echo    INSTALADOR - SAREL - Sistema de Amostragem e Rotulagem para Erosão Laminar
 echo ===============================================================================
 echo.
 

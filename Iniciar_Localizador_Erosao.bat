@@ -5,10 +5,10 @@ chcp 65001 > nul
 :: Executado como processo separado pelo bloco [2/3] mais abaixo.
 if /i "%~1"=="--aguardar-navegador" goto :aguardar_navegador
 
-title Localizador de Erosao ^& Propriedade - Mestrado PPGTCA 2026
+title SAREL - Sistema de Amostragem e Rotulagem para Erosao Laminar
 
 echo ===============================================================================
-echo     LOCALIZADOR DE EROSAO ^& PROPRIEDADE (BRASIL) - MESTRADO PPGTCA 2026
+echo          SAREL - Sistema de Amostragem e Rotulagem para Erosão Laminar
 echo ===============================================================================
 echo.
 echo [1/3] Verificando ambiente e dependencias...

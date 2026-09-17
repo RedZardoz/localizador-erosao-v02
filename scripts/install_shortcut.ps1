@@ -9,7 +9,7 @@ Write-Host "Instalando atalho na Area de Trabalho..." -ForegroundColor Cyan
 $sDesktop = $ws.CreateShortcut((Join-Path $desktopPath "Localizador de Erosao & Propriedade.lnk"))
 $sDesktop.TargetPath = $target
 $sDesktop.WorkingDirectory = $appDir
-$sDesktop.Description = "Localizador de Erosao & Propriedade - Mestrado PPGTCA 2026"
+$sDesktop.Description = "SAREL - Sistema de Amostragem e Rotulagem para Erosão Laminar"
 $sDesktop.IconLocation = "$icon,0"
 $sDesktop.Save()
 
@@ -17,7 +17,7 @@ Write-Host "Instalando atalho no Menu Iniciar..." -ForegroundColor Cyan
 $sStart = $ws.CreateShortcut((Join-Path $startMenuPath "Localizador de Erosao & Propriedade.lnk"))
 $sStart.TargetPath = $target
 $sStart.WorkingDirectory = $appDir
-$sStart.Description = "Localizador de Erosao & Propriedade - Mestrado PPGTCA 2026"
+$sStart.Description = "SAREL - Sistema de Amostragem e Rotulagem para Erosão Laminar"
 $sStart.IconLocation = "$icon,0"
 $sStart.Save()
 

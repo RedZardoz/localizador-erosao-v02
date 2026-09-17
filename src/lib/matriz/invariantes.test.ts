@@ -107,4 +107,40 @@ describe("Invariantes de Exportação — Validações e Meta-Testes", () => {
       expect(res.violacoes.some((v) => v.invariante === 6)).toBe(true);
     });
   });
+
+  describe("Invariante 7: Detector de Constante Disfarçada e Exceção Tabelada", () => {
+    it("bloqueia exportação quando coluna contínua possui 21 valores idênticos", () => {
+      const linhas = Array.from({ length: 25 }, (_, i) => ({
+        Codigo: `PR-${String(i + 1).padStart(3, "0")}`,
+        Declividade_pct: 12.5, // constante disfarçada!
+      }));
+
+      const artefato: ArtefatoProjetado = {
+        perfil: "planilha",
+        cabecalho: ["Codigo", "Declividade_pct"],
+        linhas,
+      };
+
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.valido).toBe(false);
+      expect(res.violacoes.some((v) => v.invariante === 7)).toBe(true);
+    });
+
+    it("permite RUSLE_Fator_P constante (1.0) por ser valor tabelado legítimo (Renard et al. 1997)", () => {
+      const linhas = Array.from({ length: 25 }, (_, i) => ({
+        Codigo: `PR-${String(i + 1).padStart(3, "0")}`,
+        Declividade_pct: 5.0 + i * 0.5, // com variância natural
+        RUSLE_Fator_P: 1.0,            // tabelado uniforme
+      }));
+
+      const artefato: ArtefatoProjetado = {
+        perfil: "planilha",
+        cabecalho: ["Codigo", "Declividade_pct", "RUSLE_Fator_P"],
+        linhas,
+      };
+
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.violacoes.some((v) => v.invariante === 7)).toBe(false);
+    });
+  });
 });

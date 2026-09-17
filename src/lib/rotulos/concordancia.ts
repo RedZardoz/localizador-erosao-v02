@@ -134,9 +134,18 @@ export function calcularKappaCohen(
   const grau = classificarLandisKoch(kappa);
   const operacional = kappa >= 0.6;
 
+  // Cálculo do Erro-Padrão (SE) e Intervalo de Confiança de 95% (Cohen, 1960; Fleiss et al., 1969)
+  const varBruta = (po * (1 - po)) / (n * Math.pow(1 - pe, 2));
+  const seKappa = varBruta > 0 ? Math.sqrt(varBruta) : 0;
+  let ciInferior = Number((kappa - 1.96 * seKappa).toFixed(4));
+  if (ciInferior < -1) ciInferior = -1;
+  let ciSuperior = Number((kappa + 1.96 * seKappa).toFixed(4));
+  if (ciSuperior > 1) ciSuperior = 1;
+  const intervaloConfianca95: [number, number] = [ciInferior, ciSuperior];
+
   let alertaBloqueante: string | undefined = undefined;
   if (!operacional) {
-    alertaBloqueante = `ALERTA BLOQUEANTE: Índice Kappa de Cohen (${kappa.toFixed(3)}) inferior a 0.60 (patamar mínimo substancial).`;
+    alertaBloqueante = `ALERTA BLOQUEANTE: Índice Kappa de Cohen (${kappa.toFixed(3)}, IC 95% [${ciInferior.toFixed(2)}, ${ciSuperior.toFixed(2)}]) inferior a 0.60 (patamar mínimo para concordância substancial segundo Landis & Koch, 1977).`;
   }
 
   return {
@@ -145,6 +154,7 @@ export function calcularKappaCohen(
     pe: Number(pe.toFixed(4)),
     grau,
     operacional,
+    intervaloConfianca95,
     alertaBloqueante,
     matrizConfusao,
     classes: classesPermitidas,

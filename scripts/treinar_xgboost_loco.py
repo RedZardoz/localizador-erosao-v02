@@ -754,8 +754,9 @@ def gerar_graficos_e_explicabilidade_shap(
 
 def main():
     parser = argparse.ArgumentParser(description="Treinamento XGBoost e SHAP LOCO — PPGTCA 2026")
-    parser.add_argument('--dados', type=str, default="Tabela_Consolidada_Parana_Todo_o_Estado_150focos_2026-09-04.xlsx",
-                        help="Caminho do arquivo de dados reais (Excel, CSV ou JSON)")
+    parser.add_argument('--dados', type=str,
+                        default=os.path.join("legado", "pre_sarel", "Tabela_Consolidada_Parana_Todo_o_Estado_150focos_2026-09-04.xlsx"),
+                        help="Caminho do arquivo de dados (Excel, CSV ou JSON)")
     parser.add_argument('--controles', type=str, default=None,
                         help="Caminho do arquivo com amostras de Controle / SPD reais (Classe 0)")
     parser.add_argument('--permitir-dryrun-sintetico', action='store_true', default=False,

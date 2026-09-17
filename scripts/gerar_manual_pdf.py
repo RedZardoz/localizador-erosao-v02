@@ -3,8 +3,11 @@
 """
 ===============================================================================
 GERADOR DO MANUAL DE INSTALAÇÃO E OPERAÇÃO DO SAREL (PDF OFICIAL)
-Mestrado Profissional em Tecnologias Ambientais — PPGTCA 2026
-Pesquisa: Arcabouço de Inteligência Geoespacial para Mapeamento de Erosão Laminar
+Programa de Pós-Graduação em Tecnologias Computacionais para o Agronegócio (PPGTCA)
+UTFPR Câmpus Medianeira — 2026
+Pesquisador/Autor: Luis Alfredo Ferreira da Silva
+Orientador: Claudio Leones Bazzi
+Sistema: SAREL - Sistema de Amostragem e Rotulagem para Erosão Laminar
 ===============================================================================
 
 O QUÊ FAZ:
@@ -49,6 +52,7 @@ from reportlab.pdfgen import canvas
 # Diretórios de trabalho
 DIRETORIO_RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIRETORIO_DOCS = os.path.join(DIRETORIO_RAIZ, "docs")
+DIRETORIO_IMAGES = os.path.join(DIRETORIO_DOCS, "images")
 DIRETORIO_FIGURAS = os.path.join(DIRETORIO_DOCS, "figuras_manual")
 CAMINHO_PDF_FINAL = os.path.join(DIRETORIO_DOCS, "Manual_Instalacao_e_Operacao_SAREL.pdf")
 
@@ -455,10 +459,10 @@ class NumeradorPaginas(canvas.Canvas):
         # Cabeçalho Superior
         self.setFont("Helvetica-Bold", 7.5)
         self.setFillColor(colors.HexColor("#0F172A"))
-        self.drawString(40, 808, "SAREL — Sistema de Apoio à Recuperação de Erosão Laminar")
+        self.drawString(40, 808, "SAREL — Sistema de Amostragem e Rotulagem para Erosão Laminar")
         self.setFont("Helvetica", 7.5)
         self.setFillColor(colors.HexColor("#64748B"))
-        self.drawRightString(555, 808, "Mestrado PPGTCA 2026 • Manual de Instalação e Operação")
+        self.drawRightString(555, 808, "PPGTCA/UTFPR 2026 • Manual de Instalação e Operação")
 
         self.setStrokeColor(colors.HexColor("#CBD5E1"))
         self.setLineWidth(0.6)
@@ -476,7 +480,7 @@ class NumeradorPaginas(canvas.Canvas):
         self.restoreState()
 
 
-def construir_manual_pdf(caminho_saida: str, caminhos_figuras: dict[str, str]):
+def construir_manual_pdf(caminho_saida: str, caminhos_figuras: dict[str, str] = None):
     """Monta a estrutura editorial completa do manual pericial em PDF."""
     os.makedirs(os.path.dirname(caminho_saida), exist_ok=True)
 
@@ -593,17 +597,27 @@ def construir_manual_pdf(caminho_saida: str, caminhos_figuras: dict[str, str]):
     # =========================================================================
     # 1. PÁGINA DE CAPA OFICIAL
     # =========================================================================
-    elementos.append(Spacer(1, 15 * mm))
-    elementos.append(Paragraph("UNIVERSIDADE ESTADUAL DO OESTE DO PARANÁ — UNIOESTE", ParagraphStyle('InstSuperior', parent=estilos['Normal'], fontName='Helvetica-Bold', fontSize=10, leading=13, alignment=TA_CENTER, textColor=colors.HexColor('#475569'))))
-    elementos.append(Paragraph("PROGRAMA DE PÓS-GRADUAÇÃO EM TECNOLOGIAS AMBIENTAIS — PPGTCA 2026", ParagraphStyle('ProgSuperior', parent=estilos['Normal'], fontName='Helvetica-Bold', fontSize=9, leading=12, alignment=TA_CENTER, textColor=colors.HexColor('#0369A1'))))
-    elementos.append(Spacer(1, 20 * mm))
+    elementos.append(Spacer(1, 10 * mm))
+    elementos.append(Paragraph("UNIVERSIDADE TECNOLÓGICA FEDERAL DO PARANÁ — UTFPR", ParagraphStyle('InstSuperior', parent=estilos['Normal'], fontName='Helvetica-Bold', fontSize=10, leading=13, alignment=TA_CENTER, textColor=colors.HexColor('#475569'))))
+    elementos.append(Paragraph("CÂMPUS MEDIANEIRA", ParagraphStyle('CampusSuperior', parent=estilos['Normal'], fontName='Helvetica-Bold', fontSize=8.5, leading=11, alignment=TA_CENTER, textColor=colors.HexColor('#64748B'))))
+    elementos.append(Paragraph("PROGRAMA DE PÓS-GRADUAÇÃO EM TECNOLOGIAS COMPUTACIONAIS PARA O AGRONEGÓCIO — PPGTCA", ParagraphStyle('ProgSuperior', parent=estilos['Normal'], fontName='Helvetica-Bold', fontSize=8.5, leading=12, alignment=TA_CENTER, textColor=colors.HexColor('#0369A1'))))
+    elementos.append(Spacer(1, 4 * mm))
+
+    caminho_logo = os.path.join(DIRETORIO_IMAGES, "SAREL.png")
+    if os.path.exists(caminho_logo):
+        img_logo = Image(caminho_logo, width=28 * mm, height=30 * mm)
+        img_logo.hAlign = 'CENTER'
+        elementos.append(img_logo)
+        elementos.append(Spacer(1, 4 * mm))
+    else:
+        elementos.append(Spacer(1, 10 * mm))
 
     elementos.append(Paragraph("SAREL v2.0", estilo_subtitulo_capa))
+    elementos.append(Spacer(1, 2 * mm))
+    elementos.append(Paragraph("Sistema de Amostragem e Rotulagem para Erosão Laminar", estilo_titulo_capa))
     elementos.append(Spacer(1, 3 * mm))
-    elementos.append(Paragraph("Sistema de Apoio à Recuperação de Erosão Laminar", estilo_titulo_capa))
-    elementos.append(Spacer(1, 4 * mm))
-    elementos.append(Paragraph("Manual Oficial de Instalação, Operação, Protocolo de Drone e Auditoria Científica", ParagraphStyle('SubSubCapa', parent=estilos['Normal'], fontName='Helvetica-Bold', fontSize=11, leading=15, alignment=TA_CENTER, textColor=colors.HexColor('#334155'))))
-    elementos.append(Spacer(1, 10 * mm))
+    elementos.append(Paragraph("Manual Oficial de Instalação, Operação, Protocolo de Drone e Auditoria Científica", ParagraphStyle('SubSubCapa', parent=estilos['Normal'], fontName='Helvetica-Bold', fontSize=10.5, leading=14, alignment=TA_CENTER, textColor=colors.HexColor('#334155'))))
+    elementos.append(Spacer(1, 6 * mm))
 
     # Box em destaque na capa com o link do Google Drive
     conteudo_box_drive = [
@@ -628,11 +642,13 @@ def construir_manual_pdf(caminho_saida: str, caminhos_figuras: dict[str, str]):
     ]))
     elementos.append(tabela_box_drive)
 
-    elementos.append(Spacer(1, 22 * mm))
+    elementos.append(Spacer(1, 14 * mm))
 
     metadados_capa = [
-        [Paragraph("<b>Pesquisador / Autor:</b>", estilo_tabela_celula), Paragraph("Luis Alfredo (Mestrando PPGTCA 2026)", estilo_tabela_celula)],
-        [Paragraph("<b>Linha de Pesquisa:</b>", estilo_tabela_celula), Paragraph("Gestão e Tecnologias Ambientais / Sensoriamento Remoto e Modelagem de Solos", estilo_tabela_celula)],
+        [Paragraph("<b>Pesquisador / Autor:</b>", estilo_tabela_celula), Paragraph("Luis Alfredo Ferreira da Silva", estilo_tabela_celula)],
+        [Paragraph("<b>Orientador:</b>", estilo_tabela_celula), Paragraph("Claudio Leones Bazzi", estilo_tabela_celula)],
+        [Paragraph("<b>Programa de Pós-Graduação:</b>", estilo_tabela_celula), Paragraph("Tecnologias Computacionais para o Agronegócio (PPGTCA) — UTFPR Campus Medianeira", estilo_tabela_celula)],
+        [Paragraph("<b>Linha de Pesquisa:</b>", estilo_tabela_celula), Paragraph("Sensoriamento Remoto, Inteligência Geoespacial e Modelagem de Solos", estilo_tabela_celula)],
         [Paragraph("<b>Objeto de Estudo:</b>", estilo_tabela_celula), Paragraph("Erosão Laminar no Estado do Paraná (Macrobacias IAT / Bacias Iguaçu, Ivaí, Tibagi, Piquiri)", estilo_tabela_celula)],
         [Paragraph("<b>Stack Computacional:</b>", estilo_tabela_celula), Paragraph("Next.js 14, React 18, Google Earth Engine API, Python 3.10+ (XGBoost, SHAP, GDAL)", estilo_tabela_celula)],
         [Paragraph("<b>Rigor Pericial:</b>", estilo_tabela_celula), Paragraph("Diretrizes Anti-Mock Estritas, Cegamento Duplo (Blinding) e Rastreabilidade D01 a D19", estilo_tabela_celula)],
@@ -648,8 +664,8 @@ def construir_manual_pdf(caminho_saida: str, caminhos_figuras: dict[str, str]):
     ]))
     elementos.append(tabela_meta_capa)
 
-    elementos.append(Spacer(1, 15 * mm))
-    elementos.append(Paragraph("Foz do Iguaçu / Cascavel — Paraná, Brasil<br/>Ano Acadêmico 2026", ParagraphStyle('RodapeCapa', parent=estilos['Normal'], fontName='Helvetica', fontSize=8.5, leading=12, alignment=TA_CENTER, textColor=colors.HexColor('#64748B'))))
+    elementos.append(Spacer(1, 10 * mm))
+    elementos.append(Paragraph("Medianeira — Paraná, Brasil<br/>Ano Acadêmico 2026", ParagraphStyle('RodapeCapa', parent=estilos['Normal'], fontName='Helvetica', fontSize=8.5, leading=12, alignment=TA_CENTER, textColor=colors.HexColor('#64748B'))))
     elementos.append(PageBreak())
 
     # =========================================================================
@@ -659,8 +675,9 @@ def construir_manual_pdf(caminho_saida: str, caminhos_figuras: dict[str, str]):
     elementos.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#0F172A'), spaceBefore=2, spaceAfter=8))
 
     elementos.append(Paragraph(
-        "O <b>SAREL (Sistema de Apoio à Recuperação de Erosão Laminar)</b> constitui uma plataforma integrada de "
-        "Inteligência Geoespacial desenvolvida no âmbito do Mestrado Profissional em Tecnologias Ambientais (PPGTCA 2026). "
+        "O <b>SAREL (Sistema de Amostragem e Rotulagem para Erosão Laminar)</b> constitui uma plataforma integrada de "
+        "Inteligência Geoespacial desenvolvida no âmbito do Programa de Pós-Graduação em Tecnologias Computacionais para o Agronegócio (PPGTCA) "
+        "da UTFPR Campus Medianeira. "
         "A plataforma resolve o desafio pericial e agronômico de mapear, prever e monitorar a degradação do solo por erosão hídrica "
         "laminar em escala regional (Estado do Paraná) e submétrica (ortomosaicos de drone de 5 a 10 cm).",
         estilo_corpo
@@ -919,129 +936,196 @@ def construir_manual_pdf(caminho_saida: str, caminhos_figuras: dict[str, str]):
     elementos.append(PageBreak())
 
     # =========================================================================
-    # 6. CAPÍTULO 4: MANUAL DE OPERAÇÃO E TELAS DEMONSTRATIVAS
+    # 6. CAPÍTULO 4: MANUAL DE OPERAÇÃO & GUIA VISUAL DE INTERFACES
     # =========================================================================
-    elementos.append(Paragraph("CAPÍTULO 4: MANUAL DE OPERAÇÃO & TELAS DEMONSTRATIVAS", estilo_h1))
+    def criar_imagem_tela(nome_arquivo: str):
+        caminho = os.path.join(DIRETORIO_IMAGES, nome_arquivo)
+        im = Image(caminho, width=500, height=244)
+        im.hAlign = 'CENTER'
+        return im
+
+    # --- PÁGINA 5: TELA 1 ---
+    elementos.append(Paragraph("CAPÍTULO 4: MANUAL DE OPERAÇÃO & GUIA VISUAL DE INTERFACES", estilo_h1))
     elementos.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#0F172A'), spaceBefore=2, spaceAfter=8))
 
-    # --- Seção 4.1: Tela 1 ---
-    elementos.append(Paragraph("4.1. Triagem Amostral & Visualização Espacial 3D", estilo_h2))
+    elementos.append(Paragraph("4.1. Tela Principal & Interface Cartográfica do SAREL", estilo_h2))
     elementos.append(Paragraph(
-        "A tela de Triagem Amostral do SAREL permite ao operador definir e visualizar no mapa cartográfico 3D os conjuntos "
-        "de pontos candidatos estratificados biofisicamente segundo os critérios oficiais da pesquisa (Decisões D01, D02, D03 e D10).",
+        "A tela principal do <b>SAREL v2.0</b> integra a estação de trabalho geoespacial de alta performance da pesquisa, "
+        "reunindo o visualizador cartográfico dinâmico (MapLibre GL / Google Earth Satélite), o motor de relevo topográfico 3D "
+        "(MDE ALOS PALSAR 30m) e a barra de controle operacional para triagem e monitoramento da erosão laminar no Estado do Paraná.",
         estilo_corpo
     ))
-    elementos.append(Image(caminhos_figuras['tela1'], width=515, height=298))
-    elementos.append(Paragraph("<b>Figura 1:</b> Interface de Triagem Amostral do SAREL — Filtros Biofísicos e Visualização de Feições Erodidas vs Controles sob SPD no Paraná.", estilo_legenda))
-
-    elementos.append(Paragraph("<b>Roteiro Operacional da Triagem Amostral:</b>", estilo_corpo))
+    elementos.append(criar_imagem_tela("01-tela-principal.png"))
     elementos.append(Paragraph(
-        "1. <b>Seleção da Macrobacia:</b> No menu superior, filtre por bacia (ex.: Bacia do Iguaçu, Ivaí ou Todo o Estado).<br/>"
-        "2. <b>Ajuste de Limiares Espectrais:</b> O sistema aplica por padrão os limiares decididos: para Erosão, BSI >= 0.10 e NDVI < 0.40; "
-        "para Controle SPD, BSI <= 0.00 e NDVI >= 0.65.<br/>"
-        "3. <b>Ativação do Thinning Geodésico:</b> O controle deslizante de buffer mínimo (500 metros) assegura que nenhum par de pontos "
-        "pertença à mesma vertente ou compartilhe a mesma assinatura espectral de vizinhança, mitigando a pseudorrepetição espacial.<br/>"
-        "4. <b>Exportação do Conjunto Amostral:</b> Clique em <i>'Exportar GeoJSON/XLSX'</i> para gerar a tabela balanceada de modelagem.",
-        estilo_corpo
+        "<b>Figura 1:</b> Interface Principal do SAREL v2.0 — Canvas Cartográfico, Ferramentas de Topografia 3D, Barra de Controle e Legenda Biofísica.",
+        estilo_legenda
     ))
-    elementos.append(PageBreak())
-
-    # --- Seção 4.2: Tela 2 ---
-    elementos.append(Paragraph("4.2. Inspetor Científico de Ponto & Série Multitemporal (CCDC)", estilo_h2))
+    elementos.append(Paragraph("<b>Recursos Centrais & Navegação Cartográfica:</b>", estilo_corpo))
     elementos.append(Paragraph(
-        "Ao selecionar qualquer feição de erosão ou ponto de controle no mapa ou na tabela, o <b>Inspetor Científico de Ponto</b> "
-        "é aberto lateralmente, renderizando a trajetória multianual Sentinel-2 (2016–2026) e as métricas físicas consolidadas.",
-        estilo_corpo
-    ))
-    elementos.append(Image(caminhos_figuras['tela2'], width=515, height=298))
-    elementos.append(Paragraph("<b>Figura 2:</b> Inspetor Científico de Ponto — Trajetória Multitemporal, Zona de Guarda do Modelo P e Diagnóstico CCDC.", estilo_legenda))
-
-    elementos.append(Paragraph("<b>Fundamentação Biofísica dos Controles Visuais:</b>", estilo_corpo))
-    elementos.append(Paragraph(
-        "• <b>Seletor Modelo D vs Modelo P (Decisão D04):</b> O botão de alternância define a finalidade da análise. Ao selecionar o <b>Modelo P (Prognóstico)</b>, "
-        "o sistema ativa uma <i>Zona de Guarda Temporal</i> (faixa amarela hachurada) de no mínimo 12 meses antes do evento t0. Todas as observações "
-        "contidas nessa janela são estritamente mascaradas para prevenir vazamento temporal (data leakage).<br/>"
-        "• <b>Limiares Horizontais de Referência:</b> A linha vermelha tracejada marca o limiar de solo exposto (NDVI = 0.40 · Decisão D10); "
-        "a linha verde indica o fechamento completo do dossel vegetal em Sistema Plantio Direto (NDVI = 0.65).<br/>"
-        "• <b>Badge CCDC de Persistência Temporal (Decisão D11):</b> Discrimina formalmente pousio agrícola transitório (solo nu por <= 120 dias com "
-        "posterior recuperação vigorosa do dossel com NDVI >= 0.65) de degradação crônica persistente (frequência de solo nu > 25%, NDVI máximo "
-        "cronicamente atrofiado < 0.55 e taxa linear positiva de elevação do infravermelho de ondas curtas SWIR B12).",
+        "1. <b>Barra Superior de Status & Módulos:</b> Atalhos diretos para <i>Áreas Ativas</i>, totalizador de <i>Amostras</i>, "
+        "seletor de <i>Relevo 3D</i>, <i>Amostragem GEE</i>, <i>Campanha & Rótulos</i>, <i>Matriz de Treino</i>, <i>Decisões Metodológicas (19)</i>, "
+        "<i>Conexão & Chaves</i> e <i>Exportar</i>.<br/>"
+        "2. <b>Visualização Topográfica 3D (DEM):</b> Os botões de exagero vertical (<b>1x</b>, <b>1.5x</b>, <b>2.5x</b>) permitem angular o terreno, "
+        "revelando rampas de vertente, divisores de água e zonas de concentração de enxurrada crítica.<br/>"
+        "3. <b>Basemaps & Ferramentas de Desenho:</b> Alternância entre mosaico orbital de alta resolução, relevo sombreado e ferramenta <i>'Delimitar Talhão / Polígono'</i>.<br/>"
+        "4. <b>Painel Lateral de Amostras:</b> Ajuste do volume visível no canvas (10, 25, 50, 100 ou Todas) e consulta de coordenadas e métricas.<br/>"
+        "5. <b>Legenda Cromática Oficial (PPGTCA 2026):</b> <b>Erosão (Classe 1, Vermelho)</b> (BSI > 0.10, NDVI < 0.40); "
+        "<b>Controle/SPD (Classe 0, Verde)</b> (BSI < 0.00, NDVI > 0.65); <b>Em Avaliação (Amarelo)</b>; e <b>Sítios Padrão-Ouro de Drone (Azul Ciano)</b>.",
         estilo_corpo
     ))
     elementos.append(PageBreak())
 
-    # --- Seção 4.3: Tela 3 ---
-    elementos.append(Paragraph("4.3. Central de Campanha & Sítios Padrão-Ouro de Drone (10 a 50 ha)", estilo_h2))
+    # --- PÁGINA 6: TELA 2 ---
+    elementos.append(Paragraph("4.2. Definição da Área de Estudo & Delimitação para Coleta (AOI)", estilo_h2))
     elementos.append(Paragraph(
-        "A <b>Central de Campanha de Drone</b> gerencia a validação de altíssima resolução (Padrão-Ouro), estabelecendo o "
-        "vínculo direto entre a resposta orbital de 10 metros do Sentinel-2 e a verdade de campo mapeada a 5-10 cm com VANT.",
+        "O modal <b>'Definir Área de Estudo & Delimitação para Coleta (AOI)'</b> estabelece a máscara geográfica espacial oficial "
+        "para a geração de pontos amostrais e extração de séries temporais orbitais, assegurando conformidade com a malha político-administrativa e hidrográfica.",
         estilo_corpo
     ))
-    elementos.append(Image(caminhos_figuras['tela3'], width=515, height=298))
-    elementos.append(Paragraph("<b>Figura 3:</b> Central de Campanha de Drone — Sítios Contínuos de 10 a 50 ha, Validação Matricial e Protocolo de Substituição.", estilo_legenda))
-
-    elementos.append(Paragraph("<b>Validação Matricial Pixel-a-Pixel & Flexibilidade Operacional:</b>", estilo_corpo))
+    elementos.append(criar_imagem_tela("02-Escolha-das-areas.png"))
     elementos.append(Paragraph(
-        "1. <b>Sítios Contínuos de 10 a 50 ha (Decisão D08):</b> Foram demarcados 4 sítios de referência na base oficial SICAR do Paraná "
-        "(2 em Céu Azul e 2 em Medianeira), representativos das classes pedológicas predominantes (Latossolos e Nitossolos).<br/>"
-        "2. <b>Matriz de Confusão Matricial Submétrica (Decisão D09):</b> O ortomosaico de 5 cm é reamostrado para a grade de 10 m "
-        "do satélite através de agregação zonal com cálculo da pureza fracionária de borda. O sistema calcula acurácia global, índice Kappa, "
-        "IoU (Interseção sobre União) e F1-Score com base na matriz pixel-a-pixel.<br/>"
-        "3. <b>Segregação Held-Out Test Set:</b> Dois sítios são mantidos como conjunto de validação externa isolado, nunca visualizados pelo modelo.<br/>"
-        "4. <b>Protocolo de Substituição de Sítio Inacessível:</b> Caso um sítio planejado fique inacessível (condições climáticas severas, estradas rurais "
-        "intransitáveis ou impedimento de proprietário), o perito pode acionar o botão <i>'Substituir Sítio'</i>. O algoritmo busca automaticamente um polígono "
-        "equivalente que respeite rigorosamente os 4 critérios biofísicos: (a) Mesma macrobacia hidrográfica; (b) Mesma classe pedológica; (c) Mesma faixa de "
-        "declividade média (±3%); e (d) Área contínua entre 10 e 50 hectares, registrando justificativa pericial no relatório auditável.",
-        estilo_corpo
+        "<b>Figura 2:</b> Modal de Delimitação Territorial (AOI) — Seleção por Estado/Municípios (IBGE), Microbacias Hidrográficas (IAT) ou Polígonos Vetoriais.",
+        estilo_legenda
     ))
-    elementos.append(PageBreak())
-
-    # --- Seção 4.4: Tela 4 ---
-    elementos.append(Paragraph("4.4. Ingestão de Dados de Campo KoboCollect & Exportação Duplo-Cega", estilo_h2))
+    elementos.append(Paragraph("<b>Modalidades de Delimitação Territorial:</b>", estilo_corpo))
     elementos.append(Paragraph(
-        "A integridade dos laudos periciais e da dissertação de mestrado repousa no <b>Protocolo de Cegamento Duplo (Double-Blinding)</b>, "
-        "garantindo que as avaliações de campo não sejam contaminadas por conhecimento prévio das predições de satélite e vice-versa.",
-        estilo_corpo
-    ))
-    elementos.append(Image(caminhos_figuras['tela4'], width=515, height=298))
-    elementos.append(Paragraph("<b>Figura 4:</b> Ingestão de Dados KoboCollect — Pareamento Espacial e Perfis de Exportação Cega.", estilo_legenda))
-
-    elementos.append(Paragraph("<b>Fluxo Operacional de Coleta e Ingestão Kobo:</b>", estilo_corpo))
-    elementos.append(Paragraph(
-        "1. <b>Coleta em Campo via KoboCollect:</b> O perito de campo preenche o formulário ODK sem acesso a qualquer predição do modelo. "
-        "O formulário registra: coordenadas com acurácia GPS < 3 m, presença de selamento superficial, rugosidade aleatória, presença de microcanais, "
-        "profundidade do horizonte A e 4 fotografias padronizadas com indicação de azimute e bússola.<br/>"
-        "2. <b>Sincronização e Pareamento Espacial:</b> O módulo <code>ingestaoKobo.ts</code> lê o JSON/CSV exportado do servidor KoboToolbox e "
-        "realiza o pareamento geométrico automático com o ponto amostral mais próximo dentro de um raio de tolerância de até 50 metros.<br/>"
-        "3. <b>Exportação Cega por Perfil de Atuação:</b> Na tela de exportação, o usuário seleciona o perfil desejado:<br/>"
-        "&nbsp;&nbsp;&nbsp;&nbsp;• <i>Perfil Avaliador de Campo:</i> Exporta coordenadas, dados de terreno e perguntas agronômicas, <b>ocultando</b> "
-        "completamente NDVI, BSI, RUSLE e probabilidade predita pelo XGBoost;<br/>"
-        "&nbsp;&nbsp;&nbsp;&nbsp;• <i>Perfil Modelador Espectral:</i> Exporta variáveis orbitais e topográficas puras, <b>ocultando</b> notas "
-        "qualitativas e diagnósticos subjetivos de campo.",
+        "1. <b>Seleção Estadual & Municipal (IBGE):</b> Permite marcar o Paraná integralmente (botão <i>'Selecionar o Estado Todo como Área'</i>) "
+        "ou pesquisar individualmente entre os 399 municípios paranaenses através do campo de busca com filtro instantâneo.<br/>"
+        "2. <b>Aba Microbacias Hidrográficas:</b> Delimita a amostragem por bacias hidrográficas oficiais do Instituto Água e Terra (IAT), "
+        "viabilizando o protocolo de validação cruzada espacial em blocos regionais (Leave-One-Catchment-Out — LOCO, K=5).<br/>"
+        "3. <b>Importação de Polígono Vetorial (GeoJSON / KML):</b> Suporte ao carregamento direto de geometrias personalizadas, como perímetros "
+        "de propriedades rurais do CAR/SICAR, talhões agrícolas experimentais ou zonas periciais delimitadas em campo.<br/>"
+        "4. <b>Gestão de Áreas Ativas:</b> O rodapé indica o total de áreas cadastradas na sessão e permite ativá-las ou desativá-las dinamicamente antes da coleta.",
         estilo_corpo
     ))
     elementos.append(PageBreak())
 
-    # --- Seção 4.5: Tela 5 ---
-    elementos.append(Paragraph("4.5. Pipeline XGBoost LOCO, Explicabilidade SHAP & Registro de Decisões", estilo_h2))
+    # --- PÁGINA 7: TELA 3 ---
+    elementos.append(Paragraph("4.3. Eleição Amostral no Google Earth Engine (GEE)", estilo_h2))
     elementos.append(Paragraph(
-        "O pipeline analítico de aprendizado de máquina integra o algoritmo <b>XGBoost</b> a uma validação cruzada espacial "
-        "em blocos regionais (LOCO, K=5) e explicabilidade pós-hoc através de valores de Shapley (<b>SHAP TreeExplainer</b>).",
+        "O motor de <b>Eleição Amostral no GEE</b> executa a estratificação biofísica cruzada massiva (Solo × Relevo × Frequência de Solo Nu) "
+        "conectando o SAREL aos servidores em nuvem do Google Earth Engine, assegurando a obtenção de dados reais auditáveis sem fabricação sintética.",
         estilo_corpo
     ))
-    elementos.append(Image(caminhos_figuras['tela5'], width=515, height=298))
-    elementos.append(Paragraph("<b>Figura 5:</b> Painel de Modelagem XGBoost LOCO — Curva ROC, Importância SHAP e Livro de Decisões Metodológicas.", estilo_legenda))
-
-    elementos.append(Paragraph("<b>Execução e Auditoria da Modelagem Científica:</b>", estilo_corpo))
+    elementos.append(criar_imagem_tela("03-Eleicao-das-Amostras.png"))
     elementos.append(Paragraph(
-        "1. <b>Execução via Linha de Comando:</b> Para treinar o modelo e gerar as figuras de publicação em 300 DPI, execute:<br/>"
-        "&nbsp;&nbsp;&nbsp;&nbsp;<code>python scripts/treinar_xgboost_loco.py --dados data/tabelas/Tabela_150focos.xlsx --controles data/tabelas/base_controles_spd.xlsx --saida docs/relatorios/modelagem/</code><br/>"
-        "2. <b>Validação Cruzada Espacial LOCO (K=5):</b> O script particiona os dados pelas 6 macrobacias do Paraná (IAT). Em cada fold, "
-        "uma bacia hidrográfica inteira é mantida fora do treinamento para atuar como conjunto de teste, medindo a real capacidade de extrapolação regional.<br/>"
-        "3. <b>Explicabilidade Física via SHAP:</b> O gráfico SHAP decompõe a contribuição marginal de cada fator: índices de solo exposto (BSI) e "
-        "declividade impulsionam a probabilidade de erosão, enquanto o vigor vegetal (NDVI) atua como atenuante biofísico protetivo.<br/>"
-        "4. <b>Livro de Decisões Metodológicas (D01 a D19):</b> Painel formal que registra o estado de cada premissa do mestrado. "
-        "Nenhuma decisão pode ser alterada sem registro auditável de justificativa e impacto científico.",
+        "<b>Figura 3:</b> Painel de Eleição Amostral no GEE — Parametrização Biofísica, Thinning Geodésico e Salvaguarda Anti-Mock.",
+        estilo_legenda
+    ))
+    elementos.append(Paragraph("<b>Parâmetros de Controle & Salvaguardas Biofísicas:</b>", estilo_corpo))
+    elementos.append(Paragraph(
+        "1. <b>Alerta de Segurança & Anti-Mock:</b> O banner adverte que a eleição requer credenciais ativas do GEE (Service Account GCP). "
+        "O sistema bloqueia preventivamente qualquer amostragem mockada ou com dados simulados.<br/>"
+        "2. <b>Quantidade de Candidatos:</b> Define o volume amostral balanceado a ser extraído na AOI ativa (padrão de 50 amostras por lote).<br/>"
+        "3. <b>Raio de Thinning Espacial (km):</b> Buffer geodésico mínimo (ex.: 5 km) entre candidatos para mitigar autocorrelação espacial "
+        "e evitar que pontos amostrais compartilhem a mesma vertente ou assinatura espectral de vizinhança.<br/>"
+        "4. <b>Filtros de Frequência de Solo Nu & Declividade:</b> Limiar mínimo de exposição do solo (0,15) e faixa de declividade topográfica "
+        "(3% a 20% no DEM ALOS PALSAR), focando em áreas suscetíveis à erosão e excluindo terrenos planos ou escarpas inapropriadas.<br/>"
+        "5. <b>Conformidade Regras 1 a 9:</b> O botão <i>'Eleger Pontos Reais no GEE'</i> só é liberado após a validação de todas as salvaguardas periciais.",
+        estilo_corpo
+    ))
+    elementos.append(PageBreak())
+
+    # --- PÁGINA 8: TELA 4 ---
+    elementos.append(Paragraph("4.4. Central de Campanha & Sítios Padrão-Ouro de Drone (VANT)", estilo_h2))
+    elementos.append(Paragraph(
+        "A <b>Central de Campanha, Ingestão de Rótulos & Concordância Kappa</b> gerencia a validação de altíssima resolução espacial "
+        "(GSD de 5 a 10 cm), estabelecendo o vínculo pericial direto entre a verdade de campo mapeada por VANT e a resposta orbital de 10 m do Sentinel-2.",
+        estilo_corpo
+    ))
+    elementos.append(criar_imagem_tela("04-Central-de-campanha.png"))
+    elementos.append(Paragraph(
+        "<b>Figura 4:</b> Central de Campanha de Drone — Sítios Contínuos de 10 a 50 ha (Céu Azul e Medianeira) e Gradiente Topo-Sequencial.",
+        estilo_legenda
+    ))
+    elementos.append(Paragraph("<b>Estrutura Metodológica da Validação Padrão-Ouro:</b>", estilo_corpo))
+    elementos.append(Paragraph(
+        "1. <b>Sítios Contínuos de 10 a 50 ha (Seção 3.2 PPGTCA 2026):</b> Quatro sítios de referência cadastrados na malha SICAR/CAR "
+        "(Sítios Alfa e Beta em Medianeira; Gama e Delta em Céu Azul — Bacia do Paraná 3). Os dados de drone atuam com papel estritamente <b>HELD-OUT</b> (nunca treinam o modelo).<br/>"
+        "2. <b>Resolução & Grade Matricial:</b> Cada sítio cobre ~49,5 a 50 ha, correspondendo a ~4.954 a 4.994 pixels Sentinel-2 (10m) "
+        "e ortomosaicos centimétricos com GSD de 7,5 cm.<br/>"
+        "3. <b>Gradiente Topo-Sequencial de Calibração:</b> Monitoramento contínuo da topossequência da vertente agrícola: "
+        "<i>1. Topo Estável</i> (divisor de águas, 2% a 6%); <i>2. Encosta de Escoamento</i> (cisalhamento hidráulico, 8% a 18%); e "
+        "<i>3. Baixada de Deposição</i> (acúmulo coluvial, 1% a 5%).<br/>"
+        "4. <b>Métricas Matriciais Pixel-a-Pixel:</b> O botão <i>'Calcular Métricas Matriciais (GSD vs 10m)'</i> reamostra o ortomosaico "
+        "para a grade do satélite via agregação zonal, gerando Acurácia Global, F1-Score, IoU e Índice Kappa.",
+        estilo_corpo
+    ))
+    elementos.append(PageBreak())
+
+    # --- PÁGINA 9: TELA 5 ---
+    elementos.append(Paragraph("4.5. Central da Matriz de Treino (Supervisionado) & Invariantes", estilo_h2))
+    elementos.append(Paragraph(
+        "A <b>Central da Matriz de Treino</b> é o núcleo de integração onde as variáveis multi-sensores (Sentinel-2, ALOS PALSAR, "
+        "índices de solo/vegetação e pedologia) são fundidas aos rótulos empíricos consolidados de observação humana, sob estrita verificação de invariantes matemáticos.",
+        estilo_corpo
+    ))
+    elementos.append(criar_imagem_tela("05-Matriz-de-treino.png"))
+    elementos.append(Paragraph(
+        "<b>Figura 5:</b> Painel da Matriz de Treino — Fusão Multi-Sensores, Exclusão de Divergências e Bloqueio de Dados Não Validados.",
+        estilo_legenda
+    ))
+    elementos.append(Paragraph("<b>Salvaguardas de Composição da Matriz & Rastreabilidade:</b>", estilo_corpo))
+    elementos.append(Paragraph(
+        "1. <b>Bloqueio de Matriz Vazia:</b> O sistema detecta se a base supervisionada possui pontos sem validação empírica e impede a montagem "
+        "de matrizes cegas, exigindo rótulos consolidados de Fase A (observação de imagens) ou Fase B (inspeção presencial KoboCollect).<br/>"
+        "2. <b>Exclusão Automática de Divergências:</b> Amostras com conflitos inter-avaliadores pendentes são sumariamente expurgadas da "
+        "matriz até que haja consenso pericial documentado, eliminando contaminação por incerteza de rotulagem.<br/>"
+        "3. <b>Auditoria dos 10 Invariantes Matemáticos:</b> O motor valida que nenhuma coluna possua variância zero, que nenhum valor decorra "
+        "de imputação numérica artificial e que a janela de guarda temporal do Modelo P (>= 12 meses) seja integralmente respeitada.<br/>"
+        "4. <b>Montagem de Features:</b> Integra bandas de reflectância (B02-B12), índices BSI, NDVI, NDWI, métricas topográficas e atributos do solo.",
+        estilo_corpo
+    ))
+    elementos.append(PageBreak())
+
+    # --- PÁGINA 10: TELA 6 ---
+    elementos.append(Paragraph("4.6. Conexão, Credenciais & Gestão de Dados e APIs", estilo_h2))
+    elementos.append(Paragraph(
+        "O módulo <b>'Conexão, Credenciais & Gestão de Dados'</b> centraliza a gestão segura das chaves de API e conexões locais "
+        "necessárias para alimentar os motores de sensoriamento remoto, cartografia e bases cadastrais fundiárias do SAREL v2.0.",
+        estilo_corpo
+    ))
+    elementos.append(criar_imagem_tela("06-Conexao-e-chaves.png"))
+    elementos.append(Paragraph(
+        "<b>Figura 6:</b> Gerenciador de Credenciais e APIs — Chaves Planet NICFI, Mapbox HD, Embrapa AgroAPI e Google Maps.",
+        estilo_legenda
+    ))
+    elementos.append(Paragraph("<b>Painéis de Configuração & Fontes de Dados:</b>", estilo_corpo))
+    elementos.append(Paragraph(
+        "1. <b>Aba Google Earth Engine (GEE):</b> Permite testar e validar o arquivo JSON da conta de serviço (Service Account) Google Cloud, "
+        "essencial para a ingestão massiva de coleções Sentinel-2 e ALOS PALSAR.<br/>"
+        "2. <b>Planet NICFI & Orders API Key:</b> Configuração do acesso a mosaicos planetários de alta resolução (3 metros) para auditoria temporal fina.<br/>"
+        "3. <b>Mapbox Satellite HD Token:</b> Integração do basemap de alta fidelidade para inspeção detalhada de feições erosivas e conservacionistas.<br/>"
+        "4. <b>Embrapa AgroAPI / SmartSolos Token:</b> Conexão ao serviço web da Embrapa para recuperação automática de atributos físico-químicos de solos.<br/>"
+        "5. <b>Google Maps API Key:</b> Chave para geocodificação reversa de endereços municipais e links diretos para navegação terrestre pericial.<br/>"
+        "6. <b>Base Fundiária Local:</b> Aba dedicada à monitoração e conexão ao banco de dados SQLite/SpatiaLite local (<code>fundiario_brasil.db</code>).",
+        estilo_corpo
+    ))
+    elementos.append(PageBreak())
+
+    # --- PÁGINA 11: TELA 7 ---
+    elementos.append(Paragraph("4.7. Central de Exportação Científica & SIG", estilo_h2))
+    elementos.append(Paragraph(
+        "A <b>Central de Exportação Científica & SIG</b> gera os artefatos de dados e relatórios da pesquisa em formatos abertos e periciais, "
+        "assegurando reprodutibilidade metodológica total em conformidade com as 9 Regras do SAREL e diretrizes da LGPD.",
+        estilo_corpo
+    ))
+    elementos.append(criar_imagem_tela("07-Exportacao.png"))
+    elementos.append(Paragraph(
+        "<b>Figura 7:</b> Central de Exportação Científica & SIG — Planilha de Dissertação (.xlsx), CSV UTF-8 e Camadas GeoJSON.",
+        estilo_legenda
+    ))
+    elementos.append(Paragraph("<b>Formatos de Exportação Disponíveis:</b>", estilo_corpo))
+    elementos.append(Paragraph(
+        "1. <b>Planilha de Dissertação (.xlsx):</b> Pasta de trabalho oficial do Microsoft Excel contendo 3 abas estruturadas: "
+        "<i>Metadados</i> (parâmetros da coleta e hash da versão), <i>Dados Amostrais</i> (com colunas duplas registrando valor e proveniência) "
+        "e <i>Dicionário de Variáveis</i> formal.<br/>"
+        "2. <b>CSV Científico UTF-8:</b> Formato leve delimitado por vírgulas voltado a scripts de modelagem em Python e R, contendo bloco "
+        "superior de conformidade metodológica e anonimização pericial LGPD.<br/>"
+        "3. <b>Camadas Vetoriais GeoJSON:</b> Arquivo <i>FeatureCollection</i> padronizado (EPSG:4326) pronto para importação no QGIS ou ArcGIS, "
+        "reunindo os pontos amostrais com todos os atributos físicos e os polígonos de talhões delimitados.<br/>"
+        "4. <b>Princípio de Rastreabilidade Estrita:</b> O lema do sistema <i>'Sem colunas inventadas: Toda célula tem proveniência real'</i> "
+        "garante que cada atributo exportado provém de fonte física comprovada (satélite, MDE, Embrapa ou medição de campo).",
         estilo_corpo
     ))
     elementos.append(PageBreak())
@@ -1150,11 +1234,11 @@ def construir_manual_pdf(caminho_saida: str, caminhos_figuras: dict[str, str]):
 def main():
     print("=" * 80)
     print("GERADOR DE MANUAL DE INSTALAÇÃO E OPERAÇÃO SAREL (PDF OFICIAL)")
-    print("Mestrado PPGTCA 2026 — Pesquisa de Erosão Laminar no Paraná")
-    print("=" * 80)
+    print("SAREL - Sistema de Amostragem e Rotulagem para Erosão Laminar")
+    print("PPGTCA / UTFPR Campus Medianeira — 2026")
+    print("================================================================================")
 
-    figuras = criar_diagramas_telas(DIRETORIO_FIGURAS)
-    construir_manual_pdf(CAMINHO_PDF_FINAL, figuras)
+    construir_manual_pdf(CAMINHO_PDF_FINAL)
 
     tamanho_bytes = os.path.getsize(CAMINHO_PDF_FINAL)
     print(f"[ARTEFATO] PDF Final: {CAMINHO_PDF_FINAL} ({tamanho_bytes / 1024:.1f} KB)")

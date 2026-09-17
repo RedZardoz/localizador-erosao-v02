@@ -305,6 +305,11 @@ export function PainelCampanha() {
                     <span className="text-base font-bold text-cyan-600 dark:text-cyan-400 font-mono">
                       {metricasSimuladas.kappaCohen.toFixed(3)}
                     </span>
+                    {metricasSimuladas.intervaloConfianca95 && (
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500 block font-mono">
+                        IC 95% [{metricasSimuladas.intervaloConfianca95[0].toFixed(2)}, {metricasSimuladas.intervaloConfianca95[1].toFixed(2)}]
+                      </span>
+                    )}
                   </div>
 
                   <div className="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-center">

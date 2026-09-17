@@ -8,7 +8,7 @@ $IconPath = (Join-Path $WorkingDirectory "assets\icon.ico")
 $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
 $Shortcut.TargetPath = $TargetFile
 $Shortcut.WorkingDirectory = $WorkingDirectory
-$Shortcut.Description = "Localizador de Erosao & Propriedade - Mestrado PPGTCA 2026"
+$Shortcut.Description = "SAREL - Sistema de Amostragem e Rotulagem para Erosão Laminar"
 if (Test-Path $IconPath) {
     $Shortcut.IconLocation = "$IconPath,0"
 } else {

@@ -22,7 +22,18 @@ import {
   NomeBandaEspectral,
   TODAS_BANDAS_ESPECTRAIS,
   calcularNdvi,
+  calcularBsi,
 } from "./serieTemporal";
+
+export interface OpcoesExtracaoSoloExposto {
+  /**
+   * Limiar mínimo de Bare Soil Index (BSI) para confirmação de solo mineral.
+   * Em áreas sob Sistema Plantio Direto (SPD), palhada seca residual pode apresentar
+   * NDVI baixo (< 0.25). A exigência opcional de BSI >= limiarMinBsi assegura que apenas
+   * superfícies com assinatura mineral exposta sejam contabilizadas como solo nu (Ê).
+   */
+  limiarMinBsi?: number;
+}
 
 export interface MetricasSoloExposto {
   frequenciaSoloNu: Proveniencia<number>;       // E^
@@ -53,7 +64,8 @@ function calcularMediana(valores: number[]): number | null {
  */
 export function extrairMetricasSoloExposto(
   cenas: ObservacaoCena[],
-  limiarNdvi: number
+  limiarNdvi: number,
+  opcoes?: OpcoesExtracaoSoloExposto
 ): MetricasSoloExposto {
   if (!Number.isFinite(limiarNdvi)) {
     throw new Error(`Limiar de NDVI inválido: ${limiarNdvi}`);
@@ -89,10 +101,19 @@ export function extrairMetricasSoloExposto(
     };
   }
 
-  // 2. Classificar cada cena válida como solo nu (NDVI < limiarNdvi)
+  // 2. Classificar cada cena válida como solo nu (NDVI < limiarNdvi e BSI opcional)
   const cenasComNdvi = validas.map(c => {
     const ndvi = calcularNdvi(c.b8, c.b4);
-    const ehSoloNu = ndvi !== null && ndvi < limiarNdvi;
+    let ehSoloNu = ndvi !== null && ndvi < limiarNdvi;
+
+    // Discriminação física contra falso positivo de palhada seca em SPD
+    if (ehSoloNu && typeof opcoes?.limiarMinBsi === "number") {
+      const bsi = calcularBsi(c.b11, c.b4, c.b8, c.b2);
+      if (bsi !== null && bsi < opcoes.limiarMinBsi) {
+        ehSoloNu = false;
+      }
+    }
+
     return { ...c, ndviCalculado: ndvi, ehSoloNu };
   });
 
@@ -102,11 +123,18 @@ export function extrairMetricasSoloExposto(
   // 3. Frequência de solo nu (Ê)
   // Regra 1 / Invariante 5: se nSoloNu == 0, frequencia = 0.0 é um valor real medido/modelado!
   const freqVal = Number((nSoloNu / nValidas).toFixed(4));
+  const insumos = ["serie_B4", "serie_B8"];
+  if (typeof opcoes?.limiarMinBsi === "number") {
+    insumos.push("serie_B2", "serie_B11");
+  }
+
   const frequenciaSoloNu: Proveniencia<number> = {
     estado: "modelado",
     valor: freqVal,
-    modelo: "Ê = nSoloNu / nTotalValidas",
-    insumos: ["serie_B4", "serie_B8"],
+    modelo: typeof opcoes?.limiarMinBsi === "number"
+      ? "Ê = nSoloNu(NDVI < limiar & BSI >= limiarMin) / nTotalValidas"
+      : "Ê = nSoloNu / nTotalValidas",
+    insumos,
     decisoes: ["D10"],
     qualidade: { nObservacoes: nValidas },
   };
