@@ -1,15 +1,57 @@
 "use client";
 
 import React from "react";
+import { Cpu, RefreshCw, CheckCircle2, AlertTriangle, ShieldCheck, Zap } from "lucide-react";
 import { useSarelStore } from "@/store/useSarelStore";
 import { SeloProveniencia } from "./SeloProveniencia";
 import { GraficoSerieTemporal } from "./GraficoSerieTemporal";
 import { formatToDMS } from "@/lib/export/dms";
+import type { LaudoAuditoriaPonto } from "@/types/jev";
 
 export function InspetorPonto() {
-  const { obterPontoSelecionado, rotulosConsolidados, pontos, selecionarPonto } = useSarelStore();
+  const { obterPontoSelecionado, rotulosConsolidados, pontos, selecionarPonto, credenciais, adicionarLog } = useSarelStore();
   const [modeloAtivo, setModeloAtivo] = React.useState<"D" | "P">("D");
+  const [laudoAuditoria, setLaudoAuditoria] = React.useState<LaudoAuditoriaPonto | null>(null);
+  const [auditando, setAuditando] = React.useState(false);
   const ponto = obterPontoSelecionado();
+
+  React.useEffect(() => {
+    setLaudoAuditoria(null);
+  }, [ponto?.id]);
+
+  const dispararAuditoria = async () => {
+    if (!ponto) return;
+    setAuditando(true);
+    try {
+      const res = await fetch("/api/jev/auditar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ponto,
+          apiKey: credenciais.jevApiKey,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.ok && data.laudo) {
+        setLaudoAuditoria(data.laudo);
+        adicionarLog(
+          "info",
+          "Auditoria-DualEngine",
+          `Auditoria concluída para ${ponto.codigo} via ${data.laudo.metodo} (${data.laudo.latenciaMs}ms).`
+        );
+      } else {
+        throw new Error(data?.error || `Falha na requisição: HTTP ${res.status}`);
+      }
+    } catch (err: any) {
+      adicionarLog(
+        "warning",
+        "Auditoria-DualEngine",
+        `Erro ao auditar ponto ${ponto.codigo}: ${err?.message || "Falha na comunicação"}.`
+      );
+    } finally {
+      setAuditando(false);
+    }
+  };
 
   if (!ponto) {
     return (
@@ -199,6 +241,152 @@ export function InspetorPonto() {
         onModeloChange={setModeloAtivo}
         dataReferencia={ponto.rastreio?.calculadoEm?.split("T")[0] || "2026-01-01"}
       />
+
+      {/* Bloco de Auditoria Rápida Dual-Engine (Jev System One / RUSLE Local) */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+              <Cpu className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                Auditoria de Decisão Rápida (Dual-Engine)
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-mono font-semibold bg-slate-100 text-slate-600">
+                  {credenciais.jevApiKey ? "API Jev Configurada" : "Motor Determinístico Local"}
+                </span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                Auditoria biofísica em tempo real via Jev (TypeSafe AI / System One) com fallback determinístico RUSLE.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={dispararAuditoria}
+            disabled={auditando}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-sm transition-all cursor-pointer"
+          >
+            {auditando ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Auditando amostra...</span>
+              </>
+            ) : (
+              <>
+                <Zap className="w-3.5 h-3.5" />
+                <span>Auditar Ponto {ponto.codigo}</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {laudoAuditoria && (
+          <div className="space-y-3 animate-in fade-in">
+            {/* Metadados da Auditoria */}
+            <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-slate-500">Motor de Execução:</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full font-mono font-bold text-[11px] flex items-center gap-1.5 ${
+                    laudoAuditoria.metodo === "JEV_SYSTEM_ONE"
+                      ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                      : "bg-blue-100 text-blue-800 border border-blue-300"
+                  }`}
+                >
+                  <span className="text-xs">●</span>
+                  {laudoAuditoria.metodo === "JEV_SYSTEM_ONE"
+                    ? "Jev (TypeSafe AI / System One)"
+                    : "Motor Local Determinístico (RUSLE/Embrapa)"}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3 text-slate-500 font-mono text-[11px]">
+                <span>Latência: <b>{laudoAuditoria.latenciaMs}ms</b></span>
+                <span>•</span>
+                <span>{new Date(laudoAuditoria.timestamp).toLocaleTimeString()}</span>
+              </div>
+            </div>
+
+            {/* Aviso de Degradação Graciosa, se houver */}
+            {laudoAuditoria.detalhes?.motivoFallback && (
+              <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600" />
+                <span><b>Nota de Resiliência:</b> {laudoAuditoria.detalhes.motivoFallback}</span>
+              </div>
+            )}
+
+            {/* 3 Primitivas Avaliadas */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+              {/* 1. Consistência Física (Noul) */}
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-slate-600">Consistência Física (Noul)</span>
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      laudoAuditoria.consistenciaFisica.valido
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "bg-rose-100 text-rose-800"
+                    }`}
+                  >
+                    {laudoAuditoria.consistenciaFisica.valido ? "Válido" : "Inconsistente"}
+                  </span>
+                </div>
+                <p className="font-bold text-slate-900">
+                  Confiança: {(laudoAuditoria.consistenciaFisica.confianca * 100).toFixed(0)}%
+                </p>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  {laudoAuditoria.consistenciaFisica.observacao}
+                </p>
+              </div>
+
+              {/* 2. Suscetibilidade à Erosão (Score) */}
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-slate-600">Suscetibilidade (Score 0-4)</span>
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                      laudoAuditoria.scoreSuscetibilidade.grau >= 3
+                        ? "bg-rose-100 text-rose-800"
+                        : laudoAuditoria.scoreSuscetibilidade.grau === 2
+                        ? "bg-amber-100 text-amber-800"
+                        : "bg-emerald-100 text-emerald-800"
+                    }`}
+                  >
+                    {laudoAuditoria.scoreSuscetibilidade.rotulo}
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xl font-black text-slate-900">
+                    Grau {laudoAuditoria.scoreSuscetibilidade.grau}
+                  </span>
+                  <span className="text-[11px] text-slate-400">/ 4</span>
+                </div>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  {laudoAuditoria.scoreSuscetibilidade.descricao}
+                </p>
+              </div>
+
+              {/* 3. Classificação de Manejo (Choice) */}
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-slate-600">Uso e Manejo (Choice)</span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    {(laudoAuditoria.coberturaManejo.confianca * 100).toFixed(0)}% conf.
+                  </span>
+                </div>
+                <p className="font-bold text-slate-900 leading-snug">
+                  {laudoAuditoria.coberturaManejo.classe}
+                </p>
+                <div className="pt-1 text-[10px] text-slate-400 font-mono flex justify-between">
+                  <span>NDVI: {laudoAuditoria.detalhes?.ndviObservado !== null ? laudoAuditoria.detalhes.ndviObservado?.toFixed(2) : "—"}</span>
+                  <span>BSI: {laudoAuditoria.detalhes?.bsiObservado !== null ? laudoAuditoria.detalhes.bsiObservado?.toFixed(2) : "—"}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Bloco de Rótulo Humano e Fundiário */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
