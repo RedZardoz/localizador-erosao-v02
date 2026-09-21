@@ -16,6 +16,7 @@ import {
 import { useSarelStore, usePontosVisiveis } from "@/store/useSarelStore";
 import { gerarPlanilhaXLSX } from "@/lib/export/planilha";
 import { gerarCsvCientifico } from "@/lib/export/csv";
+import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
 import { valorOuNulo } from "@/types/proveniencia";
 
 export const ExportModal: React.FC = () => {
@@ -86,6 +87,7 @@ export const ExportModal: React.FC = () => {
     }
     setExportando("geojson");
     try {
+      assegurarApenasPontosReais(pontosVisiveis, "exportação GeoJSON");
       const features: GeoJSON.Feature[] = [
         ...pontosVisiveis.map(
           (p): GeoJSON.Feature => ({

@@ -45,6 +45,10 @@ export const CAMPOS_PROIBIDOS_MATRIZ_TREINO = [
   "documentoMascarado",
   "perdaSoloRUSLE",
   "RUSLE_Perda_Solo",
+  "scoreSuscetibilidade",
+  "scoreJev",
+  "laudoJev",
+  "consistenciaFisica",
 ] as const;
 
 /**
