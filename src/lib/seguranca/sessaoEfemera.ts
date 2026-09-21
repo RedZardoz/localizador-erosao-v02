@@ -16,6 +16,7 @@ export interface SessaoTokens {
   gee?: CredenciaisServiceAccount;
   planetApiKey?: string;
   mapLibreToken?: string;
+  jevApiKey?: string;
 }
 
 interface SessionEntry {

@@ -424,6 +424,7 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
     cartoApiKey: "",
     planetApiKey: "",
     embrapaToken: "",
+    jevApiKey: "",
   },
 
   setCredenciais: (creds) =>

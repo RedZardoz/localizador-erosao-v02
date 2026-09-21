@@ -644,25 +644,25 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
     add_header(s13, "Limitações Metodológicas & Desafios da Operação Real", "TRANSPARÊNCIA CIENTÍFICA & LIMITES DE VALIDADE")
 
     limit_cards = [
-        ("Resolução Espacial de 30m (Copernicus DEM)", [
-            ("Limitação do Pixel:", "Copernicus DEM (30m) suaviza microtopografia, terraços de retenção (2–6m) e microcanais."),
-            ("Consequência:", "Pode subestimar localmente o gradiente hidráulico em talvegues abruptos ou rupturas de declive."),
-            ("Compensação Implantada:", "Abordagem multiescala: macro-triagem no GEE + PlanetScope (3m) na rotulagem cega + drone (< 5cm) no campo."),
+        ("Resolução Espacial de 30 metros", [
+            ("Tamanho do Pixel:", "Copernicus DEM (30m) suaviza microtopografia, feições de microrrelevo e terraços estreitos."),
+            ("Consequência:", "Pode subestimar localmente a declividade em talvegues abruptos ou rupturas de declive acentuadas."),
+            ("Atenuação:", "Uso complementar de ortomosaicos de drone (GSD < 5cm) nas áreas de calibração presencial."),
         ], C_AMBER),
         ("Persistência de Cobertura de Nuvens", [
-            ("Desafio Subtropical:", "Alta nebulosidade convectiva no Paraná durante as safras de primavera e verão (outubro a março)."),
-            ("Consequência:", "Redução de passagens ópticas úteis do Sentinel-2 (ciclo de 5 dias) em janelas críticas pós-plantio."),
-            ("Compensação Implantada:", "Revisita quase diária do PlanetScope, radar Sentinel-1 (C-band penetra nuvem em T0) e filtro UDM2 por AOI."),
+            ("Região Sul do Brasil:", "Elevada nebulosidade em períodos chuvosos críticos de primavera e verão."),
+            ("Consequência:", "Redução do número de imagens úteis no Sentinel-2 e janelas de observação truncadas."),
+            ("Atenuação:", "Composição temporal com BSI, máscaras estritas de nuvem/sombra e séries de múltiplos anos."),
         ], C_ROSE),
         ("Viés de Consentimento dos Produtores", [
-            ("Desafio Fundiário:", "Validação presencial de campo (20%) exige autorização formal de acesso ao imóvel rural (CAR/SIGEF)."),
-            ("Consequência:", "Risco de amostragem viciada em proprietários mais solícitos, com práticas conservacionistas superiores."),
-            ("Compensação Metodológica:", "Dupla cegueira: Fase A (PlanetScope 3m) cobre 100% da amostra sem viés; auditoria Kappa (IC 95%) afere desvios."),
+            ("Acesso aos Imóveis:", "A validação presencial exige autorização formal de entrada pelo titular do imóvel rural."),
+            ("Consequência:", "Possível viés amostral de proprietários mais colaborativos e com manejo potencialmente superior."),
+            ("Atenuação:", "Condução de fotointerpretação cega independente e geolocalização com amostragem balanceada."),
         ], C_INDIGO),
         ("Descasamento Temporal Solo-Sensor", [
-            ("Dinâmica Agrícola:", "Enxurradas ocorrem entre passagens orbitais; o rápido rebrote e cobertura mascaram a erosão laminar."),
-            ("Consequência:", "Marcas efêmeras de erosão laminar podem desaparecer antes de uma cena óptica sem nuvens."),
-            ("Compensação Metodológica:", "Pares de evento (trio T-, T0, T+ com CHIRPS/IMERG) e métrica harmônica contínua de solo exposto (Ê)."),
+            ("Dinâmica Agrícola:", "Eventos de chuva intensa podem ocorrer entre as passagens orbitais de 5 dias do Sentinel-2."),
+            ("Consequência:", "Erosão ocorrida logo após o preparo do solo pode ser mascarada pelo rápido crescimento de plantas."),
+            ("Atenuação:", "Registro da data exata de cada observação e análise da série histórica de solo exposto (Ê)."),
         ], C_CYAN),
     ]
 
@@ -670,8 +670,8 @@ def create_deck(output_pptx_path="Apresentacao_SAREL_PPGTCA_2026.pptx"):
         col = idx % 2
         row = idx // 2
         bx = Inches(0.8 + col * 6.0)
-        by = Inches(1.50 + row * 2.70)
-        add_card(s13, bx, by, Inches(5.7), Inches(2.55), title, bullets, accent_color=color, title_size=12.5, body_size=9.2)
+        by = Inches(1.55 + row * 2.65)
+        add_card(s13, bx, by, Inches(5.7), Inches(2.45), title, bullets, accent_color=color, title_size=13, body_size=10)
 
     # =========================================================================
     # SLIDE 14: CONCLUSÃO & REFERÊNCIAS

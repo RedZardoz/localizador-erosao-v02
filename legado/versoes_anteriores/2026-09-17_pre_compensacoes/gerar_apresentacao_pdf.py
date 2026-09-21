@@ -585,26 +585,29 @@ def criar_apresentacao_pdf(caminho_saida):
     story.append(PageBreak())
 
     # =========================================================================
-    # SLIDE 13: LIMITAÇÕES METODOLÓGICAS & SOLUÇÕES COMPENSATÓRIAS
+    # SLIDE 13: LIMITAÇÕES DO ESTUDO & PRÓXIMOS PASSOS
     # =========================================================================
     c1 = card_box(
-        "Limitações & Desafios Metodológicos",
+        "Limitações Metodológicas Declaradas",
         [
-            "<b>1. Resolução do MDE (30m):</b> O Copernicus DEM suaviza microtopografia, terraços de contenção (2–6m) e microcanais, podendo subestimar localmente a declividade em talvegues acentuados.",
-            "<b>2. Persistência de Nuvens:</b> Elevada nebulosidade convectiva no Paraná durante as safras de primavera/verão limita o número de passagens ópticas úteis do Sentinel-2 (ciclo de 5 dias).",
-            "<b>3. Viés de Consentimento:</b> A validação presencial (20%) exige anuência formal do proprietário (CAR/SIGEF), com risco de priorizar produtores mais receptivos e com manejo conservacionista superior.",
-            "<b>4. Descasamento Temporal:</b> Eventos de chuva erosiva ocorrem fora da passagem orbital; o rápido crescimento da cultura pode mascarar feições efêmeras de erosão laminar.",
+            "<b>1. Resolução Espacial do MDE (30m):</b> O Copernicus DEM suaviza feições de microrrelevo (pequenos terraços e sulcos decamétricos) que influenciam o escoamento superficial direto.",
+            "<b>2. Janela Óptica & Cobertura de Nuvens:</b> A frequência de nebulosidade no Paraná limita a quantidade de cenas utilizáveis sem interferência atmosférica.",
+            "<b>3. Viés de Acesso em Campo:</b> A subamostra presencial de 20% depende de autorização de proprietários, podendo gerar viés de consentimento nas vistorias.",
+            "<b>4. Parametrização RUSLE em Andamento:</b> A linha de base ainda aguarda a homologação formal dos fatores R, K e LS para emissão de perda em t/ha/ano.",
         ],
         cor_tit="amber", cor_borda=colors.HexColor("#FDE68A"), cor_fundo=C_AMBER_BG, largura=425
     )
 
     c2 = card_box(
-        "Soluções Compensatórias & Mitigações Implantadas",
+        "Status Atual do Sistema & Próximos Passos",
         [
-            "<b>1. Abordagem Multiescala:</b> Macro-triagem no GEE (30m/10m) combinada com <b>PlanetScope (3m)</b> na fotointerpretação cega e <b>ortomosaicos de drone (< 5cm)</b> no campo presencial.",
-            "<b>2. Revisita Diária & Radar:</b> Constelação Planet diária para brechas de céu claro, radar <b>Sentinel-1 C-band</b> (penetra nuvens em T0) e máscara <b>UDM2 avaliada na AOI</b> do ponto (≥80%).",
-            "<b>3. Dupla Cegueira & Kappa:</b> A Fase A (PlanetScope 3m) cobre <b>100% da amostra sem viés fundiário</b>; a auditoria estatística por <b>Kappa de Cohen (κ ≥ 0,61, IC 95%)</b> isola divergências.",
-            "<b>4. Pares de Eventos & Frequência Ê:</b> Módulo de trios temporais (T-, T0, T+) disparado por anomalias CHIRPS/IMERG + análise da <b>persistência histórica de solo exposto (Ê)</b>.",
+            "<b>Realidade Operacional Atual do SAREL:</b>",
+            "• Módulos de amostragem estratificada, banco fundiário local, cliente OGC Embrapa e governança de invariantes 100% implementados e testados.",
+            "<b>Cronograma da Pesquisa de Mestrado:</b>",
+            "• <b>Fase 1:</b> Execução da rotulagem cega (Fase A) sobre imagens de alta resolução;",
+            "• <b>Fase 2:</b> Campanha de campo (Fase B) e auditoria Kappa de concordância;",
+            "• <b>Fase 3:</b> Homologação dos fatores pendentes da RUSLE (R, K, LS);",
+            "• <b>Fase 4:</b> Treinamento do XGBoost com validação LOCO e redação final.",
         ],
         cor_tit="emerald", cor_borda=colors.HexColor("#A7F3D0"), cor_fundo=C_EMERALD_BG, largura=425
     )
