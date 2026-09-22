@@ -45,10 +45,16 @@ export interface DiagnosticoPersistencia {
 }
 
 export interface OpcoesPersistencia {
-  limiarNdviSoloNu: number;        // Padrao do metodo: 0.40 (D10)
-  limiarNdviDosselFechado: number; // Padrao: 0.65 (Controle SPD)
-  limiarFreqDegradacao: number;    // Padrao: 0.25 (mais de 25% do tempo com solo nu)
+  limiarNdviSoloNu?: number;        // Padrao do metodo: 0.25 (Decisao D10: GEOS3 / Demattê et al., 2018)
+  limiarNdviDosselFechado?: number; // Padrao: 0.65 (Controle SPD)
+  limiarFreqDegradacao?: number;    // Padrao: 0.25 (mais de 25% do tempo com solo nu)
 }
+
+export const OPCOES_PERSISTENCIA_PADRAO: Required<OpcoesPersistencia> = {
+  limiarNdviSoloNu: 0.25,
+  limiarNdviDosselFechado: 0.65,
+  limiarFreqDegradacao: 0.25,
+};
 
 /**
  * Analisa a trajetoria multitemporal de um ponto para separar formalmente
@@ -72,9 +78,11 @@ export interface OpcoesPersistencia {
  */
 export function analisarPersistenciaTemporal(
   cenas: ObservacaoCena[],
-  opcoes: OpcoesPersistencia
+  opcoes: OpcoesPersistencia = OPCOES_PERSISTENCIA_PADRAO
 ): DiagnosticoPersistencia {
-  const { limiarNdviSoloNu, limiarNdviDosselFechado, limiarFreqDegradacao } = opcoes;
+  const limiarNdviSoloNu = opcoes.limiarNdviSoloNu ?? OPCOES_PERSISTENCIA_PADRAO.limiarNdviSoloNu;
+  const limiarNdviDosselFechado = opcoes.limiarNdviDosselFechado ?? OPCOES_PERSISTENCIA_PADRAO.limiarNdviDosselFechado;
+  const limiarFreqDegradacao = opcoes.limiarFreqDegradacao ?? OPCOES_PERSISTENCIA_PADRAO.limiarFreqDegradacao;
 
   // 1. Filtrar e ordenar cronologicamente observacoes sem nuvem
   const validas = cenas
@@ -109,7 +117,7 @@ export function analisarPersistenciaTemporal(
       ndvi,
       bsi,
       b12: c.b12,
-      ehSoloNu: ndvi < limiarNdviSoloNu,
+      ehSoloNu: ndvi <= limiarNdviSoloNu,
       ehDosselFechado: ndvi >= limiarNdviDosselFechado,
     };
   });

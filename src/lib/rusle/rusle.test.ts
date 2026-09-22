@@ -119,9 +119,9 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
   });
 
   describe("14.4 Coerência e Invariante 1", () => {
-    it("com D13, D14 ou D15 pendente, perdaSolo é indisponivel com causa decisao-pendente", () => {
+    it("com D13 ou D15 pendente, perdaSolo é indisponivel com causa decisao-pendente", () => {
       expect(REGISTRO_DECISOES.D13.estado).toBe("pendente");
-      expect(REGISTRO_DECISOES.D14.estado).toBe("pendente");
+      expect(REGISTRO_DECISOES.D14.estado).toBe("decidida");
       expect(REGISTRO_DECISOES.D15.estado).toBe("pendente");
 
       const rusle = montarLinhaDeBaseRUSLE({

@@ -51,7 +51,7 @@ export function executarAuditoriaLocal(
     if (ndvi > 0.6 && bsi < 0.0) {
       classeCobertura = "Plantio Direto Consolidado / Cobertura Densa";
       confiancaCobertura = 0.95;
-    } else if (ndvi < 0.4 && bsi > 0.1) {
+    } else if (ndvi <= 0.25 && bsi > 0.1) {
       classeCobertura = "Solo Exposto Degradado";
       confiancaCobertura = 0.92;
     } else {
@@ -65,7 +65,7 @@ export function executarAuditoriaLocal(
   let rotulo: "Nula" | "Baixa" | "Moderada" | "Alta" | "Crítica" = "Baixa";
   let descricao = "Baixa propensão inicial a perdas por arraste hídrico.";
 
-  const isSoloExposto = ndvi !== null && bsi !== null && ndvi < 0.4 && bsi > 0.1;
+  const isSoloExposto = ndvi !== null && bsi !== null && ndvi <= 0.25 && bsi > 0.1;
 
   if (isSoloExposto) {
     if (declividade !== null) {

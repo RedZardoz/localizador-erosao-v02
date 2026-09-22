@@ -53,7 +53,7 @@ function criarPontoMock(parciais?: Partial<PontoAmostral>): PontoAmostral {
       erodibilidadeClasse: { estado: "tabelado", valor: "Média", tabela: "Embrapa", chave: "LV" },
     },
     espectral: {
-      ndvi: medido(0.28),
+      ndvi: medido(0.20),
       bsi: medido(0.18),
       b2: medido(0.05),
       b4: medido(0.12),

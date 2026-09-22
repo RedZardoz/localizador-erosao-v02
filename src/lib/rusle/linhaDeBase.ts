@@ -16,9 +16,11 @@ import { LinhaDeBaseRUSLE } from "@/types/ponto";
 import { Proveniencia } from "@/types/proveniencia";
 import { REGISTRO_DECISOES } from "@/config/decisoes";
 import { obterFatorCComProveniencia } from "./fatorC";
+import { obterFatorKComProveniencia } from "./fatorK";
 
 export interface ParametrosLinhaDeBaseRUSLE {
   ndviProveniencia?: Proveniencia<number> | null;
+  erodibilidadeProveniencia?: Proveniencia<string> | null;
   fatorRSubstituto?: Proveniencia<number>;
   fatorKSubstituto?: Proveniencia<number>;
   fatorLSSubstituto?: Proveniencia<number>;
@@ -46,6 +48,7 @@ export function obterFatorPPadrao(): Proveniencia<number> {
 export function montarLinhaDeBaseRUSLE(params: ParametrosLinhaDeBaseRUSLE = {}): LinhaDeBaseRUSLE {
   const {
     ndviProveniencia,
+    erodibilidadeProveniencia,
     fatorRSubstituto,
     fatorKSubstituto,
     fatorLSSubstituto,
@@ -73,20 +76,16 @@ export function montarLinhaDeBaseRUSLE(params: ParametrosLinhaDeBaseRUSLE = {}):
         }
   );
 
-  // 4. Fator K (Aguardando Decisão D14)
-  const fatorK: Proveniencia<number> = fatorKSubstituto ?? (
-    REGISTRO_DECISOES.D14.estado === "pendente"
-      ? {
-          estado: "indisponivel",
-          causa: "decisao-pendente",
-          motivo: "Fator K numérico para RUSLE aguarda definição da Decisão D14.",
-        }
+  // 4. Fator K (Decisão D14 - Tabela 5 Embrapa Solos / Mannigel et al., 2002)
+  const fatorK: Proveniencia<number> =
+    fatorKSubstituto ??
+    (erodibilidadeProveniencia
+      ? obterFatorKComProveniencia(erodibilidadeProveniencia)
       : {
           estado: "indisponivel",
-          causa: "nao-calculado",
-          motivo: "Fator K decidido mas modelo de erodibilidade não integrado.",
-        }
-  );
+          causa: "insuficiente",
+          motivo: "Fator K numérico para RUSLE requer a classe de erodibilidade pedológica informada (Decisão D14).",
+        });
 
   // 5. Fator LS (Aguardando Decisão D15)
   const fatorLS: Proveniencia<number> = fatorLSSubstituto ?? (
@@ -127,7 +126,7 @@ export function montarLinhaDeBaseRUSLE(params: ParametrosLinhaDeBaseRUSLE = {}):
       valor: Number(perdaCalculada.toFixed(4)),
       modelo: "Equação Universal de Perda de Solo Revisada (RUSLE: A = R * K * LS * C * P)",
       insumos: ["Fator R", "Fator K", "Fator LS", "Fator C", "Fator P"],
-      decisoes: ["D01"],
+      decisoes: ["D01", "D14"],
     };
   } else {
     // Coleta as causas de indisponibilidade para justificativa honesta
