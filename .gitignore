@@ -88,3 +88,6 @@ legado/**/__pycache__/
 data/planet/
 
 Descrição da versão atual/
+
+# Bibliografia pesada (PDFs brutos locais mantidos fora do git - Opção A)
+docs/Selecao Bibliografica/**/*.pdf
