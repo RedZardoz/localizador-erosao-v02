@@ -839,7 +839,7 @@ def criar_apresentacao(caminho_saida):
     tf_ab1.word_wrap = True
 
     refs_p1 = [
-        "BHERING, S. B. et al. Erodibilidade dos solos do Brasil. Rio de Janeiro: Embrapa Solos, 2024. 40 p. (Documentos / Embrapa Solos, 246).",
+        "COELHO, M. R. et al. Erodibilidade dos solos do Brasil. Rio de Janeiro: Embrapa Solos, 2024. 38 p. (Documentos / Embrapa Solos, n. 246). Disponível em: http://www.infoteca.cnptia.embrapa.br/infoteca/handle/doc/1170044.",
         "CHEN, T.; GUESTRIN, C. XGBoost: A Scalable Tree Boosting System. In: ACM SIGKDD INTERNATIONAL CONFERENCE ON KNOWLEDGE DISCOVERY AND DATA MINING, 22., 2016, San Francisco. Proceedings [...]. New York: ACM, 2016. p. 785–794.",
         "DEMATTÊ, J. A. M. et al. Geospatial Soil Sensing System (GEOS3): A powerful data mining procedure to retrieve soil spectral reflectance from satellite images. Remote Sensing of Environment, v. 212, p. 161–175, 2018.",
         "DURIGON, V. L. et al. NDVI-based C-factor estimation for RUSLE in Brazilian watersheds. Revista Brasileira de Ciência do Solo, v. 38, n. 3, p. 726–734, 2014.",

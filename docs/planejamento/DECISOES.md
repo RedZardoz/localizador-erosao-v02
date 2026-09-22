@@ -43,7 +43,7 @@
 |---|---|
 | **Estado** | ✅ **Decidida** |
 | **Valor** | Domínio agrícola estrito [1..5] conforme escala Embrapa Solos. Classes 1 a 5 mapeadas ordinalmente (1: 'Muito baixa', 2: 'Baixa', 3: 'Média', 4: 'Alta', 5: 'Muito alta'). Classes não-agrícolas (6: 'Fase erodida', 7: 'Dunas', 8: 'Afloramentos de rochas', 9: 'Corpos d\'água') excluídas por máscara ou marcadas como `indisponivel` (`causa: "fora-do-dominio"`).<br/>**Corte K̂ para estratificação amostral:** Nível 1 = Baixa/Média erodibilidade (classes 1 a 3, correspondendo a K ≤ 0,0285 t·h·MJ⁻¹·mm⁻¹); Nível 2 = Alta/Muito alta erodibilidade (classes 4 e 5, correspondendo a K ≥ 0,0300 t·h·MJ⁻¹·mm⁻¹). |
-| **Referência** | Bhering, S.B. et al. (2024). *Erodibilidade dos solos do Brasil*. Documentos 246, Embrapa Solos, Rio de Janeiro (Tabela 5, páginas 13 a 15); Mannigel, E. et al. (2002). Fator erodibilidade de solos do estado de São Paulo. *Revista Brasileira de Ciência do Solo*, 26:1039–1049. |
+| **Referência** | Coelho, M.R. et al. (2024). *Erodibilidade dos solos do Brasil*. Documentos 246, Embrapa Solos, Rio de Janeiro, 38 p. (Tabela 5, páginas 13 a 15). Disponível em: http://www.infoteca.cnptia.embrapa.br/infoteca/handle/doc/1170044; Mannigel, E. et al. (2002). Fator erodibilidade de solos do estado de São Paulo. *Revista Brasileira de Ciência do Solo*, 26:1039–1049. |
 | **Justificativa** | Adoção da Proposta A com respaldo normativo oficial da Embrapa Solos (Doc. 246/2024) e validação pedológica de Mannigel et al. (2002), garantindo que a estratificação amostral K̂ reflita as descontinuidades reais de erodibilidade dos solos agrícolas brasileiros. |
 | **Decidido por** | Pesquisador |
 | **Decidido em** | 2026-09-22 |
@@ -69,7 +69,7 @@
 |---|---|
 | **Estado** | ✅ **Decidida** |
 | **Valor** | Conversão tabular oficial da Tabela 5 da Embrapa Solos (Documentos 246/2024) fundamentada em Mannigel et al. (2002) e IBGE (2018):<br/>• **Muito baixa (1,0 a 1,4):** K = 0,0020 a 0,0084 t·h·MJ⁻¹·mm⁻¹ (média ~0,0052)<br/>• **Baixa (1,5 a 2,4):** K = 0,0090 a 0,0144 t·h·MJ⁻¹·mm⁻¹ (média ~0,0117)<br/>• **Média (2,5 a 3,4):** K = 0,0150 a 0,0285 t·h·MJ⁻¹·mm⁻¹ (média ~0,0218)<br/>• **Alta (3,5 a 4,4):** K = 0,0300 a 0,0420 t·h·MJ⁻¹·mm⁻¹ (média ~0,0360)<br/>• **Muito alta (4,5 a 5,4):** K = 0,0450 a 0,0585 t·h·MJ⁻¹·mm⁻¹ (média ~0,0518) |
-| **Referência** | Bhering, S.B. et al. (2024). *Erodibilidade dos solos do Brasil*. Documentos 246, Embrapa Solos, Rio de Janeiro (Tabela 5, páginas 13 a 15); Mannigel, E. et al. (2002). Fator erodibilidade de solos do estado de São Paulo. *Revista Brasileira de Ciência do Solo*, 26:1039–1049; IBGE (2018). *Manual Técnico de Pedologia*. |
+| **Referência** | Coelho, M.R. et al. (2024). *Erodibilidade dos solos do Brasil*. Documentos 246, Embrapa Solos, Rio de Janeiro, 38 p. (Tabela 5, páginas 13 a 15). Disponível em: http://www.infoteca.cnptia.embrapa.br/infoteca/handle/doc/1170044; Mannigel, E. et al. (2002). Fator erodibilidade de solos do estado de São Paulo. *Revista Brasileira de Ciência do Solo*, 26:1039–1049; IBGE (2018). *Manual Técnico de Pedologia*. |
 | **Justificativa** | Resolve a incompatibilidade entre a carta da Embrapa Solos (que fornece classes ordinais qualitativas) e a equação da RUSLE (que exige valores numéricos contínuos de K). A conversão padronizada pela Embrapa elimina estimativas arbitrárias e ancora a linha de base empírica da pesquisa na literatura pedológica brasileira consolidada. |
 | **Decidido por** | Pesquisador |
 | **Decidido em** | 2026-09-22 |

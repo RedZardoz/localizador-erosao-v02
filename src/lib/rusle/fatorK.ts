@@ -25,8 +25,8 @@
  *    são tratadas como fora do domínio de calibração agrícola (retornam 'fora-do-dominio').
  *
  * Referências:
- * - Bhering, S.B. et al. (2024). Erodibilidade dos solos do Brasil. Documentos 246,
- *   Embrapa Solos, Rio de Janeiro, 40 p. (Tabela 5, p. 13-15).
+ * - Coelho, M.R. et al. (2024). Erodibilidade dos solos do Brasil. Documentos 246,
+ *   Embrapa Solos, Rio de Janeiro, 38 p. (Tabela 5, p. 13-15).
  * - Mannigel, E. et al. (2002). Fator erodibilidade de solos do estado de São Paulo.
  *   Revista Brasileira de Ciência do Solo, 26:1039–1049.
  * - IBGE (2018). Manual Técnico de Pedologia. Manuais Técnicos em Geociências, 3ª ed.
