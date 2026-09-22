@@ -1,13 +1,13 @@
 # Registro de Decisões Metodológicas — SAREL
 
-**Espelho legível de `src/config/decisoes.ts`.**
-Última atualização: 2026-09-10 (Fase −1).
+**Espelho legível de `src/config/decisoes.ts`.**  
+Última atualização: 2026-09-22.
 
 > **Regra 9.** Todo parâmetro metodológico tem dono e registro. Decisão pendente → `indisponivel` com `causa: "decisao-pendente"` e o ID. Somente o pesquisador muda uma decisão para `"decidida"`.
 
 ---
 
-## Decisão Tomada
+## Decisões Tomadas ✅
 
 ### D01 — Fórmula do Fator C: Durigon et al. (2014)
 
@@ -21,6 +21,58 @@
 | **Decidido em** | 2026-09-08 |
 
 **Limitação declarada:** resposta linear em NDVI e saturação do NDVI sob biomassa densa comprimem a faixa de C em dossel fechado. Prevista análise de sensibilidade com van der Knijff (Fase 8).
+
+---
+
+### D04 — Modelo D (detecção) e Modelo P (predição) e intervalo de guarda temporal
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor** | Ambos os modelos integrados: Modelo D para detecção contemporânea de feições ativas (t0) e Modelo P para predição prospectiva de risco com intervalo de guarda temporal estrito de 2 anos (24 meses) encerrado antes da data do evento. |
+| **Referência** | Kaufman, S., Rosset, S., Perlich, C., & Stitelman, O. (2012). Leakage in data mining: Formulation, detection, and avoidance. *ACM Transactions on Knowledge Discovery from Data (TKDD)*, 6(4), 15; Embrapa Soja (Sistemas de Produção: Rotação Bienal de Culturas no Paraná; Franchini et al., 2011). |
+| **Justificativa** | O intervalo de guarda de 2 anos obedece ao princípio de 'learn-predict separation' de Kaufman et al. (2012), eliminando o vazamento de dados temporal (*data leakage*). Agronomicamente, corresponde ao ciclo fenológico bienal completo do Sistema Plantio Direto paranaense (Soja no verão / Milho safrinha e Trigo no inverno). Amostragens orbitais com intervalo inferior a 24 meses amostram a mesma fase do manejo cultural e o mesmo resíduo, gerando dependência espúria e overfitting temporal no XGBoost. |
+| **Decidido por** | Pesquisador |
+| **Decidido em** | 2026-09-22 |
+
+---
+
+### D09 — Mapa ordinal das classes de erodibilidade e corte em 2 níveis de K̂
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor** | Domínio agrícola estrito [1..5] conforme escala Embrapa Solos. Classes 1 a 5 mapeadas ordinalmente (1: 'Muito baixa', 2: 'Baixa', 3: 'Média', 4: 'Alta', 5: 'Muito alta'). Classes não-agrícolas (6: 'Fase erodida', 7: 'Dunas', 8: 'Afloramentos de rochas', 9: 'Corpos d\'água') excluídas por máscara ou marcadas como `indisponivel` (`causa: "fora-do-dominio"`).<br/>**Corte K̂ para estratificação amostral:** Nível 1 = Baixa/Média erodibilidade (classes 1 a 3, correspondendo a K ≤ 0,0285 t·h·MJ⁻¹·mm⁻¹); Nível 2 = Alta/Muito alta erodibilidade (classes 4 e 5, correspondendo a K ≥ 0,0300 t·h·MJ⁻¹·mm⁻¹). |
+| **Referência** | Bhering, S.B. et al. (2024). *Erodibilidade dos solos do Brasil*. Documentos 246, Embrapa Solos, Rio de Janeiro (Tabela 5, páginas 13 a 15); Mannigel, E. et al. (2002). Fator erodibilidade de solos do estado de São Paulo. *Revista Brasileira de Ciência do Solo*, 26:1039–1049. |
+| **Justificativa** | Adoção da Proposta A com respaldo normativo oficial da Embrapa Solos (Doc. 246/2024) e validação pedológica de Mannigel et al. (2002), garantindo que a estratificação amostral K̂ reflita as descontinuidades reais de erodibilidade dos solos agrícolas brasileiros. |
+| **Decidido por** | Pesquisador |
+| **Decidido em** | 2026-09-22 |
+
+---
+
+### D10 — Limiar de NDVI para solo descoberto
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor** | NDVI ≤ 0,25 (combinado com BSI > 0,10 quando aplicável na assinatura espectral) |
+| **Referência** | Demattê, J.A.M., Fongaro, C.T., Rizzo, R., Safanelli, J.L. (2018). Geospatial Soil Sensing System (GEOS3): A powerful data mining procedure to retrieve soil spectral reflectance from satellite images. *Remote Sensing of Environment*, 212, 161–175; Safanelli, J.L., Demattê, J.A.M. et al. (2021). Fine-scale soil mapping with Earth Observation data: a multiple geographic level comparison. *Revista Brasileira de Ciência do Solo*, 45:e0210080. |
+| **Justificativa** | Calibrado no sistema GEOS3 (GeoCiS/ESALQ-USP) para solos brasileiros sob imagens orbitais (Landsat e Sentinel-2). O limiar estrito de NDVI ≤ 0,25 garante a discriminação precisa entre solo exposto/descoberto sujeito a impacto direto de gotas (*splash*) e superfícies protegidas por palhada densa de Plantio Direto ou cobertura vegetal viva, mitigando falsos positivos na frequência de solo descoberto (Ê). |
+| **Decidido por** | Pesquisador |
+| **Decidido em** | 2026-09-22 |
+
+---
+
+### D14 — Fator K numérico para a linha de base RUSLE
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor** | Conversão tabular oficial da Tabela 5 da Embrapa Solos (Documentos 246/2024) fundamentada em Mannigel et al. (2002) e IBGE (2018):<br/>• **Muito baixa (1,0 a 1,4):** K = 0,0020 a 0,0084 t·h·MJ⁻¹·mm⁻¹ (média ~0,0052)<br/>• **Baixa (1,5 a 2,4):** K = 0,0090 a 0,0144 t·h·MJ⁻¹·mm⁻¹ (média ~0,0117)<br/>• **Média (2,5 a 3,4):** K = 0,0150 a 0,0285 t·h·MJ⁻¹·mm⁻¹ (média ~0,0218)<br/>• **Alta (3,5 a 4,4):** K = 0,0300 a 0,0420 t·h·MJ⁻¹·mm⁻¹ (média ~0,0360)<br/>• **Muito alta (4,5 a 5,4):** K = 0,0450 a 0,0585 t·h·MJ⁻¹·mm⁻¹ (média ~0,0518) |
+| **Referência** | Bhering, S.B. et al. (2024). *Erodibilidade dos solos do Brasil*. Documentos 246, Embrapa Solos, Rio de Janeiro (Tabela 5, páginas 13 a 15); Mannigel, E. et al. (2002). Fator erodibilidade de solos do estado de São Paulo. *Revista Brasileira de Ciência do Solo*, 26:1039–1049; IBGE (2018). *Manual Técnico de Pedologia*. |
+| **Justificativa** | Resolve a incompatibilidade entre a carta da Embrapa Solos (que fornece classes ordinais qualitativas) e a equação da RUSLE (que exige valores numéricos contínuos de K). A conversão padronizada pela Embrapa elimina estimativas arbitrárias e ancora a linha de base empírica da pesquisa na literatura pedológica brasileira consolidada. |
+| **Decidido por** | Pesquisador |
+| **Decidido em** | 2026-09-22 |
 
 ---
 
@@ -44,17 +96,6 @@
 | **Trava** | Enum `ClasseRotulo`, ficha Kobo |
 | **O agente entrega** | Apoio técnico |
 | **Nota** | `ausente / incipiente / moderada / severa` é provisória |
-
----
-
-### D04 — Modelo D (detecção) e/ou Modelo P (predição) e intervalo de guarda
-
-| Campo | Valor |
-|---|---|
-| **Estado** | 🟡 Implementado em código (aguarda validação em campo) |
-| **Trava** | Janela da série (Fase 3) e montagem da matriz (Fase 6) |
-| **O agente entrega** | Função `definirJanelasModelo` em `src/lib/gee/serieTemporal.ts`: isola a janela do Modelo D (série até o evento) da janela do Modelo P (série encerrada com guarda temporal pré-evento, ex.: 2 anos), impedindo vazamento temporal e garantindo integridade preditiva. |
-| **Sugestão planejamento v3** | Intervalo de guarda de 2 anos para Modelo P |
 
 ---
 
@@ -99,29 +140,6 @@
 
 ---
 
-### D09 — Mapa ordinal das classes de erodibilidade e corte em 2 níveis de K̂
-
-| Campo | Valor |
-|---|---|
-| **Estado** | 🟡 Proposta detalhada (aguarda escolha do pesquisador) |
-| **Trava** | Fase 2 (mapa) e Fase 4 (K̂) |
-| **Evidência arquivada** | `docs/verificacoes/2026-09-10_embrapa_erodibilidade_classes.json` (varredura exaustiva WFS OGC oficial) |
-| **Domínio oficial verificado** | 1: 'Muito baixa', 2: 'Baixa', 3: 'Media', 4: 'Alta', 5: 'Muito alta', 6: 'Fase erodida', 7: 'Dunas', 8: 'Afloramentos de rochas', 9: 'Corpos dagua' |
-| **Proposta A (Recomendada)** | **Domínio agrícola estrito [1..5]:** Classes 1 a 5 mapeadas ordinalmente de 1 a 5. Classes 6 ('Fase erodida'), 7 ('Dunas'), 8 ('Afloramentos') e 9 ('Corpos dagua') tratadas como `indisponivel` (`causa: "fora-do-dominio"`) ou excluídas pela máscara de uso do solo. **Corte K̂:** Nível 1 (baixa/média erodibilidade = 1 a 3) e Nível 2 (alta/muito alta erodibilidade = 4 e 5). |
-| **Proposta B** | **Domínio estendido [1..6]:** Inclui 'Fase erodida' como classe ordinal máxima (6). Classes 7 a 9 excluídas. **Corte K̂:** Nível 1 (1 a 3) e Nível 2 (4 a 6). |
-
----
-
-### D10 — Limiar de NDVI para "solo descoberto"
-
-| Campo | Valor |
-|---|---|
-| **Estado** | 🔴 Pendente |
-| **Trava** | Fases 3 e 4 |
-| **O agente entrega** | Valores da literatura com citação conferida na fonte e sensibilidade de Ê a ±0,05 |
-
----
-
 ### D11 — Cobertura temporal mínima (nº mínimo de observações válidas)
 
 | Campo | Valor |
@@ -150,17 +168,6 @@
 | **Estado** | 🔴 Pendente |
 | **Trava** | Fase 8 e feature de mecanismo |
 | **O agente entrega** | Alternativas da literatura com referência conferida (Brown & Foster 1987; Waltrick et al. 2015) |
-
----
-
-### D14 — Fator K numérico para a linha de base RUSLE
-
-| Campo | Valor |
-|---|---|
-| **Estado** | 🔴 Pendente |
-| **Trava** | Fase 8 |
-| **O agente entrega** | Origem documental possível de valores de K e o que cada uma exige |
-| **Nota** | A carta da Embrapa dá classe; a RUSLE exige número |
 
 ---
 
