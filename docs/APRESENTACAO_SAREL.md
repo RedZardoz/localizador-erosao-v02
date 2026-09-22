@@ -206,18 +206,28 @@ style: |
 
 ---
 
+## Síntese Visual das Formulações Matemáticas Canônicas
+
+![Quadro Completo das Formulações Matemáticas Canônicas do SAREL](figuras_formulas/quadro_completo_formulas.png)
+
+---
+
 ## 9. Formulações Matemáticas Fundamentais — Parte 1: Índices e Fenologia
 
 1. **Índice de Vegetação por Diferença Normalizada (NDVI - Rouse et al., 1974):**
+   ![Fórmula 01 - NDVI](figuras_formulas/formula_01_ndvi.png)
    $$\text{NDVI} = \frac{\rho_{\text{NIR}} - \rho_{\text{RED}}}{\rho_{\text{NIR}} + \rho_{\text{RED}}} = \frac{B8 - B4}{B8 + B4}$$
 
 2. **Índice de Solo Exposto (*Bare Soil Index* - BSI - Rikimaru et al., 2002):**
+   ![Fórmula 02 - BSI](figuras_formulas/formula_02_bsi.png)
    $$\text{BSI} = \frac{(B11 + B4) - (B8 + B2)}{(B11 + B4) + (B8 + B2)}$$
 
 3. **Decomposição Harmônica OLS (CCDC - Zhu & Woodcock, 2014):**
+   ![Fórmula 03 - Decomposição Harmônica](figuras_formulas/formula_03_harmonicos.png)
    $$\hat{y}(t) = c_0 + c_1 t + \sum_{k=1}^m \left[ a_k \cos\left(\frac{2\pi k t}{T}\right) + b_k \sin\left(\frac{2\pi k t}{T}\right) \right]$$
 
 4. **Frequência Multianual de Solo Exposto ($\hat{E}$ - Decisão D10 / GEOS3):**
+   ![Fórmula 04 - Frequência de Solo Nu](figuras_formulas/formula_04_solo_nu.png)
    $$\hat{E} = \frac{1}{N_{\text{válido}}} \sum_{i=1}^{N_{\text{válido}}} \mathbb{I}(\text{NDVI}_i \le 0{,}25)$$
 
 ---
@@ -225,9 +235,11 @@ style: |
 ## 10. Formulações Matemáticas Fundamentais — Parte 2: RUSLE e Mecanismo
 
 5. **Fator C da RUSLE Regional Tropical (Durigon et al., 2014 — Decisão D01):**
+   ![Fórmula 05 - Fator C](figuras_formulas/formula_05_fator_c.png)
    $$C = \left( \frac{1 - \text{NDVI}}{2} \right)^{(1 + \text{NDVI})}$$
 
 6. **Fator K Numérico Oficial (Embrapa Solos Doc. 246/2024 / Mannigel et al., 2002 — Decisão D14):**
+   ![Fórmula 06 - Fator K Numérico](figuras_formulas/formula_06_fator_k.png)
    * $\text{Muito baixa (Classe 1): } K = 0{,}0052 \text{ t}\cdot\text{h}\cdot\text{MJ}^{-1}\cdot\text{mm}^{-1} \quad (0{,}0020 - 0{,}0084) \to \hat{K} = 1$
    * $\text{Baixa (Classe 2): } K = 0{,}0117 \text{ t}\cdot\text{h}\cdot\text{MJ}^{-1}\cdot\text{mm}^{-1} \quad (0{,}0090 - 0{,}0144) \to \hat{K} = 1$
    * $\text{Média (Classe 3): } K = 0{,}0218 \text{ t}\cdot\text{h}\cdot\text{MJ}^{-1}\cdot\text{mm}^{-1} \quad (0{,}0150 - 0{,}0285) \to \hat{K} = 1$
@@ -235,9 +247,11 @@ style: |
    * $\text{Muito alta (Classe 5): } K = 0{,}0518 \text{ t}\cdot\text{h}\cdot\text{MJ}^{-1}\cdot\text{mm}^{-1} \quad (0{,}0450 - 0{,}0585) \to \hat{K} = 2$
 
 7. **Equação Universal de Perda de Solo Revisada (RUSLE - Renard et al., 1997):**
+   ![Fórmula 07 - RUSLE](figuras_formulas/formula_07_rusle.png)
    $$A = R \times K \times LS \times C \times P$$
 
 8. **Índice de Mecanismo Dinâmico Chuva-Solo Nu (Modelo G2 - Karydas & Panagos, 2018):**
+   ![Fórmula 08 - Modelo G2](figuras_formulas/formula_08_g2.png)
    $$I_{\text{mecanismo}} = \sum_{t=1}^T \left( R_t \times \mathbb{I}(\text{NDVI}_t \le 0{,}25) \right)$$
 
 ---
@@ -245,16 +259,20 @@ style: |
 ## 11. Formulações Matemáticas Fundamentais — Parte 3: IA e Explicabilidade
 
 9. **Função Objetivo e Otimização do XGBoost (Chen & Guestrin, 2016):**
+   ![Fórmula 09 - Função Objetivo XGBoost](figuras_formulas/formula_09_xgboost.png)
    $$\mathcal{L}^{(t)} \approx \sum_{i=1}^n \left[ g_i f_t(x_i) + \frac{1}{2} h_i f_t^2(x_i) \right] + \gamma T + \frac{1}{2} \lambda \sum_{j=1}^T w_j^2$$
    *onde $g_i = \partial_{\hat{y}^{(t-1)}} l(y_i, \hat{y}^{(t-1)})$ e $h_i = \partial^2_{\hat{y}^{(t-1)}} l(y_i, \hat{y}^{(t-1)})$.*
 
 10. **Critério de Ganho de Divisão em Árvore (*Gain Split*):**
+    ![Fórmula 10 - Split Gain](figuras_formulas/formula_10_split_gain.png)
     $$\mathcal{L}_{\text{split}} = \frac{1}{2} \left[ \frac{(\sum_{i \in I_L} g_i)^2}{\sum_{i \in I_L} h_i + \lambda} + \frac{(\sum_{i \in I_R} g_i)^2}{\sum_{i \in I_R} h_i + \lambda} - \frac{(\sum_{i \in I} g_i)^2}{\sum_{i \in I} h_i + \lambda} \right] - \gamma$$
 
 11. **Concordância Inter-intérpretes (Kappa de Cohen - Landis & Koch, 1977):**
+    ![Fórmula 11 - Kappa de Cohen](figuras_formulas/formula_11_kappa.png)
     $$\kappa = \frac{P_o - P_e}{1 - P_e}$$
 
 12. **Valores SHAP para Explicabilidade Aditiva (Lundberg & Lee, 2017):**
+    ![Fórmula 12 - SHAP](figuras_formulas/formula_12_shap.png)
     $$\phi_i(f, x) = \sum_{S \subseteq F \setminus \{i\}} \frac{|S|! (|F| - |S| - 1)!}{|F|!} \left[ f_x(S \cup \{i\}) - f_x(S) \right]$$
 
 ---

@@ -549,160 +549,170 @@ def criar_apresentacao(caminho_saida):
             p_i.space_after = Pt(3)
 
     # =========================================================================
-    # SLIDE 10: CÁLCULOS MATEMÁTICOS - PARTE 1: ÍNDICES E DECOMPOSIÇÃO
+    # SLIDE 10: QUADRO SÍNTESE DAS 12 FORMULAÇÕES MATEMÁTICAS CANÔNICAS
     # =========================================================================
     s10 = prs.slides.add_slide(blank_layout)
     set_bg(s10)
-    add_header(s10, "9. Cálculos Matemáticos: Índices Espectrais e Fenologia")
+    add_header(s10, "9. Síntese Visual das Formulações Matemáticas Canônicas do SAREL")
     add_footer(s10, 10)
 
-    eqs_1 = [
-        ("1. Índice de Vegetação por Diferença Normalizada (NDVI)", "NDVI = (B8 - B4) / (B8 + B4)", "Mede o vigor fotossintético da biomassa vegetal ativa. Varia de -1 a +1. Banda B8 (Infravermelho Próximo) e Banda B4 (Vermelho). Base seminal: Rouse et al. (1974)."),
-        ("2. Índice de Solo Exposto (Bare Soil Index - BSI)", "BSI = [(B11 + B4) - (B8 + B2)] / [(B11 + B4) + (B8 + B2)]", "Discrimina solo mineralizado desnudo de cobertura vegetal densa. Valores positivos (> 0.10) associam-se a solo descoberto ou horizonte B exposto (Rikimaru et al., 2002)."),
-        ("3. Decomposição Harmônica OLS (Zhu & Woodcock, 2014)", "y^(t) = c0 + c1·t + SUM_{k=1..m} [ak·cos(2·pi·k·t / T) + bk·sen(2·pi·k·t / T)]", "Modela a sazonalidade fenológica regular e estima a taxa de degradação linear (c1) no SWIR B12, separando ciclos agrícolas de erosão progressiva."),
-        ("4. Frequência de Solo Nu (E^) — Decisão D10 (GEOS3)", "E^ = (1 / N_valido) * SUM_{i=1..N} I(NDVI_i <= 0.25)", "Fração temporal em que o solo permanece exposto ao impacto de chuva torrencial. Calibrado pelo sistema GEOS3 (Demattê et al., 2018; Safanelli et al., 2021)."),
-    ]
-
-    for idx, (tit, form, expl) in enumerate(eqs_1):
-        col = idx % 2
-        row = idx // 2
-        x = Inches(0.8 + col * 5.95)
-        y = Inches(1.5 + row * 2.7)
-        card = s10.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, Inches(5.75), Inches(2.45))
-        card.fill.solid()
-        card.fill.fore_color.rgb = C_CARD_LIGHT
-        card.line.color.rgb = C_BORDER_LIGHT
-
-        tb = s10.shapes.add_textbox(x + Inches(0.2), y + Inches(0.15), Inches(5.35), Inches(2.15))
-        tf = tb.text_frame
-        tf.word_wrap = True
-        p_t = tf.paragraphs[0]
-        p_t.text = tit
-        p_t.font.bold = True
-        p_t.font.size = Pt(11.5)
-        p_t.font.color.rgb = C_NAVY_DARK
-        p_t.space_after = Pt(4)
-
-        p_f = tf.add_paragraph()
-        p_f.text = form
-        p_f.font.bold = True
-        p_f.font.size = Pt(11)
-        p_f.font.color.rgb = C_EMERALD_DARK
-        p_f.space_after = Pt(6)
-
-        p_e = tf.add_paragraph()
-        p_e.text = expl
-        p_e.font.size = Pt(9.5)
-        p_e.font.color.rgb = C_TEXT_DARK
+    # Imagem do Quadro Completo em Alta Resolução (300 DPI)
+    quadro_path = os.path.join("docs", "figuras_formulas", "quadro_completo_formulas.png")
+    if os.path.exists(quadro_path):
+        s10.shapes.add_picture(quadro_path, Inches(0.95), Inches(1.35), width=Inches(11.433))
 
     # =========================================================================
-    # SLIDE 11: CÁLCULOS MATEMÁTICOS - PARTE 2: RUSLE E MECANISMO G2
+    # SLIDE 11: CÁLCULOS MATEMÁTICOS - PARTE 1: ÍNDICES E DECOMPOSIÇÃO
     # =========================================================================
     s11 = prs.slides.add_slide(blank_layout)
     set_bg(s11)
-    add_header(s11, "10. Cálculos Matemáticos: Fatores RUSLE e Dinâmica G2")
+    add_header(s11, "10. Cálculos Matemáticos: Índices Espectrais e Fenologia")
     add_footer(s11, 11)
 
-    eqs_2 = [
-        ("5. Fator C da RUSLE Regional Tropical (Decisão D01)", "C = [(1 - NDVI) / 2]^(1 + NDVI)", "Modelo calibrado para bacias brasileiras por Durigon et al. (2014). Para solo nu (NDVI = 0.0), C = 0.50; para vegetação densa (NDVI = 0.80), C = 0.026. Evita subestimação."),
-        ("6. Fator K Numérico (Tabela 5 Embrapa Solos / D14)", "K = [0.0052; 0.0117; 0.0218; 0.0360; 0.0518] t·h/(MJ·mm)", "Conversão oficial da carta pedológica para valores numéricos contínuos (Doc. 246/2024 / Mannigel et al., 2002). Estratificação K^: Nível 1 <= 0.0285; Nível 2 >= 0.0300 (D09)."),
-        ("7. Equação de Perda de Solo (RUSLE)", "A = R * K * LS * C * P  (t/ha/ano)", "Equação Universal de Perda de Solo Revisada (Renard et al., 1997). Invariante 1: só calculada se os 5 fatores e a memória de cálculo existirem simultaneamente."),
-        ("8. Índice Dinâmico Chuva-Solo Nu (Modelo G2)", "I_mecanismo = SUM_t [ R_t * I(NDVI_t <= 0.25) ]", "Acoplamento físico-temporal: quantifica a ocorrência simultânea de chuva erosiva com solo exposto desprotegido (Karydas & Panagos, 2018)."),
+    eqs_1 = [
+        ("1. Índice de Vegetação por Diferença Normalizada (NDVI)", "formula_01_ndvi.png", "Mede o vigor fotossintético da biomassa vegetal ativa. Varia de -1 a +1. Banda B8 (NIR) e Banda B4 (Vermelho). Base seminal: Rouse et al. (1974)."),
+        ("2. Índice de Solo Exposto (Bare Soil Index - BSI)", "formula_02_bsi.png", "Discrimina solo mineralizado desnudo de cobertura vegetal densa. Valores positivos (> 0.10) associam-se a solo descoberto ou horizonte B exposto (Rikimaru et al., 2002)."),
+        ("3. Decomposição Harmônica OLS (Zhu & Woodcock, 2014)", "formula_03_harmonicos.png", "Modela a sazonalidade fenológica regular e estima a taxa de degradação linear (c1) no SWIR B12, separando ciclos agrícolas de erosão progressiva."),
+        ("4. Frequência de Solo Nu (E^) — Decisão D10 (GEOS3)", "formula_04_solo_nu.png", "Fração temporal em que o solo permanece exposto ao impacto de chuva torrencial. Calibrado pelo sistema GEOS3 (Demattê et al., 2018; Safanelli et al., 2021)."),
     ]
 
-    for idx, (tit, form, expl) in enumerate(eqs_2):
+    for idx, (tit, img_name, expl) in enumerate(eqs_1):
         col = idx % 2
         row = idx // 2
         x = Inches(0.8 + col * 5.95)
-        y = Inches(1.5 + row * 2.7)
-        card = s11.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, Inches(5.75), Inches(2.45))
+        y = Inches(1.4 + row * 2.8)
+        card = s11.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, Inches(5.75), Inches(2.65))
         card.fill.solid()
         card.fill.fore_color.rgb = C_CARD_LIGHT
         card.line.color.rgb = C_BORDER_LIGHT
 
-        tb = s11.shapes.add_textbox(x + Inches(0.2), y + Inches(0.15), Inches(5.35), Inches(2.15))
+        tb = s11.shapes.add_textbox(x + Inches(0.2), y + Inches(0.12), Inches(5.35), Inches(0.4))
         tf = tb.text_frame
         tf.word_wrap = True
         p_t = tf.paragraphs[0]
         p_t.text = tit
         p_t.font.bold = True
-        p_t.font.size = Pt(11.5)
+        p_t.font.size = Pt(11)
         p_t.font.color.rgb = C_NAVY_DARK
-        p_t.space_after = Pt(4)
 
-        p_f = tf.add_paragraph()
-        p_f.text = form
-        p_f.font.bold = True
-        p_f.font.size = Pt(10.5)
-        p_f.font.color.rgb = C_EMERALD_DARK
-        p_f.space_after = Pt(6)
+        img_path = os.path.join("docs", "figuras_formulas", img_name)
+        if os.path.exists(img_path):
+            s11.shapes.add_picture(img_path, x + Inches(0.25), y + Inches(0.55), height=Inches(0.50))
 
-        p_e = tf.add_paragraph()
+        tb_e = s11.shapes.add_textbox(x + Inches(0.2), y + Inches(1.15), Inches(5.35), Inches(1.4))
+        tf_e = tb_e.text_frame
+        tf_e.word_wrap = True
+        p_e = tf_e.paragraphs[0]
         p_e.text = expl
-        p_e.font.size = Pt(9.5)
+        p_e.font.size = Pt(9.2)
         p_e.font.color.rgb = C_TEXT_DARK
 
     # =========================================================================
-    # SLIDE 12: CÁLCULOS MATEMÁTICOS - PARTE 3: XGBOOST, KAPPA E SHAP
+    # SLIDE 12: CÁLCULOS MATEMÁTICOS - PARTE 2: RUSLE E MECANISMO G2
     # =========================================================================
     s12 = prs.slides.add_slide(blank_layout)
     set_bg(s12)
-    add_header(s12, "11. Cálculos Matemáticos: Otimização XGBoost e SHAP")
+    add_header(s12, "11. Cálculos Matemáticos: Fatores RUSLE e Dinâmica G2")
     add_footer(s12, 12)
 
-    eqs_3 = [
-        ("9. Função Objetivo do XGBoost (Chen & Guestrin, 2016)", "L^(t) ~ SUM [ gi·ft(xi) + 0.5·hi·ft^2(xi) ] + gamma·T + 0.5·lambda·SUM wj^2", "Aproximação de Taylor de 2ª ordem da perda com gradientes gi e hessianas hi. Regularização L2 (lambda) e penalidade por número de folhas T (gamma) contra overfitting."),
-        ("10. Critério de Ganho de Divisão de Árvore (Split Gain)", "Gain = 0.5 * [ GL^2/(HL + lambda) + GR^2/(HR + lambda) - (G)^2/(H + lambda) ] - gamma", "Avalia se a divisão de um nó folha produz melhoria marginal superior ao custo de complexidade gamma da árvore."),
-        ("11. Concordância Inter-intérpretes (Kappa de Cohen)", "kappa = (Po - Pe) / (1 - Pe)", "Mede a concordância real Po descontada a concordância puramente casual Pe entre os dois fotointérpretes humanos independentes (Landis & Koch, 1977)."),
-        ("12. Valores SHAP de Explicabilidade Aditiva (Lundberg & Lee, 2017)", "phi_i(f, x) = SUM_{S} [ |S|!(|F|-|S|-1)! / |F|! ] * [ f(S U {i}) - f(S) ]", "Distribui o crédito marginal exato de cada preditor na probabilidade final de erosão, garantindo consistência teórica via teoria dos jogos."),
+    eqs_2 = [
+        ("5. Fator C da RUSLE Regional Tropical (Decisão D01)", "formula_05_fator_c.png", "Modelo calibrado para bacias brasileiras por Durigon et al. (2014). Para solo nu (NDVI = 0.0), C = 0.50; para vegetação densa (NDVI = 0.80), C = 0.026. Evita subestimação."),
+        ("6. Fator K Numérico (Tabela 5 Embrapa Solos / D14)", "formula_06_fator_k.png", "Conversão oficial da carta pedológica para valores numéricos contínuos (Doc. 246/2024 / Mannigel et al., 2002). Estratificação K^: Nível 1 <= 0.0285; Nível 2 >= 0.0300 (D09)."),
+        ("7. Equação de Perda de Solo (RUSLE)", "formula_07_rusle.png", "Equação Universal de Perda de Solo Revisada (Renard et al., 1997). Invariante 1: só calculada se os 5 fatores e a memória de cálculo existirem simultaneamente."),
+        ("8. Índice Dinâmico Chuva-Solo Nu (Modelo G2)", "formula_08_g2.png", "Acoplamento físico-temporal: quantifica a ocorrência simultânea de chuva erosiva com solo exposto desprotegido (Karydas & Panagos, 2018)."),
     ]
 
-    for idx, (tit, form, expl) in enumerate(eqs_3):
+    for idx, (tit, img_name, expl) in enumerate(eqs_2):
         col = idx % 2
         row = idx // 2
         x = Inches(0.8 + col * 5.95)
-        y = Inches(1.5 + row * 2.7)
-        card = s12.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, Inches(5.75), Inches(2.45))
+        y = Inches(1.4 + row * 2.8)
+        card = s12.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, Inches(5.75), Inches(2.65))
         card.fill.solid()
         card.fill.fore_color.rgb = C_CARD_LIGHT
         card.line.color.rgb = C_BORDER_LIGHT
 
-        tb = s12.shapes.add_textbox(x + Inches(0.2), y + Inches(0.15), Inches(5.35), Inches(2.15))
+        tb = s12.shapes.add_textbox(x + Inches(0.2), y + Inches(0.12), Inches(5.35), Inches(0.4))
         tf = tb.text_frame
         tf.word_wrap = True
         p_t = tf.paragraphs[0]
         p_t.text = tit
         p_t.font.bold = True
-        p_t.font.size = Pt(11.5)
+        p_t.font.size = Pt(11)
         p_t.font.color.rgb = C_NAVY_DARK
-        p_t.space_after = Pt(4)
 
-        p_f = tf.add_paragraph()
-        p_f.text = form
-        p_f.font.bold = True
-        p_f.font.size = Pt(10)
-        p_f.font.color.rgb = C_ROSE_DARK
-        p_f.space_after = Pt(6)
+        img_path = os.path.join("docs", "figuras_formulas", img_name)
+        if os.path.exists(img_path):
+            s12.shapes.add_picture(img_path, x + Inches(0.25), y + Inches(0.55), height=Inches(0.50))
 
-        p_e = tf.add_paragraph()
+        tb_e = s12.shapes.add_textbox(x + Inches(0.2), y + Inches(1.15), Inches(5.35), Inches(1.4))
+        tf_e = tb_e.text_frame
+        tf_e.word_wrap = True
+        p_e = tf_e.paragraphs[0]
         p_e.text = expl
-        p_e.font.size = Pt(9.5)
+        p_e.font.size = Pt(9.2)
         p_e.font.color.rgb = C_TEXT_DARK
 
     # =========================================================================
-    # SLIDE 13: AS 9 REGRAS INVIOLÁVEIS E 7 INVARIANTES
+    # SLIDE 13: CÁLCULOS MATEMÁTICOS - PARTE 3: XGBOOST, KAPPA E SHAP
     # =========================================================================
     s13 = prs.slides.add_slide(blank_layout)
     set_bg(s13)
-    add_header(s13, "12. Governança e Blindagem: 9 Regras e 7 Invariantes")
+    add_header(s13, "12. Cálculos Matemáticos: Otimização XGBoost e SHAP")
     add_footer(s13, 13)
 
-    card_r = s13.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.4), Inches(5.75), Inches(5.4))
+    eqs_3 = [
+        ("9. Função Objetivo do XGBoost (Chen & Guestrin, 2016)", "formula_09_xgboost.png", "Aproximação de Taylor de 2ª ordem da perda com gradientes gi e hessianas hi. Regularização L2 (lambda) e penalidade por número de folhas T (gamma) contra overfitting."),
+        ("10. Critério de Ganho de Divisão de Árvore (Split Gain)", "formula_10_split_gain.png", "Avalia se a divisão de um nó folha produz melhoria marginal superior ao custo de complexidade gamma da árvore."),
+        ("11. Concordância Inter-intérpretes (Kappa de Cohen)", "formula_11_kappa.png", "Mede a concordância real Po descontada a concordância puramente casual Pe entre os dois fotointérpretes humanos independentes (Landis & Koch, 1977)."),
+        ("12. Valores SHAP de Explicabilidade Aditiva (Lundberg & Lee, 2017)", "formula_12_shap.png", "Distribui o crédito marginal exato de cada preditor na probabilidade final de erosão, garantindo consistência teórica via teoria dos jogos."),
+    ]
+
+    for idx, (tit, img_name, expl) in enumerate(eqs_3):
+        col = idx % 2
+        row = idx // 2
+        x = Inches(0.8 + col * 5.95)
+        y = Inches(1.4 + row * 2.8)
+        card = s13.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, Inches(5.75), Inches(2.65))
+        card.fill.solid()
+        card.fill.fore_color.rgb = C_CARD_LIGHT
+        card.line.color.rgb = C_BORDER_LIGHT
+
+        tb = s13.shapes.add_textbox(x + Inches(0.2), y + Inches(0.12), Inches(5.35), Inches(0.4))
+        tf = tb.text_frame
+        tf.word_wrap = True
+        p_t = tf.paragraphs[0]
+        p_t.text = tit
+        p_t.font.bold = True
+        p_t.font.size = Pt(11)
+        p_t.font.color.rgb = C_NAVY_DARK
+
+        img_path = os.path.join("docs", "figuras_formulas", img_name)
+        if os.path.exists(img_path):
+            s13.shapes.add_picture(img_path, x + Inches(0.25), y + Inches(0.55), height=Inches(0.50))
+
+        tb_e = s13.shapes.add_textbox(x + Inches(0.2), y + Inches(1.15), Inches(5.35), Inches(1.4))
+        tf_e = tb_e.text_frame
+        tf_e.word_wrap = True
+        p_e = tf_e.paragraphs[0]
+        p_e.text = expl
+        p_e.font.size = Pt(9.2)
+        p_e.font.color.rgb = C_TEXT_DARK
+
+    # =========================================================================
+    # SLIDE 14: AS 9 REGRAS INVIOLÁVEIS E 7 INVARIANTES
+    # =========================================================================
+    s14 = prs.slides.add_slide(blank_layout)
+    set_bg(s14)
+    add_header(s14, "13. Governança e Blindagem: 9 Regras e 7 Invariantes")
+    add_footer(s14, 14)
+
+    card_r = s14.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.4), Inches(5.75), Inches(5.4))
     card_r.fill.solid()
     card_r.fill.fore_color.rgb = C_CARD_LIGHT
     card_r.line.color.rgb = C_ROSE_DARK
 
-    tb_r = s13.shapes.add_textbox(Inches(1.0), Inches(1.5), Inches(5.35), Inches(5.1))
+    tb_r = s14.shapes.add_textbox(Inches(1.0), Inches(1.5), Inches(5.35), Inches(5.1))
     tf_r = tb_r.text_frame
     tf_r.word_wrap = True
     p_rt = tf_r.paragraphs[0]
@@ -729,12 +739,12 @@ def criar_apresentacao(caminho_saida):
         r2 = p.add_run(); r2.text = r_dsc; r2.font.size = Pt(9); r2.font.color.rgb = C_TEXT_DARK
         p.space_after = Pt(2)
 
-    card_i = s13.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.8), Inches(1.4), Inches(5.75), Inches(5.4))
+    card_i = s14.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.8), Inches(1.4), Inches(5.75), Inches(5.4))
     card_i.fill.solid()
     card_i.fill.fore_color.rgb = C_CARD_LIGHT
     card_i.line.color.rgb = C_EMERALD_DARK
 
-    tb_i = s13.shapes.add_textbox(Inches(7.0), Inches(1.5), Inches(5.35), Inches(5.1))
+    tb_i = s14.shapes.add_textbox(Inches(7.0), Inches(1.5), Inches(5.35), Inches(5.1))
     tf_i = tb_i.text_frame
     tf_i.word_wrap = True
     p_it = tf_i.paragraphs[0]
@@ -760,19 +770,19 @@ def criar_apresentacao(caminho_saida):
         p.space_after = Pt(4)
 
     # =========================================================================
-    # SLIDE 14: MODELO D VS MODELO P (DECISÃO D04)
+    # SLIDE 15: MODELO D VS MODELO P (DECISÃO D04)
     # =========================================================================
-    s14 = prs.slides.add_slide(blank_layout)
-    set_bg(s14)
-    add_header(s14, "13. Segregação Temporal: Modelo D vs. Modelo P")
-    add_footer(s14, 14)
+    s15 = prs.slides.add_slide(blank_layout)
+    set_bg(s15)
+    add_header(s15, "14. Segregação Temporal: Modelo D vs. Modelo P")
+    add_footer(s15, 15)
 
-    card_d = s14.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.5), Inches(5.75), Inches(5.3))
+    card_d = s15.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.5), Inches(5.75), Inches(5.3))
     card_d.fill.solid()
     card_d.fill.fore_color.rgb = C_CARD_LIGHT
     card_d.line.color.rgb = C_CYAN_LIGHT
 
-    tb_d = s14.shapes.add_textbox(Inches(1.0), Inches(1.6), Inches(5.35), Inches(5.0))
+    tb_d = s15.shapes.add_textbox(Inches(1.0), Inches(1.6), Inches(5.35), Inches(5.0))
     tf_d = tb_d.text_frame
     tf_d.word_wrap = True
     p_dt = tf_d.paragraphs[0]
@@ -794,12 +804,12 @@ def criar_apresentacao(caminho_saida):
         r2 = p.add_run(); r2.text = dsc; r2.font.size = Pt(9.5); r2.font.color.rgb = C_TEXT_DARK
         p.space_after = Pt(8)
 
-    card_p = s14.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.8), Inches(1.5), Inches(5.75), Inches(5.3))
+    card_p = s15.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.8), Inches(1.5), Inches(5.75), Inches(5.3))
     card_p.fill.solid()
     card_p.fill.fore_color.rgb = C_CARD_LIGHT
     card_p.line.color.rgb = C_EMERALD_MID
 
-    tb_p = s14.shapes.add_textbox(Inches(7.0), Inches(1.6), Inches(5.35), Inches(5.0))
+    tb_p = s15.shapes.add_textbox(Inches(7.0), Inches(1.6), Inches(5.35), Inches(5.0))
     tf_p = tb_p.text_frame
     tf_p.word_wrap = True
     p_pt = tf_p.paragraphs[0]
@@ -822,19 +832,19 @@ def criar_apresentacao(caminho_saida):
         p.space_after = Pt(8)
 
     # =========================================================================
-    # SLIDE 15: REFERÊNCIAS BIBLIOGRÁFICAS (ABNT PARTE 1)
+    # SLIDE 16: REFERÊNCIAS BIBLIOGRÁFICAS (ABNT PARTE 1)
     # =========================================================================
-    s15 = prs.slides.add_slide(blank_layout)
-    set_bg(s15)
-    add_header(s15, "14. Referências Bibliográficas (Normas ABNT NBR 6023:2018) — Parte 1")
-    add_footer(s15, 15)
+    s16 = prs.slides.add_slide(blank_layout)
+    set_bg(s16)
+    add_header(s16, "15. Referências Bibliográficas (Normas ABNT NBR 6023:2018) — Parte 1")
+    add_footer(s16, 16)
 
-    card_abnt1 = s15.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.4), Inches(11.733), Inches(5.4))
+    card_abnt1 = s16.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.4), Inches(11.733), Inches(5.4))
     card_abnt1.fill.solid()
     card_abnt1.fill.fore_color.rgb = C_CARD_LIGHT
     card_abnt1.line.color.rgb = C_BORDER_LIGHT
 
-    tb_ab1 = s15.shapes.add_textbox(Inches(1.1), Inches(1.5), Inches(11.1), Inches(5.1))
+    tb_ab1 = s16.shapes.add_textbox(Inches(1.1), Inches(1.5), Inches(11.1), Inches(5.1))
     tf_ab1 = tb_ab1.text_frame
     tf_ab1.word_wrap = True
 
@@ -856,19 +866,19 @@ def criar_apresentacao(caminho_saida):
         p.space_after = Pt(10)
 
     # =========================================================================
-    # SLIDE 16: REFERÊNCIAS BIBLIOGRÁFICAS (ABNT PARTE 2) E CONCLUSÕES
+    # SLIDE 17: REFERÊNCIAS BIBLIOGRÁFICAS (ABNT PARTE 2) E CONCLUSÕES
     # =========================================================================
-    s16 = prs.slides.add_slide(blank_layout)
-    set_bg(s16)
-    add_header(s16, "15. Referências Bibliográficas (Normas ABNT NBR 6023:2018) — Parte 2")
-    add_footer(s16, 16)
+    s17 = prs.slides.add_slide(blank_layout)
+    set_bg(s17)
+    add_header(s17, "16. Referências Bibliográficas (Normas ABNT NBR 6023:2018) — Parte 2")
+    add_footer(s17, 17)
 
-    card_abnt2 = s16.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.4), Inches(11.733), Inches(5.4))
+    card_abnt2 = s17.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.4), Inches(11.733), Inches(5.4))
     card_abnt2.fill.solid()
     card_abnt2.fill.fore_color.rgb = C_CARD_LIGHT
     card_abnt2.line.color.rgb = C_BORDER_LIGHT
 
-    tb_ab2 = s16.shapes.add_textbox(Inches(1.1), Inches(1.5), Inches(11.1), Inches(5.1))
+    tb_ab2 = s17.shapes.add_textbox(Inches(1.1), Inches(1.5), Inches(11.1), Inches(5.1))
     tf_ab2 = tb_ab2.text_frame
     tf_ab2.word_wrap = True
 

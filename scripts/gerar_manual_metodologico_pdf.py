@@ -17,8 +17,9 @@ from reportlab.lib import colors
 from reportlab.lib.units import mm, cm
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    PageBreak, KeepTogether, HRFlowable
+    PageBreak, KeepTogether, HRFlowable, Image as RLImage
 )
+from PIL import Image as PILImage
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
 from reportlab.pdfgen import canvas
@@ -272,21 +273,44 @@ def make_callout(titulo, texto, cor_borda=C_EMERALD_MID, cor_fundo=C_MINT_BG, la
     ]))
     return t
 
-def make_formula_card(titulo_formula, formula_str, explicacao_str, largura=174*mm):
+def make_formula_card(titulo_formula, formula_str, explicacao_str, largura=174*mm, img_nome=None):
     styles = get_sarel_styles()
     conteudo = [
         Paragraph(f"<b>{titulo_formula}</b>", styles["CalloutTitle"]),
-        Spacer(1, 2*mm),
-        Paragraph(formula_str, styles["FormulaBox"]),
-        Spacer(1, 2*mm),
-        Paragraph(f"<i>Explicação física:</i> {explicacao_str}", styles["CalloutText"])
+        Spacer(1, 1.5*mm),
     ]
+
+    img_path = os.path.join("docs", "figuras_formulas", f"{img_nome}.png") if img_nome else None
+    if img_path and os.path.exists(img_path):
+        try:
+            with PILImage.open(img_path) as im:
+                orig_w, orig_h = im.size
+            aspect = orig_w / orig_h
+            max_w = largura - 16 * mm
+            calc_h = 10.5 * mm
+            calc_w = calc_h * aspect
+            if calc_w > max_w:
+                calc_w = max_w
+                calc_h = calc_w / aspect
+            img_flowable = RLImage(img_path, width=calc_w, height=calc_h)
+            img_flowable.hAlign = 'CENTER'
+            conteudo.append(img_flowable)
+            conteudo.append(Spacer(1, 1.5*mm))
+        except Exception:
+            conteudo.append(Paragraph(formula_str, styles["FormulaBox"]))
+            conteudo.append(Spacer(1, 1.5*mm))
+    else:
+        conteudo.append(Paragraph(formula_str, styles["FormulaBox"]))
+        conteudo.append(Spacer(1, 1.5*mm))
+
+    conteudo.append(Paragraph(f"<i>Explicação física:</i> {explicacao_str}", styles["CalloutText"]))
+
     t = Table([[conteudo]], colWidths=[largura])
     t.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor("#F1F5F9")),
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor("#F8FAFC")),
         ('BOX', (0, 0), (-1, -1), 0.8, C_BORDER),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ('LEFTPADDING', (0, 0), (-1, -1), 8),
         ('RIGHTPADDING', (0, 0), (-1, -1), 8),
     ]))
@@ -590,11 +614,21 @@ def construir_manual_pdf(caminho_saida):
     story.append(Paragraph("5. Cálculos e Modelos Matemáticos Detalhados", styles["ChapterTitle"]))
     story.append(HRFlowable(width="100%", thickness=0.8, color=C_EMERALD_MID, spaceBefore=1*mm, spaceAfter=3*mm))
 
+    # Síntese Visual: Quadro Completo das 12 Formulações Matemáticas Canônicas
+    quadro_path = os.path.join("docs", "figuras_formulas", "quadro_completo_formulas.png")
+    if os.path.exists(quadro_path):
+        story.append(Paragraph("<b>Síntese Visual das 12 Formulações Canônicas do SAREL:</b>", styles["SubSectionTitle"]))
+        story.append(Spacer(1, 1.5*mm))
+        story.append(RLImage(quadro_path, width=largura_util, height=largura_util / 1.75))
+        story.append(Spacer(1, 4*mm))
+        story.append(PageBreak())
+
     # Equação 1: NDVI
     story.append(make_formula_card(
         "1. Índice de Vegetação por Diferença Normalizada (NDVI — ROUSE et al., 1974)",
         "NDVI = (B8 - B4) / (B8 + B4)",
-        "Mede o contraste entre a forte absorção fotossintética da clorofila na banda do Vermelho (B4: 665 nm) e a alta espalhabilidade celular no Infravermelho Próximo (B8: 842 nm). Varia no domínio biofísico [-1.0, +1.0]. Valores > 0.65 caracterizam cobertura vegetal densa e consolidada (Sistema Plantio Direto); valores <= 0.25 caracterizam solo mineralizado exposto."
+        "Mede o contraste entre a forte absorção fotossintética da clorofila na banda do Vermelho (B4: 665 nm) e a alta espalhabilidade celular no Infravermelho Próximo (B8: 842 nm). Varia no domínio biofísico [-1.0, +1.0]. Valores > 0.65 caracterizam cobertura vegetal densa e consolidada (Sistema Plantio Direto); valores <= 0.25 caracterizam solo mineralizado exposto.",
+        img_nome="formula_01_ndvi"
     ))
     story.append(Spacer(1, 2.5*mm))
 
@@ -602,7 +636,8 @@ def construir_manual_pdf(caminho_saida):
     story.append(make_formula_card(
         "2. Índice de Solo Exposto (Bare Soil Index — BSI — RIKIMARU et al., 2002)",
         "BSI = [(B11 + B4) - (B8 + B2)] / [(B11 + B4) + (B8 + B2)]",
-        "Combina as bandas do SWIR-1 (B11: 1610 nm) e Vermelho (B4) contra o NIR (B8) e Azul (B2: 490 nm). O solo seco e erodido apresenta forte reflectância no SWIR e absorção no visível, elevando o BSI para valores positivos (> 0.10). Vegetação vigorosa empurra o BSI para valores fortemente negativos (< 0.00)."
+        "Combina as bandas do SWIR-1 (B11: 1610 nm) e Vermelho (B4) contra o NIR (B8) e Azul (B2: 490 nm). O solo seco e erodido apresenta forte reflectância no SWIR e absorção no visível, elevando o BSI para valores positivos (> 0.10). Vegetação vigorosa empurra o BSI para valores fortemente negativos (< 0.00).",
+        img_nome="formula_02_bsi"
     ))
     story.append(Spacer(1, 2.5*mm))
 
@@ -610,7 +645,8 @@ def construir_manual_pdf(caminho_saida):
     story.append(make_formula_card(
         "3. Decomposição Harmônica e Taxa de Degradação OLS (ZHU & WOODCOCK, 2014)",
         "y^(t) = c0 + c1·t + SUM_{k=1..m} [ ak·cos(2·pi·k·t / T) + bk·sen(2·pi·k·t / T) ]",
-        "Regressão linear por Mínimos Quadrados Ordinários ajustando componentes sazonais cíclicos (harmônicos anuais e semestrais) e uma componente de tendência linear (c1). O coeficiente c1 na banda SWIR B12 atua como indicador de degradação: declives positivos persistentes safra após safra evidenciam perda de horizonte A orgânico e exposição crônica de horizonte B textural rico em ferro."
+        "Regressão linear por Mínimos Quadrados Ordinários ajustando componentes sazonais cíclicos (harmônicos anuais e semestrais) e uma componente de tendência linear (c1). O coeficiente c1 na banda SWIR B12 atua como indicador de degradação: declives positivos persistentes safra após safra evidenciam perda de horizonte A orgânico e exposição crônica de horizonte B textural rico em ferro.",
+        img_nome="formula_03_harmonicos"
     ))
     story.append(Spacer(1, 2.5*mm))
 
@@ -618,7 +654,8 @@ def construir_manual_pdf(caminho_saida):
     story.append(make_formula_card(
         "4. Frequência Multianual de Solo Exposto (E^ — Decisão D10 / GEOS3)",
         "E^ = (1 / N_valido) * SUM_{i=1..N_valido} I(NDVI_i <= 0.25)",
-        "Fração temporal em que o solo permaneceu descoberto durante a série histórica. Fundamentada nos trabalhos do sistema GEOS3 (DEMATTÊ et al., 2018; SAFANELLI et al., 2021), a adoção do limiar estrito NDVI <= 0.25 elimina falsos positivos decorrentes de resíduos secos de palhada de Plantio Direto (que apresentam NDVI entre 0.28 e 0.38)."
+        "Fração temporal em que o solo permaneceu descoberto durante a série histórica. Fundamentada nos trabalhos do sistema GEOS3 (DEMATTÊ et al., 2018; SAFANELLI et al., 2021), a adoção do limiar estrito NDVI <= 0.25 elimina falsos positivos decorrentes de resíduos secos de palhada de Plantio Direto (que apresentam NDVI entre 0.28 e 0.38).",
+        img_nome="formula_04_solo_nu"
     ))
     story.append(Spacer(1, 2.5*mm))
 
@@ -626,7 +663,8 @@ def construir_manual_pdf(caminho_saida):
     story.append(make_formula_card(
         "5. Fator C de Cobertura e Manejo da RUSLE Regional Tropical (DURIGON et al., 2014 — Decisão D01)",
         "C = [ (1 - NDVI) / 2 ]^(1 + NDVI)",
-        "Modela a atenuação das perdas de solo pela cobertura vegetal sob condições edafoclimáticas brasileiras. Para solo completamente desnudo (NDVI = 0.0), C = 0.50; para cobertura vegetal em desenvolvimento (NDVI = 0.50), C = 0.088; para dossel fechado (NDVI = 0.80), C = 0.026. Supera a formulação exponencial europeia de Van der Knijff et al. (2000), que subestima severamente o Fator C em áreas agrícolas tropicais."
+        "Modela a atenuação das perdas de solo pela cobertura vegetal sob condições edafoclimáticas brasileiras. Para solo completamente desnudo (NDVI = 0.0), C = 0.50; para cobertura vegetal em desenvolvimento (NDVI = 0.50), C = 0.088; para dossel fechado (NDVI = 0.80), C = 0.026. Supera a formulação exponencial europeia de Van der Knijff et al. (2000), que subestima severamente o Fator C em áreas agrícolas tropicais.",
+        img_nome="formula_05_fator_c"
     ))
     story.append(Spacer(1, 2.5*mm))
 
@@ -634,7 +672,8 @@ def construir_manual_pdf(caminho_saida):
     story.append(make_formula_card(
         "6. Fator K de Erodibilidade do Solo Numérico (Tabela 5 Embrapa Solos / MANNIGEL et al., 2002 — Decisão D14)",
         "K = [ 0.0052; 0.0117; 0.0218; 0.0360; 0.0518 ] t·h·MJ⁻¹·mm⁻¹",
-        "Converte as 5 classes ordinais qualitativas da carta pedológica oficial da Embrapa Solos (Doc. 246/2024) para grandezas contínuas oficiais. Estratificação K^ (Decisão D09): Nível 1 = Baixa/Média erodibilidade (K <= 0.0285 t·h/(MJ·mm)); Nível 2 = Alta/Muito Alta erodibilidade (K >= 0.0300 t·h/(MJ·mm)). Feições não-agrícolas retornam 'fora-do-dominio'."
+        "Converte as 5 classes ordinais qualitativas da carta pedológica oficial da Embrapa Solos (Doc. 246/2024) para grandezas contínuas oficiais. Estratificação K^ (Decisão D09): Nível 1 = Baixa/Média erodibilidade (K <= 0.0285 t·h/(MJ·mm)); Nível 2 = Alta/Muito Alta erodibilidade (K >= 0.0300 t·h/(MJ·mm)). Feições não-agrícolas retornam 'fora-do-dominio'.",
+        img_nome="formula_06_fator_k"
     ))
     story.append(Spacer(1, 2.5*mm))
 
@@ -663,7 +702,8 @@ def construir_manual_pdf(caminho_saida):
     story.append(make_formula_card(
         "7. Equação Universal de Perda de Solo Revisada (RUSLE — RENARD et al., 1997)",
         "A = R * K * LS * C * P   [t / (ha · ano)]",
-        "Onde: A é a perda média anual de solo estimada; R é a erosividade da chuva (MJ·mm/(ha·h·ano)); K é a erodibilidade do solo (t·ha·h/(ha·MJ·mm)); LS é o fator topográfico adimensional de comprimento e declive da rampa; C é o fator de uso e cobertura vegetal; e P é o fator de práticas conservacionistas de suporte. Invariante 1: O SAREL impede o cálculo de A se qualquer um dos cinco fatores estiver ausente ou indefinido."
+        "Onde: A é a perda média anual de solo estimada; R é a erosividade da chuva (MJ·mm/(ha·h·ano)); K é a erodibilidade do solo (t·ha·h/(ha·MJ·mm)); LS é o fator topográfico adimensional de comprimento e declive da rampa; C é o fator de uso e cobertura vegetal; e P é o fator de práticas conservacionistas de suporte. Invariante 1: O SAREL impede o cálculo de A se qualquer um dos cinco fatores estiver ausente ou indefinido.",
+        img_nome="formula_07_rusle"
     ))
     story.append(Spacer(1, 2.5*mm))
 
@@ -671,7 +711,8 @@ def construir_manual_pdf(caminho_saida):
     story.append(make_formula_card(
         "8. Índice de Mecanismo Dinâmico Pluviometria-Exposição (Modelo G2 — KARYDAS & PANAGOS, 2018)",
         "I_mecanismo = SUM_{t=1..T} [ R_t * I(NDVI_t <= 0.25) ]",
-        "Acopla temporalmente a série de precipitação diária com a condição fenológica do solo. Captura a essência física da erosão hídrica: o impacto de temporais severos de chuva (elevado R_t) incidentes exatamente nos dias em que o terreno agrícola encontrava-se desprotegido de vegetação ou palhada residual (NDVI_t <= 0.25)."
+        "Acopla temporalmente a série de precipitação diária com a condição fenológica do solo. Captura a essência física da erosão hídrica: o impacto de temporais severos de chuva (elevado R_t) incidentes exatamente nos dias em que o terreno agrícola encontrava-se desprotegido de vegetação ou palhada residual (NDVI_t <= 0.25).",
+        img_nome="formula_08_g2"
     ))
     story.append(Spacer(1, 2.5*mm))
 
@@ -679,14 +720,16 @@ def construir_manual_pdf(caminho_saida):
     story.append(make_formula_card(
         "9. Função Objetivo Regularizada do XGBoost (CHEN & GUESTRIN, 2016)",
         "L^(t) ~ SUM_{i=1..n} [ gi · ft(xi) + 0.5 · hi · ft^2(xi) ] + gamma · T + 0.5 · lambda · SUM_{j=1..T} wj^2",
-        "Otimização em cada iteração de boosting t baseada na expansão em série de Taylor de segunda ordem da função de perda l(yi, y^i). gi e hi representam, respectivamente, o gradiente de primeira ordem e a hessiana de segunda ordem. A penalidade gamma controla o número de folhas T (complexidade da árvore) e lambda controla a regularização L2 sobre os pesos das folhas wj, evitando sobreajuste (overfitting)."
+        "Otimização em cada iteração de boosting t baseada na expansão em série de Taylor de segunda ordem da função de perda l(yi, y^i). gi e hi representam, respectivamente, o gradiente de primeira ordem e a hessiana de segunda ordem. A penalidade gamma controla o número de folhas T (complexidade da árvore) e lambda controla a regularização L2 sobre os pesos das folhas wj, evitando sobreajuste (overfitting).",
+        img_nome="formula_09_xgboost"
     ))
     story.append(Spacer(1, 2.5*mm))
 
     story.append(make_formula_card(
         "10. Critério de Ganho de Divisão de Árvore no XGBoost (Split Gain)",
         "Gain = 0.5 * [ (GL)^2 / (HL + lambda) + (GR)^2 / (HR + lambda) - (GL + GR)^2 / (HL + HR + lambda) ] - gamma",
-        "Determina de forma exata se a divisão de um nó pai nos nós filhos esquerdo (L) e direito (R) resulta em redução de perda estatística suficiente para compensar o custo de regularização gamma da árvore. Se Gain <= 0, o algoritmo realiza a poda (pruning) do ramo."
+        "Determina de forma exata se a divisão de um nó pai nos nós filhos esquerdo (L) e direito (R) resulta em redução de perda estatística suficiente para compensar o custo de regularização gamma da árvore. Se Gain <= 0, o algoritmo realiza a poda (pruning) do ramo.",
+        img_nome="formula_10_split_gain"
     ))
     story.append(Spacer(1, 2.5*mm))
 
@@ -694,7 +737,8 @@ def construir_manual_pdf(caminho_saida):
     story.append(make_formula_card(
         "11. Concordância Inter-intérpretes (Índice Kappa de Cohen — LANDIS & KOCH, 1977)",
         "kappa = (Po - Pe) / (1 - Pe)",
-        "Calcula a concordância observada (Po) corrigida pelo efeito puramente casual do acaso (Pe) entre dois fotointérpretes humanos independentes que avaliaram cegamente a presença de erosão laminar nas imagens de alta resolução PlanetScope (Fase A). Valores de kappa >= 0.60 asseguram concordância substancial e aprovam o ponto amostral para a matriz de treino."
+        "Calcula a concordância observada (Po) corrigida pelo efeito puramente casual do acaso (Pe) entre dois fotointérpretes humanos independentes que avaliaram cegamente a presença de erosão laminar nas imagens de alta resolução PlanetScope (Fase A). Valores de kappa >= 0.60 asseguram concordância substancial e aprovam o ponto amostral para a matriz de treino.",
+        img_nome="formula_11_kappa"
     ))
     story.append(Spacer(1, 2.5*mm))
 
@@ -702,7 +746,8 @@ def construir_manual_pdf(caminho_saida):
     story.append(make_formula_card(
         "12. Valores SHAP de Explicabilidade Aditiva (LUNDBERG & LEE, 2017)",
         "phi_i(f, x) = SUM_{S subseteq F \\ {i}} [ |S|! · (|F| - |S| - 1)! / |F|! ] * [ fx(S U {i}) - fx(S) ]",
-        "Calcula a contribuição marginal de cada preditor i na probabilidade final de erosão predita pelo XGBoost, ancorado na teoria dos jogos cooperativos de Shapley. Permite responder com rigor científico: 'Quais variáveis biofísicas foram determinantes para classificar este ponto como erodido?' — abrindo integralmente a 'caixa-preta' do algoritmo."
+        "Calcula a contribuição marginal de cada preditor i na probabilidade final de erosão predita pelo XGBoost, ancorado na teoria dos jogos cooperativos de Shapley. Permite responder com rigor científico: 'Quais variáveis biofísicas foram determinantes para classificar este ponto como erodido?' — abrindo integralmente a 'caixa-preta' do algoritmo.",
+        img_nome="formula_12_shap"
     ))
     story.append(Spacer(1, 4*mm))
 
