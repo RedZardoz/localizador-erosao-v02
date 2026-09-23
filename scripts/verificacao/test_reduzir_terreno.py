@@ -75,13 +75,23 @@ def test_invariante_2_trigonometria():
     print("  [OK] Invariante 2 matematicamente comprovado em todos os pontos.")
 
 def test_invariante_5_twi_plano():
-    print("[TEST] 4. Verificação do Invariante 5 (TWI indefinido para declividade plana)...")
-    # Testa diretamente a lógica de TWI com declividade zero
+    print("[TEST] 4. Verificação do Invariante 5 e Anti-Mock para TWI...")
+    # Caso 1: Sem área de contribuição real informada -> Indisponível (Regra 1 Anti-Mock)
+    res_sem_area = extrair_atributos_terreno(-24.955, -53.455, area_contribuicao_m2=None)
+    assert res_sem_area["twi"]["estado"] == "indisponivel"
+    assert res_sem_area["twi"]["causa"] == "fora-do-dominio"
+
+    # Caso 2: Com área de contribuição real e declividade normal -> Modelado
+    res_com_area = extrair_atributos_terreno(-24.955, -53.455, area_contribuicao_m2=150.0)
+    assert res_com_area["twi"]["estado"] == "modelado"
+    assert res_com_area["twi"]["valor"] > 0
+
+    # Caso 3: Declividade plana (zero slope) -> Indisponível (Invariante 5)
     from reduzir_terreno_copernicus import _gerar_terreno_indisponivel
     res_indisp = _gerar_terreno_indisponivel("fora-do-dominio", "Declividade plana")
     assert res_indisp["twi"]["estado"] == "indisponivel"
     assert res_indisp["twi"]["causa"] == "fora-do-dominio"
-    print("  [OK] Invariante 5 protegido contra divisão por zero.")
+    print("  [OK] Invariante 5 e Regra 1 (Anti-Mock) rigorosamente cumpridos no TWI.")
 
 def test_reducao_lote():
     print("[TEST] 5. Verificação da redução em lote de PontoAmostral...")

@@ -122,6 +122,7 @@ def baixar_tile_se_necessario(tile: str, pasta_cache: str = "data/dem_cache", ve
 def extrair_atributos_terreno(
     lat: float,
     lon: float,
+    area_contribuicao_m2: Optional[float] = None,
     pasta_cache: str = "data/dem_cache",
     usar_cache_local: bool = True,
     baixar_tile_completo: bool = False
@@ -231,10 +232,11 @@ def extrair_atributos_terreno(
 
             # =========================================================================
             # TWI (Topographic Wetness Index) e Invariante 5 do SAREL:
-            # TWI = ln(a / tan(beta))
-            # Se beta <= 0.001° (plano): tan(0) = 0 -> Indisponível (fora-do-dominio)
+            # TWI = ln(a / tan(beta)) (Beven & Kirkby, 1979)
+            # Regra 1 (Anti-Mock): Se a área de contribuição específica não for fornecida
+            # a partir de uma grade de fluxo real (D8/MD8), reporta "indisponivel".
+            # Se beta <= 0.001° (plano): tan(0) = 0 -> Indisponível (fora-do-dominio).
             # =========================================================================
-            area_contribuicao_m2 = 30.0  # Comprimento de contorno local unitário (30m)
             tan_beta = math.tan(declividade_rad)
 
             if declividade_graus <= 0.001 or tan_beta <= 1e-6:
@@ -242,6 +244,12 @@ def extrair_atributos_terreno(
                     "estado": "indisponivel",
                     "causa": "fora-do-dominio",
                     "motivo": "Declividade plana (beta = 0°) impossibilita cálculo do TWI (divisão por zero em tan(beta))."
+                }
+            elif area_contribuicao_m2 is None or area_contribuicao_m2 <= 0:
+                twi_obj = {
+                    "estado": "indisponivel",
+                    "causa": "fora-do-dominio",
+                    "motivo": "TWI aguarda mapa de acúmulo de fluxo e área de contribuição específica real (Beven & Kirkby, 1979)."
                 }
             else:
                 twi_calc = math.log(area_contribuicao_m2 / tan_beta)
