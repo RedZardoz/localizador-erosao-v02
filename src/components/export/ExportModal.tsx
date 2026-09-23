@@ -12,10 +12,15 @@ import {
   CheckCircle2,
   AlertCircle,
   ShieldCheck,
+  PackageCheck,
+  Sparkles,
+  FileCode,
+  Lock,
 } from "lucide-react";
 import { useSarelStore, usePontosVisiveis } from "@/store/useSarelStore";
 import { gerarPlanilhaXLSX } from "@/lib/export/planilha";
 import { gerarCsvCientifico } from "@/lib/export/csv";
+import { gerarPacoteReprodutibilidadeZip } from "@/lib/export/pacoteReprodutibilidade";
 import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
 import { valorOuNulo } from "@/types/proveniencia";
 
@@ -75,6 +80,31 @@ export const ExportModal: React.FC = () => {
       setMensagem({ tipo: "sucesso", texto: "Arquivo CSV científico com metadados exportado!" });
     } catch (e: any) {
       setMensagem({ tipo: "erro", texto: e.message || "Falha ao gerar CSV." });
+    } finally {
+      setExportando(null);
+    }
+  };
+
+  const baixarPacoteReprodutibilidade = async () => {
+    if (totalPontos === 0) {
+      setMensagem({ tipo: "erro", texto: "Nenhum ponto visível na tela para exportar o pacote de reprodutibilidade." });
+      return;
+    }
+    setExportando("reprodutibilidade");
+    try {
+      const blob = await gerarPacoteReprodutibilidadeZip(pontosVisiveis);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `PACOTE_REPRODUTIBILIDADE_SAREL_PPGTCA_2026_${Date.now()}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setMensagem({
+        tipo: "sucesso",
+        texto: "Pacote de Reprodutibilidade Científica (.ZIP) exportado com sucesso contendo 6 arquivos e hashes SHA-256!",
+      });
+    } catch (e: any) {
+      setMensagem({ tipo: "erro", texto: e.message || "Falha ao gerar Pacote de Reprodutibilidade." });
     } finally {
       setExportando(null);
     }
@@ -196,6 +226,61 @@ export const ExportModal: React.FC = () => {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Card Pacote de Reprodutibilidade da Dissertação (RESEARCH COMPENDIUM .ZIP) */}
+            <div className="p-4 bg-gradient-to-br from-indigo-50/90 via-purple-50/50 to-slate-50 dark:from-indigo-950/40 dark:via-purple-950/30 dark:to-slate-900/80 rounded-xl border border-indigo-200 dark:border-indigo-800/70 space-y-3 col-span-1 sm:col-span-2 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <PackageCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                      Pacote de Reprodutibilidade da Dissertação (Research Compendium .ZIP)
+                    </span>
+                    <span className="px-2 py-0.5 text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 rounded-full border border-indigo-200 dark:border-indigo-700">
+                      FAIR Data
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Arquivo unificado para entrega à <strong>Banca Examinadora do PPGTCA</strong> e submissão em periódicos de alto impacto. Reúne a matriz de preditores, base cega do <strong>VANT Spectral 2</strong>, confronto radiométrico (Pearson <em>r</em>), dicionário em JSON, script autônomo em Python e manifesto criptográfico <strong>SHA-256</strong>.
+                  </p>
+                </div>
+              </div>
+
+              {/* Badges dos 6 Arquivos e Literatura */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] text-slate-600 dark:text-slate-400 font-mono">
+                <span className="bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 flex items-center gap-1">
+                  <FileText className="w-3 h-3 text-emerald-500" /> 01_matriz_treinamento.csv
+                </span>
+                <span className="bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 flex items-center gap-1">
+                  <FileText className="w-3 h-3 text-amber-500" /> 02_validacao_held_out_drone.csv
+                </span>
+                <span className="bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 flex items-center gap-1">
+                  <FileText className="w-3 h-3 text-blue-500" /> 03_confronto_radiometrico.csv
+                </span>
+                <span className="bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 flex items-center gap-1">
+                  <FileCode className="w-3 h-3 text-purple-500" /> 04_datasheet_metadados.json
+                </span>
+                <span className="bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 flex items-center gap-1">
+                  <FileCode className="w-3 h-3 text-cyan-500" /> 05_script_auditoria.py
+                </span>
+                <span className="bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 flex items-center gap-1">
+                  <Lock className="w-3 h-3 text-rose-500" /> 06_manifesto_sha256.txt
+                </span>
+              </div>
+
+              <button
+                onClick={baixarPacoteReprodutibilidade}
+                disabled={exportando === "reprodutibilidade" || totalPontos === 0}
+                className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-40 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 shadow cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                <span>
+                  {exportando === "reprodutibilidade"
+                    ? "Compilando compêndio e calculando hashes SHA-256..."
+                    : "Exportar Pacote de Reprodutibilidade Completo (.ZIP)"}
+                </span>
+              </button>
+            </div>
+
             {/* Card XLSX */}
             <div className="p-4 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2.5">
               <div className="flex items-center gap-2">
