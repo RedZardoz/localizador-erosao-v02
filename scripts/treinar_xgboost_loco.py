@@ -385,6 +385,16 @@ def preparar_matriz_preditores(
         'Banda_B4': 'banda_b4',
         'Banda_B8': 'banda_b8',
         'Banda_B12': 'banda_b12',
+        'curvaturaPerfil': 'curvatura_perfil',
+        'Curvatura_Perfil': 'curvatura_perfil',
+        'curvatura_perfil': 'curvatura_perfil',
+        'curvaturaPlana': 'curvatura_plana',
+        'Curvatura_Plana': 'curvatura_plana',
+        'curvatura_plana': 'curvatura_plana',
+        'twi': 'twi',
+        'TWI': 'twi',
+        'declividadeGraus': 'declividade_graus',
+        'Declividade_Graus': 'declividade_graus',
     }
     df = df.rename(columns={k: v for k, v in mapeamento.items() if k in df.columns})
 
@@ -454,6 +464,9 @@ def preparar_matriz_preditores(
         'banda_b4',
         'banda_b8',
         'banda_b12',
+        'curvatura_perfil',
+        'curvatura_plana',
+        'twi',
         'rusle_fator_k',
         'rusle_fator_r',
         'rusle_perda_solo',
