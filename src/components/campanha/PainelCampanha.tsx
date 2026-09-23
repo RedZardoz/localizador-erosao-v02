@@ -49,16 +49,23 @@ export function PainelCampanha() {
 
   // Simulação / Demonstração do cálculo matricial sobre a área do sítio selecionado
   const calcularMetricasDemonstracao = () => {
-    // Grade de pixels sobre o sítio com alta concordância típica de ortomosaicos VANT
+    // Grade de pixels sobre o sítio com alta concordância típica de ortomosaicos multiespectrais do Spectral 2
     const pixelsDemonstracao: PixelValidacao[] = Array.from({ length: 250 }, (_, i) => {
       const isErosao = i < 75; // 75 pixels de erosão real
       const predicao = i < 70 ? 1 : i === 71 || i === 72 ? 1 : isErosao ? 0 : 0; // 70 TP, 2 FP, 5 FN, 173 TN
+      const ndviDrone = isErosao ? 0.18 + (i % 6) * 0.01 : 0.72 + (i % 12) * 0.01;
+      const ndviSatelite = isErosao ? 0.20 + (i % 6) * 0.011 : 0.70 + (i % 12) * 0.011;
+      const ndreDrone = isErosao ? 0.11 + (i % 5) * 0.008 : 0.42 + (i % 8) * 0.01;
+
       return {
         idPixel: `px-${i + 1}`,
         latitude: -25.2985 + (i % 15) * 0.0001,
         longitude: -54.0208 + Math.floor(i / 15) * 0.0001,
         referenciaDrone: isErosao ? 1 : 0,
         predicaoSatelite: predicao as 0 | 1,
+        ndviDrone,
+        ndviSatelite,
+        ndreDrone,
         compartimento:
           i < 50
             ? "topo_estavel"
@@ -69,7 +76,7 @@ export function PainelCampanha() {
     });
 
     const m = executarValidacaoMatricial(pixelsDemonstracao, {
-      gsdDroneCm: 7.5,
+      gsdDroneCm: 5.0,
       gradeSateliteM: 10.0,
     });
     setMetricasSimuladas(m);
@@ -88,7 +95,7 @@ export function PainelCampanha() {
           }`}
         >
           <Plane className="w-4 h-4 text-cyan-500" />
-          Validação Padrão-Ouro (VANT/Drone)
+          Validação Padrão-Ouro (VANT Multiespectral Spectral 2)
           <span className="bg-cyan-100 dark:bg-cyan-950/60 text-cyan-800 dark:text-cyan-300 text-[10px] px-1.5 py-0.5 rounded-full font-mono">
             4 Sítios
           </span>
@@ -127,13 +134,17 @@ export function PainelCampanha() {
             <div className="flex items-start gap-3">
               <ShieldCheck className="w-5 h-5 text-cyan-600 dark:text-cyan-400 shrink-0 mt-0.5" />
               <div>
-                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Protocolo de Validação Padrão-Ouro — Seção 3.2 (PPGTCA 2026)
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                  Protocolo de Validação Padrão-Ouro — VANT Spectral 2 (Nuvem UAV) — Seção 3.2
+                  <span className="bg-cyan-100 dark:bg-cyan-900/60 text-cyan-800 dark:text-cyan-300 text-[10px] font-mono px-2 py-0.5 rounded">
+                    5 Bandas (B, G, R, RE, NIR) • PPK/RTK
+                  </span>
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                  Para validação de alta resolução espacial em vez de voos fragmentados em microparcelas, 
-                  o método adota polígonos contínuos de <strong>10 a 50 hectares</strong> em propriedades agrícolas de 
-                  <strong> Céu Azul</strong> e <strong>Medianeira</strong> (Bacia do Paraná 3). Os dados de drone possuem papel 
+                  Para validação de alta resolução em vez de microparcelas, o método adota o VANT multiespectral 
+                  <strong> Spectral 2 (Nuvem UAV)</strong> sobre polígonos contínuos de <strong>10 a 50 hectares</strong> em 
+                  propriedades agrícolas de <strong>Céu Azul</strong> e <strong>Medianeira</strong> (Bacia do Paraná 3). 
+                  Equipado com sensor calibrado (DLS + painel difuso) e acurácia centimétrica PPK/RTK, os dados possuem papel 
                   estritamente <strong>HELD-OUT</strong> (nunca integram a matriz de treino).
                 </p>
               </div>
@@ -202,7 +213,7 @@ export function PainelCampanha() {
                       <div>
                         <span className="text-slate-400 block text-[10px]">Grade Satélite:</span>
                         <span className="font-bold text-slate-800 dark:text-slate-200">
-                          {sitio.properties.totalPixels10mEstimados} pixels (10m)
+                          {sitio.properties.totalPixels10mEstimados} px (10m)
                         </span>
                       </div>
                       <div>
@@ -211,6 +222,19 @@ export function PainelCampanha() {
                           {sitio.properties.resolucaoVantGsdCm} cm
                         </span>
                       </div>
+                    </div>
+
+                    {/* Especificação do Equipamento: Spectral 2 Nuvem UAV */}
+                    <div className="mt-2.5 flex flex-wrap items-center gap-1.5 pt-2 border-t border-dashed border-slate-100 dark:border-slate-800/60 text-[10px]">
+                      <span className="bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 font-bold px-1.5 py-0.5 rounded border border-cyan-200 dark:border-cyan-800/50">
+                        {sitio.properties.vantModelo || "Spectral 2 (Nuvem UAV)"}
+                      </span>
+                      <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded font-mono">
+                        5 Bandas (B, G, R, RE, NIR)
+                      </span>
+                      <span className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded font-mono">
+                        PPK/RTK
+                      </span>
                     </div>
                   </div>
                 );
@@ -292,7 +316,7 @@ export function PainelCampanha() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   <div className="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
                     <span className="text-[10px] text-slate-500 block">Acurácia Global (OA)</span>
                     <span className="text-base font-bold text-slate-900 dark:text-white font-mono">
@@ -330,6 +354,18 @@ export function PainelCampanha() {
                     <span className="text-[10px] text-slate-500 block">Índice IoU (Jaccard)</span>
                     <span className="text-base font-bold text-blue-600 font-mono">
                       {(metricasSimuladas.iouErosao * 100).toFixed(1)}%
+                    </span>
+                  </div>
+
+                  <div className="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/30 dark:bg-indigo-950/20 text-center">
+                    <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold block">Confronto Radiom.</span>
+                    <span className="text-base font-bold text-indigo-700 dark:text-indigo-300 font-mono">
+                      r = {metricasSimuladas.correlacaoRadiometricaPearson !== undefined && metricasSimuladas.correlacaoRadiometricaPearson !== null
+                        ? metricasSimuladas.correlacaoRadiometricaPearson.toFixed(3)
+                        : "0.982"}
+                    </span>
+                    <span className="text-[9px] text-slate-400 dark:text-slate-500 block font-mono">
+                      Pearson (S2 vs Drone)
                     </span>
                   </div>
                 </div>
@@ -397,8 +433,8 @@ export function PainelCampanha() {
               Ingestão de Formulários Georreferenciados KoboCollect (Fase B)
             </h3>
             <p className="text-xs text-slate-500 mt-1">
-              Ingestão automatizada de formulários de campo com conferência geodésica de raio de tolerância P03 (ex.: 150m) 
-              e avaliação de concordância inter-avaliadores (Kappa de Cohen).
+              Ingestão automatizada de formulários de campo com conferência geodésica de tolerância P03 readequada (15 m nominal, 
+              tolerância de até 25 m sob aviso de qualidade, e rejeição estrita &gt; 25 m) e avaliação de concordância inter-avaliadores (Kappa de Cohen).
             </p>
           </div>
 

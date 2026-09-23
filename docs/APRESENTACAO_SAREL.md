@@ -186,8 +186,8 @@ style: |
 
 * **Passo 8: Protocolos Cegos de Coleta e Curadoria de Rótulos**
   - **Fase A (PlanetScope 3m):** 2 fotointérpretes humanos independentes; pares antes/depois de chuva; validação via Kappa de Cohen ($\kappa \ge 0{,}60$).
-  - **Fase B (Auditoria em Campo):** Ficha padronizada KoboToolbox com roteamento logístico e sobreposição fundiária (SIGEF/SICAR).
-  - **Fase D (Ortomosaicos de Drone):** Resolução centimétrica (2 cm/pixel) isolada como conjunto *held-out* puro (nunca entra no treinamento).
+  - **Fase B (Auditoria em Campo):** Ficha padronizada KoboToolbox com validação de raio geodésico P03 (15 m nominal, tolerância até 25 m sob aviso de qualidade; rejeição se > 25 m) e sobreposição fundiária oficial (SIGEF, SICAR, SNCR).
+  - **Fase D (VANT Multiespectral Spectral 2 — Nuvem UAV):** Aerolevantamento em 4 sítios contínuos de 10 a 50 ha (Céu Azul e Medianeira) com GSD centimétrico (3 a 7,5 cm). Sensor multiespectral de 5 bandas calibradas (Azul 475nm, Verde 560nm, Vermelho 668nm, RedEdge 717nm e NIR 842nm), sensor DLS de irradiância solar e precisão centimétrica PPK/RTK. Permite confronto radiométrico direto (correlação de Pearson $r$ entre $\text{NDVI}_{\text{satélite}}$ e $\text{NDVI}_{\text{drone}}$) e validação sub-pixel com isolamento inviolável como *held-out* (Regra 4).
 
 ---
 

@@ -279,7 +279,7 @@ def gerar_documento_field_collector_pdf(output_path="SAREL_Field_Collector_Espec
     ))
 
     vantagens = [
-        ("Auditoria Geodésica in-situ (Parâmetro P03):", "Monitora a distância Haversine em tempo real entre o GPS e o centróide teórico, alertando se a tolerância de 150 metros for excedida."),
+        ("Auditoria Geodésica in-situ (Parâmetro P03):", "Monitora a distância Haversine em tempo real entre o GPS e o centróide teórico, assegurando a tolerância nominal de 15 metros (com tolerância ampliada de até 25 metros sob aviso de qualidade)."),
         ("Blindagem do Protocolo Cego (Regra 4):", "Omite compulsoriamente predições de IA, scores de satélite e fatores RUSLE, prevenindo o viés de confirmação do observador."),
         ("Ingestão Direta sem Pós-Processamento:", "Gera arquivos JSON e CSV estruturados no formato exato consumido pelo módulo <code>src/lib/rotulos/ingestaoKobo.ts</code>."),
         ("Operação 100% Offline-First:", "Persiste os dados localmente no IndexedDB do celular para áreas rurais do Paraná sem sinal 4G/5G."),
@@ -376,7 +376,7 @@ def gerar_documento_field_collector_pdf(output_path="SAREL_Field_Collector_Espec
         ("1. Exportação do Plano no SAREL", "No painel web, o pesquisador conclui a amostragem estratificada e clica em 'Exportar Plano de Campo (Perfil campo-cego)'. O sistema gera o arquivo <code>sarel_pontos_campo.json</code> (ou <code>.csv</code>)."),
         ("2. Carga no Smartphone", "No aplicativo móvel, o operador clica em 'Carregar Pontos SAREL' e seleciona o arquivo exportado. Os pontos são persistidos no IndexedDB local com seus polígonos CAR associados."),
         ("3. Navegação Geodésica Offline", "O Field Collector calcula em tempo real a distância Haversine e o azimute entre a posição GPS do celular e os alvos, ordenando os pontos por proximidade geográfica para otimizar o deslocamento vicinal."),
-        ("4. Chegada ao Ponto & Trava P03", "Ao se aproximar da coordenada planejada, o app aciona o selo verde quando a distância é ≤ 150 m (Tolerância Geodésica P03). Se houver obstáculo físico (ex.: cerca fechada ou brejo), o operador registra a observação no raio de até 150 m com log do desvio."),
+        ("4. Chegada ao Ponto & Trava P03", "Ao se aproximar da coordenada planejada, o app aciona o selo verde quando a distância é ≤ 15 m (Tolerância Geodésica Nominal P03). Se houver obstáculo físico (ex.: cerca ou terraço), admite-se registro até 25 m com aviso formal de qualidade; distâncias acima de 25 m são bloqueadas para evitar descaracterização da feição."),
         ("5. Inspeção Biofísica Padronizada", "O operador preenche os campos estruturados da ficha de campo, avaliando morfologia do solo, espessura do horizonte A, pedestais e práticas conservacionistas."),
         ("6. Registro Fotográfico Obrigatório", "Captura de duas fotografias vinculadas ao código do ponto: (a) Foto Nadir vertical a 1,20 m do solo; (b) Foto Panorâmica da vertente."),
         ("7. Exportação do Pacote de Campo", "Ao final do dia, o aplicativo gera um pacote unificado <code>sarel_coleta_campo_[DATA].json</code> e compartilha via Drive, USB ou WhatsApp."),
@@ -448,8 +448,8 @@ def gerar_documento_field_collector_pdf(output_path="SAREL_Field_Collector_Espec
     story.append(Spacer(1, 4))
 
     callout_p03 = callout_box(
-        "TOLERÂNCIA GEODÉSICA DE CAMPO (PARÂMETRO P03: RAIO DE 150 METROS)",
-        "No ambiente operacional real das fazendas paranaenses, barreiras físicas (cercas de arame farpado, curvas de nível intransitáveis, canaviais densos ou carreadores alagados) frequentemente impedem que o avaliador pise no centróide exato do pixel. O Field Collector audita a distância in-situ: medições a até 150 metros da coordenada planejada são aceitas e o desvio métrico é formalmente gravado no arquivo; registros acima de 150 metros disparam alerta imediato na tela.",
+        "TOLERÂNCIA GEODÉSICA DE CAMPO READEQUADA (PARÂMETRO P03: 15 M NOMINAL, ATÉ 25 M SOB AVISO)",
+        "Na escala do pixel de 10 m do Sentinel-2 (100 m²), a tolerância geodésica P03 foi readequada de 150 m para 15 metros nominais (1,5 pixel), compatível com a precisão dos receptores GPS/GNSS móveis (3 a 8 m) e a integridade física da erosão laminar. Quando barreiras físicas impedirem o acesso ao centróide exato, o app aceita registros de até 25 metros com aviso formal de qualidade gravado no log; registros acima de 25 metros são bloqueados para evitar atribuição errônea a células vizinhas (Congalton & Green, 2019).",
         styles, bg_color=C_AMBER_BG, border_color=C_AMBER_DARK, title_color=C_AMBER_DARK
     )
     story.append(callout_p03)

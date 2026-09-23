@@ -109,13 +109,14 @@
 
 ---
 
-### D06 — Unidade de predição: pixel 10 m, 30 m ou talhão
+### D06 — Unidade de predição: pixel 10 m calibrado por VANT Multiespectral
 
 | Campo | Valor |
 |---|---|
-| **Estado** | 🔴 Pendente |
-| **Trava** | Fases 3, 4 e 6 |
-| **O agente entrega** | Análise de viabilidade |
+| **Estado** | 🟢 Decidida (2026-09-22) |
+| **Valor Adotado** | Pixel Sentinel-2 de 10 m com calibração sub-métrica e confronto radiométrico pelo VANT Multiespectral Spectral 2 (Nuvem UAV) — 5 bandas calibradas (Azul, Verde, Vermelho, RedEdge, NIR), PPK/RTK centimétrico e GSD 3 a 7,5 cm — em 4 polígonos contínuos de 10 a 50 ha (Céu Azul e Medianeira) |
+| **Justificativa** | Elimina a subjetividade de vetorização manual de microparcelas, viabiliza o confronto radiométrico direto (Pearson $r$) entre satélite e drone, e captura o gradiente topo-sequencial completo da catena agrícola (topo, encosta e baixada). |
+| **Referência** | Metodologia PPGTCA 2026, Seções 3.1 e 3.2; Nuvem UAV (2024) |
 
 ---
 
@@ -185,9 +186,10 @@
 
 | Campo | Valor |
 |---|---|
-| **Estado** | 🔴 Pendente |
-| **Trava** | Tamanho amostral, Fases 4 e 6 |
-| **O agente entrega** | Dimensionamento logístico |
+| **Estado** | 🟢 Decidida (2026-09-22) |
+| **Valor Adotado** | 4 sítios contínuos de referência territorial (10 a 50 ha cada) em Céu Azul e Medianeira voados com o VANT Multiespectral Spectral 2 (Nuvem UAV, 5 bandas, PPK/RTK) mantidos estritamente como held-out, combinados com 120 a 180 pontos de inspeção presencial via formulário KoboCollect sob protocolo cego. |
+| **Justificativa** | Garante cobertura exaustiva da variabilidade pedológica e topográfica da Bacia do Paraná 3, respeitando as restrições logísticas de campo e preservando a segregação cega de dados. |
+| **Referência** | Metodologia PPGTCA 2026, Seções 3.2 e 3.3 |
 
 ---
 
@@ -230,7 +232,7 @@
 |---|---|---|---|---|
 | P01 | Aresta do bloco espacial | Derivada do variograma; fallback 20 km | Proposta | Roberts et al. (2017) — fallback provisório |
 | P02 | Espaçamento mínimo do *thinning* | 1 km | Proposta | Localizador `spatialThinning` |
-| P03 | Raio de casamento Kobo | 150 m | Proposta | Localizador `koboParser.ts` |
+| P03 | Raio de casamento geodésico Kobo | 15 m nominal (tolerância até 25 m sob aviso; rejeição estrita se > 25 m) | 🟢 Decidida | Congalton & Green (2019); LUCAS (2022) |
 | P04 | Buffers de exclusão (água / urbano) | 30 m / 150 m / 10% | Proposta | Localizador `eligibilityConstants.ts` |
 | P05 | Classes elegíveis ESA WorldCover | 30, 40, 60 | Proposta | Planejamento v3 §7.1 |
 | P06 | Fração limpa mínima (UDM2) | A definir | Pendente | Fase 5 |

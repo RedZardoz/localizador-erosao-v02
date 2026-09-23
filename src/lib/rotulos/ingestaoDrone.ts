@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * Ingestão de Validação por Drone — SAREL (PPGTCA 2026)
  * ============================================================================
@@ -9,8 +9,18 @@
  * - NUNCA misturado à matriz de treino do modelo supervisionado.
  */
 
-import { Rotulo } from "@/types/rotulo";
+import { MetadadosSensorDrone, Rotulo } from "@/types/rotulo";
 import { validarRotulo } from "./concordancia";
+
+export const METADADOS_PADRAO_SPECTRAL_2: MetadadosSensorDrone = {
+  tipoSensor: "multiespectral",
+  fabricanteVant: "Nuvem UAV",
+  modeloVant: "Spectral 2",
+  bandas: ["blue", "green", "red", "rededge", "nir"],
+  resolucaoGsdCm: 5.0,
+  georreferenciamento: "ppk-rtk",
+  calibracaoRadiometrica: true,
+};
 
 export interface ItemDroneProcessado {
   codigoPonto: string;
@@ -19,6 +29,10 @@ export interface ItemDroneProcessado {
   dataVoo?: string;
   sensor?: string;
   altitudeVooMetros?: number;
+  metadadosSensor?: MetadadosSensorDrone;
+  ndviMedioDrone?: number; // Média centimétrica no pixel orbital de 10m
+  ndreMedioDrone?: number; // Normalized Difference Red Edge
+  fracaoSoloNuEspectralPct?: number; // Fração de solo nu estimada por espectrometria de alta resolução
   papelConjunto: "held-out"; // Inviolável
 }
 
@@ -63,16 +77,33 @@ export function ingestarValidacaoDrone(
       continue;
     }
 
+    const gsd = raw.resolucaoGsdCm !== undefined ? Number(raw.resolucaoGsdCm) : METADADOS_PADRAO_SPECTRAL_2.resolucaoGsdCm;
+
+    const metadadosSensor: MetadadosSensorDrone = {
+      tipoSensor: (raw.tipoSensor as "multiespectral" | "rgb") || METADADOS_PADRAO_SPECTRAL_2.tipoSensor,
+      fabricanteVant: String(raw.fabricanteVant || METADADOS_PADRAO_SPECTRAL_2.fabricanteVant),
+      modeloVant: String(raw.modeloVant || METADADOS_PADRAO_SPECTRAL_2.modeloVant),
+      bandas: Array.isArray(raw.bandas) ? (raw.bandas as MetadadosSensorDrone["bandas"]) : METADADOS_PADRAO_SPECTRAL_2.bandas,
+      resolucaoGsdCm: gsd,
+      georreferenciamento: (raw.georreferenciamento as "ppk-rtk" | "gnss-navegacao") || METADADOS_PADRAO_SPECTRAL_2.georreferenciamento,
+      calibracaoRadiometrica: raw.calibracaoRadiometrica !== undefined ? Boolean(raw.calibracaoRadiometrica) : METADADOS_PADRAO_SPECTRAL_2.calibracaoRadiometrica,
+    };
+
     aceitos.push({
       codigoPonto: codigo,
       rotulo,
-      resolucaoGsdCm: raw.resolucaoGsdCm !== undefined ? Number(raw.resolucaoGsdCm) : undefined,
+      resolucaoGsdCm: gsd,
       dataVoo: raw.dataVoo ? String(raw.dataVoo) : observadoEm,
-      sensor: raw.sensor ? String(raw.sensor) : undefined,
+      sensor: raw.sensor ? String(raw.sensor) : `${metadadosSensor.modeloVant} (${metadadosSensor.tipoSensor})`,
       altitudeVooMetros: raw.altitudeVooMetros !== undefined ? Number(raw.altitudeVooMetros) : undefined,
+      metadadosSensor,
+      ndviMedioDrone: raw.ndviMedioDrone !== undefined ? Number(raw.ndviMedioDrone) : undefined,
+      ndreMedioDrone: raw.ndreMedioDrone !== undefined ? Number(raw.ndreMedioDrone) : undefined,
+      fracaoSoloNuEspectralPct: raw.fracaoSoloNuEspectralPct !== undefined ? Number(raw.fracaoSoloNuEspectralPct) : undefined,
       papelConjunto: "held-out",
     });
   }
+
 
   return {
     totalProcessados: entradas.length,

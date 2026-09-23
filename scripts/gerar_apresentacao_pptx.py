@@ -78,7 +78,7 @@ def criar_apresentacao(caminho_saida):
         line.fill.fore_color.rgb = C_EMERALD_MID
         line.line.color.rgb = C_EMERALD_MID
 
-    def add_footer(slide, num_slide, total_slides=16):
+    def add_footer(slide, num_slide, total_slides=17):
         tb = slide.shapes.add_textbox(Inches(0.8), Inches(7.1), Inches(11.733), Inches(0.3))
         p = tb.text_frame.paragraphs[0]
         p.text = f"SAREL v2.0 • Sistema de Amostragem e Rotulagem para Erosão Laminar | UTFPR Medianeira | Slide {num_slide} de {total_slides}"
@@ -460,10 +460,10 @@ def criar_apresentacao(caminho_saida):
             "Invariante 1 de Integridade: Perda de solo (A) só é calculada se os 5 fatores estiverem simultaneamente disponíveis com valores finitos."
         ]),
         ("Passo 8: Protocolos Cegos de Coleta e Validação Multicamada", [
-            "Fase A (PlanetScope 3 m): 2 intérpretes humanos independentes; pares antes/depois de chuva; validação por Kappa de Cohen (k >= 0.60).",
-            "Fase B (Auditoria em Campo): Coleta padronizada via formulário KoboToolbox com cruzamento cadastral fundiário (SIGEF, SICAR, SNCR).",
-            "Fase D (Ortomosaicos de Drone): Resolução de 2 cm/pixel; isolado estritamente como conjunto held-out de teste (nunca entra no treino).",
-            "Regra Inviolável 6: Coordenadas geográficas NUNCA entram na matriz de treino tabular, impedindo o aprendizado de viés de localização."
+            "Fase A (PlanetScope 3 m): 2 fotointérpretes humanos independentes; pares antes/depois de chuva; validação por Kappa de Cohen (k >= 0.60).",
+            "Fase B (Auditoria em Campo): Ficha KoboToolbox com tolerância geodésica P03 de 15 m nominal (até 25 m sob aviso) e cruzamento fundiário (SICAR/SIGEF).",
+            "Fase D (VANT Spectral 2 - Nuvem UAV): Sensor multiespectral 5 bandas (B, G, R, RedEdge, NIR), PPK/RTK e GSD 3 a 7,5 cm em 4 sítios de 10 a 50 ha.",
+            "Confronto Radiométrico: Correlação de Pearson r entre NDVI Sentinel-2 e drone, mantido estritamente como held-out (Regra 4)."
         ])
     ]
 
@@ -883,6 +883,7 @@ def criar_apresentacao(caminho_saida):
     tf_ab2.word_wrap = True
 
     refs_p2 = [
+        "CONGALTON, R. G.; GREEN, K. Assessing the accuracy of remotely sensed data: principles and practices. 3. ed. Boca Raton: CRC Press, 2019. 348 p.",
         "LUNDBERG, S. M.; LEE, S.-I. A Unified Approach to Interpreting Model Predictions. In: ADVANCES IN NEURAL INFORMATION PROCESSING SYSTEMS (NEURIPS 2017), 30., 2017, Long Beach. Proceedings [...]. Red Hook: Curran Associates, 2017. p. 4765–4774.",
         "MANNIGEL, E. et al. Fator erodibilidade de solos do estado de São Paulo. Revista Brasileira de Ciência do Solo, v. 26, n. 4, p. 1039–1049, 2002.",
         "RENARD, K. G. et al. Predicting soil erosion by water: a guide to conservation planning with the Revised Universal Soil Loss Equation (RUSLE). Washington, D.C.: United States Department of Agriculture, 1997. 404 p. (Agriculture Handbook, n. 703).",

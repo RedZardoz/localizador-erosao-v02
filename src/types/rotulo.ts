@@ -3,6 +3,18 @@ export type ClasseRotulo = string;
 
 export type ModalidadeRotulo = "interpretacao-visual" | "campo" | "drone";
 
+export type BandaMultiespectral = "blue" | "green" | "red" | "rededge" | "nir";
+
+export interface MetadadosSensorDrone {
+  tipoSensor: "multiespectral" | "rgb";
+  fabricanteVant: "Nuvem UAV" | string;
+  modeloVant: "Spectral 2" | string;
+  bandas: BandaMultiespectral[];
+  resolucaoGsdCm: number;
+  georreferenciamento: "ppk-rtk" | "gnss-navegacao";
+  calibracaoRadiometrica: boolean; // DLS (sensor de irradiância solar) + painel de reflectância difusa
+}
+
 export interface Rotulo {
   classe: ClasseRotulo;
   modalidade: ModalidadeRotulo;
@@ -20,3 +32,4 @@ export interface RotuloConsolidado {
   divergencia: "nenhuma" | "resolvida-por-terceiro" | "pendente";
   papelConjunto: "treino" | "held-out";       // drone e sempre held-out
 }
+

@@ -45,6 +45,12 @@ export interface SitioPadraoOuroProperties {
   resolucaoGradeSateliteM: number;
   totalPixels10mEstimados: number;
   papelConjunto: 'held-out';
+  vantModelo?: string;
+  fabricanteVant?: string;
+  sensorTipo?: string;
+  bandasMultiespectrais?: ("blue" | "green" | "red" | "rededge" | "nir")[];
+  georreferenciamento?: string;
+  calibracaoRadiometrica?: string;
   compartimentos?: CompartimentoTopoSequencial[];
 }
 
@@ -101,7 +107,13 @@ export const SITIOS_PADRAO_OURO: SitioPadraoOuroFeature[] = [
       "resolucaoVantGsdCm": 7.5,
       "resolucaoGradeSateliteM": 10,
       "totalPixels10mEstimados": 4994,
-      "papelConjunto": "held-out"
+      "papelConjunto": "held-out",
+      "vantModelo": "Spectral 2 (Nuvem UAV)",
+      "fabricanteVant": "Nuvem UAV",
+      "sensorTipo": "Multiespectral 5 bandas (Azul, Verde, Vermelho, RedEdge, NIR)",
+      "bandasMultiespectrais": ["blue", "green", "red", "rededge", "nir"],
+      "georreferenciamento": "PPK/RTK centimétrico",
+      "calibracaoRadiometrica": "Sensor DLS + Painel de Reflectância Difusa"
     },
     "geometry": {
       "type": "Polygon",
@@ -371,7 +383,13 @@ export const SITIOS_PADRAO_OURO: SitioPadraoOuroFeature[] = [
       "resolucaoVantGsdCm": 7.5,
       "resolucaoGradeSateliteM": 10,
       "totalPixels10mEstimados": 4954,
-      "papelConjunto": "held-out"
+      "papelConjunto": "held-out",
+      "vantModelo": "Spectral 2 (Nuvem UAV)",
+      "fabricanteVant": "Nuvem UAV",
+      "sensorTipo": "Multiespectral 5 bandas (Azul, Verde, Vermelho, RedEdge, NIR)",
+      "bandasMultiespectrais": ["blue", "green", "red", "rededge", "nir"],
+      "georreferenciamento": "PPK/RTK centimétrico",
+      "calibracaoRadiometrica": "Sensor DLS + Painel de Reflectância Difusa"
     },
     "geometry": {
       "type": "Polygon",
@@ -501,7 +519,13 @@ export const SITIOS_PADRAO_OURO: SitioPadraoOuroFeature[] = [
       "resolucaoVantGsdCm": 7.5,
       "resolucaoGradeSateliteM": 10,
       "totalPixels10mEstimados": 4954,
-      "papelConjunto": "held-out"
+      "papelConjunto": "held-out",
+      "vantModelo": "Spectral 2 (Nuvem UAV)",
+      "fabricanteVant": "Nuvem UAV",
+      "sensorTipo": "Multiespectral 5 bandas (Azul, Verde, Vermelho, RedEdge, NIR)",
+      "bandasMultiespectrais": ["blue", "green", "red", "rededge", "nir"],
+      "georreferenciamento": "PPK/RTK centimétrico",
+      "calibracaoRadiometrica": "Sensor DLS + Painel de Reflectância Difusa"
     },
     "geometry": {
       "type": "Polygon",
@@ -611,7 +635,13 @@ export const SITIOS_PADRAO_OURO: SitioPadraoOuroFeature[] = [
       "resolucaoVantGsdCm": 7.5,
       "resolucaoGradeSateliteM": 10,
       "totalPixels10mEstimados": 4954,
-      "papelConjunto": "held-out"
+      "papelConjunto": "held-out",
+      "vantModelo": "Spectral 2 (Nuvem UAV)",
+      "fabricanteVant": "Nuvem UAV",
+      "sensorTipo": "Multiespectral 5 bandas (Azul, Verde, Vermelho, RedEdge, NIR)",
+      "bandasMultiespectrais": ["blue", "green", "red", "rededge", "nir"],
+      "georreferenciamento": "PPK/RTK centimétrico",
+      "calibracaoRadiometrica": "Sensor DLS + Painel de Reflectância Difusa"
     },
     "geometry": {
       "type": "Polygon",

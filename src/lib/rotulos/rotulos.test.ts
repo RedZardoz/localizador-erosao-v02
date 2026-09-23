@@ -105,7 +105,7 @@ describe("Rotulagem, Concordância e Matriz de Treino (Fase 6 — SAREL)", () =>
   });
 
   describe("Ingestão KoboToolbox de Campo (ingestaoKobo.ts)", () => {
-    it("valida distância geodésica contra tolerância P03", () => {
+    it("aceita sem avisos pontos dentro da tolerância nominal P03 (<= 15 m)", () => {
       const registros = [
         {
           codigoPonto: "P01",
@@ -116,32 +116,95 @@ describe("Rotulagem, Concordância e Matriz de Treino (Fase 6 — SAREL)", () =>
           longitude: -53.0,
         },
       ];
+      // ~11 m de distância
       const esperadas = {
-        P01: { codigo: "P01", latitude: -25.002, longitude: -53.0 }, // ~222 m de distância
+        P01: { codigo: "P01", latitude: -25.0001, longitude: -53.0 },
       };
 
-      const res = ingestarSubmissoesKobo(registros, esperadas, 150); // P03 = 150m
+      const res = ingestarSubmissoesKobo(registros, esperadas); // defaults: 15m nominal, 25m máxima
+      expect(res.aceitos).toHaveLength(1);
+      expect(res.aceitos[0].desvioAceitavel).toBe(true);
+      expect(res.aceitos[0].distanciaGpsMetros).toBeLessThanOrEqual(15);
+      expect(res.avisosQualidade).toHaveLength(0);
+    });
+
+    it("aceita com aviso de qualidade pontos entre 15 m e 25 m da coordenada planejada", () => {
+      const registros = [
+        {
+          codigoPonto: "P02",
+          classe: "severa",
+          observador: "Agente1",
+          observadoEm: "2026-06-01",
+          latitude: -25.0,
+          longitude: -53.0,
+        },
+      ];
+      // ~19 m de distância (-25.00017 vs -25.0)
+      const esperadas = {
+        P02: { codigo: "P02", latitude: -25.00017, longitude: -53.0 },
+      };
+
+      const res = ingestarSubmissoesKobo(registros, esperadas);
+      expect(res.aceitos).toHaveLength(1);
+      expect(res.aceitos[0].desvioAceitavel).toBe(true);
+      expect(res.aceitos[0].distanciaGpsMetros).toBeGreaterThan(15);
+      expect(res.aceitos[0].distanciaGpsMetros).toBeLessThanOrEqual(25);
+      expect(res.avisosQualidade[0]).toContain("tolerância nominal P03: 15 m; aceito sob tolerância ampliada de até 25 m");
+    });
+
+    it("rejeita pontos com desvio > 25 m (desvioAceitavel = false)", () => {
+      const registros = [
+        {
+          codigoPonto: "P03",
+          classe: "moderada",
+          observador: "Agente1",
+          observadoEm: "2026-06-01",
+          latitude: -25.0,
+          longitude: -53.0,
+        },
+      ];
+      const esperadas = {
+        P03: { codigo: "P03", latitude: -25.002, longitude: -53.0 }, // ~222 m de distância
+      };
+
+      const res = ingestarSubmissoesKobo(registros, esperadas);
       expect(res.aceitos).toHaveLength(1);
       expect(res.aceitos[0].desvioAceitavel).toBe(false);
-      expect(res.avisosQualidade[0]).toContain("tolerância P03");
+      expect(res.avisosQualidade[0]).toContain("excede tolerância máxima P03 de 25 m");
     });
   });
 
   describe("Ingestão de Validação por Drone (ingestaoDrone.ts)", () => {
-    it("segrega estritamente o papel do conjunto como held-out", () => {
+    it("segrega estritamente o papel do conjunto como held-out e preenche metadados do Spectral 2 (Nuvem UAV)", () => {
       const entradas = [
         {
           codigoPonto: "P01",
           classe: "severa",
           observador: "Piloto1",
           observadoEm: "2026-06-05",
-          resolucaoGsdCm: 3.5,
+          resolucaoGsdCm: 4.2,
+          ndviMedioDrone: 0.18,
+          ndreMedioDrone: 0.12,
+          fracaoSoloNuEspectralPct: 82.5,
         },
       ];
 
       const res = ingestarValidacaoDrone(entradas);
       expect(res.aceitos).toHaveLength(1);
-      expect(res.aceitos[0].papelConjunto).toBe("held-out");
+      const item = res.aceitos[0];
+      expect(item.papelConjunto).toBe("held-out");
+      expect(item.resolucaoGsdCm).toBe(4.2);
+      expect(item.ndviMedioDrone).toBe(0.18);
+      expect(item.ndreMedioDrone).toBe(0.12);
+      expect(item.fracaoSoloNuEspectralPct).toBe(82.5);
+
+      // Metadados do VANT Spectral 2
+      expect(item.metadadosSensor?.fabricanteVant).toBe("Nuvem UAV");
+      expect(item.metadadosSensor?.modeloVant).toBe("Spectral 2");
+      expect(item.metadadosSensor?.tipoSensor).toBe("multiespectral");
+      expect(item.metadadosSensor?.georreferenciamento).toBe("ppk-rtk");
+      expect(item.metadadosSensor?.calibracaoRadiometrica).toBe(true);
+      expect(item.metadadosSensor?.bandas).toEqual(["blue", "green", "red", "rededge", "nir"]);
     });
 
     it("lança erro se tentar incluir drone no treino", () => {

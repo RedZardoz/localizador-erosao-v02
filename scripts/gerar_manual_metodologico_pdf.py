@@ -481,6 +481,12 @@ def construir_manual_pdf(caminho_saida):
             Paragraph("Python / XGBoost / Scikit-Learn / SHAP", styles["TableCell"]),
             Paragraph("• Treinamento de árvores de gradiente impulsionado<br/>• Otimização com regularizações L1/L2 e scale_pos_weight<br/>• Spatial Block Cross-Validation com buffer de 1 km<br/>• Janela de guarda temporal bienal de 24 meses (Modelo P)<br/>• Atribuição de importância física via valores SHAP", styles["TableCell"]),
             Paragraph("Modelagem preditiva externa alimentada exclusivamente por matriz desidentificada e rótulos humanos auditados.", styles["TableCell"])
+        ],
+        [
+            Paragraph("<b>VANT Spectral 2 (Nuvem UAV)</b>", styles["TableCellBold"]),
+            Paragraph("Aerofotogrametria Multiespectral PPK/RTK (Held-Out)", styles["TableCell"]),
+            Paragraph("• Ortomosaicos centimétricos (GSD 3 a 7,5 cm) em 4 sítios contínuos (10 a 50 ha em Céu Azul e Medianeira)<br/>• 5 bandas calibradas (Azul 475nm, Verde 560nm, Vermelho 668nm, RedEdge 717nm, NIR 842nm)<br/>• Calibração radiométrica física: sensor DLS de irradiância solar + painel de reflectância difusa<br/>• Confronto radiométrico direto (correlação de Pearson r) e validação matricial sub-pixel", styles["TableCell"]),
+            Paragraph("Padrão-ouro territorial mantido estritamente isolado como held-out (Regra 4; jamais entra no treino do XGBoost).", styles["TableCell"])
         ]
     ]
 
@@ -586,8 +592,8 @@ def construir_manual_pdf(caminho_saida):
         ("Passo 8: Protocolos Cegos de Rotulagem Multicamada (Fases A, B e D)",
          "Curadoria humana estrita de verdade terrestre: "
          "• Fase A (PlanetScope 3 m): Recortes de alta resolução temporal e espacial analisados por dois intérpretes humanos em teste cego, validados via Kappa de Cohen (k >= 0.60); "
-         "• Fase B (Campo): Vistorias presenciais orientadas por formulário KoboToolbox com cruzamento cadastral fundiário em bases do SICAR, SIGEF e SNCR; "
-         "• Fase D (Drone): Ortomosaicos centimétricos (2 cm/pixel) isolados como conjunto held-out independente (Regra 6)."),
+         "• Fase B (Campo): Vistorias presenciais orientadas por formulário KoboToolbox com raio geodésico P03 de 15 m nominal (tolerância até 25 m sob aviso de qualidade; rejeição estrita se > 25 m) e cruzamento cadastral fundiário oficial (SICAR, SIGEF, SNCR); "
+         "• Fase D (VANT Multiespectral Spectral 2 — Nuvem UAV): Ortomosaicos centimétricos (GSD 3 a 7,5 cm) em 4 sítios contínuos de 10 a 50 ha (Céu Azul e Medianeira). Equipado com 5 bandas calibradas (Azul 475nm, Verde 560nm, Vermelho 668nm, RedEdge 717nm e NIR 842nm), sensor DLS de irradiância solar e precisão centimétrica PPK/RTK. Permite confronto radiométrico direto (correlação de Pearson r) e validação sub-pixel isolada estritamente como held-out (Regra 4; nunca entra no treino)."),
 
         ("Passo 9: Modelagem Preditiva com Gradient Tree Boosting (XGBoost)",
          "A matriz tabular consolidada (contendo variáveis topográficas, climáticas, biofísicas, lags multitemporais e persistência espectral) é exportada "
@@ -875,6 +881,7 @@ def construir_manual_pdf(caminho_saida):
 
     referencias_abnt = [
         "COELHO, M. R. et al. <b>Erodibilidade dos solos do Brasil</b>. Rio de Janeiro: Embrapa Solos, 2024. 38 p. (Documentos / Embrapa Solos, n. 246). Disponível em: http://www.infoteca.cnptia.embrapa.br/infoteca/handle/doc/1170044.",
+        "CONGALTON, R. G.; GREEN, K. <b>Assessing the accuracy of remotely sensed data: principles and practices</b>. 3. ed. Boca Raton: CRC Press, 2019. 348 p.",
         "CHEN, T.; GUESTRIN, C. XGBoost: A Scalable Tree Boosting System. In: ACM SIGKDD INTERNATIONAL CONFERENCE ON KNOWLEDGE DISCOVERY AND DATA MINING, 22., 2016, San Francisco. <b>Proceedings [...]</b>. New York: ACM, 2016. p. 785–794. DOI: 10.1145/2939672.2939785.",
         "DEMATTÊ, J. A. M. et al. Geospatial Soil Sensing System (GEOS3): A powerful data mining procedure to retrieve soil spectral reflectance from satellite images. <b>Remote Sensing of Environment</b>, v. 212, p. 161–175, 2018. DOI: 10.1016/j.rse.2018.04.047.",
         "DURIGON, V. L. et al. NDVI-based C-factor estimation for RUSLE in Brazilian watersheds. <b>Revista Brasileira de Ciência do Solo</b>, Viçosa, v. 38, n. 3, p. 726–734, 2014. DOI: 10.1590/S0100-06832014000300003.",
