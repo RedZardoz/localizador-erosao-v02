@@ -832,12 +832,41 @@ def criar_apresentacao(caminho_saida):
         p.space_after = Pt(8)
 
     # =========================================================================
-    # SLIDE 16: REFERÊNCIAS BIBLIOGRÁFICAS (ABNT PARTE 1)
+    # SLIDE 16: INSTALADOR AUTÔNOMO (.EXE) E REPOSITÓRIO GOOGLE DRIVE
+    # =========================================================================
+    s15b = prs.slides.add_slide(blank_layout)
+    set_bg(s15b)
+    add_header(s15b, "15. Implantação Autônoma (Instalador_SAREL.exe) e Google Drive")
+    add_footer(s15b, 16, 18)
+
+    card_inst = s15b.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.4), Inches(11.733), Inches(5.4))
+    card_inst.fill.solid()
+    card_inst.fill.fore_color.rgb = C_CARD_LIGHT
+    card_inst.line.color.rgb = C_EMERALD_MID
+
+    tb_inst = s15b.shapes.add_textbox(Inches(1.1), Inches(1.6), Inches(11.1), Inches(5.0))
+    tf_inst = tb_inst.text_frame
+    tf_inst.word_wrap = True
+
+    itens_inst = [
+        ("Executável Único Auto-Suficiente (Instalador_SAREL.exe — 2,0 MB):", "Desenvolvido em C#/.NET (WinForms) com o código-fonte completo do SAREL embutido (SarelPayload.zip). Permite enviar apenas o arquivo .exe para avaliadores e técnicos que NÃO acessam o GitHub."),
+        ("Instalação Automatizada em 1 Clique:", "Extrai automaticamente o sistema para C:\\SAREL, verifica/instala Node.js e Python silenciosamente via winget/pip/npm e cria atalhos na Área de Trabalho e no Menu Iniciar com o ícone oficial (assets/icon.ico)."),
+        ("Repositório Oficial no Google Drive:", "Integrado diretamente ao diretório https://drive.google.com/drive/folders/1S6UsUYGM3dUh7w_hLrmvcsuh0nSfjyYR?usp=sharing (Dados INCRA, Dados SICAR, Dados SIGEF, Dados SNCR e banco consolidado fundiario_brasil.db com 4,4 milhões de registros)."),
+        ("Download Automático Pós-Instalação:", "Possui botão para baixar e descompactar automaticamente o banco de dados do Google Drive para a pasta local data/ com barra de progresso, além de botão direto para abrir a pasta no navegador.")
+    ]
+    for idx_i, (tit_i, dsc_i) in enumerate(itens_inst):
+        p = tf_inst.paragraphs[0] if idx_i == 0 else tf_inst.add_paragraph()
+        r1 = p.add_run(); r1.text = f"• {tit_i} "; r1.font.bold = True; r1.font.size = Pt(11); r1.font.color.rgb = C_EMERALD_DARK
+        r2 = p.add_run(); r2.text = dsc_i; r2.font.size = Pt(10.5); r2.font.color.rgb = C_TEXT_DARK
+        p.space_after = Pt(12)
+
+    # =========================================================================
+    # SLIDE 17: REFERÊNCIAS BIBLIOGRÁFICAS (ABNT PARTE 1)
     # =========================================================================
     s16 = prs.slides.add_slide(blank_layout)
     set_bg(s16)
-    add_header(s16, "15. Referências Bibliográficas (Normas ABNT NBR 6023:2018) — Parte 1")
-    add_footer(s16, 16)
+    add_header(s16, "16. Referências Bibliográficas (Normas ABNT NBR 6023:2018) — Parte 1")
+    add_footer(s16, 17, 18)
 
     card_abnt1 = s16.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.4), Inches(11.733), Inches(5.4))
     card_abnt1.fill.solid()

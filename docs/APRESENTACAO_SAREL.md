@@ -320,7 +320,18 @@ style: |
 
 ---
 
-## 15. Referências Bibliográficas (Normas ABNT NBR 6023:2018)
+## 15. Distribuição Autônoma (`Instalador_SAREL.exe`) e Repositório Google Drive
+
+* **Executável Único Auto-Suficiente (`Instalador_SAREL.exe` — 2,0 MB):**
+  - Desenvolvido em C#/.NET (`WinForms`) com o código-fonte completo do SAREL embutido (`SarelPayload.zip`), permitindo instalação em computadores de avaliadores, peritos e técnicos **sem necessidade de acesso ao GitHub**.
+  - Extrai o sistema para `C:\SAREL`, configura automaticamente os motores **Node.js** e **Python** (`runtime/` portátil ou via `winget`) e cria os atalhos na **Área de Trabalho** e no **Menu Iniciar** com o ícone oficial (`assets/icon.ico`).
+* **Integração Direta com o Diretório Oficial no Google Drive:**
+  - Repositório oficial das bases complementares: `https://drive.google.com/drive/folders/1S6UsUYGM3dUh7w_hLrmvcsuh0nSfjyYR?usp=sharing` (`Dados INCRA`, `Dados SICAR`, `Dados SIGEF`, `Dados SNCR` e banco consolidado `data/fundiario_brasil.db` com 4,4 milhões de registros).
+  - O próprio instalador oferece **download automático com barra de progresso** (`scripts/download_gdrive_db.py`) e botão direto para abrir o diretório oficial no Google Drive após a instalação.
+
+---
+
+## 16. Referências Bibliográficas (Normas ABNT NBR 6023:2018)
 
 * COELHO, M. R. et al. **Erodibilidade dos solos do Brasil**. Rio de Janeiro: Embrapa Solos, 2024. 38 p. (Documentos / Embrapa Solos, n. 246). Disponível em: http://www.infoteca.cnptia.embrapa.br/infoteca/handle/doc/1170044.
 * CHEN, T.; GUESTRIN, C. XGBoost: A Scalable Tree Boosting System. In: **ACM SIGKDD International Conference on Knowledge Discovery and Data Mining**, 22., 2016, São Francisco. Proceedings [...]. Nova York: ACM, 2016. p. 785–794.

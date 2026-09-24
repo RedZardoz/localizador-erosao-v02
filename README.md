@@ -40,18 +40,39 @@ O sistema opera sob as **9 Regras Invioláveis da Lei Fundamental** (`docs/plane
 
 ---
 
-## Execução e Testes
+## Instalação, Distribuição Autônoma e Execução
 
-### Pré-requisitos
-- Node.js $\ge 18.17.0$
-- npm
+O **SAREL** oferece duas formas de instalação: **Instalador Executável Autônomo (`.exe` para usuários sem GitHub)** e **Instalação via Repositório Git (para desenvolvedores/pesquisadores)**.
 
-### Instalação
+### Opção 1: Instalador Executável Autônomo (`Instalador_SAREL.exe` — Sem necessidade de GitHub)
+Para instalar o sistema em máquinas de pesquisadores, avaliadores ou técnicos que não acessam o GitHub:
+1. Envie apenas o arquivo único **[`Instalador_SAREL.exe`](file:///c:/Users/lalfr/Docs%20Fora%20do%20Ar/LUIS%20ALFREDO/01%20-%20MESTRADO%20PPGTCA%202026/02%20-%20PESQUISA%20EROS%C3%83O%20LAMINAR/geolocalizacao-erosao-propriedade/Instalador_SAREL.exe)** (`~2,0 MB`, que já contém todo o código-fonte do SAREL embutido).
+2. Ao executar o `Instalador_SAREL.exe` e clicar em **"1. Instalar Sistema e Criar Atalhos"**:
+   - O sistema é extraído automaticamente para `C:\SAREL` (ou diretório escolhido);
+   - Os motores **Node.js** e **Python** e suas bibliotecas (`npm` / `pip`) são verificados e instalados automaticamente caso não existam na máquina;
+   - Os atalhos oficiais são criados na **Área de Trabalho** e no **Menu Iniciar** com o ícone oficial (`assets/icon.ico`).
+3. **Bancos de Dados Complementares (Google Drive Oficial):**
+   - Diretório oficial recomendado: **[Acessar Repositório no Google Drive](https://drive.google.com/drive/folders/1S6UsUYGM3dUh7w_hLrmvcsuh0nSfjyYR?usp=sharing)** (`Dados INCRA`, `Dados SICAR`, `Dados SIGEF`, `Dados SNCR` e `fundiario_brasil.db`).
+   - Na **Seção 2** do `Instalador_SAREL.exe`, o usuário pode clicar em **"2. Baixar Banco Automaticamente do Google Drive para a pasta `data\`"** (download direto com barra de progresso e descompactação automática) ou em **"Abrir Google Drive"** para acessar a pasta oficial no navegador.
+4. **Utilitários de Empacotamento (para o mantenedor):**
+   - `Gerar_Pacote_Portatil.bat`: Gera a distribuição `dist\SAREL_Instalador_Portatil` com runtimes `runtime\node` e `runtime\python` embutidos e recompila o `Instalador_SAREL.exe`.
+   - `Gerar_Zip_Banco_GoogleDrive.bat`: Compacta o banco SQLite consolidado (`data\fundiario_brasil.db`, com 4,4 milhões de registros SICAR/SIGEF/SNCR para PR, SC e SP) junto às geometrias `.shp/.shx/.prj` de `data\sicar_cache\` em `dist\Banco_Consolidado_SAREL_GoogleDrive.zip`.
+
+---
+
+### Opção 2: Instalação via Git / Ambiente de Desenvolvimento
+
+#### Pré-requisitos
+- Node.js $\ge 18.17.0$ e `npm`
+- Python $\ge 3.10$ (`pip install -r requirements.txt`)
+
+#### Instalação
 ```bash
 npm install
+pip install -r requirements.txt
 ```
 
-### Disciplina dos "Três Verdes"
+#### Disciplina dos "Três Verdes"
 O projeto adota verificação contínua automatizada:
 ```bash
 # 1. Suíte de testes unitários e de integração (Vitest)
@@ -67,11 +88,8 @@ npm run lint
 npm run build
 ```
 
-### Executar em Desenvolvimento
-```bash
-npm run dev
-```
-Acesse a aplicação em `http://127.0.0.1:3000`.
+#### Executar a Aplicação
+Dê duplo clique em **`Iniciar_Localizador_Erosao.bat`** (ou execute `npm run dev` no terminal) e acesse `http://127.0.0.1:3000`.
 
 ---
 
