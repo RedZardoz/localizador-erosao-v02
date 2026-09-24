@@ -15,13 +15,22 @@ const CONFIG_FILES = [
   'postcss.config.mjs',
 ];
 
+const IGNORE_PATTERNS = [
+  /\.(test|spec)\.[jt]sx?$/,
+  /\.md$/,
+];
+
 function getFilesRecursively(dir) {
   if (!fs.existsSync(dir)) return [];
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   const files = [];
   for (const entry of entries) {
+    if (IGNORE_PATTERNS.some((pattern) => pattern.test(entry.name))) {
+      continue;
+    }
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
+      if (entry.name === '__tests__' || entry.name === 'node_modules') continue;
       files.push(...getFilesRecursively(fullPath));
     } else if (entry.isFile()) {
       files.push(fullPath);

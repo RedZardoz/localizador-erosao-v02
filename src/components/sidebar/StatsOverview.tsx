@@ -87,7 +87,11 @@ export const StatsOverview: React.FC = () => {
 
       <div className="grid grid-cols-2 gap-2">
         {/* Declividade Média DEM */}
-        <div className="p-2.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div
+          data-metodologia="terreno-3d"
+          className="p-2.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 cursor-help"
+          title="Declividade média (Botão direito: Ver fórmula LS e Horn)"
+        >
           <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
             <TrendingUp className="w-3 h-3 text-amber-500 shrink-0" />
             <span>Declividade Méd.</span>
@@ -109,7 +113,11 @@ export const StatsOverview: React.FC = () => {
         </div>
 
         {/* Frequência de Solo Nu */}
-        <div className="p-2.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div
+          data-metodologia="amostragem-gee"
+          className="p-2.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 cursor-help"
+          title="Frequência temporal de solo nu (Botão direito: Ver fórmulas NDVI/BSI)"
+        >
           <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
             <Percent className="w-3 h-3 text-rose-500 shrink-0" />
             <span>Solo Nu Médio</span>
@@ -120,7 +128,11 @@ export const StatsOverview: React.FC = () => {
         </div>
 
         {/* RUSLE Linha de Base */}
-        <div className="p-2.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div
+          data-metodologia="fator-c-rusle"
+          className="p-2.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 cursor-help"
+          title="RUSLE com Fator C Durigon (Botão direito: Ver equação do Fator C)"
+        >
           <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
             <Layers className="w-3 h-3 text-cyan-500 shrink-0" />
             <span>RUSLE (Durigon C)</span>

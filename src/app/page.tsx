@@ -13,6 +13,9 @@ import { PainelMatrizModal } from "@/components/matriz/PainelMatrizModal";
 import { DecisoesModal } from "@/components/decisoes/DecisoesModal";
 import { ExportModal } from "@/components/export/ExportModal";
 import { SystemLogsModal } from "@/components/diagnostics/SystemLogsModal";
+import { ApresentacaoSpotlight } from "@/components/presentation/ApresentacaoSpotlight";
+import { ApresentacaoManager } from "@/components/presentation/ApresentacaoManager";
+import { ModalExplicativaMetodologica } from "@/components/presentation/ModalExplicativaMetodologica";
 import { useSarelStore } from "@/store/useSarelStore";
 
 // Carregamento dinâmico do MapViewer com WebGL desabilitando SSR
@@ -75,16 +78,23 @@ export default function HomePage() {
         <MapViewer />
       </div>
 
-      {/* 3. Modais e Centrais de Trabalho */}
-      <SettingsModal />
-      <RegionRequestModal />
-      <CandidateSelectionModal />
-      <AuditDossierModal />
-      <PainelCampanhaModal />
-      <PainelMatrizModal />
-      <DecisoesModal />
-      <ExportModal />
-      <SystemLogsModal />
+      {/* 3. Modais, Popups e Centrais de Trabalho (Sempre em Modo Claro de Alto Contraste) */}
+      <div className="light-popup">
+        <SettingsModal />
+        <RegionRequestModal />
+        <CandidateSelectionModal />
+        <AuditDossierModal />
+        <PainelCampanhaModal />
+        <PainelMatrizModal />
+        <DecisoesModal />
+        <ExportModal />
+        <SystemLogsModal />
+
+        {/* 4. Modo de Apresentação & Tour Metodológico (PPGTCA 2026) */}
+        <ApresentacaoSpotlight />
+        <ApresentacaoManager />
+        <ModalExplicativaMetodologica />
+      </div>
     </main>
   );
 }

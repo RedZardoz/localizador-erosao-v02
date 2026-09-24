@@ -75,12 +75,12 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
   };
 
   return (
-    <div className="absolute top-16 right-4 z-20 w-96 max-w-[calc(100vw-2rem)] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-4 space-y-3 text-slate-800 dark:text-slate-200 animate-in fade-in slide-in-from-right-4">
+    <div className="light-popup absolute top-16 right-4 z-20 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-2xl border-2 border-slate-300 ring-2 ring-black/20 shadow-2xl p-4 space-y-3 text-slate-900 animate-in fade-in slide-in-from-right-4">
       {/* Header do Popup */}
-      <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+      <div className="flex items-start justify-between border-b border-slate-200 pb-2">
         <div>
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-mono">
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300 font-mono">
               {point.codigo}
             </span>
             <span className="text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
@@ -310,8 +310,10 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
 
         {/* Botão de Dossiê Científico e Script GEE */}
         <button
+          data-metodologia="dossie-auditoria"
           onClick={abrirDossieAuditoria}
           className="w-full h-9 px-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer"
+          title="Abrir Dossiê Forense do Ponto (Botão direito: Ver Equação Universal de Perda de Solo)"
         >
           <Printer className="w-3.5 h-3.5" />
           <span>Imprimir Dossiê &amp; Script GEE</span>

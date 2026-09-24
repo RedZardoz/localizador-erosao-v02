@@ -101,35 +101,37 @@ export const SystemLogsModal: React.FC = () => {
           </div>
         </div>
 
-        {/* Lista de Logs */}
-        <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-2 font-mono text-xs">
-          {logsFiltrados.map((l) => (
-            <div
-              key={l.id}
-              className={`p-2.5 rounded-xl border flex items-start gap-2.5 ${
-                l.severity === "error"
-                  ? "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60 text-rose-900 dark:text-rose-200"
-                  : l.severity === "warning"
-                  ? "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200"
-                  : "bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200"
-              }`}
-            >
-              {l.severity === "error" ? (
-                <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-              ) : l.severity === "warning" ? (
-                <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-              ) : (
-                <Info className="w-4 h-4 text-cyan-500 shrink-0 mt-0.5" />
-              )}
-              <div className="flex-1 space-y-0.5">
-                <div className="flex items-center justify-between text-[10px] text-slate-500">
-                  <span className="font-bold uppercase tracking-wider">{l.component}</span>
-                  <span>{new Date(l.timestamp).toLocaleTimeString("pt-BR")}</span>
+        {/* Lista de Logs (Terminal Console em Fundo Negro) */}
+        <div className="p-4 bg-white overflow-y-auto custom-scrollbar flex-1">
+          <div className="p-3.5 rounded-xl bg-[#050811] border-2 border-slate-800 space-y-2 font-mono text-xs shadow-inner">
+            {logsFiltrados.map((l) => (
+              <div
+                key={l.id}
+                className={`p-2.5 rounded-lg border flex items-start gap-2.5 ${
+                  l.severity === "error"
+                    ? "bg-rose-950/60 border-rose-800 text-rose-200"
+                    : l.severity === "warning"
+                    ? "bg-amber-950/60 border-amber-800 text-amber-200"
+                    : "bg-slate-900/90 border-slate-800 text-emerald-300"
+                }`}
+              >
+                {l.severity === "error" ? (
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                ) : l.severity === "warning" ? (
+                  <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                ) : (
+                  <Info className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                )}
+                <div className="flex-1 space-y-0.5">
+                  <div className="flex items-center justify-between text-[10px] text-slate-400">
+                    <span className="font-bold uppercase tracking-wider text-cyan-300">{l.component}</span>
+                    <span>{new Date(l.timestamp).toLocaleTimeString("pt-BR")}</span>
+                  </div>
+                  <p className="leading-snug text-slate-100">{l.message}</p>
                 </div>
-                <p className="leading-snug">{l.message}</p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Footer */}

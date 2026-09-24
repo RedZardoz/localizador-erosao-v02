@@ -26,6 +26,7 @@ import type {
 } from "@/types/ui";
 import { PARANA_BASINS_GEOJSON } from "@/lib/localizacao/bacias";
 import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
+import { PASSOS_TOUR_APRESENTACAO } from "@/config/tourMetodologico";
 
 export type AbaAtiva = "mapa" | "inspetor" | "matriz" | "campanha" | "decisoes";
 
@@ -54,6 +55,20 @@ interface SarelStoreState {
   toggleSidebar: () => void;
   abaSidebar: "triagem" | "filtros";
   setAbaSidebar: (aba: "triagem" | "filtros") => void;
+
+  // Modo Apresentação & Tour Metodológico
+  modoApresentacaoAtivo: boolean;
+  passoTourAtual: number;
+  itemMetodologicoAtivoId: string | null;
+  modalMetodologiaAberta: boolean;
+  setModoApresentacaoAtivo: (ativo: boolean) => void;
+  toggleModoApresentacao: () => void;
+  iniciarTour: () => void;
+  encerrarTour: () => void;
+  avancarPassoTour: () => void;
+  voltarPassoTour: () => void;
+  abrirItemMetodologico: (id: string) => void;
+  fecharModalMetodologia: () => void;
 
   // Pontos Salvos e Pontos Provisórios (Memória Efêmera)
   pontos: PontoAmostral[];
@@ -225,6 +240,74 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
     set((state) => ({ sidebarRecolhida: !state.sidebarRecolhida })),
   abaSidebar: "triagem",
   setAbaSidebar: (aba) => set({ abaSidebar: aba }),
+
+  // Modo Apresentação & Tour Metodológico
+  modoApresentacaoAtivo: false,
+  passoTourAtual: 0,
+  itemMetodologicoAtivoId: null,
+  modalMetodologiaAberta: false,
+
+  setModoApresentacaoAtivo: (ativo) =>
+    set((state) => ({
+      modoApresentacaoAtivo: ativo,
+      modalMetodologiaAberta: ativo ? state.modalMetodologiaAberta : false,
+    })),
+
+  toggleModoApresentacao: () =>
+    set((state) => {
+      const proximo = !state.modoApresentacaoAtivo;
+      return {
+        modoApresentacaoAtivo: proximo,
+        modalMetodologiaAberta: proximo ? state.modalMetodologiaAberta : false,
+      };
+    }),
+
+  iniciarTour: () =>
+    set({
+      modoApresentacaoAtivo: true,
+      passoTourAtual: 0,
+      itemMetodologicoAtivoId: PASSOS_TOUR_APRESENTACAO[0],
+      modalMetodologiaAberta: true,
+    }),
+
+  encerrarTour: () =>
+    set({
+      modalMetodologiaAberta: false,
+    }),
+
+  avancarPassoTour: () =>
+    set((state) => {
+      const proximo = Math.min(
+        state.passoTourAtual + 1,
+        PASSOS_TOUR_APRESENTACAO.length - 1
+      );
+      return {
+        passoTourAtual: proximo,
+        itemMetodologicoAtivoId: PASSOS_TOUR_APRESENTACAO[proximo],
+        modalMetodologiaAberta: true,
+      };
+    }),
+
+  voltarPassoTour: () =>
+    set((state) => {
+      const anterior = Math.max(state.passoTourAtual - 1, 0);
+      return {
+        passoTourAtual: anterior,
+        itemMetodologicoAtivoId: PASSOS_TOUR_APRESENTACAO[anterior],
+        modalMetodologiaAberta: true,
+      };
+    }),
+
+  abrirItemMetodologico: (id) => {
+    const idx = PASSOS_TOUR_APRESENTACAO.indexOf(id);
+    set((state) => ({
+      itemMetodologicoAtivoId: id,
+      modalMetodologiaAberta: true,
+      passoTourAtual: idx !== -1 ? idx : state.passoTourAtual,
+    }));
+  },
+
+  fecharModalMetodologia: () => set({ modalMetodologiaAberta: false }),
 
   // Pontos Salvos e Pontos Provisórios
   // ZERO dados sintéticos: tela limpa inicialmente
