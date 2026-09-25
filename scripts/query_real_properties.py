@@ -84,31 +84,23 @@ def query_real_properties(min_lng, min_lat, max_lng, max_lat, limit):
         """
         c.execute(query, (min_lat, max_lat, min_lng, max_lng, stride, limit))
     rows = []
-    for i, r in enumerate(c.fetchall()):
+    for r in c.fetchall():
         if r[2] is not None and r[3] is not None:
             lat = round(float(r[2]), 6)
             lng = round(float(r[3]), 6)
             area_ha = round(float(r[4] or 0), 2)
-            # Estimativa topográfica/espectral inicial determinística baseada na coordenada real da rampa
-            # (garante distribuição real nos 18 estratos biofísicos 3(S) x 3(E) x 2(K))
-            s_hash = abs(math.sin(lat * 127.1 + lng * 311.7))
-            e_hash = abs(math.cos(lat * 269.5 + lng * 183.3))
-            k_hash = 1 if ((i % 2) == 0) else 2
             rows.append({
                 'cod_car': r[0],
-                'municipio': r[1] or 'Medianeira',
+                'municipio': r[1] or '',
                 'lat': lat,
                 'lng': lng,
                 'area_ha': area_ha,
-                'nome_imovel': r[5] or 'Imóvel Rural Cadastrado',
+                'nome_imovel': r[5] or '',
                 'proprietario_nome': r[6] or '',
                 'registro_incra': r[7] or '',
                 'mod_fiscal': round(float(r[8] or 0), 2),
-                'status': r[9] or 'AT',
-                'fonte': r[10] or 'SICAR Oficial',
-                'slope_est': round(3.0 + s_hash * 16.5, 2),
-                'bsi_freq_est': round(0.10 + e_hash * 0.55, 3),
-                'nivel_k_est': k_hash
+                'status': r[9] or '',
+                'fonte': r[10] or 'SICAR Oficial (MMA/SFB)'
             })
     conn.close()
     print(json.dumps(rows))

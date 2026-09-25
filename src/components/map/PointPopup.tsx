@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   X,
   MapPin,
@@ -13,6 +13,7 @@ import {
   ExternalLink,
   ShieldCheck,
   Building,
+  RefreshCw,
 } from "lucide-react";
 import type { PontoAmostral } from "@/types/ponto";
 import { formatToDMS } from "@/lib/export/dms";
@@ -25,7 +26,42 @@ interface PointPopupProps {
 }
 
 export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
-  const { setPontoAuditoria, setModalAtiva } = useSarelStore();
+  const { setPontoAuditoria, setModalAtiva, atualizarPontoIndividual } = useSarelStore();
+  const [consultandoFontesReais, setConsultandoFontesReais] = useState(false);
+
+  useEffect(() => {
+    const precisaTerreno = point.terreno.elevacao.estado === "indisponivel";
+    const precisaSolo = point.solo.ordem.estado === "indisponivel";
+    const precisaEspectral = !point.espectral?.ndvi || point.espectral.ndvi.estado === "indisponivel";
+    const precisaFundiario = !point.fundiario?.codigoCar;
+
+    if (!precisaTerreno && !precisaSolo && !precisaEspectral && !precisaFundiario) {
+      return;
+    }
+
+    let cancelado = false;
+    setConsultandoFontesReais(true);
+
+    fetch("/api/gee/inspect-point", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(point),
+    })
+      .then((res) => res.json())
+      .then((dados) => {
+        if (!cancelado && dados?.ok && dados?.ponto) {
+          atualizarPontoIndividual(dados.ponto);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelado) setConsultandoFontesReais(false);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, [point.id]);
 
   const dmsLat = formatToDMS(point.latitude, true);
   const dmsLon = formatToDMS(point.longitude, false);
@@ -86,6 +122,12 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
             <span className="text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
               Estrato: {point.estratoId}
             </span>
+            {consultandoFontesReais && (
+              <span className="text-[9px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded flex items-center gap-1">
+                <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                Consultando GEE / Embrapa...
+              </span>
+            )}
           </div>
           <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-1">
             {municipioNome} — {baciaNome}

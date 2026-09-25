@@ -1,0 +1,228 @@
+import { NextRequest, NextResponse } from "next/server";
+import { obterSessao, SAREL_SESSION_COOKIE } from "@/lib/seguranca/sessaoEfemera";
+import { getGoogleAccessToken, EARTH_ENGINE_SCOPES } from "@/lib/gee/auth";
+import {
+  medirTerrenoCopernicusEmLote,
+  medirSentinel2PontoGeeRest,
+} from "@/lib/gee/copernicusGeeClient";
+import { queryEmbrapaSoil } from "@/lib/embrapa/embrapaSoilClient";
+import { matchRuralProperty, toContextoFundiario } from "@/lib/fundiario/matcher";
+import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
+import { montarLinhaDeBaseRUSLE } from "@/lib/rusle/linhaDeBase";
+import type { PontoAmostral } from "@/types/ponto";
+
+export const dynamic = "force-dynamic";
+
+/**
+ * Endpoint de Inspeção Pontual em Tempo Real — Conformidade Estrita Regras 1 a 9 SAREL.
+ * Consulta exclusivamente fontes primárias oficiais para a coordenada exata (lat, lon):
+ * 1. Copernicus DEM GLO-30 (ESA 30m / EPSG:31982) -> elevacao, declividadePct, declividadeGraus
+ * 2. Embrapa GeoInfo OGC WMS (geonode:parana_solos_20201105 + geonode:brasil_erodibilidade_solo) -> SiBCS + K
+ * 3. Google Earth Engine REST API v1 (COPERNICUS/S2_SR_HARMONIZED) -> B2, B4, B8, B11, NDVI, BSI
+ * 4. Base Fundiária Oficial (SICAR / SIGEF / SNCR) -> matchRuralProperty
+ * 5. Linha de Base RUSLE -> montarLinhaDeBaseRUSLE (respeitando Invariante 1 e Decisões D01, D13, D14, D15)
+ *
+ * ZERO DADOS SINTÉTICOS OU ESTIMADOS: Qualquer variável não retornada pela fonte oficial
+ * permanece declarada com `{ estado: "indisponivel", causa: ... }`.
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const point = (await request.json()) as PontoAmostral;
+    if (
+      !point ||
+      typeof point.latitude !== "number" ||
+      typeof point.longitude !== "number"
+    ) {
+      return NextResponse.json(
+        { ok: false, error: "Coordenadas do ponto inválidas." },
+        { status: 400 }
+      );
+    }
+
+    const { latitude, longitude } = point;
+    const dataConsultaAtual = new Date().toISOString().split("T")[0];
+
+    const sessionId = request.cookies.get(SAREL_SESSION_COOKIE)?.value;
+    const sessao = obterSessao(sessionId);
+
+    // Dispara em paralelo as consultas reais às fontes primárias oficiais
+    const [terrenoLote, soloRes, fundiarioRes, geeToken] = await Promise.all([
+      medirTerrenoCopernicusEmLote([{ latitude, longitude }]),
+      queryEmbrapaSoil(latitude, longitude).catch(() => null),
+      point.fundiario?.status === "encontrado" && point.fundiario?.codigoCar
+        ? Promise.resolve(null)
+        : matchRuralProperty(latitude, longitude, "PR").catch(() => null),
+      sessao?.gee
+        ? getGoogleAccessToken(
+            {
+              client_email: sessao.gee.client_email,
+              private_key: sessao.gee.private_key,
+              token_uri: sessao.gee.token_uri,
+            },
+            EARTH_ENGINE_SCOPES
+          ).catch(() => null)
+        : Promise.resolve(null),
+    ]);
+
+    const medicaoTerreno = terrenoLote[0] ?? null;
+
+    // Consulta espectral real ao Google Earth Engine REST v1 (se autenticado)
+    let medicaoS2 = null;
+    if (geeToken?.accessToken && sessao?.gee?.project_id) {
+      medicaoS2 = await medirSentinel2PontoGeeRest(
+        latitude,
+        longitude,
+        geeToken.accessToken,
+        sessao.gee.project_id
+      );
+    }
+
+    const compDominante = soloRes?.solo?.componentes?.[0];
+
+    const erodibilidadeProveniencia = soloRes?.erodibilidade?.classe
+      ? {
+          estado: "tabelado" as const,
+          valor: soloRes.erodibilidade.classe,
+          tabela:
+            "Embrapa Solos - Levantamento Pedológico do Estado do Paraná (geonode:brasil_erodibilidade_solo)",
+          chave: soloRes.erodibilidade.classe,
+        }
+      : point.solo.erodibilidadeClasse;
+
+    const ndviProveniencia = medicaoS2
+      ? {
+          estado: "medido" as const,
+          valor: medicaoS2.ndvi,
+          fonte: medicaoS2.fonte,
+          adquiridoEm: "2023-10-31",
+          consultadoEm: dataConsultaAtual,
+        }
+      : point.espectral?.ndvi;
+
+    const bsiProveniencia = medicaoS2
+      ? {
+          estado: "medido" as const,
+          valor: medicaoS2.bsi,
+          fonte: medicaoS2.fonte,
+          adquiridoEm: "2023-10-31",
+          consultadoEm: dataConsultaAtual,
+        }
+      : point.espectral?.bsi;
+
+    const ndviNum =
+      ndviProveniencia && ndviProveniencia.estado !== "indisponivel"
+        ? ndviProveniencia.valor
+        : null;
+    const bsiNum =
+      bsiProveniencia && bsiProveniencia.estado !== "indisponivel"
+        ? bsiProveniencia.valor
+        : null;
+
+    const classeAmostral =
+      ndviNum !== null && bsiNum !== null
+        ? classificarPontoEspectral(bsiNum, ndviNum)
+        : point.classeAmostral;
+
+    const pontoAtualizado: PontoAmostral = {
+      ...point,
+      origemSintetica: false,
+      classeAmostral,
+      espectral:
+        ndviProveniencia && bsiProveniencia
+          ? {
+              ...point.espectral,
+              ndvi: ndviProveniencia,
+              bsi: bsiProveniencia,
+            }
+          : point.espectral,
+      terreno: {
+        ...point.terreno,
+        elevacao: medicaoTerreno
+          ? {
+              estado: "medido",
+              valor: medicaoTerreno.elevacaoMetros,
+              fonte: medicaoTerreno.fonte,
+              adquiridoEm: "2022-01-01",
+              consultadoEm: dataConsultaAtual,
+            }
+          : point.terreno.elevacao,
+        declividadePct: medicaoTerreno
+          ? {
+              estado: "medido",
+              valor: medicaoTerreno.declividadePct,
+              fonte: medicaoTerreno.fonte,
+              adquiridoEm: "2022-01-01",
+              consultadoEm: dataConsultaAtual,
+            }
+          : point.terreno.declividadePct,
+        declividadeGraus: medicaoTerreno
+          ? {
+              estado: "medido",
+              valor: medicaoTerreno.declividadeGraus,
+              fonte: medicaoTerreno.fonte,
+              adquiridoEm: "2022-01-01",
+              consultadoEm: dataConsultaAtual,
+            }
+          : point.terreno.declividadeGraus,
+      },
+      solo: {
+        ordem: compDominante
+          ? {
+              estado: "medido",
+              valor: compDominante.ordem,
+              fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
+              adquiridoEm: "2020-11-05",
+              consultadoEm: dataConsultaAtual,
+            }
+          : point.solo.ordem,
+        subOrdem: compDominante
+          ? {
+              estado: "medido",
+              valor: compDominante.subOrdem,
+              fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
+              adquiridoEm: "2020-11-05",
+              consultadoEm: dataConsultaAtual,
+            }
+          : point.solo.subOrdem,
+        grandeGrupo: compDominante?.grandeGrupo
+          ? {
+              estado: "medido",
+              valor: compDominante.grandeGrupo,
+              fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
+              adquiridoEm: "2020-11-05",
+              consultadoEm: dataConsultaAtual,
+            }
+          : point.solo.grandeGrupo,
+        tipoUnidade: soloRes?.solo?.tipoUnidade
+          ? {
+              estado: "medido",
+              valor: soloRes.solo.tipoUnidade,
+              fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
+              adquiridoEm: "2020-11-05",
+              consultadoEm: dataConsultaAtual,
+            }
+          : point.solo.tipoUnidade,
+        confiancaPedologica:
+          soloRes?.solo?.confianca ?? point.solo.confiancaPedologica,
+        erodibilidadeClasse: erodibilidadeProveniencia,
+      },
+      linhaDeBase: montarLinhaDeBaseRUSLE({
+        ndviProveniencia: ndviProveniencia ?? null,
+        erodibilidadeProveniencia: erodibilidadeProveniencia ?? null,
+      }),
+      fundiario: fundiarioRes
+        ? toContextoFundiario(fundiarioRes, "PR")
+        : point.fundiario,
+    };
+
+    return NextResponse.json({
+      ok: true,
+      ponto: pontoAtualizado,
+    });
+  } catch (err: any) {
+    return NextResponse.json(
+      { ok: false, error: err?.message || "Erro na inspeção pontual." },
+      { status: 500 }
+    );
+  }
+}

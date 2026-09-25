@@ -45,7 +45,12 @@ import { matchRuralProperty, toContextoFundiario } from "@/lib/fundiario/matcher
 import { identificarBacia, estaNoCorredorExperimentalBp3 } from "@/lib/localizacao/bacias";
 import { pontoEmGeoJson } from "@/lib/localizacao/municipio";
 import { montarLinhaDeBaseRUSLE } from "@/lib/rusle/linhaDeBase";
+import { converterErodibilidadeFatorK } from "@/lib/rusle/fatorK";
 import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
+import {
+  medirTerrenoCopernicusEmLote,
+  medirSentinel2PontoGeeRest,
+} from "@/lib/gee/copernicusGeeClient";
 import type { PontoAmostral } from "@/types/ponto";
 import type { AreaEstudo } from "@/types/ui";
 import { getGeoJsonBBox } from "@/lib/gee/aoiTiling";
@@ -220,94 +225,110 @@ export async function POST(request: NextRequest) {
 
     const listaParaAmostragem = imoveisFiltrados.length > 0 ? imoveisFiltrados : imoveisReais;
 
-    // 4. Parâmetros e Variáveis Físicas Geodésicas Reais
+    // 4. Thinning Espacial Determinístico (P02) sobre os centroides reais SICAR/SNCR
     const dataConsultaAtual = new Date().toISOString().split("T")[0];
     const semente = 42;
 
-    const candidatosProcessados: Array<{
-      id: string;
-      codigoCar: string;
-      municipio: string;
-      areaHa: number;
-      nomeImovel: string;
-      proprietarioNome: string;
-      registroIncra: string;
-      modFiscal: number;
-      statusCar: string;
-      fonteCar: string;
-      latitude: number;
-      longitude: number;
-      declividadePct: number;
-      declividadeGraus: number;
-      elevacao: number;
-      frequenciaSoloNu: number;
-      nivelK: 1 | 2;
-    }> = [];
-
-    let idx = 1;
-    for (const im of listaParaAmostragem) {
-      const slopeVal = Math.min(
-        declividadeMax,
-        Math.max(declividadeMin, im.slope_est ?? declividadeMin)
-      );
-      const bsiFreqVal = Math.max(frequenciaSoloNuMin, im.bsi_freq_est ?? frequenciaSoloNuMin);
-      const nivelKVal: 1 | 2 = im.nivel_k_est === 2 ? 2 : 1;
-
-      candidatosProcessados.push({
-        id: "cand-" + (idx++),
-        codigoCar: im.cod_car,
-        municipio: im.municipio,
-        areaHa: im.area_ha || 0,
-        nomeImovel: im.nome_imovel || "Imóvel Rural Cadastrado",
-        proprietarioNome: im.proprietario_nome || "",
-        registroIncra: im.registro_incra || "",
-        modFiscal: im.mod_fiscal || 0,
-        statusCar: im.status || "AT",
-        fonteCar: im.fonte || "SICAR Oficial",
-        latitude: Number(im.lat.toFixed(6)),
-        longitude: Number(im.lng.toFixed(6)),
-        declividadePct: slopeVal,
-        declividadeGraus: Number(((Math.atan(slopeVal / 100) * 180) / Math.PI).toFixed(2)),
-        elevacao: 0,
-        frequenciaSoloNu: bsiFreqVal,
-        nivelK: nivelKVal,
-      });
-    }
-
-    // 5. Thinning Espacial Determinístico (P02) com ajuste adaptativo até o limite mínimo P02 (1,0 km)
-    // caso o usuário solicite amostras densas (ex: 300 a 500 pontos dentro de uma única bacia)
-    const inputThinning = candidatosProcessados.map((c) => ({
-      id: c.id,
-      latitude: c.latitude,
-      longitude: c.longitude,
-      declividadePct: c.declividadePct,
-      frequenciaSoloNu: c.frequenciaSoloNu,
-      nivelK: c.nivelK,
-      elevacao: c.elevacao,
-      declividadeGraus: c.declividadeGraus,
+    const candidatosBase = listaParaAmostragem.map((im, i) => ({
+      id: "cand-" + (i + 1),
+      codigoCar: im.cod_car,
+      municipio: im.municipio,
+      areaHa: im.area_ha || 0,
+      nomeImovel: im.nome_imovel || "",
+      proprietarioNome: im.proprietario_nome || "",
+      registroIncra: im.registro_incra || "",
+      modFiscal: im.mod_fiscal || 0,
+      statusCar: im.status || "",
+      fonteCar: im.fonte || "SICAR Oficial (MMA/SFB)",
+      latitude: Number(im.lat.toFixed(6)),
+      longitude: Number(im.lng.toFixed(6)),
     }));
 
     let raioMetros = raioThinningKm * 1000;
-    let candidatosAposThinning = aplicarThinningDeterminista(inputThinning, raioMetros, semente);
+    let candidatosAposThinning = aplicarThinningDeterminista(candidatosBase, raioMetros, semente);
 
-    // Se o raio inicial (ex: 5 km) comportar menos pontos que o solicitado na bacia, reduz gradualmente até 1,0 km (P02)
     while (candidatosAposThinning.length < tamanhoAmostra && raioMetros > 1000) {
       raioMetros = Math.max(1000, Math.floor(raioMetros * 0.65));
-      candidatosAposThinning = aplicarThinningDeterminista(inputThinning, raioMetros, semente);
+      candidatosAposThinning = aplicarThinningDeterminista(candidatosBase, raioMetros, semente);
     }
 
-    // 6. Estratificação Multivariada 3(S) x 3(E) x 2(K) (P07 / D09) com Partição Multi-Escala (Fase A + Fase B Corredor In-Loco)
-    const propInLoco = typeof body.proporcaoInLocoCorredorPct === "number" ? body.proporcaoInLocoCorredorPct : 20;
-    const qtdAlvoInLoco = Math.round((tamanhoAmostra * Math.min(100, Math.max(0, propInLoco))) / 100);
+    // Limita o pool de medição topográfica/pedológica real ao teto necessário para estratificação
+    const poolParaMedicaoReal = candidatosAposThinning.slice(
+      0,
+      Math.min(candidatosAposThinning.length, Math.max(tamanhoAmostra + 40, 120))
+    );
 
-    const estratificacaoInput: CandidatoEstratificacao[] = candidatosAposThinning.map((c) => ({
-      id: c.id,
-      latitude: c.latitude,
-      longitude: c.longitude,
-      declividadePct: c.declividadePct!,
-      frequenciaSoloNu: c.frequenciaSoloNu!,
-      nivelK: c.nivelK!,
-    }));
+    // 5. Medição Topográfica Real (Copernicus DEM GLO-30 30m / EPSG:31982) e Pedológica Real (Embrapa GeoInfo OWS)
+    const medicoesTerreno = await medirTerrenoCopernicusEmLote(
+      poolParaMedicaoReal.map((c) => ({ latitude: c.latitude, longitude: c.longitude }))
+    );
+
+    // Cache espacial de células pedológicas (0.05° ≈ 5,5 km, compatível com a escala 1:250.000 da carta Embrapa)
+    // para consultar o GeoServer OGC WMS da Embrapa sem abrir 500 conexões simultâneas redundantes
+    const celulasUnicas = new Map<string, { lat: number; lon: number }>();
+    for (const c of poolParaMedicaoReal) {
+      const chaveCelula = `${(Math.round(c.latitude * 20) / 20).toFixed(2)}_${(
+        Math.round(c.longitude * 20) / 20
+      ).toFixed(2)}`;
+      if (!celulasUnicas.has(chaveCelula)) {
+        celulasUnicas.set(chaveCelula, { lat: c.latitude, lon: c.longitude });
+      }
+    }
+
+    const resultadosEmbrapaPorCelula = new Map<
+      string,
+      Awaited<ReturnType<typeof queryEmbrapaSoil>> | null
+    >();
+    const entradasCelulas = Array.from(celulasUnicas.entries());
+    const CONCORRENCIA_EMBRAPA = 15;
+    for (let b = 0; b < entradasCelulas.length; b += CONCORRENCIA_EMBRAPA) {
+      const loteCelulas = entradasCelulas.slice(b, b + CONCORRENCIA_EMBRAPA);
+      await Promise.all(
+        loteCelulas.map(async ([chave, coord]) => {
+          try {
+            const res = await queryEmbrapaSoil(coord.lat, coord.lon, { timeoutMs: 6000 });
+            resultadosEmbrapaPorCelula.set(chave, res);
+          } catch {
+            resultadosEmbrapaPorCelula.set(chave, null);
+          }
+        })
+      );
+    }
+
+    const candidatosMap = new Map(candidatosBase.map((c) => [c.id, c]));
+    const terrenoMap = new Map(
+      poolParaMedicaoReal.map((c, idx) => [c.id, medicoesTerreno[idx] ?? null])
+    );
+    const soloMap = new Map(
+      poolParaMedicaoReal.map((c) => {
+        const chaveCelula = `${(Math.round(c.latitude * 20) / 20).toFixed(2)}_${(
+          Math.round(c.longitude * 20) / 20
+        ).toFixed(2)}`;
+        return [c.id, resultadosEmbrapaPorCelula.get(chaveCelula) ?? null];
+      })
+    );
+
+    // 6. Estratificação Multivariada 3(S) x 3(E) x 2(K) com Partição Multi-Escala (Fase A + Fase B Corredor In-Loco)
+    const propInLoco =
+      typeof body.proporcaoInLocoCorredorPct === "number" ? body.proporcaoInLocoCorredorPct : 20;
+    const qtdAlvoInLoco = Math.round(
+      (tamanhoAmostra * Math.min(100, Math.max(0, propInLoco))) / 100
+    );
+
+    const estratificacaoInput: CandidatoEstratificacao[] = poolParaMedicaoReal.map((c) => {
+      const medTerreno = terrenoMap.get(c.id);
+      const medSolo = soloMap.get(c.id);
+      const convK = converterErodibilidadeFatorK(medSolo?.erodibilidade?.classe);
+
+      return {
+        id: c.id,
+        latitude: c.latitude,
+        longitude: c.longitude,
+        declividadePct: medTerreno ? medTerreno.declividadePct : declividadeMin,
+        frequenciaSoloNu: frequenciaSoloNuMin,
+        nivelK: convK ? convK.nivelEstratoK : 1,
+      };
+    });
 
     const candidatosNoCorredor = estratificacaoInput.filter((c) =>
       estaNoCorredorExperimentalBp3(c.latitude, c.longitude)
@@ -351,125 +372,102 @@ export async function POST(request: NextRequest) {
       relatorioEstratificacao = resultadoEstratificacao.relatorio;
     }
 
-    const candidatosMap = new Map(candidatosProcessados.map((c) => [c.id, c]));
-    const usarEnriquecimentoRapidoBatch = pontosEstratificados.length > 15;
-
-    // 7. Enriquecimento com Embrapa SiBCS, SICAR Oficial e Bacias Hidrográficas
+    // 7. Montagem Estrita de PontoAmostral — Regra 1, Regra 5, Regra 7 e Invariante 1 (Zero Dados Sintéticos)
     const pontosFinais: PontoAmostral[] = await Promise.all(
       pontosEstratificados.map(async (pe, i) => {
         const bruto = candidatosMap.get(pe.id)!;
+        const medTerreno = terrenoMap.get(pe.id) ?? null;
+        const soloEmbrapa = soloMap.get(pe.id) ?? null;
         const codigoFormatado = "PR-2026-" + String(i + 1).padStart(4, "0");
 
-        const baciaNome = identificarBacia(bruto.latitude, bruto.longitude) || "Bacia Hidrográfica do Paraná 3";
+        const baciaNome =
+          identificarBacia(bruto.latitude, bruto.longitude) || "Bacia Hidrográfica do Paraná 3";
         const noCorredorInLoco = estaNoCorredorExperimentalBp3(bruto.latitude, bruto.longitude);
 
-        // Consulta pedológica ao GeoServer da Embrapa GeoInfo (em lote grande usa o estrato K oficial sem bloquear 500 conexões)
-        let soloEmbrapa = null;
-        if (!usarEnriquecimentoRapidoBatch) {
-          try {
-            soloEmbrapa = await queryEmbrapaSoil(bruto.latitude, bruto.longitude);
-          } catch {
-            soloEmbrapa = null;
-          }
+        // Consulta pontual Sentinel-2 via GEE REST v1 para lotes compactos (ou sob demanda ao clicar no ponto)
+        let medicaoS2 = null;
+        if (pontosEstratificados.length <= 15 && sessao.gee?.project_id) {
+          medicaoS2 = await medirSentinel2PontoGeeRest(
+            bruto.latitude,
+            bruto.longitude,
+            token.accessToken,
+            sessao.gee.project_id
+          );
         }
 
-        // Contexto fundiário construído diretamente da base oficial SICAR/SNCR já carregada
-        let contextoFundiario;
-        try {
-          if (!usarEnriquecimentoRapidoBatch) {
-            const matchFund = await matchRuralProperty(bruto.latitude, bruto.longitude, "PR");
-            contextoFundiario = toContextoFundiario(matchFund, "PR");
-          } else {
-            contextoFundiario = toContextoFundiario(
-              {
-                status: bruto.codigoCar ? "encontrado" : "sem-correspondencia",
-                carCode: bruto.codigoCar,
-                propertyName: bruto.nomeImovel || "Imóvel Rural Cadastrado",
-                ownerName: bruto.proprietarioNome || "Titular Declarado no CAR (SICAR/MMA)",
-                incraRegistry: bruto.registroIncra || `SICAR-PR (${bruto.municipio})`,
-                propertyAreaHa: bruto.areaHa,
-                municipio: bruto.municipio,
-                uf: "PR",
-                dataConsulta: dataConsultaAtual,
-                criterioAssociacao: "Intersecção espacial no índice R-Tree (SICAR/SNCR)",
-                sicarArquivoOrigem: bruto.fonteCar || "SICAR Oficial (MMA/SFB)",
-              },
-              "PR"
-            );
-          }
-        } catch {
-          contextoFundiario = undefined;
-        }
+        // Contexto fundiário real do banco SICAR/SNCR (sem inventar dados ausentes)
+        const contextoFundiario = toContextoFundiario(
+          {
+            status: bruto.codigoCar ? "encontrado" : "sem-correspondencia",
+            carCode: bruto.codigoCar || undefined,
+            propertyName: bruto.nomeImovel || undefined,
+            ownerName: bruto.proprietarioNome || undefined,
+            incraRegistry: bruto.registroIncra || undefined,
+            propertyAreaHa: bruto.areaHa > 0 ? bruto.areaHa : null,
+            municipio: bruto.municipio || undefined,
+            uf: "PR",
+            dataConsulta: dataConsultaAtual,
+            criterioAssociacao:
+              "Intersecção espacial de polígono/centroide no índice R-Tree (SICAR/SNCR)",
+            sicarArquivoOrigem: bruto.fonteCar || undefined,
+          },
+          "PR"
+        );
 
         const compDominante = soloEmbrapa?.solo?.componentes?.[0];
 
-        // Determinação pedológica SiBCS (Embrapa Solos Paraná 1:250.000) coerente com o estrato K̂
-        const ordemSolo =
-          compDominante?.ordem || (bruto.nivelK === 1 ? "LATOSSOLO" : "NITOSSOLO");
-        const subOrdemSolo =
-          compDominante?.subOrdem || (bruto.nivelK === 1 ? "VERMELHO" : "VERMELHO");
-        const grandeGrupoSolo =
-          compDominante?.grandeGrupo || (bruto.nivelK === 1 ? "Eutroférrico" : "Eutroférrico");
-        const classeErodibilidade =
-          soloEmbrapa?.erodibilidade?.classe || (bruto.nivelK === 1 ? "Média" : "Alta");
+        const erodibilidadeProveniencia = soloEmbrapa?.erodibilidade?.classe
+          ? {
+              estado: "tabelado" as const,
+              valor: soloEmbrapa.erodibilidade.classe,
+              tabela:
+                "Embrapa Solos - Levantamento Pedológico do Estado do Paraná (geonode:brasil_erodibilidade_solo)",
+              chave: soloEmbrapa.erodibilidade.classe,
+            }
+          : {
+              estado: "indisponivel" as const,
+              causa:
+                soloEmbrapa?.statusErodibilidade === "sem-cobertura"
+                  ? ("sem-cobertura" as const)
+                  : ("nao-calculado" as const),
+              motivo:
+                soloEmbrapa?.motivo ||
+                "Aguardando consulta pontual ao GeoServer OGC WMS da Embrapa GeoInfo.",
+            };
 
-        // Altimetria hipssométrica real da rampa (gradiente leste-oeste da Bacia do Paraná 3: 220m Foz/Guaíra -> 760m Cascavel/Céu Azul)
-        const fracLeste = Math.max(0, Math.min(1, (bruto.longitude - -54.62) / (-53.20 - -54.62)));
-        const ondLocal = Math.sin(bruto.latitude * 180.0 + bruto.longitude * 240.0) * 32.0;
-        const elevacaoMetros = Math.round(235 + fracLeste * 485 + ondLocal);
+        const ndviProveniencia = medicaoS2
+          ? {
+              estado: "medido" as const,
+              valor: medicaoS2.ndvi,
+              fonte: medicaoS2.fonte,
+              adquiridoEm: "2023-10-31",
+              consultadoEm: dataConsultaAtual,
+            }
+          : {
+              estado: "indisponivel" as const,
+              causa: "nao-calculado" as const,
+              motivo:
+                "Reflectância B8/B4 Sentinel-2 MSI L2A aguarda redução pontual na API REST do Earth Engine (clique no ponto para consultar em tempo real).",
+            };
 
-        // Índices espectrais orbitais Sentinel-2 MSI L2A (BOA) coerentes com a frequência de solo nu e declividade
-        const perfilEspectral = (i % 3); // Distribui candidatos entre feições de solo exposto (Classe 1), palhada/vegetação (Classe 0) e transição
-        const bsiVal =
-          perfilEspectral === 0
-            ? Number(Math.min(0.38, 0.12 + bruto.frequenciaSoloNu * 0.35).toFixed(3))
-            : perfilEspectral === 1
-            ? Number(Math.max(-0.28, -0.18 + (0.25 - bruto.frequenciaSoloNu) * 0.2).toFixed(3))
-            : Number((0.02 + (bruto.frequenciaSoloNu - 0.25) * 0.18).toFixed(3));
+        const bsiProveniencia = medicaoS2
+          ? {
+              estado: "medido" as const,
+              valor: medicaoS2.bsi,
+              fonte: medicaoS2.fonte,
+              adquiridoEm: "2023-10-31",
+              consultadoEm: dataConsultaAtual,
+            }
+          : {
+              estado: "indisponivel" as const,
+              causa: "nao-calculado" as const,
+              motivo:
+                "Reflectância B11/B4/B8/B2 Sentinel-2 MSI L2A aguarda redução pontual na API REST do Earth Engine (clique no ponto para consultar em tempo real).",
+            };
 
-        const ndviVal =
-          perfilEspectral === 0
-            ? Number(Math.max(0.14, 0.36 - bruto.frequenciaSoloNu * 0.32).toFixed(3))
-            : perfilEspectral === 1
-            ? Number(Math.min(0.86, 0.68 + (1 - bruto.frequenciaSoloNu) * 0.16).toFixed(3))
-            : Number((0.46 + (0.3 - bruto.frequenciaSoloNu) * 0.25).toFixed(3));
-
-        const classeEspectral = classificarPontoEspectral(bsiVal, ndviVal);
-
-        const ndviProveniencia = {
-          estado: "medido" as const,
-          valor: ndviVal,
-          fonte: "Sentinel-2 MSI L2A (COPERNICUS/S2_SR_HARMONIZED)",
-          adquiridoEm: "2023-08-15",
-          consultadoEm: dataConsultaAtual,
-        };
-
-        const bsiProveniencia = {
-          estado: "medido" as const,
-          valor: bsiVal,
-          fonte: "Sentinel-2 MSI L2A (COPERNICUS/S2_SR_HARMONIZED)",
-          adquiridoEm: "2023-08-15",
-          consultadoEm: dataConsultaAtual,
-        };
-
-        const erodibilidadeProveniencia = {
-          estado: "tabelado" as const,
-          valor: classeErodibilidade,
-          tabela: "Embrapa Solos - Levantamento Pedológico do Estado do Paraná (Doc. 246/2024)",
-          chave: classeErodibilidade,
-        };
-
-        // Fatores R (Erosividade Regional Oeste do PR ~ 8.650 MJ·mm/(ha·h·ano)) e LS (Topográfico de rampa)
-        const rRegional = Math.round(8450 + (1 - fracLeste) * 520);
-        const thetaRad = (bruto.declividadeGraus * Math.PI) / 180;
-        const lsVal = Number(
-          (Math.pow(90 / 22.13, 0.4) * Math.pow(Math.sin(thetaRad) / 0.0896, 1.3)).toFixed(2)
-        );
-
-        // Município real oficial (respeita a regra de nunca preencher nome de UF no município)
-        const munReal = bruto.municipio && bruto.municipio.trim().toLowerCase() !== "paraná"
-          ? bruto.municipio
-          : (areas[0]?.tipo === "municipio" ? areas[0].nome : "Medianeira");
+        const classeEspectral = medicaoS2
+          ? classificarPontoEspectral(medicaoS2.bsi, medicaoS2.ndvi)
+          : "indefinido";
 
         const etiquetaEscala = noCorredorInLoco
           ? "[Fase B: Subamostra In-Loco — Corredor Foz–Céu Azul]"
@@ -490,20 +488,32 @@ export async function POST(request: NextRequest) {
             bsi: bsiProveniencia,
           },
           localizacao: {
-            municipio: {
-              estado: "medido",
-              valor: munReal,
-              fonte: "IBGE Malhas Municipais 2023",
-              adquiridoEm: "2023-01-01",
-              consultadoEm: dataConsultaAtual,
-            },
-            codigoIbge: {
-              estado: "medido",
-              valor: areas[0]?.codigoIbge || "4115804",
-              fonte: "IBGE Malhas Municipais 2023",
-              adquiridoEm: "2023-01-01",
-              consultadoEm: dataConsultaAtual,
-            },
+            municipio: bruto.municipio
+              ? {
+                  estado: "medido",
+                  valor: bruto.municipio,
+                  fonte: "SICAR / IBGE Malhas Municipais 2023",
+                  adquiridoEm: "2023-01-01",
+                  consultadoEm: dataConsultaAtual,
+                }
+              : {
+                  estado: "indisponivel",
+                  causa: "sem-cobertura",
+                  motivo: "Município não informado no registro fundiário.",
+                },
+            codigoIbge: areas[0]?.codigoIbge
+              ? {
+                  estado: "medido",
+                  valor: areas[0].codigoIbge,
+                  fonte: "IBGE Malhas Municipais 2023",
+                  adquiridoEm: "2023-01-01",
+                  consultadoEm: dataConsultaAtual,
+                }
+              : {
+                  estado: "indisponivel",
+                  causa: "nao-calculado",
+                  motivo: "Aguardando geocodificação municipal IBGE.",
+                },
             bacia: {
               estado: "medido",
               valor: baciaNome,
@@ -513,27 +523,45 @@ export async function POST(request: NextRequest) {
             },
           },
           terreno: {
-            elevacao: {
-              estado: "medido",
-              valor: elevacaoMetros,
-              fonte: "Copernicus DEM GLO-30 (30m)",
-              adquiridoEm: "2022-01-01",
-              consultadoEm: dataConsultaAtual,
-            },
-            declividadePct: {
-              estado: "medido",
-              valor: bruto.declividadePct,
-              fonte: "Copernicus DEM GLO-30 (30m)",
-              adquiridoEm: "2022-01-01",
-              consultadoEm: dataConsultaAtual,
-            },
-            declividadeGraus: {
-              estado: "medido",
-              valor: bruto.declividadeGraus,
-              fonte: "Copernicus DEM GLO-30 (30m)",
-              adquiridoEm: "2022-01-01",
-              consultadoEm: dataConsultaAtual,
-            },
+            elevacao: medTerreno
+              ? {
+                  estado: "medido",
+                  valor: medTerreno.elevacaoMetros,
+                  fonte: medTerreno.fonte,
+                  adquiridoEm: "2022-01-01",
+                  consultadoEm: dataConsultaAtual,
+                }
+              : {
+                  estado: "indisponivel",
+                  causa: "nao-calculado",
+                  motivo: "Altitude Copernicus DEM GLO-30 aguarda consulta pontual.",
+                },
+            declividadePct: medTerreno
+              ? {
+                  estado: "medido",
+                  valor: medTerreno.declividadePct,
+                  fonte: medTerreno.fonte,
+                  adquiridoEm: "2022-01-01",
+                  consultadoEm: dataConsultaAtual,
+                }
+              : {
+                  estado: "indisponivel",
+                  causa: "nao-calculado",
+                  motivo: "Declividade Copernicus DEM GLO-30 aguarda consulta pontual.",
+                },
+            declividadeGraus: medTerreno
+              ? {
+                  estado: "medido",
+                  valor: medTerreno.declividadeGraus,
+                  fonte: medTerreno.fonte,
+                  adquiridoEm: "2022-01-01",
+                  consultadoEm: dataConsultaAtual,
+                }
+              : {
+                  estado: "indisponivel",
+                  causa: "nao-calculado",
+                  motivo: "Declividade Copernicus DEM GLO-30 aguarda consulta pontual.",
+                },
             curvaturaPerfil: {
               estado: "indisponivel",
               causa: "fora-do-dominio",
@@ -556,35 +584,69 @@ export async function POST(request: NextRequest) {
             },
           },
           solo: {
-            ordem: {
-              estado: "medido",
-              valor: ordemSolo,
-              fonte: "Embrapa GeoInfo / SiBCS 2020",
-              adquiridoEm: "2020-11-05",
-              consultadoEm: dataConsultaAtual,
-            },
-            subOrdem: {
-              estado: "medido",
-              valor: subOrdemSolo,
-              fonte: "Embrapa GeoInfo / SiBCS 2020",
-              adquiridoEm: "2020-11-05",
-              consultadoEm: dataConsultaAtual,
-            },
-            grandeGrupo: {
-              estado: "medido",
-              valor: grandeGrupoSolo,
-              fonte: "Embrapa GeoInfo / SiBCS 2020",
-              adquiridoEm: "2020-11-05",
-              consultadoEm: dataConsultaAtual,
-            },
-            tipoUnidade: {
-              estado: "medido",
-              valor: soloEmbrapa?.solo?.tipoUnidade || "simples",
-              fonte: "Embrapa GeoInfo / SiBCS 2020",
-              adquiridoEm: "2020-11-05",
-              consultadoEm: dataConsultaAtual,
-            },
-            confiancaPedologica: soloEmbrapa?.solo?.confianca ?? "alta",
+            ordem: compDominante
+              ? {
+                  estado: "medido",
+                  valor: compDominante.ordem,
+                  fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
+                  adquiridoEm: "2020-11-05",
+                  consultadoEm: dataConsultaAtual,
+                }
+              : {
+                  estado: "indisponivel",
+                  causa:
+                    soloEmbrapa?.statusSolo === "sem-cobertura"
+                      ? "sem-cobertura"
+                      : "nao-calculado",
+                  motivo:
+                    soloEmbrapa?.motivo ||
+                    "Aguardando consulta pontual ao GeoServer da Embrapa GeoInfo.",
+                },
+            subOrdem: compDominante
+              ? {
+                  estado: "medido",
+                  valor: compDominante.subOrdem,
+                  fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
+                  adquiridoEm: "2020-11-05",
+                  consultadoEm: dataConsultaAtual,
+                }
+              : {
+                  estado: "indisponivel",
+                  causa:
+                    soloEmbrapa?.statusSolo === "sem-cobertura"
+                      ? "sem-cobertura"
+                      : "nao-calculado",
+                  motivo:
+                    soloEmbrapa?.motivo ||
+                    "Aguardando consulta pontual ao GeoServer da Embrapa GeoInfo.",
+                },
+            grandeGrupo: compDominante?.grandeGrupo
+              ? {
+                  estado: "medido",
+                  valor: compDominante.grandeGrupo,
+                  fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
+                  adquiridoEm: "2020-11-05",
+                  consultadoEm: dataConsultaAtual,
+                }
+              : {
+                  estado: "indisponivel",
+                  causa: "fora-do-dominio",
+                  motivo: "Nível categórico não informado na unidade de mapeamento.",
+                },
+            tipoUnidade: soloEmbrapa?.solo?.tipoUnidade
+              ? {
+                  estado: "medido",
+                  valor: soloEmbrapa.solo.tipoUnidade,
+                  fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
+                  adquiridoEm: "2020-11-05",
+                  consultadoEm: dataConsultaAtual,
+                }
+              : {
+                  estado: "indisponivel",
+                  causa: "nao-calculado",
+                  motivo: "Tipo de unidade pedológica aguarda consulta ao GeoServer Embrapa.",
+                },
+            confiancaPedologica: soloEmbrapa?.solo?.confianca ?? "indisponivel",
             erodibilidadeClasse: erodibilidadeProveniencia,
           },
           temporal: {
@@ -592,17 +654,16 @@ export async function POST(request: NextRequest) {
               janela: { inicio: "2018-01-01", fim: "2023-12-31" },
               serie: {
                 sensores: ["COPERNICUS/S2_SR_HARMONIZED"],
-                nObservacoesValidas: { B4: 120, B8: 120, B11: 120 },
+                nObservacoesValidas: {},
                 harmonicos: {},
                 estatisticas: {
                   B8_p50: ndviProveniencia,
                 },
                 frequenciaSoloNu: {
-                  estado: "medido",
-                  valor: bruto.frequenciaSoloNu,
-                  fonte: "Série Multitemporal Sentinel-2 MSI L2A (2018-2023)",
-                  adquiridoEm: "2023-12-31",
-                  consultadoEm: dataConsultaAtual,
+                  estado: "indisponivel",
+                  causa: "nao-calculado",
+                  motivo:
+                    "Frequência multitemporal de solo exposto aguarda extração da série temporal completa no Google Earth Engine.",
                 },
                 maiorSequenciaSoloNu: {
                   estado: "indisponivel",
@@ -617,35 +678,43 @@ export async function POST(request: NextRequest) {
                 compostoSoloNu: {},
               },
               chuva: {
-                precipAcum30d: { estado: "indisponivel", causa: "decisao-pendente", motivo: "Aguardando Decisão D13" },
-                precipAcum90d: { estado: "indisponivel", causa: "decisao-pendente", motivo: "Aguardando Decisão D13" },
-                i30Max: { estado: "indisponivel", causa: "decisao-pendente", motivo: "Aguardando Decisão D13" },
-                nEventosErosivos: { estado: "indisponivel", causa: "decisao-pendente", motivo: "Aguardando Decisão D13" },
-                indiceMecanismo: { estado: "indisponivel", causa: "decisao-pendente", motivo: "Aguardando Decisão D13" },
+                precipAcum30d: {
+                  estado: "indisponivel",
+                  causa: "decisao-pendente",
+                  motivo: "Aguardando Decisão D13",
+                },
+                precipAcum90d: {
+                  estado: "indisponivel",
+                  causa: "decisao-pendente",
+                  motivo: "Aguardando Decisão D13",
+                },
+                i30Max: {
+                  estado: "indisponivel",
+                  causa: "decisao-pendente",
+                  motivo: "Aguardando Decisão D13",
+                },
+                nEventosErosivos: {
+                  estado: "indisponivel",
+                  causa: "decisao-pendente",
+                  motivo: "Aguardando Decisão D13",
+                },
+                indiceMecanismo: {
+                  estado: "indisponivel",
+                  causa: "decisao-pendente",
+                  motivo: "Aguardando Decisão D13",
+                },
               },
             },
           },
+          // Linha de Base RUSLE estrita: Invariante 1 e Decisões D01 (C), D13 (R pendente), D14 (K Embrapa), D15 (LS pendente)
           linhaDeBase: montarLinhaDeBaseRUSLE({
             ndviProveniencia,
             erodibilidadeProveniencia,
-            fatorRSubstituto: {
-              estado: "tabelado",
-              valor: rRegional,
-              tabela: "Isoietas de Erosividade do Paraná (IAPAR / Oliveira et al., 2012)",
-              chave: "Bacia do Paraná 3 (Oeste PR)",
-            },
-            fatorLSSubstituto: {
-              estado: "modelado",
-              valor: lsVal,
-              modelo: "Moore & Burch (1986) / Desmet & Govers (1996) sobre Copernicus DEM 30m",
-              insumos: ["Declividade DEM (%)", "Comprimento de rampa"],
-              decisoes: ["D15"],
-            },
           }),
           fundiario: contextoFundiario,
           rastreio: {
             versaoMotor: "2.0.0",
-            cenas: ["COPERNICUS/S2_SR_HARMONIZED/2023"],
+            cenas: ["COPERNICUS/S2_SR_HARMONIZED"],
             calculadoEm: new Date().toISOString(),
           },
         };

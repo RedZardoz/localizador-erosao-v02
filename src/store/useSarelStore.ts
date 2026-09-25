@@ -87,6 +87,7 @@ interface SarelStoreState {
   setPontoAuditoria: (ponto: PontoAmostral | null) => void;
   definirRotuloConsolidado: (codigo: string, rotulo: RotuloConsolidado) => void;
   obterPontoSelecionado: () => PontoAmostral | undefined;
+  atualizarPontoIndividual: (pontoAtualizado: PontoAmostral) => void;
 
   // Áreas Territoriais e Polígonos Persistentes no Mapa
   areas: AreaEstudo[];
@@ -332,6 +333,17 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
   },
 
   selecionarPonto: (id) => set({ pontoSelecionadoId: id }),
+
+  atualizarPontoIndividual: (pontoAtualizado) => {
+    assegurarApenasPontosReais([pontoAtualizado]);
+    const harmonizado = harmonizarClasseAmostral(pontoAtualizado);
+    set((state) => ({
+      pontos: state.pontos.map((p) => (p.id === harmonizado.id ? harmonizado : p)),
+      pontosProvisorios: state.pontosProvisorios.map((p) =>
+        p.id === harmonizado.id ? harmonizado : p
+      ),
+    }));
+  },
 
   setPontoAuditoria: (ponto) => set({ pontoAuditoria: ponto }),
 
