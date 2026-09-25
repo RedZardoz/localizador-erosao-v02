@@ -68,6 +68,15 @@ interface ImovelRealDb {
   lat: number;
   lng: number;
   area_ha: number;
+  nome_imovel?: string;
+  proprietario_nome?: string;
+  registro_incra?: string;
+  mod_fiscal?: number;
+  status?: string;
+  fonte?: string;
+  slope_est?: number;
+  bsi_freq_est?: number;
+  nivel_k_est?: 1 | 2;
 }
 
 /**
@@ -97,7 +106,7 @@ function buscarImoveisReaisPython(
       String(limite),
     ];
 
-    execFile(pythonCmd, args, { timeout: 15000 }, (error, stdout) => {
+    execFile(pythonCmd, args, { timeout: 15000, maxBuffer: 10 * 1024 * 1024 }, (error, stdout) => {
       if (error || !stdout) {
         return resolve([]);
       }
@@ -188,7 +197,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Obtenção de Coordenadas de Imóveis Rurais Reais (SICAR / SNCR)
-    const numCandidatosBusca = Math.min(Math.max(tamanhoAmostra * 10, 200), 2000);
+    const numCandidatosBusca = Math.min(Math.max(tamanhoAmostra * 12, 500), 6000);
     const imoveisReais = await buscarImoveisReaisPython(minLng, minLat, maxLng, maxLat, numCandidatosBusca);
 
     if (imoveisReais.length === 0) {
@@ -219,6 +228,13 @@ export async function POST(request: NextRequest) {
       id: string;
       codigoCar: string;
       municipio: string;
+      areaHa: number;
+      nomeImovel: string;
+      proprietarioNome: string;
+      registroIncra: string;
+      modFiscal: number;
+      statusCar: string;
+      fonteCar: string;
       latitude: number;
       longitude: number;
       declividadePct: number;
@@ -230,36 +246,55 @@ export async function POST(request: NextRequest) {
 
     let idx = 1;
     for (const im of listaParaAmostragem) {
+      const slopeVal = Math.min(
+        declividadeMax,
+        Math.max(declividadeMin, im.slope_est ?? declividadeMin)
+      );
+      const bsiFreqVal = Math.max(frequenciaSoloNuMin, im.bsi_freq_est ?? frequenciaSoloNuMin);
+      const nivelKVal: 1 | 2 = im.nivel_k_est === 2 ? 2 : 1;
+
       candidatosProcessados.push({
         id: "cand-" + (idx++),
         codigoCar: im.cod_car,
         municipio: im.municipio,
+        areaHa: im.area_ha || 0,
+        nomeImovel: im.nome_imovel || "Imóvel Rural Cadastrado",
+        proprietarioNome: im.proprietario_nome || "",
+        registroIncra: im.registro_incra || "",
+        modFiscal: im.mod_fiscal || 0,
+        statusCar: im.status || "AT",
+        fonteCar: im.fonte || "SICAR Oficial",
         latitude: Number(im.lat.toFixed(6)),
         longitude: Number(im.lng.toFixed(6)),
-        declividadePct: declividadeMin,
-        declividadeGraus: Number(((Math.atan(declividadeMin / 100) * 180) / Math.PI).toFixed(2)),
+        declividadePct: slopeVal,
+        declividadeGraus: Number(((Math.atan(slopeVal / 100) * 180) / Math.PI).toFixed(2)),
         elevacao: 0,
-        frequenciaSoloNu: frequenciaSoloNuMin,
-        nivelK: 1,
+        frequenciaSoloNu: bsiFreqVal,
+        nivelK: nivelKVal,
       });
     }
 
-    // 5. Thinning Espacial Determinístico (P02)
-    const raioMetros = raioThinningKm * 1000;
-    const candidatosAposThinning = aplicarThinningDeterminista(
-      candidatosProcessados.map((c) => ({
-        id: c.id,
-        latitude: c.latitude,
-        longitude: c.longitude,
-        declividadePct: c.declividadePct,
-        frequenciaSoloNu: c.frequenciaSoloNu,
-        nivelK: c.nivelK,
-        elevacao: c.elevacao,
-        declividadeGraus: c.declividadeGraus,
-      })),
-      raioMetros,
-      semente
-    );
+    // 5. Thinning Espacial Determinístico (P02) com ajuste adaptativo até o limite mínimo P02 (1,0 km)
+    // caso o usuário solicite amostras densas (ex: 300 a 500 pontos dentro de uma única bacia)
+    const inputThinning = candidatosProcessados.map((c) => ({
+      id: c.id,
+      latitude: c.latitude,
+      longitude: c.longitude,
+      declividadePct: c.declividadePct,
+      frequenciaSoloNu: c.frequenciaSoloNu,
+      nivelK: c.nivelK,
+      elevacao: c.elevacao,
+      declividadeGraus: c.declividadeGraus,
+    }));
+
+    let raioMetros = raioThinningKm * 1000;
+    let candidatosAposThinning = aplicarThinningDeterminista(inputThinning, raioMetros, semente);
+
+    // Se o raio inicial (ex: 5 km) comportar menos pontos que o solicitado na bacia, reduz gradualmente até 1,0 km (P02)
+    while (candidatosAposThinning.length < tamanhoAmostra && raioMetros > 1000) {
+      raioMetros = Math.max(1000, Math.floor(raioMetros * 0.65));
+      candidatosAposThinning = aplicarThinningDeterminista(inputThinning, raioMetros, semente);
+    }
 
     // 6. Estratificação Multivariada 3(S) x 3(E) x 2(K) (P07 / D09) com Partição Multi-Escala (Fase A + Fase B Corredor In-Loco)
     const propInLoco = typeof body.proporcaoInLocoCorredorPct === "number" ? body.proporcaoInLocoCorredorPct : 20;
@@ -282,6 +317,8 @@ export async function POST(request: NextRequest) {
     );
 
     let pontosEstratificados = [];
+    let relatorioEstratificacao: any = null;
+
     if (qtdAlvoInLoco > 0 && candidatosNoCorredor.length > 0 && candidatosForaCorredor.length > 0) {
       const qtdCorredorEfetiva = Math.min(qtdAlvoInLoco, candidatosNoCorredor.length);
       const qtdRestanteEfetiva = Math.max(0, tamanhoAmostra - qtdCorredorEfetiva);
@@ -297,6 +334,13 @@ export async function POST(request: NextRequest) {
         semente + 1
       );
       pontosEstratificados = [...resCorredor.pontos, ...resRestante.pontos];
+      relatorioEstratificacao = {
+        ...resRestante.relatorio,
+        totalSolicitado: tamanhoAmostra,
+        totalSelecionado: pontosEstratificados.length,
+        subamostraInLocoCorredor: resCorredor.pontos.length,
+        amostraOrbitalMacrobacia: resRestante.pontos.length,
+      };
     } else {
       const resultadoEstratificacao = executarAmostragemEstratificada(
         estratificacaoInput,
@@ -304,9 +348,11 @@ export async function POST(request: NextRequest) {
         semente
       );
       pontosEstratificados = resultadoEstratificacao.pontos;
+      relatorioEstratificacao = resultadoEstratificacao.relatorio;
     }
 
     const candidatosMap = new Map(candidatosProcessados.map((c) => [c.id, c]));
+    const usarEnriquecimentoRapidoBatch = pontosEstratificados.length > 15;
 
     // 7. Enriquecimento com Embrapa SiBCS, SICAR Oficial e Bacias Hidrográficas
     const pontosFinais: PontoAmostral[] = await Promise.all(
@@ -317,19 +363,40 @@ export async function POST(request: NextRequest) {
         const baciaNome = identificarBacia(bruto.latitude, bruto.longitude) || "Bacia Hidrográfica do Paraná 3";
         const noCorredorInLoco = estaNoCorredorExperimentalBp3(bruto.latitude, bruto.longitude);
 
-        // Consulta pedológica real ao GeoServer da Embrapa GeoInfo
-        let soloEmbrapa;
-        try {
-          soloEmbrapa = await queryEmbrapaSoil(bruto.latitude, bruto.longitude);
-        } catch {
-          soloEmbrapa = null;
+        // Consulta pedológica ao GeoServer da Embrapa GeoInfo (em lote grande usa o estrato K oficial sem bloquear 500 conexões)
+        let soloEmbrapa = null;
+        if (!usarEnriquecimentoRapidoBatch) {
+          try {
+            soloEmbrapa = await queryEmbrapaSoil(bruto.latitude, bruto.longitude);
+          } catch {
+            soloEmbrapa = null;
+          }
         }
 
-        // Consulta fundiária detalhada via script oficial de cruzamento
+        // Contexto fundiário construído diretamente da base oficial SICAR/SNCR já carregada
         let contextoFundiario;
         try {
-          const matchFund = await matchRuralProperty(bruto.latitude, bruto.longitude, "PR");
-          contextoFundiario = toContextoFundiario(matchFund, "PR");
+          if (!usarEnriquecimentoRapidoBatch) {
+            const matchFund = await matchRuralProperty(bruto.latitude, bruto.longitude, "PR");
+            contextoFundiario = toContextoFundiario(matchFund, "PR");
+          } else {
+            contextoFundiario = toContextoFundiario(
+              {
+                found: true,
+                cod_car: bruto.codigoCar,
+                nome_imovel: bruto.nomeImovel,
+                proprietario_nome: bruto.proprietarioNome,
+                registro_incra: bruto.registroIncra,
+                area_ha: bruto.areaHa,
+                municipio: bruto.municipio,
+                uf: "PR",
+                mod_fiscal: bruto.modFiscal,
+                status: bruto.statusCar,
+                fonte: bruto.fonteCar,
+              } as any,
+              "PR"
+            );
+          }
         } catch {
           contextoFundiario = undefined;
         }
@@ -530,7 +597,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       pontos: pontosFinais,
-      relatorio: resultadoEstratificacao.relatorio,
+      relatorio: relatorioEstratificacao,
     });
   } catch (error: any) {
     console.error("Erro no processamento da amostragem GEE:", error);
