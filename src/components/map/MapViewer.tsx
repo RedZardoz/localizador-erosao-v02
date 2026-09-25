@@ -7,7 +7,7 @@ import { useSarelStore, usePontosVisiveis } from "@/store/useSarelStore";
 import { MapControls } from "./MapControls";
 import { DrawingToolbar } from "@/components/polygon/DrawingToolbar";
 import { PointPopup } from "./PointPopup";
-import { PARANA_BASINS_GEOJSON } from "@/lib/localizacao/bacias";
+import { PARANA_BASINS_GEOJSON, PARANA3_28_MUNICIPIOS_GEOJSON } from "@/lib/localizacao/bacias";
 import { SITIOS_PADRAO_OURO_GEOJSON } from "@/lib/padraoOuro/sitiosReferencia";
 
 export const MapViewer: React.FC = () => {
@@ -161,6 +161,59 @@ export const MapViewer: React.FC = () => {
           "line-color": ["get", "color"],
           "line-width": 1.5,
           "line-dasharray": [3, 2],
+        },
+      });
+
+      // 1.05 Malha Legal dos 28 Municípios da Bacia Hidrográfica do Paraná 3 (IBGE/ITCG)
+      map.addSource("parana3-28-municipios-source", {
+        type: "geojson",
+        data: PARANA3_28_MUNICIPIOS_GEOJSON as any,
+      });
+
+      map.addLayer({
+        id: "parana3-28-municipios-fill",
+        type: "fill",
+        source: "parana3-28-municipios-source",
+        layout: {
+          visibility: "none",
+        },
+        paint: {
+          "fill-color": [
+            "case",
+            ["==", ["get", "corredorExperimental"], true],
+            "#F59E0B",
+            "#10B981",
+          ],
+          "fill-opacity": [
+            "case",
+            ["==", ["get", "corredorExperimental"], true],
+            0.12,
+            0.05,
+          ],
+        },
+      });
+
+      map.addLayer({
+        id: "parana3-28-municipios-line",
+        type: "line",
+        source: "parana3-28-municipios-source",
+        layout: {
+          visibility: "none",
+        },
+        paint: {
+          "line-color": [
+            "case",
+            ["==", ["get", "corredorExperimental"], true],
+            "#FBBF24",
+            "#94A3B8",
+          ],
+          "line-width": [
+            "case",
+            ["==", ["get", "corredorExperimental"], true],
+            1.4,
+            0.9,
+          ],
+          "line-dasharray": [2, 2],
         },
       });
 
@@ -464,7 +517,35 @@ export const MapViewer: React.FC = () => {
       type: "FeatureCollection",
       features,
     });
-  }, [areas, mapLoaded]);
+
+    // Exibe a malha legal interna dos 28 municípios da Bacia do Paraná 3 (IBGE/ITCG)
+    // sempre que a Bacia do Paraná 3 (ou Corredor Experimental) estiver ativa na tela
+    const parana3Ativa =
+      mapState.mostrarBacias ||
+      mapState.mostrarLimites ||
+      areasAtivas.some(
+        (a) =>
+          a.id.includes("parana3") ||
+          a.id.includes("corredor-foz-ceu-azul") ||
+          a.nome.toLowerCase().includes("paraná 3") ||
+          a.nome.toLowerCase().includes("parana 3")
+      );
+
+    if (mapRef.current.getLayer("parana3-28-municipios-fill")) {
+      mapRef.current.setLayoutProperty(
+        "parana3-28-municipios-fill",
+        "visibility",
+        parana3Ativa ? "visible" : "none"
+      );
+    }
+    if (mapRef.current.getLayer("parana3-28-municipios-line")) {
+      mapRef.current.setLayoutProperty(
+        "parana3-28-municipios-line",
+        "visibility",
+        parana3Ativa ? "visible" : "none"
+      );
+    }
+  }, [areas, mapState.mostrarBacias, mapState.mostrarLimites, mapLoaded]);
 
   // Atualização do Desenho em Progresso
   useEffect(() => {

@@ -24,7 +24,7 @@ import type {
   ModalType,
   SystemLogEntry,
 } from "@/types/ui";
-import { PARANA_BASINS_GEOJSON } from "@/lib/localizacao/bacias";
+import { PARANA_BASINS_GEOJSON, PARANA_ESTADO_IBGE_GEOMETRY } from "@/lib/localizacao/bacias";
 import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
 import { PASSOS_TOUR_APRESENTACAO } from "@/config/tourMetodologico";
 
@@ -115,7 +115,7 @@ interface SarelStoreState {
   limparFiltros: () => void;
   setTopN: (n: number | "todas") => void;
 
-  // Estado Cartográfico (MapLibre GL 3D)
+  // Estado Cartográfica (MapLibre GL 3D)
   mapState: MapViewState;
   setMapState: (
     updater:
@@ -138,53 +138,16 @@ interface SarelStoreState {
   ) => void;
 }
 
-// Bacia padrão Paraná como área territorial inicial
+// Malha oficial do Estado do Paraná (IBGE 41) como área territorial de referência
 const AREA_PARANA_INICIAL: AreaEstudo = {
   id: "area-pr-estado",
-  nome: "Estado do Paraná (IBGE)",
+  nome: "Estado do Paraná (Malha Oficial IBGE)",
   tipo: "estado",
   codigoIbge: "41",
   areaKm2: 199315,
   ativa: true,
   cor: "#059669",
-  geometry: {
-    type: "Polygon",
-    coordinates: [
-      [
-        [-54.25, -24.01],
-        [-54.08, -23.70],
-        [-53.72, -23.25],
-        [-53.40, -22.85],
-        [-52.95, -22.52],
-        [-52.50, -22.58],
-        [-51.85, -22.65],
-        [-51.20, -22.75],
-        [-50.45, -22.95],
-        [-49.95, -23.15],
-        [-49.60, -23.40],
-        [-49.30, -23.85],
-        [-48.95, -24.30],
-        [-48.50, -24.70],
-        [-48.15, -25.05],
-        [-48.40, -25.55],
-        [-48.60, -25.90],
-        [-49.00, -25.95],
-        [-49.55, -26.05],
-        [-50.10, -26.15],
-        [-50.80, -26.10],
-        [-51.40, -26.25],
-        [-51.95, -26.45],
-        [-52.30, -26.10],
-        [-52.80, -26.20],
-        [-53.10, -26.15],
-        [-53.70, -26.25],
-        [-54.20, -25.85],
-        [-54.60, -25.55],
-        [-54.35, -24.70],
-        [-54.25, -24.01],
-      ],
-    ],
-  },
+  geometry: PARANA_ESTADO_IBGE_GEOMETRY as any,
 };
 
 const FILTROS_INICIAIS: FiltrosState = {

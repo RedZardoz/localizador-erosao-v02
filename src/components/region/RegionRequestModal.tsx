@@ -26,7 +26,12 @@ import {
   EstadoIbge,
   MunicipioIbge,
 } from "@/lib/localizacao/municipio";
-import { PARANA_BASINS_GEOJSON } from "@/lib/localizacao/bacias";
+import {
+  PARANA_BASINS_GEOJSON,
+  PARANA3_UNIAO_28_MUNICIPIOS_FEATURE,
+  CORREDOR_FOZ_CEU_AZUL_FEATURE,
+  PARANA3_28_MUNICIPIOS_GEOJSON,
+} from "@/lib/localizacao/bacias";
 import type { AreaEstudo } from "@/types/ui";
 import * as toGeoJSON from "@tmcw/togeojson";
 
@@ -232,9 +237,87 @@ export const RegionRequestModal: React.FC = () => {
       geometry: baciaFeature.geometry,
     };
     adicionarArea(novaArea);
+    if (String(props.code).startsWith("BP3")) {
+      setMapState({
+        flyToTarget: { lng: -54.05, lat: -24.85, zoom: 8.1, pitch: 35, bearing: 0 },
+      });
+    }
     setFeedback({
       tipo: "sucesso",
       texto: `${props.name} adicionada como área ativa!`,
+    });
+  };
+
+  // AÇÃO 3.1: Ativar Solução Híbrida Completa da Bacia do Paraná 3 (IAT + 28 Municípios IBGE + Corredor Foz–Céu Azul)
+  const ativarRecorteHibridoParana3 = () => {
+    // Desativa o estado inteiro se estiver ativo para focar na Bacia do Paraná 3
+    if (areas.some((a) => a.id === "area-pr-estado" && a.ativa)) {
+      alternarAreaAtiva("area-pr-estado", false);
+    }
+
+    const baciaIat = PARANA_BASINS_GEOJSON.features.find(
+      (f) => f.properties.code === "BP3"
+    );
+
+    if (baciaIat) {
+      adicionarArea({
+        id: `bacia-${baciaIat.id}`,
+        nome: baciaIat.properties.name + " (Divisor Hidrológico IAT)",
+        tipo: "bacia",
+        areaKm2: baciaIat.properties.area_km2,
+        ativa: true,
+        cor: "#EC4899",
+        geometry: baciaIat.geometry as any,
+      });
+    }
+
+    adicionarArea({
+      id: `bacia-${PARANA3_UNIAO_28_MUNICIPIOS_FEATURE.id}`,
+      nome: PARANA3_UNIAO_28_MUNICIPIOS_FEATURE.properties.name,
+      tipo: "bacia",
+      areaKm2: PARANA3_UNIAO_28_MUNICIPIOS_FEATURE.properties.area_km2,
+      ativa: true,
+      cor: "#059669",
+      geometry: PARANA3_UNIAO_28_MUNICIPIOS_FEATURE.geometry as any,
+    });
+
+    adicionarArea({
+      id: `bacia-${CORREDOR_FOZ_CEU_AZUL_FEATURE.id}`,
+      nome: CORREDOR_FOZ_CEU_AZUL_FEATURE.properties.name,
+      tipo: "bacia",
+      areaKm2: CORREDOR_FOZ_CEU_AZUL_FEATURE.properties.area_km2,
+      ativa: true,
+      cor: "#F59E0B",
+      geometry: CORREDOR_FOZ_CEU_AZUL_FEATURE.geometry as any,
+    });
+
+    setMapState({
+      flyToTarget: { lng: -54.05, lat: -24.85, zoom: 8.1, pitch: 35, bearing: 0 },
+    });
+
+    setFeedback({
+      tipo: "sucesso",
+      texto:
+        "Recorte Híbrido PPGTCA ativado: Divisor Hidrológico BP3 (IAT) + Limite Legal dos 28 Municípios (IBGE/ITCG) + Corredor In-Loco Foz–Céu Azul!",
+    });
+  };
+
+  // AÇÃO 3.2: Adicionar qualquer um dos 28 Municípios da Bacia do Paraná 3 diretamente
+  const adicionarMunicipioBp3Direto = (feat: any) => {
+    const p = feat.properties;
+    const areaId = `mun-${p.codigoIbge}`;
+    adicionarArea({
+      id: areaId,
+      nome: `${p.labelMapa} (PR)`,
+      tipo: "municipio",
+      codigoIbge: String(p.codigoIbge),
+      ativa: true,
+      cor: p.corredorExperimental ? "#F59E0B" : "#06B6D4",
+      geometry: feat.geometry,
+    });
+    setFeedback({
+      tipo: "sucesso",
+      texto: `Município ${p.labelMapa} (IBGE ${p.codigoIbge}) adicionado com seu limite legal oficial!`,
     });
   };
 
@@ -578,12 +661,132 @@ export const RegionRequestModal: React.FC = () => {
             </div>
           )}
 
-          {/* ABA 2: MICROBACIAS HIDROGRÁFICAS */}
+          {/* ABA 2: MICROBACIAS HIDROGRÁFICAS & SOLUÇÃO HÍBRIDA PARANÁ 3 */}
           {abaAtiva === "bacias" && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
-                <span>Bacias Hidrográficas do Estado ({PARANA_BASINS_GEOJSON.features.length})</span>
-                <span className="font-mono text-[10px]">Fonte Oficial: IAT / SUDERHSA</span>
+            <div className="space-y-4">
+              {/* PAINEL ESPECIAL: SOLUÇÃO HÍBRIDA BACIA DO PARANÁ 3 (IAT + 28 MUNICÍPIOS IBGE/ITCG + CORREDOR FOZ–CÉU AZUL) */}
+              <div className="p-4 rounded-2xl border-2 border-emerald-500/70 bg-emerald-50/40 dark:bg-emerald-950/25 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-600 text-white">
+                      Recorte Oficial da Pesquisa (PPGTCA 2026)
+                    </span>
+                    <h3 className="text-xs font-bold text-slate-900 dark:text-white mt-1">
+                      Bacia Hidrográfica do Paraná 3 — Solução Híbrida Legal &amp; Hidrológica
+                    </h3>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                      Combina o <strong>Divisor Hidrológico Oficial (IAT — 7.979 km²)</strong>, os{" "}
+                      <strong>Limites Legais dos 28 Municípios (IBGE/ITCG — 13.350 km²)</strong> e o{" "}
+                      <strong>Corredor Experimental In-Loco Foz do Iguaçu – Céu Azul (6 Municípios)</strong>.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={ativarRecorteHibridoParana3}
+                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/25 cursor-pointer shrink-0 transition-all"
+                  >
+                    Ativar Combo Híbrido BP3 (IAT + 28 Mun + Corredor)
+                  </button>
+                </div>
+
+                {/* 3 Botões das Camadas da Bacia do Paraná 3 */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                  <button
+                    onClick={() => selecionarBacia(PARANA3_UNIAO_28_MUNICIPIOS_FEATURE)}
+                    className="p-2.5 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-white dark:bg-slate-900 hover:border-emerald-500 text-left cursor-pointer transition-all"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 shrink-0" />
+                      <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
+                        Limite Legal 28 Municípios (IBGE)
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+                      13.350 km² • 01-Cascavel a 28-Foz
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const baciaIat = PARANA_BASINS_GEOJSON.features.find(
+                        (f) => f.properties.code === "BP3"
+                      );
+                      if (baciaIat) selecionarBacia(baciaIat);
+                    }}
+                    className="p-2.5 rounded-xl border border-pink-300 dark:border-pink-800 bg-white dark:bg-slate-900 hover:border-pink-500 text-left cursor-pointer transition-all"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-pink-500 shrink-0" />
+                      <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
+                        Divisor Hidrológico Estrito (IAT)
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+                      7.979 km² • Drenagem Lago Itaipu
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => selecionarBacia(CORREDOR_FOZ_CEU_AZUL_FEATURE)}
+                    className="p-2.5 rounded-xl border border-amber-300 dark:border-amber-800 bg-white dark:bg-slate-900 hover:border-amber-500 text-left cursor-pointer transition-all"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
+                      <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
+                        Corredor In-Loco (Foz a Céu Azul)
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+                      2.920 km² • 6 Municípios (Fase B &amp; Drone)
+                    </span>
+                  </button>
+                </div>
+
+                {/* Lista Rápida dos 28 Municípios Oficiais da Bacia do Paraná 3 (Mapa ITCG 01 a 28) */}
+                <details className="pt-1 group">
+                  <summary className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 cursor-pointer select-none flex items-center justify-between">
+                    <span>
+                      Ver/Adicionar Individualmente os 28 Municípios Legais da Bacia do Paraná 3 (01 a 28 — Base ITCG/IBGE)
+                    </span>
+                    <span className="text-[10px] font-mono underline">Expandir 28 municípios</span>
+                  </summary>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mt-2 max-h-44 overflow-y-auto custom-scrollbar pr-1">
+                    {PARANA3_28_MUNICIPIOS_GEOJSON.features.map((mFeat) => {
+                      const mp = mFeat.properties;
+                      const munAreaId = `mun-${mp.codigoIbge}`;
+                      const jaAtivo = areas.some((a) => a.id === munAreaId);
+                      return (
+                        <button
+                          key={mp.codigoIbge}
+                          onClick={() => adicionarMunicipioBp3Direto(mFeat)}
+                          disabled={jaAtivo}
+                          className={`px-2 py-1.5 rounded-lg border text-left text-[10px] transition-all cursor-pointer truncate ${
+                            jaAtivo
+                              ? "bg-emerald-100/70 dark:bg-emerald-900/40 border-emerald-500 opacity-70"
+                              : mp.corredorExperimental
+                              ? "bg-amber-50/80 dark:bg-amber-950/30 border-amber-400/70 hover:border-amber-500"
+                              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-emerald-500"
+                          }`}
+                          title={`${mp.labelMapa} (IBGE: ${mp.codigoIbge})${
+                            mp.corredorExperimental ? " — Corredor Experimental Foz–Céu Azul" : ""
+                          }`}
+                        >
+                          <span className="font-bold text-slate-900 dark:text-white block truncate">
+                            {mp.labelMapa}
+                          </span>
+                          <span className="text-[9px] text-slate-500 font-mono">
+                            {mp.corredorExperimental ? "★ Corredor In-Loco" : `IBGE ${mp.codigoIbge}`}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </details>
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 pt-1">
+                <span>Macrobacias Hidrográficas Oficiais do Paraná ({PARANA_BASINS_GEOJSON.features.length})</span>
+                <span className="font-mono text-[10px]">Malha Oficial: IAT / IBGE (SIRGAS 2000)</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

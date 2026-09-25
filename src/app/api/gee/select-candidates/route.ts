@@ -42,7 +42,7 @@ import { executarAmostragemEstratificada, CandidatoEstratificacao } from "@/lib/
 import { aplicarThinningDeterminista } from "@/lib/gee/thinning";
 import { queryEmbrapaSoil } from "@/lib/embrapa/embrapaSoilClient";
 import { matchRuralProperty, toContextoFundiario } from "@/lib/fundiario/matcher";
-import { identificarBacia } from "@/lib/localizacao/bacias";
+import { identificarBacia, estaNoCorredorExperimentalBp3 } from "@/lib/localizacao/bacias";
 import { pontoEmGeoJson } from "@/lib/localizacao/municipio";
 import { montarLinhaDeBaseRUSLE } from "@/lib/rusle/linhaDeBase";
 import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
@@ -54,6 +54,7 @@ export const dynamic = "force-dynamic";
 
 interface RequestBody {
   tamanhoAmostra: number;
+  proporcaoInLocoCorredorPct?: number;
   raioThinningKm: number;
   frequenciaSoloNuMin: number;
   declividadeMin: number;
@@ -260,7 +261,10 @@ export async function POST(request: NextRequest) {
       semente
     );
 
-    // 6. Estratificação Multivariada 3(S) x 3(E) x 2(K) (P07 / D09)
+    // 6. Estratificação Multivariada 3(S) x 3(E) x 2(K) (P07 / D09) com Partição Multi-Escala (Fase A + Fase B Corredor In-Loco)
+    const propInLoco = typeof body.proporcaoInLocoCorredorPct === "number" ? body.proporcaoInLocoCorredorPct : 20;
+    const qtdAlvoInLoco = Math.round((tamanhoAmostra * Math.min(100, Math.max(0, propInLoco))) / 100);
+
     const estratificacaoInput: CandidatoEstratificacao[] = candidatosAposThinning.map((c) => ({
       id: c.id,
       latitude: c.latitude,
@@ -270,21 +274,48 @@ export async function POST(request: NextRequest) {
       nivelK: c.nivelK!,
     }));
 
-    const resultadoEstratificacao = executarAmostragemEstratificada(
-      estratificacaoInput,
-      tamanhoAmostra,
-      semente
+    const candidatosNoCorredor = estratificacaoInput.filter((c) =>
+      estaNoCorredorExperimentalBp3(c.latitude, c.longitude)
     );
+    const candidatosForaCorredor = estratificacaoInput.filter(
+      (c) => !estaNoCorredorExperimentalBp3(c.latitude, c.longitude)
+    );
+
+    let pontosEstratificados = [];
+    if (qtdAlvoInLoco > 0 && candidatosNoCorredor.length > 0 && candidatosForaCorredor.length > 0) {
+      const qtdCorredorEfetiva = Math.min(qtdAlvoInLoco, candidatosNoCorredor.length);
+      const qtdRestanteEfetiva = Math.max(0, tamanhoAmostra - qtdCorredorEfetiva);
+
+      const resCorredor = executarAmostragemEstratificada(
+        candidatosNoCorredor,
+        qtdCorredorEfetiva,
+        semente
+      );
+      const resRestante = executarAmostragemEstratificada(
+        candidatosForaCorredor,
+        qtdRestanteEfetiva,
+        semente + 1
+      );
+      pontosEstratificados = [...resCorredor.pontos, ...resRestante.pontos];
+    } else {
+      const resultadoEstratificacao = executarAmostragemEstratificada(
+        estratificacaoInput,
+        tamanhoAmostra,
+        semente
+      );
+      pontosEstratificados = resultadoEstratificacao.pontos;
+    }
 
     const candidatosMap = new Map(candidatosProcessados.map((c) => [c.id, c]));
 
     // 7. Enriquecimento com Embrapa SiBCS, SICAR Oficial e Bacias Hidrográficas
     const pontosFinais: PontoAmostral[] = await Promise.all(
-      resultadoEstratificacao.pontos.map(async (pe, i) => {
+      pontosEstratificados.map(async (pe, i) => {
         const bruto = candidatosMap.get(pe.id)!;
         const codigoFormatado = "PR-2026-" + String(i + 1).padStart(4, "0");
 
-        const baciaNome = identificarBacia(bruto.latitude, bruto.longitude) || "Bacia do Rio Ivaí";
+        const baciaNome = identificarBacia(bruto.latitude, bruto.longitude) || "Bacia Hidrográfica do Paraná 3";
+        const noCorredorInLoco = estaNoCorredorExperimentalBp3(bruto.latitude, bruto.longitude);
 
         // Consulta pedológica real ao GeoServer da Embrapa GeoInfo
         let soloEmbrapa;
@@ -308,7 +339,11 @@ export async function POST(request: NextRequest) {
         // Município real oficial (respeita a regra de nunca preencher nome de UF no município)
         const munReal = bruto.municipio && bruto.municipio.trim().toLowerCase() !== "paraná"
           ? bruto.municipio
-          : (areas[0]?.tipo === "municipio" ? areas[0].nome : "Londrina");
+          : (areas[0]?.tipo === "municipio" ? areas[0].nome : "Medianeira");
+
+        const etiquetaEscala = noCorredorInLoco
+          ? "[Fase B: Subamostra In-Loco — Corredor Foz–Céu Azul]"
+          : "[Fase A: Triagem Orbital — Macrobacia BP3]";
 
         const ponto: PontoAmostral = {
           id: crypto.randomUUID(),
@@ -319,7 +354,7 @@ export async function POST(request: NextRequest) {
           blocoEspacial: null,
           classeAmostral: "indefinido",
           estratoId: pe.estratoId,
-          criterioSelecao: pe.criterioSelecao,
+          criterioSelecao: `${etiquetaEscala} ${pe.criterioSelecao}`,
           localizacao: {
             municipio: {
               estado: "medido",
