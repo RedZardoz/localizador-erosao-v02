@@ -60,7 +60,7 @@ def criar_apresentacao_simposio(output_paths):
         tf = notes_slide.notes_text_frame
         tf.text = texto_roteiro
 
-    def add_header(slide, titulo, subt_tempo, categoria="SIMPÓSIO ESTUDANTIL • PPGTCA / UTFPR MEDIANEIRA • APOIO CAPES"):
+    def add_header(slide, titulo, subt_tempo, categoria="SIMPÓSIO ESTUDANTIL • PPGTCA / UTFPR MEDIANEIRA • APOIO ITAIPU PARQUETEC"):
         bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0), Inches(0), Inches(13.333), Inches(1.12))
         bar.fill.solid()
         bar.fill.fore_color.rgb = C_NAVY_DARK
@@ -254,7 +254,7 @@ def criar_apresentacao_simposio(output_paths):
     p.space_after = Pt(18)
 
     p = tf1.add_paragraph()
-    p.text = "Apoio Institucional: PPGTCA / UTFPR  •  CAPES (Código de Financiamento 001)"
+    p.text = "Apoio Institucional e Financiamento: PPGTCA / UTFPR  •  Itaipu Parquetec"
     p.font.size = Pt(10.5)
     p.font.color.rgb = C_TEXT_MUTED
 
@@ -539,7 +539,7 @@ def criar_apresentacao_simposio(output_paths):
     p_ack.alignment = PP_ALIGN.CENTER
     p_ack.text = (
         "Agradecimentos: Programa de Pós-Graduação em Tecnologias Computacionais para o Agronegócio (PPGTCA — UTFPR Campus Medianeira) "
-        "e Coordenação de Aperfeiçoamento de Pessoal de Nível Superior — Brasil (CAPES) — Código de Financiamento 001.\n"
+        "e Itaipu Parquetec pelo financiamento e apoio ao desenvolvimento tecnológico.\n"
         "Obrigado pela atenção!  •  Luis Alfredo da Silva (PPGTCA / UTFPR)"
     )
     p_ack.font.size = Pt(10.5)
@@ -549,7 +549,7 @@ def criar_apresentacao_simposio(output_paths):
     add_notes(s8, (
         "[TEMPO: 6:30 a 7:00 — 30 segundos]\n"
         "Concluindo, o arcabouço SAREL demonstra que é possível unir rigor estatístico, sensoriamento remoto gratuito e bases oficiais brasileiras para guiar a conservação de solos na Bacia do Paraná 3 com total rastreabilidade.\n"
-        "Agradeço ao PPGTCA da UTFPR Campus Medianeira, ao meu orientador, à CAPES pelo apoio financeiro e a todos vocês pela atenção. Muito obrigado!"
+        "Agradeço ao PPGTCA da UTFPR Campus Medianeira, ao meu orientador, ao Itaipu Parquetec pelo financiamento e apoio à pesquisa, e a todos vocês pela atenção. Muito obrigado!"
     ))
 
     for path in output_paths:

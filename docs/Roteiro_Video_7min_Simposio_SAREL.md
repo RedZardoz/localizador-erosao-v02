@@ -66,4 +66,4 @@ Nos **Slides 3, 4, 5, 6 e 7**, a metade direita do slide ($6,68'' \times 5,45''$
 
 ### Slide 8 — Considerações Finais e Agradecimentos (`6:30 a 7:00` | 30 segundos)
 > "Em conclusão, o arcabouço SAREL entrega uma solução reprodutível e pericialmente auditável para triagem territorial na Bacia do Paraná 3, reduzindo drasticamente o custo de encontrar focos de erosão laminar no campo e apoiando o manejo conservacionista de precisão.  
-> Agradeço ao **PPGTCA da UTFPR — Campus Medianeira**, ao meu orientador, e à **CAPES** pelo apoio à pesquisa. Muito obrigado pela atenção!"
+> Agradeço ao **PPGTCA da UTFPR — Campus Medianeira**, ao meu orientador, e ao **Itaipu Parquetec** pelo financiamento e apoio à pesquisa. Muito obrigado pela atenção!"

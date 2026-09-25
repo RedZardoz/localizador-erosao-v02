@@ -483,7 +483,7 @@ export function exigirDecisao<T>(d: Decisao<T>): T {
       explicacao:
         "Garante que o software recuse a execução caso premissas científicas estejam pendentes.",
     },
-    referencia: "Normas de Qualificação PPGTCA 2026; Diretrizes de Reprodutibilidade Aberta da CAPES.",
+    referencia: "Normas de Qualificação PPGTCA 2026; Diretrizes de Pesquisa e Inovação do Itaipu Parquetec.",
     decisaoId: "D01-D19",
     acaoAtalho: {
       rotulo: "Abrir Livro de Decisões",
