@@ -106,7 +106,7 @@ function buscarImoveisReaisPython(
       String(limite),
     ];
 
-    execFile(pythonCmd, args, { timeout: 15000, maxBuffer: 10 * 1024 * 1024 }, (error, stdout) => {
+    execFile(pythonCmd, args, { timeout: 45000, maxBuffer: 15 * 1024 * 1024 }, (error, stdout) => {
       if (error || !stdout) {
         return resolve([]);
       }
