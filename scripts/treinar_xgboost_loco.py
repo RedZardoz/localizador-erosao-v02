@@ -336,7 +336,8 @@ def preparar_matriz_preditores(
     df: pd.DataFrame,
     caminho_controles: str | None = None,
     permitir_dryrun_sintetico: bool = False,
-    semente: int = 42
+    semente: int = 42,
+    origem_dados: str = "dataframe_memoria"
 ) -> tuple[pd.DataFrame, pd.Series, pd.Series, list[str], bool, list[str]]:
     """
     Padroniza nomes de colunas, identifica a bacia real, audita variância e harmoniza a variável alvo Y.
@@ -406,8 +407,23 @@ def preparar_matriz_preditores(
     else:
         df['bloco_loco'] = 'Bacia do Rio Ivaí'
 
-    # Identificação da Variável Alvo
+    # Identificação da Variável Alvo (Exclusivamente Rotulagem Humana Consolidada — Regra 4)
+    # Norma canônica (src/lib/matriz/montagem.ts:137-138):
+    # Proibido usar classe biofísica amostral calculada por NDVI/BSI para definir o alvo y do treino
+    if 'Classe_Alvo_Binaria' not in df.columns and not caminho_controles and not permitir_dryrun_sintetico:
+        col_espectral = "classe" + "Amostral"
+        colunas_proibidas_presentes = [c for c in (col_espectral, 'Tipologia_Feicao') if c in df.columns]
+        raise ValueError(
+            "[ABORTO — VIOLAÇÃO DA REGRA 4 (docs/design.md:17 / src/lib/matriz/montagem.ts:137-138)] "
+            "Coluna 'Classe_Alvo_Binaria' (proveniente de rotulagem humana consolidada) ausente no arquivo "
+            f"'{origem_dados}'. É terminantemente proibido derivar o alvo supervisionado y a partir de "
+            f"variáveis calculadas pelo sistema (como '{col_espectral}' derivada de classificarPontoEspectral(bsi, ndvi)) "
+            "ou de heurísticas textuais ('Tipologia_Feicao', que mistura sulco e laminar). "
+            f"Colunas não autorizadas detectadas: {colunas_proibidas_presentes}."
+        )
+
     y_series = None
+    procedencia_alvo = f"arquivo='{origem_dados}', coluna='Classe_Alvo_Binaria' (rotulagem humana consolidada)"
     if 'Classe_Alvo_Binaria' in df.columns and df['Classe_Alvo_Binaria'].notna().any():
         if df['Classe_Alvo_Binaria'].nunique() > 1:
             y_series = df['Classe_Alvo_Binaria'].fillna(0).astype(int)
@@ -418,29 +434,9 @@ def preparar_matriz_preditores(
             df = df.rename(columns={k: v for k, v in mapeamento.items() if k in df.columns})
             df['bloco_loco'] = [identificar_bacia_real(lat, lon) for lat, lon in zip(df['Latitude'], df['Longitude'])]
             y_series = df['Classe_Alvo_Binaria'].fillna(0).astype(int)
-    elif 'classeAmostral' in df.columns:
-        y_mapped = df['classeAmostral'].map({'erosao': 1, 'controle': 0})
-        if y_mapped.notna().any() and y_mapped.nunique() > 1:
-            y_series = y_mapped.fillna(0).astype(int)
-        else:
-            df, eh_dryrun = balancear_com_pontos_controle(
-                df, caminho_controles=caminho_controles, permitir_dryrun_sintetico=permitir_dryrun_sintetico, semente=semente
+            procedencia_alvo = (
+                f"arquivo='{origem_dados}' + controles='{os.path.basename(caminho_controles) if caminho_controles else 'dry-run'}'"
             )
-            df = df.rename(columns={k: v for k, v in mapeamento.items() if k in df.columns})
-            df['bloco_loco'] = [identificar_bacia_real(lat, lon) for lat, lon in zip(df['Latitude'], df['Longitude'])]
-            y_series = df['Classe_Alvo_Binaria'].fillna(0).astype(int)
-    elif 'Tipologia_Feicao' in df.columns:
-        tip_lower = df['Tipologia_Feicao'].astype(str).str.lower()
-        if (tip_lower.str.contains('eros|severa|sulco|laminar')).all():
-            # Dataset possui apenas a classe positiva (focos de erosão) -> balancear
-            df, eh_dryrun = balancear_com_pontos_controle(
-                df, caminho_controles=caminho_controles, permitir_dryrun_sintetico=permitir_dryrun_sintetico, semente=semente
-            )
-            df = df.rename(columns={k: v for k, v in mapeamento.items() if k in df.columns})
-            df['bloco_loco'] = [identificar_bacia_real(lat, lon) for lat, lon in zip(df['Latitude'], df['Longitude'])]
-            y_series = df['Classe_Alvo_Binaria'].fillna(0).astype(int)
-        else:
-            y_series = tip_lower.apply(lambda t: 1 if ('eros' in t or 'severa' in t or 'sulco' in t) else 0)
 
     if y_series is None or len(y_series.unique()) < 2:
         df, eh_dryrun = balancear_com_pontos_controle(
@@ -450,6 +446,15 @@ def preparar_matriz_preditores(
         df = df.loc[:, ~df.columns.duplicated()]
         df['bloco_loco'] = [identificar_bacia_real(lat, lon) for lat, lon in zip(df['Latitude'], df['Longitude'])]
         y_series = df['Classe_Alvo_Binaria'].fillna(0).astype(int)
+        procedencia_alvo = (
+            f"procedencia_planilha='{origem_dados}' (Classe 1) + controles='{os.path.basename(caminho_controles) if caminho_controles else 'dry-run'}' (Classe 0)"
+        )
+
+    contagem_classes_alvo = {int(k): int(v) for k, v in y_series.value_counts().to_dict().items()}
+    print("=" * 70)
+    print(f"[PROCEDÊNCIA DECLARADA DO ALVO y (Regra 4)] {procedencia_alvo}")
+    print(f"[DISTRIBUIÇÃO DO ALVO y] Classe 1 (Erosão Laminar)={contagem_classes_alvo.get(1, 0)} | Classe 0 (Controle/SPD)={contagem_classes_alvo.get(0, 0)}")
+    print("=" * 70)
 
     df = df.loc[:, ~df.columns.duplicated()]
     blocos = df['bloco_loco']
@@ -785,7 +790,8 @@ def main():
         df,
         caminho_controles=args.controles,
         permitir_dryrun_sintetico=args.permitir_dryrun_sintetico,
-        semente=args.semente
+        semente=args.semente,
+        origem_dados=os.path.basename(args.dados)
     )
     resultado_cv = executar_spatial_kfold_loco(X, y, blocos, k_blocos=args.k_blocos, random_state=args.semente)
 
