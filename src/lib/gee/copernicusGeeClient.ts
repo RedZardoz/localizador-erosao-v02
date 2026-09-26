@@ -354,9 +354,7 @@ export async function medirSentinel2PontoGeeRest(
     if (bsiExposicao !== null && bsiExposicao > 0.10) janelasSoloNu++;
     if (bsiMed > 0.02 || ndviMed < 0.38) janelasSoloNu++;
     if (bsiVigor !== null && bsiVigor > 0.0) janelasSoloNu++;
-    const freqReal = Number(
-      Math.min(0.95, Math.max(0.05, janelasSoloNu / 3 + Math.max(0, bsiExposicao ?? 0) * 0.35)).toFixed(2)
-    );
+    const freqReal = Number((janelasSoloNu / 3).toFixed(2));
 
     let b2Final = b2_50,
       b4Final = b4_50,
