@@ -130,6 +130,13 @@ export const MapViewer: React.FC = () => {
     );
     map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
 
+    // Captura silenciosa de eventos de tile/rede do MapLibre GL encaminhando para Governança & Sistema
+    map.on("error", (ev: any) => {
+      const msg = ev?.error?.message || ev?.message || "";
+      if (!msg || /abort|cancel|tile|fetch/i.test(msg)) return;
+      useSarelStore.getState().adicionarLog("warning", "MapLibre-WebGL", msg);
+    });
+
     map.on("load", () => {
       // 1. Fonte e camadas de Macrobacias Hidrográficas do Paraná
       map.addSource("parana-basins-source", {

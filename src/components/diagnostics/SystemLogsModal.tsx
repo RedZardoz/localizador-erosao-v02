@@ -13,10 +13,13 @@ import {
 import { useSarelStore } from "@/store/useSarelStore";
 
 export const SystemLogsModal: React.FC = () => {
-  const { modalAtiva, setModalAtiva, systemLogs, credenciais } = useSarelStore();
+  const { modalAtiva, setModalAtiva, systemLogs, credenciais, limparLogs } = useSarelStore();
   const [filtroSeveridade, setFiltroSeveridade] = useState<string>("todas");
 
   if (modalAtiva !== "diagnostics") return null;
+
+  const totalErros = systemLogs.filter((l) => l.severity === "error").length;
+  const totalAvisos = systemLogs.filter((l) => l.severity === "warning").length;
 
   const logsFiltrados = systemLogs.filter((l) =>
     filtroSeveridade === "todas" ? true : l.severity === filtroSeveridade
@@ -31,10 +34,10 @@ export const SystemLogsModal: React.FC = () => {
             <Activity className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                Diagnóstico &amp; Auditoria de Integridade do Sistema
+                Governança &amp; Sistema — Relatório de Erros e Diagnóstico
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Monitoramento em tempo real de conexões oficiais e guardas antissintéticos
+                Centralização de erros de execução, conexões oficiais (GEE/Embrapa) e guardas antissintéticos
               </p>
             </div>
           </div>
@@ -47,7 +50,7 @@ export const SystemLogsModal: React.FC = () => {
         </div>
 
         {/* Resumo de Estado */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-950 grid grid-cols-3 gap-2 text-xs">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-950 grid grid-cols-4 gap-2 text-xs">
           <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-2">
             <div
               className={`w-2.5 h-2.5 rounded-full ${
@@ -77,25 +80,50 @@ export const SystemLogsModal: React.FC = () => {
               <span className="font-bold text-slate-900 dark:text-white">Local (SQLite)</span>
             </div>
           </div>
+
+          <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-2">
+            <AlertCircle className={`w-4 h-4 ${totalErros > 0 ? "text-rose-600" : "text-emerald-600"}`} />
+            <div>
+              <span className="text-[10px] text-slate-400 block font-sans">Relatório de Erros</span>
+              <span className="font-bold text-slate-900 dark:text-white">
+                {totalErros} {totalErros === 1 ? "Erro" : "Erros"} / {totalAvisos} Avisos
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Filtros de Severidade */}
         <div className="px-5 py-2.5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 text-xs">
-          <span className="font-semibold text-slate-600 dark:text-slate-400">
-            Eventos Registrados ({logsFiltrados.length})
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-slate-600 dark:text-slate-400">
+              Eventos Registrados ({logsFiltrados.length})
+            </span>
+            <button
+              onClick={limparLogs}
+              className="px-2 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1 cursor-pointer transition-colors"
+              title="Limpar histórico de erros e eventos do sistema"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Limpar Relatório
+            </button>
+          </div>
           <div className="flex gap-1">
-            {["todas", "info", "warning", "error"].map((sev) => (
+            {[
+              { id: "todas", label: `Todas (${systemLogs.length})` },
+              { id: "error", label: `Erros (${totalErros})` },
+              { id: "warning", label: `Avisos (${totalAvisos})` },
+              { id: "info", label: "Info" },
+            ].map((sev) => (
               <button
-                key={sev}
-                onClick={() => setFiltroSeveridade(sev)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold capitalize transition-all cursor-pointer ${
-                  filtroSeveridade === sev
+                key={sev.id}
+                onClick={() => setFiltroSeveridade(sev.id)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  filtroSeveridade === sev.id
                     ? "bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900"
                     : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
                 }`}
               >
-                {sev}
+                {sev.label}
               </button>
             ))}
           </div>
@@ -104,33 +132,39 @@ export const SystemLogsModal: React.FC = () => {
         {/* Lista de Logs (Terminal Console em Fundo Negro) */}
         <div className="p-4 bg-white overflow-y-auto custom-scrollbar flex-1">
           <div className="p-3.5 rounded-xl bg-[#050811] border-2 border-slate-800 space-y-2 font-mono text-xs shadow-inner">
-            {logsFiltrados.map((l) => (
-              <div
-                key={l.id}
-                className={`p-2.5 rounded-lg border flex items-start gap-2.5 ${
-                  l.severity === "error"
-                    ? "bg-rose-950/60 border-rose-800 text-rose-200"
-                    : l.severity === "warning"
-                    ? "bg-amber-950/60 border-amber-800 text-amber-200"
-                    : "bg-slate-900/90 border-slate-800 text-emerald-300"
-                }`}
-              >
-                {l.severity === "error" ? (
-                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                ) : l.severity === "warning" ? (
-                  <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                ) : (
-                  <Info className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
-                )}
-                <div className="flex-1 space-y-0.5">
-                  <div className="flex items-center justify-between text-[10px] text-slate-400">
-                    <span className="font-bold uppercase tracking-wider text-cyan-300">{l.component}</span>
-                    <span>{new Date(l.timestamp).toLocaleTimeString("pt-BR")}</span>
-                  </div>
-                  <p className="leading-snug text-slate-100">{l.message}</p>
-                </div>
+            {logsFiltrados.length === 0 ? (
+              <div className="p-6 text-center text-slate-400">
+                Nenhum evento ou erro registrado para este filtro.
               </div>
-            ))}
+            ) : (
+              logsFiltrados.map((l) => (
+                <div
+                  key={l.id}
+                  className={`p-2.5 rounded-lg border flex items-start gap-2.5 ${
+                    l.severity === "error"
+                      ? "bg-rose-950/60 border-rose-800 text-rose-200"
+                      : l.severity === "warning"
+                      ? "bg-amber-950/60 border-amber-800 text-amber-200"
+                      : "bg-slate-900/90 border-slate-800 text-emerald-300"
+                  }`}
+                >
+                  {l.severity === "error" ? (
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  ) : l.severity === "warning" ? (
+                    <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  ) : (
+                    <Info className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                  )}
+                  <div className="flex-1 space-y-0.5">
+                    <div className="flex items-center justify-between text-[10px] text-slate-400">
+                      <span className="font-bold uppercase tracking-wider text-cyan-300">{l.component}</span>
+                      <span>{new Date(l.timestamp).toLocaleTimeString("pt-BR")}</span>
+                    </div>
+                    <p className="leading-snug text-slate-100 break-words">{l.message}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

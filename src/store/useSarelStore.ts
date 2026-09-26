@@ -137,6 +137,7 @@ interface SarelStoreState {
     message: string,
     details?: Record<string, unknown>
   ) => void;
+  limparLogs: () => void;
 }
 
 // Malha oficial do Estado do Paraná (IBGE 41) como área territorial de referência
@@ -507,19 +508,38 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
   ],
 
   adicionarLog: (severity, component, message, details) =>
-    set((state) => ({
+    set((state) => {
+      // Evita duplicar a mesma mensagem consecutiva no relatório
+      if (state.systemLogs[0]?.message === message && state.systemLogs[0]?.component === component) {
+        return state;
+      }
+      return {
+        systemLogs: [
+          {
+            id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            timestamp: new Date().toISOString(),
+            severity,
+            component,
+            message,
+            details,
+          },
+          ...state.systemLogs.slice(0, 149),
+        ],
+      };
+    }),
+
+  limparLogs: () =>
+    set({
       systemLogs: [
         {
-          id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          id: `log-clear-${Date.now()}`,
           timestamp: new Date().toISOString(),
-          severity,
-          component,
-          message,
-          details,
+          severity: "info",
+          component: "Governança & Sistema",
+          message: "Relatório de erros e eventos limpo pelo pesquisador.",
         },
-        ...state.systemLogs.slice(0, 99),
       ],
-    })),
+    }),
 }));
 
 /**
