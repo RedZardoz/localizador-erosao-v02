@@ -91,11 +91,12 @@ export function PainelCampanha() {
 
   const baixarTemplateKoboCsv = () => {
     if (pontosAtivos.length === 0) return;
-    const hoje = new Date().toISOString().split("T")[0];
     const cabecalho = "codigoPonto,classe,observador,data_observacao,latitude,longitude,confianca,cego";
-    const linhas = pontosAtivos.map((p, i) => {
-      const classeSugestao = i % 2 === 0 ? "erosao" : "controle";
-      return `${p.codigo},${classeSugestao},Equipe_Campo_PPGTCA,${hoje},${p.latitude.toFixed(6)},${p.longitude.toFixed(6)},alta,true`;
+    // Regra 4 & T9: o template de campo jamais pré-preenche classe ("erosao"/"controle"),
+    // observador, data, confiança ou flag de protocolo cego. Linhas não editadas em campo
+    // permanecem com classe vazia e são estritamente rejeitadas por ingestarSubmissoesKobo.
+    const linhas = pontosAtivos.map((p) => {
+      return `${p.codigo},,,,${p.latitude.toFixed(6)},${p.longitude.toFixed(6)},,`;
     });
     const csv = "\uFEFF" + [cabecalho, ...linhas].join("\r\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

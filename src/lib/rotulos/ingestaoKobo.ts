@@ -108,9 +108,16 @@ export function ingestarSubmissoesKobo(
     }
 
     const classe = String(reg.classe || reg.classe_erosao || "").trim();
+    if (!classe) {
+      rejeitados.push({
+        registro: reg,
+        motivo: `Ponto '${codigo}' sem classe de campo preenchida (linha de template não inspecionada in-situ — Regra 4).`,
+      });
+      continue;
+    }
     const observador = String(reg.observador || reg.entrevistador || "").trim();
     const observadoEm = String(reg.observadoEm || reg.data_observacao || "").trim();
-    const cego = reg.cego === false ? false : true;
+    const cego = reg.cego === false || String(reg.cego).trim().toLowerCase() === "false" ? false : true;
 
     const rotulo: Rotulo = {
       classe,
@@ -118,7 +125,7 @@ export function ingestarSubmissoesKobo(
       observador,
       observadoEm,
       cego,
-      confianca: reg.confianca as "alta" | "media" | "baixa" | undefined,
+      confianca: reg.confianca ? (String(reg.confianca).trim() as "alta" | "media" | "baixa") : undefined,
       observacoes: reg.observacoes ? String(reg.observacoes) : undefined,
     };
 

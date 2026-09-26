@@ -172,6 +172,53 @@ describe("Rotulagem, Concordância e Matriz de Treino (Fase 6 — SAREL)", () =>
       expect(res.aceitos[0].desvioAceitavel).toBe(false);
       expect(res.avisosQualidade[0]).toContain("excede tolerância máxima P03 de 25 m");
     });
+
+    it("rejeita linhas de template Kobo não editadas em campo (classe vazia ou sentinela — T9, Regra 4)", () => {
+      const registros = [
+        {
+          codigoPonto: "P01",
+          classe: "",
+          observador: "",
+          data_observacao: "",
+          latitude: "-25.000000",
+          longitude: "-53.000000",
+          confianca: "",
+          cego: "",
+        },
+        {
+          codigoPonto: "P02",
+          classe: "",
+          observador: "Equipe_Campo_PPGTCA",
+          data_observacao: "2026-09-26",
+          latitude: "-25.000000",
+          longitude: "-53.000000",
+          confianca: "alta",
+          cego: true,
+        },
+        {
+          codigoPonto: "P03",
+          classe: "PREENCHER_EM_CAMPO",
+          observador: "Equipe_Campo_PPGTCA",
+          data_observacao: "2026-09-26",
+          latitude: "-25.000000",
+          longitude: "-53.000000",
+          confianca: "alta",
+          cego: true,
+        },
+      ];
+      const esperadas = {
+        P01: { codigo: "P01", latitude: -25.0, longitude: -53.0 },
+        P02: { codigo: "P02", latitude: -25.0, longitude: -53.0 },
+        P03: { codigo: "P03", latitude: -25.0, longitude: -53.0 },
+      };
+
+      const res = ingestarSubmissoesKobo(registros, esperadas);
+      expect(res.aceitos).toHaveLength(0);
+      expect(res.rejeitados).toHaveLength(3);
+      expect(res.rejeitados[0].motivo).toContain("sem classe de campo preenchida");
+      expect(res.rejeitados[1].motivo).toContain("sem classe de campo preenchida");
+      expect(res.rejeitados[2].motivo).toContain("inválida ou sentinela não preenchida");
+    });
   });
 
   describe("Ingestão de Validação por Drone (ingestaoDrone.ts)", () => {
