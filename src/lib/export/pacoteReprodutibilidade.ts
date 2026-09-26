@@ -67,6 +67,45 @@ export async function calcularSha256(conteudo: string): Promise<string> {
   }
 }
 
+function formatarLinhaCensoProveniencia(
+  rotulo: string,
+  pontos: PontoAmostral[],
+  extrator: (p: PontoAmostral) => { estado: string; causa?: string } | undefined,
+  notaExtra?: string
+): string {
+  const total = pontos.length;
+  let disponiveis = 0;
+  const contagensEstado: Record<string, number> = {};
+  const contagensCausa: Record<string, number> = {};
+
+  for (const p of pontos) {
+    const prov = extrator(p);
+    if (!prov || prov.estado === "indisponivel") {
+      const causa = prov?.causa ?? "nao-informado";
+      if (!contagensCausa[causa]) contagensCausa[causa] = 0;
+      contagensCausa[causa] += 1;
+    } else {
+      disponiveis += 1;
+      if (!contagensEstado[prov.estado]) contagensEstado[prov.estado] = 0;
+      contagensEstado[prov.estado] += 1;
+    }
+  }
+
+  const segmentos: string[] = [];
+  for (const [est, qtd] of Object.entries(contagensEstado)) {
+    segmentos.push(`${est}=${qtd}`);
+  }
+  for (const [causa, qtd] of Object.entries(contagensCausa)) {
+    segmentos.push(`indisponivel: ${causa}=${qtd}`);
+  }
+  if (notaExtra && disponiveis === 0) {
+    segmentos.push(notaExtra);
+  }
+
+  const sufixo = segmentos.length > 0 ? ` | ${segmentos.join(" | ")}` : "";
+  return `# ${rotulo}: ${disponiveis}/${total} disponiveis${sufixo}`;
+}
+
 /**
  * Gera o Arquivo 01: Matriz de Preditores Geoespaciais para Treinamento (CSV).
  */
@@ -78,6 +117,26 @@ export function gerarCsvMatrizTreinamento(pontos: PontoAmostral[]): string {
   linhasCsv.push(`# ARQUIVO 01: Matriz de Preditores Geoespaciais para Treinamento do Modelo Supervisionado`);
   linhasCsv.push(`# Princípios FAIR (Wilkinson et al., 2016) | Compêndio de Pesquisa (Marwick et al., 2018)`);
   linhasCsv.push(`# Emissão: ${new Date().toISOString()} | Total de Amostras: ${pontos.length}`);
+  linhasCsv.push(`# CENSO DE PROVENIENCIA (Regra 3) — contagem sobre ${pontos.length} pontos emitidos`);
+  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_R", pontos, (p) => p.linhaDeBase?.fatorR, "D13"));
+  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_K", pontos, (p) => p.linhaDeBase?.fatorK));
+  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_LS", pontos, (p) => p.linhaDeBase?.fatorLS, "D15"));
+  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_C", pontos, (p) => p.linhaDeBase?.fatorC));
+  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_P", pontos, (p) => p.linhaDeBase?.fatorP));
+  linhasCsv.push(
+    formatarLinhaCensoProveniencia(
+      "RUSLE_Perda_Solo_A",
+      pontos,
+      (p) => p.linhaDeBase?.perdaSolo,
+      "retido pelo Invariante 1"
+    )
+  );
+  linhasCsv.push(formatarLinhaCensoProveniencia("Elevacao_m", pontos, (p) => p.terreno?.elevacao));
+  linhasCsv.push(formatarLinhaCensoProveniencia("Declividade_pct", pontos, (p) => p.terreno?.declividadePct));
+  linhasCsv.push(formatarLinhaCensoProveniencia("Curvatura_Perfil", pontos, (p) => p.terreno?.curvaturaPerfil));
+  linhasCsv.push(formatarLinhaCensoProveniencia("Curvatura_Plana", pontos, (p) => p.terreno?.curvaturaPlana));
+  linhasCsv.push(formatarLinhaCensoProveniencia("Acumulo_Fluxo", pontos, (p) => p.terreno?.acumuloFluxo));
+  linhasCsv.push(formatarLinhaCensoProveniencia("TWI", pontos, (p) => p.terreno?.twi));
   linhasCsv.push(``);
 
   const colunas = [
@@ -132,10 +191,10 @@ export function gerarCsvMatrizTreinamento(pontos: PontoAmostral[]): string {
       Longitude: Number(p.longitude.toFixed(6)),
       Latitude_DMS: latDms,
       Longitude_DMS: lngDms,
-      Municipio: valorOuNulo(p.localizacao?.municipio) ?? "não determinado",
+      Municipio: valorOuNulo(p.localizacao?.municipio) ?? "",
       Codigo_IBGE: valorOuNulo(p.localizacao?.codigoIbge) ?? "",
-      Bacia_Hidrografica: valorOuNulo(p.localizacao?.bacia) ?? "Paraná 3",
-      Bloco_Espacial: p.blocoEspacial ?? "bloco_central",
+      Bacia_Hidrografica: valorOuNulo(p.localizacao?.bacia) ?? "",
+      Bloco_Espacial: p.blocoEspacial ?? "",
       Estrato_ID: p.estratoId,
       Elevacao_m: valorOuNulo(p.terreno?.elevacao) ?? "",
       Declividade_pct: valorOuNulo(p.terreno?.declividadePct) ?? "",
@@ -144,13 +203,13 @@ export function gerarCsvMatrizTreinamento(pontos: PontoAmostral[]): string {
       Curvatura_Plana: valorOuNulo(p.terreno?.curvaturaPlana) ?? "",
       Acumulo_Fluxo: valorOuNulo(p.terreno?.acumuloFluxo) ?? "",
       TWI: valorOuNulo(p.terreno?.twi) ?? "",
-      Ordem_Solo: valorOuNulo(p.solo?.ordem) ?? "Latossolo Vermelho",
-      Erodibilidade_Classe: valorOuNulo(p.solo?.erodibilidadeClasse) ?? "Baixa",
-      RUSLE_Fator_K: valorOuNulo(p.linhaDeBase?.fatorK) ?? "0.0117",
-      RUSLE_Fator_R: valorOuNulo(p.linhaDeBase?.fatorR) ?? "7500",
-      RUSLE_Fator_LS: valorOuNulo(p.linhaDeBase?.fatorLS) ?? "1.45",
-      RUSLE_Fator_C: valorOuNulo(p.linhaDeBase?.fatorC) ?? "0.12",
-      RUSLE_Fator_P: valorOuNulo(p.linhaDeBase?.fatorP) ?? "1.0",
+      Ordem_Solo: valorOuNulo(p.solo?.ordem) ?? "",
+      Erodibilidade_Classe: valorOuNulo(p.solo?.erodibilidadeClasse) ?? "",
+      RUSLE_Fator_K: valorOuNulo(p.linhaDeBase?.fatorK) ?? "",
+      RUSLE_Fator_R: valorOuNulo(p.linhaDeBase?.fatorR) ?? "",
+      RUSLE_Fator_LS: valorOuNulo(p.linhaDeBase?.fatorLS) ?? "",
+      RUSLE_Fator_C: valorOuNulo(p.linhaDeBase?.fatorC) ?? "",
+      RUSLE_Fator_P: valorOuNulo(p.linhaDeBase?.fatorP) ?? "",
       Precip_Acum_30d_mm: valorOuNulo(p.temporal?.D?.chuva?.precipAcum30d ?? p.temporal?.P?.chuva?.precipAcum30d) ?? "",
       Precip_Acum_90d_mm: valorOuNulo(p.temporal?.D?.chuva?.precipAcum90d ?? p.temporal?.P?.chuva?.precipAcum90d) ?? "",
       I30_Max_mm_h: valorOuNulo(p.temporal?.D?.chuva?.i30Max ?? p.temporal?.P?.chuva?.i30Max) ?? "",
@@ -536,15 +595,35 @@ def auditar_modelo():
         "Elevacao_m", "Declividade_pct", "Curvatura_Perfil", "Curvatura_Plana",
         "Acumulo_Fluxo", "TWI", "RUSLE_Fator_K", "RUSLE_Fator_R"
     ]
-    # Filtrar colunas existentes no dataframe
+    # Filtrar colunas existentes no dataframe e converter sem imputação (Regra 1)
+    # O XGBClassifier trata NaN nativamente por aprendizado da direção de ausência (missing=np.nan é o padrão)
+    # Referência: Chen & Guestrin (2016), XGBoost: A Scalable Tree Boosting System, KDD 2016, seção 3.4 "Sparsity-aware Split Finding"
     cols_existentes = [c for c in colunas_preditoras if c in df.columns]
+    X_bruto = df[cols_existentes].apply(pd.to_numeric, errors="coerce")
 
-    # Preencher NaN com média segura da coluna para a modelagem
-    X = df[cols_existentes].apply(pd.to_numeric, errors="coerce").fillna(0.0)
+    preditores_ativos = []
+    for col in cols_existentes:
+        validas = int(X_bruto[col].notna().sum())
+        if validas == 0:
+            print(f"  [RETIDA] {col}: 0/{len(df)} observações válidas — excluída dos preditores (indisponível na origem).")
+        else:
+            pct_ausentes = 100.0 * (len(df) - validas) / len(df) if len(df) > 0 else 0.0
+            print(f"  {col}: {validas}/{len(df)} válidas ({pct_ausentes:.1f}% ausentes) — NaN preservado, tratado por sparsity-aware split.")
+            preditores_ativos.append(col)
+
+    if len(preditores_ativos) < 3:
+        print(f"[ABORTO] Restaram apenas {len(preditores_ativos)} preditores válidos ({preditores_ativos}) após o descarte (< 3 mínimos exigidos). Modelagem interrompida.")
+        return
+
+    if "Bloco_Espacial" not in df.columns or df["Bloco_Espacial"].isna().any() or (df["Bloco_Espacial"].astype(str).str.strip() == "").any():
+        print("[ABORTO] Coluna 'Bloco_Espacial' ausente ou contendo células vazias. Validação cruzada espacial interrompida (proibido agrupar em bloco único).")
+        return
+
+    X = X_bruto[preditores_ativos]
     y = df["Classe_Alvo_Binaria"].astype(int)
-    grupos = df["Bloco_Espacial"] if "Bloco_Espacial" in df.columns else np.zeros(len(df))
+    grupos = df["Bloco_Espacial"].astype(str).str.strip()
 
-    print(f"  Preditores selecionados para treino: {cols_existentes}")
+    print(f"  Preditores selecionados para treino ({len(preditores_ativos)}): {preditores_ativos}")
     print(f"  Distribuição de classes: 0={sum(y==0)}, 1={sum(y==1)}\n")
 
     print("=" * 70)

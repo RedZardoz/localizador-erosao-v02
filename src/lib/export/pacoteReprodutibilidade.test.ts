@@ -237,4 +237,44 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
     expect(zip.file("05_script_auditoria_reproduzivel.py")).not.toBeNull();
     expect(zip.file("06_manifesto_integridade_sha256.txt")).not.toBeNull();
   });
+
+  it("não deve fabricar fatores RUSLE nem solo quando linhaDeBase e solo forem indisponíveis e deve emitir censo de proveniência (Regra 1 e Regra 3)", () => {
+    const base = criarPontoTeste("1", -25.14, -53.84, "laminar_ativa");
+    const pontoIndisponivel: PontoAmostral = {
+      ...base,
+      solo: {
+        ordem: { estado: "indisponivel", causa: "sem-cobertura", motivo: "Sem carta pedológica" },
+        subOrdem: { estado: "indisponivel", causa: "sem-cobertura", motivo: "Sem carta pedológica" },
+        grandeGrupo: { estado: "indisponivel", causa: "sem-cobertura", motivo: "Sem carta pedológica" },
+        tipoUnidade: { estado: "indisponivel", causa: "sem-cobertura", motivo: "Sem carta pedológica" },
+        confiancaPedologica: "indisponivel",
+        erodibilidadeClasse: { estado: "indisponivel", causa: "sem-cobertura", motivo: "Sem carta pedológica" },
+      },
+      linhaDeBase: {
+        fatorR: { estado: "indisponivel", causa: "decisao-pendente", motivo: "Aguarda D13" },
+        fatorK: { estado: "indisponivel", causa: "insuficiente", motivo: "Sem erodibilidade" },
+        fatorLS: { estado: "indisponivel", causa: "decisao-pendente", motivo: "Aguarda D15" },
+        fatorC: { estado: "indisponivel", causa: "sem-cobertura", motivo: "Nuvem" },
+        fatorP: { estado: "indisponivel", causa: "insuficiente", motivo: "Não informado" },
+        perdaSolo: { estado: "indisponivel", causa: "decisao-pendente", motivo: "Retido Invariante 1" },
+        memoriaCalculo: null,
+      },
+    };
+
+    const csv = gerarCsvMatrizTreinamento([pontoIndisponivel]);
+    const linhas = csv.replace(/^\uFEFF/, "").split(/\r?\n/);
+    const linhasDados = linhas.filter((l) => l.trim().length > 0 && !l.startsWith("#") && !l.startsWith("Ponto_ID,"));
+
+    expect(linhasDados).toHaveLength(1);
+    const linhaDado = linhasDados[0];
+
+    expect(linhaDado).not.toContain("7500");
+    expect(linhaDado).not.toContain("1.45");
+    expect(linhaDado).not.toContain("0.0117");
+    expect(linhaDado).not.toContain("0.12");
+    expect(linhaDado).not.toContain("Latossolo Vermelho");
+    expect(linhaDado).not.toContain("Baixa");
+
+    expect(csv).toContain("RUSLE_Fator_R: 0/1 disponiveis");
+  });
 });
