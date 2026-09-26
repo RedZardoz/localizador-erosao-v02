@@ -181,11 +181,13 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
   });
 
   it("deve gerar o Arquivo 04 (Datasheet JSON) em conformidade com Gebru et al. (2021) e FAIR", () => {
-    const jsonStr = gerarJsonDatasheetMetadados(150);
+    const jsonStr = gerarJsonDatasheetMetadados(150, 120);
     const data = JSON.parse(jsonStr);
 
     expect(data.projeto.nome).toContain("SAREL");
     expect(data.projeto.programa).toContain("PPGTCA");
+    expect(data.projeto.totalAmostrasRecebidas).toBe(150);
+    expect(data.projeto.totalAmostrasTreinamento).toBe(120);
     expect(data.conformidadeCientifica.principiosFAIR.findable).toBeDefined();
     expect(data.conformidadeCientifica.datasheetForDatasets.referencia).toContain("Gebru et al. (2021)");
     expect(data.equipamentoVantReferencia.modelo).toContain("Spectral 2");
@@ -342,5 +344,27 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
     expect(linhasDados).toHaveLength(0);
     expect(csv).toContain("# HELD-OUT DRONE (D16): 1 pontos excluidos");
     expect(() => assegurarSegregacaoTreino("drone")).toThrow(/held-out/);
+  });
+
+  it("T1 (D4): coerência entre artefatos — totalAmostrasTreinamento do Arquivo 04 é idêntico ao número de linhas de dados emitidas no Arquivo 01 sob rotulagem parcial", async () => {
+    const p1 = criarPontoTeste("1", -25.14, -53.84, "erosao");
+    const p2 = criarPontoTeste("2", -25.15, -53.85, "ausente");
+    const p3: PontoAmostral = { ...criarPontoTeste("3", -25.16, -53.86, "erosao"), rotulo: undefined };
+    const p4: PontoAmostral = { ...criarPontoTeste("4", -25.17, -53.87, "ausente"), rotulo: undefined };
+    const pontos = [p1, p2, p3, p4];
+    // Rotulagem parcial: apenas p1 e p2 consolidados
+    const mapaParcial = extrairMapaRotulos([p1, p2]);
+
+    const pacote = await gerarConteudoPacoteReprodutibilidade(pontos, mapaParcial);
+    const linhasArquivo01 = pacote.matrizTreinamentoCsv
+      .replace(/^\uFEFF/, "")
+      .split(/\r?\n/)
+      .filter((l) => l.trim().length > 0 && !l.startsWith("#") && !l.startsWith("Ponto_ID,"));
+
+    const datasheet = JSON.parse(pacote.datasheetJson);
+
+    expect(datasheet.projeto.totalAmostrasRecebidas).toBe(4);
+    expect(datasheet.projeto.totalAmostrasTreinamento).toBe(2);
+    expect(datasheet.projeto.totalAmostrasTreinamento).toBe(linhasArquivo01.length);
   });
 });

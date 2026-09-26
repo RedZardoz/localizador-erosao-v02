@@ -488,7 +488,10 @@ export function gerarCsvConfrontoRadiometrico(): string {
 /**
  * Gera o Arquivo 04: Datasheet e Dicionário de Metadados (JSON).
  */
-export function gerarJsonDatasheetMetadados(totalPontos: number): string {
+export function gerarJsonDatasheetMetadados(
+  totalAmostrasRecebidas: number,
+  totalAmostrasTreinamento: number
+): string {
   const datasheet = {
     projeto: {
       nome: "SAREL — Sistema Automatizado de Reconhecimento de Risco de Erosão Laminar",
@@ -498,7 +501,8 @@ export function gerarJsonDatasheetMetadados(totalPontos: number): string {
       versaoPlataforma: "2.0.0",
       licencaDados: "Creative Commons Attribution 4.0 International (CC-BY 4.0)",
       dataEmissao: new Date().toISOString(),
-      totalAmostrasTreinamento: totalPontos,
+      totalAmostrasRecebidas,
+      totalAmostrasTreinamento,
     },
     conformidadeCientifica: {
       principiosFAIR: {
@@ -774,10 +778,11 @@ export async function gerarConteudoPacoteReprodutibilidade(
   assegurarApenasPontosReais(pontos, "geração do pacote de reprodutibilidade da dissertação");
 
   // 2. Geração dos 5 primeiros arquivos
+  const resultadoMatriz = montarMatrizTreino(pontos, rotulosConsolidados, { modeloJanela: "D" });
   const f1_matrizTreino = gerarCsvMatrizTreinamento(pontos, rotulosConsolidados);
   const f2_validacaoDrone = gerarCsvValidacaoDroneHeldOut();
   const f3_confrontoRad = gerarCsvConfrontoRadiometrico();
-  const f4_datasheet = gerarJsonDatasheetMetadados(pontos.length);
+  const f4_datasheet = gerarJsonDatasheetMetadados(pontos.length, resultadoMatriz.totalAmostrasTreino);
   const f5_scriptPy = gerarScriptPythonAuditoria();
 
   // 3. Cálculo dos Hashes SHA-256
