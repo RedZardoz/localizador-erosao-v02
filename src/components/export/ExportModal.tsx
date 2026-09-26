@@ -25,7 +25,7 @@ import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
 import { valorOuNulo } from "@/types/proveniencia";
 
 export const ExportModal: React.FC = () => {
-  const { modalAtiva, setModalAtiva, areas } = useSarelStore();
+  const { modalAtiva, setModalAtiva, areas, rotulosConsolidados } = useSarelStore();
   const pontosVisiveis = usePontosVisiveis();
 
   const [exportando, setExportando] = useState<string | null>(null);
@@ -92,7 +92,7 @@ export const ExportModal: React.FC = () => {
     }
     setExportando("reprodutibilidade");
     try {
-      const blob = await gerarPacoteReprodutibilidadeZip(pontosVisiveis);
+      const blob = await gerarPacoteReprodutibilidadeZip(pontosVisiveis, rotulosConsolidados);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

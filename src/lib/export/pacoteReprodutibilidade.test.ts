@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import JSZip from "jszip";
 import type { PontoAmostral } from "@/types/ponto";
+import type { RotuloConsolidado } from "@/types/rotulo";
+import { assegurarSegregacaoTreino } from "@/lib/rotulos/ingestaoDrone";
 import {
   calcularSha256,
   gerarCsvMatrizTreinamento,
@@ -120,6 +122,16 @@ function criarPontoTeste(id: string, lat: number, lng: number, classe: string): 
   };
 }
 
+function extrairMapaRotulos(pontos: PontoAmostral[]): Record<string, RotuloConsolidado> {
+  const mapa: Record<string, RotuloConsolidado> = {};
+  for (const p of pontos) {
+    if (p.rotulo) {
+      mapa[p.codigo] = p.rotulo;
+    }
+  }
+  return mapa;
+}
+
 describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", () => {
   it("deve calcular o hash criptográfico SHA-256 de forma determinística", async () => {
     const texto = "SAREL-PPGTCA-2026";
@@ -134,11 +146,11 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
 
   it("deve gerar o Arquivo 01 (Matriz de Treinamento CSV) com BOM e colunas esperadas", () => {
     const pontos = [
-      criarPontoTeste("1", -25.14, -53.84, "laminar_ativa"),
+      criarPontoTeste("1", -25.14, -53.84, "erosao"),
       criarPontoTeste("2", -25.15, -53.85, "ausente"),
     ];
 
-    const csv = gerarCsvMatrizTreinamento(pontos);
+    const csv = gerarCsvMatrizTreinamento(pontos, extrairMapaRotulos(pontos));
     expect(csv.startsWith("\uFEFF")).toBe(true);
     expect(csv).toContain("Ponto_ID,Codigo,Latitude,Longitude");
     expect(csv).toContain("RUSLE_Fator_K");
@@ -201,8 +213,8 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
   });
 
   it("deve gerar o conteúdo completo dos 6 arquivos e verificar coerência do manifesto", async () => {
-    const pontos = [criarPontoTeste("1", -25.14, -53.84, "laminar_ativa")];
-    const pacote = await gerarConteudoPacoteReprodutibilidade(pontos);
+    const pontos = [criarPontoTeste("1", -25.14, -53.84, "erosao")];
+    const pacote = await gerarConteudoPacoteReprodutibilidade(pontos, extrairMapaRotulos(pontos));
 
     expect(pacote.matrizTreinamentoCsv).toBeDefined();
     expect(pacote.validacaoDroneCsv).toBeDefined();
@@ -218,11 +230,11 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
 
   it("deve gerar um arquivo ZIP válido contendo os 6 arquivos", async () => {
     const pontos = [
-      criarPontoTeste("1", -25.14, -53.84, "laminar_ativa"),
+      criarPontoTeste("1", -25.14, -53.84, "erosao"),
       criarPontoTeste("2", -25.15, -53.85, "ausente"),
     ];
 
-    const blob = await gerarPacoteReprodutibilidadeZip(pontos);
+    const blob = await gerarPacoteReprodutibilidadeZip(pontos, extrairMapaRotulos(pontos));
     expect(blob).toBeDefined();
     expect(blob.size).toBeGreaterThan(1000);
 
@@ -239,7 +251,7 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
   });
 
   it("não deve fabricar fatores RUSLE nem solo quando linhaDeBase e solo forem indisponíveis e deve emitir censo de proveniência (Regra 1 e Regra 3)", () => {
-    const base = criarPontoTeste("1", -25.14, -53.84, "laminar_ativa");
+    const base = criarPontoTeste("1", -25.14, -53.84, "erosao");
     const pontoIndisponivel: PontoAmostral = {
       ...base,
       solo: {
@@ -261,7 +273,7 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
       },
     };
 
-    const csv = gerarCsvMatrizTreinamento([pontoIndisponivel]);
+    const csv = gerarCsvMatrizTreinamento([pontoIndisponivel], extrairMapaRotulos([pontoIndisponivel]));
     const linhas = csv.replace(/^\uFEFF/, "").split(/\r?\n/);
     const linhasDados = linhas.filter((l) => l.trim().length > 0 && !l.startsWith("#") && !l.startsWith("Ponto_ID,"));
 
@@ -276,5 +288,59 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
     expect(linhaDado).not.toContain("Baixa");
 
     expect(csv).toContain("RUSLE_Fator_R: 0/1 disponiveis");
+  });
+
+  it("A1: ponto sem rótulo em rotulosConsolidados não aparece nas linhas de dados do CSV e o censo registra a exclusão (Regra 4)", () => {
+    const pontoSemRotulo: PontoAmostral = {
+      ...criarPontoTeste("1", -25.14, -53.84, "erosao"),
+      rotulo: undefined,
+    };
+
+    const csv = gerarCsvMatrizTreinamento([pontoSemRotulo], {});
+    const linhas = csv.replace(/^\uFEFF/, "").split(/\r?\n/);
+    const linhasDados = linhas.filter((l) => l.trim().length > 0 && !l.startsWith("#") && !l.startsWith("Ponto_ID,"));
+
+    expect(linhasDados).toHaveLength(0);
+    expect(csv).toContain("# EXCLUSOES DE ROTULAGEM (Regra 4) — 1 pontos recebidos, 0 emitidos");
+    expect(csv).toContain("# sem rotulagem=1 | divergencia sem desempate=0");
+  });
+
+  it("A3: ponto com rotulo.final.classe = 'severa' emite Classe_Alvo_Binaria = 1 conforme a regra canônica (montagem.ts)", () => {
+    const pontoSevera = criarPontoTeste("1", -25.14, -53.84, "severa");
+    const csv = gerarCsvMatrizTreinamento([pontoSevera], extrairMapaRotulos([pontoSevera]));
+    const linhas = csv.replace(/^\uFEFF/, "").split(/\r?\n/);
+    const linhasDados = linhas.filter((l) => l.trim().length > 0 && !l.startsWith("#") && !l.startsWith("Ponto_ID,"));
+
+    expect(linhasDados).toHaveLength(1);
+    expect(linhasDados[0].endsWith(",severa,campo,1")).toBe(true);
+    expect(csv).toContain("# Classe_Alvo_Binaria: 1/1 derivadas de observacao humana | erosao=1 | controle=0");
+  });
+
+  it("A4: ponto com modalidade = 'drone' é segregado por montarMatrizTreino (0 emitidos, registrado em # HELD-OUT DRONE) e assegurarSegregacaoTreino protege como pós-condição", () => {
+    const pontoDrone = criarPontoTeste("1", -25.14, -53.84, "severa");
+    const mapaDrone: Record<string, RotuloConsolidado> = {
+      [pontoDrone.codigo]: {
+        final: {
+          classe: "severa",
+          modalidade: "drone",
+          observador: "Piloto VANT Spectral 2",
+          observadoEm: "2026-03-10",
+          confianca: "alta",
+          cego: true,
+        },
+        origens: [],
+        kappa: null,
+        divergencia: "nenhuma",
+        papelConjunto: "held-out",
+      },
+    };
+
+    const csv = gerarCsvMatrizTreinamento([pontoDrone], mapaDrone);
+    const linhas = csv.replace(/^\uFEFF/, "").split(/\r?\n/);
+    const linhasDados = linhas.filter((l) => l.trim().length > 0 && !l.startsWith("#") && !l.startsWith("Ponto_ID,"));
+
+    expect(linhasDados).toHaveLength(0);
+    expect(csv).toContain("# HELD-OUT DRONE (D16): 1 pontos excluidos");
+    expect(() => assegurarSegregacaoTreino("drone")).toThrow(/held-out/);
   });
 });

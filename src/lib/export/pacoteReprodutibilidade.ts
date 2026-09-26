@@ -17,7 +17,10 @@
 
 import JSZip from "jszip";
 import type { PontoAmostral } from "@/types/ponto";
+import type { RotuloConsolidado } from "@/types/rotulo";
 import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
+import { montarMatrizTreino } from "@/lib/matriz/montagem";
+import { assegurarSegregacaoTreino } from "@/lib/rotulos/ingestaoDrone";
 import { SITIOS_PADRAO_OURO } from "@/lib/padraoOuro/sitiosReferencia";
 import { calcularCorrelacaoPearson } from "@/lib/padraoOuro/validacaoMatricial";
 import { formatToDMS } from "./dms";
@@ -108,35 +111,77 @@ function formatarLinhaCensoProveniencia(
 
 /**
  * Gera o Arquivo 01: Matriz de Preditores Geoespaciais para Treinamento (CSV).
+ * Deriva Classe_Alvo_Binaria, Rotulo_Classe, Rotulo_Modalidade e exclusões
+ * estritamente da implementação canônica montarMatrizTreino (Regra 4).
  */
-export function gerarCsvMatrizTreinamento(pontos: PontoAmostral[]): string {
+export function gerarCsvMatrizTreinamento(
+  pontos: PontoAmostral[],
+  rotulosConsolidados: Record<string, RotuloConsolidado>
+): string {
+  const resultadoMatriz = montarMatrizTreino(pontos, rotulosConsolidados, { modeloJanela: "D" });
+
+  // Pós-condição de segregação held-out (Decisão D16 e Regra 4):
+  // Nenhuma linha efetivamente emitida na matriz de treino pode ter modalidade "drone"
+  for (const linhaTreino of resultadoMatriz.linhas) {
+    assegurarSegregacaoTreino(linhaTreino.rotuloModalidade);
+  }
+
+  const linhaPorPontoId = new Map(resultadoMatriz.linhas.map((l) => [l.pontoId, l]));
+  const pontosEmitidos = pontos.filter((p) => linhaPorPontoId.has(p.id));
+
+  let nSemRotulagem = 0;
+  let nDivergencia = 0;
+  for (const exc of resultadoMatriz.exclusoes) {
+    if (exc.motivo.includes("Divergência")) {
+      nDivergencia += 1;
+    } else {
+      nSemRotulagem += 1;
+    }
+  }
+
+  let nErosao = 0;
+  let nControle = 0;
+  for (const l of resultadoMatriz.linhas) {
+    if (l.classeAlvoBinaria === 1) {
+      nErosao += 1;
+    } else {
+      nControle += 1;
+    }
+  }
+
   const linhasCsv: string[] = [];
 
   linhasCsv.push(`# SAREL — Sistema de Amostragem e Rotulagem para Erosão Laminar`);
   linhasCsv.push(`# PPGTCA 2026 — Pesquisa de Mestrado (UEL / UEM / UFPR)`);
   linhasCsv.push(`# ARQUIVO 01: Matriz de Preditores Geoespaciais para Treinamento do Modelo Supervisionado`);
   linhasCsv.push(`# Princípios FAIR (Wilkinson et al., 2016) | Compêndio de Pesquisa (Marwick et al., 2018)`);
-  linhasCsv.push(`# Emissão: ${new Date().toISOString()} | Total de Amostras: ${pontos.length}`);
-  linhasCsv.push(`# CENSO DE PROVENIENCIA (Regra 3) — contagem sobre ${pontos.length} pontos emitidos`);
-  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_R", pontos, (p) => p.linhaDeBase?.fatorR, "D13"));
-  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_K", pontos, (p) => p.linhaDeBase?.fatorK));
-  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_LS", pontos, (p) => p.linhaDeBase?.fatorLS, "D15"));
-  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_C", pontos, (p) => p.linhaDeBase?.fatorC));
-  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_P", pontos, (p) => p.linhaDeBase?.fatorP));
+  linhasCsv.push(`# Emissão: ${new Date().toISOString()} | Total de Amostras Recebidas: ${pontos.length} | Emitidas: ${pontosEmitidos.length}`);
+  linhasCsv.push(`# EXCLUSOES DE ROTULAGEM (Regra 4) — ${pontos.length} pontos recebidos, ${pontosEmitidos.length} emitidos`);
+  linhasCsv.push(`# sem rotulagem=${nSemRotulagem} | divergencia sem desempate=${nDivergencia}`);
+  linhasCsv.push(`# HELD-OUT DRONE (D16): ${resultadoMatriz.heldOutDrone.length} pontos excluidos`);
+  linhasCsv.push(
+    `# Classe_Alvo_Binaria: ${pontosEmitidos.length}/${pontosEmitidos.length} derivadas de observacao humana | erosao=${nErosao} | controle=${nControle}`
+  );
+  linhasCsv.push(`# CENSO DE PROVENIENCIA (Regra 3) — contagem sobre ${pontosEmitidos.length} pontos emitidos`);
+  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_R", pontosEmitidos, (p) => p.linhaDeBase?.fatorR, "D13"));
+  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_K", pontosEmitidos, (p) => p.linhaDeBase?.fatorK));
+  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_LS", pontosEmitidos, (p) => p.linhaDeBase?.fatorLS, "D15"));
+  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_C", pontosEmitidos, (p) => p.linhaDeBase?.fatorC));
+  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_P", pontosEmitidos, (p) => p.linhaDeBase?.fatorP));
   linhasCsv.push(
     formatarLinhaCensoProveniencia(
       "RUSLE_Perda_Solo_A",
-      pontos,
+      pontosEmitidos,
       (p) => p.linhaDeBase?.perdaSolo,
       "retido pelo Invariante 1"
     )
   );
-  linhasCsv.push(formatarLinhaCensoProveniencia("Elevacao_m", pontos, (p) => p.terreno?.elevacao));
-  linhasCsv.push(formatarLinhaCensoProveniencia("Declividade_pct", pontos, (p) => p.terreno?.declividadePct));
-  linhasCsv.push(formatarLinhaCensoProveniencia("Curvatura_Perfil", pontos, (p) => p.terreno?.curvaturaPerfil));
-  linhasCsv.push(formatarLinhaCensoProveniencia("Curvatura_Plana", pontos, (p) => p.terreno?.curvaturaPlana));
-  linhasCsv.push(formatarLinhaCensoProveniencia("Acumulo_Fluxo", pontos, (p) => p.terreno?.acumuloFluxo));
-  linhasCsv.push(formatarLinhaCensoProveniencia("TWI", pontos, (p) => p.terreno?.twi));
+  linhasCsv.push(formatarLinhaCensoProveniencia("Elevacao_m", pontosEmitidos, (p) => p.terreno?.elevacao));
+  linhasCsv.push(formatarLinhaCensoProveniencia("Declividade_pct", pontosEmitidos, (p) => p.terreno?.declividadePct));
+  linhasCsv.push(formatarLinhaCensoProveniencia("Curvatura_Perfil", pontosEmitidos, (p) => p.terreno?.curvaturaPerfil));
+  linhasCsv.push(formatarLinhaCensoProveniencia("Curvatura_Plana", pontosEmitidos, (p) => p.terreno?.curvaturaPlana));
+  linhasCsv.push(formatarLinhaCensoProveniencia("Acumulo_Fluxo", pontosEmitidos, (p) => p.terreno?.acumuloFluxo));
+  linhasCsv.push(formatarLinhaCensoProveniencia("TWI", pontosEmitidos, (p) => p.terreno?.twi));
   linhasCsv.push(``);
 
   const colunas = [
@@ -178,11 +223,12 @@ export function gerarCsvMatrizTreinamento(pontos: PontoAmostral[]): string {
 
   linhasCsv.push(colunas.map(escaparCsv).join(","));
 
-  for (const p of pontos) {
+  for (const p of pontosEmitidos) {
+    const linhaCanonica = linhaPorPontoId.get(p.id)!;
+    assegurarSegregacaoTreino(linhaCanonica.rotuloModalidade);
+
     const latDms = formatToDMS(p.latitude, true);
     const lngDms = formatToDMS(p.longitude, false);
-    const classeStr = String(p.rotulo?.final?.classe ?? "ausente").toLowerCase();
-    const classeBinaria = classeStr.includes("laminar") || classeStr.includes("erosao") || classeStr === "1" ? 1 : 0;
 
     const row: Record<string, unknown> = {
       Ponto_ID: p.id,
@@ -216,9 +262,9 @@ export function gerarCsvMatrizTreinamento(pontos: PontoAmostral[]): string {
       N_Eventos_Erosivos: valorOuNulo(p.temporal?.D?.chuva?.nEventosErosivos ?? p.temporal?.P?.chuva?.nEventosErosivos) ?? "",
       Indice_Mecanismo_G2: valorOuNulo(p.temporal?.D?.chuva?.indiceMecanismo ?? p.temporal?.P?.chuva?.indiceMecanismo) ?? "",
       Frequencia_Solo_Nu: valorOuNulo(p.temporal?.D?.serie?.frequenciaSoloNu ?? p.temporal?.P?.serie?.frequenciaSoloNu) ?? "",
-      Rotulo_Classe: p.rotulo?.final?.classe ?? "ausente",
-      Rotulo_Modalidade: p.rotulo?.final?.modalidade ?? "campo",
-      Classe_Alvo_Binaria: classeBinaria,
+      Rotulo_Classe: linhaCanonica.rotuloClasse,
+      Rotulo_Modalidade: linhaCanonica.rotuloModalidade,
+      Classe_Alvo_Binaria: linhaCanonica.classeAlvoBinaria,
     };
 
     linhasCsv.push(colunas.map((col) => escaparCsv(row[col])).join(","));
@@ -589,6 +635,9 @@ def auditar_modelo():
     # Leitura com suporte a comentários
     df = pd.read_csv(treino_path, comment="#")
     print(f"  Total de amostras: {len(df)}")
+    if len(df) == 0:
+        print("[ABORTO] Matriz de treino vazia (0 amostras rotuladas emitidas no Arquivo 01). Campanha de rotulagem humana ainda não consolidada.")
+        return
     print(f"  Colunas disponíveis: {list(df.columns[:8])} ...")
 
     colunas_preditoras = [
@@ -697,13 +746,14 @@ export function gerarManifestoSha256(hashes: Record<string, string>): string {
  * Monta todos os 6 arquivos do pacote e calcula os hashes SHA-256.
  */
 export async function gerarConteudoPacoteReprodutibilidade(
-  pontos: PontoAmostral[]
+  pontos: PontoAmostral[],
+  rotulosConsolidados: Record<string, RotuloConsolidado>
 ): Promise<ArquivosPacoteReprodutibilidade> {
   // 1. Barreira antissintética obrigatória
   assegurarApenasPontosReais(pontos, "geração do pacote de reprodutibilidade da dissertação");
 
   // 2. Geração dos 5 primeiros arquivos
-  const f1_matrizTreino = gerarCsvMatrizTreinamento(pontos);
+  const f1_matrizTreino = gerarCsvMatrizTreinamento(pontos, rotulosConsolidados);
   const f2_validacaoDrone = gerarCsvValidacaoDroneHeldOut();
   const f3_confrontoRad = gerarCsvConfrontoRadiometrico();
   const f4_datasheet = gerarJsonDatasheetMetadados(pontos.length);
@@ -734,8 +784,11 @@ export async function gerarConteudoPacoteReprodutibilidade(
 /**
  * Compacta os 6 arquivos no formato .ZIP para download direto na plataforma.
  */
-export async function gerarPacoteReprodutibilidadeZip(pontos: PontoAmostral[]): Promise<Blob> {
-  const arquivos = await gerarConteudoPacoteReprodutibilidade(pontos);
+export async function gerarPacoteReprodutibilidadeZip(
+  pontos: PontoAmostral[],
+  rotulosConsolidados: Record<string, RotuloConsolidado>
+): Promise<Blob> {
+  const arquivos = await gerarConteudoPacoteReprodutibilidade(pontos, rotulosConsolidados);
   const zip = new JSZip();
 
   zip.file("01_matriz_preditores_treinamento_sarel.csv", arquivos.matrizTreinamentoCsv);
