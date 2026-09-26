@@ -119,10 +119,62 @@ export function identificarBacia(lat: number, lon: number): string | null {
 
 /**
  * Verifica se uma coordenada [lat, lon] pertence ao Corredor Experimental de Coleta In-Loco
- * (Foz do Iguaçu, Santa Terezinha de Itaipu, São Miguel do Iguaçu, Medianeira, Matelândia e Céu Azul).
+ * (Foz do Iguaçu, Santa Terezinha de Itaipu, São Miguel do Iguaçu, Medianeira, Matelândia e Céu Azul),
+ * restringindo estritamente à vertente agrícola (fora do Parque Nacional do Iguaçu).
  */
 export function estaNoCorredorExperimentalBp3(lat: number, lon: number): boolean {
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+  if (estaEmUnidadeConservacaoFlorestalBp3(lat, lon)) return false;
   const coords = CORREDOR_FOZ_CEU_AZUL_FEATURE.geometry.coordinates;
   return pontoEmAnel(lon, lat, coords[0]);
+}
+
+/**
+ * Verifica se uma coordenada [lat, lon] está contida estritamente dentro do Divisor Hidrológico
+ * Oficial da Bacia Hidrográfica do Paraná 3 (IAT/SEMA — ~7.979 km²).
+ */
+export function estaNoDivisorHidrologicoBp3(lat: number, lon: number): boolean {
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+  const bp3Feature = PARANA_BASINS_GEOJSON.features.find(
+    (f) => f.properties?.id === "bacia-parana-3" || f.properties?.name?.includes("Paraná 3")
+  );
+  if (!bp3Feature) return false;
+  return pontoEmAnel(lon, lat, bp3Feature.geometry.coordinates[0]);
+}
+
+/**
+ * Polígono delimitador do Parque Nacional do Iguaçu (ICMBio) e blocos florestais de proteção integral
+ * adjacentes ao setor sul/sudeste da Bacia do Paraná 3 (Céu Azul, Matelândia, Serranópolis do Iguaçu,
+ * Medianeira, São Miguel do Iguaçu, Santa Terezinha de Itaipu e Foz do Iguaçu).
+ */
+const PARQUE_NACIONAL_IGUACU_ANEL: number[][] = [
+  [-54.495, -25.565],
+  [-54.340, -25.495],
+  [-54.185, -25.415],
+  [-54.035, -25.320],
+  [-53.915, -25.235],
+  [-53.815, -25.135],
+  [-53.680, -25.045],
+  [-53.560, -25.060],
+  [-53.550, -25.660],
+  [-54.510, -25.710],
+  [-54.495, -25.565],
+];
+
+/**
+ * Verifica se uma coordenada [lat, lon] intercepta Unidades de Conservação Florestal de Proteção Integral
+ * (Parque Nacional do Iguaçu, Refúgios Biológicos de Itaipu ou áreas fora da vertente agrícola da BP3).
+ */
+export function estaEmUnidadeConservacaoFlorestalBp3(lat: number, lon: number): boolean {
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return true;
+  // 1. Parque Nacional do Iguaçu (setor sul da BR-277 em Céu Azul, Matelândia, Serranópolis, Medianeira, São Miguel e Foz)
+  if (pontoEmAnel(lon, lat, PARQUE_NACIONAL_IGUACU_ANEL)) {
+    return true;
+  }
+  // 2. Se estiver ao sul da latitude -25.05 e fora do divisor hidrológico oficial da Bacia do Paraná 3,
+  // trata-se da vertente florestal do Parque Nacional do Iguaçu / Baixo Iguaçu
+  if (lat < -25.05 && !estaNoDivisorHidrologicoBp3(lat, lon)) {
+    return true;
+  }
+  return false;
 }

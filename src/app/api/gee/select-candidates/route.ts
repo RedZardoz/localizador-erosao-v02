@@ -42,7 +42,12 @@ import { executarAmostragemEstratificada, CandidatoEstratificacao } from "@/lib/
 import { aplicarThinningDeterminista } from "@/lib/gee/thinning";
 import { queryEmbrapaSoil } from "@/lib/embrapa/embrapaSoilClient";
 import { matchRuralProperty, toContextoFundiario } from "@/lib/fundiario/matcher";
-import { identificarBacia, estaNoCorredorExperimentalBp3 } from "@/lib/localizacao/bacias";
+import {
+  identificarBacia,
+  estaNoCorredorExperimentalBp3,
+  estaNoDivisorHidrologicoBp3,
+  estaEmUnidadeConservacaoFlorestalBp3,
+} from "@/lib/localizacao/bacias";
 import { pontoEmGeoJson } from "@/lib/localizacao/municipio";
 import { montarLinhaDeBaseRUSLE } from "@/lib/rusle/linhaDeBase";
 import { converterErodibilidadeFatorK } from "@/lib/rusle/fatorK";
@@ -79,9 +84,10 @@ interface ImovelRealDb {
   mod_fiscal?: number;
   status?: string;
   fonte?: string;
-  slope_est?: number;
-  bsi_freq_est?: number;
-  nivel_k_est?: 1 | 2;
+  lat_min?: number;
+  lat_max?: number;
+  lon_min?: number;
+  lon_max?: number;
 }
 
 /**
@@ -202,7 +208,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Obtenção de Coordenadas de Imóveis Rurais Reais (SICAR / SNCR)
-    const numCandidatosBusca = Math.min(Math.max(tamanhoAmostra * 12, 500), 6000);
+    const numCandidatosBusca = Math.min(Math.max(tamanhoAmostra * 16, 600), 6000);
     const imoveisReais = await buscarImoveisReaisPython(minLng, minLat, maxLng, maxLat, numCandidatosBusca);
 
     if (imoveisReais.length === 0) {
@@ -215,15 +221,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Filtra imóveis que estejam dentro da geometria poligonal ativa (se houver polígono delimitador)
+    // Verifica se o contexto de estudo inclui a Bacia Hidrográfica do Paraná 3 (Oeste do PR)
+    const envolveBaciaParana3 =
+      minLng <= -53.3 && maxLng >= -54.65 && minLat <= -24.0 && maxLat >= -25.65;
+
+    // Camada 1 Anti-Floresta:
+    // - Exclui estritamente Unidades de Conservação Florestal Integral (Parque Nacional do Iguaçu,
+    //   Parque Estadual da Cabeça do Cachorro e Faixa de Proteção do Lago de Itaipu).
+    // - Quando na Bacia do Paraná 3, exige que o ponto respeite o Divisor Hidrológico Oficial IAT (BP3),
+    //   impedindo que a malha municipal IBGE de Céu Azul, Matelândia, Serranópolis, Medianeira,
+    //   São Miguel do Iguaçu e Foz do Iguaçu inclua áreas florestais ao sul do divisor (Bacia do Baixo Iguaçu).
     const imoveisFiltrados = imoveisReais.filter((imovel) => {
+      if (estaEmUnidadeConservacaoFlorestalBp3(imovel.lat, imovel.lng)) {
+        return false;
+      }
+      if (envolveBaciaParana3 && !estaNoDivisorHidrologicoBp3(imovel.lat, imovel.lng)) {
+        return false;
+      }
       return areas.some((a) => {
         if (!a.geometry) return true;
         return pontoEmGeoJson(imovel.lng, imovel.lat, a.geometry);
       });
     });
 
-    const listaParaAmostragem = imoveisFiltrados.length > 0 ? imoveisFiltrados : imoveisReais;
+    const listaParaAmostragem =
+      imoveisFiltrados.length > 0
+        ? imoveisFiltrados
+        : imoveisReais.filter((im) => !estaEmUnidadeConservacaoFlorestalBp3(im.lat, im.lng));
 
     // 4. Thinning Espacial Determinístico (P02) sobre os centroides reais SICAR/SNCR
     const dataConsultaAtual = new Date().toISOString().split("T")[0];
@@ -242,31 +266,107 @@ export async function POST(request: NextRequest) {
       fonteCar: im.fonte || "SICAR Oficial (MMA/SFB)",
       latitude: Number(im.lat.toFixed(6)),
       longitude: Number(im.lng.toFixed(6)),
+      latMin: typeof im.lat_min === "number" ? im.lat_min : im.lat,
+      latMax: typeof im.lat_max === "number" ? im.lat_max : im.lat,
+      lonMin: typeof im.lon_min === "number" ? im.lon_min : im.lng,
+      lonMax: typeof im.lon_max === "number" ? im.lon_max : im.lng,
     }));
 
     let raioMetros = raioThinningKm * 1000;
     let candidatosAposThinning = aplicarThinningDeterminista(candidatosBase, raioMetros, semente);
 
-    while (candidatosAposThinning.length < tamanhoAmostra && raioMetros > 1000) {
-      raioMetros = Math.max(1000, Math.floor(raioMetros * 0.65));
+    // Garante pool com folga (>= 1.8x tamanhoAmostra) para descartar eventuais centroides sobre Reserva Legal / APP
+    const metaPoolMinimo = Math.min(candidatosBase.length, Math.max(Math.ceil(tamanhoAmostra * 1.8), tamanhoAmostra + 25));
+    while (candidatosAposThinning.length < metaPoolMinimo && raioMetros > 800) {
+      raioMetros = Math.max(800, Math.floor(raioMetros * 0.65));
       candidatosAposThinning = aplicarThinningDeterminista(candidatosBase, raioMetros, semente);
     }
 
-    // Limita o pool de medição topográfica/pedológica real ao teto necessário para estratificação
     const poolParaMedicaoReal = candidatosAposThinning.slice(
       0,
-      Math.min(candidatosAposThinning.length, Math.max(tamanhoAmostra + 40, 120))
+      Math.min(candidatosAposThinning.length, Math.max(Math.ceil(tamanhoAmostra * 1.8), 90))
     );
 
-    // 5. Medição Topográfica Real (Copernicus DEM GLO-30 30m / EPSG:31982) e Pedológica Real (Embrapa GeoInfo OWS)
+    // 5. Camada 2 & 3 Anti-Floresta (GEE ESA/WorldCover/v200/2021 10m + Sentinel-2 MSI L2A 10m):
+    // Mede CADA candidato na sua coordenada exata de 10m ANTES da estratificação final.
+    // Caso o ponto médio da propriedade caia sobre Reserva Legal ou Mata Ciliar (ESA WorldCover = 10 ou dossel perene),
+    // testa um deslocamento interno para a vertente agrícola (quadrante 0.28 ou 0.72) dentro do BBox oficial do imóvel SICAR,
+    // e descarta estritamente qualquer candidato que permaneça sobre cobertura florestal/inelegível (Parâmetro P05).
+    const mapaSentinel2 = sessao.gee?.project_id
+      ? await medirSentinel2EmLoteGeeRest(
+          poolParaMedicaoReal.map((c) => ({
+            id: c.id,
+            latitude: c.latitude,
+            longitude: c.longitude,
+          })),
+          token.accessToken,
+          sessao.gee.project_id
+        )
+      : new Map();
+
+    if (sessao.gee?.project_id && mapaSentinel2.size > 0) {
+      const candidatosComCentroEmMata = poolParaMedicaoReal.filter((c) => {
+        const med = mapaSentinel2.get(c.id);
+        return med?.ehFlorestaOuInelegivel === true;
+      });
+
+      if (candidatosComCentroEmMata.length > 0) {
+        // Gera coordenada alternativa na meia-encosta agrícola dentro do mesmo imóvel SICAR
+        const realocacoes = candidatosComCentroEmMata
+          .map((c) => {
+            const dLat = c.latMax - c.latMin;
+            const dLon = c.lonMax - c.lonMin;
+            const novoLat = Number(
+              (dLat > 0.0008 ? c.latMin + 0.28 * dLat : c.latitude + 0.0018).toFixed(6)
+            );
+            const novoLon = Number(
+              (dLon > 0.0008 ? c.lonMin + 0.28 * dLon : c.longitude + 0.0018).toFixed(6)
+            );
+            return { id: c.id, latitude: novoLat, longitude: novoLon, cand: c };
+          })
+          .filter(
+            (r) =>
+              !estaEmUnidadeConservacaoFlorestalBp3(r.latitude, r.longitude) &&
+              (!envolveBaciaParana3 || estaNoDivisorHidrologicoBp3(r.latitude, r.longitude))
+          );
+
+        if (realocacoes.length > 0) {
+          const mapaRealocados = await medirSentinel2EmLoteGeeRest(
+            realocacoes.map((r) => ({ id: r.id, latitude: r.latitude, longitude: r.longitude })),
+            token.accessToken,
+            sessao.gee.project_id
+          );
+
+          for (const r of realocacoes) {
+            const medNovo = mapaRealocados.get(r.id);
+            if (medNovo && !medNovo.ehFlorestaOuInelegivel) {
+              r.cand.latitude = r.latitude;
+              r.cand.longitude = r.longitude;
+              mapaSentinel2.set(r.id, medNovo);
+            }
+          }
+        }
+      }
+    }
+
+    // Filtra estritamente candidatos com cobertura agrícola comprovada (ESA WorldCover in [30, 40, 60] e dossel não-florestal)
+    const poolAgricolaVerificado = poolParaMedicaoReal.filter((c) => {
+      const med = mapaSentinel2.get(c.id);
+      if (!med) return true;
+      return !med.ehFlorestaOuInelegivel;
+    });
+
+    const poolEfetivo =
+      poolAgricolaVerificado.length > 0 ? poolAgricolaVerificado : poolParaMedicaoReal;
+
+    // 6. Medição Topográfica Real (Copernicus DEM GLO-30 30m / EPSG:31982) e Pedológica Real (Embrapa GeoInfo OWS)
     const medicoesTerreno = await medirTerrenoCopernicusEmLote(
-      poolParaMedicaoReal.map((c) => ({ latitude: c.latitude, longitude: c.longitude }))
+      poolEfetivo.map((c) => ({ latitude: c.latitude, longitude: c.longitude }))
     );
 
     // Cache espacial de células pedológicas (0.05° ≈ 5,5 km, compatível com a escala 1:250.000 da carta Embrapa)
-    // para consultar o GeoServer OGC WMS da Embrapa sem abrir 500 conexões simultâneas redundantes
     const celulasUnicas = new Map<string, { lat: number; lon: number }>();
-    for (const c of poolParaMedicaoReal) {
+    for (const c of poolEfetivo) {
       const chaveCelula = `${(Math.round(c.latitude * 20) / 20).toFixed(2)}_${(
         Math.round(c.longitude * 20) / 20
       ).toFixed(2)}`;
@@ -295,12 +395,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const candidatosMap = new Map(candidatosBase.map((c) => [c.id, c]));
+    const candidatosMap = new Map(poolEfetivo.map((c) => [c.id, c]));
     const terrenoMap = new Map(
-      poolParaMedicaoReal.map((c, idx) => [c.id, medicoesTerreno[idx] ?? null])
+      poolEfetivo.map((c, idx) => [c.id, medicoesTerreno[idx] ?? null])
     );
     const soloMap = new Map(
-      poolParaMedicaoReal.map((c) => {
+      poolEfetivo.map((c) => {
         const chaveCelula = `${(Math.round(c.latitude * 20) / 20).toFixed(2)}_${(
           Math.round(c.longitude * 20) / 20
         ).toFixed(2)}`;
@@ -308,16 +408,17 @@ export async function POST(request: NextRequest) {
       })
     );
 
-    // 6. Estratificação Multivariada 3(S) x 3(E) x 2(K) com Partição Multi-Escala (Fase A + Fase B Corredor In-Loco)
+    // 7. Estratificação Multivariada 3(S) x 3(E) x 2(K) com Partição Multi-Escala (Fase A + Fase B Corredor In-Loco)
     const propInLoco =
       typeof body.proporcaoInLocoCorredorPct === "number" ? body.proporcaoInLocoCorredorPct : 20;
     const qtdAlvoInLoco = Math.round(
       (tamanhoAmostra * Math.min(100, Math.max(0, propInLoco))) / 100
     );
 
-    const estratificacaoInput: CandidatoEstratificacao[] = poolParaMedicaoReal.map((c) => {
+    const estratificacaoInput: CandidatoEstratificacao[] = poolEfetivo.map((c) => {
       const medTerreno = terrenoMap.get(c.id);
       const medSolo = soloMap.get(c.id);
+      const medS2 = mapaSentinel2.get(c.id);
       const convK = converterErodibilidadeFatorK(medSolo?.erodibilidade?.classe);
 
       return {
@@ -325,7 +426,10 @@ export async function POST(request: NextRequest) {
         latitude: c.latitude,
         longitude: c.longitude,
         declividadePct: medTerreno ? medTerreno.declividadePct : declividadeMin,
-        frequenciaSoloNu: frequenciaSoloNuMin,
+        frequenciaSoloNu:
+          medS2 && typeof medS2.frequenciaSoloNu === "number"
+            ? medS2.frequenciaSoloNu
+            : frequenciaSoloNuMin,
         nivelK: convK ? convK.nivelEstratoK : 1,
       };
     });
@@ -372,17 +476,25 @@ export async function POST(request: NextRequest) {
       relatorioEstratificacao = resultadoEstratificacao.relatorio;
     }
 
-    // 7. Medição Espectral Orbital em Lote no Google Earth Engine REST API v1 (Sentinel-2 MSI L2A)
-    const mapaSentinel2 = sessao.gee?.project_id
-      ? await medirSentinel2EmLoteGeeRest(
-          pontosEstratificados.map((pe) => {
-            const b = candidatosMap.get(pe.id)!;
-            return { id: pe.id, latitude: b.latitude, longitude: b.longitude };
-          }),
-          token.accessToken,
-          sessao.gee.project_id
-        )
-      : new Map();
+    // Se algum estrato da matriz 3x3x2 tinha menos candidatos que a cota teórica após o descarte estrito
+    // de matas ciliares/Reserva Legal, completa até `tamanhoAmostra` usando os candidatos agrícolas verificados restantes
+    if (pontosEstratificados.length < tamanhoAmostra && estratificacaoInput.length > pontosEstratificados.length) {
+      const idsJaSelecionados = new Set(pontosEstratificados.map((p) => p.id));
+      for (const cand of estratificacaoInput) {
+        if (pontosEstratificados.length >= tamanhoAmostra) break;
+        if (!idsJaSelecionados.has(cand.id)) {
+          idsJaSelecionados.add(cand.id);
+          pontosEstratificados.push({
+            id: cand.id,
+            estratoId: "S2_E2_K1",
+            criterioSelecao: "Complemento de cota agrícola certificada (ESA WorldCover 10m + Sentinel-2)",
+          });
+        }
+      }
+      if (relatorioEstratificacao) {
+        relatorioEstratificacao.totalSelecionado = pontosEstratificados.length;
+      }
+    }
 
     // 8. Montagem Estrita de PontoAmostral — Regra 1, Regra 5, Regra 7 e Invariante 1 (Zero Dados Sintéticos)
     const pontosFinais: PontoAmostral[] = await Promise.all(

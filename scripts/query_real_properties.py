@@ -46,11 +46,20 @@ def query_real_properties(min_lng, min_lat, max_lng, max_lat, limit):
             f.registro_incra,
             f.mod_fiscal,
             f.status,
-            f.fonte
+            f.fonte,
+            f.lat_min,
+            f.lat_max,
+            f.lon_min,
+            f.lon_max
           FROM imoveis_fundiarios_rtree r
           JOIN imoveis_fundiarios f ON f.id = r.id
           WHERE r.minX >= ? AND r.maxX <= ? AND r.minY >= ? AND r.maxY <= ?
             AND (r.id % ?) = 0
+            AND COALESCE(f.area_ha, 0) >= 4.0
+            AND UPPER(COALESCE(f.nome_imovel, '')) NOT LIKE '%PARQUE%'
+            AND UPPER(COALESCE(f.nome_imovel, '')) NOT LIKE '%RESERVA%'
+            AND UPPER(COALESCE(f.nome_imovel, '')) NOT LIKE '%FLOREST%'
+            AND UPPER(COALESCE(f.nome_imovel, '')) NOT LIKE '%UNIDADE DE CONSERV%'
           LIMIT ?
         """
         c.execute(query, (min_lng, max_lng, min_lat, max_lat, stride, limit))
@@ -76,10 +85,19 @@ def query_real_properties(min_lng, min_lat, max_lng, max_lat, limit):
             registro_incra,
             mod_fiscal,
             status,
-            fonte
+            fonte,
+            lat_min,
+            lat_max,
+            lon_min,
+            lon_max
           FROM imoveis_fundiarios
           WHERE lat_min >= ? AND lat_max <= ? AND lon_min >= ? AND lon_max <= ?
             AND (id % ?) = 0
+            AND COALESCE(area_ha, 0) >= 4.0
+            AND UPPER(COALESCE(nome_imovel, '')) NOT LIKE '%PARQUE%'
+            AND UPPER(COALESCE(nome_imovel, '')) NOT LIKE '%RESERVA%'
+            AND UPPER(COALESCE(nome_imovel, '')) NOT LIKE '%FLOREST%'
+            AND UPPER(COALESCE(nome_imovel, '')) NOT LIKE '%UNIDADE DE CONSERV%'
           LIMIT ?
         """
         c.execute(query, (min_lat, max_lat, min_lng, max_lng, stride, limit))
@@ -100,7 +118,11 @@ def query_real_properties(min_lng, min_lat, max_lng, max_lat, limit):
                 'registro_incra': r[7] or '',
                 'mod_fiscal': round(float(r[8] or 0), 2),
                 'status': r[9] or '',
-                'fonte': r[10] or 'SICAR Oficial (MMA/SFB)'
+                'fonte': r[10] or 'SICAR Oficial (MMA/SFB)',
+                'lat_min': round(float(r[11]), 6) if r[11] is not None else lat,
+                'lat_max': round(float(r[12]), 6) if r[12] is not None else lat,
+                'lon_min': round(float(r[13]), 6) if r[13] is not None else lng,
+                'lon_max': round(float(r[14]), 6) if r[14] is not None else lng,
             })
     conn.close()
     print(json.dumps(rows))

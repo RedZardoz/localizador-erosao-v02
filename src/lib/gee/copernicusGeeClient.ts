@@ -17,6 +17,7 @@
 
 import { pctParaGraus } from "./terreno";
 import { calcularNdvi, calcularBsi } from "./serieTemporal";
+import { isClasseUsoElegivel } from "./elegibilidade";
 
 export let ultimoErroGee: string | null = null;
 
@@ -35,6 +36,8 @@ export interface MedicaoEspectralReal {
   ndvi: number;
   bsi: number;
   frequenciaSoloNu: number | null;
+  classeWorldCover?: number | null;
+  ehFlorestaOuInelegivel?: boolean;
   fonte: string;
 }
 
@@ -126,10 +129,13 @@ export async function medirTerrenoCopernicusEmLote(
 
 /**
  * Consulta pontual às bandas de reflectância de superfície do Sentinel-2 MSI L2A
- * (COPERNICUS/S2_SR_HARMONIZED, cenas com < 15% de nuvens) via API REST v1 do Google Earth Engine
- * (Image.reduceRegion sobre GeometryConstructors.Point com Reducer.percentile([15, 50, 85])).
+ * (COPERNICUS/S2_SR_HARMONIZED, cenas com < 20% de nuvens) combinadas com a máscara
+ * de uso e cobertura do solo ESA/WorldCover/v200/2021 (banda Map a 10m) via API REST v1
+ * do Google Earth Engine (Image.reduceRegion sobre GeometryConstructors.Point).
  *
- * Retorna `null` caso o projeto GCP não retorne bandas válidas ou se o pixel estiver mascarado.
+ * Identifica estritamente se o pixel de 10m cai sobre cobertura florestal/arbórea
+ * (ESA WorldCover = 10/20/50/80/90 ou dossel perene com NDVI mínimo >= 0.50),
+ * permitindo rejeitar Reserva Legal, Mata Ciliar e Unidades de Conservação (Parâmetro P05).
  */
 export async function medirSentinel2PontoGeeRest(
   latitude: number,
@@ -147,7 +153,7 @@ export async function medirSentinel2PontoGeeRest(
           functionInvocationValue: {
             functionName: "Image.reduceRegion",
             arguments: {
-              image: { valueReference: "1" },
+              image: { valueReference: "6" },
               reducer: {
                 functionInvocationValue: {
                   functionName: "Reducer.first",
@@ -156,6 +162,22 @@ export async function medirSentinel2PontoGeeRest(
               },
               geometry: { valueReference: "2" },
               scale: { constantValue: 10 },
+            },
+          },
+        },
+        "6": {
+          functionInvocationValue: {
+            functionName: "Image.addBands",
+            arguments: {
+              dstImg: { valueReference: "1" },
+              srcImg: {
+                functionInvocationValue: {
+                  functionName: "Image.load",
+                  arguments: {
+                    id: { constantValue: "ESA/WorldCover/v200/2021" },
+                  },
+                },
+              },
             },
           },
         },
@@ -299,6 +321,11 @@ export async function medirSentinel2PontoGeeRest(
       return null;
     }
 
+    const classeWorldCover =
+      typeof props.Map === "number" && Number.isFinite(props.Map)
+        ? Math.round(props.Map)
+        : null;
+
     const b2_15 = typeof props.B2_p15 === "number" ? props.B2_p15 / 10000 : null;
     const b4_15 = typeof props.B4_p15 === "number" ? props.B4_p15 / 10000 : null;
     const b8_15 = typeof props.B8_p15 === "number" ? props.B8_p15 / 10000 : null;
@@ -348,6 +375,18 @@ export async function medirSentinel2PontoGeeRest(
 
     const ndviMed = calcularNdvi(b8_50, b4_50)!;
     const bsiMed = calcularBsi(b11_50, b4_50, b8_50, b2_50)!;
+
+    // Verificação estrita do Parâmetro P05 (Elegibilidade Agrícola):
+    // 1. ESA WorldCover 10m fora de [30=Pastagem, 40=Lavoura, 60=Solo Exposto] (ex.: 10=Floresta, 20=Arbustiva, 50=Urbano, 80=Água)
+    // 2. Dossel arbóreo perene no Sentinel-2 (mesmo no percentil 15 de NIR e 85 de Vermelho, o dossel nunca é colhido: ndviExposicao >= 0.50 e ndviMed >= 0.65)
+    const inelegivelWorldCover =
+      classeWorldCover !== null && !isClasseUsoElegivel(classeWorldCover);
+    const dosselFlorestalPerene =
+      ndviExposicao !== null &&
+      ndviExposicao >= 0.50 &&
+      ndviMed >= 0.65 &&
+      (bsiExposicao === null || bsiExposicao < -0.05);
+    const ehFlorestaOuInelegivel = inelegivelWorldCover || dosselFlorestalPerene;
 
     // Frequência observada de solo exposto ao longo dos percentis (Decisão D10)
     let janelasSoloNu = 0;
@@ -402,7 +441,9 @@ export async function medirSentinel2PontoGeeRest(
       ndvi: ndviFinal,
       bsi: bsiFinal,
       frequenciaSoloNu: freqReal,
-      fonte: "Sentinel-2 MSI L2A (COPERNICUS/S2_SR_HARMONIZED via GEE REST v1)",
+      classeWorldCover,
+      ehFlorestaOuInelegivel,
+      fonte: "Sentinel-2 MSI L2A + ESA WorldCover 10m (GEE REST v1)",
     };
   } catch (err: any) {
     ultimoErroGee = `Exception: ${err?.message}`;
@@ -411,8 +452,9 @@ export async function medirSentinel2PontoGeeRest(
 }
 
 /**
- * Consulta em lote com cache de células espaciais e paralelismo controlado
- * usando `medirSentinel2PontoGeeRest` na API REST v1 do Google Earth Engine.
+ * Consulta em lote com paralelismo controlado na API REST v1 do Google Earth Engine.
+ * Avalia CADA ponto em sua coordenada exata de 10m (sem agrupar em células grossas),
+ * garantindo que nenhum candidato caia sobre Mata Ciliar, Reserva Legal ou Floresta.
  */
 export async function medirSentinel2EmLoteGeeRest(
   pontos: Array<{ id: string; latitude: number; longitude: number }>,
@@ -422,13 +464,11 @@ export async function medirSentinel2EmLoteGeeRest(
   const mapa = new Map<string, MedicaoEspectralReal>();
   if (pontos.length === 0 || !accessToken || !projectId) return mapa;
 
-  // Agrupa em sub-zonas agrícolas de 0.04° (~4,4 km) para consultar o GEE em paralelo
-  // sem exceder a cota de requisições concorrentes da Service Account
+  // Deduplica apenas coordenadas idênticas (< 1 m: 5 casas decimais) para medir
+  // estritamente o pixel de 10 m exato de cada candidato
   const celulas = new Map<string, { lat: number; lon: number; ids: string[] }>();
   for (const pt of pontos) {
-    const chave = `${(Math.round(pt.latitude * 25) / 25).toFixed(2)}_${(
-      Math.round(pt.longitude * 25) / 25
-    ).toFixed(2)}`;
+    const chave = `${pt.latitude.toFixed(5)}_${pt.longitude.toFixed(5)}`;
     const atual = celulas.get(chave);
     if (atual) {
       atual.ids.push(pt.id);
@@ -438,7 +478,7 @@ export async function medirSentinel2EmLoteGeeRest(
   }
 
   const listaCelulas = Array.from(celulas.values());
-  const CONCORRENCIA = 18;
+  const CONCORRENCIA = 22;
 
   for (let i = 0; i < listaCelulas.length; i += CONCORRENCIA) {
     const fatia = listaCelulas.slice(i, i + CONCORRENCIA);

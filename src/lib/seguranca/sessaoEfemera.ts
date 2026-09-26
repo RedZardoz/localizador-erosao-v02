@@ -50,11 +50,13 @@ export function obterSessao(sessionId: string | undefined | null): SessaoTokens 
     }
   }
   // Fallback para a sessão ativa mais recente em memória local (single-user desktop/localhost)
-  for (const [k, entry] of store.entries()) {
-    if (entry.expiresAt < Date.now()) {
-      store.delete(k);
-    } else if (entry.tokens?.gee) {
-      return entry.tokens;
+  if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
+    for (const [k, entry] of store.entries()) {
+      if (entry.expiresAt < Date.now()) {
+        store.delete(k);
+      } else if (entry.tokens?.gee) {
+        return entry.tokens;
+      }
     }
   }
   return null;
