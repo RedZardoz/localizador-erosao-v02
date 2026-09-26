@@ -115,8 +115,8 @@ export function InspetorPonto() {
   const dmsLat = formatToDMS(ponto.latitude, true);
   const dmsLng = formatToDMS(ponto.longitude, false);
 
-  const rotuloConsolidado = rotulosConsolidados[ponto.codigo] ?? (ponto.rotulo ? { final: ponto.rotulo, origens: [ponto.rotulo] } : null);
-  const rotuloFinal = rotuloConsolidado?.final;
+  const rotuloConsolidado = rotulosConsolidados[ponto.codigo] ?? null;
+  const rotuloFinal = rotuloConsolidado?.final ?? null;
   const soloAssociacao = ponto.solo?.tipoUnidade?.estado === "medido" && ponto.solo.tipoUnidade.valor === "associacao";
 
   const janelaAtiva = modeloAtivo === "D" ? ponto.temporal?.D : ponto.temporal?.P;

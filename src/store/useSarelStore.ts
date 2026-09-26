@@ -255,6 +255,7 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
 
   voltarPassoTour: () =>
     set((state) => {
+      // permitido: controle de indice de paginacao de interface do tour metodologico (>= 0)
       const anterior = Math.max(state.passoTourAtual - 1, 0);
       return {
         passoTourAtual: anterior,

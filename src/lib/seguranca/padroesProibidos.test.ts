@@ -157,25 +157,32 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
     });
   });
 
-  describe("Varredura no código científico ativo em src/lib/", () => {
-    function listarArquivosTs(dir: string): string[] {
+  describe("Varredura no código científico e de estado em src/lib, src/app/api, src/store e src/config (Q2.ii)", () => {
+    function listarArquivosCodigo(dir: string): string[] {
       if (!fs.existsSync(dir)) return [];
       const entries = fs.readdirSync(dir, { withFileTypes: true });
       const arquivos: string[] = [];
       for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
         if (entry.isDirectory()) {
-          arquivos.push(...listarArquivosTs(fullPath));
-        } else if (entry.isFile() && fullPath.endsWith(".ts") && !fullPath.endsWith(".test.ts")) {
+          arquivos.push(...listarArquivosCodigo(fullPath));
+        } else if (
+          entry.isFile() &&
+          (fullPath.endsWith(".ts") || fullPath.endsWith(".tsx")) &&
+          !fullPath.endsWith(".test.ts") &&
+          !fullPath.endsWith(".test.tsx")
+        ) {
           arquivos.push(fullPath);
         }
       }
       return arquivos;
     }
 
-    it("nenhum arquivo científico ativo deve conter padrões proibidos", () => {
-      const raizLib = path.resolve(__dirname, "..");
-      const arquivos = listarArquivosTs(raizLib);
+    it("nenhum arquivo em src/lib, src/app/api, src/store ou src/config deve conter padrões proibidos", () => {
+      const diretoriosAlvo = ["src/lib", "src/app/api", "src/store", "src/config"].map((d) =>
+        path.resolve(process.cwd(), d)
+      );
+      const arquivos = diretoriosAlvo.flatMap((dir) => listarArquivosCodigo(dir));
       const todasViolacoes: ViolacaoPadrao[] = [];
 
       for (const arq of arquivos) {
@@ -189,6 +196,34 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
           .map((v) => `  ${v.arquivo}:${v.linha} [${v.padrao}] -> ${v.trecho}`)
           .join("\n");
         expect.fail(`Violações de padrões proibidos encontradas em código ativo:\n${msg}`);
+      }
+      expect(todasViolacoes).toHaveLength(0);
+    });
+
+    it("nenhum componente em src/components/**/*.tsx deve conter literais de data/código entre aspas ou adquiridoEm fabricado", () => {
+      const raizComponents = path.resolve(process.cwd(), "src/components");
+      const arquivos = listarArquivosCodigo(raizComponents);
+      const padroesRestritosComponentes = new Set([
+        "coalescencia-com-numero-entre-aspas",
+        "ou-logico-com-numero-entre-aspas",
+        "adquiridoEm-com-new-date",
+        "sintese-aleatoria-atributos-fisicos",
+      ]);
+      const todasViolacoes: ViolacaoPadrao[] = [];
+
+      for (const arq of arquivos) {
+        const conteudo = fs.readFileSync(arq, "utf-8");
+        const v = varrerCodigo(conteudo, path.relative(process.cwd(), arq)).filter((viol) =>
+          padroesRestritosComponentes.has(viol.padrao)
+        );
+        todasViolacoes.push(...v);
+      }
+
+      if (todasViolacoes.length > 0) {
+        const msg = todasViolacoes
+          .map((v) => `  ${v.arquivo}:${v.linha} [${v.padrao}] -> ${v.trecho}`)
+          .join("\n");
+        expect.fail(`Violações de padrões proibidos em src/components:\n${msg}`);
       }
       expect(todasViolacoes).toHaveLength(0);
     });

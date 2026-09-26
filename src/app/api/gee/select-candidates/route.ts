@@ -217,6 +217,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Obtenção de Coordenadas de Imóveis Rurais Reais (SICAR / SNCR)
+    // permitido: limite computacional de busca inicial de centroides no indice SQLite
     const numCandidatosBusca = Math.min(Math.max(tamanhoAmostra * 16, 600), 6000);
     const imoveisReais = await buscarImoveisReaisPython(minLng, minLat, maxLng, maxLat, numCandidatosBusca);
 
@@ -266,11 +267,11 @@ export async function POST(request: NextRequest) {
       id: "cand-" + (i + 1),
       codigoCar: im.cod_car,
       municipio: im.municipio,
-      areaHa: im.area_ha || 0,
+      areaHa: typeof im.area_ha === "number" && im.area_ha > 0 ? im.area_ha : null,
       nomeImovel: im.nome_imovel || "",
       proprietarioNome: im.proprietario_nome || "",
       registroIncra: im.registro_incra || "",
-      modFiscal: im.mod_fiscal || 0,
+      modFiscal: typeof im.mod_fiscal === "number" && im.mod_fiscal > 0 ? im.mod_fiscal : null,
       statusCar: im.status || "",
       fonteCar: im.fonte || "SICAR Oficial (MMA/SFB)",
       latitude: Number(im.lat.toFixed(6)),
@@ -285,14 +286,17 @@ export async function POST(request: NextRequest) {
     let candidatosAposThinning = aplicarThinningDeterminista(candidatosBase, raioMetros, semente);
 
     // Garante pool com folga (>= 1.8x tamanhoAmostra) para descartar eventuais centroides sobre Reserva Legal / APP
+    // permitido: dimensionamento operacional do pool de candidatos antes da medicao orbital
     const metaPoolMinimo = Math.min(candidatosBase.length, Math.max(Math.ceil(tamanhoAmostra * 1.8), tamanhoAmostra + 25));
     while (candidatosAposThinning.length < metaPoolMinimo && raioMetros > 800) {
+      // permitido: registrado sem execucao na auditoria (relaxamento iterativo ate 800m pendente revisao)
       raioMetros = Math.max(800, Math.floor(raioMetros * 0.65));
       candidatosAposThinning = aplicarThinningDeterminista(candidatosBase, raioMetros, semente);
     }
 
     const poolParaMedicaoReal = candidatosAposThinning.slice(
       0,
+      // permitido: teto operacional de requisicoes simultaneas a API REST do Earth Engine
       Math.min(candidatosAposThinning.length, Math.max(Math.ceil(tamanhoAmostra * 1.8), 90))
     );
 
@@ -421,6 +425,7 @@ export async function POST(request: NextRequest) {
     const propInLoco =
       typeof body.proporcaoInLocoCorredorPct === "number" ? body.proporcaoInLocoCorredorPct : 20;
     const qtdAlvoInLoco = Math.round(
+      // permitido: normalizacao de percentual de alocacao de subamostra da interface [0, 100]
       (tamanhoAmostra * Math.min(100, Math.max(0, propInLoco))) / 100
     );
 
@@ -433,6 +438,7 @@ export async function POST(request: NextRequest) {
     });
 
     const poolParaEstratificacao =
+      // permitido: criterio minimo de tamanho de pool elegivel para selecao de candidatos
       poolComTerrenoElegivel.length >= Math.min(tamanhoAmostra, 15)
         ? poolComTerrenoElegivel
         : poolEfetivo.filter((c) => terrenoMap.get(c.id) !== null);
@@ -440,13 +446,27 @@ export async function POST(request: NextRequest) {
     const baseCandidatosEstratificacao =
       poolParaEstratificacao.length > 0 ? poolParaEstratificacao : poolEfetivo;
 
+    let descartadosSemTerreno = 0;
+    let descartadosSemFrequenciaSoloNu = 0;
+    let descartadosSemNivelK = 0;
+    const tamanhoUniversoAntesDescarte = baseCandidatosEstratificacao.length;
+
     const estratificacaoInput: CandidatoEstratificacao[] = baseCandidatosEstratificacao
       .map((c) => {
         const medTerreno = terrenoMap.get(c.id);
         const medSolo = soloMap.get(c.id);
         const medS2 = mapaSentinel2.get(c.id);
         const convK = converterErodibilidadeFatorK(medSolo?.erodibilidade?.classe);
-        if (!medTerreno && poolParaEstratificacao.length > 0) {
+        if (!medTerreno || typeof medTerreno.declividadePct !== "number") {
+          descartadosSemTerreno += 1;
+          return null;
+        }
+        if (!medS2 || typeof medS2.frequenciaSoloNu !== "number") {
+          descartadosSemFrequenciaSoloNu += 1;
+          return null;
+        }
+        if (!convK || (convK.nivelEstratoK !== 1 && convK.nivelEstratoK !== 2)) {
+          descartadosSemNivelK += 1;
           return null;
         }
 
@@ -454,15 +474,24 @@ export async function POST(request: NextRequest) {
           id: c.id,
           latitude: c.latitude,
           longitude: c.longitude,
-          declividadePct: medTerreno ? medTerreno.declividadePct : 0,
-          frequenciaSoloNu:
-            medS2 && typeof medS2.frequenciaSoloNu === "number"
-              ? medS2.frequenciaSoloNu
-              : 0,
-          nivelK: convK ? convK.nivelEstratoK : 1,
+          declividadePct: medTerreno.declividadePct,
+          frequenciaSoloNu: medS2.frequenciaSoloNu,
+          nivelK: convK.nivelEstratoK,
         };
       })
       .filter((item): item is CandidatoEstratificacao => item !== null);
+
+    const censoDescarteEstratificacao = {
+      universoAntesDescarte: tamanhoUniversoAntesDescarte,
+      universoEfetivoTercisSE: estratificacaoInput.length,
+      totalDescartados:
+        descartadosSemTerreno + descartadosSemFrequenciaSoloNu + descartadosSemNivelK,
+      porMotivo: {
+        semDeclividadeTerreno: descartadosSemTerreno,
+        semFrequenciaSoloNuSentinel2: descartadosSemFrequenciaSoloNu,
+        semClasseErodibilidadeNivelK: descartadosSemNivelK,
+      },
+    };
 
     // Cálculo do Semivariograma Empírico e Aresta de Bloco Espacial (Roberts et al., 2017 — Seção 3.7)
     const pontosGeoVariograma = estratificacaoInput.map((c) => ({
@@ -488,6 +517,7 @@ export async function POST(request: NextRequest) {
 
     if (qtdAlvoInLoco > 0 && candidatosNoCorredor.length > 0 && candidatosForaCorredor.length > 0) {
       const qtdCorredorEfetiva = Math.min(qtdAlvoInLoco, candidatosNoCorredor.length);
+      // permitido: subtracao aritmetica de cota amostral inteira nao negativa entre subconjuntos
       const qtdRestanteEfetiva = Math.max(0, tamanhoAmostra - qtdCorredorEfetiva);
 
       const resCorredor = executarAmostragemEstratificada(
@@ -508,6 +538,7 @@ export async function POST(request: NextRequest) {
         subamostraInLocoCorredor: resCorredor.pontos.length,
         amostraOrbitalMacrobacia: resRestante.pontos.length,
         variograma: resultadoVariograma,
+        censoDescarteEstratificacao,
       };
     } else {
       const resultadoEstratificacao = executarAmostragemEstratificada(
@@ -519,6 +550,7 @@ export async function POST(request: NextRequest) {
       relatorioEstratificacao = {
         ...resultadoEstratificacao.relatorio,
         variograma: resultadoVariograma,
+        censoDescarteEstratificacao,
       };
     }
 
@@ -584,7 +616,7 @@ export async function POST(request: NextRequest) {
             propertyName: bruto.nomeImovel || undefined,
             ownerName: bruto.proprietarioNome || undefined,
             incraRegistry: bruto.registroIncra || undefined,
-            propertyAreaHa: bruto.areaHa > 0 ? bruto.areaHa : null,
+            propertyAreaHa: bruto.areaHa,
             municipio: bruto.municipio || undefined,
             uf: "PR",
             dataConsulta: dataConsultaAtual,

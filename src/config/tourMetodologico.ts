@@ -285,12 +285,13 @@ function aplicarSpatialThinning(pontos: PontoAmostral[], dMinMetros: number): Po
     script: {
       linguagem: "typescript",
       rotulo: "Implementação Oficial do Fator C",
-      codigo: `// Decisão D01: Fator C Durigon et al. (2014)
-export function calcularFatorC_Durigon(ndvi: number): number {
-  if (Number.isNaN(ndvi)) return 0.5; // Pior caso seguro
-  const ndviClamped = Math.max(-1, Math.min(1, ndvi));
-  const c = (1 - ndviClamped) / 2;
-  return Number(c.toFixed(4));
+      codigo: `// Decisão D01: Fator C Durigon et al. (2014) — Regra 2 (Sem cortes silenciosos)
+export function calcularFatorC_Durigon(ndvi: Proveniencia<number>): Proveniencia<number> {
+  if (ndvi.estado === "indisponivel") return ndvi;
+  if (ndvi.valor < -1.0 || ndvi.valor > 1.0) {
+    return indisponivel("fora-do-dominio", "NDVI fora de [-1, 1]");
+  }
+  return modelado((1 - ndvi.valor) / 2, "Durigon et al. (2014)", ["NDVI"]);
 }`,
       explicacao:
         "Implementação determinística direta sem parâmetros livres, preservada na íntegra em src/lib/rusle/fatorC.ts.",
@@ -523,9 +524,9 @@ export function exigirDecisao<T>(d: Decisao<T>): T {
     script: {
       linguagem: "typescript",
       rotulo: "Cálculo da Linha de Base RUSLE",
-      codigo: `// Linha de Base Oficial RUSLE (Renard et al., 1997)
+      codigo: `// Linha de Base Oficial RUSLE (Renard et al., 1997) — Invariante 1
 export function calcularPerdaSoloRUSLE(
-  r: number, k: number, ls: number, c: number, p: number = 1.0
+  r: number, k: number, ls: number, c: number, p: number
 ): number {
   const a = r * k * ls * c * p;
   return Number(a.toFixed(2)); // Retorna perda em t/(ha.ano)
