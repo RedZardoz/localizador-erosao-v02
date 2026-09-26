@@ -4,6 +4,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "SAREL — Sistema de Amostragem e Rotulagem para Erosão Laminar",
   description: "Instrumento computacional de suporte à pesquisa de mestrado PPGTCA 2026",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
