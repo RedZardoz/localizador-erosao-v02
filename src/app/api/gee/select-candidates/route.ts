@@ -49,7 +49,7 @@ import { converterErodibilidadeFatorK } from "@/lib/rusle/fatorK";
 import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
 import {
   medirTerrenoCopernicusEmLote,
-  medirSentinel2PontoGeeRest,
+  medirSentinel2EmLoteGeeRest,
 } from "@/lib/gee/copernicusGeeClient";
 import type { PontoAmostral } from "@/types/ponto";
 import type { AreaEstudo } from "@/types/ui";
@@ -372,28 +372,30 @@ export async function POST(request: NextRequest) {
       relatorioEstratificacao = resultadoEstratificacao.relatorio;
     }
 
-    // 7. Montagem Estrita de PontoAmostral — Regra 1, Regra 5, Regra 7 e Invariante 1 (Zero Dados Sintéticos)
+    // 7. Medição Espectral Orbital em Lote no Google Earth Engine REST API v1 (Sentinel-2 MSI L2A)
+    const mapaSentinel2 = sessao.gee?.project_id
+      ? await medirSentinel2EmLoteGeeRest(
+          pontosEstratificados.map((pe) => {
+            const b = candidatosMap.get(pe.id)!;
+            return { id: pe.id, latitude: b.latitude, longitude: b.longitude };
+          }),
+          token.accessToken,
+          sessao.gee.project_id
+        )
+      : new Map();
+
+    // 8. Montagem Estrita de PontoAmostral — Regra 1, Regra 5, Regra 7 e Invariante 1 (Zero Dados Sintéticos)
     const pontosFinais: PontoAmostral[] = await Promise.all(
       pontosEstratificados.map(async (pe, i) => {
         const bruto = candidatosMap.get(pe.id)!;
         const medTerreno = terrenoMap.get(pe.id) ?? null;
         const soloEmbrapa = soloMap.get(pe.id) ?? null;
+        const medicaoS2 = mapaSentinel2.get(pe.id) ?? null;
         const codigoFormatado = "PR-2026-" + String(i + 1).padStart(4, "0");
 
         const baciaNome =
           identificarBacia(bruto.latitude, bruto.longitude) || "Bacia Hidrográfica do Paraná 3";
         const noCorredorInLoco = estaNoCorredorExperimentalBp3(bruto.latitude, bruto.longitude);
-
-        // Consulta pontual Sentinel-2 via GEE REST v1 para lotes compactos (ou sob demanda ao clicar no ponto)
-        let medicaoS2 = null;
-        if (pontosEstratificados.length <= 15 && sessao.gee?.project_id) {
-          medicaoS2 = await medirSentinel2PontoGeeRest(
-            bruto.latitude,
-            bruto.longitude,
-            token.accessToken,
-            sessao.gee.project_id
-          );
-        }
 
         // Contexto fundiário real do banco SICAR/SNCR (sem inventar dados ausentes)
         const contextoFundiario = toContextoFundiario(
@@ -447,7 +449,7 @@ export async function POST(request: NextRequest) {
               estado: "indisponivel" as const,
               causa: "nao-calculado" as const,
               motivo:
-                "Reflectância B8/B4 Sentinel-2 MSI L2A aguarda redução pontual na API REST do Earth Engine (clique no ponto para consultar em tempo real).",
+                "Reflectância B8/B4 Sentinel-2 MSI L2A aguarda redução pontual na API REST do Earth Engine.",
             };
 
         const bsiProveniencia = medicaoS2
@@ -462,8 +464,24 @@ export async function POST(request: NextRequest) {
               estado: "indisponivel" as const,
               causa: "nao-calculado" as const,
               motivo:
-                "Reflectância B11/B4/B8/B2 Sentinel-2 MSI L2A aguarda redução pontual na API REST do Earth Engine (clique no ponto para consultar em tempo real).",
+                "Reflectância B11/B4/B8/B2 Sentinel-2 MSI L2A aguarda redução pontual na API REST do Earth Engine.",
             };
+
+        const freqNuProveniencia =
+          medicaoS2 && medicaoS2.frequenciaSoloNu !== null
+            ? {
+                estado: "medido" as const,
+                valor: medicaoS2.frequenciaSoloNu,
+                fonte: medicaoS2.fonte,
+                adquiridoEm: "2023-12-31",
+                consultadoEm: dataConsultaAtual,
+              }
+            : {
+                estado: "indisponivel" as const,
+                causa: "nao-calculado" as const,
+                motivo:
+                  "Frequência multitemporal de solo exposto aguarda extração da série no Google Earth Engine.",
+              };
 
         const classeEspectral = medicaoS2
           ? classificarPontoEspectral(medicaoS2.bsi, medicaoS2.ndvi)
@@ -659,12 +677,7 @@ export async function POST(request: NextRequest) {
                 estatisticas: {
                   B8_p50: ndviProveniencia,
                 },
-                frequenciaSoloNu: {
-                  estado: "indisponivel",
-                  causa: "nao-calculado",
-                  motivo:
-                    "Frequência multitemporal de solo exposto aguarda extração da série temporal completa no Google Earth Engine.",
-                },
+                frequenciaSoloNu: freqNuProveniencia,
                 maiorSequenciaSoloNu: {
                   estado: "indisponivel",
                   causa: "fora-do-dominio",
@@ -709,6 +722,7 @@ export async function POST(request: NextRequest) {
           // Linha de Base RUSLE estrita: Invariante 1 e Decisões D01 (C), D13 (R pendente), D14 (K Embrapa), D15 (LS pendente)
           linhaDeBase: montarLinhaDeBaseRUSLE({
             ndviProveniencia,
+            bsiProveniencia,
             erodibilidadeProveniencia,
           }),
           fundiario: contextoFundiario,

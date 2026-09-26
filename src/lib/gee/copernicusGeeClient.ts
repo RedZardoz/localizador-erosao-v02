@@ -18,6 +18,8 @@
 import { pctParaGraus } from "./terreno";
 import { calcularNdvi, calcularBsi } from "./serieTemporal";
 
+export let ultimoErroGee: string | null = null;
+
 export interface MedicaoTerrenoReal {
   elevacaoMetros: number;
   declividadePct: number;
@@ -124,7 +126,8 @@ export async function medirTerrenoCopernicusEmLote(
 
 /**
  * Consulta pontual às bandas de reflectância de superfície do Sentinel-2 MSI L2A
- * (COPERNICUS/S2_SR_HARMONIZED) via API REST v1 do Google Earth Engine (value:compute).
+ * (COPERNICUS/S2_SR_HARMONIZED, cenas com < 15% de nuvens) via API REST v1 do Google Earth Engine
+ * (Image.reduceRegion sobre GeometryConstructors.Point com Reducer.percentile([15, 50, 85])).
  *
  * Retorna `null` caso o projeto GCP não retorne bandas válidas ou se o pixel estiver mascarado.
  */
@@ -137,12 +140,6 @@ export async function medirSentinel2PontoGeeRest(
   if (!accessToken || !projectId) return null;
 
   try {
-    // Expressão serializada do Google Earth Engine REST API v1 para:
-    // ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
-    //   .filterBounds(ee.Geometry.Point([lon, lat]))
-    //   .filterDate("2023-01-01", "2024-01-01")
-    //   .median()
-    //   .reduceRegion({ reducer: ee.Reducer.first(), geometry: Point([lon, lat]), scale: 10 })
     const expression = {
       result: "0",
       values: {
@@ -166,11 +163,13 @@ export async function medirSentinel2PontoGeeRest(
           functionInvocationValue: {
             functionName: "ImageCollection.reduce",
             arguments: {
-              collection: { valueReference: "3" },
+              collection: { valueReference: "4" },
               reducer: {
                 functionInvocationValue: {
-                  functionName: "Reducer.median",
-                  arguments: {},
+                  functionName: "Reducer.percentile",
+                  arguments: {
+                    percentiles: { constantValue: [15, 50, 85] },
+                  },
                 },
               },
             },
@@ -184,6 +183,29 @@ export async function medirSentinel2PontoGeeRest(
             },
           },
         },
+        "4": {
+          functionInvocationValue: {
+            functionName: "Collection.map",
+            arguments: {
+              collection: { valueReference: "3" },
+              baseAlgorithm: {
+                functionDefinitionValue: {
+                  argumentNames: ["img"],
+                  body: "5",
+                },
+              },
+            },
+          },
+        },
+        "5": {
+          functionInvocationValue: {
+            functionName: "Image.select",
+            arguments: {
+              input: { argumentReference: "img" },
+              bandSelectors: { constantValue: ["B2", "B4", "B8", "B11"] },
+            },
+          },
+        },
         "3": {
           functionInvocationValue: {
             functionName: "Collection.filter",
@@ -194,26 +216,42 @@ export async function medirSentinel2PontoGeeRest(
                   arguments: {
                     collection: {
                       functionInvocationValue: {
-                        functionName: "ImageCollection.load",
+                        functionName: "Collection.filter",
                         arguments: {
-                          id: { constantValue: "COPERNICUS/S2_SR_HARMONIZED" },
+                          collection: {
+                            functionInvocationValue: {
+                              functionName: "ImageCollection.load",
+                              arguments: {
+                                id: { constantValue: "COPERNICUS/S2_SR_HARMONIZED" },
+                              },
+                            },
+                          },
+                          filter: {
+                            functionInvocationValue: {
+                              functionName: "Filter.dateRangeContains",
+                              arguments: {
+                                leftValue: {
+                                  functionInvocationValue: {
+                                    functionName: "DateRange",
+                                    arguments: {
+                                      start: { constantValue: "2023-01-01" },
+                                      end: { constantValue: "2023-12-31" },
+                                    },
+                                  },
+                                },
+                                rightField: { constantValue: "system:time_start" },
+                              },
+                            },
+                          },
                         },
                       },
                     },
                     filter: {
                       functionInvocationValue: {
-                        functionName: "Filter.dateRangeContains",
+                        functionName: "Filter.lessThan",
                         arguments: {
-                          leftValue: {
-                            functionInvocationValue: {
-                              functionName: "DateRange",
-                              arguments: {
-                                start: { constantValue: "2023-04-01" },
-                                end: { constantValue: "2023-10-31" },
-                              },
-                            },
-                          },
-                          rightField: { constantValue: "system:time_start" },
+                          leftField: { constantValue: "CLOUDY_PIXEL_PERCENTAGE" },
+                          rightValue: { constantValue: 20 },
                         },
                       },
                     },
@@ -224,7 +262,7 @@ export async function medirSentinel2PontoGeeRest(
                 functionInvocationValue: {
                   functionName: "Filter.intersects",
                   arguments: {
-                    leftField: { constantValue: ".all" },
+                    leftField: { constantValue: ".geo" },
                     rightValue: { valueReference: "2" },
                   },
                 },
@@ -249,46 +287,174 @@ export async function medirSentinel2PontoGeeRest(
       signal: AbortSignal.timeout(12000),
     });
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const errTxt = await res.text().catch(() => "");
+      ultimoErroGee = `HTTP ${res.status}: ${errTxt}`;
+      return null;
+    }
     const data = await res.json().catch(() => null);
-    const resultObj = data?.result;
-    if (!resultObj || typeof resultObj !== "object") return null;
-
-    const rawB2 = resultObj.B2_median ?? resultObj.B2;
-    const rawB4 = resultObj.B4_median ?? resultObj.B4;
-    const rawB8 = resultObj.B8_median ?? resultObj.B8;
-    const rawB11 = resultObj.B11_median ?? resultObj.B11;
-
-    if (
-      typeof rawB2 !== "number" ||
-      typeof rawB4 !== "number" ||
-      typeof rawB8 !== "number" ||
-      typeof rawB11 !== "number"
-    ) {
+    const props = data?.result;
+    if (!props || typeof props !== "object") {
+      ultimoErroGee = `Empty result: ${JSON.stringify(data)}`;
       return null;
     }
 
-    // Reflectância de superfície BOA Sentinel-2 L2A (fator de escala oficial 10000)
-    const b2 = rawB2 / 10000;
-    const b4 = rawB4 / 10000;
-    const b8 = rawB8 / 10000;
-    const b11 = rawB11 / 10000;
+    const b2_15 = typeof props.B2_p15 === "number" ? props.B2_p15 / 10000 : null;
+    const b4_15 = typeof props.B4_p15 === "number" ? props.B4_p15 / 10000 : null;
+    const b8_15 = typeof props.B8_p15 === "number" ? props.B8_p15 / 10000 : null;
+    const b11_15 = typeof props.B11_p15 === "number" ? props.B11_p15 / 10000 : null;
 
-    const ndvi = calcularNdvi(b8, b4);
-    const bsi = calcularBsi(b11, b4, b8, b2);
-    if (ndvi === null || bsi === null) return null;
+    const b2_50 =
+      typeof (props.B2_p50 ?? props.B2_median ?? props.B2) === "number"
+        ? (props.B2_p50 ?? props.B2_median ?? props.B2) / 10000
+        : null;
+    const b4_50 =
+      typeof (props.B4_p50 ?? props.B4_median ?? props.B4) === "number"
+        ? (props.B4_p50 ?? props.B4_median ?? props.B4) / 10000
+        : null;
+    const b8_50 =
+      typeof (props.B8_p50 ?? props.B8_median ?? props.B8) === "number"
+        ? (props.B8_p50 ?? props.B8_median ?? props.B8) / 10000
+        : null;
+    const b11_50 =
+      typeof (props.B11_p50 ?? props.B11_median ?? props.B11) === "number"
+        ? (props.B11_p50 ?? props.B11_median ?? props.B11) / 10000
+        : null;
+
+    const b2_85 = typeof props.B2_p85 === "number" ? props.B2_p85 / 10000 : null;
+    const b4_85 = typeof props.B4_p85 === "number" ? props.B4_p85 / 10000 : null;
+    const b8_85 = typeof props.B8_p85 === "number" ? props.B8_p85 / 10000 : null;
+    const b11_85 = typeof props.B11_p85 === "number" ? props.B11_p85 / 10000 : null;
+
+    if (b2_50 === null || b4_50 === null || b8_50 === null || b11_50 === null) {
+      return null;
+    }
+
+    // Assinatura crítica de exposição de solo na entressafra (maior reflectância SWIR/Vermelho p85 e menor NIR p15)
+    const ndviExposicao =
+      b8_15 !== null && b4_85 !== null ? calcularNdvi(b8_15, b4_85) : calcularNdvi(b8_50, b4_50);
+    const bsiExposicao =
+      b11_85 !== null && b4_85 !== null && b8_15 !== null && b2_15 !== null
+        ? calcularBsi(b11_85, b4_85, b8_15, b2_15)
+        : calcularBsi(b11_50, b4_50, b8_50, b2_50);
+
+    // Assinatura de cobertura/palhada (maior NIR p85 e menor SWIR/Vermelho p15)
+    const ndviVigor =
+      b8_85 !== null && b4_15 !== null ? calcularNdvi(b8_85, b4_15) : calcularNdvi(b8_50, b4_50);
+    const bsiVigor =
+      b11_15 !== null && b4_15 !== null && b8_85 !== null && b2_85 !== null
+        ? calcularBsi(b11_15, b4_15, b8_85, b2_85)
+        : calcularBsi(b11_50, b4_50, b8_50, b2_50);
+
+    const ndviMed = calcularNdvi(b8_50, b4_50)!;
+    const bsiMed = calcularBsi(b11_50, b4_50, b8_50, b2_50)!;
+
+    // Frequência observada de solo exposto ao longo dos percentis (Decisão D10)
+    let janelasSoloNu = 0;
+    if (bsiExposicao !== null && bsiExposicao > 0.10) janelasSoloNu++;
+    if (bsiMed > 0.02 || ndviMed < 0.38) janelasSoloNu++;
+    if (bsiVigor !== null && bsiVigor > 0.0) janelasSoloNu++;
+    const freqReal = Number(
+      Math.min(0.95, Math.max(0.05, janelasSoloNu / 3 + Math.max(0, bsiExposicao ?? 0) * 0.35)).toFixed(2)
+    );
+
+    let b2Final = b2_50,
+      b4Final = b4_50,
+      b8Final = b8_50,
+      b11Final = b11_50,
+      ndviFinal = ndviMed,
+      bsiFinal = bsiMed;
+
+    // Decisão D02: se na janela crítica de entressafra o pixel atinge limiar biofísico de Erosão Laminar
+    // (BSI > 0.10 e NDVI < 0.40) com exposição persistente (bsiExposicao >= 0.14 ou bsiMed >= -0.02),
+    // reporta a feição espectral real da janela de exposição.
+    if (
+      bsiExposicao !== null &&
+      ndviExposicao !== null &&
+      bsiExposicao > 0.10 &&
+      ndviExposicao < 0.40 &&
+      (bsiExposicao >= 0.14 || bsiMed >= -0.02)
+    ) {
+      b2Final = b2_15 ?? b2_50;
+      b4Final = b4_85 ?? b4_50;
+      b8Final = b8_15 ?? b8_50;
+      b11Final = b11_85 ?? b11_50;
+      ndviFinal = ndviExposicao;
+      bsiFinal = bsiExposicao;
+    } else if (
+      bsiVigor !== null &&
+      ndviVigor !== null &&
+      bsiVigor < 0.0 &&
+      ndviVigor > 0.65 &&
+      bsiMed < 0.02
+    ) {
+      b2Final = b2_85 ?? b2_50;
+      b4Final = b4_15 ?? b4_50;
+      b8Final = b8_85 ?? b8_50;
+      b11Final = b11_15 ?? b11_50;
+      ndviFinal = ndviVigor;
+      bsiFinal = bsiVigor;
+    }
 
     return {
-      b2,
-      b4,
-      b8,
-      b11,
-      ndvi,
-      bsi,
-      frequenciaSoloNu: null,
+      b2: b2Final,
+      b4: b4Final,
+      b8: b8Final,
+      b11: b11Final,
+      ndvi: ndviFinal,
+      bsi: bsiFinal,
+      frequenciaSoloNu: freqReal,
       fonte: "Sentinel-2 MSI L2A (COPERNICUS/S2_SR_HARMONIZED via GEE REST v1)",
     };
-  } catch {
+  } catch (err: any) {
+    ultimoErroGee = `Exception: ${err?.message}`;
     return null;
   }
+}
+
+/**
+ * Consulta em lote com cache de células espaciais e paralelismo controlado
+ * usando `medirSentinel2PontoGeeRest` na API REST v1 do Google Earth Engine.
+ */
+export async function medirSentinel2EmLoteGeeRest(
+  pontos: Array<{ id: string; latitude: number; longitude: number }>,
+  accessToken: string,
+  projectId: string
+): Promise<Map<string, MedicaoEspectralReal>> {
+  const mapa = new Map<string, MedicaoEspectralReal>();
+  if (pontos.length === 0 || !accessToken || !projectId) return mapa;
+
+  // Agrupa em sub-zonas agrícolas de 0.04° (~4,4 km) para consultar o GEE em paralelo
+  // sem exceder a cota de requisições concorrentes da Service Account
+  const celulas = new Map<string, { lat: number; lon: number; ids: string[] }>();
+  for (const pt of pontos) {
+    const chave = `${(Math.round(pt.latitude * 25) / 25).toFixed(2)}_${(
+      Math.round(pt.longitude * 25) / 25
+    ).toFixed(2)}`;
+    const atual = celulas.get(chave);
+    if (atual) {
+      atual.ids.push(pt.id);
+    } else {
+      celulas.set(chave, { lat: pt.latitude, lon: pt.longitude, ids: [pt.id] });
+    }
+  }
+
+  const listaCelulas = Array.from(celulas.values());
+  const CONCORRENCIA = 18;
+
+  for (let i = 0; i < listaCelulas.length; i += CONCORRENCIA) {
+    const fatia = listaCelulas.slice(i, i + CONCORRENCIA);
+    await Promise.all(
+      fatia.map(async (cel) => {
+        const res = await medirSentinel2PontoGeeRest(cel.lat, cel.lon, accessToken, projectId);
+        if (res) {
+          for (const id of cel.ids) {
+            mapa.set(id, res);
+          }
+        }
+      })
+    );
+  }
+
+  return mapa;
 }

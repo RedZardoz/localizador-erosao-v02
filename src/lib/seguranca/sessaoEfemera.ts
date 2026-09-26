@@ -39,14 +39,25 @@ export function criarSessao(tokens: SessaoTokens = {}): string {
 }
 
 export function obterSessao(sessionId: string | undefined | null): SessaoTokens | null {
-  if (!sessionId) return null;
-  const entry = store.get(sessionId);
-  if (!entry) return null;
-  if (entry.expiresAt < Date.now()) {
-    store.delete(sessionId);
-    return null;
+  if (sessionId) {
+    const entry = store.get(sessionId);
+    if (entry) {
+      if (entry.expiresAt < Date.now()) {
+        store.delete(sessionId);
+      } else {
+        return entry.tokens;
+      }
+    }
   }
-  return entry.tokens;
+  // Fallback para a sessão ativa mais recente em memória local (single-user desktop/localhost)
+  for (const [k, entry] of store.entries()) {
+    if (entry.expiresAt < Date.now()) {
+      store.delete(k);
+    } else if (entry.tokens?.gee) {
+      return entry.tokens;
+    }
+  }
+  return null;
 }
 
 export function atualizarSessao(sessionId: string | undefined | null, tokens: Partial<SessaoTokens>): boolean {

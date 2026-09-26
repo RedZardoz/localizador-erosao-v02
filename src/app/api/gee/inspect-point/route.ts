@@ -4,6 +4,7 @@ import { getGoogleAccessToken, EARTH_ENGINE_SCOPES } from "@/lib/gee/auth";
 import {
   medirTerrenoCopernicusEmLote,
   medirSentinel2PontoGeeRest,
+  ultimoErroGee,
 } from "@/lib/gee/copernicusGeeClient";
 import { queryEmbrapaSoil } from "@/lib/embrapa/embrapaSoilClient";
 import { matchRuralProperty, toContextoFundiario } from "@/lib/fundiario/matcher";
@@ -206,8 +207,34 @@ export async function POST(request: NextRequest) {
           soloRes?.solo?.confianca ?? point.solo.confiancaPedologica,
         erodibilidadeClasse: erodibilidadeProveniencia,
       },
+      temporal: {
+        ...point.temporal,
+        D: point.temporal?.D
+          ? {
+              ...point.temporal.D,
+              serie: {
+                ...point.temporal.D.serie,
+                estatisticas: {
+                  ...point.temporal.D.serie.estatisticas,
+                  ...(ndviProveniencia ? { B8_p50: ndviProveniencia } : {}),
+                },
+                frequenciaSoloNu:
+                  medicaoS2 && medicaoS2.frequenciaSoloNu !== null
+                    ? {
+                        estado: "medido",
+                        valor: medicaoS2.frequenciaSoloNu,
+                        fonte: medicaoS2.fonte,
+                        adquiridoEm: "2023-12-31",
+                        consultadoEm: dataConsultaAtual,
+                      }
+                    : point.temporal.D.serie.frequenciaSoloNu,
+              },
+            }
+          : point.temporal?.D,
+      },
       linhaDeBase: montarLinhaDeBaseRUSLE({
         ndviProveniencia: ndviProveniencia ?? null,
+        bsiProveniencia: bsiProveniencia ?? null,
         erodibilidadeProveniencia: erodibilidadeProveniencia ?? null,
       }),
       fundiario: fundiarioRes
@@ -218,6 +245,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       ponto: pontoAtualizado,
+      geeDebug: ultimoErroGee,
     });
   } catch (err: any) {
     return NextResponse.json(

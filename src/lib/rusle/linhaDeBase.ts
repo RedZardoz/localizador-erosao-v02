@@ -20,6 +20,7 @@ import { obterFatorKComProveniencia } from "./fatorK";
 
 export interface ParametrosLinhaDeBaseRUSLE {
   ndviProveniencia?: Proveniencia<number> | null;
+  bsiProveniencia?: Proveniencia<number> | null;
   erodibilidadeProveniencia?: Proveniencia<string> | null;
   fatorRSubstituto?: Proveniencia<number>;
   fatorKSubstituto?: Proveniencia<number>;
@@ -48,6 +49,7 @@ export function obterFatorPPadrao(): Proveniencia<number> {
 export function montarLinhaDeBaseRUSLE(params: ParametrosLinhaDeBaseRUSLE = {}): LinhaDeBaseRUSLE {
   const {
     ndviProveniencia,
+    bsiProveniencia,
     erodibilidadeProveniencia,
     fatorRSubstituto,
     fatorKSubstituto,
@@ -56,7 +58,7 @@ export function montarLinhaDeBaseRUSLE(params: ParametrosLinhaDeBaseRUSLE = {}):
   } = params;
 
   // 1. Fator C (Decisão D01 - Durigon et al., 2014)
-  const fatorC = obterFatorCComProveniencia(ndviProveniencia);
+  const fatorC = obterFatorCComProveniencia(ndviProveniencia, bsiProveniencia);
 
   // 2. Fator P (Renard et al., 1997 - P = 1.0 tabelado por padrão)
   const fatorP: Proveniencia<number> = fatorPSubstituto ?? obterFatorPPadrao();
