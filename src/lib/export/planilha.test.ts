@@ -3,6 +3,8 @@ import { gerarPlanilhaXLSX } from "./planilha";
 import { gerarCsvCientifico } from "./csv";
 import type { PontoAmostral } from "@/types/ponto";
 import { ErroPontoSinteticoDetectado } from "@/lib/seguranca/guardaSintetico";
+import { montarMatrizTreino } from "@/lib/matriz/montagem";
+import type { PerfilExportacao } from "@/lib/matriz/perfis";
 
 function mockPonto(id: number, parciais?: Partial<PontoAmostral>): PontoAmostral {
   return {
@@ -77,5 +79,48 @@ describe("Exportação XLSX e CSV — Validações e Guardas", () => {
   it("gerarCsvCientifico recusa exportação se houver pontos sintéticos", () => {
     const pontos = [mockPonto(1, { id: "TEST-01" })];
     expect(() => gerarCsvCientifico(pontos)).toThrow(ErroPontoSinteticoDetectado);
+  });
+
+  it("todos os 5 perfis de exportação (planilha, interpretacao-cega, campo-cego, voo-cego, matriz-treino) passam no Invariante 2 em CSV e XLSX", async () => {
+    const pontos = Array.from({ length: 4 }, (_, i) => mockPonto(i + 1));
+    const perfis: PerfilExportacao[] = [
+      "planilha",
+      "interpretacao-cega",
+      "campo-cego",
+      "voo-cego",
+      "matriz-treino",
+    ];
+    for (const perfil of perfis) {
+      const csv = gerarCsvCientifico(pontos, perfil);
+      expect(csv.startsWith("\uFEFF")).toBe(true);
+      const xlsx = await gerarPlanilhaXLSX(pontos, { perfil });
+      expect(xlsx).toBeInstanceOf(Buffer);
+    }
+  });
+
+  it("montarMatrizTreino respeita estritamente a Regra 4: classeAmostral espectral não sobrescreve rótulo humano 'controle'", () => {
+    const p = mockPonto(1, { classeAmostral: "erosao" });
+    const res = montarMatrizTreino(
+      [p],
+      {
+        [p.codigo]: {
+          final: {
+            classe: "controle",
+            modalidade: "campo",
+            observador: "Perito_1",
+            observadoEm: "2026-09-26",
+            cego: true,
+          },
+          origens: [],
+          kappa: null,
+          divergencia: "nenhuma",
+          papelConjunto: "treino",
+        },
+      },
+      { modeloJanela: "D" }
+    );
+    expect(res.linhas).toHaveLength(1);
+    expect(res.linhas[0].classeAlvoBinaria).toBe(0);
+    expect(res.linhas[0].rotuloClasse).toBe("controle");
   });
 });

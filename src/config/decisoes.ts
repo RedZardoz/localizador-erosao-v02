@@ -72,6 +72,8 @@ export const DECISOES: Record<string, Decisao<any>> = {
     id: "D05",
     titulo: "Extensão da série: apenas Sentinel-2 ou inclui Landsat",
     estado: "pendente" as EstadoDecisao,
+    justificativa: "Proposta estruturada: adotar exclusivamente a série Sentinel-2 MSI (2016–2026, 10 m) no treinamento supervisionado para evitar salto de escala de 9x (900 m² vs 100 m²) em relação ao Landsat.",
+    referencia: "Metodologia PPGTCA 2026, Seção 3.1; Drusch et al. (2012)",
   },
   D06: {
     id: "D06",
@@ -87,11 +89,15 @@ export const DECISOES: Record<string, Decisao<any>> = {
     id: "D07",
     titulo: "Domínio de validade (ex.: declividade 3-20%, uso agrícola)",
     estado: "pendente" as EstadoDecisao,
+    justificativa: "Proposta estruturada: declividade entre 3% e 20% (relevo suave ondulado a ondulado) sob uso agrícola de lavouras temporárias e pastagem cultivada (ESA WorldCover 30, 40, 60).",
+    referencia: "SiBCS / Embrapa Solos (2018); Metodologia PPGTCA 2026, Seção 3.1",
   },
   D08: {
     id: "D08",
     titulo: "Tratamento das unidades pedológicas em associação",
     estado: "pendente" as EstadoDecisao,
+    justificativa: "Proposta estruturada: atribuir o componente dominante (ordem_1) com propagação explícita de confiança pedológica 'media' e ressalva visual no Inspetor.",
+    referencia: "Embrapa GeoInfo (parana_solos_20201105); Coelho et al. (2024)",
   },
   D09: {
     id: "D09",
@@ -127,11 +133,15 @@ export const DECISOES: Record<string, Decisao<any>> = {
     id: "D12",
     titulo: "Dimensões da estratificação (18 estratos vs ampliada)",
     estado: "pendente" as EstadoDecisao,
+    justificativa: "Proposta estruturada: matriz fatorial de 18 estratos canônicos (3 tercis de declividade S^ x 3 tercis de exposição E^ x 2 níveis de erodibilidade K^).",
+    referencia: "Planejamento V3, §7.2; Cochran (1977)",
   },
   D13: {
     id: "D13",
     titulo: "Formulação do Fator R",
     estado: "pendente" as EstadoDecisao,
+    justificativa: "Proposta estruturada: equação de erosividade regional do Paraná baseada em séries pluviométricas CHIRPS/IMERG.",
+    referencia: "Waltrick et al. (2015), RBCS; Oliveira et al. (2013)",
   },
   D14: {
     id: "D14",
@@ -147,6 +157,8 @@ export const DECISOES: Record<string, Decisao<any>> = {
     id: "D15",
     titulo: "Fator LS: método de acúmulo e expoentes m e n",
     estado: "pendente" as EstadoDecisao,
+    justificativa: "Proposta estruturada: algoritmo bidimensional de área de contribuição específica (Desmet & Govers, 1996) projetado em UTM 22S (EPSG:31982).",
+    referencia: "Desmet & Govers (1996), JSWC 51(5):427-433; McCool et al. (1989)",
   },
   D16: {
     id: "D16",
@@ -162,16 +174,22 @@ export const DECISOES: Record<string, Decisao<any>> = {
     id: "D17",
     titulo: "Ciclo da cota Planet: mensal ou total",
     estado: "pendente" as EstadoDecisao,
+    justificativa: "Proposta estruturada: controle de cota acumulado sobre o volume total de área acadêmica contratada.",
+    referencia: "Planet Labs Education & Research Program",
   },
   D18: {
     id: "D18",
     titulo: "Buffer do recorte Planet (recomendado 250m)",
     estado: "pendente" as EstadoDecisao,
+    justificativa: "Proposta estruturada: raio de buffer de 250 m (~19,6 ha) ao redor do centróide amostral para cobrir a encosta do talhão.",
+    referencia: "Planejamento V3, §10.4",
   },
   D19: {
     id: "D19",
     titulo: "Quantidade de pontos com pares de evento",
     estado: "pendente" as EstadoDecisao,
+    justificativa: "Proposta estruturada: subconjunto de 40 a 60 pontos amostrais pareados pré/pós evento erosivo pluviométrico.",
+    referencia: "Planejamento V3, §10.5",
   },
 };
 

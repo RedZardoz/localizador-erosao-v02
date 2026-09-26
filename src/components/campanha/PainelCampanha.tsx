@@ -9,6 +9,13 @@ import {
   MetricasValidacaoMatricial,
   PixelValidacao,
 } from "@/lib/padraoOuro/validacaoMatricial";
+import { gerarCsvCientifico } from "@/lib/export/csv";
+import { gerarPlanilhaXLSX } from "@/lib/export/planilha";
+import {
+  ingestarSubmissoesKobo,
+  ResultadoIngestaoKobo,
+  CoordenadaEsperada,
+} from "@/lib/rotulos/ingestaoKobo";
 import {
   FileSpreadsheet,
   CheckCircle2,
@@ -17,13 +24,157 @@ import {
   Layers,
   MapPin,
   ShieldCheck,
+  Download,
+  Upload,
+  AlertTriangle,
 } from "lucide-react";
 
 export function PainelCampanha() {
-  const { pontos, setMapState, setModalAtiva } = useSarelStore();
+  const { pontos, pontosProvisorios, setMapState, setModalAtiva, definirRotuloConsolidado, adicionarLog } =
+    useSarelStore();
+  const pontosAtivos = pontos.length > 0 ? pontos : pontosProvisorios;
   const [abaInterna, setAbaInterna] = useState<"exportacao" | "kobo" | "padrao-ouro">("padrao-ouro");
   const [sitioSelecionadoId, setSitioSelecionadoId] = useState<string>("sitio-ouro-01");
   const [metricasSimuladas, setMetricasSimuladas] = useState<MetricasValidacaoMatricial | null>(null);
+  const [resultadoKobo, setResultadoKobo] = useState<ResultadoIngestaoKobo | null>(null);
+  const [msgCampanha, setMsgCampanha] = useState<{ tipo: "sucesso" | "erro"; texto: string } | null>(null);
+  const fileInputKoboRef = React.useRef<HTMLInputElement | null>(null);
+
+  const exportarPerfilCsv = (perfil: PerfilExportacao) => {
+    if (pontosAtivos.length === 0) return;
+    try {
+      const csvStr = gerarCsvCientifico(pontosAtivos, perfil);
+      const blob = new Blob([csvStr], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sarel_${perfil}_${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setMsgCampanha({
+        tipo: "sucesso",
+        texto: `Perfil '${perfil}' exportado em CSV (${pontosAtivos.length} amostras) respeitando o Invariante 2!`,
+      });
+    } catch (e: any) {
+      setMsgCampanha({ tipo: "erro", texto: e?.message || "Erro ao exportar perfil CSV." });
+    }
+  };
+
+  const exportarPerfilXlsx = async (perfil: PerfilExportacao) => {
+    if (pontosAtivos.length === 0) return;
+    try {
+      const buffer = await gerarPlanilhaXLSX(pontosAtivos, { perfil });
+      const blob = new Blob([buffer as any], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sarel_${perfil}_${Date.now()}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setMsgCampanha({
+        tipo: "sucesso",
+        texto: `Perfil '${perfil}' exportado em XLSX (${pontosAtivos.length} amostras) respeitando o Invariante 2!`,
+      });
+    } catch (e: any) {
+      setMsgCampanha({ tipo: "erro", texto: e?.message || "Erro ao exportar perfil XLSX." });
+    }
+  };
+
+  const baixarTemplateKoboCsv = () => {
+    if (pontosAtivos.length === 0) return;
+    const hoje = new Date().toISOString().split("T")[0];
+    const cabecalho = "codigoPonto,classe,observador,data_observacao,latitude,longitude,confianca,cego";
+    const linhas = pontosAtivos.map((p, i) => {
+      const classeSugestao = i % 2 === 0 ? "erosao" : "controle";
+      return `${p.codigo},${classeSugestao},Equipe_Campo_PPGTCA,${hoje},${p.latitude.toFixed(6)},${p.longitude.toFixed(6)},alta,true`;
+    });
+    const csv = "\uFEFF" + [cabecalho, ...linhas].join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `template_kobo_fase_b_${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const processarArquivoKobo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const texto = await file.text();
+      let registros: Record<string, unknown>[] = [];
+      if (file.name.toLowerCase().endsWith(".json")) {
+        const parsed = JSON.parse(texto);
+        registros = Array.isArray(parsed) ? parsed : [];
+      } else {
+        const linhas = texto
+          .replace(/^\uFEFF/, "")
+          .split(/\r?\n/)
+          .filter((l) => l.trim().length > 0 && !l.trim().startsWith("#"));
+        if (linhas.length >= 2) {
+          const cols = linhas[0].split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
+          registros = linhas.slice(1).map((l) => {
+            const vals = l.split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
+            const obj: Record<string, unknown> = {};
+            cols.forEach((col, idx) => {
+              obj[col] = vals[idx] ?? "";
+            });
+            if (obj.cego === "true") obj.cego = true;
+            if (obj.cego === "false") obj.cego = false;
+            return obj;
+          });
+        }
+      }
+
+      const mapaEsperadas: Record<string, CoordenadaEsperada> = {};
+      for (const p of pontosAtivos) {
+        mapaEsperadas[p.codigo] = {
+          codigo: p.codigo,
+          latitude: p.latitude,
+          longitude: p.longitude,
+        };
+      }
+
+      const res = ingestarSubmissoesKobo(registros, mapaEsperadas);
+      setResultadoKobo(res);
+
+      let consolidadosCount = 0;
+      for (const item of res.aceitos) {
+        if (item.desvioAceitavel) {
+          definirRotuloConsolidado(item.pontoCodigo, {
+            final: item.rotulo,
+            origens: [item.rotulo],
+            kappa: null,
+            divergencia: "nenhuma",
+            papelConjunto: "treino",
+          });
+          consolidadosCount++;
+        }
+      }
+
+      adicionarLog(
+        "info",
+        "KoboCollect-FaseB",
+        `Ingestão Kobo concluída: ${consolidadosCount} rótulos consolidados (${res.rejeitados.length} rejeitados).`
+      );
+      setMsgCampanha({
+        tipo: "sucesso",
+        texto: `Ingestão Kobo concluída: ${consolidadosCount} pontos rotulados e integrados à Matriz de Treino!`,
+      });
+    } catch (err: any) {
+      setMsgCampanha({
+        tipo: "erro",
+        texto: err?.message || "Falha ao processar arquivo KoboCollect.",
+      });
+    } finally {
+      if (fileInputKoboRef.current) {
+        fileInputKoboRef.current.value = "";
+      }
+    }
+  };
 
   const perfis: PerfilExportacao[] = [
     "planilha",
@@ -384,15 +535,30 @@ export function PainelCampanha() {
       {/* CONTEÚDO 2: EXPORTAÇÃO CEGA POR PERFIL */}
       {abaInterna === "exportacao" && (
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-4">
-          <div>
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-              Gestão de Campanha e Exportação por Perfil Cego (Invariante 2)
-            </h3>
-            <p className="text-xs text-slate-500 mt-1">
-              Garante que equipes de campo e fotointérpretes recebam planilhas cegas sem vazamento de
-              features, escores ou rótulos de outras modalidades.
-            </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Gestão de Campanha e Exportação por Perfil Cego (Invariante 2)
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Garante que equipes de campo e fotointérpretes recebam planilhas cegas sem vazamento de
+                features, escores ou rótulos de outras modalidades ({pontosAtivos.length} pontos ativos).
+              </p>
+            </div>
           </div>
+
+          {msgCampanha && (
+            <div
+              className={`p-3 rounded-xl border text-xs flex items-center gap-2 ${
+                msgCampanha.tipo === "sucesso"
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                  : "bg-rose-50 border-rose-200 text-rose-800"
+              }`}
+            >
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>{msgCampanha.texto}</span>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 pt-2">
             {perfis.map((perfil) => {
@@ -412,12 +578,24 @@ export function PainelCampanha() {
                     </p>
                   </div>
 
-                  <button
-                    disabled={pontos.length === 0}
-                    className="mt-4 w-full rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    Exportar CSV / XLSX ({perfil})
-                  </button>
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => exportarPerfilCsv(perfil)}
+                      disabled={pontosAtivos.length === 0}
+                      className="rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 py-1.5 px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      CSV
+                    </button>
+                    <button
+                      onClick={() => exportarPerfilXlsx(perfil)}
+                      disabled={pontosAtivos.length === 0}
+                      className="rounded-lg bg-indigo-600 hover:bg-indigo-700 py-1.5 px-2 text-xs font-semibold text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      <FileSpreadsheet className="w-3.5 h-3.5" />
+                      XLSX
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -428,30 +606,103 @@ export function PainelCampanha() {
       {/* CONTEÚDO 3: INGESTÃO KOBOCOLLECT (FASE B) */}
       {abaInterna === "kobo" && (
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-4">
-          <div>
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-              Ingestão de Formulários Georreferenciados KoboCollect (Fase B)
-            </h3>
-            <p className="text-xs text-slate-500 mt-1">
-              Ingestão automatizada de formulários de campo com conferência geodésica de tolerância P03 readequada (15 m nominal, 
-              tolerância de até 25 m sob aviso de qualidade, e rejeição estrita &gt; 25 m) e avaliação de concordância inter-avaliadores (Kappa de Cohen).
-            </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Ingestão de Formulários Georreferenciados KoboCollect (Fase B)
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Ingestão automatizada de formulários de campo com conferência geodésica de tolerância P03 readequada (15 m nominal,
+                tolerância de até 25 m sob aviso de qualidade, e rejeição estrita &gt; 25 m).
+              </p>
+            </div>
+            <button
+              onClick={baixarTemplateKoboCsv}
+              disabled={pontosAtivos.length === 0}
+              className="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Baixar Template CSV dos Pontos ({pontosAtivos.length})
+            </button>
           </div>
 
+          {msgCampanha && (
+            <div
+              className={`p-3 rounded-xl border text-xs flex items-center gap-2 ${
+                msgCampanha.tipo === "sucesso"
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                  : "bg-rose-50 border-rose-200 text-rose-800"
+              }`}
+            >
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>{msgCampanha.texto}</span>
+            </div>
+          )}
+
           <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center space-y-3 bg-slate-50/50 dark:bg-slate-800/30">
+            <input
+              ref={fileInputKoboRef}
+              type="file"
+              accept=".csv,.json"
+              onChange={processarArquivoKobo}
+              className="hidden"
+            />
             <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
             <div>
               <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                Arraste o arquivo CSV/Excel exportado do KoboToolbox
+                Selecione o arquivo CSV ou JSON exportado do KoboToolbox
               </p>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                Contendo as colunas: <code>codigoPonto</code>, <code>classe</code>, <code>_geolocation</code>, <code>data_observacao</code>
+                Contendo as colunas: <code>codigoPonto</code>, <code>classe</code> (<code>erosao</code> ou <code>controle</code>), <code>observador</code>, <code>data_observacao</code>, <code>latitude</code>, <code>longitude</code>
               </p>
             </div>
-            <button className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm cursor-pointer">
-              Selecionar Arquivo Kobo
+            <button
+              onClick={() => fileInputKoboRef.current?.click()}
+              className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm cursor-pointer inline-flex items-center gap-1.5"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Selecionar Arquivo Kobo (CSV / JSON)
             </button>
           </div>
+
+          {resultadoKobo && (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3 text-xs">
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+                  <span className="text-slate-500 block text-[10px]">Total Processados</span>
+                  <span className="text-base font-bold text-slate-900 font-mono">
+                    {resultadoKobo.totalProcessados}
+                  </span>
+                </div>
+                <div className="bg-white p-2.5 rounded-lg border border-emerald-200">
+                  <span className="text-emerald-600 block text-[10px]">Aceitos (P03 ≤ 25m)</span>
+                  <span className="text-base font-bold text-emerald-700 font-mono">
+                    {resultadoKobo.aceitos.filter((a) => a.desvioAceitavel).length}
+                  </span>
+                </div>
+                <div className="bg-white p-2.5 rounded-lg border border-rose-200">
+                  <span className="text-rose-600 block text-[10px]">Rejeitados / Desvio &gt; 25m</span>
+                  <span className="text-base font-bold text-rose-700 font-mono">
+                    {resultadoKobo.rejeitados.length +
+                      resultadoKobo.aceitos.filter((a) => !a.desvioAceitavel).length}
+                  </span>
+                </div>
+              </div>
+              {resultadoKobo.avisosQualidade.length > 0 && (
+                <div className="space-y-1 pt-2 border-t border-slate-200">
+                  <span className="font-bold text-amber-700 flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    Avisos de Qualidade Geodésica (P03):
+                  </span>
+                  {resultadoKobo.avisosQualidade.slice(0, 5).map((av, idx) => (
+                    <p key={idx} className="text-[11px] text-amber-800 font-mono">
+                      • {av}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

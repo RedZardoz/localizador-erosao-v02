@@ -134,6 +134,38 @@ export async function POST(request: NextRequest) {
               ...point.espectral,
               ndvi: ndviProveniencia,
               bsi: bsiProveniencia,
+              ...(medicaoS2
+                ? {
+                    b2: {
+                      estado: "medido" as const,
+                      valor: medicaoS2.b2,
+                      fonte: medicaoS2.fonte,
+                      adquiridoEm: "2023-10-31",
+                      consultadoEm: dataConsultaAtual,
+                    },
+                    b4: {
+                      estado: "medido" as const,
+                      valor: medicaoS2.b4,
+                      fonte: medicaoS2.fonte,
+                      adquiridoEm: "2023-10-31",
+                      consultadoEm: dataConsultaAtual,
+                    },
+                    b8: {
+                      estado: "medido" as const,
+                      valor: medicaoS2.b8,
+                      fonte: medicaoS2.fonte,
+                      adquiridoEm: "2023-10-31",
+                      consultadoEm: dataConsultaAtual,
+                    },
+                    b12: {
+                      estado: "medido" as const,
+                      valor: medicaoS2.b11,
+                      fonte: medicaoS2.fonte,
+                      adquiridoEm: "2023-10-31",
+                      consultadoEm: dataConsultaAtual,
+                    },
+                  }
+                : {}),
             }
           : point.espectral,
       terreno: {

@@ -136,7 +136,10 @@ export function estaNoCorredorExperimentalBp3(lat: number, lon: number): boolean
 export function estaNoDivisorHidrologicoBp3(lat: number, lon: number): boolean {
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
   const bp3Feature = PARANA_BASINS_GEOJSON.features.find(
-    (f) => f.properties?.id === "bacia-parana-3" || f.properties?.name?.includes("Paraná 3")
+    (f) =>
+      f.id === "basin-parana3" ||
+      f.properties?.code === "BP3" ||
+      f.properties?.name?.includes("Paraná 3")
   );
   if (!bp3Feature) return false;
   return pontoEmAnel(lon, lat, bp3Feature.geometry.coordinates[0]);

@@ -285,18 +285,36 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
   carregarPontos: (novosPontos) => {
     assegurarApenasPontosReais(novosPontos);
     const harmonizados = novosPontos.map(harmonizarClasseAmostral);
-    set({
-      pontos: harmonizados,
-      pontoSelecionadoId: harmonizados.length > 0 ? harmonizados[0].id : null,
+    set((state) => {
+      const novosRotulos = { ...state.rotulosConsolidados };
+      for (const p of harmonizados) {
+        if (p.rotulo) {
+          novosRotulos[p.codigo] = p.rotulo;
+        }
+      }
+      return {
+        pontos: harmonizados,
+        rotulosConsolidados: novosRotulos,
+        pontoSelecionadoId: harmonizados.length > 0 ? harmonizados[0].id : null,
+      };
     });
   },
 
   carregarPontosProvisorios: (novosPontos) => {
     assegurarApenasPontosReais(novosPontos);
     const harmonizados = novosPontos.map(harmonizarClasseAmostral);
-    set({
-      pontosProvisorios: harmonizados,
-      pontoSelecionadoId: harmonizados.length > 0 ? harmonizados[0].id : null,
+    set((state) => {
+      const novosRotulos = { ...state.rotulosConsolidados };
+      for (const p of harmonizados) {
+        if (p.rotulo) {
+          novosRotulos[p.codigo] = p.rotulo;
+        }
+      }
+      return {
+        pontosProvisorios: harmonizados,
+        rotulosConsolidados: novosRotulos,
+        pontoSelecionadoId: harmonizados.length > 0 ? harmonizados[0].id : null,
+      };
     });
   },
 
@@ -343,6 +361,9 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
       pontosProvisorios: state.pontosProvisorios.map((p) =>
         p.id === harmonizado.id ? harmonizado : p
       ),
+      rotulosConsolidados: harmonizado.rotulo
+        ? { ...state.rotulosConsolidados, [harmonizado.codigo]: harmonizado.rotulo }
+        : state.rotulosConsolidados,
     }));
   },
 
@@ -354,6 +375,12 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
         ...state.rotulosConsolidados,
         [codigo]: rotulo,
       },
+      pontos: state.pontos.map((p) =>
+        p.codigo === codigo ? harmonizarClasseAmostral({ ...p, rotulo }) : p
+      ),
+      pontosProvisorios: state.pontosProvisorios.map((p) =>
+        p.codigo === codigo ? harmonizarClasseAmostral({ ...p, rotulo }) : p
+      ),
     })),
 
   obterPontoSelecionado: () => {

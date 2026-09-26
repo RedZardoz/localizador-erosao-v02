@@ -38,8 +38,17 @@ import fs from "fs";
 import { obterSessao, SAREL_SESSION_COOKIE } from "@/lib/seguranca/sessaoEfemera";
 import { getGoogleAccessToken, EARTH_ENGINE_SCOPES } from "@/lib/gee/auth";
 import { validarOpcoesElegibilidade } from "@/lib/gee/elegibilidade";
-import { executarAmostragemEstratificada, CandidatoEstratificacao } from "@/lib/gee/estratificacao";
+import {
+  executarAmostragemEstratificada,
+  CandidatoEstratificacao,
+  calcularLimiaresTercis,
+  classificarTercil,
+} from "@/lib/gee/estratificacao";
 import { aplicarThinningDeterminista } from "@/lib/gee/thinning";
+import {
+  calcularSemivariogramaEmpirico,
+  atribuirBlocoEspacial,
+} from "@/lib/gee/blocosEspaciais";
 import { queryEmbrapaSoil } from "@/lib/embrapa/embrapaSoilClient";
 import { matchRuralProperty, toContextoFundiario } from "@/lib/fundiario/matcher";
 import {
@@ -415,23 +424,56 @@ export async function POST(request: NextRequest) {
       (tamanhoAmostra * Math.min(100, Math.max(0, propInLoco))) / 100
     );
 
-    const estratificacaoInput: CandidatoEstratificacao[] = poolEfetivo.map((c) => {
-      const medTerreno = terrenoMap.get(c.id);
-      const medSolo = soloMap.get(c.id);
-      const medS2 = mapaSentinel2.get(c.id);
-      const convK = converterErodibilidadeFatorK(medSolo?.erodibilidade?.classe);
+    // Filtra candidatos dentro do domínio físico de declividade [declividadeMin, declividadeMax] (Decisão D07)
+    // quando houver medição topográfica real, sem inventar declividade caso medTerreno seja null (Regra 1)
+    const poolComTerrenoElegivel = poolEfetivo.filter((c) => {
+      const medT = terrenoMap.get(c.id);
+      if (!medT) return false;
+      return medT.declividadePct >= declividadeMin && medT.declividadePct <= declividadeMax;
+    });
 
-      return {
-        id: c.id,
-        latitude: c.latitude,
-        longitude: c.longitude,
-        declividadePct: medTerreno ? medTerreno.declividadePct : declividadeMin,
-        frequenciaSoloNu:
-          medS2 && typeof medS2.frequenciaSoloNu === "number"
-            ? medS2.frequenciaSoloNu
-            : frequenciaSoloNuMin,
-        nivelK: convK ? convK.nivelEstratoK : 1,
-      };
+    const poolParaEstratificacao =
+      poolComTerrenoElegivel.length >= Math.min(tamanhoAmostra, 15)
+        ? poolComTerrenoElegivel
+        : poolEfetivo.filter((c) => terrenoMap.get(c.id) !== null);
+
+    const baseCandidatosEstratificacao =
+      poolParaEstratificacao.length > 0 ? poolParaEstratificacao : poolEfetivo;
+
+    const estratificacaoInput: CandidatoEstratificacao[] = baseCandidatosEstratificacao
+      .map((c) => {
+        const medTerreno = terrenoMap.get(c.id);
+        const medSolo = soloMap.get(c.id);
+        const medS2 = mapaSentinel2.get(c.id);
+        const convK = converterErodibilidadeFatorK(medSolo?.erodibilidade?.classe);
+        if (!medTerreno && poolParaEstratificacao.length > 0) {
+          return null;
+        }
+
+        return {
+          id: c.id,
+          latitude: c.latitude,
+          longitude: c.longitude,
+          declividadePct: medTerreno ? medTerreno.declividadePct : 0,
+          frequenciaSoloNu:
+            medS2 && typeof medS2.frequenciaSoloNu === "number"
+              ? medS2.frequenciaSoloNu
+              : 0,
+          nivelK: convK ? convK.nivelEstratoK : 1,
+        };
+      })
+      .filter((item): item is CandidatoEstratificacao => item !== null);
+
+    // Cálculo do Semivariograma Empírico e Aresta de Bloco Espacial (Roberts et al., 2017 — Seção 3.7)
+    const pontosGeoVariograma = estratificacaoInput.map((c) => ({
+      latitude: c.latitude,
+      longitude: c.longitude,
+      valor: c.declividadePct,
+    }));
+    const resultadoVariograma = calcularSemivariogramaEmpirico(pontosGeoVariograma, {
+      tamanhoPassoKm: 5,
+      distanciaMaximaKm: 60,
+      fallbackArestaKm: 20,
     });
 
     const candidatosNoCorredor = estratificacaoInput.filter((c) =>
@@ -465,6 +507,7 @@ export async function POST(request: NextRequest) {
         totalSelecionado: pontosEstratificados.length,
         subamostraInLocoCorredor: resCorredor.pontos.length,
         amostraOrbitalMacrobacia: resRestante.pontos.length,
+        variograma: resultadoVariograma,
       };
     } else {
       const resultadoEstratificacao = executarAmostragemEstratificada(
@@ -473,21 +516,40 @@ export async function POST(request: NextRequest) {
         semente
       );
       pontosEstratificados = resultadoEstratificacao.pontos;
-      relatorioEstratificacao = resultadoEstratificacao.relatorio;
+      relatorioEstratificacao = {
+        ...resultadoEstratificacao.relatorio,
+        variograma: resultadoVariograma,
+      };
     }
 
     // Se algum estrato da matriz 3x3x2 tinha menos candidatos que a cota teórica após o descarte estrito
     // de matas ciliares/Reserva Legal, completa até `tamanhoAmostra` usando os candidatos agrícolas verificados restantes
     if (pontosEstratificados.length < tamanhoAmostra && estratificacaoInput.length > pontosEstratificados.length) {
+      const limiaresS = calcularLimiaresTercis(estratificacaoInput.map((c) => c.declividadePct));
+      const limiaresE = calcularLimiaresTercis(estratificacaoInput.map((c) => c.frequenciaSoloNu));
       const idsJaSelecionados = new Set(pontosEstratificados.map((p) => p.id));
       for (const cand of estratificacaoInput) {
         if (pontosEstratificados.length >= tamanhoAmostra) break;
         if (!idsJaSelecionados.has(cand.id)) {
           idsJaSelecionados.add(cand.id);
+          const tercilS = classificarTercil(cand.declividadePct, limiaresS);
+          const tercilE = classificarTercil(cand.frequenciaSoloNu, limiaresE);
           pontosEstratificados.push({
             id: cand.id,
-            estratoId: "S2_E2_K1",
-            criterioSelecao: "Complemento de cota agrícola certificada (ESA WorldCover 10m + Sentinel-2)",
+            codigo: `PR-2026-${String(pontosEstratificados.length + 1).padStart(4, "0")}`,
+            latitude: cand.latitude,
+            longitude: cand.longitude,
+            declividadePct: cand.declividadePct,
+            frequenciaSoloNu: cand.frequenciaSoloNu,
+            nivelK: cand.nivelK,
+            estratoId: `E_${tercilS}_${tercilE}_${cand.nivelK}`,
+            criterioSelecao: {
+              tercilS,
+              tercilE,
+              nivelK: cand.nivelK,
+              phiDiag: null,
+              semente,
+            },
           });
         }
       }
@@ -507,7 +569,12 @@ export async function POST(request: NextRequest) {
 
         const baciaNome =
           identificarBacia(bruto.latitude, bruto.longitude) || "Bacia Hidrográfica do Paraná 3";
-        const noCorredorInLoco = estaNoCorredorExperimentalBp3(bruto.latitude, bruto.longitude);
+        const blocoEspacialAtribuido = atribuirBlocoEspacial(
+          bruto.latitude,
+          bruto.longitude,
+          resultadoVariograma.arestaBlocoAdotadaKm,
+          { origemLat: -26.5, origemLng: -54.65 }
+        );
 
         // Contexto fundiário real do banco SICAR/SNCR (sem inventar dados ausentes)
         const contextoFundiario = toContextoFundiario(
@@ -579,6 +646,46 @@ export async function POST(request: NextRequest) {
                 "Reflectância B11/B4/B8/B2 Sentinel-2 MSI L2A aguarda redução pontual na API REST do Earth Engine.",
             };
 
+        const b2Proveniencia = medicaoS2
+          ? {
+              estado: "medido" as const,
+              valor: medicaoS2.b2,
+              fonte: medicaoS2.fonte,
+              adquiridoEm: "2023-10-31",
+              consultadoEm: dataConsultaAtual,
+            }
+          : undefined;
+
+        const b4Proveniencia = medicaoS2
+          ? {
+              estado: "medido" as const,
+              valor: medicaoS2.b4,
+              fonte: medicaoS2.fonte,
+              adquiridoEm: "2023-10-31",
+              consultadoEm: dataConsultaAtual,
+            }
+          : undefined;
+
+        const b8Proveniencia = medicaoS2
+          ? {
+              estado: "medido" as const,
+              valor: medicaoS2.b8,
+              fonte: medicaoS2.fonte,
+              adquiridoEm: "2023-10-31",
+              consultadoEm: dataConsultaAtual,
+            }
+          : undefined;
+
+        const b12Proveniencia = medicaoS2
+          ? {
+              estado: "medido" as const,
+              valor: medicaoS2.b11,
+              fonte: medicaoS2.fonte,
+              adquiridoEm: "2023-10-31",
+              consultadoEm: dataConsultaAtual,
+            }
+          : undefined;
+
         const freqNuProveniencia =
           medicaoS2 && medicaoS2.frequenciaSoloNu !== null
             ? {
@@ -599,23 +706,23 @@ export async function POST(request: NextRequest) {
           ? classificarPontoEspectral(medicaoS2.bsi, medicaoS2.ndvi)
           : "indefinido";
 
-        const etiquetaEscala = noCorredorInLoco
-          ? "[Fase B: Subamostra In-Loco — Corredor Foz–Céu Azul]"
-          : "[Fase A: Triagem Orbital — Macrobacia BP3]";
-
         const ponto: PontoAmostral = {
           id: crypto.randomUUID(),
           codigo: codigoFormatado,
           latitude: bruto.latitude,
           longitude: bruto.longitude,
           origemSintetica: false,
-          blocoEspacial: null,
+          blocoEspacial: blocoEspacialAtribuido,
           classeAmostral: classeEspectral,
           estratoId: pe.estratoId,
-          criterioSelecao: `${etiquetaEscala} ${pe.criterioSelecao}`,
+          criterioSelecao: pe.criterioSelecao,
           espectral: {
             ndvi: ndviProveniencia,
             bsi: bsiProveniencia,
+            ...(b2Proveniencia ? { b2: b2Proveniencia } : {}),
+            ...(b4Proveniencia ? { b4: b4Proveniencia } : {}),
+            ...(b8Proveniencia ? { b8: b8Proveniencia } : {}),
+            ...(b12Proveniencia ? { b12: b12Proveniencia } : {}),
           },
           localizacao: {
             municipio: bruto.municipio

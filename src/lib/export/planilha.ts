@@ -125,19 +125,121 @@ export function extrairLinhasAbaDados(pontos: PontoAmostral[]): Record<string, u
 }
 
 /**
+ * Projeta estritamente as linhas conforme as colunas permitidas por cada Perfil de Exportação
+ * (Invariante 2 e Regra 6: Segregação Cega de Exportação).
+ */
+export function extrairLinhasPorPerfil(
+  pontos: PontoAmostral[],
+  perfil: PerfilExportacao = "planilha"
+): Record<string, unknown>[] {
+  if (perfil === "planilha") {
+    return extrairLinhasAbaDados(pontos);
+  }
+
+  if (perfil === "interpretacao-cega") {
+    return pontos.map((p) => ({
+      Codigo: p.codigo,
+      Latitude: Number(p.latitude.toFixed(6)),
+      Longitude: Number(p.longitude.toFixed(6)),
+      Janela_Inicio: p.temporal?.D?.janela?.inicio ?? "2018-01-01",
+      Janela_Fim: p.temporal?.D?.janela?.fim ?? "2023-12-31",
+      Referencia_Cena_Tile: p.rastreio?.cenas?.join("; ") || "COPERNICUS/S2_SR_HARMONIZED",
+    }));
+  }
+
+  if (perfil === "campo-cego") {
+    return pontos.map((p) => ({
+      Codigo: p.codigo,
+      Latitude: Number(p.latitude.toFixed(6)),
+      Longitude: Number(p.longitude.toFixed(6)),
+      Latitude_DMS: formatToDMS(p.latitude, true),
+      Longitude_DMS: formatToDMS(p.longitude, false),
+      Municipio: valorOuNulo(p.localizacao?.municipio) ?? "não determinado",
+      Status_Fundiario: p.fundiario?.status ?? "sem-correspondencia",
+      Motivo_Acesso: p.fundiario?.motivo ?? "Inspeção presencial de campanha PPGTCA",
+      Codigo_CAR: p.fundiario?.codigoCar ?? "",
+      Titular_Mascarado: p.fundiario?.titularMascarado ?? "",
+      Rota_Acesso: `${p.latitude.toFixed(6)},${p.longitude.toFixed(6)}`,
+    }));
+  }
+
+  if (perfil === "voo-cego") {
+    return pontos.map((p) => ({
+      Codigo: p.codigo,
+      Latitude: Number(p.latitude.toFixed(6)),
+      Longitude: Number(p.longitude.toFixed(6)),
+      Area_Voo_Poligono: p.fundiario?.areaImovelHa ? `${p.fundiario.areaImovelHa} ha` : "Buffer 250 m",
+    }));
+  }
+
+  // perfil === "matriz-treino": Zero coordenadas, zero variáveis proibidas (Regra 4 e Regra 6)
+  return pontos.map((p) => {
+    const rotuloStr = (p.rotulo?.final?.classe ?? "nao-rotulado").trim().toLowerCase();
+    const ehErosao =
+      rotuloStr.includes("erosao") ||
+      rotuloStr.includes("erosão") ||
+      rotuloStr === "presente" ||
+      rotuloStr === "incipiente" ||
+      rotuloStr === "moderada" ||
+      rotuloStr === "severa" ||
+      rotuloStr === "1";
+
+    return {
+      Ponto_ID: p.id,
+      Bloco_Espacial: p.blocoEspacial ?? "BLOCO_INDEFINIDO",
+      Elevacao_m: valorOuNulo(p.terreno?.elevacao) ?? "",
+      Declividade_pct: valorOuNulo(p.terreno?.declividadePct) ?? "",
+      Declividade_graus: valorOuNulo(p.terreno?.declividadeGraus) ?? "",
+      Curvatura_Perfil: valorOuNulo(p.terreno?.curvaturaPerfil) ?? "",
+      Curvatura_Plana: valorOuNulo(p.terreno?.curvaturaPlana) ?? "",
+      Acumulo_Fluxo: valorOuNulo(p.terreno?.acumuloFluxo) ?? "",
+      TWI: valorOuNulo(p.terreno?.twi) ?? "",
+      Ordem_Solo: valorOuNulo(p.solo?.ordem) ?? "",
+      Subordem_Solo: valorOuNulo(p.solo?.subOrdem) ?? "",
+      Grande_Grupo_Solo: valorOuNulo(p.solo?.grandeGrupo) ?? "",
+      Erodibilidade_Classe: valorOuNulo(p.solo?.erodibilidadeClasse) ?? "",
+      Frequencia_Solo_Nu:
+        valorOuNulo(p.temporal?.D?.serie?.frequenciaSoloNu ?? p.temporal?.P?.serie?.frequenciaSoloNu) ?? "",
+      Banda_B2: valorOuNulo(p.espectral?.b2) ?? "",
+      Banda_B4: valorOuNulo(p.espectral?.b4) ?? "",
+      Banda_B8: valorOuNulo(p.espectral?.b8) ?? "",
+      Banda_B12: valorOuNulo(p.espectral?.b12) ?? "",
+      NDVI: valorOuNulo(p.espectral?.ndvi) ?? "",
+      BSI: valorOuNulo(p.espectral?.bsi) ?? "",
+      RUSLE_Fator_K: valorOuNulo(p.linhaDeBase?.fatorK) ?? "",
+      RUSLE_Fator_R: valorOuNulo(p.linhaDeBase?.fatorR) ?? "",
+      Precip_Acum_30d_mm:
+        valorOuNulo(p.temporal?.D?.chuva?.precipAcum30d ?? p.temporal?.P?.chuva?.precipAcum30d) ?? "",
+      Precip_Acum_90d_mm:
+        valorOuNulo(p.temporal?.D?.chuva?.precipAcum90d ?? p.temporal?.P?.chuva?.precipAcum90d) ?? "",
+      I30_Max_mm_h: valorOuNulo(p.temporal?.D?.chuva?.i30Max ?? p.temporal?.P?.chuva?.i30Max) ?? "",
+      N_Eventos_Erosivos:
+        valorOuNulo(p.temporal?.D?.chuva?.nEventosErosivos ?? p.temporal?.P?.chuva?.nEventosErosivos) ?? "",
+      Indice_Mecanismo:
+        valorOuNulo(p.temporal?.D?.chuva?.indiceMecanismo ?? p.temporal?.P?.chuva?.indiceMecanismo) ?? "",
+      Classe_Alvo_Binaria: p.rotulo?.final ? (ehErosao ? 1 : 0) : "",
+      Rotulo_Classe: p.rotulo?.final?.classe ?? "não rotulado",
+      Rotulo_Modalidade: p.rotulo?.final?.modalidade ?? "não rotulado",
+    };
+  });
+}
+
+/**
  * Gera a planilha XLSX completa com 3 abas, garantindo guarda e invariantes.
  */
 export async function gerarPlanilhaXLSX(pontos: PontoAmostral[], opcoes: OpcoesExportacao = {}): Promise<Buffer> {
   // 1. Guarda antissintético
   assegurarApenasPontosReais(pontos, "geração de planilha XLSX");
 
-  // 2. Extração e montagem da Aba 1
-  const linhasDados = extrairLinhasAbaDados(pontos);
+  const perfilAtivo = opcoes.perfil ?? "planilha";
+
+  // 2. Extração e montagem da Aba 1 projetada pelo perfil
+  const linhasDados = extrairLinhasPorPerfil(pontos, perfilAtivo);
   const cabecalho = linhasDados.length > 0 ? Object.keys(linhasDados[0]) : [];
 
   // 3. Validação de Invariantes sobre o artefato projetado
   const artefato: ArtefatoProjetado = {
-    perfil: opcoes.perfil ?? "planilha",
+    perfil: perfilAtivo,
     cabecalho,
     linhas: linhasDados,
   };

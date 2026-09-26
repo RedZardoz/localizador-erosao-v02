@@ -9,15 +9,52 @@ import { formatToDMS } from "@/lib/export/dms";
 import type { LaudoAuditoriaPonto } from "@/types/jev";
 
 export function InspetorPonto() {
-  const { obterPontoSelecionado, rotulosConsolidados, pontos, selecionarPonto, credenciais, adicionarLog } = useSarelStore();
+  const {
+    obterPontoSelecionado,
+    rotulosConsolidados,
+    pontos,
+    selecionarPonto,
+    credenciais,
+    adicionarLog,
+    definirRotuloConsolidado,
+  } = useSarelStore();
   const [modeloAtivo, setModeloAtivo] = React.useState<"D" | "P">("D");
   const [laudoAuditoria, setLaudoAuditoria] = React.useState<LaudoAuditoriaPonto | null>(null);
   const [auditando, setAuditando] = React.useState(false);
+  const [classeRotuloInput, setClasseRotuloInput] = React.useState<"erosao" | "controle">("erosao");
+  const [modalidadeRotuloInput, setModalidadeRotuloInput] = React.useState<"interpretacao-visual" | "campo">("interpretacao-visual");
+  const [observadorInput, setObservadorInput] = React.useState<string>("Pesquisador PPGTCA");
+  const [confiancaInput, setConfiancaInput] = React.useState<"alta" | "media" | "baixa">("alta");
   const ponto = obterPontoSelecionado();
 
   React.useEffect(() => {
     setLaudoAuditoria(null);
   }, [ponto?.id]);
+
+  const salvarRotuloHumano = () => {
+    if (!ponto) return;
+    const hoje = new Date().toISOString().split("T")[0];
+    const novoRotulo = {
+      classe: classeRotuloInput,
+      modalidade: modalidadeRotuloInput,
+      observador: observadorInput.trim() || "Pesquisador PPGTCA",
+      observadoEm: hoje,
+      cego: true,
+      confianca: confiancaInput,
+    };
+    definirRotuloConsolidado(ponto.codigo, {
+      final: novoRotulo,
+      origens: [novoRotulo],
+      kappa: null,
+      divergencia: "nenhuma",
+      papelConjunto: "treino",
+    });
+    adicionarLog(
+      "info",
+      "Rotulagem-Humana",
+      `Rótulo pericial '${classeRotuloInput}' (${modalidadeRotuloInput}) consolidado para ${ponto.codigo}.`
+    );
+  };
 
   const dispararAuditoria = async () => {
     if (!ponto) return;
@@ -390,25 +427,25 @@ export function InspetorPonto() {
 
       {/* Bloco de Rótulo Humano e Fundiário */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2.5 mb-3">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
+          <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2.5">
             ROTULAGEM HUMANA (Regra 4 — Nunca calculado pelo sistema)
           </h3>
           {rotuloFinal ? (
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between border-b border-slate-100 pb-1">
+            <div className="space-y-2 text-xs bg-emerald-50/50 border border-emerald-200/80 rounded-lg p-3">
+              <div className="flex justify-between border-b border-emerald-100 pb-1">
                 <span className="text-slate-500">Classe Observada:</span>
-                <span className="font-bold text-slate-900 uppercase">{rotuloFinal.classe}</span>
+                <span className="font-bold text-emerald-900 uppercase">{rotuloFinal.classe}</span>
               </div>
-              <div className="flex justify-between border-b border-slate-100 pb-1">
+              <div className="flex justify-between border-b border-emerald-100 pb-1">
                 <span className="text-slate-500">Modalidade:</span>
                 <span className="font-medium text-slate-800">{rotuloFinal.modalidade}</span>
               </div>
-              <div className="flex justify-between border-b border-slate-100 pb-1">
+              <div className="flex justify-between border-b border-emerald-100 pb-1">
                 <span className="text-slate-500">Observador:</span>
                 <span className="font-medium text-slate-800">{rotuloFinal.observador}</span>
               </div>
-              <div className="flex justify-between border-b border-slate-100 pb-1">
+              <div className="flex justify-between border-b border-emerald-100 pb-1">
                 <span className="text-slate-500">Data de Observação:</span>
                 <span className="font-mono text-slate-800">{rotuloFinal.observadoEm}</span>
               </div>
@@ -422,6 +459,68 @@ export function InspetorPonto() {
               Ponto ainda não rotulado por observação humana independente.
             </p>
           )}
+
+          {/* Formulário Pericial para Registro de Rótulo (Fase A ou Fase B) */}
+          <div className="pt-2 border-t border-slate-100 space-y-2.5 text-xs">
+            <span className="font-semibold text-slate-700 block">
+              Registrar / Atualizar Laudo Pericial Humano (Alimenta a Matriz de Treino):
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[11px] text-slate-500 block mb-0.5">Classe Alvo (D03):</label>
+                <select
+                  value={classeRotuloInput}
+                  onChange={(e) => setClasseRotuloInput(e.target.value as "erosao" | "controle")}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-800"
+                >
+                  <option value="erosao">1 — Erosão Laminar Ativa</option>
+                  <option value="controle">0 — Controle (SPD Conservado)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] text-slate-500 block mb-0.5">Modalidade:</label>
+                <select
+                  value={modalidadeRotuloInput}
+                  onChange={(e) =>
+                    setModalidadeRotuloInput(e.target.value as "interpretacao-visual" | "campo")
+                  }
+                  className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-800"
+                >
+                  <option value="interpretacao-visual">Fase A — Interpretação Visual</option>
+                  <option value="campo">Fase B — Campo (In-Loco)</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[11px] text-slate-500 block mb-0.5">Perito / Avaliador:</label>
+                <input
+                  type="text"
+                  value={observadorInput}
+                  onChange={(e) => setObservadorInput(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-800"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-slate-500 block mb-0.5">Confiança:</label>
+                <select
+                  value={confiancaInput}
+                  onChange={(e) => setConfiancaInput(e.target.value as "alta" | "media" | "baixa")}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-800"
+                >
+                  <option value="alta">Alta</option>
+                  <option value="media">Média</option>
+                  <option value="baixa">Baixa</option>
+                </select>
+              </div>
+            </div>
+            <button
+              onClick={salvarRotuloHumano}
+              className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 text-xs shadow-sm transition-colors cursor-pointer"
+            >
+              Consolidar Rótulo Humano para {ponto.codigo}
+            </button>
+          </div>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
