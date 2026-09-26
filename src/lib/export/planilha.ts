@@ -141,8 +141,8 @@ export function extrairLinhasPorPerfil(
       Codigo: p.codigo,
       Latitude: Number(p.latitude.toFixed(6)),
       Longitude: Number(p.longitude.toFixed(6)),
-      Janela_Inicio: p.temporal?.D?.janela?.inicio ?? "2018-01-01",
-      Janela_Fim: p.temporal?.D?.janela?.fim ?? "2023-12-31",
+      Janela_Inicio: p.temporal?.D?.janela?.inicio ?? "",
+      Janela_Fim: p.temporal?.D?.janela?.fim ?? "",
       Referencia_Cena_Tile: p.rastreio?.cenas?.join("; ") || "COPERNICUS/S2_SR_HARMONIZED",
     }));
   }

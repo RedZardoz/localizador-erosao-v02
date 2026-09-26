@@ -23,6 +23,8 @@ const REGEX_PADROES = [
   { id: "unmask-numerico", regex: /\.unmask\s*\(\s*\d+(\.\d+)?\s*\)/ },
   { id: "ou-logico-com-numero", regex: /\|\|\s*\d+(\.\d+)?\b/ },
   { id: "coalescencia-com-numero", regex: /\?\?\s*\d+(\.\d+)?\b/ },
+  { id: "coalescencia-com-numero-entre-aspas", regex: /\?\?\s*["'`]\s*[0-9]/ },
+  { id: "ou-logico-com-numero-entre-aspas", regex: /\|\|\s*["'`]\s*[0-9]/ },
   { id: "parametro-com-default-numerico", regex: /:\s*number\s*=\s*\d+(\.\d+)?\b/ },
   { id: "corte-math-max-min-com-literal", regex: /Math\.(max|min)\s*\([^)]*\b\d+(\.\d+)?\b[^)]*\)/ },
   { id: "adquiridoEm-com-new-date", regex: /adquiridoEm\s*:\s*(new\s+Date|Date\.now)/ },
@@ -102,6 +104,13 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
       const code = `const ndvi = (frequenciaSoloNu ?? 0.3) * 0.7;`;
       const v = varrerCodigo(code, "teste.ts");
       expect(v.some((x) => x.padrao === "coalescencia-com-numero")).toBe(true);
+    });
+
+    it("detecta ?? e || seguidos de numeral entre aspas", () => {
+      const v1 = varrerLinha('x: a ?? "7500",', 1, "f.ts");
+      expect(v1.some((x) => x.padrao === "coalescencia-com-numero-entre-aspas")).toBe(true);
+      const v2 = varrerLinha('y: b || "2026-01-01",', 2, "f.ts");
+      expect(v2.some((x) => x.padrao === "ou-logico-com-numero-entre-aspas")).toBe(true);
     });
 
     it("detecta parâmetro com default numérico na assinatura", () => {
