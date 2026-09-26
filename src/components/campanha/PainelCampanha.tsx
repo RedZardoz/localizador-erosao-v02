@@ -30,8 +30,15 @@ import {
 } from "lucide-react";
 
 export function PainelCampanha() {
-  const { pontos, pontosProvisorios, setMapState, setModalAtiva, definirRotuloConsolidado, adicionarLog } =
-    useSarelStore();
+  const {
+    pontos,
+    pontosProvisorios,
+    rotulosConsolidados,
+    setMapState,
+    setModalAtiva,
+    definirRotuloConsolidado,
+    adicionarLog,
+  } = useSarelStore();
   const pontosAtivos = pontos.length > 0 ? pontos : pontosProvisorios;
   const [abaInterna, setAbaInterna] = useState<"exportacao" | "kobo" | "padrao-ouro">("padrao-ouro");
   const [sitioSelecionadoId, setSitioSelecionadoId] = useState<string>("sitio-ouro-01");
@@ -43,7 +50,7 @@ export function PainelCampanha() {
   const exportarPerfilCsv = (perfil: PerfilExportacao) => {
     if (pontosAtivos.length === 0) return;
     try {
-      const csvStr = gerarCsvCientifico(pontosAtivos, perfil);
+      const csvStr = gerarCsvCientifico(pontosAtivos, perfil, rotulosConsolidados);
       const blob = new Blob([csvStr], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -63,7 +70,7 @@ export function PainelCampanha() {
   const exportarPerfilXlsx = async (perfil: PerfilExportacao) => {
     if (pontosAtivos.length === 0) return;
     try {
-      const buffer = await gerarPlanilhaXLSX(pontosAtivos, { perfil });
+      const buffer = await gerarPlanilhaXLSX(pontosAtivos, { perfil, rotulosConsolidados });
       const blob = new Blob([buffer as any], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });

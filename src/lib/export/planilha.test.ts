@@ -83,6 +83,24 @@ describe("Exportação XLSX e CSV — Validações e Guardas", () => {
 
   it("todos os 5 perfis de exportação (planilha, interpretacao-cega, campo-cego, voo-cego, matriz-treino) passam no Invariante 2 em CSV e XLSX", async () => {
     const pontos = Array.from({ length: 4 }, (_, i) => mockPonto(i + 1));
+    const mapaRotulos = Object.fromEntries(
+      pontos.map((p, idx) => [
+        p.codigo,
+        {
+          final: {
+            classe: idx % 2 === 0 ? "erosao" : "controle",
+            modalidade: "campo" as const,
+            observador: "Perito_PPGTCA",
+            observadoEm: "2026-09-26",
+            cego: true,
+          },
+          origens: [],
+          kappa: 0.9,
+          divergencia: "nenhuma" as const,
+          papelConjunto: "treino" as const,
+        },
+      ])
+    );
     const perfis: PerfilExportacao[] = [
       "planilha",
       "interpretacao-cega",
@@ -91,11 +109,64 @@ describe("Exportação XLSX e CSV — Validações e Guardas", () => {
       "matriz-treino",
     ];
     for (const perfil of perfis) {
-      const csv = gerarCsvCientifico(pontos, perfil);
+      const csv = gerarCsvCientifico(pontos, perfil, mapaRotulos);
       expect(csv.startsWith("\uFEFF")).toBe(true);
-      const xlsx = await gerarPlanilhaXLSX(pontos, { perfil });
+      const xlsx = await gerarPlanilhaXLSX(pontos, { perfil, rotulosConsolidados: mapaRotulos });
       expect(xlsx).toBeInstanceOf(Buffer);
     }
+  });
+
+  it("T5 (D5 / Q1): perfil 'matriz-treino' recusa mapa de rótulos ausente ou vazio (Postura 9), exclui pontos sem rótulo e segrega modalidade 'drone'", () => {
+    const p1 = mockPonto(1);
+    const p2 = mockPonto(2);
+    const p3 = mockPonto(3);
+
+    // 1. Omissão ou mapa vazio lança erro explícito
+    expect(() => gerarCsvCientifico([p1], "matriz-treino")).toThrow(/exige o mapa autoritativo 'rotulosConsolidados'/);
+    expect(() => gerarCsvCientifico([p1], "matriz-treino", {})).toThrow(/exige o mapa autoritativo 'rotulosConsolidados'/);
+
+    // 2. p1 rotulado em campo ("severa"), p2 sem rótulo, p3 rotulado por "drone" (held-out)
+    const mapa = {
+      [p1.codigo]: {
+        final: {
+          classe: "severa",
+          modalidade: "campo" as const,
+          observador: "Perito_1",
+          observadoEm: "2026-09-26",
+          cego: true,
+        },
+        origens: [],
+        kappa: 0.92,
+        divergencia: "nenhuma" as const,
+        papelConjunto: "treino" as const,
+      },
+      [p3.codigo]: {
+        final: {
+          classe: "erosao",
+          modalidade: "drone" as const,
+          observador: "VANT_Spectral2",
+          observadoEm: "2026-09-26",
+          cego: true,
+        },
+        origens: [],
+        kappa: null,
+        divergencia: "nenhuma" as const,
+        papelConjunto: "held-out" as const,
+      },
+    };
+
+    const csv = gerarCsvCientifico([p1, p2, p3], "matriz-treino", mapa);
+    const linhasDados = csv
+      .replace(/^\uFEFF/, "")
+      .split(/\r?\n/)
+      .filter((l) => l.trim().length > 0 && !l.startsWith("#") && !l.startsWith("Ponto_ID,"));
+
+    // Apenas p1 é emitido (p2 sem rótulo excluído, p3 drone segregado em heldOutDrone)
+    expect(linhasDados).toHaveLength(1);
+    expect(linhasDados[0]).toContain("ponto-1");
+    expect(linhasDados[0]).not.toContain("ponto-2");
+    expect(linhasDados[0]).not.toContain("ponto-3");
+    expect(linhasDados[0].endsWith(",1,severa,campo")).toBe(true);
   });
 
   it("montarMatrizTreino respeita estritamente a Regra 4: classeAmostral espectral não sobrescreve rótulo humano 'controle'", () => {

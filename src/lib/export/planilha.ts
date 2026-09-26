@@ -1,6 +1,9 @@
 import type { PontoAmostral } from "@/types/ponto";
+import type { RotuloConsolidado } from "@/types/rotulo";
 import { formatarDescricaoOrigem, valorOuNulo } from "@/types/proveniencia";
 import { derivarCamposNaoMedidos, assegurarInvariantesArtefato, ArtefatoProjetado } from "@/lib/matriz/invariantes";
+import { montarMatrizTreino } from "@/lib/matriz/montagem";
+import { assegurarSegregacaoTreino } from "@/lib/rotulos/ingestaoDrone";
 import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
 import { formatToDMS } from "./dms";
 import { generateXlsxBuffer, XlsxSheet, XlsxRowValue } from "./xlsxWriter";
@@ -13,6 +16,7 @@ A anonimização dos dados de titularidade é originária das bases públicas fe
 
 export interface OpcoesExportacao {
   perfil?: PerfilExportacao;
+  rotulosConsolidados?: Record<string, RotuloConsolidado>;
   filtrosAtivos?: string[];
   janelaTemporal?: { inicio: string; fim: string };
   responsavelEmissao?: string;
@@ -130,7 +134,8 @@ export function extrairLinhasAbaDados(pontos: PontoAmostral[]): Record<string, u
  */
 export function extrairLinhasPorPerfil(
   pontos: PontoAmostral[],
-  perfil: PerfilExportacao = "planilha"
+  perfil: PerfilExportacao = "planilha",
+  rotulosConsolidados?: Record<string, RotuloConsolidado>
 ): Record<string, unknown>[] {
   if (perfil === "planilha") {
     return extrairLinhasAbaDados(pontos);
@@ -172,56 +177,53 @@ export function extrairLinhasPorPerfil(
     }));
   }
 
-  // perfil === "matriz-treino": Zero coordenadas, zero variáveis proibidas (Regra 4 e Regra 6)
-  return pontos.map((p) => {
-    const rotuloStr = (p.rotulo?.final?.classe ?? "nao-rotulado").trim().toLowerCase();
-    const ehErosao =
-      rotuloStr.includes("erosao") ||
-      rotuloStr.includes("erosão") ||
-      rotuloStr === "presente" ||
-      rotuloStr === "incipiente" ||
-      rotuloStr === "moderada" ||
-      rotuloStr === "severa" ||
-      rotuloStr === "1";
+  // perfil === "matriz-treino": Delega integralmente a montarMatrizTreino (Regra 4, Regra 6 e Postura 2/9)
+  if (!rotulosConsolidados || (pontos.length > 0 && Object.keys(rotulosConsolidados).length === 0)) {
+    throw new Error(
+      "[ABORTO — REGRA 4 / POSTURA 9] O perfil 'matriz-treino' exige o mapa autoritativo 'rotulosConsolidados' não vazio. " +
+      "Exportar a matriz de treinamento sem rótulos humanos consolidados produziria degradação silenciosa."
+    );
+  }
 
-    return {
-      Ponto_ID: p.id,
-      Bloco_Espacial: p.blocoEspacial ?? "BLOCO_INDEFINIDO",
-      Elevacao_m: valorOuNulo(p.terreno?.elevacao) ?? "",
-      Declividade_pct: valorOuNulo(p.terreno?.declividadePct) ?? "",
-      Declividade_graus: valorOuNulo(p.terreno?.declividadeGraus) ?? "",
-      Curvatura_Perfil: valorOuNulo(p.terreno?.curvaturaPerfil) ?? "",
-      Curvatura_Plana: valorOuNulo(p.terreno?.curvaturaPlana) ?? "",
-      Acumulo_Fluxo: valorOuNulo(p.terreno?.acumuloFluxo) ?? "",
-      TWI: valorOuNulo(p.terreno?.twi) ?? "",
-      Ordem_Solo: valorOuNulo(p.solo?.ordem) ?? "",
-      Subordem_Solo: valorOuNulo(p.solo?.subOrdem) ?? "",
-      Grande_Grupo_Solo: valorOuNulo(p.solo?.grandeGrupo) ?? "",
-      Erodibilidade_Classe: valorOuNulo(p.solo?.erodibilidadeClasse) ?? "",
-      Frequencia_Solo_Nu:
-        valorOuNulo(p.temporal?.D?.serie?.frequenciaSoloNu ?? p.temporal?.P?.serie?.frequenciaSoloNu) ?? "",
-      Banda_B2: valorOuNulo(p.espectral?.b2) ?? "",
-      Banda_B4: valorOuNulo(p.espectral?.b4) ?? "",
-      Banda_B8: valorOuNulo(p.espectral?.b8) ?? "",
-      Banda_B12: valorOuNulo(p.espectral?.b12) ?? "",
-      NDVI: valorOuNulo(p.espectral?.ndvi) ?? "",
-      BSI: valorOuNulo(p.espectral?.bsi) ?? "",
-      RUSLE_Fator_K: valorOuNulo(p.linhaDeBase?.fatorK) ?? "",
-      RUSLE_Fator_R: valorOuNulo(p.linhaDeBase?.fatorR) ?? "",
-      Precip_Acum_30d_mm:
-        valorOuNulo(p.temporal?.D?.chuva?.precipAcum30d ?? p.temporal?.P?.chuva?.precipAcum30d) ?? "",
-      Precip_Acum_90d_mm:
-        valorOuNulo(p.temporal?.D?.chuva?.precipAcum90d ?? p.temporal?.P?.chuva?.precipAcum90d) ?? "",
-      I30_Max_mm_h: valorOuNulo(p.temporal?.D?.chuva?.i30Max ?? p.temporal?.P?.chuva?.i30Max) ?? "",
-      N_Eventos_Erosivos:
-        valorOuNulo(p.temporal?.D?.chuva?.nEventosErosivos ?? p.temporal?.P?.chuva?.nEventosErosivos) ?? "",
-      Indice_Mecanismo:
-        valorOuNulo(p.temporal?.D?.chuva?.indiceMecanismo ?? p.temporal?.P?.chuva?.indiceMecanismo) ?? "",
-      Classe_Alvo_Binaria: p.rotulo?.final ? (ehErosao ? 1 : 0) : "",
-      Rotulo_Classe: p.rotulo?.final?.classe ?? "não rotulado",
-      Rotulo_Modalidade: p.rotulo?.final?.modalidade ?? "não rotulado",
-    };
-  });
+  const resultadoMatriz = montarMatrizTreino(pontos, rotulosConsolidados, { modeloJanela: "D" });
+
+  // Pós-condição de segregação held-out (Decisão D16 e Regra 4):
+  for (const linhaTreino of resultadoMatriz.linhas) {
+    assegurarSegregacaoTreino(linhaTreino.rotuloModalidade);
+  }
+
+  return resultadoMatriz.linhas.map((l) => ({
+    Ponto_ID: l.pontoId,
+    Bloco_Espacial: l.blocoEspacial ?? "BLOCO_INDEFINIDO",
+    Elevacao_m: l.elevacao ?? "",
+    Declividade_pct: l.declividadePct ?? "",
+    Declividade_graus: l.declividadeGraus ?? "",
+    Curvatura_Perfil: l.curvaturaPerfil ?? "",
+    Curvatura_Plana: l.curvaturaPlana ?? "",
+    Acumulo_Fluxo: l.acumuloFluxo ?? "",
+    TWI: l.twi ?? "",
+    Ordem_Solo: l.ordemSolo ?? "",
+    Subordem_Solo: l.subOrdemSolo ?? "",
+    Grande_Grupo_Solo: l.grandeGrupoSolo ?? "",
+    Erodibilidade_Classe: l.erodibilidadeClasse ?? "",
+    Frequencia_Solo_Nu: l.frequenciaSoloNu ?? "",
+    Banda_B2: l.bandaB2 ?? "",
+    Banda_B4: l.bandaB4 ?? "",
+    Banda_B8: l.bandaB8 ?? "",
+    Banda_B12: l.bandaB12 ?? "",
+    NDVI: l.ndvi ?? "",
+    BSI: l.bsi ?? "",
+    RUSLE_Fator_K: l.fatorK ?? "",
+    RUSLE_Fator_R: l.fatorR ?? "",
+    Precip_Acum_30d_mm: l.precipAcum30d ?? "",
+    Precip_Acum_90d_mm: l.precipAcum90d ?? "",
+    I30_Max_mm_h: l.i30Max ?? "",
+    N_Eventos_Erosivos: l.nEventosErosivos ?? "",
+    Indice_Mecanismo: l.indiceMecanismo ?? "",
+    Classe_Alvo_Binaria: l.classeAlvoBinaria,
+    Rotulo_Classe: l.rotuloClasse,
+    Rotulo_Modalidade: l.rotuloModalidade,
+  }));
 }
 
 /**
@@ -234,7 +236,7 @@ export async function gerarPlanilhaXLSX(pontos: PontoAmostral[], opcoes: OpcoesE
   const perfilAtivo = opcoes.perfil ?? "planilha";
 
   // 2. Extração e montagem da Aba 1 projetada pelo perfil
-  const linhasDados = extrairLinhasPorPerfil(pontos, perfilAtivo);
+  const linhasDados = extrairLinhasPorPerfil(pontos, perfilAtivo, opcoes.rotulosConsolidados);
   const cabecalho = linhasDados.length > 0 ? Object.keys(linhasDados[0]) : [];
 
   // 3. Validação de Invariantes sobre o artefato projetado
