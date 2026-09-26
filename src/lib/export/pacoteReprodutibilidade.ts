@@ -664,22 +664,43 @@ def auditar_modelo():
         print(f"[ABORTO] Restaram apenas {len(preditores_ativos)} preditores válidos ({preditores_ativos}) após o descarte (< 3 mínimos exigidos). Modelagem interrompida.")
         return
 
-    if "Bloco_Espacial" not in df.columns or df["Bloco_Espacial"].isna().any() or (df["Bloco_Espacial"].astype(str).str.strip() == "").any():
-        print("[ABORTO] Coluna 'Bloco_Espacial' ausente ou contendo células vazias. Validação cruzada espacial interrompida (proibido agrupar em bloco único).")
+    if "Bloco_Espacial" not in df.columns:
+        print("[ABORTO] Coluna 'Bloco_Espacial' ausente no Arquivo 01. Validação cruzada espacial interrompida.")
         return
 
-    X = X_bruto[preditores_ativos]
-    y = df["Classe_Alvo_Binaria"].astype(int)
-    grupos = df["Bloco_Espacial"].astype(str).str.strip()
+    bloco_str = df["Bloco_Espacial"].astype(str).str.strip()
+    mascara_bloco_valido = (~df["Bloco_Espacial"].isna()) & (bloco_str != "") & (bloco_str != "nan") & (bloco_str != "BLOCO_INDEFINIDO")
+    n_sem_bloco = int((~mascara_bloco_valido).sum())
+    if n_sem_bloco > 0:
+        print(f"  [DESCARTE] {n_sem_bloco}/{len(df)} pontos sem bloco espacial atribuído — excluídos da validação cruzada espacial.")
+
+    df_valido = df[mascara_bloco_valido]
+    X = X_bruto.loc[mascara_bloco_valido, preditores_ativos]
+    y = df_valido["Classe_Alvo_Binaria"].astype(int)
+    grupos = bloco_str[mascara_bloco_valido]
 
     print(f"  Preditores selecionados para treino ({len(preditores_ativos)}): {preditores_ativos}")
-    print(f"  Distribuição de classes: 0={sum(y==0)}, 1={sum(y==1)}\n")
+    print(f"  Distribuição de classes após filtro espacial: 0={sum(y==0)}, 1={sum(y==1)}\n")
 
     print("=" * 70)
     print("3. VALIDAÇÃO CRUZADA ESPACIAL POR BLOCOS (SPATIAL BLOCK BOOTSTRAP)")
     print("=" * 70)
 
-    gkf = GroupKFold(n_splits=min(3, len(set(grupos))))
+    n_grupos = len(set(grupos))
+    if n_grupos < 2:
+        print(f"[ABORTO] Validação cruzada espacial requer ao menos 2 blocos espaciais independentes (n_grupos={n_grupos}). A validação cruzada por blocos espaciais exige grupos independentes para estimar o erro sem inflação por autocorrelação espacial (Roberts et al., 2017).")
+        return
+
+    n_splits = min(3, n_grupos)
+    if len(df_valido) < n_splits:
+        print(f"[ABORTO] Número de amostras válidas ({len(df_valido)}) insuficiente para {n_splits} dobras espaciais.")
+        return
+
+    contagem_por_bloco = grupos.value_counts().to_dict()
+    print(f"  Blocos espaciais independentes (n_grupos={n_grupos}) | Dobras efetivas (n_splits={n_splits})")
+    print(f"  Contagem de pontos por bloco: {contagem_por_bloco}")
+
+    gkf = GroupKFold(n_splits=n_splits)
     acuracias = []
 
     for fold, (train_idx, val_idx) in enumerate(gkf.split(X, y, grupos)):
