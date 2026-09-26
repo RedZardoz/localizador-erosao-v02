@@ -6,6 +6,7 @@ import { useSarelStore } from "@/store/useSarelStore";
 import { SeloProveniencia } from "./SeloProveniencia";
 import { GraficoSerieTemporal } from "./GraficoSerieTemporal";
 import { formatToDMS } from "@/lib/export/dms";
+import { REGISTRO_DECISOES } from "@/config/decisoes";
 import type { LaudoAuditoriaPonto } from "@/types/jev";
 
 export function InspetorPonto() {
@@ -221,6 +222,51 @@ export function InspetorPonto() {
         </div>
       </div>
 
+      {/* Linha de Base RUSLE (Fase 8 — Invariante 1) */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2.5 mb-3">
+          LINHA DE BASE RUSLE — A = R · K · LS · C · P
+        </h3>
+        {ponto.linhaDeBase ? (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <SeloProveniencia
+                label="Fator R (erosividade)"
+                proveniencia={ponto.linhaDeBase.fatorR}
+                unidade="MJ·mm·ha⁻¹·h⁻¹·ano⁻¹"
+              />
+              <SeloProveniencia
+                label="Fator K (erodibilidade)"
+                proveniencia={ponto.linhaDeBase.fatorK}
+                unidade="t·h·MJ⁻¹·mm⁻¹"
+              />
+              <SeloProveniencia label="Fator LS (topográfico)" proveniencia={ponto.linhaDeBase.fatorLS} />
+              <SeloProveniencia label="Fator C (cobertura)" proveniencia={ponto.linhaDeBase.fatorC} />
+              <SeloProveniencia label="Fator P (prática)" proveniencia={ponto.linhaDeBase.fatorP} />
+              <SeloProveniencia
+                label="Perda de Solo A"
+                proveniencia={ponto.linhaDeBase.perdaSolo}
+                unidade="t·ha⁻¹·ano⁻¹"
+              />
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 font-mono text-xs text-slate-700">
+              {ponto.linhaDeBase.memoriaCalculo !== null
+                ? ponto.linhaDeBase.memoriaCalculo
+                : ponto.linhaDeBase.perdaSolo.estado === "indisponivel"
+                ? ponto.linhaDeBase.perdaSolo.motivo
+                : "Memória de cálculo não disponível."}
+            </div>
+            <p className="text-[11px] text-slate-500">
+              Governança Metodológica: A retenção de A decorre do Invariante 1 (docs/design.md:73). As pendências de R e LS correspondem às Decisões D13 ({REGISTRO_DECISOES.D13.titulo}) e D15 ({REGISTRO_DECISOES.D15.titulo}).
+            </p>
+          </div>
+        ) : (
+          <p className="text-xs text-slate-500 italic">
+            A linha de base RUSLE não foi montada para este ponto amostral.
+          </p>
+        )}
+      </div>
+
       {/* Série Temporal e Composto de Solo Exposto */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -276,7 +322,7 @@ export function InspetorPonto() {
         }
         modeloAtivo={modeloAtivo}
         onModeloChange={setModeloAtivo}
-        dataReferencia={ponto.rastreio?.calculadoEm?.split("T")[0] || "2026-01-01"}
+        dataReferencia={ponto.rastreio?.calculadoEm?.split("T")[0] || ""}
       />
 
       {/* Bloco de Auditoria Rápida Dual-Engine (Jev System One / RUSLE Local) */}
