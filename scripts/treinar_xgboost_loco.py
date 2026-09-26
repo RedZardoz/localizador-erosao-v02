@@ -226,7 +226,8 @@ def balancear_com_pontos_controle(
     df_erosao: pd.DataFrame,
     caminho_controles: str | None = None,
     permitir_dryrun_sintetico: bool = False,
-    semente: int = 42
+    semente: int = 42,
+    origem_dados: str = "planilha_erosao"
 ) -> tuple[pd.DataFrame, bool]:
     """
     Equilibra o conjunto de dados com amostras de Controle / SPD (Classe 0).
@@ -248,14 +249,31 @@ def balancear_com_pontos_controle(
     df_erosao = df_erosao.copy()
     if 'Classe_Alvo_Binaria' not in df_erosao.columns:
         df_erosao['Classe_Alvo_Binaria'] = 1
+        print(
+            f"  [PROCEDÊNCIA DE PLANILHA] {len(df_erosao)} registros receberam Classe_Alvo_Binaria=1 "
+            f"pela procedência declarada do arquivo '{origem_dados}'."
+        )
     else:
-        df_erosao['Classe_Alvo_Binaria'] = df_erosao['Classe_Alvo_Binaria'].fillna(1).astype(int)
+        alvo_num = pd.to_numeric(df_erosao['Classe_Alvo_Binaria'], errors='coerce')
+        mascara_alvo_valido = alvo_num.isin([0, 1])
+        n_sem_alvo = int((~mascara_alvo_valido).sum())
+        if n_sem_alvo > 0:
+            print(
+                f"  [DESCARTE ALVO (Regra 4)] {n_sem_alvo}/{len(df_erosao)} registros descartados em "
+                f"'{origem_dados}' por motivo: Classe_Alvo_Binaria ausente/NaN (nunca imputado)."
+            )
+        df_erosao = df_erosao.loc[mascara_alvo_valido].copy()
+        df_erosao['Classe_Alvo_Binaria'] = alvo_num.loc[mascara_alvo_valido].astype(int)
 
     # 1. Caso haja arquivo externo de controles empíricos reais
     if caminho_controles and os.path.exists(caminho_controles):
         print(f"[BALANCEAMENTO] Carregando controles reais de '{os.path.basename(caminho_controles)}'...")
         df_ctrl = carregar_dados_reais(caminho_controles)
         df_ctrl['Classe_Alvo_Binaria'] = 0
+        print(
+            f"  [PROCEDÊNCIA DE PLANILHA] {len(df_ctrl)} registros receberam Classe_Alvo_Binaria=0 "
+            f"pela procedência declarada do arquivo de controles '{os.path.basename(caminho_controles)}'."
+        )
         df_bal = pd.concat([df_erosao, df_ctrl], ignore_index=True)
         df_bal = df_bal.loc[:, ~df_bal.columns.duplicated()]
         return df_bal, False
@@ -339,7 +357,10 @@ def balancear_com_pontos_controle(
     df_controle['Classe_Alvo_Binaria'] = 0
     df_balanceado = pd.concat([df_erosao, df_controle], ignore_index=True)
     df_balanceado = df_balanceado.loc[:, ~df_balanceado.columns.duplicated()]
-    df_balanceado['Classe_Alvo_Binaria'] = df_balanceado['Classe_Alvo_Binaria'].fillna(0).astype(int)
+    assert df_balanceado['Classe_Alvo_Binaria'].notna().all(), (
+        "Invariante violado: Classe_Alvo_Binaria contém NaN após concatenação no modo dry-run"
+    )
+    df_balanceado['Classe_Alvo_Binaria'] = df_balanceado['Classe_Alvo_Binaria'].astype(int)
     print(f"[BALANCEAMENTO DRY-RUN] Base equilibrada com marca d'agua: {len(df_erosao)} Erosão + {len(df_controle)} Controle.")
     return df_balanceado, True
 
@@ -444,28 +465,55 @@ def preparar_matriz_preditores(
 
     y_series = None
     procedencia_alvo = f"arquivo='{origem_dados}', coluna='Classe_Alvo_Binaria' (rotulagem humana consolidada)"
-    if 'Classe_Alvo_Binaria' in df.columns and df['Classe_Alvo_Binaria'].notna().any():
+    if 'Classe_Alvo_Binaria' in df.columns:
+        alvo_num = pd.to_numeric(df['Classe_Alvo_Binaria'], errors='coerce')
+        mascara_alvo_valido = alvo_num.isin([0, 1])
+        n_sem_alvo = int((~mascara_alvo_valido).sum())
+        if n_sem_alvo > 0:
+            print(
+                f"  [DESCARTE ALVO (Regra 4)] {n_sem_alvo}/{len(df)} registros descartados em "
+                f"'{origem_dados}' por motivo: Classe_Alvo_Binaria ausente/NaN (nunca imputado)."
+            )
+        df = df.loc[mascara_alvo_valido].copy()
+        if len(df) == 0:
+            raise ValueError(
+                f"[ABORTO — REGRA 4] Nenhum registro com 'Classe_Alvo_Binaria' válida (0 ou 1) restou em "
+                f"'{origem_dados}' após o descarte de {n_sem_alvo} registros sem rótulo."
+            )
+        df['Classe_Alvo_Binaria'] = alvo_num.loc[mascara_alvo_valido].astype(int)
+
         if df['Classe_Alvo_Binaria'].nunique() > 1:
-            y_series = df['Classe_Alvo_Binaria'].fillna(0).astype(int)
+            assert df['Classe_Alvo_Binaria'].notna().all()
+            y_series = df['Classe_Alvo_Binaria'].astype(int)
         else:
             df, eh_dryrun = balancear_com_pontos_controle(
-                df, caminho_controles=caminho_controles, permitir_dryrun_sintetico=permitir_dryrun_sintetico, semente=semente
+                df,
+                caminho_controles=caminho_controles,
+                permitir_dryrun_sintetico=permitir_dryrun_sintetico,
+                semente=semente,
+                origem_dados=origem_dados,
             )
             df = df.rename(columns={k: v for k, v in mapeamento.items() if k in df.columns})
             df['bloco_loco'] = _atribuir_bloco_loco(df)
-            y_series = df['Classe_Alvo_Binaria'].fillna(0).astype(int)
+            assert df['Classe_Alvo_Binaria'].notna().all()
+            y_series = df['Classe_Alvo_Binaria'].astype(int)
             procedencia_alvo = (
                 f"arquivo='{origem_dados}' + controles='{os.path.basename(caminho_controles) if caminho_controles else 'dry-run'}'"
             )
 
     if y_series is None or len(y_series.unique()) < 2:
         df, eh_dryrun = balancear_com_pontos_controle(
-            df, caminho_controles=caminho_controles, permitir_dryrun_sintetico=permitir_dryrun_sintetico, semente=semente
+            df,
+            caminho_controles=caminho_controles,
+            permitir_dryrun_sintetico=permitir_dryrun_sintetico,
+            semente=semente,
+            origem_dados=origem_dados,
         )
         df = df.rename(columns={k: v for k, v in mapeamento.items() if k in df.columns})
         df = df.loc[:, ~df.columns.duplicated()]
         df['bloco_loco'] = _atribuir_bloco_loco(df)
-        y_series = df['Classe_Alvo_Binaria'].fillna(0).astype(int)
+        assert df['Classe_Alvo_Binaria'].notna().all()
+        y_series = df['Classe_Alvo_Binaria'].astype(int)
         procedencia_alvo = (
             f"procedencia_planilha='{origem_dados}' (Classe 1) + controles='{os.path.basename(caminho_controles) if caminho_controles else 'dry-run'}' (Classe 0)"
         )
@@ -489,6 +537,14 @@ def preparar_matriz_preditores(
     df = df.loc[mascara_bloco_valido].copy()
     y_series = y_series.loc[mascara_bloco_valido]
     blocos = bloco_str.loc[mascara_bloco_valido]
+
+    if y_series.nunique() < 2:
+        raise ValueError(
+            "[ABORTO — ERRO DE INTEGRIDADE CIENTÍFICA (ANTI-MOCK - METODOLOGIA PPGTCA 2026)] "
+            f"Após o descarte proporcional, restou apenas {y_series.nunique()} classe em y ({dict(y_series.value_counts())}). "
+            "Modelos de classificação binária supervisionada requerem contraste biofísico entre o fenômeno de "
+            "degradação (Classe 1) e o estado de equilíbrio da paisagem (Classe 0)."
+        )
 
     n_grupos = len(set(blocos))
     contagem_por_bloco = blocos.value_counts().to_dict()
