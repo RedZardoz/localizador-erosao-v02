@@ -124,7 +124,7 @@ def criar_diagramas_telas(pasta_figuras: str) -> dict[str, str]:
     # Macrobacias esboçadas
     ax.text(40, 68, "Bacia do Paranapanema", color='#475569', fontsize=7.5, style='italic')
     ax.text(68, 62, "Bacia do Tibagi", color='#475569', fontsize=7.5, style='italic')
-    ax.text(45, 45, "Bacia do Rio Ivaí", color='#475569', fontsize=7.5, style='italic')
+    ax.text(45, 45, "Macrobacia Ivai (IAT)", color='#475569', fontsize=7.5, style='italic')
     ax.text(36, 28, "Bacia do Piquiri / PR 3", color='#475569', fontsize=7.5, style='italic')
     ax.text(62, 22, "Bacia do Rio Iguaçu", color='#475569', fontsize=7.5, style='italic')
 

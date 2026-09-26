@@ -70,7 +70,7 @@ BACIAS_PARANA = {
         [-50.00, -25.20], [-50.40, -25.30], [-50.90, -24.80], [-51.30, -24.10],
         [-51.60, -23.40], [-51.40, -22.75]
     ],
-    "Bacia do Rio Ivaí": [
+    "Macrobacia Ivai (IAT)": [
         [-53.70, -23.25], [-52.60, -23.20], [-51.80, -23.40], [-51.30, -24.10],
         [-50.90, -24.80], [-51.20, -25.25], [-52.10, -24.90], [-52.80, -24.40],
         [-53.40, -23.80], [-53.70, -23.25]
@@ -120,7 +120,7 @@ def ponto_em_poligono(lon: float, lat: float, anel: list[list[float]]) -> bool:
     return dentro
 
 
-def identificar_bacia_real(lat: float, lon: float) -> str:
+def identificar_bacia_real(lat: float, lon: float) -> str | None:
     """
     Identifica a macrobacia oficial do IAT correspondente à coordenada.
 
@@ -135,22 +135,34 @@ def identificar_bacia_real(lat: float, lon: float) -> str:
     padrões pedológicos e regimes climáticos coerentes. Esse agrupamento físico é indispensável para evitar
     a contaminação de dados por autocorrelação espacial durante a modelagem preditiva.
     """
+    if pd.isna(lat) or pd.isna(lon):
+        return None
+    try:
+        lat_f = float(lat)
+        lon_f = float(lon)
+    except (TypeError, ValueError):
+        return None
+    if not (np.isfinite(lat_f) and np.isfinite(lon_f)):
+        return None
+
     for nome, anel in BACIAS_PARANA.items():
-        if ponto_em_poligono(lon, lat, anel):
+        if ponto_em_poligono(lon_f, lat_f, anel):
             return nome
-    # Fallback geográfico determinístico por quadrante do Paraná
-    if lat < -25.3:
-        return "Bacia do Rio Iguaçu"
-    elif lon < -53.2:
-        return "Bacia do Rio Piquiri / PR 3"
-    elif lon > -50.2:
-        return "Bacia Litorânea / Ribeira"
-    elif lat > -23.3:
-        return "Bacia do Paranapanema"
-    elif lon > -51.8:
-        return "Bacia do Rio Tibagi"
-    else:
-        return "Bacia do Rio Ivaí"
+    # Enquadramento geográfico determinístico por quadrante dentro dos limites do Paraná
+    if -26.8 <= lat_f <= -22.5 and -54.7 <= lon_f <= -48.0:
+        if lat_f < -25.3:
+            return "Bacia do Rio Iguaçu"
+        elif lon_f < -53.2:
+            return "Bacia do Rio Piquiri / PR 3"
+        elif lon_f > -50.2:
+            return "Bacia Litorânea / Ribeira"
+        elif lat_f > -23.3:
+            return "Bacia do Paranapanema"
+        elif lon_f > -51.8:
+            return "Bacia do Rio Tibagi"
+        else:
+            return "Macrobacia Ivai (IAT)"
+    return None
 
 
 def carregar_dados_reais(caminho_arquivo: str) -> pd.DataFrame:
@@ -399,13 +411,21 @@ def preparar_matriz_preditores(
     }
     df = df.rename(columns={k: v for k, v in mapeamento.items() if k in df.columns})
 
-    # Identificação da Macrobacia Real via Coordenadas Oficiais
-    if 'Latitude' in df.columns and 'Longitude' in df.columns:
-        df['bloco_loco'] = [identificar_bacia_real(lat, lon) for lat, lon in zip(df['Latitude'], df['Longitude'])]
-    elif 'bacia' in df.columns and df['bacia'].notna().any() and not (df['bacia'] == 'Bacia Local').all():
-        df['bloco_loco'] = df['bacia']
-    else:
-        df['bloco_loco'] = 'Bacia do Rio Ivaí'
+    def _atribuir_bloco_loco(df_alvo: pd.DataFrame) -> list[str | None]:
+        if 'Bloco_Espacial' in df_alvo.columns and df_alvo['Bloco_Espacial'].notna().any():
+            return [None if pd.isna(v) else str(v).strip() for v in df_alvo['Bloco_Espacial']]
+        if 'Latitude' in df_alvo.columns and 'Longitude' in df_alvo.columns:
+            return [identificar_bacia_real(lat, lon) for lat, lon in zip(df_alvo['Latitude'], df_alvo['Longitude'])]
+        if 'bacia' in df_alvo.columns and df_alvo['bacia'].notna().any() and not (df_alvo['bacia'] == 'Bacia Local').all():
+            return [None if pd.isna(v) else str(v).strip() for v in df_alvo['bacia']]
+        raise ValueError(
+            "[ABORTO — VALIDAÇÃO CRUZADA ESPACIAL LOCO] Sem informação de bacia/cluster espacial por ponto "
+            "(ausentes 'Bloco_Espacial', coordenadas 'Latitude'/'Longitude' e coluna 'bacia'). "
+            "LOCO exige clusters reais independentes; cluster único não estima erro sob autocorrelação espacial (Roberts et al., 2017)."
+        )
+
+    # Identificação da Macrobacia / Bloco Espacial Real (sem literal fabricado)
+    df['bloco_loco'] = _atribuir_bloco_loco(df)
 
     # Identificação da Variável Alvo (Exclusivamente Rotulagem Humana Consolidada — Regra 4)
     # Norma canônica (src/lib/matriz/montagem.ts:137-138):
@@ -432,7 +452,7 @@ def preparar_matriz_preditores(
                 df, caminho_controles=caminho_controles, permitir_dryrun_sintetico=permitir_dryrun_sintetico, semente=semente
             )
             df = df.rename(columns={k: v for k, v in mapeamento.items() if k in df.columns})
-            df['bloco_loco'] = [identificar_bacia_real(lat, lon) for lat, lon in zip(df['Latitude'], df['Longitude'])]
+            df['bloco_loco'] = _atribuir_bloco_loco(df)
             y_series = df['Classe_Alvo_Binaria'].fillna(0).astype(int)
             procedencia_alvo = (
                 f"arquivo='{origem_dados}' + controles='{os.path.basename(caminho_controles) if caminho_controles else 'dry-run'}'"
@@ -444,10 +464,40 @@ def preparar_matriz_preditores(
         )
         df = df.rename(columns={k: v for k, v in mapeamento.items() if k in df.columns})
         df = df.loc[:, ~df.columns.duplicated()]
-        df['bloco_loco'] = [identificar_bacia_real(lat, lon) for lat, lon in zip(df['Latitude'], df['Longitude'])]
+        df['bloco_loco'] = _atribuir_bloco_loco(df)
         y_series = df['Classe_Alvo_Binaria'].fillna(0).astype(int)
         procedencia_alvo = (
             f"procedencia_planilha='{origem_dados}' (Classe 1) + controles='{os.path.basename(caminho_controles) if caminho_controles else 'dry-run'}' (Classe 0)"
+        )
+
+    df = df.loc[:, ~df.columns.duplicated()]
+
+    # Descarte proporcional de pontos sem bloco espacial válido (Postura 3 / espelhando Arquivo 05 e66d3a9)
+    bloco_str = df['bloco_loco'].astype(str).str.strip()
+    mascara_bloco_valido = (
+        (~df['bloco_loco'].isna())
+        & (bloco_str != "")
+        & (bloco_str != "nan")
+        & (bloco_str != "None")
+        & (bloco_str != "BLOCO_INDEFINIDO")
+        & (bloco_str != "Bacia Local")
+    )
+    n_sem_bloco = int((~mascara_bloco_valido).sum())
+    if n_sem_bloco > 0:
+        print(f"  [DESCARTE] {n_sem_bloco}/{len(df)} pontos sem bloco espacial atribuído — excluídos da validação cruzada espacial.")
+
+    df = df.loc[mascara_bloco_valido].copy()
+    y_series = y_series.loc[mascara_bloco_valido]
+    blocos = bloco_str.loc[mascara_bloco_valido]
+
+    n_grupos = len(set(blocos))
+    contagem_por_bloco = blocos.value_counts().to_dict()
+    print(f"  Blocos espaciais independentes (n_grupos={n_grupos})")
+    print(f"  Contagem de pontos por bloco: {contagem_por_bloco}")
+    if n_grupos < 2:
+        raise ValueError(
+            f"[ABORTO] Validação cruzada espacial requer ao menos 2 blocos espaciais independentes (n_grupos={n_grupos}). "
+            "A validação cruzada por blocos espaciais exige grupos independentes para estimar o erro sem inflação por autocorrelação espacial (Roberts et al., 2017)."
         )
 
     contagem_classes_alvo = {int(k): int(v) for k, v in y_series.value_counts().to_dict().items()}
@@ -455,9 +505,6 @@ def preparar_matriz_preditores(
     print(f"[PROCEDÊNCIA DECLARADA DO ALVO y (Regra 4)] {procedencia_alvo}")
     print(f"[DISTRIBUIÇÃO DO ALVO y] Classe 1 (Erosão Laminar)={contagem_classes_alvo.get(1, 0)} | Classe 0 (Controle/SPD)={contagem_classes_alvo.get(0, 0)}")
     print("=" * 70)
-
-    df = df.loc[:, ~df.columns.duplicated()]
-    blocos = df['bloco_loco']
 
     # Seleção dos Preditores Físico-Informados
     candidatos_preditores = [
