@@ -254,13 +254,16 @@ export const PARAMETROS: Record<string, Decisao<any>> = {
   },
   P03: {
     id: "P03",
-    titulo: "Raio de casamento geodésico Kobo com ponto planejado",
+    titulo: "Critério de casamento geodésico de campo com o ponto planejado",
     estado: "decidida" as EstadoDecisao,
-    valor: "15 m nominal (tolerância ampliada de até 25 m sob aviso de qualidade; rejeição estrita se > 25 m)",
-    justificativa: "Readequado de 150 m para 15 m (1,5 pixel do Sentinel-2), compatível com a escala do pixel de 10 m e a acurácia de GPS/GNSS de navegação em campo (3 a 8 m). Margem ampliada de até 25 m cobre barreiras físicas (cercas, terraços), enquanto desvios acima de 25 m são rejeitados para evitar descaracterização da feição de erosão laminar ou atribuição a pixels vizinhos.",
-    referencia: "Congalton & Green (2019); LUCAS Survey (2022); Metodologia PPGTCA 2026, Seção 3.3",
+    valor:
+      "Três critérios independentes, substituindo o limiar único anterior de 15/25 m. (a) TETO DE ERRO GROSSEIRO: 30 m entre a coordenada observada e a planejada; acima disso o registro é rejeitado, por indicar ponto errado visitado ou código digitado errado, não qualidade de posicionamento. (b) CRITÉRIO DE INTEGRIDADE: o ponto observado deve permanecer no mesmo estrato (tercil S^, tercil E^ e nivelK) do ponto sorteado, verificado por reextração das covariáveis na coordenada observada; falha aqui invalida a amostra mesmo dentro dos 30 m. (c) TRAVA DE QUALIDADE POSICIONAL: acurácia GNSS declarada pelo aparelho de até 5 m (meio pixel) é aceita; de 5 a 10 m é aceita com marcação de qualidade que acompanha o registro; acima de 10 m é rejeitada e o ponto deve ser remedido em campo. As features são extraídas na COORDENADA OBSERVADA, nunca na planejada.",
+    justificativa:
+      "O limiar único anterior confundia três fontes de erro distintas. Primeira: o deslocamento entre o planejado e o observado é conhecido e corrigível — basta extrair as features onde o observador esteve, o que elimina o problema de atribuição em vez de tolerá-lo. Segunda: a incerteza posicional do GNSS é desconhecida e irredutível sem melhor equipamento, e é ela que limita a atribuição ao pixel; medido para pixel de 10 m com erro gaussiano isotrópico, o acerto é de 57,9% a sigma de 3 m, 37,2% a 5 m e 19,6% a 8 m, faixa típica de GNSS de frequência única em campo aberto. Terceira: a pertinência ao estrato é o que a amostragem estratificada realmente exige, e é diretamente verificável — em relevo dissecado o tercil de declividade muda em 10 m, enquanto em chapadão uniforme 30 m não alteram nada, de modo que nenhum limiar métrico único serve aos dois casos. A faixa intermediária de 5 a 10 m foi adotada em lugar de corte seco porque o Galaxy M13 entrega tipicamente 3 a 8 m: cortar em 5 m rejeitaria parcela grande do trabalho de campo. O registro entra com a acurácia gravada, e a decisão de excluir ou ponderar a faixa intermediária é tomada depois, sobre a distribuição empírica obtida no lote piloto. A incoerência anterior fica registrada: os 15 m nominais equivaliam a 1,5 pixel e os 25 m a 2,5 pixels, de modo que a tolerância nominal já garantia a atribuição a pixel vizinho que a própria justificativa dizia querer evitar.",
+    referencia:
+      "Congalton & Green (2019); LUCAS Survey (2022); Metodologia PPGTCA 2026, Seção 3.3; docs/auditorias/Relatorio_Auditoria_Integral_Coerencia_Efetividade_2026-09-26.md; medições de atribuição de pixel registradas em 2026-09-27",
     decididoPor: "pesquisador",
-    decididoEm: "2026-09-22",
+    decididoEm: "2026-09-27",
   },
   P04: {
     id: "P04",
