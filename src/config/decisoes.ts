@@ -50,13 +50,16 @@ export const DECISOES: Record<string, Decisao<any>> = {
   },
   D03: {
     id: "D03",
-    titulo: "Escala do rótulo (binária ou ordinal)",
+    titulo: "Escala do rótulo: coleta ordinal com binarização declarada",
     estado: "decidida" as EstadoDecisao,
-    valor: "Binária (0: Controle/Não-Erosão, 1: Erosão Laminar Ativa)",
-    justificativa: "Classificação supervisionada com XGBoost binary:logistic e validação de alta resolução.",
-    referencia: "Metodologia PPGTCA 2026, Seções 3.1 e 5",
+    valor:
+      "COLETA em escala ordinal de quatro níveis, com o vocabulário do SAREL Coletor como canônico: 'ausente', 'incipiente', 'moderada', 'severa'. ALVO SUPERVISIONADO binário, obtido por binarização explícita com corte entre 'ausente' e 'incipiente': ausente => 0; incipiente, moderada e severa => 1. INCIPIENTE CONTA COMO POSITIVO. Os termos 'presente', 'erosao', 'erosão' e '1', aceitos por montarMatrizTreino (montagem.ts:139-148), são aliases legados de versões anteriores e mapeiam para 1. A escala ordinal de quatro níveis é preservada integralmente no dado, não apenas o binário derivado. Fica PRÉ-REGISTRADA uma análise de sensibilidade secundária que repete o ajuste com corte alternativo — ausente => 0, moderada e severa => 1, com 'incipiente' excluído do treino — cujo resultado é reportado junto do principal, qualquer que seja.",
+    justificativa:
+      "Três razões sustentam o corte em 'incipiente'. Primeira, de propósito: a finalidade declarada do método é localização e predição, e detectar apenas erosão moderada ou severa tem baixo valor prático, porque nesse estágio o dano já está consolidado; excluir a erosão incipiente contrariaria a razão de existir do instrumento. Segunda, de tamanho amostral: o positivo é o recurso escasso da pesquisa, e este é o único corte que não o reduz — a decisão D24 registra que o regime de dados já está abaixo do recomendado para ensembles de árvores, e reduzir positivos agravaria. Terceira, de honestidade: classificar como 'sem erosão' um ponto onde o observador registrou erosão incipiente seria rótulo falso, ainda que conveniente ao desempenho medido. O custo é assumido e declarado: a classe positiva fica heterogênea, e a erosão incipiente é justamente a de detecção mais difícil no pixel de 10 m do Sentinel-2, de modo que incluí-la tende a reduzir o desempenho aparente. É precisamente por isso que a análise de sensibilidade é pré-registrada: a diferença de desempenho entre os dois cortes mede quanto do sinal está na erosão incipiente, e esse contraste é resultado científico, não escolha metodológica a ser feita depois. A binarização é fixada ANTES da campanha e não pode ser alterada após a observação dos resultados, sob pena de flexibilidade analítica.",
+    referencia:
+      "Metodologia PPGTCA 2026, Seções 3.1 e 5; src/lib/matriz/montagem.ts:139-148 (implementação canônica); modelo de dados do SAREL Coletor (FieldCollection.classe)",
     decididoPor: "pesquisador",
-    decididoEm: "2026-09-13",
+    decididoEm: "2026-09-27",
   },
   D04: {
     id: "D04",
