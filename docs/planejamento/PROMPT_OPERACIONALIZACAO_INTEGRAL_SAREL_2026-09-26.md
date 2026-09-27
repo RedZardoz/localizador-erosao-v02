@@ -239,6 +239,12 @@ Nada de F1 a F5 começa antes de F0 estar verde.
 
 **F1.5** Se Q1 escolher o híbrido (iii), acrescentar a camada MERIT como verificação independente e registrar a concordância em `docs/verificacoes/`.
 
+**F1.6 — Citação de D20 no selo do Fator C.** O pesquisador registrou **D20** no commit `7c60756`, formalizando a fórmula híbrida SPD com domínio estrito em $[0,1]$. O selo em `src/lib/rusle/fatorC.ts` ainda cita `decisoes: ["D01"]` em ambos os caminhos. Corrigir: caminho híbrido (BSI presente) passa a citar `["D01", "D20"]`; caminho puro (sem BSI) mantém `["D01"]`. Teste que asseverá a citação correta em cada caminho. **Não editar `src/config/decisoes.ts`** (P8).
+
+**F1.7 — Dívidas da FASE 0 a liquidar.** Duas entregas ficaram pendentes e devem constar do relatório desta fase:
+1. O **quadro comparativo de Q1** que não veio: tempo de execução, $A_s$ mínimo e máximo, e facilidade de fixar versão, para `whitebox` **e** `pysheds`, sobre o mesmo MDE 200×200 usado no teste original. O bloqueio do pysheds está identificado e é real — NumPy 2.4.6 removeu `np.in1d`, que `pysheds/sgrid.py` invoca 9 vezes —, mas o quadro precisa dos números para fechar a decisão em registro.
+2. **Versão exata do WhiteboxTools, URL de origem e hash do binário** baixado, no documento da Regra 8. Sem isso, o parâmetro $A_s$ não é reproduzível por terceiro.
+
 ### Aceite de F1
 - Um ponto real inspecionado devolve as quatro variáveis com `estado: "medido"`.
 - Ponto em superfície plana devolve TWI `indisponivel` por Invariante 5.
@@ -339,6 +345,7 @@ Ao fim de **cada** fase, entregue e aguarde autorização:
 8. Falsos positivos de critério de aceite encontrados (Postura 13), relatados e **não** contornados por edição de conteúdo.
 9. Declaração de que D13 e D15 seguem `pendente` e que nenhum valor de R, LS ou $A$ foi produzido.
 10. O que não foi feito e por qual proibição.
+11. **Suas linhas acrescentadas à §3 de `docs/PROVENIENCIA_ASSISTENCIA_IA.md`**, com commit, data, objeto e o prompt que o especificou — assinadas com a sua identidade, conforme P11. Esse documento é a fonte que o pesquisador citará na declaração acadêmica de uso de ferramentas.
 
 Ao fim de F3, acrescente o **quadro de efetividade**: a tabela da PARTE I atualizada, coluna a coluna, com o estado real medido.
 
