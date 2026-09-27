@@ -172,17 +172,29 @@ export const DECISOES: Record<string, Decisao<any>> = {
   },
   D17: {
     id: "D17",
-    titulo: "Ciclo da cota Planet: mensal ou total",
-    estado: "pendente" as EstadoDecisao,
-    justificativa: "Proposta estruturada: controle de cota acumulado sobre o volume total de área acadêmica contratada.",
-    referencia: "Planet Labs Education & Research Program",
+    titulo: "Ciclo da cota Planet e alocação racional entre download e tiles",
+    estado: "decidida" as EstadoDecisao,
+    valor:
+      "Cota de Scene Downloads de 3.000 km² tratada como TOTAL do período de vigência do plano (Education and Research Basic, Plan ID 798565, até 05/04/2028), não como cota mensal renovável. Alocação: a fotointerpretação de rotulagem consome exclusivamente a cota de Scene Tiles (100.000 tiles), que não debita km²; a cota de km² fica reservada aos recortes analíticos ortho_analytic (PSScene), incluindo os trios pré/pós evento.",
+    justificativa:
+      "A leitura conservadora (total, não mensal) é segura sob ambas as hipóteses contratuais: se o ciclo for de fato mensal, o planejamento apenas folga, nunca aperta; a hipótese inversa esgotaria a cota com OVERAGE desligado, situação em que a API rejeita a requisição. O dimensionamento medido em 27/09/2026 confirma folga ampla sob a leitura conservadora: com o buffer de D18 (0,25 km² por recorte), 180 pontos em uma data mais 60 trios pré/pós evento consomem 75 km², ou 2,5% da cota total; 180 pontos em três datas consomem 135 km², ou 4,5%. A separação entre tiles e km² é a economia estruturante: rotular por fotointerpretação não deve debitar a cota analítica, e o plano oferece 100.000 tiles exatamente para esse uso. O ciclo contratual efetivo deve ser confirmado na página do plano na conta Planet; a confirmação de ciclo mensal permite relaxar esta decisão sem qualquer alteração operacional.",
+    referencia:
+      "Planet Labs Education & Research Program, Plan ID 798565 (vigência até 05/04/2028); src/lib/planet/quota.ts (livro-razão persistente); Planejamento V3, §11.1-11.3",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-27",
   },
   D18: {
     id: "D18",
-    titulo: "Buffer do recorte Planet (recomendado 250m)",
-    estado: "pendente" as EstadoDecisao,
-    justificativa: "Proposta estruturada: raio de buffer de 250 m (~19,6 ha) ao redor do centróide amostral para cobrir a encosta do talhão.",
-    referencia: "Planejamento V3, §10.4",
+    titulo: "Buffer do recorte Planet por ponto amostral",
+    estado: "decidida" as EstadoDecisao,
+    valor:
+      "Raio de 250 m ao redor do centróide amostral, materializado como bounding box de 500 m de lado em EPSG:4326, equivalente a 0,25 km² (25 ha) por recorte.",
+    justificativa:
+      "O raio de 250 m cobre a encosta do talhão e o gradiente topo-sequencial da catena agrícola (topo, encosta e baixada), que é a unidade do processo hidrossedimentológico da erosão laminar — o fenômeno não se manifesta num ponto isolado. A área registrada é 25 ha, e não os 19,6 ha da proposta original: criarPoligonoBufferAoi (src/lib/planet/ordersApi.ts:56) produz uma bounding box quadrada de lado 2r, não um círculo de raio r, e o valor circular subestimava o consumo real de cota em 27%. A restrição operante aqui é metodológica, não orçamentária: a cota permitiria raio de até cerca de 1.179 m em 180 pontos por três datas, mas ampliar o recorte além da encosta acrescenta área sem acrescentar relevância de processo.",
+    referencia:
+      "Planejamento V3, §10.4; src/lib/planet/ordersApi.ts:56 (geometria efetiva do buffer); docs/Delimitacao_Territorial_e_Selecao_Amostral_MultiEscala_BP3.md (catena topo-sequencial)",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-27",
   },
   D19: {
     id: "D19",
@@ -200,6 +212,19 @@ export const DECISOES: Record<string, Decisao<any>> = {
       "Estende a formulação de Durigon et al. (2014) — decidida em D01 e preservada como caminho puro — acrescentando modulação pelo Índice de Solo Exposto (BSI). Fundamento físico: sob Sistema Plantio Direto, o NDVI isolado não distingue palhada senescente de solo mineral exposto, pois ambos apresentam NDVI baixo. O BSI resolve a ambiguidade pelo sinal: palhada senescente exibe NDVI baixo com BSI negativo (cobertura morta ainda protege o solo do impacto da gota), enquanto solo mineral exposto exibe NDVI baixo com BSI positivo (superfície desprotegida e suscetível ao salpicamento). Como o Fator C expressa a razão de perda de solo sob determinada cobertura em relação ao solo continuamente descoberto, é fisicamente correto que a mesma leitura de NDVI produza C menor sob palhada e C maior sob solo exposto. O domínio estrito em [0, 1] é imposto na saída porque o Fator C é razão adimensional por construção (Renard et al., 1997): sem essa verificação, a combinação NDVI = -1 com BSI = 1 produzia C = 2,0, o dobro do máximo físico, que se propagaria para A = R*K*LS*C*P. Conforme a Regra 2, valor fora do domínio não é cortado por piso ou teto artificial: causa indisponibilidade explícita. Esta decisão NÃO substitui nem revoga D01, que permanece registrada com a formulação original e segue vigente quando o BSI não está disponível.",
     referencia:
       "Durigon et al. (2014), International Journal of Remote Sensing 35(2):441-453 (formulação base); Rikimaru et al. (2002) (Bare Soil Index); Renard et al. (1997), USDA-ARS Agriculture Handbook 703 (domínio do Fator C); docs/auditorias/Relatorio_Auditoria_Integral_Coerencia_Efetividade_2026-09-26.md, achado C1",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-27",
+  },
+  D21: {
+    id: "D21",
+    titulo: "Fonte e resolução do Modelo Digital de Elevação",
+    estado: "decidida" as EstadoDecisao,
+    valor:
+      "Copernicus DEM GLO-30 (ESA) na resolução nativa de 30 m, processado em projeção métrica SIRGAS 2000 / UTM 22S (EPSG:31982). Todas as derivadas topográficas — declividade, curvatura de perfil, curvatura plana, área de contribuição específica e TWI — são calculadas na grade nativa de 30 m. É PROIBIDO reamostrar o MDE para grade mais fina: a área de contribuição específica e o fator LS são grandezas dependentes de escala, e reamostrar produziria valores diferentes sem informação nova, sob selo 'medido'. A resolução da fonte é registrada na proveniência de cada variável derivada.",
+    justificativa:
+      "Não existe MDE gratuito de resolução superior a 30 m com cobertura da Bacia do Paraná 3: o Copernicus EEA-10 (10 m) cobre apenas território europeu, e NASADEM, AW3D30 e FABDEM são igualmente de 30 m. O TOPODATA (INPE) tem 30 m nominais reamostrados de 90 m, ou seja, menor conteúdo real na mesma grade. Limitação declarada e assumida: terraços agrícolas espaçados a 15-40 m no Oeste do Paraná são sub-pixel a 30 m, o que sustenta P = 1,0 na linha de base RUSLE e o selo 'modelado' no fator LS. Desencontro de escala declarado em relação a D06: a unidade de predição é o pixel de 10 m do Sentinel-2, de modo que um único valor de terreno abrange 9 pixels de predição e validação. Esta decisão é expressamente revisável: obtida fonte de resolução superior com cobertura do recorte — o MDT da cartografia base 1:10.000 do ITCG/IAT é o candidato a verificar —, a substituição é feita sem alteração arquitetural, porque a resolução está registrada na proveniência e não embutida em constante de código.",
+    referencia:
+      "ESA Copernicus DEM GLO-30; Zevenbergen & Thorne (1987) para curvaturas; Beven & Kirkby (1979) para TWI; Desmet & Govers (1996) para dependência de escala de As; docs/auditorias/Relatorio_Auditoria_Integral_Coerencia_Efetividade_2026-09-26.md, achado A3",
     decididoPor: "pesquisador",
     decididoEm: "2026-09-27",
   },
