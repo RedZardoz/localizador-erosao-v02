@@ -4,8 +4,14 @@ import { getGoogleAccessToken, EARTH_ENGINE_SCOPES } from "@/lib/gee/auth";
 import {
   medirTerrenoCopernicusEmLote,
   medirSentinel2PontoGeeRest,
+  LIMIAR_MINIMO_OBSERVACOES_D11,
   ultimoErroGee,
 } from "@/lib/gee/copernicusGeeClient";
+import {
+  DATA_PUBLICACAO_COPERNICUS_GLO30,
+  DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
+  extrairDataAquisicaoSentinel2,
+} from "@/lib/gee/metadadosColecoes";
 import { queryEmbrapaSoil } from "@/lib/embrapa/embrapaSoilClient";
 import { matchRuralProperty, toContextoFundiario } from "@/lib/fundiario/matcher";
 import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
@@ -90,24 +96,46 @@ export async function POST(request: NextRequest) {
         }
       : point.solo.erodibilidadeClasse;
 
+    const dataAquisicaoS2 =
+      medicaoS2?.adquiridoEm ??
+      extrairDataAquisicaoSentinel2({ cenas: point.rastreio?.cenas }) ??
+      point.rastreio?.calculadoEm?.slice(0, 10) ??
+      dataConsultaAtual;
+
+    const motivoD11 = medicaoS2
+      ? `Suficiência amostral insuficiente (${medicaoS2.nObservacoesValidas} < ${LIMIAR_MINIMO_OBSERVACOES_D11} observações válidas sem nuvem/sombra exigidas pela Decisão D11).`
+      : "";
+
     const ndviProveniencia = medicaoS2
-      ? {
-          estado: "medido" as const,
-          valor: medicaoS2.ndvi,
-          fonte: medicaoS2.fonte,
-          adquiridoEm: "2023-10-31",
-          consultadoEm: dataConsultaAtual,
-        }
+      ? medicaoS2.insuficienteD11
+        ? {
+            estado: "indisponivel" as const,
+            causa: "insuficiente" as const,
+            motivo: motivoD11,
+          }
+        : {
+            estado: "medido" as const,
+            valor: medicaoS2.ndvi,
+            fonte: medicaoS2.fonte,
+            adquiridoEm: dataAquisicaoS2,
+            consultadoEm: dataConsultaAtual,
+          }
       : point.espectral?.ndvi;
 
     const bsiProveniencia = medicaoS2
-      ? {
-          estado: "medido" as const,
-          valor: medicaoS2.bsi,
-          fonte: medicaoS2.fonte,
-          adquiridoEm: "2023-10-31",
-          consultadoEm: dataConsultaAtual,
-        }
+      ? medicaoS2.insuficienteD11
+        ? {
+            estado: "indisponivel" as const,
+            causa: "insuficiente" as const,
+            motivo: motivoD11,
+          }
+        : {
+            estado: "medido" as const,
+            valor: medicaoS2.bsi,
+            fonte: medicaoS2.fonte,
+            adquiridoEm: dataAquisicaoS2,
+            consultadoEm: dataConsultaAtual,
+          }
       : point.espectral?.bsi;
 
     const ndviNum =
@@ -134,34 +162,41 @@ export async function POST(request: NextRequest) {
               ...point.espectral,
               ndvi: ndviProveniencia,
               bsi: bsiProveniencia,
-              ...(medicaoS2
+              ...(medicaoS2 && !medicaoS2.insuficienteD11
                 ? {
                     b2: {
                       estado: "medido" as const,
                       valor: medicaoS2.b2,
                       fonte: medicaoS2.fonte,
-                      adquiridoEm: "2023-10-31",
+                      adquiridoEm: dataAquisicaoS2,
                       consultadoEm: dataConsultaAtual,
                     },
                     b4: {
                       estado: "medido" as const,
                       valor: medicaoS2.b4,
                       fonte: medicaoS2.fonte,
-                      adquiridoEm: "2023-10-31",
+                      adquiridoEm: dataAquisicaoS2,
                       consultadoEm: dataConsultaAtual,
                     },
                     b8: {
                       estado: "medido" as const,
                       valor: medicaoS2.b8,
                       fonte: medicaoS2.fonte,
-                      adquiridoEm: "2023-10-31",
+                      adquiridoEm: dataAquisicaoS2,
+                      consultadoEm: dataConsultaAtual,
+                    },
+                    b11: {
+                      estado: "medido" as const,
+                      valor: medicaoS2.b11,
+                      fonte: medicaoS2.fonte,
+                      adquiridoEm: dataAquisicaoS2,
                       consultadoEm: dataConsultaAtual,
                     },
                     b12: {
                       estado: "medido" as const,
-                      valor: medicaoS2.b11,
+                      valor: medicaoS2.b12,
                       fonte: medicaoS2.fonte,
-                      adquiridoEm: "2023-10-31",
+                      adquiridoEm: dataAquisicaoS2,
                       consultadoEm: dataConsultaAtual,
                     },
                   }
@@ -175,7 +210,7 @@ export async function POST(request: NextRequest) {
               estado: "medido",
               valor: medicaoTerreno.elevacaoMetros,
               fonte: medicaoTerreno.fonte,
-              adquiridoEm: "2022-01-01",
+              adquiridoEm: DATA_PUBLICACAO_COPERNICUS_GLO30,
               consultadoEm: dataConsultaAtual,
             }
           : point.terreno.elevacao,
@@ -184,7 +219,7 @@ export async function POST(request: NextRequest) {
               estado: "medido",
               valor: medicaoTerreno.declividadePct,
               fonte: medicaoTerreno.fonte,
-              adquiridoEm: "2022-01-01",
+              adquiridoEm: DATA_PUBLICACAO_COPERNICUS_GLO30,
               consultadoEm: dataConsultaAtual,
             }
           : point.terreno.declividadePct,
@@ -193,7 +228,7 @@ export async function POST(request: NextRequest) {
               estado: "medido",
               valor: medicaoTerreno.declividadeGraus,
               fonte: medicaoTerreno.fonte,
-              adquiridoEm: "2022-01-01",
+              adquiridoEm: DATA_PUBLICACAO_COPERNICUS_GLO30,
               consultadoEm: dataConsultaAtual,
             }
           : point.terreno.declividadeGraus,
@@ -204,7 +239,7 @@ export async function POST(request: NextRequest) {
               estado: "medido",
               valor: compDominante.ordem,
               fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
-              adquiridoEm: "2020-11-05",
+              adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
               consultadoEm: dataConsultaAtual,
             }
           : point.solo.ordem,
@@ -213,7 +248,7 @@ export async function POST(request: NextRequest) {
               estado: "medido",
               valor: compDominante.subOrdem,
               fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
-              adquiridoEm: "2020-11-05",
+              adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
               consultadoEm: dataConsultaAtual,
             }
           : point.solo.subOrdem,
@@ -222,7 +257,7 @@ export async function POST(request: NextRequest) {
               estado: "medido",
               valor: compDominante.grandeGrupo,
               fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
-              adquiridoEm: "2020-11-05",
+              adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
               consultadoEm: dataConsultaAtual,
             }
           : point.solo.grandeGrupo,
@@ -231,7 +266,7 @@ export async function POST(request: NextRequest) {
               estado: "medido",
               valor: soloRes.solo.tipoUnidade,
               fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
-              adquiridoEm: "2020-11-05",
+              adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
               consultadoEm: dataConsultaAtual,
             }
           : point.solo.tipoUnidade,
@@ -246,19 +281,35 @@ export async function POST(request: NextRequest) {
               ...point.temporal.D,
               serie: {
                 ...point.temporal.D.serie,
+                nObservacoesValidas: medicaoS2
+                  ? {
+                      ...point.temporal.D.serie.nObservacoesValidas,
+                      B4: medicaoS2.nObservacoesValidas,
+                      B11: medicaoS2.nObservacoesValidas,
+                      B12: medicaoS2.nObservacoesValidas,
+                    }
+                  : point.temporal.D.serie.nObservacoesValidas,
                 estatisticas: {
                   ...point.temporal.D.serie.estatisticas,
                   ...(ndviProveniencia ? { B8_p50: ndviProveniencia } : {}),
                 },
                 frequenciaSoloNu:
-                  medicaoS2 && medicaoS2.frequenciaSoloNu !== null
-                    ? {
-                        estado: "medido",
-                        valor: medicaoS2.frequenciaSoloNu,
-                        fonte: medicaoS2.fonte,
-                        adquiridoEm: "2023-12-31",
-                        consultadoEm: dataConsultaAtual,
-                      }
+                  medicaoS2
+                    ? medicaoS2.insuficienteD11
+                      ? {
+                          estado: "indisponivel",
+                          causa: "insuficiente",
+                          motivo: motivoD11,
+                        }
+                      : medicaoS2.frequenciaSoloNu !== null
+                        ? {
+                            estado: "medido",
+                            valor: medicaoS2.frequenciaSoloNu,
+                            fonte: medicaoS2.fonte,
+                            adquiridoEm: dataAquisicaoS2,
+                            consultadoEm: dataConsultaAtual,
+                          }
+                        : point.temporal.D.serie.frequenciaSoloNu
                     : point.temporal.D.serie.frequenciaSoloNu,
               },
             }

@@ -43,16 +43,40 @@ from datetime import datetime
 from typing import Dict, Any, List, Tuple, Optional
 
 # =============================================================================
-# Isolamento e Correção de Ambiente PROJ / GDAL no Windows
-# Evita conflitos com bancos PostgreSQL/PostGIS locais com esquemas legados de proj.db
+# F0.5 — Isolamento e Correção de Ambiente PROJ / GDAL no Windows 11
+# No ambiente Windows 11 com PostgreSQL 18 / PostGIS 3.6 instalado, a variável
+# de sistema PROJ_LIB aponta para:
+#   C:\Program Files\PostgreSQL\18\share\contrib\postgis-3.6\proj\proj.db
+# cujo esquema possui DATABASE.LAYOUT.VERSION.MINOR = 2 (enquanto o rasterio 1.5.1
+# exige VERSION.MINOR >= 6). Como a libproj/GDAL lê PROJ_LIB no ato do `import rasterio`,
+# localizamos o diretório `proj_data` via `importlib.util.find_spec("rasterio")`
+# ANTES de importar o módulo Cython do rasterio e forçamos também `pyproj.datadir`.
 # =============================================================================
+import importlib.util as _importlib_util
+
+_spec_rasterio = _importlib_util.find_spec("rasterio")
+if _spec_rasterio and _spec_rasterio.origin:
+    _rasterio_proj = os.path.join(os.path.dirname(_spec_rasterio.origin), "proj_data")
+    if os.path.exists(_rasterio_proj):
+        os.environ["PROJ_LIB"] = _rasterio_proj
+        os.environ["PROJ_DATA"] = _rasterio_proj
+
 try:
     import rasterio
-    rasterio_proj = os.path.join(os.path.dirname(rasterio.__file__), "proj_data")
-    if os.path.exists(rasterio_proj):
-        os.environ["PROJ_LIB"] = rasterio_proj
-        os.environ["PROJ_DATA"] = rasterio_proj
+    from rasterio.env import set_proj_data_search_path
+    if "_rasterio_proj" in locals() and os.path.exists(_rasterio_proj):
+        try:
+            set_proj_data_search_path(_rasterio_proj)
+        except Exception:
+            pass
 except ImportError:
+    pass
+
+try:
+    import pyproj.datadir
+    if "_rasterio_proj" in locals() and os.path.exists(_rasterio_proj):
+        pyproj.datadir.set_data_dir(_rasterio_proj)
+except Exception:
     pass
 
 import numpy as np
@@ -60,7 +84,9 @@ import numpy as np
 
 AWS_DEM_BASE_URL = "https://copernicus-dem-30m.s3.amazonaws.com"
 FONTE_OFICIAL = "COPERNICUS/DEM/GLO30 (EPSG:31982)"
-DATA_AQUISICAO_BASE = "2024-01-01"
+# Catálogo Earth Engine: https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_DEM_GLO30
+# Release ESA PRISM 2023_1: https://prism-dem-open.copernicus.eu/
+DATA_AQUISICAO_BASE = "2023-11-15"
 
 
 def identificar_tile_copernicus(lat: float, lon: float) -> str:

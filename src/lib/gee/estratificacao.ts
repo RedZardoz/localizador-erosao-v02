@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * Estratificação Multivariada no Espaço Ŝ × Ê × K̂ — SAREL (PPGTCA 2026)
  * ============================================================================
@@ -42,6 +42,7 @@ export interface PontoEstratificado {
     nivelK: 1 | 2;
     phiDiag: number | null;  // null quando amplitude de S ou E for zero
     semente: number;
+    raioThinningEfetivoMetros?: number;
   };
 }
 

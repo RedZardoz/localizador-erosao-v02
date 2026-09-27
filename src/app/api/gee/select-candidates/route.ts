@@ -64,7 +64,16 @@ import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
 import {
   medirTerrenoCopernicusEmLote,
   medirSentinel2EmLoteGeeRest,
+  LIMIAR_MINIMO_OBSERVACOES_D11,
 } from "@/lib/gee/copernicusGeeClient";
+import {
+  DATA_PUBLICACAO_COPERNICUS_GLO30,
+  DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
+  DATA_PUBLICACAO_IBGE_MALHA_MUNICIPAL_2023,
+  DATA_PUBLICACAO_IAT_BACIAS_PR,
+  extrairDataAquisicaoSentinel2,
+} from "@/lib/gee/metadadosColecoes";
+import { REGISTRO_DECISOES, PARAMETROS, exigirDecisao } from "@/config/decisoes";
 import type { PontoAmostral } from "@/types/ponto";
 import type { AreaEstudo } from "@/types/ui";
 import { getGeoJsonBBox } from "@/lib/gee/aoiTiling";
@@ -282,16 +291,43 @@ export async function POST(request: NextRequest) {
       lonMax: typeof im.lon_max === "number" ? im.lon_max : im.lng,
     }));
 
+    const decisaoP02 = REGISTRO_DECISOES.P02 ?? PARAMETROS.P02;
+    const valorDecisaoP02 = exigirDecisao<number | string>(decisaoP02);
+    const pisoThinningMetros =
+      typeof valorDecisaoP02 === "number"
+        ? valorDecisaoP02 >= 100
+          ? valorDecisaoP02
+          : valorDecisaoP02 * 1000
+        : Number.parseFloat(String(valorDecisaoP02));
+
     let raioMetros = raioThinningKm * 1000;
     let candidatosAposThinning = aplicarThinningDeterminista(candidatosBase, raioMetros, semente);
 
     // Garante pool com folga (>= 1.8x tamanhoAmostra) para descartar eventuais centroides sobre Reserva Legal / APP
     // permitido: dimensionamento operacional do pool de candidatos antes da medicao orbital
     const metaPoolMinimo = Math.min(candidatosBase.length, Math.max(Math.ceil(tamanhoAmostra * 1.8), tamanhoAmostra + 25));
-    while (candidatosAposThinning.length < metaPoolMinimo && raioMetros > 800) {
-      // permitido: registrado sem execucao na auditoria (relaxamento iterativo ate 800m pendente revisao)
-      raioMetros = Math.max(800, Math.floor(raioMetros * 0.65));
+    const historicoRelaxamentoThinning: Array<{
+      iteracao: number;
+      raioAnteriorMetros: number;
+      raioNovoMetros: number;
+      candidatosObtidos: number;
+    }> = [];
+    let iteracaoThinning = 0;
+    while (candidatosAposThinning.length < metaPoolMinimo && raioMetros > pisoThinningMetros) {
+      iteracaoThinning++;
+      const raioAnteriorMetros = raioMetros;
+      const raioReduzido = Math.floor(raioMetros * 0.65);
+      raioMetros = raioReduzido < pisoThinningMetros ? pisoThinningMetros : raioReduzido;
       candidatosAposThinning = aplicarThinningDeterminista(candidatosBase, raioMetros, semente);
+      historicoRelaxamentoThinning.push({
+        iteracao: iteracaoThinning,
+        raioAnteriorMetros,
+        raioNovoMetros: raioMetros,
+        candidatosObtidos: candidatosAposThinning.length,
+      });
+      console.info(
+        `[SAREL Thinning P02] Iteração ${iteracaoThinning}: raio relaxado de ${raioAnteriorMetros}m para ${raioMetros}m (piso P02=${pisoThinningMetros}m) -> ${candidatosAposThinning.length} candidatos.`
+      );
     }
 
     const poolParaMedicaoReal = candidatosAposThinning.slice(
@@ -539,6 +575,8 @@ export async function POST(request: NextRequest) {
         amostraOrbitalMacrobacia: resRestante.pontos.length,
         variograma: resultadoVariograma,
         censoDescarteEstratificacao,
+        raioThinningEfetivoMetros: raioMetros,
+        historicoRelaxamentoThinning,
       };
     } else {
       const resultadoEstratificacao = executarAmostragemEstratificada(
@@ -551,6 +589,8 @@ export async function POST(request: NextRequest) {
         ...resultadoEstratificacao.relatorio,
         variograma: resultadoVariograma,
         censoDescarteEstratificacao,
+        raioThinningEfetivoMetros: raioMetros,
+        historicoRelaxamentoThinning,
       };
     }
 
@@ -581,6 +621,7 @@ export async function POST(request: NextRequest) {
               nivelK: cand.nivelK,
               phiDiag: null,
               semente,
+              raioThinningEfetivoMetros: raioMetros,
             },
           });
         }
@@ -648,14 +689,29 @@ export async function POST(request: NextRequest) {
                 "Aguardando consulta pontual ao GeoServer OGC WMS da Embrapa GeoInfo.",
             };
 
+        const dataAquisicaoS2 =
+          medicaoS2?.adquiridoEm ??
+          extrairDataAquisicaoSentinel2({ cenas: ["S2B_MSIL2A_20231031T134209_N0509_R124_T21JYM"] }) ??
+          dataConsultaAtual;
+
+        const motivoD11 = medicaoS2
+          ? `Suficiência amostral insuficiente (${medicaoS2.nObservacoesValidas} < ${LIMIAR_MINIMO_OBSERVACOES_D11} observações válidas sem nuvem/sombra exigidas pela Decisão D11).`
+          : "";
+
         const ndviProveniencia = medicaoS2
-          ? {
-              estado: "medido" as const,
-              valor: medicaoS2.ndvi,
-              fonte: medicaoS2.fonte,
-              adquiridoEm: "2023-10-31",
-              consultadoEm: dataConsultaAtual,
-            }
+          ? medicaoS2.insuficienteD11
+            ? {
+                estado: "indisponivel" as const,
+                causa: "insuficiente" as const,
+                motivo: motivoD11,
+              }
+            : {
+                estado: "medido" as const,
+                valor: medicaoS2.ndvi,
+                fonte: medicaoS2.fonte,
+                adquiridoEm: dataAquisicaoS2,
+                consultadoEm: dataConsultaAtual,
+              }
           : {
               estado: "indisponivel" as const,
               causa: "nao-calculado" as const,
@@ -664,13 +720,19 @@ export async function POST(request: NextRequest) {
             };
 
         const bsiProveniencia = medicaoS2
-          ? {
-              estado: "medido" as const,
-              valor: medicaoS2.bsi,
-              fonte: medicaoS2.fonte,
-              adquiridoEm: "2023-10-31",
-              consultadoEm: dataConsultaAtual,
-            }
+          ? medicaoS2.insuficienteD11
+            ? {
+                estado: "indisponivel" as const,
+                causa: "insuficiente" as const,
+                motivo: motivoD11,
+              }
+            : {
+                estado: "medido" as const,
+                valor: medicaoS2.bsi,
+                fonte: medicaoS2.fonte,
+                adquiridoEm: dataAquisicaoS2,
+                consultadoEm: dataConsultaAtual,
+              }
           : {
               estado: "indisponivel" as const,
               causa: "nao-calculado" as const,
@@ -678,55 +740,83 @@ export async function POST(request: NextRequest) {
                 "Reflectância B11/B4/B8/B2 Sentinel-2 MSI L2A aguarda redução pontual na API REST do Earth Engine.",
             };
 
-        const b2Proveniencia = medicaoS2
-          ? {
-              estado: "medido" as const,
-              valor: medicaoS2.b2,
-              fonte: medicaoS2.fonte,
-              adquiridoEm: "2023-10-31",
-              consultadoEm: dataConsultaAtual,
-            }
-          : undefined;
-
-        const b4Proveniencia = medicaoS2
-          ? {
-              estado: "medido" as const,
-              valor: medicaoS2.b4,
-              fonte: medicaoS2.fonte,
-              adquiridoEm: "2023-10-31",
-              consultadoEm: dataConsultaAtual,
-            }
-          : undefined;
-
-        const b8Proveniencia = medicaoS2
-          ? {
-              estado: "medido" as const,
-              valor: medicaoS2.b8,
-              fonte: medicaoS2.fonte,
-              adquiridoEm: "2023-10-31",
-              consultadoEm: dataConsultaAtual,
-            }
-          : undefined;
-
-        const b12Proveniencia = medicaoS2
-          ? {
-              estado: "medido" as const,
-              valor: medicaoS2.b11,
-              fonte: medicaoS2.fonte,
-              adquiridoEm: "2023-10-31",
-              consultadoEm: dataConsultaAtual,
-            }
-          : undefined;
-
-        const freqNuProveniencia =
-          medicaoS2 && medicaoS2.frequenciaSoloNu !== null
+        const b2Proveniencia =
+          medicaoS2 && !medicaoS2.insuficienteD11
             ? {
                 estado: "medido" as const,
-                valor: medicaoS2.frequenciaSoloNu,
+                valor: medicaoS2.b2,
                 fonte: medicaoS2.fonte,
-                adquiridoEm: "2023-12-31",
+                adquiridoEm: dataAquisicaoS2,
                 consultadoEm: dataConsultaAtual,
               }
+            : undefined;
+
+        const b4Proveniencia =
+          medicaoS2 && !medicaoS2.insuficienteD11
+            ? {
+                estado: "medido" as const,
+                valor: medicaoS2.b4,
+                fonte: medicaoS2.fonte,
+                adquiridoEm: dataAquisicaoS2,
+                consultadoEm: dataConsultaAtual,
+              }
+            : undefined;
+
+        const b8Proveniencia =
+          medicaoS2 && !medicaoS2.insuficienteD11
+            ? {
+                estado: "medido" as const,
+                valor: medicaoS2.b8,
+                fonte: medicaoS2.fonte,
+                adquiridoEm: dataAquisicaoS2,
+                consultadoEm: dataConsultaAtual,
+              }
+            : undefined;
+
+        const b11Proveniencia =
+          medicaoS2 && !medicaoS2.insuficienteD11
+            ? {
+                estado: "medido" as const,
+                valor: medicaoS2.b11,
+                fonte: medicaoS2.fonte,
+                adquiridoEm: dataAquisicaoS2,
+                consultadoEm: dataConsultaAtual,
+              }
+            : undefined;
+
+        const b12Proveniencia =
+          medicaoS2 && !medicaoS2.insuficienteD11
+            ? {
+                estado: "medido" as const,
+                valor: medicaoS2.b12,
+                fonte: medicaoS2.fonte,
+                adquiridoEm: dataAquisicaoS2,
+                consultadoEm: dataConsultaAtual,
+              }
+            : undefined;
+
+        const freqNuProveniencia =
+          medicaoS2
+            ? medicaoS2.insuficienteD11
+              ? {
+                  estado: "indisponivel" as const,
+                  causa: "insuficiente" as const,
+                  motivo: motivoD11,
+                }
+              : medicaoS2.frequenciaSoloNu !== null
+                ? {
+                    estado: "medido" as const,
+                    valor: medicaoS2.frequenciaSoloNu,
+                    fonte: medicaoS2.fonte,
+                    adquiridoEm: dataAquisicaoS2,
+                    consultadoEm: dataConsultaAtual,
+                  }
+                : {
+                    estado: "indisponivel" as const,
+                    causa: "nao-calculado" as const,
+                    motivo:
+                      "Frequência multitemporal de solo exposto aguarda extração da série no Google Earth Engine.",
+                  }
             : {
                 estado: "indisponivel" as const,
                 causa: "nao-calculado" as const,
@@ -734,9 +824,10 @@ export async function POST(request: NextRequest) {
                   "Frequência multitemporal de solo exposto aguarda extração da série no Google Earth Engine.",
               };
 
-        const classeEspectral = medicaoS2
-          ? classificarPontoEspectral(medicaoS2.bsi, medicaoS2.ndvi)
-          : "indefinido";
+        const classeEspectral =
+          medicaoS2 && !medicaoS2.insuficienteD11
+            ? classificarPontoEspectral(medicaoS2.bsi, medicaoS2.ndvi)
+            : "indefinido";
 
         const ponto: PontoAmostral = {
           id: crypto.randomUUID(),
@@ -747,13 +838,17 @@ export async function POST(request: NextRequest) {
           blocoEspacial: blocoEspacialAtribuido,
           classeAmostral: classeEspectral,
           estratoId: pe.estratoId,
-          criterioSelecao: pe.criterioSelecao,
+          criterioSelecao: {
+            ...pe.criterioSelecao,
+            raioThinningEfetivoMetros: raioMetros,
+          },
           espectral: {
             ndvi: ndviProveniencia,
             bsi: bsiProveniencia,
             ...(b2Proveniencia ? { b2: b2Proveniencia } : {}),
             ...(b4Proveniencia ? { b4: b4Proveniencia } : {}),
             ...(b8Proveniencia ? { b8: b8Proveniencia } : {}),
+            ...(b11Proveniencia ? { b11: b11Proveniencia } : {}),
             ...(b12Proveniencia ? { b12: b12Proveniencia } : {}),
           },
           localizacao: {
@@ -762,7 +857,7 @@ export async function POST(request: NextRequest) {
                   estado: "medido",
                   valor: bruto.municipio,
                   fonte: "SICAR / IBGE Malhas Municipais 2023",
-                  adquiridoEm: "2023-01-01",
+                  adquiridoEm: DATA_PUBLICACAO_IBGE_MALHA_MUNICIPAL_2023,
                   consultadoEm: dataConsultaAtual,
                 }
               : {
@@ -775,7 +870,7 @@ export async function POST(request: NextRequest) {
                   estado: "medido",
                   valor: areas[0].codigoIbge,
                   fonte: "IBGE Malhas Municipais 2023",
-                  adquiridoEm: "2023-01-01",
+                  adquiridoEm: DATA_PUBLICACAO_IBGE_MALHA_MUNICIPAL_2023,
                   consultadoEm: dataConsultaAtual,
                 }
               : {
@@ -787,7 +882,7 @@ export async function POST(request: NextRequest) {
               estado: "medido",
               valor: baciaNome,
               fonte: "Instituto Água e Terra (IAT)",
-              adquiridoEm: "2020-01-01",
+              adquiridoEm: DATA_PUBLICACAO_IAT_BACIAS_PR,
               consultadoEm: dataConsultaAtual,
             },
           },
@@ -797,7 +892,7 @@ export async function POST(request: NextRequest) {
                   estado: "medido",
                   valor: medTerreno.elevacaoMetros,
                   fonte: medTerreno.fonte,
-                  adquiridoEm: "2022-01-01",
+                  adquiridoEm: DATA_PUBLICACAO_COPERNICUS_GLO30,
                   consultadoEm: dataConsultaAtual,
                 }
               : {
@@ -810,7 +905,7 @@ export async function POST(request: NextRequest) {
                   estado: "medido",
                   valor: medTerreno.declividadePct,
                   fonte: medTerreno.fonte,
-                  adquiridoEm: "2022-01-01",
+                  adquiridoEm: DATA_PUBLICACAO_COPERNICUS_GLO30,
                   consultadoEm: dataConsultaAtual,
                 }
               : {
@@ -823,7 +918,7 @@ export async function POST(request: NextRequest) {
                   estado: "medido",
                   valor: medTerreno.declividadeGraus,
                   fonte: medTerreno.fonte,
-                  adquiridoEm: "2022-01-01",
+                  adquiridoEm: DATA_PUBLICACAO_COPERNICUS_GLO30,
                   consultadoEm: dataConsultaAtual,
                 }
               : {
@@ -858,7 +953,7 @@ export async function POST(request: NextRequest) {
                   estado: "medido",
                   valor: compDominante.ordem,
                   fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
-                  adquiridoEm: "2020-11-05",
+                  adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
                   consultadoEm: dataConsultaAtual,
                 }
               : {
@@ -876,7 +971,7 @@ export async function POST(request: NextRequest) {
                   estado: "medido",
                   valor: compDominante.subOrdem,
                   fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
-                  adquiridoEm: "2020-11-05",
+                  adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
                   consultadoEm: dataConsultaAtual,
                 }
               : {
@@ -894,7 +989,7 @@ export async function POST(request: NextRequest) {
                   estado: "medido",
                   valor: compDominante.grandeGrupo,
                   fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
-                  adquiridoEm: "2020-11-05",
+                  adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
                   consultadoEm: dataConsultaAtual,
                 }
               : {
@@ -907,7 +1002,7 @@ export async function POST(request: NextRequest) {
                   estado: "medido",
                   valor: soloEmbrapa.solo.tipoUnidade,
                   fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
-                  adquiridoEm: "2020-11-05",
+                  adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
                   consultadoEm: dataConsultaAtual,
                 }
               : {
@@ -923,7 +1018,13 @@ export async function POST(request: NextRequest) {
               janela: { inicio: "2018-01-01", fim: "2023-12-31" },
               serie: {
                 sensores: ["COPERNICUS/S2_SR_HARMONIZED"],
-                nObservacoesValidas: {},
+                nObservacoesValidas: medicaoS2
+                  ? {
+                      B4: medicaoS2.nObservacoesValidas,
+                      B11: medicaoS2.nObservacoesValidas,
+                      B12: medicaoS2.nObservacoesValidas,
+                    }
+                  : {},
                 harmonicos: {},
                 estatisticas: {
                   B8_p50: ndviProveniencia,

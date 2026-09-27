@@ -28,6 +28,7 @@ const REGEX_PADROES = [
   { id: "parametro-com-default-numerico", regex: /:\s*number\s*=\s*\d+(\.\d+)?\b/ },
   { id: "corte-math-max-min-com-literal", regex: /Math\.(max|min)\s*\([^)]*\b\d+(\.\d+)?\b[^)]*\)/ },
   { id: "adquiridoEm-com-new-date", regex: /adquiridoEm\s*:\s*(new\s+Date|Date\.now)/ },
+  { id: "adquiridoEm-com-literal-data", regex: /adquiridoEm\s*:\s*["'`]\d{4}-\d{2}-\d{2}/ },
   {
     id: "sintese-aleatoria-atributos-fisicos",
     regex: /(bsi|ndvi|decliv|slope|elev|perda|fator)[a-z_0-9]*\s*=\s*(float\()?((np\.)?random\.(uniform|normal|random|choice)|random\.(uniform|random|choice))/i,
@@ -207,6 +208,7 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
         "coalescencia-com-numero-entre-aspas",
         "ou-logico-com-numero-entre-aspas",
         "adquiridoEm-com-new-date",
+        "adquiridoEm-com-literal-data",
         "sintese-aleatoria-atributos-fisicos",
       ]);
       const todasViolacoes: ViolacaoPadrao[] = [];
@@ -266,6 +268,60 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
         expect.fail(`Violações de padrões proibidos encontradas em scripts/:\n${msg}`);
       }
       expect(todasViolacoes).toHaveLength(0);
+    });
+  });
+
+  describe("FASE 0 — Identidade de Banda B11/B12 (F0.1), Proveniência adquiridoEm (F0.3) e Guarda D11 (F0.4)", () => {
+    it("separa B11 (SWIR-1) de B12 (SWIR-2), preserva B11 no BSI e deriva adquiridoEm real de PRODUCT_ID (F0.1, F0.3)", async () => {
+      const { processarRespostaGeeSentinel2 } = await import("@/lib/gee/copernicusGeeClient");
+      const { calcularBsi } = await import("@/lib/gee/serieTemporal");
+
+      const medicao = processarRespostaGeeSentinel2(
+        {
+          Map: 40,
+          B2_p50: 850,
+          B4_p50: 1200,
+          B8_p50: 3100,
+          B11_p50: 2750, // SWIR-1 = 0.2750
+          B12_p50: 1920, // SWIR-2 = 0.1920
+          B4_count: 14,
+        },
+        ["S2B_MSIL2A_20240815T134209_N0511_R124_T21JYM_20240815T171822"]
+      );
+
+      expect(medicao).not.toBeNull();
+      expect(medicao!.b11).toBeCloseTo(0.275, 4);
+      expect(medicao!.b12).toBeCloseTo(0.192, 4);
+      expect(medicao!.b11).not.toBe(medicao!.b12);
+      expect(medicao!.bsi).toBeCloseTo(calcularBsi(0.275, 0.12, 0.31, 0.085)!, 4);
+      expect(medicao!.adquiridoEm).toBe("2024-08-15");
+      expect(medicao!.insuficienteD11).toBe(false);
+    });
+
+    it("marca insuficienteD11 = true e retém frequenciaSoloNu quando nObservacoesValidas < 6 (F0.4, Decisão D11)", async () => {
+      const { processarRespostaGeeSentinel2, avaliarSuficienciaAmostralD11 } = await import(
+        "@/lib/gee/copernicusGeeClient"
+      );
+
+      const d11Falha = avaliarSuficienciaAmostralD11(4);
+      expect(d11Falha.suficiente).toBe(false);
+      expect(d11Falha.causa).toBe("insuficiente");
+      expect(d11Falha.motivo).toContain("D11");
+
+      const medicaoInsuf = processarRespostaGeeSentinel2({
+        Map: 40,
+        B2_p50: 850,
+        B4_p50: 1200,
+        B8_p50: 3100,
+        B11_p50: 2750,
+        B12_p50: 1920,
+        B4_count: 4,
+      });
+
+      expect(medicaoInsuf).not.toBeNull();
+      expect(medicaoInsuf!.nObservacoesValidas).toBe(4);
+      expect(medicaoInsuf!.insuficienteD11).toBe(true);
+      expect(medicaoInsuf!.frequenciaSoloNu).toBeNull();
     });
   });
 });

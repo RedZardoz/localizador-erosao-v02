@@ -84,6 +84,66 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
       const respIndisp = obterFatorCComProveniencia(null);
       expect(respIndisp.estado).toBe("indisponivel");
     });
+
+    it("rejeita saída híbrida C > 1 (ex.: NDVI = -1.0, BSI = 1.0 -> C = 2.0) devolvendo indisponivel com causa fora-do-dominio (F0.2, Regra 2)", () => {
+      expect(() => calcularFatorC(-1.0, 1.0)).toThrow(ErroForaDoDominio);
+
+      const resForaDominio = obterFatorCComProveniencia(
+        {
+          estado: "medido",
+          valor: -1.0,
+          fonte: "Sentinel-2 L2A",
+          adquiridoEm: "2026-05-10",
+          consultadoEm: "2026-09-10",
+        },
+        {
+          estado: "medido",
+          valor: 1.0,
+          fonte: "Sentinel-2 L2A",
+          adquiridoEm: "2026-05-10",
+          consultadoEm: "2026-09-10",
+        }
+      );
+      expect(resForaDominio.estado).toBe("indisponivel");
+      if (resForaDominio.estado === "indisponivel") {
+        expect(resForaDominio.causa).toBe("fora-do-dominio");
+        expect(resForaDominio.motivo).toContain("NDVI=-1");
+        expect(resForaDominio.motivo).toContain("BSI=1");
+        expect(resForaDominio.motivo).toContain("2.0000");
+      }
+    });
+
+    it("exercita o caminho híbrido ativo com BSI presente em ao menos três pontos do domínio físico [0, 1] (F0.2)", () => {
+      const casos: Array<{ ndvi: number; bsi: number; esperado: number }> = [
+        { ndvi: 0.10, bsi: 0.50, esperado: 0.6750 },
+        { ndvi: 0.30, bsi: -0.20, esperado: 0.2800 }, // palhada senescente (NDVI baixo, BSI negativo)
+        { ndvi: 0.20, bsi: 0.25, esperado: 0.5000 },  // solo mineral exposto (NDVI baixo, BSI positivo)
+      ];
+
+      for (const caso of casos) {
+        const res = obterFatorCComProveniencia(
+          {
+            estado: "medido",
+            valor: caso.ndvi,
+            fonte: "Sentinel-2 L2A",
+            adquiridoEm: "2026-05-10",
+            consultadoEm: "2026-09-10",
+          },
+          {
+            estado: "medido",
+            valor: caso.bsi,
+            fonte: "Sentinel-2 L2A",
+            adquiridoEm: "2026-05-10",
+            consultadoEm: "2026-09-10",
+          }
+        );
+        expect(res.estado).toBe("modelado");
+        if (res.estado === "modelado") {
+          expect(res.valor).toBeCloseTo(caso.esperado, 4);
+          expect(res.insumos).toEqual(["NDVI Sentinel-2 L2A", "BSI Sentinel-2 L2A"]);
+        }
+      }
+    });
   });
 
   describe("14.2 Fator P (Renard et al., 1997)", () => {

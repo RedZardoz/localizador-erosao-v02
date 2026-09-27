@@ -18,8 +18,11 @@
 import { pctParaGraus } from "./terreno";
 import { calcularNdvi, calcularBsi } from "./serieTemporal";
 import { isClasseUsoElegivel } from "./elegibilidade";
+import { extrairDataAquisicaoSentinel2 } from "./metadadosColecoes";
 
 export let ultimoErroGee: string | null = null;
+
+export const LIMIAR_MINIMO_OBSERVACOES_D11 = 6;
 
 export interface MedicaoTerrenoReal {
   elevacaoMetros: number;
@@ -33,12 +36,31 @@ export interface MedicaoEspectralReal {
   b4: number;
   b8: number;
   b11: number;
+  b12: number;
   ndvi: number;
   bsi: number;
   frequenciaSoloNu: number | null;
+  nObservacoesValidas: number;
+  insuficienteD11: boolean;
+  adquiridoEm: string | null;
   classeWorldCover?: number | null;
   ehFlorestaOuInelegivel?: boolean;
   fonte: string;
+}
+
+export function avaliarSuficienciaAmostralD11(nObservacoesValidas: number): {
+  suficiente: boolean;
+  causa?: "insuficiente";
+  motivo?: string;
+} {
+  if (!Number.isFinite(nObservacoesValidas) || nObservacoesValidas < LIMIAR_MINIMO_OBSERVACOES_D11) {
+    return {
+      suficiente: false,
+      causa: "insuficiente",
+      motivo: `Suficiência amostral insuficiente (${nObservacoesValidas} < ${LIMIAR_MINIMO_OBSERVACOES_D11} observações válidas sem nuvem/sombra exigidas pela Decisão D11).`,
+    };
+  }
+  return { suficiente: true };
 }
 
 /**
@@ -188,9 +210,23 @@ export async function medirSentinel2PontoGeeRest(
               collection: { valueReference: "4" },
               reducer: {
                 functionInvocationValue: {
-                  functionName: "Reducer.percentile",
+                  functionName: "Reducer.combine",
                   arguments: {
-                    percentiles: { constantValue: [15, 50, 85] },
+                    reducer1: {
+                      functionInvocationValue: {
+                        functionName: "Reducer.percentile",
+                        arguments: {
+                          percentiles: { constantValue: [15, 50, 85] },
+                        },
+                      },
+                    },
+                    reducer2: {
+                      functionInvocationValue: {
+                        functionName: "Reducer.count",
+                        arguments: {},
+                      },
+                    },
+                    sharedInputs: { constantValue: true },
                   },
                 },
               },
@@ -224,7 +260,7 @@ export async function medirSentinel2PontoGeeRest(
             functionName: "Image.select",
             arguments: {
               input: { argumentReference: "img" },
-              bandSelectors: { constantValue: ["B2", "B4", "B8", "B11"] },
+              bandSelectors: { constantValue: ["B2", "B4", "B8", "B11", "B12"] },
             },
           },
         },
@@ -321,134 +357,170 @@ export async function medirSentinel2PontoGeeRest(
       return null;
     }
 
-    const classeWorldCover =
-      typeof props.Map === "number" && Number.isFinite(props.Map)
-        ? Math.round(props.Map)
-        : null;
-
-    const b2_15 = typeof props.B2_p15 === "number" ? props.B2_p15 / 10000 : null;
-    const b4_15 = typeof props.B4_p15 === "number" ? props.B4_p15 / 10000 : null;
-    const b8_15 = typeof props.B8_p15 === "number" ? props.B8_p15 / 10000 : null;
-    const b11_15 = typeof props.B11_p15 === "number" ? props.B11_p15 / 10000 : null;
-
-    const b2_50 =
-      typeof (props.B2_p50 ?? props.B2_median ?? props.B2) === "number"
-        ? (props.B2_p50 ?? props.B2_median ?? props.B2) / 10000
-        : null;
-    const b4_50 =
-      typeof (props.B4_p50 ?? props.B4_median ?? props.B4) === "number"
-        ? (props.B4_p50 ?? props.B4_median ?? props.B4) / 10000
-        : null;
-    const b8_50 =
-      typeof (props.B8_p50 ?? props.B8_median ?? props.B8) === "number"
-        ? (props.B8_p50 ?? props.B8_median ?? props.B8) / 10000
-        : null;
-    const b11_50 =
-      typeof (props.B11_p50 ?? props.B11_median ?? props.B11) === "number"
-        ? (props.B11_p50 ?? props.B11_median ?? props.B11) / 10000
-        : null;
-
-    const b2_85 = typeof props.B2_p85 === "number" ? props.B2_p85 / 10000 : null;
-    const b4_85 = typeof props.B4_p85 === "number" ? props.B4_p85 / 10000 : null;
-    const b8_85 = typeof props.B8_p85 === "number" ? props.B8_p85 / 10000 : null;
-    const b11_85 = typeof props.B11_p85 === "number" ? props.B11_p85 / 10000 : null;
-
-    if (b2_50 === null || b4_50 === null || b8_50 === null || b11_50 === null) {
-      return null;
-    }
-
-    // Assinatura crítica de exposição de solo na entressafra (maior reflectância SWIR/Vermelho p85 e menor NIR p15)
-    const ndviExposicao =
-      b8_15 !== null && b4_85 !== null ? calcularNdvi(b8_15, b4_85) : calcularNdvi(b8_50, b4_50);
-    const bsiExposicao =
-      b11_85 !== null && b4_85 !== null && b8_15 !== null && b2_15 !== null
-        ? calcularBsi(b11_85, b4_85, b8_15, b2_15)
-        : calcularBsi(b11_50, b4_50, b8_50, b2_50);
-
-    // Assinatura de cobertura/palhada (maior NIR p85 e menor SWIR/Vermelho p15)
-    const ndviVigor =
-      b8_85 !== null && b4_15 !== null ? calcularNdvi(b8_85, b4_15) : calcularNdvi(b8_50, b4_50);
-    const bsiVigor =
-      b11_15 !== null && b4_15 !== null && b8_85 !== null && b2_85 !== null
-        ? calcularBsi(b11_15, b4_15, b8_85, b2_85)
-        : calcularBsi(b11_50, b4_50, b8_50, b2_50);
-
-    const ndviMed = calcularNdvi(b8_50, b4_50)!;
-    const bsiMed = calcularBsi(b11_50, b4_50, b8_50, b2_50)!;
-
-    // Verificação estrita do Parâmetro P05 (Elegibilidade Agrícola):
-    // 1. ESA WorldCover 10m fora de [30=Pastagem, 40=Lavoura, 60=Solo Exposto] (ex.: 10=Floresta, 20=Arbustiva, 50=Urbano, 80=Água)
-    // 2. Dossel arbóreo perene no Sentinel-2 (mesmo no percentil 15 de NIR e 85 de Vermelho, o dossel nunca é colhido: ndviExposicao >= 0.50 e ndviMed >= 0.65)
-    const inelegivelWorldCover =
-      classeWorldCover !== null && !isClasseUsoElegivel(classeWorldCover);
-    const dosselFlorestalPerene =
-      ndviExposicao !== null &&
-      ndviExposicao >= 0.50 &&
-      ndviMed >= 0.65 &&
-      (bsiExposicao === null || bsiExposicao < -0.05);
-    const ehFlorestaOuInelegivel = inelegivelWorldCover || dosselFlorestalPerene;
-
-    // Frequência observada de solo exposto ao longo dos percentis (Decisão D10)
-    let janelasSoloNu = 0;
-    if (bsiExposicao !== null && bsiExposicao > 0.10) janelasSoloNu++;
-    if (bsiMed > 0.02 || ndviMed < 0.38) janelasSoloNu++;
-    if (bsiVigor !== null && bsiVigor > 0.0) janelasSoloNu++;
-    const freqReal = Number((janelasSoloNu / 3).toFixed(2));
-
-    let b2Final = b2_50,
-      b4Final = b4_50,
-      b8Final = b8_50,
-      b11Final = b11_50,
-      ndviFinal = ndviMed,
-      bsiFinal = bsiMed;
-
-    // Decisão D02: se na janela crítica de entressafra o pixel atinge limiar biofísico de Erosão Laminar
-    // (BSI > 0.10 e NDVI < 0.40) com exposição persistente (bsiExposicao >= 0.14 ou bsiMed >= -0.02),
-    // reporta a feição espectral real da janela de exposição.
-    if (
-      bsiExposicao !== null &&
-      ndviExposicao !== null &&
-      bsiExposicao > 0.10 &&
-      ndviExposicao < 0.40 &&
-      (bsiExposicao >= 0.14 || bsiMed >= -0.02)
-    ) {
-      b2Final = b2_15 ?? b2_50;
-      b4Final = b4_85 ?? b4_50;
-      b8Final = b8_15 ?? b8_50;
-      b11Final = b11_85 ?? b11_50;
-      ndviFinal = ndviExposicao;
-      bsiFinal = bsiExposicao;
-    } else if (
-      bsiVigor !== null &&
-      ndviVigor !== null &&
-      bsiVigor < 0.0 &&
-      ndviVigor > 0.65 &&
-      bsiMed < 0.02
-    ) {
-      b2Final = b2_85 ?? b2_50;
-      b4Final = b4_15 ?? b4_50;
-      b8Final = b8_85 ?? b8_50;
-      b11Final = b11_15 ?? b11_50;
-      ndviFinal = ndviVigor;
-      bsiFinal = bsiVigor;
-    }
-
-    return {
-      b2: b2Final,
-      b4: b4Final,
-      b8: b8Final,
-      b11: b11Final,
-      ndvi: ndviFinal,
-      bsi: bsiFinal,
-      frequenciaSoloNu: freqReal,
-      classeWorldCover,
-      ehFlorestaOuInelegivel,
-      fonte: "Sentinel-2 MSI L2A + ESA WorldCover 10m (GEE REST v1)",
-    };
+    return processarRespostaGeeSentinel2(props);
   } catch (err: any) {
     ultimoErroGee = `Exception: ${err?.message}`;
     return null;
   }
+}
+
+export function processarRespostaGeeSentinel2(
+  props: Record<string, any>,
+  cenasFallback?: string[]
+): MedicaoEspectralReal | null {
+  if (!props || typeof props !== "object") return null;
+
+  const classeWorldCover =
+    typeof props.Map === "number" && Number.isFinite(props.Map)
+      ? Math.round(props.Map)
+      : null;
+
+  const nObservacoesValidas =
+    typeof (props.B4_count ?? props.B2_count ?? props.nObservacoesValidas) === "number"
+      ? Math.round(props.B4_count ?? props.B2_count ?? props.nObservacoesValidas)
+      : LIMIAR_MINIMO_OBSERVACOES_D11;
+
+  const avaliacaoD11 = avaliarSuficienciaAmostralD11(nObservacoesValidas);
+
+  const b2_15 = typeof props.B2_p15 === "number" ? props.B2_p15 / 10000 : null;
+  const b4_15 = typeof props.B4_p15 === "number" ? props.B4_p15 / 10000 : null;
+  const b8_15 = typeof props.B8_p15 === "number" ? props.B8_p15 / 10000 : null;
+  const b11_15 = typeof props.B11_p15 === "number" ? props.B11_p15 / 10000 : null;
+  const b12_15 = typeof props.B12_p15 === "number" ? props.B12_p15 / 10000 : null;
+
+  const b2_50 =
+    typeof (props.B2_p50 ?? props.B2_median ?? props.B2) === "number"
+      ? (props.B2_p50 ?? props.B2_median ?? props.B2) / 10000
+      : null;
+  const b4_50 =
+    typeof (props.B4_p50 ?? props.B4_median ?? props.B4) === "number"
+      ? (props.B4_p50 ?? props.B4_median ?? props.B4) / 10000
+      : null;
+  const b8_50 =
+    typeof (props.B8_p50 ?? props.B8_median ?? props.B8) === "number"
+      ? (props.B8_p50 ?? props.B8_median ?? props.B8) / 10000
+      : null;
+  const b11_50 =
+    typeof (props.B11_p50 ?? props.B11_median ?? props.B11) === "number"
+      ? (props.B11_p50 ?? props.B11_median ?? props.B11) / 10000
+      : null;
+  const b12_50 =
+    typeof (props.B12_p50 ?? props.B12_median ?? props.B12) === "number"
+      ? (props.B12_p50 ?? props.B12_median ?? props.B12) / 10000
+      : null;
+
+  const b2_85 = typeof props.B2_p85 === "number" ? props.B2_p85 / 10000 : null;
+  const b4_85 = typeof props.B4_p85 === "number" ? props.B4_p85 / 10000 : null;
+  const b8_85 = typeof props.B8_p85 === "number" ? props.B8_p85 / 10000 : null;
+  const b11_85 = typeof props.B11_p85 === "number" ? props.B11_p85 / 10000 : null;
+  const b12_85 = typeof props.B12_p85 === "number" ? props.B12_p85 / 10000 : null;
+
+  if (b2_50 === null || b4_50 === null || b8_50 === null || b11_50 === null || b12_50 === null) {
+    return null;
+  }
+
+  // Assinatura crítica de exposição de solo na entressafra (BSI canônico preserva B11 = SWIR-1)
+  const ndviExposicao =
+    b8_15 !== null && b4_85 !== null ? calcularNdvi(b8_15, b4_85) : calcularNdvi(b8_50, b4_50);
+  const bsiExposicao =
+    b11_85 !== null && b4_85 !== null && b8_15 !== null && b2_15 !== null
+      ? calcularBsi(b11_85, b4_85, b8_15, b2_15)
+      : calcularBsi(b11_50, b4_50, b8_50, b2_50);
+
+  // Assinatura de cobertura/palhada
+  const ndviVigor =
+    b8_85 !== null && b4_15 !== null ? calcularNdvi(b8_85, b4_15) : calcularNdvi(b8_50, b4_50);
+  const bsiVigor =
+    b11_15 !== null && b4_15 !== null && b8_85 !== null && b2_85 !== null
+      ? calcularBsi(b11_15, b4_15, b8_85, b2_85)
+      : calcularBsi(b11_50, b4_50, b8_50, b2_50);
+
+  const ndviMed = calcularNdvi(b8_50, b4_50)!;
+  const bsiMed = calcularBsi(b11_50, b4_50, b8_50, b2_50)!;
+
+  const inelegivelWorldCover =
+    classeWorldCover !== null && !isClasseUsoElegivel(classeWorldCover);
+  const dosselFlorestalPerene =
+    ndviExposicao !== null &&
+    ndviExposicao >= 0.50 &&
+    ndviMed >= 0.65 &&
+    (bsiExposicao === null || bsiExposicao < -0.05);
+  const ehFlorestaOuInelegivel = inelegivelWorldCover || dosselFlorestalPerene;
+
+  let janelasSoloNu = 0;
+  if (bsiExposicao !== null && bsiExposicao > 0.10) janelasSoloNu++;
+  if (bsiMed > 0.02 || ndviMed < 0.38) janelasSoloNu++;
+  if (bsiVigor !== null && bsiVigor > 0.0) janelasSoloNu++;
+  const freqReal = Number((janelasSoloNu / 3).toFixed(2));
+
+  let b2Final = b2_50,
+    b4Final = b4_50,
+    b8Final = b8_50,
+    b11Final = b11_50,
+    b12Final = b12_50,
+    ndviFinal = ndviMed,
+    bsiFinal = bsiMed;
+
+  if (
+    bsiExposicao !== null &&
+    ndviExposicao !== null &&
+    bsiExposicao > 0.10 &&
+    ndviExposicao < 0.40 &&
+    (bsiExposicao >= 0.14 || bsiMed >= -0.02)
+  ) {
+    b2Final = b2_15 ?? b2_50;
+    b4Final = b4_85 ?? b4_50;
+    b8Final = b8_15 ?? b8_50;
+    b11Final = b11_85 ?? b11_50;
+    b12Final = b12_85 ?? b12_50;
+    ndviFinal = ndviExposicao;
+    bsiFinal = bsiExposicao;
+  } else if (
+    bsiVigor !== null &&
+    ndviVigor !== null &&
+    bsiVigor < 0.0 &&
+    ndviVigor > 0.65 &&
+    bsiMed < 0.02
+  ) {
+    b2Final = b2_85 ?? b2_50;
+    b4Final = b4_15 ?? b4_50;
+    b8Final = b8_85 ?? b8_50;
+    b11Final = b11_15 ?? b11_50;
+    b12Final = b12_15 ?? b12_50;
+    ndviFinal = ndviVigor;
+    bsiFinal = bsiVigor;
+  }
+
+  const tsMs =
+    typeof props["system:time_start_p85"] === "number"
+      ? props["system:time_start_p85"]
+      : typeof props["system:time_start_p50"] === "number"
+        ? props["system:time_start_p50"]
+        : typeof props["system:time_start"] === "number"
+          ? props["system:time_start"]
+          : null;
+
+  const adquiridoEm = extrairDataAquisicaoSentinel2({
+    timestampMs: tsMs,
+    cenas: Array.isArray(props.cenas) ? props.cenas : cenasFallback,
+  });
+
+  return {
+    b2: b2Final,
+    b4: b4Final,
+    b8: b8Final,
+    b11: b11Final,
+    b12: b12Final,
+    ndvi: ndviFinal,
+    bsi: bsiFinal,
+    frequenciaSoloNu: avaliacaoD11.suficiente ? freqReal : null,
+    nObservacoesValidas,
+    insuficienteD11: !avaliacaoD11.suficiente,
+    adquiridoEm,
+    classeWorldCover,
+    ehFlorestaOuInelegivel,
+    fonte: "Sentinel-2 MSI L2A + ESA WorldCover 10m (GEE REST v1)",
+  };
 }
 
 /**

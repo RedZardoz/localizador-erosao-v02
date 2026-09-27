@@ -71,6 +71,7 @@ export interface PontoAmostral {
     b2?: Proveniencia<number>;
     b4?: Proveniencia<number>;
     b8?: Proveniencia<number>;
+    b11?: Proveniencia<number>;
     b12?: Proveniencia<number>;
   };
 
@@ -82,6 +83,7 @@ export interface PontoAmostral {
     nivelK: 1 | 2;
     phiDiag: number | null;                   // null quando alguma dimensao tem amplitude zero
     semente: number;
+    raioThinningEfetivoMetros?: number;
   };
 
   localizacao: {
