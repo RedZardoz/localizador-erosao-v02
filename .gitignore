@@ -92,3 +92,17 @@ Descrição da versão atual/
 
 # Bibliografia pesada (PDFs brutos locais mantidos fora do git - Opção A)
 docs/Selecao Bibliografica/**/*.pdf
+
+# Dados brutos de VANT (Spectral 2 / MicaSense) — pesados, ficam fora do git.
+# Versiona-se apenas o manifesto, os logs de voo e os relatorios de processamento.
+data/drone/**/raw/
+data/drone/**/ortomosaico/
+data/drone/**/nuvem_pontos/
+*.tif
+*.tiff
+*.las
+*.laz
+*.obj
+*.ply
+# Excecoes: figuras pequenas de documentacao
+!docs/**/*.png
