@@ -244,6 +244,19 @@ export const DECISOES: Record<string, Decisao<any>> = {
     decididoPor: "pesquisador",
     decididoEm: "2026-09-27",
   },
+  D23: {
+    id: "D23",
+    titulo: "Regime amostral: estratificação desproporcional com probabilidade de inclusão registrada",
+    estado: "decidida" as EstadoDecisao,
+    valor:
+      "Amostragem ESTRATIFICADA DESPROPORCIONAL com a probabilidade de inclusão pi_i REGISTRADA POR PONTO em criterioSelecao, substituindo o balanceamento 50/50 que constava do relatório comparativo e nunca foi implementado. Para cada estrato h, pi_i = n_h / N_h, com n_h e N_h também registrados. A alocação entre estratos é desproporcional e calibrada pelo LOTE PILOTO, não fixada a priori em razão simétrica. LOTE PILOTO: 30 a 40 pontos, sorteados de forma ESTRATIFICADA com pi_i conhecido e metade em cada classe espectral de D02, executado ANTES da amostra principal. O piloto calibra quatro grandezas simultaneamente: (a) a precisão do rastreio espectral, isto é, a fração de pontos classificados como erosão provável que o observador humano confirma; (b) a PREVALÊNCIA real de erosão laminar na bacia, obtida por estimador ponderado por 1/pi_i (Horvitz-Thompson), não por contagem direta; (c) a acurácia posicional efetiva do Galaxy M13 no terreno real, que alimenta a calibração de P03; (d) a taxa de erro da fotointerpretação da Fase A contra a verdade de campo. REGRAS DE INFERÊNCIA: toda afirmação sobre a Bacia do Paraná 3 — área afetada, prevalência, acurácia do mapa — usa os estimadores estratificados de Olofsson et al. (2014), com intervalo de confiança; toda probabilidade predita pelo modelo exige CORREÇÃO A PRIORI (King & Zeng, 2001) ancorada na prevalência estimada no piloto. A AUC é reportada sem correção, por ser baseada em ordenação e portanto independente de prevalência.",
+    justificativa:
+      "O balanceamento 50/50 é um caso particular com razão arbitrária e não justificada; a estratificação desproporcional com pi_i registrado o domina, porque entrega as duas inferências ao mesmo tempo. Treinar na amostra desproporcional é eficiente: King & Zeng (2001) demonstram que sobreamostrar o evento raro e subamostrar os não-eventos economiza até 99% do custo de coleta sem perda de validade, desde que a correção a priori seja aplicada. E registrar pi_i preserva a inferência populacional, que uma amostra desbalanceada sem pesos destrói. O que sobrevive e o que não sobrevive ao desbalanceamento precisa estar explícito, porque a distinção é fonte comum de erro: a AUC sobrevive, por depender apenas da ordenação; a probabilidade predita, a acurácia, a precisão e o kappa NÃO sobrevivem, por dependerem de prevalência. A correção a priori exige conhecer a prevalência real, que não pode ser extraída da própria amostra desbalanceada — daí a necessidade de âncora independente. O piloto foi escolhido ESTRATIFICADO, e não aleatório simples, porque a prevalência esperada é baixa: 30 a 40 pontos aleatórios renderiam pouquíssimos positivos e ensinariam quase nada sobre a precisão do rastreio, ao passo que o piloto estratificado rende positivos suficientes para medi-la e ainda recupera a prevalência por ponderação. O custo é exigir a matemática da ponderação, que é padrão e está documentada em Olofsson et al. (2014). Ver também D24, que trata do regime de dados do classificador, e P03, cuja faixa intermediária de acurácia será calibrada com a distribuição empírica obtida neste piloto.",
+    referencia:
+      "King, G. & Zeng, L. (2001), Political Analysis 9:137-163; Olofsson, P. et al. (2014), Remote Sensing of Environment 148:42-57; Cochran (1977), Sampling Techniques; docs/auditorias/Relatorio_Auditoria_Integral_Coerencia_Efetividade_2026-09-26.md",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-27",
+  },
 };
 
 export const PARAMETROS: Record<string, Decisao<any>> = {
