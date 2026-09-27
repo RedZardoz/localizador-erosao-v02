@@ -106,3 +106,13 @@ data/drone/**/nuvem_pontos/
 *.ply
 # Excecoes: figuras pequenas de documentacao
 !docs/**/*.png
+
+# ============================================================================
+# Dados brutos de voo VANT — 40 GB fora do versionamento (medido em 2026-09-28)
+# ============================================================================
+# 'git add .' adicionaria 23 GB (19,7 GB .zip, 2,0 GB .mp4, 876 MB .jpg,
+# 235 MB .dat). Git preserva todo blob permanentemente: um unico commit
+# desses inutilizaria o repositorio de forma irreversivel.
+# Os dados ficam no disco e FORA do git. O que e probatorio e leve entra
+# versionado em docs/verificacoes/voo/ como manifesto e relatorio derivado.
+/Dados de voo/
