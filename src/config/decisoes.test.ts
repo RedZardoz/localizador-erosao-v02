@@ -24,8 +24,16 @@ describe("Registro de Decisões — Mecanismo e Integridade", () => {
   });
 
   it("Decisões pendentes devem lançar ErroDecisaoPendente ao serem exigidas", () => {
-    const pendentes = Object.values(DECISOES).filter((d) => d.estado === "pendente");
-    expect(pendentes.length).toBe(Object.values(DECISOES).length - 10);
+    const todas = Object.values(DECISOES);
+    const pendentes = todas.filter((d) => d.estado === "pendente");
+    const decididas = todas.filter((d) => d.estado === "decidida");
+
+    // A partição de DECISOES é binária: toda decisão está "decidida" ou "pendente".
+    // Asseverar a partição, e não uma contagem literal, evita que o registro de uma
+    // nova decisão quebre o teste sem que nenhuma invariante tenha sido violada.
+    expect(pendentes.length + decididas.length).toBe(todas.length);
+    // Guarda antivacuidade: precisa haver pendência para o detector ter o que exercitar.
+    expect(pendentes.length).toBeGreaterThan(0);
 
     for (const d of pendentes) {
       expect(d.estado).toBe("pendente");

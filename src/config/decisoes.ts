@@ -191,6 +191,18 @@ export const DECISOES: Record<string, Decisao<any>> = {
     justificativa: "Proposta estruturada: subconjunto de 40 a 60 pontos amostrais pareados pré/pós evento erosivo pluviométrico.",
     referencia: "Planejamento V3, §10.5",
   },
+  D20: {
+    id: "D20",
+    titulo: "Fórmula do Fator C híbrido SPD: Durigon et al. (2014) modulada pelo BSI",
+    estado: "decidida" as EstadoDecisao,
+    valor: "C = ((1 - NDVI) / 2) * (1 + BSI), com domínio físico estrito C em [0, 1]; qualquer C fora de [0, 1] resulta em indisponivel com causa fora-do-dominio. Na ausência de BSI válido, aplica-se a forma pura de D01: C = (1 - NDVI) / 2.",
+    justificativa:
+      "Estende a formulação de Durigon et al. (2014) — decidida em D01 e preservada como caminho puro — acrescentando modulação pelo Índice de Solo Exposto (BSI). Fundamento físico: sob Sistema Plantio Direto, o NDVI isolado não distingue palhada senescente de solo mineral exposto, pois ambos apresentam NDVI baixo. O BSI resolve a ambiguidade pelo sinal: palhada senescente exibe NDVI baixo com BSI negativo (cobertura morta ainda protege o solo do impacto da gota), enquanto solo mineral exposto exibe NDVI baixo com BSI positivo (superfície desprotegida e suscetível ao salpicamento). Como o Fator C expressa a razão de perda de solo sob determinada cobertura em relação ao solo continuamente descoberto, é fisicamente correto que a mesma leitura de NDVI produza C menor sob palhada e C maior sob solo exposto. O domínio estrito em [0, 1] é imposto na saída porque o Fator C é razão adimensional por construção (Renard et al., 1997): sem essa verificação, a combinação NDVI = -1 com BSI = 1 produzia C = 2,0, o dobro do máximo físico, que se propagaria para A = R*K*LS*C*P. Conforme a Regra 2, valor fora do domínio não é cortado por piso ou teto artificial: causa indisponibilidade explícita. Esta decisão NÃO substitui nem revoga D01, que permanece registrada com a formulação original e segue vigente quando o BSI não está disponível.",
+    referencia:
+      "Durigon et al. (2014), International Journal of Remote Sensing 35(2):441-453 (formulação base); Rikimaru et al. (2002) (Bare Soil Index); Renard et al. (1997), USDA-ARS Agriculture Handbook 703 (domínio do Fator C); docs/auditorias/Relatorio_Auditoria_Integral_Coerencia_Efetividade_2026-09-26.md, achado C1",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-27",
+  },
 };
 
 export const PARAMETROS: Record<string, Decisao<any>> = {
@@ -204,8 +216,16 @@ export const PARAMETROS: Record<string, Decisao<any>> = {
   P02: {
     id: "P02",
     titulo: "Espaçamento mínimo do thinning",
-    estado: "proposta" as EstadoDecisao,
-    justificativa: "1 km herdado do Localizador para dispersão espacial",
+    estado: "decidida" as EstadoDecisao,
+    // Valor em METROS. O consumidor (select-candidates/route.ts) trata numero >= 100 como metros.
+    // Nao usar string: "1.000 m" seria lido por parseFloat como 1 metro.
+    valor: 1000,
+    justificativa:
+      "Piso absoluto de 1.000 m para o espaçamento geodésico mínimo entre pontos amostrais, aplicado como limite inferior inviolável do relaxamento iterativo do thinning. O raio de partida permanece em 5.000 m e pode ser reduzido para atingir a meta de pool, mas nunca abaixo deste piso. Substitui o literal de 800 m que vigorava no laço de relaxamento e que furava silenciosamente o próprio parâmetro herdado, afrouxando a independência espacial da amostra para acomodar o tamanho do pool (achado C4 da auditoria integral de 26/09/2026). O thinning controla a autocorrelação espacial entre unidades amostrais e é anterior e independente da aresta do bloco espacial (P01), que governa as dobras da validação cruzada.",
+    referencia:
+      "Herdado do Localizador de Erosão (SAREL 1) para dispersão espacial; docs/auditorias/Relatorio_Auditoria_Integral_Coerencia_Efetividade_2026-09-26.md, achado C4",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-27",
   },
   P03: {
     id: "P03",
