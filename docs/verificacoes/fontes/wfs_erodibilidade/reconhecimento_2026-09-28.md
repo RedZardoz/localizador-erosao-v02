@@ -166,3 +166,26 @@ Ganho: elimina a categoria "ponto em fronteira" como fonte de arbitrio — sao 7
 pontos, 35%, cuja classificacao hoje depende da heuristica. Ressalva: ponto sobre lacuna
 ou sobre poligono de agua devolve ZERO feicoes, o que deve mapear para `indisponivel` e
 NUNCA para "solo nao encontrado, usar fallback".
+
+## F9 — ponto-em-poligono nas TRES camadas numa unica requisicao (testado)
+
+O custo nao aumenta: continua uma requisicao por ponto, como o GetFeatureInfo de hoje.
+
+    service=WFS&version=1.1.0&request=GetFeature
+    &typeName=<L1>,<L2>,<L3>
+    &outputFormat=application/json
+    &CQL_FILTER=INTERSECTS(geometry, POINT(<lat> <lon>));INTERSECTS(...);INTERSECTS(...)
+
+Um filtro por camada, separados por ponto e virgula, na mesma ordem de typeName.
+Medido em (-24.8800, -54.2600) -> 3 feicoes, uma por camada:
+parana_solos_20201105.2807 (NVef2), bra_erodibilidade_2024_sirgas2000.102154 (SG21NVef1),
+brasil_erodibilidade_solo.75362 (Baixa).
+
+NAO funciona: WFS 2.0.0 com varias typeNames -> HTTP 500, "Join query must specify a
+filter". Com camada unica a 2.0.0 funciona, mas exigiria tres requisicoes.
+
+ORDEM DE EIXOS, inverte entre versoes e falha em silencio:
+  1.1.0 -> POINT(lat lon);  1.0.0 -> POINT(lon lat);  2.0.0 (camada unica) -> POINT(lat lon)
+Com a ordem errada a consulta devolve ZERO feicoes sem erro algum, para todos os pontos —
+o que faria todo candidato virar "sem solo mapeado" e esvaziaria o quadro amostral em
+silencio. E o modo de falha mais perigoso da troca.
