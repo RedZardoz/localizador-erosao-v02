@@ -93,17 +93,29 @@ export const DECISOES: Record<string, Decisao<any>> = {
   },
   D07: {
     id: "D07",
-    titulo: "Domínio de validade (ex.: declividade 3-20%, uso agrícola)",
-    estado: "pendente" as EstadoDecisao,
-    justificativa: "Proposta estruturada: declividade entre 3% e 20% (relevo suave ondulado a ondulado) sob uso agrícola de lavouras temporárias e pastagem cultivada (ESA WorldCover 30, 40, 60).",
-    referencia: "SiBCS / Embrapa Solos (2018); Metodologia PPGTCA 2026, Seção 3.1",
+    titulo: "Domínio de validade: declividade 3 a 20%, WorldCover 30 e 40, concordância entre épocas",
+    estado: "decidida" as EstadoDecisao,
+    valor:
+      "DOMÍNIO DE VALIDADE do método, fora do qual nenhuma predição é declarada válida e nenhuma métrica é reportada. (a) DECLIVIDADE entre 3% e 20%, relevo suave ondulado a ondulado do SiBCS, calculada em EPSG:31982 conforme P04. (b) USO E COBERTURA: ESA WorldCover a 10 m, EXCLUSIVAMENTE as classes 30 (pastagem) e 40 (lavoura). A CLASSE 60 (solo exposto e vegetação esparsa) É EXCLUÍDA, revertendo a proposta original que a admitia. (c) ÉPOCA DA COBERTURA: exige-se CONCORDÂNCIA entre as duas épocas disponíveis do produto, v100 (2020) e v200 (2021); célula classificada como 30 ou 40 em apenas uma das duas fica FORA do domínio. (d) Os buffers de exclusão hídrica e urbana de P04 permanecem vigentes e são cumulativos com este domínio. (e) EXTRAPOLAÇÃO VEDADA: fora da faixa de 3% a 20% e fora das classes 30 e 40 o modelo NÃO é aplicado nem avaliado, e a D25 é avaliada exclusivamente dentro deste domínio. OBRIGAÇÃO DE IMPLEMENTAÇÃO, registrada porque o código ainda não a cumpre nesta data: o parâmetro P05 e a constante OPCOES_ELEGIBILIDADE_PADRAO.allowedLandCoverClasses em src/lib/gee/elegibilidade.ts trazem [30, 40, 60] e devem passar a [30, 40]; e o cliente GEE em src/lib/gee/copernicusGeeClient.ts consulta apenas ESA/WorldCover/v200/2021, de modo que a exigência de concordância entre épocas requer acrescentar v100/2020 ao grafo de expressão. Até que isso seja feito existe DIVERGÊNCIA DECLARADA entre decisão e código, e ela vale contra o código. LIMITAÇÃO ASSUMIDA: restringir a declividade a 3% a 20% TRUNCA a amplitude do preditor de terreno, o que reduz a capacidade do modelo de aprender a resposta à declividade e é uma das razões pelas quais o bloco de terreno tem teto baixo em D24. O truncamento é preço do domínio de validade, não defeito a corrigir depois.",
+    justificativa:
+      "Os limites de declividade delimitam onde a erosão laminar é o processo dominante: abaixo de 3% o escoamento superficial raramente adquire competência para desagregar e transportar de forma laminar, e acima de 20% o processo passa a ser dominado por sulco e voçoroca, que são fenômenos distintos do que esta pesquisa rotula. Restringir AMBOS os competidores de D24 ao mesmo domínio é também o que torna a comparação de D25 justa, porque impede que um deles seja avaliado em terreno onde o outro não se aplica. A EXCLUSÃO DA CLASSE 60 corrige um problema de circularidade que a proposta original não havia percebido: a dimensão Ê da estratificação de D12 É a frequência de solo nu, de modo que admitir solo exposto como critério de ENTRADA no domínio faria a definição do domínio determinar em parte o estrato de destino. É a mesma família de defeito que D16 já barra ao proibir voar onde o rastreio espectral aponta erosão. O custo é pequeno: talhão agrícola em declividade de 3% a 20% é classificado como 40 na maioria dos anos do produto, e a fração efetivamente perdida é a de solo exposto permanente, que não é uso agrícola ativo. A EXIGÊNCIA DE CONCORDÂNCIA ENTRE ÉPOCAS responde a uma incompatibilidade temporal que estava passando em silêncio: o produto de cobertura é de época única enquanto a série de treino vai de 2016 a 2026, de modo que uma máscara de um ano estava sendo aplicada a dez. Exigir que as duas épocas concordem reduz o erro de classificação de ano único ao custo de encolher o domínio, e é o máximo que se pode fazer com duas épocas. Fica DECLARADO como não modelado o que nenhuma das duas resolve: a mudança de uso ocorrida dentro da série, que para uma célula que virou lavoura em 2019 significa atribuir preditores de período em que ela não era lavoura. A classe 30 é adotada como pastagem cultivada por pressuposto declarado, pois o produto não distingue pastagem cultivada de campo natural; na Bacia do Paraná 3, em declividade agrícola, a fração de campo natural é pequena, mas o pressuposto é registrado e não verificado nesta data.",
+    referencia:
+      "Zanaga, D. et al. (2022), ESA WorldCover 10 m 2021 v200, Zenodo; Zanaga, D. et al. (2021), ESA WorldCover 10 m 2020 v100, Zenodo; SiBCS / Embrapa Solos (2018), Sistema Brasileiro de Classificação de Solos, 5a ed. (classes de relevo); Metodologia PPGTCA 2026, Seção 3.1; src/lib/gee/elegibilidade.ts e src/lib/gee/copernicusGeeClient.ts (implementação a alinhar); P04 (declividade em EPSG:31982 e buffers); P05 (classes elegíveis); D06 (unidade de 10 m); D12 (tercis calculados sobre este domínio); D16 (sorteio dos polígonos); D24 (teto do bloco de terreno); D25 (avaliação restrita ao domínio)",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-27",
   },
   D08: {
     id: "D08",
-    titulo: "Tratamento das unidades pedológicas em associação",
-    estado: "pendente" as EstadoDecisao,
-    justificativa: "Proposta estruturada: atribuir o componente dominante (ordem_1) com propagação explícita de confiança pedológica 'media' e ressalva visual no Inspetor.",
-    referencia: "Embrapa GeoInfo (parana_solos_20201105); Coelho et al. (2024)",
+    titulo: "Unidades pedológicas em associação: componente dominante com marcação de ambiguidade",
+    estado: "decidida" as EstadoDecisao,
+    valor:
+      "Nas unidades de mapeamento pedológico em ASSOCIAÇÃO, atribuir o COMPONENTE DOMINANTE (ordem_1), com proveniência de confiança pedológica 'media' propagada até a matriz e ressalva visual no Inspetor. VEDADA a ponderação de K pela área dos componentes: a média ponderada produz um valor de erodibilidade que não existe em unidade de mapeamento alguma, e apresentá-lo como K da célula é fabricação. MARCAÇÃO DE AMBIGUIDADE: quando os componentes da associação ATRAVESSAREM a fronteira de D09 — ordem_1 nas classes 1 a 3 (K menor ou igual a 0,0285) e algum componente subordinado nas classes 4 ou 5 (K maior ou igual a 0,0300), ou o inverso — a unidade recebe sinalizador de K AMBÍGUO NA ASSOCIAÇÃO. O sinalizador é metadado de qualidade: acompanha o registro, aparece no Inspetor e entra no pacote de reprodutibilidade, e NUNCA entra na matriz de treino como preditor, por Invariante 2. AS UNIDADES MARCADAS PERMANECEM NO QUADRO AMOSTRAL, e não são excluídas do sorteio de D16. ANÁLISE DE SENSIBILIDADE PRÉ-REGISTRADA, fixada agora e antes de qualquer resultado: a avaliação de D25 é recalculada uma segunda vez removendo as células em unidades marcadas, e a DIFERENÇA entre as duas avaliações é reportada como medida do custo da ambiguidade pedológica. Nenhuma das duas pode ser escolhida depois em função do resultado: a avaliação principal é a que inclui as marcadas, e a segunda é sensibilidade declarada.",
+    justificativa:
+      "O componente dominante é a única atribuição que não inventa valor: ele existe no mapeamento, está nomeado na unidade e tem K tabelado. A alternativa aparentemente mais refinada, ponderar K pela proporção dos componentes, é pior por duas razões independentes — produz um número que nenhuma fonte sustenta, e as proporções dos componentes em associação frequentemente não estão quantificadas na legenda, de modo que a própria ponderação exigiria supor proporções. Excluir as associações resolveria a ambiguidade e foi considerado, mas foi rejeitado porque as associações cobrem parte substancial do mapeamento e sua remoção arriscaria ESVAZIAR estratos de D12, e estrato vazio quebra a cobertura do espaço de covariáveis que é a razão de ser da estratificação. O sinalizador de ambiguidade existe porque o componente dominante, sozinho, ESCONDE o caso que mais importa: uma associação cujo dominante cai no nível 1 de K e cujo subordinado cai no nível 2 é atribuída ao estrato de erodibilidade baixa sem que nada no registro indique que a atribuição poderia ter sido a oposta. Marcar torna esse custo auditável em vez de invisível, e a sensibilidade pré-registrada o torna quantificado. O desenho segue deliberadamente o mesmo padrão já adotado em D03, onde a sensibilidade ao corte de binarização foi pré-registrada em lugar de a escolha ser feita depois de vistos os resultados: o que protege contra flexibilidade analítica não é evitar a decisão difícil, é fixá-la antes e medir o quanto ela importa.",
+    referencia:
+      "Embrapa GeoInfo, parana_solos_20201105 (mapa de solos do Paraná); Coelho, M. R. et al. (2024), Documentos 246, Embrapa Solos (Tabela 5, erodibilidade); Mannigel, A. R. et al. (2002), Revista Brasileira de Ciência do Solo 26:1039-1049; SiBCS / Embrapa Solos (2018); D09 (fronteira entre classe 3 e classe 4 de K); D12 (nível de K como dimensão); D16 (quadro amostral do sorteio); D25 (sensibilidade pré-registrada); D03 (precedente do padrão de sensibilidade)",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-27",
   },
   D09: {
     id: "D09",
@@ -353,9 +365,13 @@ export const PARAMETROS: Record<string, Decisao<any>> = {
   },
   P05: {
     id: "P05",
-    titulo: "Classes elegíveis do ESA WorldCover (30, 40, 60)",
-    estado: "proposta" as EstadoDecisao,
-    justificativa: "Classes agrícolas e campestres conforme planejamento v3",
+    titulo: "Classes elegíveis do ESA WorldCover (30 e 40; classe 60 excluída por D07)",
+    estado: "decidida" as EstadoDecisao,
+    valor: [30, 40],
+    justificativa:
+      "Restringido a [30, 40] por D07: a classe 60 foi excluída porque a dimensão Ê da estratificação de D12 é a própria frequência de solo nu, e admitir solo exposto como critério de entrada no domínio faria a definição do domínio determinar em parte o estrato. DIVERGÊNCIA DECLARADA nesta data: a constante OPCOES_ELEGIBILIDADE_PADRAO.allowedLandCoverClasses em src/lib/gee/elegibilidade.ts ainda traz [30, 40, 60], assim como o comentário de cabeçalho do mesmo arquivo, o comentário em src/app/api/gee/select-candidates/route.ts e a asserção correspondente em src/lib/gee/elegibilidade.test.ts. O alinhamento cabe ao agente executor; até que ocorra, este registro vale contra o código.",
+    decididoPor: "pesquisador",
+    decididoEm: "2026-09-27",
   },
   P06: {
     id: "P06",
