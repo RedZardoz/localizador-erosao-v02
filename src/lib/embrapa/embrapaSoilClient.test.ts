@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildGetFeatureInfoUrl,
+  classificarNivelEstratoKComponente,
   clearEmbrapaSoilCache,
+  ehCategoriaNaoSolo,
+  extrairOrdemSibcsDeLegenda,
   formatSoilLabel,
   parseErodibilityFeature,
   parseSoilFeature,
@@ -86,12 +89,14 @@ afterEach(() => {
 });
 
 describe("buildGetFeatureInfoUrl", () => {
-  it("consulta as duas camadas em uma única requisição, no formato JSON", () => {
+  it("consulta as três camadas em uma única requisição JSON com feature_count=10 (T1.4 / T2.1)", () => {
     const url = buildGetFeatureInfoUrl(-25.066904, -53.688038);
     expect(url).toContain("request=GetFeatureInfo");
     expect(url).toContain("info_format=application%2Fjson");
     expect(url).toContain("parana_solos_20201105");
     expect(url).toContain("brasil_erodibilidade_solo");
+    expect(url).toContain("bra_erodibilidade_2024_sirgas2000");
+    expect(url).toContain("feature_count=10");
     expect(url).toContain("srs=EPSG%3A4326");
   });
 
@@ -253,8 +258,8 @@ describe("formatSoilLabel", () => {
   });
 });
 
-describe("kAmbiguoAssociacao (Decisões D08 e D09)", () => {
-  it("marca kAmbiguoAssociacao === true para associação entre LATOSSOLO (K <= 0,0285) e NEOSSOLO LITÓLICO (K >= 0,0300) e na feição RRe12", () => {
+describe("kAmbiguoAssociacao, erod_c1..erod_c4 (camada 2024) e fora-do-dominio (Decisões D08 e D09, T2-T4)", () => {
+  it("testa a heurística de fallback taxonômico (sem erod2024Props): marca kAmbiguoAssociacao === true para associação LATOSSOLO + NEOSSOLO LITÓLICO e na feição RRe12", () => {
     const assocLvNeossolo = parseSoilFeature({
       sbcs: "LVef3",
       tipo_unida: "associacao",
@@ -272,13 +277,16 @@ describe("kAmbiguoAssociacao (Decisões D08 e D09)", () => {
     });
     expect(assocLvNeossolo).not.toBeNull();
     expect(assocLvNeossolo!.kAmbiguoAssociacao).toBe(true);
+    expect(assocLvNeossolo!.correspondenciaCartas2024).toBe("sem-camada-2024");
+    expect(assocLvNeossolo!.provenienciaK).toBe("heuristica-fallback-nao-conferida");
 
     const assocRRe12 = parseSoilFeature(FEATURE_SOLO_ASSOCIACAO.properties);
     expect(assocRRe12).not.toBeNull();
     expect(assocRRe12!.kAmbiguoAssociacao).toBe(true);
+    expect(assocRRe12!.provenienciaK).toBe("heuristica-fallback-nao-conferida");
   });
 
-  it("marca kAmbiguoAssociacao === false para associação em que ambos os componentes pertencem a K <= 0,0285 (LATOSSOLO + NITOSSOLO)", () => {
+  it("testa a heurística de fallback taxonômico (sem erod2024Props): marca kAmbiguoAssociacao === false para associação LATOSSOLO + NITOSSOLO (ambos K <= 0,0285)", () => {
     const assocMesmoNivel = parseSoilFeature({
       sbcs: "LVdf1",
       tipo_unida: "associacao",
@@ -297,13 +305,118 @@ describe("kAmbiguoAssociacao (Decisões D08 e D09)", () => {
     expect(assocMesmoNivel).not.toBeNull();
     expect(assocMesmoNivel!.confianca).toBe("media");
     expect(assocMesmoNivel!.kAmbiguoAssociacao).toBe(false);
+    expect(assocMesmoNivel!.provenienciaK).toBe("heuristica-fallback-nao-conferida");
   });
 
-  it("marca kAmbiguoAssociacao === false para unidade simples (LVe1)", () => {
-    const simples = parseSoilFeature(FEATURE_SOLO_SIMPLES.properties);
-    expect(simples).not.toBeNull();
-    expect(simples!.confianca).toBe("alta");
-    expect(simples!.kAmbiguoAssociacao).toBe(false);
+  it("usa erod_c1..erod_c4 tabelado quando a sequência de ordens coincide entre parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000 (T2.1 / T4.1)", () => {
+    const erod2024Compativel = {
+      cod_um2: "SG22NVef2NV",
+      legenda_c1: "NITOSSOLO VERMELHO Eutroferrico tipico",
+      erod_c1: "Baixa",
+      erod_um: "Baixa",
+    };
+    const u = parseSoilFeature(
+      {
+        sbcs: "NVef2",
+        tipo_unida: "simples",
+        ordem_1: "NITOSSOLO",
+        sub_ordem_: "VERMELHO",
+        grande_gru: "Eutroferrico",
+        sub_grupo_: "tipico",
+        familia_1_: "textura argilosa",
+        legenda: "NVef2 - NITOSSOLO VERMELHO Eutroferrico",
+      },
+      erod2024Compativel
+    );
+    expect(u).not.toBeNull();
+    expect(u!.correspondenciaCartas2024).toBe("correspondente");
+    expect(u!.divergenciaEntreCartas2024).toBe(false);
+    expect(u!.provenienciaK).toBe("tabelado");
+    expect(u!.chaveProvenienciaK).toBe("SG22NVef2NV:erod_c1=Baixa");
+    expect(u!.kAmbiguoAssociacao).toBe(false);
+  });
+
+  it("não pareia por posição quando parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000 divergem em sequência/número de componentes (T2.3)", () => {
+    // Caso real R02_Cascavel_Rural_Oeste_RRe12 (-25.066904, -53.688038):
+    // parana_solos: ['NEOSSOLO', 'CHERNOSSOLO', 'NITOSSOLO'] (3 componentes)
+    // bra_erodibilidade_2024: ['NITOSSOLO', 'NEOSSOLO', 'NEOSSOLO', 'CHERNOSSOLO'] (4 componentes)
+    const erod2024Divergente = {
+      cod_um2: "SG22NVef2NV+RRe+RLd+MTe",
+      legenda_c1: "NITOSSOLO VERMELHO Eutroferrico",
+      legenda_c2: "NEOSSOLO REGOLITICO Eutrofico",
+      legenda_c3: "NEOSSOLO LITOLICO Distrofico",
+      legenda_c4: "CHERNOSSOLO ARGILUVICO Ferrico",
+      erod_c1: "Baixa",
+      erod_c2: "Alta",
+      erod_c3: "Muito alta",
+      erod_c4: "Alta",
+      erod_um: "Baixa",
+    };
+    const u = parseSoilFeature(FEATURE_SOLO_ASSOCIACAO.properties, erod2024Divergente);
+    expect(u).not.toBeNull();
+    expect(u!.correspondenciaCartas2024).toBe("divergente");
+    expect(u!.divergenciaEntreCartas2024).toBe(true);
+    expect(u!.provenienciaK).toBe("divergencia-entre-cartas");
+    expect(u!.kAmbiguoAssociacao).toBe(true);
+    // Componente 1 de parana_solos (NEOSSOLO) NÃO recebeu erod_c1 ('Baixa', que era do NITOSSOLO em 2024)
+    expect(u!.componentes[0].erodibilidadeComponente2024).toBeNull();
+  });
+
+  it("classificarNivelEstratoKComponente retorna Proveniencia<1|2> indisponivel('fora-do-dominio') para Area urbana e Corpos dagua (T3.1 / T3.2)", () => {
+    const provUrbana = classificarNivelEstratoKComponente(
+      {
+        posicao: 1,
+        ordem: "Area urbana",
+        subOrdem: "",
+        grandeGrupo: "",
+        subGrupo: "",
+        familia: [],
+        faseVegetacao: "",
+        faseRelevo: "",
+      },
+      "Area urbana"
+    );
+    expect(provUrbana.estado).toBe("indisponivel");
+    if (provUrbana.estado === "indisponivel") {
+      expect(provUrbana.causa).toBe("fora-do-dominio");
+    }
+
+    const provAgua = classificarNivelEstratoKComponente(
+      {
+        posicao: 1,
+        ordem: "Corpos dagua",
+        subOrdem: "",
+        grandeGrupo: "",
+        subGrupo: "",
+        familia: [],
+        faseVegetacao: "",
+        faseRelevo: "",
+      },
+      "Corpos dagua"
+    );
+    expect(provAgua.estado).toBe("indisponivel");
+    if (provAgua.estado === "indisponivel") {
+      expect(provAgua.causa).toBe("fora-do-dominio");
+    }
+    expect(ehCategoriaNaoSolo("Corpo d'água")).toBe(true);
+    expect(ehCategoriaNaoSolo("Área urbana")).toBe(true);
+    expect(extrairOrdemSibcsDeLegenda("NITOSSOLO VERMELHO Eutroferrico")).toBe("NITOSSOLO");
+  });
+
+  it("queryEmbrapaSoil sinaliza foraDoDominioSolo === true quando qualquer camada retorna Area urbana ou Corpos dagua (T3.2 / T3.3)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetchJson({
+        features: [
+          FEATURE_SOLO_SIMPLES,
+          { id: "brasil_erodibilidade_solo.1", properties: { codnum: 8, classe: "Corpos dagua" } },
+          { id: "bra_erodibilidade_2024_sirgas2000.1", properties: { cod_um2: "SG21Co", erod_um: "Corpo d'água" } },
+        ],
+      })
+    );
+    const r = await queryEmbrapaSoil(-24.8531, -54.3622);
+    expect(r.foraDoDominioSolo).toBe(true);
+    expect(r.solo?.foraDoDominioSolo).toBe(true);
   });
 });
 

@@ -50,6 +50,11 @@ export const CAMPOS_PROIBIDOS_MATRIZ_TREINO = [
   "laudoJev",
   "consistenciaFisica",
   "kAmbiguoAssociacao",
+  "correspondenciaCartas2024",
+  "divergenciaEntreCartas2024",
+  "provenienciaK",
+  "chaveProvenienciaK",
+  "foraDoDominioSolo",
 ] as const;
 
 /**

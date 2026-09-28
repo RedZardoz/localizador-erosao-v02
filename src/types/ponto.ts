@@ -110,6 +110,13 @@ export interface PontoAmostral {
     confiancaPedologica: "alta" | "media" | "indisponivel";
     erodibilidadeClasse: Proveniencia<string>; // CATEGORICA
     kAmbiguoAssociacao?: boolean;             // D08: true quando associacao contem componentes em ambos os niveis de K (D09)
+    correspondenciaCartas2024?: "correspondente" | "divergente" | "sem-camada-2024";
+    divergenciaEntreCartas2024?: boolean;
+    provenienciaK?:
+      | "tabelado"
+      | "heuristica-fallback-nao-conferida"
+      | "divergencia-entre-cartas"
+      | "fora-do-dominio";
   };
 
   // Metadados de elegibilidade multitemporal ESA WorldCover (D07: 2020 v100 ∩ 2021 v200 em [30, 40])

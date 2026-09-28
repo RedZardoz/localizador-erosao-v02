@@ -1,0 +1,803 @@
+{
+  "fields_bra_erodibilidade_2024": [
+    [
+      "ogc_fid",
+      "xsd:int"
+    ],
+    [
+      "cd_fcim",
+      "xsd:string"
+    ],
+    [
+      "nom_unidad",
+      "xsd:string"
+    ],
+    [
+      "cod_um",
+      "xsd:string"
+    ],
+    [
+      "cod_um2",
+      "xsd:string"
+    ],
+    [
+      "legenda",
+      "xsd:string"
+    ],
+    [
+      "legenda_c1",
+      "xsd:string"
+    ],
+    [
+      "legenda_c2",
+      "xsd:string"
+    ],
+    [
+      "legenda_c3",
+      "xsd:string"
+    ],
+    [
+      "legenda_c4",
+      "xsd:string"
+    ],
+    [
+      "erod_c1",
+      "xsd:string"
+    ],
+    [
+      "erod_c2",
+      "xsd:string"
+    ],
+    [
+      "erod_c3",
+      "xsd:string"
+    ],
+    [
+      "erod_c4",
+      "xsd:string"
+    ],
+    [
+      "erod_um",
+      "xsd:string"
+    ],
+    [
+      "fator_k_um",
+      "xsd:string"
+    ],
+    [
+      "area_ha",
+      "xsd:int"
+    ],
+    [
+      "area_km2",
+      "xsd:double"
+    ],
+    [
+      "k_solos",
+      "xsd:double"
+    ],
+    [
+      "geometry",
+      "gml:MultiPolygonPropertyType"
+    ]
+  ],
+  "erod_c4_exists": true,
+  "n_rurais_consultados": 20,
+  "n_rurais_com_ambas_solo": 19,
+  "n_rurais_caiu_nao_solo_2024": 0,
+  "n_rurais_correspondentes_estritos": 10,
+  "n_rurais_correspondentes_dominante": 12,
+  "n_rurais_divergentes": 9,
+  "n_rurais_associacao": 3,
+  "n_rurais_associacao_correspondentes": 0,
+  "pontos": [
+    {
+      "id": "R01_Toledo_Rural_Norte",
+      "lat": -24.62,
+      "lng": -53.71,
+      "categoria": "rural",
+      "n_features_retornadas": 3,
+      "pr_sbcs": "LVef1",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "LATOSSOLO"
+      ],
+      "br_classe": "Muito baixa",
+      "br_codnum": 1,
+      "c2024_ogc_fid": 104554,
+      "c2024_cod_um": "SG22LVef1LV",
+      "c2024_legenda": "LVef - Latossolo Vermelho Eutroférrico",
+      "c2024_legendas_c": [
+        "D LATOSSOLO VERMELHO Eutroférrico típico muito argilosa A moderado mesoeutrófico suave ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "LATOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Muito baixa"
+      ],
+      "c2024_erod_um": "Muito baixa",
+      "c2024_fator_k_um": "0.0020",
+      "c2024_k_solos": 0.002,
+      "corresponde_estrito": true,
+      "corresponde_dominante": true
+    },
+    {
+      "id": "R02_Cascavel_Rural_Oeste_RRe12",
+      "lat": -25.0669,
+      "lng": -53.688,
+      "categoria": "rural",
+      "n_features_retornadas": 3,
+      "pr_sbcs": "RRe12",
+      "pr_tipo_unida": "associacao",
+      "pr_ordens": [
+        "NEOSSOLO",
+        "CHERNOSSOLO",
+        "NITOSSOLO"
+      ],
+      "br_classe": "Alta",
+      "br_codnum": 4,
+      "c2024_ogc_fid": 104934,
+      "c2024_cod_um": "SG22NVef7NV",
+      "c2024_legenda": "NVef - Nitossolo Vermelho Eutroférrico",
+      "c2024_legendas_c": [
+        "D NITOSSOLO VERMELHO Eutroférrico típico muito argilosa A moderado não álico pedregosa e não pedregosa forte ondulado e ondulado não assoreada",
+        "S NEOSSOLO LITÓLICO Chernossólico fragmentário e típico média cascalhenta e média A chernozêmico não álico pedregosa forte ondulado e ondulado não assoreada efusiva básica",
+        "S NEOSSOLO LITÓLICO Eutrófico fragmentário e típico média cascalhenta e média A moderado não álico pedregosa forte ondulado e ondulado não assor básica",
+        "S CHERNOSSOLO ARGILÚVICO Férrico saprolítico média/argilosa e argilosa A chernozêmico pedregosa forte ondulado e ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "NITOSSOLO",
+        "NEOSSOLO",
+        "NEOSSOLO",
+        "CHERNOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Baixa",
+        "Alta",
+        "Muito alta",
+        "Alta"
+      ],
+      "c2024_erod_um": "Média",
+      "c2024_fator_k_um": "0.0285",
+      "c2024_k_solos": 0.0285,
+      "corresponde_estrito": false,
+      "corresponde_dominante": false
+    },
+    {
+      "id": "R03_Palotina_Rural_Leste",
+      "lat": -24.286,
+      "lng": -53.75,
+      "categoria": "rural",
+      "n_features_retornadas": 4,
+      "pr_sbcs": "NVef2",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "NITOSSOLO"
+      ],
+      "br_classe": "Muito baixa",
+      "br_codnum": 1,
+      "c2024_ogc_fid": 104554,
+      "c2024_cod_um": "SG22LVef1LV",
+      "c2024_legenda": "LVef - Latossolo Vermelho Eutroférrico",
+      "c2024_legendas_c": [
+        "D LATOSSOLO VERMELHO Eutroférrico típico muito argilosa A moderado mesoeutrófico suave ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "LATOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Muito baixa"
+      ],
+      "c2024_erod_um": "Muito baixa",
+      "c2024_fator_k_um": "0.0020",
+      "c2024_k_solos": 0.002,
+      "corresponde_estrito": false,
+      "corresponde_dominante": false
+    },
+    {
+      "id": "R04_AssisChateaubriand_Sul",
+      "lat": -24.42,
+      "lng": -53.82,
+      "categoria": "rural",
+      "n_features_retornadas": 4,
+      "pr_sbcs": "NVef2",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "NITOSSOLO"
+      ],
+      "br_classe": "Muito baixa",
+      "br_codnum": 1,
+      "c2024_ogc_fid": 104554,
+      "c2024_cod_um": "SG22LVef1LV",
+      "c2024_legenda": "LVef - Latossolo Vermelho Eutroférrico",
+      "c2024_legendas_c": [
+        "D LATOSSOLO VERMELHO Eutroférrico típico muito argilosa A moderado mesoeutrófico suave ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "LATOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Muito baixa"
+      ],
+      "c2024_erod_um": "Muito baixa",
+      "c2024_fator_k_um": "0.0020",
+      "c2024_k_solos": 0.002,
+      "corresponde_estrito": false,
+      "corresponde_dominante": false
+    },
+    {
+      "id": "R05_MarechalCandidoRondon_Rural_Leste",
+      "lat": -24.53,
+      "lng": -53.98,
+      "categoria": "rural",
+      "n_features_retornadas": 3,
+      "pr_sbcs": "LVdf13",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "LATOSSOLO"
+      ],
+      "br_classe": "Muito baixa",
+      "br_codnum": 1,
+      "c2024_ogc_fid": 104439,
+      "c2024_cod_um": "SG22LVdf3LV",
+      "c2024_legenda": "LVdf - Latossolo Vermelho Distroférrico",
+      "c2024_legendas_c": [
+        "D LATOSSOLO VERMELHO Distroférrico típico muito argilosa A moderado mesodistrófico suave ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "LATOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Muito baixa"
+      ],
+      "c2024_erod_um": "Muito baixa",
+      "c2024_fator_k_um": "0.0020",
+      "c2024_k_solos": 0.002,
+      "corresponde_estrito": true,
+      "corresponde_dominante": true
+    },
+    {
+      "id": "R06_TerraRoxa_Rural_Sul",
+      "lat": -24.22,
+      "lng": -54.08,
+      "categoria": "rural",
+      "n_features_retornadas": 3,
+      "pr_sbcs": "LVd13",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "LATOSSOLO"
+      ],
+      "br_classe": "Baixa",
+      "br_codnum": 2,
+      "c2024_ogc_fid": 102059,
+      "c2024_cod_um": "SG21LVe2LV",
+      "c2024_legenda": "LVe - Latossolo Vermelho Eutrófico",
+      "c2024_legendas_c": [
+        "LATOSSOLO VERMELHO Eutrófico típico média e argilosa A moderado suave ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "LATOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Baixa"
+      ],
+      "c2024_erod_um": "Baixa",
+      "c2024_fator_k_um": "0.0120",
+      "c2024_k_solos": 0.012,
+      "corresponde_estrito": true,
+      "corresponde_dominante": true
+    },
+    {
+      "id": "R07_Guaira_Rural_Sudeste",
+      "lat": -24.18,
+      "lng": -54.18,
+      "categoria": "rural",
+      "n_features_retornadas": 4,
+      "pr_sbcs": "LVe2",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "LATOSSOLO"
+      ],
+      "br_classe": "Baixa",
+      "br_codnum": 2,
+      "c2024_ogc_fid": 102059,
+      "c2024_cod_um": "SG21LVe2LV",
+      "c2024_legenda": "LVe - Latossolo Vermelho Eutrófico",
+      "c2024_legendas_c": [
+        "LATOSSOLO VERMELHO Eutrófico típico média e argilosa A moderado suave ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "LATOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Baixa"
+      ],
+      "c2024_erod_um": "Baixa",
+      "c2024_fator_k_um": "0.0120",
+      "c2024_k_solos": 0.012,
+      "corresponde_estrito": true,
+      "corresponde_dominante": true
+    },
+    {
+      "id": "R08_NovaSantaRosa_Rural_Norte",
+      "lat": -24.43,
+      "lng": -53.92,
+      "categoria": "rural",
+      "n_features_retornadas": 3,
+      "pr_sbcs": "NVef2",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "NITOSSOLO"
+      ],
+      "br_classe": "Baixa",
+      "br_codnum": 2,
+      "c2024_ogc_fid": 104796,
+      "c2024_cod_um": "SG22NVef2NV",
+      "c2024_legenda": "NVef - Nitossolo Vermelho Eutroférrico",
+      "c2024_legendas_c": [
+        "D NITOSSOLO VERMELHO Eutroférrico típico muito argilosa A moderado mesoeutrófico ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "NITOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Baixa"
+      ],
+      "c2024_erod_um": "Baixa",
+      "c2024_fator_k_um": "0.0120",
+      "c2024_k_solos": 0.012,
+      "corresponde_estrito": true,
+      "corresponde_dominante": true
+    },
+    {
+      "id": "R09_QuatroPontes_Rural_Sul",
+      "lat": -24.61,
+      "lng": -53.96,
+      "categoria": "rural",
+      "n_features_retornadas": 3,
+      "pr_sbcs": "LVdf13",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "LATOSSOLO"
+      ],
+      "br_classe": "Muito baixa",
+      "br_codnum": 1,
+      "c2024_ogc_fid": 104439,
+      "c2024_cod_um": "SG22LVdf3LV",
+      "c2024_legenda": "LVdf - Latossolo Vermelho Distroférrico",
+      "c2024_legendas_c": [
+        "D LATOSSOLO VERMELHO Distroférrico típico muito argilosa A moderado mesodistrófico suave ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "LATOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Muito baixa"
+      ],
+      "c2024_erod_um": "Muito baixa",
+      "c2024_fator_k_um": "0.0020",
+      "c2024_k_solos": 0.002,
+      "corresponde_estrito": true,
+      "corresponde_dominante": true
+    },
+    {
+      "id": "R10_Mercedes_Rural_Leste",
+      "lat": -24.45,
+      "lng": -54.1,
+      "categoria": "rural",
+      "n_features_retornadas": 3,
+      "pr_sbcs": "NVef2",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "NITOSSOLO"
+      ],
+      "br_classe": "Alta",
+      "br_codnum": 4,
+      "c2024_ogc_fid": 102181,
+      "c2024_cod_um": "SG21NVef5NV",
+      "c2024_legenda": "NVef - Nitossolo Vermelho Eutroférrico",
+      "c2024_legendas_c": [
+        "D NITOSSOLO VERMELHO Eutroférrico típico muito argilosa A moderado não álico pedregosa e não pedregosa forte ondulado e ondulado não assoreada",
+        "S NEOSSOLO LITÓLICO Chernossólico fragmentário e típico média cascalhenta e média A chernozêmico não álico pedregosa forte ondulado e ondulado não assoreada efusiva básica",
+        "S NEOSSOLO LITÓLICO Eutrófico fragmentário e típico média cascalhenta e média A moderado não álico pedregosa forte ondulado e ondulado não assor básica",
+        "S CHERNOSSOLO ARGILÚVICO Férrico saprolítico média/argilosa e argilosa A chernozêmico pedregosa forte ondulado e ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "NITOSSOLO",
+        "NEOSSOLO",
+        "NEOSSOLO",
+        "CHERNOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Baixa",
+        "Alta",
+        "Muito alta",
+        "Alta"
+      ],
+      "c2024_erod_um": "Média",
+      "c2024_fator_k_um": "0.0285",
+      "c2024_k_solos": 0.0285,
+      "corresponde_estrito": false,
+      "corresponde_dominante": true
+    },
+    {
+      "id": "R11_PatoBragado_Rural_Leste",
+      "lat": -24.63,
+      "lng": -54.17,
+      "categoria": "rural",
+      "n_features_retornadas": 6,
+      "pr_sbcs": "LVef1",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "LATOSSOLO"
+      ],
+      "br_classe": "Baixa",
+      "br_codnum": 2,
+      "c2024_ogc_fid": 102088,
+      "c2024_cod_um": "SG21LVef1LV",
+      "c2024_legenda": "LVef - Latossolo Vermelho Eutroférrico",
+      "c2024_legendas_c": [
+        "D LATOSSOLO VERMELHO Eutroférrico típico muito argilosa A moderado mesoeutrófico suave ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "LATOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Muito baixa"
+      ],
+      "c2024_erod_um": "Muito baixa",
+      "c2024_fator_k_um": "0.0020",
+      "c2024_k_solos": 0.002,
+      "corresponde_estrito": true,
+      "corresponde_dominante": true
+    },
+    {
+      "id": "R12_EntreRiosDoOeste_Rural_Leste",
+      "lat": -24.7,
+      "lng": -54.18,
+      "categoria": "rural",
+      "n_features_retornadas": 3,
+      "pr_sbcs": "NVef2",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "NITOSSOLO"
+      ],
+      "br_classe": "Baixa",
+      "br_codnum": 2,
+      "c2024_ogc_fid": 102154,
+      "c2024_cod_um": "SG21NVef1NV",
+      "c2024_legenda": "NVef - Nitossolo Vermelho Eutroférrico",
+      "c2024_legendas_c": [
+        "D NITOSSOLO VERMELHO Eutroférrico típico muito argilosa A moderado mesoeutrófico ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "NITOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Baixa"
+      ],
+      "c2024_erod_um": "Baixa",
+      "c2024_fator_k_um": "0.0120",
+      "c2024_k_solos": 0.012,
+      "corresponde_estrito": true,
+      "corresponde_dominante": true
+    },
+    {
+      "id": "R13_SantaHelena_Rural_Leste",
+      "lat": -24.88,
+      "lng": -54.26,
+      "categoria": "rural",
+      "n_features_retornadas": 4,
+      "pr_sbcs": "agua",
+      "pr_tipo_unida": null,
+      "pr_ordens": [],
+      "br_classe": "Baixa",
+      "br_codnum": 2,
+      "c2024_ogc_fid": 102154,
+      "c2024_cod_um": "SG21NVef1NV",
+      "c2024_legenda": "NVef - Nitossolo Vermelho Eutroférrico",
+      "c2024_legendas_c": [
+        "D NITOSSOLO VERMELHO Eutroférrico típico muito argilosa A moderado mesoeutrófico ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "NITOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Baixa"
+      ],
+      "c2024_erod_um": "Baixa",
+      "c2024_fator_k_um": "0.0120",
+      "c2024_k_solos": 0.012,
+      "corresponde_estrito": false,
+      "corresponde_dominante": false
+    },
+    {
+      "id": "R14_Missal_Rural_Leste",
+      "lat": -25.09,
+      "lng": -54.19,
+      "categoria": "rural",
+      "n_features_retornadas": 3,
+      "pr_sbcs": "LVef2",
+      "pr_tipo_unida": "associacao",
+      "pr_ordens": [
+        "LATOSSOLO",
+        "NITOSSOLO"
+      ],
+      "br_classe": "Baixa",
+      "br_codnum": 2,
+      "c2024_ogc_fid": 102177,
+      "c2024_cod_um": "SG21NVef3NV",
+      "c2024_legenda": "NVef - Nitossolo Vermelho Eutroférrico",
+      "c2024_legendas_c": [
+        "D NITOSSOLO VERMELHO Eutroférrico típico argilosa A moderado mesoeutrófico rochosa ondulado",
+        "S LATOSSOLO VERMELHO Eutroférrico típico argilosa A moderado mesoeutrófico suave ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "NITOSSOLO",
+        "LATOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Baixa",
+        "Muito baixa"
+      ],
+      "c2024_erod_um": "Baixa",
+      "c2024_fator_k_um": "0.0096",
+      "c2024_k_solos": 0.0096,
+      "corresponde_estrito": false,
+      "corresponde_dominante": false
+    },
+    {
+      "id": "R15_Itaipulandia_Rural_Norte",
+      "lat": -25.1,
+      "lng": -54.42,
+      "categoria": "rural",
+      "n_features_retornadas": 6,
+      "pr_sbcs": "LVef3",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "LATOSSOLO"
+      ],
+      "br_classe": "Muito baixa",
+      "br_codnum": 1,
+      "c2024_ogc_fid": 102016,
+      "c2024_cod_um": "SG21LVdf1LV",
+      "c2024_legenda": "LVdf - Latossolo Vermelho Distroférrico",
+      "c2024_legendas_c": [
+        "D LATOSSOLO VERMELHO Distroférrico típico muito argilosa A moderado mesodistrófico suave ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "LATOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Muito baixa"
+      ],
+      "c2024_erod_um": "Muito baixa",
+      "c2024_fator_k_um": "0.0020",
+      "c2024_k_solos": 0.002,
+      "corresponde_estrito": true,
+      "corresponde_dominante": true
+    },
+    {
+      "id": "R16_SaoMiguelDoIguacu_Rural_Norte",
+      "lat": -25.28,
+      "lng": -54.22,
+      "categoria": "rural",
+      "n_features_retornadas": 3,
+      "pr_sbcs": "NVef8",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "NITOSSOLO"
+      ],
+      "br_classe": "Alta",
+      "br_codnum": 4,
+      "c2024_ogc_fid": 102185,
+      "c2024_cod_um": "SG21NVef5NV",
+      "c2024_legenda": "NVef - Nitossolo Vermelho Eutroférrico",
+      "c2024_legendas_c": [
+        "D NITOSSOLO VERMELHO Eutroférrico típico muito argilosa A moderado não álico pedregosa e não pedregosa forte ondulado e ondulado não assoreada",
+        "S NEOSSOLO LITÓLICO Chernossólico fragmentário e típico média cascalhenta e média A chernozêmico não álico pedregosa forte ondulado e ondulado não assoreada efusiva básica",
+        "S NEOSSOLO LITÓLICO Eutrófico fragmentário e típico média cascalhenta e média A moderado não álico pedregosa forte ondulado e ondulado não assor básica",
+        "S CHERNOSSOLO ARGILÚVICO Férrico saprolítico média/argilosa e argilosa A chernozêmico pedregosa forte ondulado e ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "NITOSSOLO",
+        "NEOSSOLO",
+        "NEOSSOLO",
+        "CHERNOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Baixa",
+        "Alta",
+        "Muito alta",
+        "Alta"
+      ],
+      "c2024_erod_um": "Média",
+      "c2024_fator_k_um": "0.0285",
+      "c2024_k_solos": 0.0285,
+      "corresponde_estrito": false,
+      "corresponde_dominante": true
+    },
+    {
+      "id": "R17_Medianeira_Rural_Norte",
+      "lat": -25.22,
+      "lng": -54.08,
+      "categoria": "rural",
+      "n_features_retornadas": 5,
+      "pr_sbcs": "NVdf3",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "NITOSSOLO"
+      ],
+      "br_classe": "Baixa",
+      "br_codnum": 2,
+      "c2024_ogc_fid": 102103,
+      "c2024_cod_um": "SG21LVef1LV",
+      "c2024_legenda": "LVef - Latossolo Vermelho Eutroférrico",
+      "c2024_legendas_c": [
+        "D LATOSSOLO VERMELHO Eutroférrico típico muito argilosa A moderado mesoeutrófico suave ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "LATOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Muito baixa"
+      ],
+      "c2024_erod_um": "Muito baixa",
+      "c2024_fator_k_um": "0.0020",
+      "c2024_k_solos": 0.002,
+      "corresponde_estrito": false,
+      "corresponde_dominante": false
+    },
+    {
+      "id": "R18_CeuAzul_Rural_Sul",
+      "lat": -25.19,
+      "lng": -53.84,
+      "categoria": "rural",
+      "n_features_retornadas": 4,
+      "pr_sbcs": "RRe12",
+      "pr_tipo_unida": "associacao",
+      "pr_ordens": [
+        "NEOSSOLO",
+        "CHERNOSSOLO",
+        "NITOSSOLO"
+      ],
+      "br_classe": "Muito baixa",
+      "br_codnum": 1,
+      "c2024_ogc_fid": 104539,
+      "c2024_cod_um": "SG22LVef1LV",
+      "c2024_legenda": "LVef - Latossolo Vermelho Eutroférrico",
+      "c2024_legendas_c": [
+        "D LATOSSOLO VERMELHO Eutroférrico típico muito argilosa A moderado mesoeutrófico suave ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "LATOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Muito baixa"
+      ],
+      "c2024_erod_um": "Muito baixa",
+      "c2024_fator_k_um": "0.0020",
+      "c2024_k_solos": 0.002,
+      "corresponde_estrito": false,
+      "corresponde_dominante": false
+    },
+    {
+      "id": "R19_Matelandia_Rural_Norte",
+      "lat": -25.18,
+      "lng": -53.98,
+      "categoria": "rural",
+      "n_features_retornadas": 3,
+      "pr_sbcs": "NVef2",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "NITOSSOLO"
+      ],
+      "br_classe": "Alta",
+      "br_codnum": 4,
+      "c2024_ogc_fid": 105541,
+      "c2024_cod_um": "SG22RLm2RL",
+      "c2024_legenda": "RLm - Neossolo Litólico Chernossólico",
+      "c2024_legendas_c": [
+        "D NEOSSOLO LITÓLICO Chernossólico fragmentário e típico média e argilosa A chernozêmico pedregosa e não pedregosa forte ondulado e montanhoso vulcânica básica",
+        "S CHERNOSSOLO ARGILÚVICO Férrico saprolítico argilosa e muito argilosa A chernozêmico pedregosa forte ondulado e ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "NEOSSOLO",
+        "CHERNOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Alta",
+        "Média"
+      ],
+      "c2024_erod_um": "Alta",
+      "c2024_fator_k_um": "0.0315",
+      "c2024_k_solos": 0.0315,
+      "corresponde_estrito": false,
+      "corresponde_dominante": false
+    },
+    {
+      "id": "R20_SantaTerezinhaItaipu_Rural_Norte",
+      "lat": -25.38,
+      "lng": -54.42,
+      "categoria": "rural",
+      "n_features_retornadas": 3,
+      "pr_sbcs": "LVdf13",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "LATOSSOLO"
+      ],
+      "br_classe": "Muito baixa",
+      "br_codnum": 1,
+      "c2024_ogc_fid": 102018,
+      "c2024_cod_um": "SG21LVdf1LV",
+      "c2024_legenda": "LVdf - Latossolo Vermelho Distroférrico",
+      "c2024_legendas_c": [
+        "D LATOSSOLO VERMELHO Distroférrico típico muito argilosa A moderado mesodistrófico suave ondulado"
+      ],
+      "c2024_ordens_extraidas": [
+        "LATOSSOLO"
+      ],
+      "c2024_erods_c": [
+        "Muito baixa"
+      ],
+      "c2024_erod_um": "Muito baixa",
+      "c2024_fator_k_um": "0.0020",
+      "c2024_k_solos": 0.002,
+      "corresponde_estrito": true,
+      "corresponde_dominante": true
+    },
+    {
+      "id": "C01_Palotina_Urbano",
+      "lat": -24.286,
+      "lng": -53.84,
+      "categoria": "controle_urbano",
+      "n_features_retornadas": 3,
+      "pr_sbcs": "Area Urbana",
+      "pr_tipo_unida": null,
+      "pr_ordens": [],
+      "br_classe": "Area urbana",
+      "br_codnum": 0,
+      "c2024_ogc_fid": 102397,
+      "c2024_cod_um": "SG22Ár",
+      "c2024_legenda": "Área urbana",
+      "c2024_legendas_c": [],
+      "c2024_ordens_extraidas": [],
+      "c2024_erods_c": [
+        "Área urbana"
+      ],
+      "c2024_erod_um": "Área urbana",
+      "c2024_fator_k_um": "Área urbana",
+      "c2024_k_solos": 0,
+      "corresponde_estrito": false,
+      "corresponde_dominante": false
+    },
+    {
+      "id": "C02_SantaHelena_CorpoDagua",
+      "lat": -24.8531,
+      "lng": -54.3622,
+      "categoria": "controle_agua",
+      "n_features_retornadas": 6,
+      "pr_sbcs": "LVef1",
+      "pr_tipo_unida": "simples",
+      "pr_ordens": [
+        "LATOSSOLO"
+      ],
+      "br_classe": "Corpos dagua",
+      "br_codnum": 9,
+      "c2024_ogc_fid": 101964,
+      "c2024_cod_um": "SG21Co",
+      "c2024_legenda": "Corpos d`água continental",
+      "c2024_legendas_c": [],
+      "c2024_ordens_extraidas": [],
+      "c2024_erods_c": [
+        "Corpo d'água"
+      ],
+      "c2024_erod_um": "Corpo d'água",
+      "c2024_fator_k_um": "Corpo d'água",
+      "c2024_k_solos": 0,
+      "corresponde_estrito": false,
+      "corresponde_dominante": false
+    }
+  ]
+}

@@ -533,6 +533,9 @@ export function gerarJsonDatasheetMetadados(
       RUSLE_Fator_K: { descricao: "Erodibilidade do solo conforme Tabela 5 da Embrapa Solos (Documentos 246/2024, PDF p. 14 / Doc. p. 13)", faixaValida: "[0.0020, 0.1100]", unidade: "t*h*MJ^-1*mm^-1", fonte: "Embrapa Solos GeoServer / Documentos 246 (2024)" },
       RUSLE_Fator_R: { descricao: "Erosividade da precipitação pluvial", faixaValida: "[3000, 12000]", unidade: "MJ*mm*ha^-1*h^-1*ano^-1", fonte: "CHIRPS / GPM / INMET" },
       kAmbiguoAssociacao: { descricao: "Flag auditável de associação pedológica com componentes em níveis opostos de erodibilidade K (Decisões D08 e D09 — excluído da matriz X)", faixaValida: "{true, false}", unidade: "Booleano", fonte: "Embrapa Solos Documentos 246 (2024)" },
+      correspondenciaCartas2024: { descricao: "Estado de correspondência da sequência de ordens entre parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000 (excluído da matriz X)", faixaValida: "{correspondente, divergente, sem-camada-2024}", unidade: "Categórica", fonte: "Embrapa Solos GeoServer OWS (2020 vs 2024)" },
+      divergenciaEntreCartas2024: { descricao: "Flag booleano indicando divergência de sequência ou de número de componentes entre parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000 (excluído da matriz X)", faixaValida: "{true, false}", unidade: "Booleano", fonte: "Embrapa Solos GeoServer OWS (2020 vs 2024)" },
+      provenienciaK: { descricao: "Proveniência metodológica da classificação do nível de K da unidade (tabelado via erod_c1..erod_c4, heurística de fallback não conferida, divergência entre cartas ou fora do domínio — excluído da matriz X)", faixaValida: "{tabelado, heuristica-fallback-nao-conferida, divergencia-entre-cartas, fora-do-dominio}", unidade: "Categórica", fonte: "Embrapa Solos Documentos 246 (2024)" },
       classeWorldCover2020: { descricao: "Classe de cobertura do solo na época 2020 (Decisão D07 / P05)", faixaValida: "{30, 40}", unidade: "Classe categórica", fonte: "ESA/WorldCover/v100/2020 (10m)" },
       classeWorldCover2021: { descricao: "Classe de cobertura do solo na época 2021 (Decisão D07 / P05)", faixaValida: "{30, 40}", unidade: "Classe categórica", fonte: "ESA/WorldCover/v200/2021 (10m)" },
     },
@@ -546,10 +549,27 @@ export function gerarJsonDatasheetMetadados(
           [30, 40].includes(p.classeWorldCover2020.valor) &&
           [30, 40].includes(p.classeWorldCover2021.valor)
       ).length,
+      frequenciaCorrespondenciaCartas2024: {
+        correspondentes: pontos.filter((p) => p.solo?.correspondenciaCartas2024 === "correspondente").length,
+        divergentes: pontos.filter((p) => p.solo?.correspondenciaCartas2024 === "divergente").length,
+        semCamada2024: pontos.filter(
+          (p) => !p.solo?.correspondenciaCartas2024 || p.solo?.correspondenciaCartas2024 === "sem-camada-2024"
+        ).length,
+        amostraVerificacaoBp3AoVivo20260928: {
+          pontosRuraisConsultados: 20,
+          pontosComSoloEmAmbasAsCartas: 19,
+          correspondenciaEstritaSequenciaCompleta: 10,
+          correspondenciaComponenteDominante: 12,
+          divergenciaEntreCartas: 9,
+          correspondenciaEstritaEmAssociacoes: 0,
+          artefatoBruto: "docs/verificacoes/fontes/wfs_erodibilidade/relatorio_correspondencia_bp3_2026-09-28.json",
+        },
+      },
       provenienciaFontesKAmbiguo: {
         documentoPrimario: "Coelho, M. R.; Lumbreras, J. F.; Amaral, A. J. do; Vasques, G. M.; Mansilla Baca, J. F.; Dart, R. de O. & Pedreira, J. P. das N. C. (2024). Erodibilidade dos solos do Brasil. Rio de Janeiro: Embrapa Solos, Documentos 246, 40 p. (CIP: PDF 38 p.).",
         statusConferenciaPdfDoc246: "conferido (docs/verificacoes/fontes/doc246/extrair_cnps_doc_246_2024.py: Tabela 4 na PDF p. 13, Tabela 5 na PDF p. 14 e prosa nas PDF pp. 18-21)",
-        statusConferenciaCamadaWfs2024: "nao_conferido (geonode:bra_erodibilidade_2024_sirgas2000 e atributos erod_c1..erod_c4 nao consultados em rede; ordens multi-classe na Figura 1 [PDF p. 20] seguem regra operacional nao conferida contra a tabela de atributos 1:250.000, no regime de D13/D15)",
+        statusConferenciaCamadaWfs2024:
+          "conferido_em_rede_com_ressalva_de_escala (geonode:bra_erodibilidade_2024_sirgas2000 consultado ao vivo em docs/verificacoes/fontes/wfs_erodibilidade/ com feature_count=10 e campos ogc_fid..erod_c1..erod_c4 verificados via DescribeFeatureType; correspondencia estrita de sequencia observada em 10/19 [52.6%] pontos rurais da BP3 e 0/3 em associacoes entre parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000; permanecem como regra operacional nao conferida [D13/D15] a heuristica de fallback taxonomico para ordens multi-classe da Figura 1 [PDF p. 20] quando erod_cN estiver ausente e os casos de divergenciaEntreCartas2024=true)",
       },
     },
     referenciasBibliograficasABNT: [

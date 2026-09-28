@@ -27,6 +27,33 @@ export function ehMedido(p?: Proveniencia<unknown> | null): boolean {
   return p?.estado === "medido";
 }
 
+export function tabelado<T>(
+  valor: T,
+  tabela: string,
+  chave: string,
+  decisao?: string
+): Proveniencia<T> {
+  return {
+    estado: "tabelado",
+    valor,
+    tabela,
+    chave,
+    ...(decisao ? { decisao } : {}),
+  };
+}
+
+export function indisponivel<T = never>(
+  causa: CausaIndisponibilidade,
+  motivoOuPartes: string | string[]
+): Proveniencia<T> {
+  const motivo = Array.isArray(motivoOuPartes) ? motivoOuPartes.join(" — ") : motivoOuPartes;
+  return {
+    estado: "indisponivel",
+    causa,
+    motivo,
+  };
+}
+
 export function formatarDescricaoOrigem<T>(p?: Proveniencia<T> | null): string {
   if (!p) return "indisponível — não informado";
   switch (p.estado) {

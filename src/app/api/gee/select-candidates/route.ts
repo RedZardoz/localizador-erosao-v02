@@ -486,6 +486,7 @@ export async function POST(request: NextRequest) {
 
     let descartadosSemTerreno = 0;
     let descartadosSemFrequenciaSoloNu = 0;
+    let descartadosForaDominioSolo = 0;
     let descartadosSemNivelK = 0;
     const tamanhoUniversoAntesDescarte = baseCandidatosEstratificacao.length;
 
@@ -494,6 +495,10 @@ export async function POST(request: NextRequest) {
         const medTerreno = terrenoMap.get(c.id);
         const medSolo = soloMap.get(c.id);
         const medS2 = mapaSentinel2.get(c.id);
+        if (medSolo?.foraDoDominioSolo === true || medSolo?.solo?.foraDoDominioSolo === true) {
+          descartadosForaDominioSolo += 1;
+          return null;
+        }
         const convK = converterErodibilidadeFatorK(medSolo?.erodibilidade?.classe);
         if (!medTerreno || typeof medTerreno.declividadePct !== "number") {
           descartadosSemTerreno += 1;
@@ -523,10 +528,14 @@ export async function POST(request: NextRequest) {
       universoAntesDescarte: tamanhoUniversoAntesDescarte,
       universoEfetivoTercisSE: estratificacaoInput.length,
       totalDescartados:
-        descartadosSemTerreno + descartadosSemFrequenciaSoloNu + descartadosSemNivelK,
+        descartadosSemTerreno +
+        descartadosSemFrequenciaSoloNu +
+        descartadosForaDominioSolo +
+        descartadosSemNivelK,
       porMotivo: {
         semDeclividadeTerreno: descartadosSemTerreno,
         semFrequenciaSoloNuSentinel2: descartadosSemFrequenciaSoloNu,
+        foraDoDominioSoloNaoSolo: descartadosForaDominioSolo,
         semClasseErodibilidadeNivelK: descartadosSemNivelK,
       },
     };
@@ -1015,6 +1024,9 @@ export async function POST(request: NextRequest) {
             confiancaPedologica: soloEmbrapa?.solo?.confianca ?? "indisponivel",
             erodibilidadeClasse: erodibilidadeProveniencia,
             kAmbiguoAssociacao: soloEmbrapa?.solo?.kAmbiguoAssociacao ?? false,
+            correspondenciaCartas2024: soloEmbrapa?.solo?.correspondenciaCartas2024,
+            divergenciaEntreCartas2024: soloEmbrapa?.solo?.divergenciaEntreCartas2024 ?? false,
+            provenienciaK: soloEmbrapa?.solo?.provenienciaK,
           },
           classeWorldCover2020:
             medicaoS2?.classeWorldCover2020 !== null && medicaoS2?.classeWorldCover2020 !== undefined
