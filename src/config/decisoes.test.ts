@@ -12,7 +12,12 @@ describe("Registro de Decisões — Mecanismo e Integridade", () => {
   });
 
   it("Decisões formalizadas na metodologia devem estar decididas e retornar valor válido", () => {
-    const decididas = ["D01", "D02", "D03", "D04", "D06", "D09", "D10", "D11", "D14", "D16"];
+    const decididas = [
+      "D01", "D02", "D03", "D04", "D06", "D09", "D10", "D11", "D14", "D16",
+      // Registradas no desenho revisto de 27/09/2026; listadas aqui para que uma
+      // reversão silenciosa a "pendente" seja detectada pelo teste.
+      "D17", "D18", "D20", "D21", "D22", "D23", "D24", "D26",
+    ];
     for (const id of decididas) {
       const d = DECISOES[id];
       expect(d.estado).toBe("decidida");
