@@ -59,3 +59,49 @@ WMS 1.1.1 GetFeatureInfo, `info_format=application/json`, bbox de meio-lado 0.00
 grade 3x3 no pixel central (x=1,y=1), `feature_count=5` — mesmo padrao de
 `buildGetFeatureInfoUrl` em `src/lib/embrapa/embrapaSoilClient.ts:198`.
 WFS 1.1.0 DescribeFeatureType para os conjuntos de campos.
+
+---
+
+# Verificacao independente do relatorio de fechamento — 28/09/2026
+
+## Confirmado por consulta propria
+
+- Esquema de `bra_erodibilidade_2024_sirgas2000`: exatamente os 20 campos relatados, `erod_c4` existe.
+  Alem de `erod_c1..c4` e `legenda_c1..c4`, a camada traz `erod_um`, **`fator_k_um`** e **`k_solos`**.
+- Ponto de associacao (-25.066904, -53.688038): confere integralmente —
+  PR `sbcs=RRe12`, `tipo_unida=associacao`, ordens `[NEOSSOLO, CHERNOSSOLO, NITOSSOLO]`;
+  camada antiga `classe=Alta`, `codnum=4`;
+  2024 `erod_c1..c4 = [Baixa, Alta, Muito alta, Alta]`, legendas com ordens
+  `[NITOSSOLO, NEOSSOLO, NEOSSOLO, CHERNOSSOLO]`.
+
+## F6 (NOVO) — a selecao da primeira feicao descarta unidade de solo valida
+
+`embrapaSoilClient.ts:788` usa `if (id.startsWith("parana_solos_") && !propsSoloPr)`, isto e,
+toma a PRIMEIRA feicao da camada de solos e ignora as seguintes.
+
+Em (-24.8800, -54.2600) — o ponto `R13` do relatorio — a camada devolve **duas** feicoes:
+
+1. `sbcs = "agua"`, `tipo_unida = null`, `ordem_1 = null`
+2. `sbcs = "NVef2"`, `tipo_unida = "simples"`, `ordem_1 = "NITOSSOLO"`
+
+A primeira vence, o ponto recebe `foraDoDominioSolo = true` e e excluido — e o relatorio
+concluiu que as cartas DIVERGEM ali. Na verdade elas **concordam** em NITOSSOLO quando se
+toma a feicao de solo: a 2024 devolve `cod_um2 = SG21NVef1`, `erod_c1 = Baixa`, legenda
+`D NITOSSOLO VERMELHO Eutroferrico`.
+
+Consequencia amostral: a margem oeste da bacia e o reservatorio de Itaipu, de modo que
+pontos ao longo de toda essa borda podem ser excluidos por caixa de consulta que encosta
+no poligono de agua, ainda que haja unidade de solo mapeada na coordenada. E `R13` deveria
+entrar no denominador da medicao de correspondencia, provavelmente como correspondente,
+deslocando `10/19` para cerca de `11/20`.
+
+## F7 — dois valores de campo relatados errados
+
+| Campo | Relatado | Medido |
+|---|---|---|
+| `cod_um2` (associacao) | `SG22NVef2NV` | `SG22NVef7` |
+| `cod_um2` (R13) | `SG21NVef1NV` | `SG21NVef1` |
+| `erod_um` (associacao) | `Baixa` | `Media` |
+
+O sufixo `NV` aparece anexado sistematicamente em `cod_um2`. Sem consequencia para o nivel
+de K (`Media` e `Baixa` sao ambos Nivel 1), mas errado no registro.
