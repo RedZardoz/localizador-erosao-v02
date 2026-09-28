@@ -49,6 +49,7 @@ export const CAMPOS_PROIBIDOS_MATRIZ_TREINO = [
   "scoreJev",
   "laudoJev",
   "consistenciaFisica",
+  "kAmbiguoAssociacao",
 ] as const;
 
 /**

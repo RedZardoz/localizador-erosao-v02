@@ -23,6 +23,8 @@ import { extrairDataAquisicaoSentinel2 } from "./metadadosColecoes";
 export let ultimoErroGee: string | null = null;
 
 export const LIMIAR_MINIMO_OBSERVACOES_D11 = 6;
+export const WORLDCOVER_V100_ASSET_ID = "ESA/WorldCover/v100/2020";
+export const WORLDCOVER_V200_ASSET_ID = "ESA/WorldCover/v200/2021";
 
 export interface MedicaoTerrenoReal {
   elevacaoMetros: number;
@@ -44,6 +46,8 @@ export interface MedicaoEspectralReal {
   insuficienteD11: boolean;
   adquiridoEm: string | null;
   classeWorldCover?: number | null;
+  classeWorldCover2020?: number | null;
+  classeWorldCover2021?: number | null;
   ehFlorestaOuInelegivel?: boolean;
   fonte: string;
 }
@@ -150,14 +154,211 @@ export async function medirTerrenoCopernicusEmLote(
 }
 
 /**
+ * Constrói o grafo de expressão REST v1 do Google Earth Engine para extração pontual
+ * das bandas de reflectância de superfície Sentinel-2 MSI L2A combinadas com as duas
+ * épocas do ESA WorldCover 10m exigidas pela Decisão D07:
+ * - Época 2020: `ESA/WorldCover/v100/2020` (banda `Map` renomeada para `Map_2020`)
+ * - Época 2021: `ESA/WorldCover/v200/2021` (banda `Map`)
+ */
+export function construirExpressaoGeeSentinel2WorldCover(
+  latitude: number,
+  longitude: number
+): Record<string, unknown> {
+  return {
+    result: "0",
+    values: {
+      "0": {
+        functionInvocationValue: {
+          functionName: "Image.reduceRegion",
+          arguments: {
+            image: { valueReference: "7" },
+            reducer: {
+              functionInvocationValue: {
+                functionName: "Reducer.first",
+                arguments: {},
+              },
+            },
+            geometry: { valueReference: "2" },
+            scale: { constantValue: 10 },
+          },
+        },
+      },
+      "7": {
+        functionInvocationValue: {
+          functionName: "Image.addBands",
+          arguments: {
+            dstImg: { valueReference: "6" },
+            srcImg: { valueReference: "8" },
+          },
+        },
+      },
+      "8": {
+        functionInvocationValue: {
+          functionName: "Image.rename",
+          arguments: {
+            input: {
+              functionInvocationValue: {
+                functionName: "Image.load",
+                arguments: {
+                  id: { constantValue: WORLDCOVER_V100_ASSET_ID },
+                },
+              },
+            },
+            names: { constantValue: ["Map_2020"] },
+          },
+        },
+      },
+      "6": {
+        functionInvocationValue: {
+          functionName: "Image.addBands",
+          arguments: {
+            dstImg: { valueReference: "1" },
+            srcImg: {
+              functionInvocationValue: {
+                functionName: "Image.load",
+                arguments: {
+                  id: { constantValue: WORLDCOVER_V200_ASSET_ID },
+                },
+              },
+            },
+          },
+        },
+      },
+      "1": {
+        functionInvocationValue: {
+          functionName: "ImageCollection.reduce",
+          arguments: {
+            collection: { valueReference: "4" },
+            reducer: {
+              functionInvocationValue: {
+                functionName: "Reducer.combine",
+                arguments: {
+                  reducer1: {
+                    functionInvocationValue: {
+                      functionName: "Reducer.percentile",
+                      arguments: {
+                        percentiles: { constantValue: [15, 50, 85] },
+                      },
+                    },
+                  },
+                  reducer2: {
+                    functionInvocationValue: {
+                      functionName: "Reducer.count",
+                      arguments: {},
+                    },
+                  },
+                  sharedInputs: { constantValue: true },
+                },
+              },
+            },
+          },
+        },
+      },
+      "2": {
+        functionInvocationValue: {
+          functionName: "GeometryConstructors.Point",
+          arguments: {
+            coordinates: { constantValue: [longitude, latitude] },
+          },
+        },
+      },
+      "4": {
+        functionInvocationValue: {
+          functionName: "Collection.map",
+          arguments: {
+            collection: { valueReference: "3" },
+            baseAlgorithm: {
+              functionDefinitionValue: {
+                argumentNames: ["img"],
+                body: "5",
+              },
+            },
+          },
+        },
+      },
+      "5": {
+        functionInvocationValue: {
+          functionName: "Image.select",
+          arguments: {
+            input: { argumentReference: "img" },
+            bandSelectors: { constantValue: ["B2", "B4", "B8", "B11", "B12"] },
+          },
+        },
+      },
+      "3": {
+        functionInvocationValue: {
+          functionName: "Collection.filter",
+          arguments: {
+            collection: {
+              functionInvocationValue: {
+                functionName: "Collection.filter",
+                arguments: {
+                  collection: {
+                    functionInvocationValue: {
+                      functionName: "Collection.filter",
+                      arguments: {
+                        collection: {
+                          functionInvocationValue: {
+                            functionName: "ImageCollection.load",
+                            arguments: {
+                              id: { constantValue: "COPERNICUS/S2_SR_HARMONIZED" },
+                            },
+                          },
+                        },
+                        filter: {
+                          functionInvocationValue: {
+                            functionName: "Filter.dateRangeContains",
+                            arguments: {
+                              leftValue: {
+                                functionInvocationValue: {
+                                  functionName: "DateRange",
+                                  arguments: {
+                                    start: { constantValue: "2023-01-01" },
+                                    end: { constantValue: "2023-12-31" },
+                                  },
+                                },
+                              },
+                              rightField: { constantValue: "system:time_start" },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                  filter: {
+                    functionInvocationValue: {
+                      functionName: "Filter.lessThan",
+                      arguments: {
+                        leftField: { constantValue: "CLOUDY_PIXEL_PERCENTAGE" },
+                        rightValue: { constantValue: 20 },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            filter: {
+              functionInvocationValue: {
+                functionName: "Filter.intersects",
+                arguments: {
+                  leftField: { constantValue: ".geo" },
+                  rightValue: { valueReference: "2" },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+}
+
+/**
  * Consulta pontual às bandas de reflectância de superfície do Sentinel-2 MSI L2A
  * (COPERNICUS/S2_SR_HARMONIZED, cenas com < 20% de nuvens) combinadas com a máscara
- * de uso e cobertura do solo ESA/WorldCover/v200/2021 (banda Map a 10m) via API REST v1
- * do Google Earth Engine (Image.reduceRegion sobre GeometryConstructors.Point).
- *
- * Identifica estritamente se o pixel de 10m cai sobre cobertura florestal/arbórea
- * (ESA WorldCover = 10/20/50/80/90 ou dossel perene com NDVI mínimo >= 0.50),
- * permitindo rejeitar Reserva Legal, Mata Ciliar e Unidades de Conservação (Parâmetro P05).
+ * de concordância multitemporal de uso e cobertura do solo ESA/WorldCover/v100/2020
+ * e ESA/WorldCover/v200/2021 (bandas Map_2020 e Map a 10m) via API REST v1 do Google Earth Engine
+ * (Decisão D07 e Parâmetro P05: elegível se e somente se ambas as épocas pertencerem a [30, 40]).
  */
 export async function medirSentinel2PontoGeeRest(
   latitude: number,
@@ -168,168 +369,7 @@ export async function medirSentinel2PontoGeeRest(
   if (!accessToken || !projectId) return null;
 
   try {
-    const expression = {
-      result: "0",
-      values: {
-        "0": {
-          functionInvocationValue: {
-            functionName: "Image.reduceRegion",
-            arguments: {
-              image: { valueReference: "6" },
-              reducer: {
-                functionInvocationValue: {
-                  functionName: "Reducer.first",
-                  arguments: {},
-                },
-              },
-              geometry: { valueReference: "2" },
-              scale: { constantValue: 10 },
-            },
-          },
-        },
-        "6": {
-          functionInvocationValue: {
-            functionName: "Image.addBands",
-            arguments: {
-              dstImg: { valueReference: "1" },
-              srcImg: {
-                functionInvocationValue: {
-                  functionName: "Image.load",
-                  arguments: {
-                    id: { constantValue: "ESA/WorldCover/v200/2021" },
-                  },
-                },
-              },
-            },
-          },
-        },
-        "1": {
-          functionInvocationValue: {
-            functionName: "ImageCollection.reduce",
-            arguments: {
-              collection: { valueReference: "4" },
-              reducer: {
-                functionInvocationValue: {
-                  functionName: "Reducer.combine",
-                  arguments: {
-                    reducer1: {
-                      functionInvocationValue: {
-                        functionName: "Reducer.percentile",
-                        arguments: {
-                          percentiles: { constantValue: [15, 50, 85] },
-                        },
-                      },
-                    },
-                    reducer2: {
-                      functionInvocationValue: {
-                        functionName: "Reducer.count",
-                        arguments: {},
-                      },
-                    },
-                    sharedInputs: { constantValue: true },
-                  },
-                },
-              },
-            },
-          },
-        },
-        "2": {
-          functionInvocationValue: {
-            functionName: "GeometryConstructors.Point",
-            arguments: {
-              coordinates: { constantValue: [longitude, latitude] },
-            },
-          },
-        },
-        "4": {
-          functionInvocationValue: {
-            functionName: "Collection.map",
-            arguments: {
-              collection: { valueReference: "3" },
-              baseAlgorithm: {
-                functionDefinitionValue: {
-                  argumentNames: ["img"],
-                  body: "5",
-                },
-              },
-            },
-          },
-        },
-        "5": {
-          functionInvocationValue: {
-            functionName: "Image.select",
-            arguments: {
-              input: { argumentReference: "img" },
-              bandSelectors: { constantValue: ["B2", "B4", "B8", "B11", "B12"] },
-            },
-          },
-        },
-        "3": {
-          functionInvocationValue: {
-            functionName: "Collection.filter",
-            arguments: {
-              collection: {
-                functionInvocationValue: {
-                  functionName: "Collection.filter",
-                  arguments: {
-                    collection: {
-                      functionInvocationValue: {
-                        functionName: "Collection.filter",
-                        arguments: {
-                          collection: {
-                            functionInvocationValue: {
-                              functionName: "ImageCollection.load",
-                              arguments: {
-                                id: { constantValue: "COPERNICUS/S2_SR_HARMONIZED" },
-                              },
-                            },
-                          },
-                          filter: {
-                            functionInvocationValue: {
-                              functionName: "Filter.dateRangeContains",
-                              arguments: {
-                                leftValue: {
-                                  functionInvocationValue: {
-                                    functionName: "DateRange",
-                                    arguments: {
-                                      start: { constantValue: "2023-01-01" },
-                                      end: { constantValue: "2023-12-31" },
-                                    },
-                                  },
-                                },
-                                rightField: { constantValue: "system:time_start" },
-                              },
-                            },
-                          },
-                        },
-                      },
-                    },
-                    filter: {
-                      functionInvocationValue: {
-                        functionName: "Filter.lessThan",
-                        arguments: {
-                          leftField: { constantValue: "CLOUDY_PIXEL_PERCENTAGE" },
-                          rightValue: { constantValue: 20 },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              filter: {
-                functionInvocationValue: {
-                  functionName: "Filter.intersects",
-                  arguments: {
-                    leftField: { constantValue: ".geo" },
-                    rightValue: { valueReference: "2" },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    };
+    const expression = construirExpressaoGeeSentinel2WorldCover(latitude, longitude);
 
     const endpoint = `https://earthengine.googleapis.com/v1/projects/${encodeURIComponent(
       projectId
@@ -370,10 +410,19 @@ export function processarRespostaGeeSentinel2(
 ): MedicaoEspectralReal | null {
   if (!props || typeof props !== "object") return null;
 
-  const classeWorldCover =
-    typeof props.Map === "number" && Number.isFinite(props.Map)
-      ? Math.round(props.Map)
+  const raw2021 = props.Map_2021 ?? props.Map;
+  const classeWorldCover2021 =
+    typeof raw2021 === "number" && Number.isFinite(raw2021)
+      ? Math.round(raw2021)
       : null;
+
+  const raw2020 = props.Map_2020 ?? props.Map_1;
+  const classeWorldCover2020 =
+    typeof raw2020 === "number" && Number.isFinite(raw2020)
+      ? Math.round(raw2020)
+      : null;
+
+  const classeWorldCover = classeWorldCover2021;
 
   const nObservacoesValidas =
     typeof (props.B4_count ?? props.B2_count ?? props.nObservacoesValidas) === "number"
@@ -438,8 +487,13 @@ export function processarRespostaGeeSentinel2(
   const ndviMed = calcularNdvi(b8_50, b4_50)!;
   const bsiMed = calcularBsi(b11_50, b4_50, b8_50, b2_50)!;
 
+  // Decisão D07 e Parâmetro P05: uma célula é elegível pela cobertura se e somente se
+  // AMBAS as épocas (2020 v100 e 2021 v200) estiverem presentes e pertencerem a [30, 40].
   const inelegivelWorldCover =
-    classeWorldCover !== null && !isClasseUsoElegivel(classeWorldCover);
+    classeWorldCover2020 === null ||
+    classeWorldCover2021 === null ||
+    !isClasseUsoElegivel(classeWorldCover2020) ||
+    !isClasseUsoElegivel(classeWorldCover2021);
   const dosselFlorestalPerene =
     ndviExposicao !== null &&
     ndviExposicao >= 0.50 &&
@@ -518,8 +572,10 @@ export function processarRespostaGeeSentinel2(
     insuficienteD11: !avaliacaoD11.suficiente,
     adquiridoEm,
     classeWorldCover,
+    classeWorldCover2020,
+    classeWorldCover2021,
     ehFlorestaOuInelegivel,
-    fonte: "Sentinel-2 MSI L2A + ESA WorldCover 10m (GEE REST v1)",
+    fonte: "Sentinel-2 MSI L2A + ESA WorldCover v100 (2020) & v200 (2021) 10m (GEE REST v1)",
   };
 }
 

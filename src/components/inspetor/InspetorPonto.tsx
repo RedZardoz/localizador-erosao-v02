@@ -219,6 +219,17 @@ export function InspetorPonto() {
               ressalvaAssociacao={soloAssociacao}
             />
           </div>
+          {(ponto.solo?.kAmbiguoAssociacao || ponto.kAmbiguoAssociacao) && (
+            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-[11px] text-amber-900 flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+              <span>
+                <b>Ambiguidade de Erodibilidade K em Associação (kAmbiguoAssociacao = true — Decisões D08 e D09):</b>{" "}
+                A unidade de mapeamento pedológico é uma associação cujo componente dominante (ordem_1) e componente(s)
+                subordinado(s) pertencem a níveis opostos de erodibilidade K (K ≤ 0,0285 vs. K ≥ 0,0300).
+                Metadado auditável — proibido na matriz X.
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

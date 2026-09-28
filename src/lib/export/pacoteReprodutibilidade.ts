@@ -490,7 +490,8 @@ export function gerarCsvConfrontoRadiometrico(): string {
  */
 export function gerarJsonDatasheetMetadados(
   totalAmostrasRecebidas: number,
-  totalAmostrasTreinamento: number
+  totalAmostrasTreinamento: number,
+  pontos: PontoAmostral[] = []
 ): string {
   const datasheet = {
     projeto: {
@@ -531,6 +532,20 @@ export function gerarJsonDatasheetMetadados(
       Declividade_pct: { descricao: "Gradiente de inclinação do relevo", faixaValida: "[0.0, 150.0]", unidade: "%", fonte: "Copernicus DEM (30m)" },
       RUSLE_Fator_K: { descricao: "Erodibilidade do solo conforme Tabela 5 da Embrapa Solos (Doc. 246/2024)", faixaValida: "[0.0052, 0.0518]", unidade: "t*h*MJ^-1*mm^-1", fonte: "Embrapa Solos GeoServer" },
       RUSLE_Fator_R: { descricao: "Erosividade da precipitação pluvial", faixaValida: "[3000, 12000]", unidade: "MJ*mm*ha^-1*h^-1*ano^-1", fonte: "CHIRPS / GPM / INMET" },
+      kAmbiguoAssociacao: { descricao: "Flag auditável de associação pedológica com componentes em níveis opostos de erodibilidade K (Decisões D08 e D09 — excluído da matriz X)", faixaValida: "{true, false}", unidade: "Booleano", fonte: "Embrapa Solos Doc. 246/2024" },
+      classeWorldCover2020: { descricao: "Classe de cobertura do solo na época 2020 (Decisão D07 / P05)", faixaValida: "{30, 40}", unidade: "Classe categórica", fonte: "ESA/WorldCover/v100/2020 (10m)" },
+      classeWorldCover2021: { descricao: "Classe de cobertura do solo na época 2021 (Decisão D07 / P05)", faixaValida: "{30, 40}", unidade: "Classe categórica", fonte: "ESA/WorldCover/v200/2021 (10m)" },
+    },
+    auditoriaElegibilidadeEAssociacaoSolo: {
+      totalPontosAnalisados: pontos.length,
+      pontosComKAmbiguoAssociacao: pontos.filter((p) => (p.solo?.kAmbiguoAssociacao ?? p.kAmbiguoAssociacao) === true).length,
+      pontosConcordantesWorldCover2020_2021: pontos.filter(
+        (p) =>
+          p.classeWorldCover2020?.estado === "medido" &&
+          p.classeWorldCover2021?.estado === "medido" &&
+          [30, 40].includes(p.classeWorldCover2020.valor) &&
+          [30, 40].includes(p.classeWorldCover2021.valor)
+      ).length,
     },
     referenciasBibliograficasABNT: [
       "COELHO, M. R. et al. Erodibilidade dos solos do Brasil. Rio de Janeiro: Embrapa Solos, 2024. 38 p. (Documentos / Embrapa Solos, n. 246).",
@@ -782,7 +797,11 @@ export async function gerarConteudoPacoteReprodutibilidade(
   const f1_matrizTreino = gerarCsvMatrizTreinamento(pontos, rotulosConsolidados);
   const f2_validacaoDrone = gerarCsvValidacaoDroneHeldOut();
   const f3_confrontoRad = gerarCsvConfrontoRadiometrico();
-  const f4_datasheet = gerarJsonDatasheetMetadados(pontos.length, resultadoMatriz.totalAmostrasTreino);
+  const f4_datasheet = gerarJsonDatasheetMetadados(
+    pontos.length,
+    resultadoMatriz.totalAmostrasTreino,
+    pontos
+  );
   const f5_scriptPy = gerarScriptPythonAuditoria();
 
   // 3. Cálculo dos Hashes SHA-256

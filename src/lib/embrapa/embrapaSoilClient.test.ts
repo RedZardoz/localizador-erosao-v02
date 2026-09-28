@@ -252,3 +252,58 @@ describe("formatSoilLabel", () => {
     expect(formatSoilLabel(r)).toBe("Consulta pedológica não realizada");
   });
 });
+
+describe("kAmbiguoAssociacao (Decisões D08 e D09)", () => {
+  it("marca kAmbiguoAssociacao === true para associação entre LATOSSOLO (K <= 0,0285) e NEOSSOLO LITÓLICO (K >= 0,0300) e na feição RRe12", () => {
+    const assocLvNeossolo = parseSoilFeature({
+      sbcs: "LVef3",
+      tipo_unida: "associacao",
+      ordem_1: "LATOSSOLO",
+      sub_ordem_: "VERMELHO",
+      grande_gru: "Eutroferrico",
+      sub_grupo_: "tipico",
+      familia_1_: "textura muito argilosa",
+      ordem_2: "NEOSSOLO",
+      sub_ordem1: "LITOLICO",
+      grande_g_1: "Eutrofico",
+      sub_grupo1: "fragmentario",
+      familia_2_: "textura media",
+      legenda: "LVef3 - Associação Latossolo Vermelho + Neossolo Litólico",
+    });
+    expect(assocLvNeossolo).not.toBeNull();
+    expect(assocLvNeossolo!.kAmbiguoAssociacao).toBe(true);
+
+    const assocRRe12 = parseSoilFeature(FEATURE_SOLO_ASSOCIACAO.properties);
+    expect(assocRRe12).not.toBeNull();
+    expect(assocRRe12!.kAmbiguoAssociacao).toBe(true);
+  });
+
+  it("marca kAmbiguoAssociacao === false para associação em que ambos os componentes pertencem a K <= 0,0285 (LATOSSOLO + NITOSSOLO)", () => {
+    const assocMesmoNivel = parseSoilFeature({
+      sbcs: "LVdf1",
+      tipo_unida: "associacao",
+      ordem_1: "LATOSSOLO",
+      sub_ordem_: "VERMELHO",
+      grande_gru: "Distroferrico",
+      sub_grupo_: "tipico",
+      familia_1_: "textura muito argilosa",
+      ordem_2: "NITOSSOLO",
+      sub_ordem1: "VERMELHO",
+      grande_g_1: "Distroferrico",
+      sub_grupo1: "tipico",
+      familia_2_: "textura muito argilosa",
+      legenda: "LVdf1 - Associação Latossolo Vermelho + Nitossolo Vermelho",
+    });
+    expect(assocMesmoNivel).not.toBeNull();
+    expect(assocMesmoNivel!.confianca).toBe("media");
+    expect(assocMesmoNivel!.kAmbiguoAssociacao).toBe(false);
+  });
+
+  it("marca kAmbiguoAssociacao === false para unidade simples (LVe1)", () => {
+    const simples = parseSoilFeature(FEATURE_SOLO_SIMPLES.properties);
+    expect(simples).not.toBeNull();
+    expect(simples!.confianca).toBe("alta");
+    expect(simples!.kAmbiguoAssociacao).toBe(false);
+  });
+});
+

@@ -26,6 +26,13 @@ export const DATA_PUBLICACAO_COPERNICUS_GLO30 = "2023-11-15";
 export const DATA_PUBLICACAO_EMBRAPA_SOLOS_PR = "2020-11-05";
 
 /**
+ * ESA WorldCover 10m 2020 v100 (European Space Agency).
+ * Catálogo Earth Engine: https://developers.google.com/earth-engine/datasets/catalog/ESA_WorldCover_v100
+ * Registro Zenodo (publicado em 20/10/2021): https://doi.org/10.5281/zenodo.5571936
+ */
+export const DATA_PUBLICACAO_ESA_WORLDCOVER_V100 = "2021-10-20";
+
+/**
  * ESA WorldCover 10m 2021 v200 (European Space Agency).
  * Catálogo Earth Engine: https://developers.google.com/earth-engine/datasets/catalog/ESA_WorldCover_v200
  * Registro Zenodo (publicado em 28/10/2022): https://doi.org/10.5281/zenodo.7254221

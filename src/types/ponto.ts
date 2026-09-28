@@ -109,7 +109,14 @@ export interface PontoAmostral {
     tipoUnidade: Proveniencia<string>;        // simples | associacao
     confiancaPedologica: "alta" | "media" | "indisponivel";
     erodibilidadeClasse: Proveniencia<string>; // CATEGORICA
+    kAmbiguoAssociacao?: boolean;             // D08: true quando associacao contem componentes em ambos os niveis de K (D09)
   };
+
+  // Metadados de elegibilidade multitemporal ESA WorldCover (D07: 2020 v100 ∩ 2021 v200 em [30, 40])
+  classeWorldCover2020?: Proveniencia<number>;
+  classeWorldCover2021?: Proveniencia<number>;
+  // Espelho de conveniencia de solo.kAmbiguoAssociacao (D08 — nunca entra na matriz X)
+  kAmbiguoAssociacao?: boolean;
 
   temporal: Partial<Record<"D" | "P", BlocoTemporal>>;  // uma janela por modelo (D04)
 

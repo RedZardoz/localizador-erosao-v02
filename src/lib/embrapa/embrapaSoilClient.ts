@@ -105,6 +105,17 @@ export interface EmbrapaSoilUnit {
    *   a carta não resolve qual dos componentes ocorre nesta coordenada.
    */
   confianca: "alta" | "media";
+  /**
+   * Marcação de ambiguidade do estrato de erodibilidade K (Decisões D08 e D09).
+   * - `true`: unidade do tipo "associacao" na qual o componente dominante (`ordem_1`)
+   *   e ao menos um componente subordinado (`ordem_2`, `ordem_3`) pertencem a níveis
+   *   opostos de estratificação de K em D09 (Nível 1: K <= 0,0285 [classes 1–3] vs.
+   *   Nível 2: K >= 0,0300 [classes 4–5]).
+   * - `false`: unidade simples ou associação em que todos os componentes pertencem
+   *   ao mesmo nível de K de D09.
+   * Nunca entra na matriz X de preditores (protegido em CAMPOS_PROIBIDOS_MATRIZ_TREINO).
+   */
+  kAmbiguoAssociacao: boolean;
 }
 
 /**
@@ -234,6 +245,77 @@ function lerComponente(
 }
 
 /**
+ * Classifica o nível de estrato de erodibilidade K (Decisão D09: 1 = K <= 0,0285 [classes 1–3];
+ * 2 = K >= 0,0300 [classes 4–5]) de um componente taxonômico de solo para fins da marcação
+ * `kAmbiguoAssociacao` (Decisão D08).
+ *
+ * Proveniência da regra (verificada em `CNPS-DOC-246-2024.pdf`, Coelho et al., 2024, pp. 13–15 e 17–19,
+ * e na camada oficial WFS `geonode:bra_erodibilidade_2024_sirgas2000`, atributos `erod_c1..erod_c4`):
+ * 1. Se a feição WFS informar explicitamente `erod_c1..erod_c4`, converte diretamente a classe textual:
+ *    {"Muito baixa", "Baixa", "Média"} -> Nível 1; {"Alta", "Muito alta", "Extremamente alta"} -> Nível 2.
+ * 2. Ordens/subordens expressamente declaradas no texto do Documentos 246 (pp. 17–19 / PDF pp. 18–20)
+ *    e verificadas em `bra_erodibilidade_2024_sirgas2000`:
+ *    - Nível 1 (K <= 0,0285): `LATOSSOLO` (exceto fase erodida), `PLINTOSSOLO PETRICO`, `NITOSSOLO`.
+ *    - Nível 2 (K >= 0,0300): `CHERNOSSOLO`, `PLANOSSOLO`, `LUVISSOLO`, `VERTISSOLO`, `ESPODOSSOLO`,
+ *      `NEOSSOLO` (`QUARTZARENICO`, `REGOLITICO`, `LITOLICO`, `FLUVICO`).
+ * 3. Para ordens cuja distribuição na Figura 1 (p. 19) abrange múltiplas classes conforme atributos de família/fase
+ *    (`ARGISSOLO`, `CAMBISSOLO`, `GLEISSOLO`, `ORGANOSSOLO`, `PLINTOSSOLO` não-pétrico):
+ *    - `ORGANOSSOLO` e `ARGISSOLO` sem caráter abróptico/arenoso -> Nível 1;
+ *    - `CAMBISSOLO`, `GLEISSOLO`, `PLINTOSSOLO` (`HAPLICO`/`ARGILUVICO`) e `ARGISSOLO` abróptico/arenoso -> Nível 2.
+ */
+export function classificarNivelEstratoKComponente(
+  comp: SoilComponent,
+  erodAtributoExplicito?: string
+): 1 | 2 {
+  if (erodAtributoExplicito) {
+    const norm = erodAtributoExplicito
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+    if (norm === "muito baixa" || norm === "baixa" || norm === "media") return 1;
+    if (norm === "alta" || norm === "muito alta" || norm === "extremamente alta") return 2;
+  }
+
+  const normalizar = (s: string) =>
+    s
+      .trim()
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+  const ordem = normalizar(comp.ordem);
+  const subOrdem = normalizar(comp.subOrdem);
+  const grandeGrupo = normalizar(comp.grandeGrupo);
+  const subGrupo = normalizar(comp.subGrupo);
+  const familiaTexto = normalizar(comp.familia.join(" "));
+
+  if (ordem.includes("LATOSSOLO")) {
+    return familiaTexto.includes("ERODID") ? 2 : 1;
+  }
+  if (ordem.includes("NITOSSOLO")) {
+    return 1;
+  }
+  if (ordem.includes("PLINTOSSOLO")) {
+    return subOrdem.includes("PETRICO") ? 1 : 2;
+  }
+  if (ordem.includes("ORGANOSSOLO")) {
+    return 1;
+  }
+  if (ordem.includes("ARGISSOLO")) {
+    const abrupticoOuArenoso =
+      grandeGrupo.includes("ABRUPTIC") ||
+      subGrupo.includes("ABRUPTIC") ||
+      familiaTexto.includes("ABRUPTIC") ||
+      familiaTexto.includes("ARENOS");
+    return abrupticoOuArenoso ? 2 : 1;
+  }
+
+  // NEOSSOLO, CHERNOSSOLO, PLANOSSOLO, LUVISSOLO, VERTISSOLO, ESPODOSSOLO, CAMBISSOLO, GLEISSOLO
+  return 2;
+}
+
+/**
  * Converte as propriedades brutas da camada de solos na estrutura tipada.
  * Os nomes de atributo seguem o esquema real da camada, verificado em 08/09/2026.
  */
@@ -276,10 +358,36 @@ export function parseSoilFeature(props: Record<string, unknown>): EmbrapaSoilUni
   if (componentes.length === 0) return null;
 
   const tipoUnidade = texto(props["tipo_unida"]);
+  const ehAssociacao =
+    tipoUnidade.toLowerCase() === "associacao" ||
+    tipoUnidade.toLowerCase() === "associação" ||
+    componentes.length > 1;
+
   // A confiança deriva do próprio dado: unidade simples resolve o ponto;
   // associação não resolve qual componente ocorre nesta coordenada.
   const confianca: "alta" | "media" =
     tipoUnidade.toLowerCase() === "simples" && componentes.length === 1 ? "alta" : "media";
+
+  // Decisões D08 e D09: marca kAmbiguoAssociacao = true se e somente se a unidade for associação
+  // e o componente dominante (ordem_1) pertencer a um nível de K de D09 (1 vs. 2) distinto
+  // de qualquer componente subordinado (ordem_2, ordem_3).
+  let kAmbiguoAssociacao = false;
+  if (ehAssociacao && componentes.length > 1) {
+    const erodC1 = texto(props["erod_c1"]);
+    const nivelDominante = classificarNivelEstratoKComponente(componentes[0], erodC1 || undefined);
+    for (let i = 1; i < componentes.length; i++) {
+      const chaveErod = `erod_c${componentes[i].posicao}`;
+      const erodSub = texto(props[chaveErod]);
+      const nivelSubordinado = classificarNivelEstratoKComponente(
+        componentes[i],
+        erodSub || undefined
+      );
+      if (nivelSubordinado !== nivelDominante) {
+        kAmbiguoAssociacao = true;
+        break;
+      }
+    }
+  }
 
   return {
     sbcs: texto(props["sbcs"]),
@@ -288,6 +396,7 @@ export function parseSoilFeature(props: Record<string, unknown>): EmbrapaSoilUni
     componentes,
     areaKm2: numeroOuNulo(props["area_km2"]),
     confianca,
+    kAmbiguoAssociacao,
   };
 }
 

@@ -69,6 +69,8 @@ import {
 import {
   DATA_PUBLICACAO_COPERNICUS_GLO30,
   DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
+  DATA_PUBLICACAO_ESA_WORLDCOVER_V100,
+  DATA_PUBLICACAO_ESA_WORLDCOVER_V200,
   DATA_PUBLICACAO_IBGE_MALHA_MUNICIPAL_2023,
   DATA_PUBLICACAO_IAT_BACIAS_PR,
   extrairDataAquisicaoSentinel2,
@@ -398,7 +400,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Filtra estritamente candidatos com cobertura agrícola comprovada (ESA WorldCover in [30, 40, 60] e dossel não-florestal)
+    // Filtra estritamente candidatos com cobertura agrícola comprovada (ESA WorldCover in [30, 40] nas épocas 2020 e 2021 — D07 / P05 — e dossel não-florestal)
     const poolAgricolaVerificado = poolParaMedicaoReal.filter((c) => {
       const med = mapaSentinel2.get(c.id);
       if (!med) return true;
@@ -1012,7 +1014,37 @@ export async function POST(request: NextRequest) {
                 },
             confiancaPedologica: soloEmbrapa?.solo?.confianca ?? "indisponivel",
             erodibilidadeClasse: erodibilidadeProveniencia,
+            kAmbiguoAssociacao: soloEmbrapa?.solo?.kAmbiguoAssociacao ?? false,
           },
+          classeWorldCover2020:
+            medicaoS2?.classeWorldCover2020 !== null && medicaoS2?.classeWorldCover2020 !== undefined
+              ? {
+                  estado: "medido",
+                  valor: medicaoS2.classeWorldCover2020,
+                  fonte: "ESA/WorldCover/v100/2020 (10m)",
+                  adquiridoEm: DATA_PUBLICACAO_ESA_WORLDCOVER_V100,
+                  consultadoEm: dataConsultaAtual,
+                }
+              : {
+                  estado: "indisponivel",
+                  causa: "nao-calculado",
+                  motivo: "Época 2020 do ESA WorldCover v100 aguarda extração via API REST v1 do GEE (D07).",
+                },
+          classeWorldCover2021:
+            medicaoS2?.classeWorldCover2021 !== null && medicaoS2?.classeWorldCover2021 !== undefined
+              ? {
+                  estado: "medido",
+                  valor: medicaoS2.classeWorldCover2021,
+                  fonte: "ESA/WorldCover/v200/2021 (10m)",
+                  adquiridoEm: DATA_PUBLICACAO_ESA_WORLDCOVER_V200,
+                  consultadoEm: dataConsultaAtual,
+                }
+              : {
+                  estado: "indisponivel",
+                  causa: "nao-calculado",
+                  motivo: "Época 2021 do ESA WorldCover v200 aguarda extração via API REST v1 do GEE (D07).",
+                },
+          kAmbiguoAssociacao: soloEmbrapa?.solo?.kAmbiguoAssociacao ?? false,
           temporal: {
             D: {
               janela: { inicio: "2018-01-01", fim: "2023-12-31" },
