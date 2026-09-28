@@ -3,7 +3,7 @@
 **Sistema de Amostragem e Rotulagem para Erosão Laminar (SAREL)**
 **Programa de Pós-Graduação em Tecnologias Computacionais para o Agronegócio (PPGTCA 2026)**
 **Pesquisador responsável:** Luís Alfredo Ferreira da Silva (`RedZardoz`)
-**Última atualização:** 27 de setembro de 2026
+**Última atualização:** 28 de setembro de 2026
 **Branch documentada:** `sarel/v2`
 
 ---
@@ -70,7 +70,14 @@ Neste commit a linha `Co-Authored-By: Claude Opus 5` **está correta**.
 
 ### 3.4 Demais commits da branch
 
-Dos 115 commits da branch `sarel/v2`, 17 trazem linha de co-autoria (os 16 das §3.1 e §3.2 mais o `772e60c` da §3.3). Os **98 restantes** não trazem qualquer linha de co-autoria e são de autoria do pesquisador, conforme sua declaração de 27/09/2026.
+Dos 115 commits da branch `sarel/v2` anteriores a 28/09/2026, 17 trazem linha de co-autoria (os 16 das §3.1 e §3.2 mais o `772e60c` da §3.3). Os **98 restantes** não trazem qualquer linha de co-autoria e são de autoria do pesquisador, conforme sua declaração de 27/09/2026.
+
+### 3.5 Executados por **Antigravity** (Google DeepMind) com identificação própria (a partir de 28/09/2026)
+
+| # | Commit | Data | Objeto | Agente executor |
+|---|---|---|---|---|
+| 17 | `de9e025` | 2026-09-28 | FASE A0: operacionaliza D07/P05 (concordância interanual WorldCover v100∧v200 em `{30,40}`), D08/D09 (`kAmbiguoAssociacao` para UMs associadas com níveis K distintos, fora da matriz de treino) e D15 (projeção EPSG:31982 com distorção recalculada via `pyproj`, máx. `+0.1237%`) sob correções C1–C5 | Antigravity (Google DeepMind) |
+| 18 | *(este commit)* | 2026-09-28 | FASE A1: implementa o mecanismo determinístico de sorteio estratificado de 36 polígonos de 10 ha (`D16` e `D23` — 18 treino + 18 held-out pareados por estrato `E_i`), CLI com `--dry-run`, rota local e painel no modal de Decisões Metodológicas, sem executar sorteio real | Antigravity (Google DeepMind) |
 
 ---
 
