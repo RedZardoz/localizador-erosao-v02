@@ -97,6 +97,26 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    if (
+      body?.origemSintetica === true ||
+      candidatos.some(
+        (c) =>
+          String(c.id).startsWith("DRY-CAND-") ||
+          c.isSynthetic === true ||
+          c.origemSintetica === true
+      )
+    ) {
+      return NextResponse.json(
+        {
+          ok: false,
+          condicaoFalha: "origem_sintetica_proibida",
+          motivo:
+            "O selo de D23 jamais pode nascer de candidato sintético/fabricado, mesmo com confirmar=true (T4.3).",
+        },
+        { status: 422 }
+      );
+    }
+
     const sha256 = crypto
       .createHash("sha256")
       .update(JSON.stringify(candidatos))

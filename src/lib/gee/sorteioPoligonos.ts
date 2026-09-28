@@ -67,6 +67,7 @@ export interface PoligonoSorteadoD16 {
   estratoId: string;
   papelConjunto: "treino" | "held-out";
   pi_i: number;
+  w_i: number;
   nCandidatosEstrato: number;
   centroide: {
     latitude: number;
@@ -89,6 +90,7 @@ export interface SeloSorteioD16 {
   politicaSemente: string;
   gitCommit: string;
   sha256ConjuntoCandidatos: string;
+  hashIntegridade: string;
   totalCandidatosEntrada: number;
   totalPoligonosSorteados: 36;
   totalTreino: 18;
@@ -376,6 +378,18 @@ export function sortearPoligonosDroneD16(
     throw new Error(`Semente de sorteio inválida (${semente}). Deve ser inteiro positivo registrado (P07).`);
   }
 
+  const possuiCandidatoSintetico = candidatos.some(
+    (c) =>
+      String(c.id).startsWith("DRY-CAND-") ||
+      c.isSynthetic === true ||
+      c.origemSintetica === true
+  );
+  if (possuiCandidatoSintetico) {
+    throw new Error(
+      "Recusa de sorteio D23 (T4.3): o selo de sorteio jamais pode ser gerado a partir de candidatos sintéticos/fabricados (DRY-CAND- / isSynthetic)."
+    );
+  }
+
   // Verifica rigorosamente as 7 pré-condições (lança erro se qualquer uma falhar)
   const relatorioPre = verificarPreCondicoesSorteioD16(candidatos, {
     seloExistenteCaminho,
@@ -411,7 +425,9 @@ export function sortearPoligonosDroneD16(
       : ["held-out", "treino"];
 
     // Probabilidade de inclusão exata em amostragem aleatória simples sem reposição de tamanho 2 no estrato h (D23)
+    // e peso de Horvitz-Thompson w_i = N_h / 2 tal que pi_i * w_i = 1
     const pi_i = Number((2 / nCandidatosEstrato).toFixed(8));
+    const w_i = Number((nCandidatosEstrato / 2).toFixed(8));
 
     for (let idxPar = 0; idxPar < 2; idxPar++) {
       const cand = parSorteado[idxPar];
@@ -425,6 +441,7 @@ export function sortearPoligonosDroneD16(
         estratoId: idEstrato,
         papelConjunto,
         pi_i,
+        w_i,
         nCandidatosEstrato,
         centroide: {
           latitude: cand.latitude,
@@ -442,6 +459,24 @@ export function sortearPoligonosDroneD16(
     }
   }
 
+  // Hash determinístico estável sobre a lista ordenada de polígonos sorteados com seus pi_i e w_i
+  const stringCanonica = poligonos
+    .map(
+      (p) =>
+        `${p.idPoligono}|${p.idCandidatoOrigem}|${p.estratoId}|${p.papelConjunto}|${p.pi_i.toFixed(8)}|${p.w_i.toFixed(8)}`
+    )
+    .join(";");
+  let h1 = 0xdeadbeef ^ semente;
+  let h2 = 0x41c6ce57 ^ semente;
+  for (let i = 0; i < stringCanonica.length; i++) {
+    const ch = stringCanonica.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  const hashIntegridade = `${(h1 >>> 0).toString(16).padStart(8, "0")}${(h2 >>> 0).toString(16).padStart(8, "0")}`;
+
   return {
     versaoEsquema: "1.0.0",
     geradoEm,
@@ -449,6 +484,7 @@ export function sortearPoligonosDroneD16(
     politicaSemente: String(PARAMETROS.P07?.valor ?? "dinamica-registrada"),
     gitCommit,
     sha256ConjuntoCandidatos,
+    hashIntegridade,
     totalCandidatosEntrada: candidatos.length,
     totalPoligonosSorteados: 36,
     totalTreino: 18,

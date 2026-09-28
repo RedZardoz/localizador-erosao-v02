@@ -164,7 +164,7 @@ export function gerarCsvMatrizTreinamento(
   );
   linhasCsv.push(`# CENSO DE PROVENIENCIA (Regra 3) — contagem sobre ${pontosEmitidos.length} pontos emitidos`);
   linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_R", pontosEmitidos, (p) => p.linhaDeBase?.fatorR, "D13"));
-  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_K", pontosEmitidos, (p) => p.linhaDeBase?.fatorK));
+  linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_K", pontosEmitidos, (p) => p.linhaDeBase?.fatorK, "D08/D09"));
   linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_LS", pontosEmitidos, (p) => p.linhaDeBase?.fatorLS, "D15"));
   linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_C", pontosEmitidos, (p) => p.linhaDeBase?.fatorC));
   linhasCsv.push(formatarLinhaCensoProveniencia("RUSLE_Fator_P", pontosEmitidos, (p) => p.linhaDeBase?.fatorP));
@@ -530,9 +530,9 @@ export function gerarJsonDatasheetMetadados(
       NDVI: { descricao: "Índice de Vegetação por Diferença Normalizada", faixaValida: "[-1.0, 1.0]", unidade: "Adimensional", fonte: "Sentinel-2 L2A (GEE)" },
       BSI: { descricao: "Índice de Solo Exposto (Bare Soil Index)", faixaValida: "[-1.0, 1.0]", unidade: "Adimensional", fonte: "Sentinel-2 L2A (GEE)" },
       Declividade_pct: { descricao: "Gradiente de inclinação do relevo", faixaValida: "[0.0, 150.0]", unidade: "%", fonte: "Copernicus DEM (30m)" },
-      RUSLE_Fator_K: { descricao: "Erodibilidade do solo conforme Tabela 5 da Embrapa Solos (Doc. 246/2024)", faixaValida: "[0.0052, 0.0518]", unidade: "t*h*MJ^-1*mm^-1", fonte: "Embrapa Solos GeoServer" },
+      RUSLE_Fator_K: { descricao: "Erodibilidade do solo conforme Tabela 5 da Embrapa Solos (Documentos 246/2024, PDF p. 14 / Doc. p. 13)", faixaValida: "[0.0020, 0.1100]", unidade: "t*h*MJ^-1*mm^-1", fonte: "Embrapa Solos GeoServer / Documentos 246 (2024)" },
       RUSLE_Fator_R: { descricao: "Erosividade da precipitação pluvial", faixaValida: "[3000, 12000]", unidade: "MJ*mm*ha^-1*h^-1*ano^-1", fonte: "CHIRPS / GPM / INMET" },
-      kAmbiguoAssociacao: { descricao: "Flag auditável de associação pedológica com componentes em níveis opostos de erodibilidade K (Decisões D08 e D09 — excluído da matriz X)", faixaValida: "{true, false}", unidade: "Booleano", fonte: "Embrapa Solos Doc. 246/2024" },
+      kAmbiguoAssociacao: { descricao: "Flag auditável de associação pedológica com componentes em níveis opostos de erodibilidade K (Decisões D08 e D09 — excluído da matriz X)", faixaValida: "{true, false}", unidade: "Booleano", fonte: "Embrapa Solos Documentos 246 (2024)" },
       classeWorldCover2020: { descricao: "Classe de cobertura do solo na época 2020 (Decisão D07 / P05)", faixaValida: "{30, 40}", unidade: "Classe categórica", fonte: "ESA/WorldCover/v100/2020 (10m)" },
       classeWorldCover2021: { descricao: "Classe de cobertura do solo na época 2021 (Decisão D07 / P05)", faixaValida: "{30, 40}", unidade: "Classe categórica", fonte: "ESA/WorldCover/v200/2021 (10m)" },
     },
@@ -546,9 +546,14 @@ export function gerarJsonDatasheetMetadados(
           [30, 40].includes(p.classeWorldCover2020.valor) &&
           [30, 40].includes(p.classeWorldCover2021.valor)
       ).length,
+      provenienciaFontesKAmbiguo: {
+        documentoPrimario: "Coelho, M. R.; Lumbreras, J. F.; Amaral, A. J. do; Vasques, G. M.; Mansilla Baca, J. F.; Dart, R. de O. & Pedreira, J. P. das N. C. (2024). Erodibilidade dos solos do Brasil. Rio de Janeiro: Embrapa Solos, Documentos 246, 40 p. (CIP: PDF 38 p.).",
+        statusConferenciaPdfDoc246: "conferido (docs/verificacoes/fontes/doc246/extrair_cnps_doc_246_2024.py: Tabela 4 na PDF p. 13, Tabela 5 na PDF p. 14 e prosa nas PDF pp. 18-21)",
+        statusConferenciaCamadaWfs2024: "nao_conferido (geonode:bra_erodibilidade_2024_sirgas2000 e atributos erod_c1..erod_c4 nao consultados em rede; ordens multi-classe na Figura 1 [PDF p. 20] seguem regra operacional nao conferida contra a tabela de atributos 1:250.000, no regime de D13/D15)",
+      },
     },
     referenciasBibliograficasABNT: [
-      "COELHO, M. R. et al. Erodibilidade dos solos do Brasil. Rio de Janeiro: Embrapa Solos, 2024. 38 p. (Documentos / Embrapa Solos, n. 246).",
+      "COELHO, M. R.; LUMBRERAS, J. F.; AMARAL, A. J. do; VASQUES, G. M.; MANSILLA BACA, J. F.; DART, R. de O.; PEDREIRA, J. P. das N. C. Erodibilidade dos solos do Brasil. Rio de Janeiro: Embrapa Solos, 2024. 40 p. (Documentos / Embrapa Solos, n. 246).",
       "CONGALTON, R. G.; GREEN, K. Assessing the Accuracy of Remotely Sensed Data: Principles and Practices. 3. ed. Boca Raton: CRC Press, 2019. 348 p.",
       "GEBRU, T. et al. Datasheets for datasets. Communications of the ACM, v. 64, n. 12, p. 86–92, 2021.",
       "MARWICK, B. et al. Packaging data analytical work reproducibly using R (and Python) applications. The American Statistician, v. 72, n. 1, p. 80–88, 2018.",

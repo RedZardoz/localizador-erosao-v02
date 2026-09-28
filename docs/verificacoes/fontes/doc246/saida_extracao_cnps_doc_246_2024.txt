@@ -1,0 +1,1429 @@
+========================================================================
+EXTRACAO DIRETA DE CNPS-DOC-246-2024.pdf VIA pypdf.PdfReader
+========================================================================
+Caminho relativo: docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/CNPS-DOC-246-2024.pdf
+Tamanho do arquivo (bytes): 1852923
+Total de paginas do PDF (len(reader.pages)): 40
+PDF Metadata (/Title): Documentos
+PDF Metadata (/Author): None
+
+--- [PDF PAGINA 1 / 40] ---
+Documentos
+ISSN 1517-2627 / e-ISSN 2966-2443
+Rio de Janeiro, RJ / Dezembro, 2024
+246
+Erodibilidade dos solos do Brasil
+
+--- [PDF PAGINA 2 / 40] ---
+Embrapa Solos
+Rio de Janeiro, RJ
+2024
+Empresa Brasileira de Pesquisa Agropecuária
+Embrapa Solos
+Ministério da Agricultura e Pecuária
+Erodibilidade dos solos do Brasil
+Documentos 246
+Maurício Rizzato Coelho
+José Francisco Lumbreras
+André Júlio do Amaral
+Gustavo Mattos Vasques
+Jesus Fernando Mansilla Baca
+Ricardo de Oliveira Dart
+João Pedro das Neves Cardoso Pedreira
+ISSN 1517-2627 / e-ISSN 2966-2443
+Dezembro, 2024
+
+--- [PDF PAGINA 3 / 40] ---
+Embrapa Solos
+Embrapa Solos
+Rua Jardim Botânico, 1024.
+Jardim Botânico
+Rio de Janeiro, RJ 
+22460-000
+www.embrapa.br/solos
+www.embrapa.br/fale-conosco/
+Comitê Local de Publicações
+Presidente
+Ana Paula Dias Turetta
+Secretário-executivo
+Marcos Antônio Nakayama
+Membros
+Bernadete da Conceição Carvalho Gomes Pedreira
+David Vilas Boas de Campos, Evaldo de Paiva Lima, 
+Helga Restum Hissa, José Francisco Lumbreras, 
+Joyce Maria Guimarães Monteiro, Lucia Raquel 
+Queiroz Pereira da Luz, Maurício Rizzato Coelho e 
+Wenceslau Geraldes Teixeira
+Edição executiva
+Marcos Antônio Nakayama
+Revisão de texto
+Marcos Antônio Nakayama
+Normalização bibliográfica
+Luciana Sampaio de Araujo
+Projeto gráfico
+Leandro Sousa Fazio
+Diagramação
+Alexandre Abrantes Cotta de Mello
+Foto da capa
+José Francisco Lumbreras
+Publicação digital: PDF
+Todos os direitos reservados
+A reprodução não autorizada desta publicação, no todo ou em parte,  
+constitui violação dos direitos autorais (Lei nº 9.610).
+Dados Internacionais de Catalogação na Publicação (CIP)
+Embrapa Solos
+Erodibilidade dos solos do Brasil / Maurício Rizzato Coelho ... [et al.]. – Rio de Janeiro 
+: Embrapa Solos, 2024.
+PDF (38 p.) : il. color. – (Documentos / Embrapa Solos, e-ISSN 2966-2443 ; 246).
+1. Erosão do Solo. 2. Erosão Hídrica. I. Coelho, Maurício Rizzato. II. Lumbreras, 
+José Francisco. III. Amaral, André Júlio do. IV. Vasques, Gustavo Mattos. V. Baca, 
+Jesus Fernando Mansilla. VI. Dart, Ricardo de Oliveira. VII. Pedreira, João Pedro das 
+Neves Cardoso. VIII. Série.
+CDD (23. ed.) 631.45
+Luciana Sampaio de Araujo (CRB-7/5165) © 2024 Embrapa
+
+--- [PDF PAGINA 4 / 40] ---
+Autores
+Maurício Rizzato Coelho
+Engenheiro-agrônomo, doutor em Ciência 
+do Solo, pesquisador da Embrapa Solos, 
+Rio de Janeiro, RJ
+José Francisco Lumbreras
+Engenheiro-agrônomo, doutor em 
+Planejamento e Gestão Ambiental, 
+pesquisador da Embrapa Solos, Rio de 
+Janeiro, RJ
+André Júlio do Amaral 
+Engenheiro-agrônomo, doutor em Ciência 
+do Solo, pesquisador da Embrapa Trigo, 
+Passo Fundo, RS
+Gustavo Mattos Vasques 
+Engenheiro florestal, Ph.D. em Solos 
+e Nutrição de Plantas, pesquisador da 
+Embrapa Solos, Rio de Janeiro, RJ
+Jesus Fernando Mansilla Baca
+Engenheiro-cartográfico, doutor em 
+Geografia, pesquisador da Embrapa Solos, 
+Rio de Janeiro, RJ
+Ricardo de Oliveira Dart
+Geógrafo, mestre em Geografia, analista da 
+Embrapa Solos, Rio de Janeiro, RJ
+João Pedro das Neves Cardoso 
+Pedreira
+Bacharel em Ciências Matemáticas e da 
+Terra, bolsista da Embrapa Solos, Rio de 
+Janeiro, RJ
+
+--- [PDF PAGINA 5 / 40] ---
+
+
+--- [PDF PAGINA 12 / 40] ---
+11Erodibilidade dos solos do Brasil
+e o transporte de partículas pela ação da água 
+(Arraes et al., 2010). 
+A avaliação integrada dos atributos dos solos 
+convergiu para classificar cada componente das 
+UM do mapa de solos em seis classes de erodibi -
+lidade (muito baixa, baixa, média, alta, muito alta e 
+extremamente alta), seguindo indicações de Man -
+nigel et al. (2002). Esses autores também relacio -
+naram cada uma das seis classes de erodibilidade 
+a intervalos de valores do fator K, os quais foram 
+utilizados neste trabalho para a obtenção do mapa 
+de erodibilidade dos solos do Brasil, cujas metodo -
+logias são detalhadas a seguir.
+Critérios de seleção do 
+número de componentes a 
+serem avaliados das UM do 
+mapa de solos do Brasil
+Na Tabela 1 é mostrado o quantitativo das UM 
+do mapa de solos do Brasil (IBGE, 2018), conside -
+rando o seu número de componentes. Observa-se 
+que 99,1% das UM têm até quatro componentes.
+A Tabela 2, por sua vez, mostra o percentual 
+de participação aqui estabelecido para cada com -
+ponente na UM. A partir das porcentagens de área 
+estabelecidas para cada componente das UM do 
+mapa de solos do IBGE (Tabela 2), pode-se calcular 
+a área ocupada por cada um dos quatro primeiros 
+componentes das UM, considerando-se que esses 
+ocupam 100% do território nacional (Tabela 3).
+Em vista do exposto, optou-se neste trabalho pela 
+avaliação da erodibilidade do solo até o quarto com-
+ponente, quer devido à sua representatividade numé-
+rica (Tabelas 2 e 3), quer devido à proporção entre os 
+especialista em todas as unidades de mapeamento 
+de solos do mapa de solos do Brasil (IBGE, 2018) 
+até nível de fase taxonômica, à capacidade dos so -
+los em resistir aos processos erosivos lineares.
+Neste contexto, o objetivo deste trabalho foi re -
+alizar o mapeamento semiquantitativo, a partir do 
+qual se elaborou uma aproximação quantitativa da 
+erodibilidade dos solos do Brasil, ou seja, do fator K 
+do modelo de predição da erosão hídrica da USLE.
+Procedimentos 
+metodológicos
+A metodologia baseou-se na interpretação 
+especialista dos solos componentes das UM do 
+mapa de solos do Brasil (IBGE, 2018), publicado 
+na escala 1:250.000, a fim de se obter índices 
+semiquantitativos e, a partir deles, quantitativos 
+da erodibilidade do solo. Para tal, inicialmente 
+avaliou-se de maneira integrada, subjetiva, qua -
+litativa e comparativamente, componente a com -
+ponente, os atributos implícitos (tipo e estabilida -
+de da estrutura, hidromorfismo, permeabilidade, 
+mineralogia, conteúdo de carbono orgânico, pro -
+fundidade efetiva, relação textural,) e explícitos 
+(grupamento textural, mudança textural abrupta, 
+pedregosidade, rochosidade, conteúdo de óxidos 
+de ferro, saturação por alumínio, atividade da ar -
+gila, fase erodida) relacionados às classes de so -
+los da legenda do mapa de solos do Brasil (IBGE, 
+2018) e que influenciam na sua erodibilidade, no -
+tadamente a capacidade dos solos de permitir a 
+infiltração de água e de resistir a desagregação 
+Tabela 1. Quantitativo de unidades de mapeamento de solos (UM) do mapa de solos do Brasil, considerando-se o número 
+de componentes.
+Número de 
+componentes das 
+UM
+Número de UM Número de UM 
+acumuladas % de UM % UM acumuladas
+1 705(1) 705 8,7 8,7
+2 3221 3926 39,6 48,2
+3 3567 7493 43,8 92,0
+4 579 8072 7,1 99,1
+5 44 8116 0,5 99,7
+6 a 10 27 8143 0,3 100
+(1) Esse valor significa que 705 UM têm apenas um componente.
+Fonte: IBGE (2018).
+
+--- [PDF PAGINA 13 / 40] ---
+12 Documentos 246
+componentes, respectivamente, para as UM com 
+três componentes; e d) 40% para o primeiro compo-
+nente e 20% para os outros três componentes, em 
+se tratando de UM com quatro componentes.
+O cálculo do valor numérico (semiquantitativo; adi-
+mensional) da erodibilidade das UM com mais de um 
+componente foi realizado considerando-se uma pon-
+deração entre os valores numéricos das classes de 
+erodibilidade, avaliadas para cada componente da uni-
+dade de mapeamento (6 classes; Tabela 4), pelo seu 
+percentual de ocorrência (Tabela 2). Para as UM com 
+componente único, em número de 705 no mapa de so-
+los do Brasil (Tabela 1), o valor numérico corresponde 
+componentes das UM, aqui considerada a mais ade-
+quada em relação às UM que detêm cinco ou mais 
+componentes. Nestas, não há predominância da par-
+ticipação de seu primeiro componente em relação aos 
+demais (Tabela 2), o que se considerou inadequado 
+para consecução dos objetivos do trabalho. 
+Avaliação semiquantitativa 
+da erodibilidade do solo
+Para cada um dos componentes de solos de to -
+das as 8.143 UM do mapa de solos do Brasil (IBGE, 
+2018), avaliando-os até o quarto componente, atri -
+buiu-se valores de 1 a 6 para representar, de forma 
+semiquantitativa, as seguintes classes de erodibili -
+dade dos solos brasileiros (Mannigel et al., 2002): 
+(1) muito baixa, (2) baixa, (3) média, (4) alta, (5) mui-
+to alta e (6) extremamente alta.
+A fim de se determinar a porcentagem de contri-
+buição de cada componente das UM, procedimen -
+to necessário para o cálculo (semiquantitativo) da 
+erodibilidade de cada unidade de mapeamento do 
+mapa de solos do Brasil, tal como veremos a seguir, 
+estabeleceu-se as seguintes regras: (Tabela 2): a) 
+100% para UM com um componente; b) 60% e 40% 
+para o primeiro e segundo componentes, respec -
+tivamente, para as UM com dois componentes; c) 
+50%, 30% e 20% para o primeiro, segundo e terceiro 
+Tabela 2. Participação percentual dos componentes considerada neste trabalho para cada UM do mapa de solos do 
+Brasil.
+Número de 
+componentes das UM 1º componente 2º componente 3º componente 4º componente 5º componente
+1 100 – – – –
+2 60 40 – – –
+3 50 30 20 – –
+4 40 20 20 20 –
+5 20 20 20 20 20
+Traço (–): informação não aplicável 
+Fonte: IBGE (2018).
+Tabela 3. Área ocupada pelos quatro primeiros componentes das UM do mapa de solos do Brasil, considerando-se a sua 
+participação percentual, conforme preconizado na Tabela 2.
+Número de
+componentes das UM Área total(1) 1º componente(1) 2º componente 3º componente 4º componente
+Área em ha 861.038.052 504.825.056 251.507.350 90.203.477 1.4502.169
+Percentual 100,00% 58,63% 29,21% 10,48% 1,68%
+(1) Área total inclui: corpos d’água, áreas urbanas e, como componente único de UM, dunas, praias e afloramentos de rocha, que juntos perfazem 
+19.511.799 ha.
+Fonte: IBGE ( 2018).
+Tabela 4. Intervalo de valores adimensionais de classes 
+de erodibilidade do solo.
+Avaliação 
+numérica do 
+componente
+Valores
+limiares das 
+UM
+Classe de 
+erodibilidade
+1 ≥ 1,0 a < 1,5 Muito baixa
+2 ≥ 1,5 a < 2,5 Baixa
+3 ≥ 2,5 a < 3,5 Média
+4 ≥ 3,5 a < 4,5 Alta
+5 ≥ 4,5 a < 5,5 Muito alta
+6 ≥ 5,5 a ≤ 6,0 Extremamente alta
+
+--- [PDF PAGINA 14 / 40] ---
+13Erodibilidade dos solos do Brasil
+Classe de 
+erodibilidade
+Valores 
+numéricos 
+ponderados 
+das UM 
+(Adimensional)
+Fator K
+(Mg ha h 
+ha-1 MJ-1 
+mm-1)
+Média 3,3 0,0270
+Média 3,4 0,0285
+Valores limiares ≥ 3,5 a < 4,5(1) ≥ 0,0300 a 
+< 0,0450(2)
+Alta 3,5 0,0300
+Alta 3,6 0,0315
+Alta 3,7 0,0330
+Alta 3,8 0,0345
+Alta 3,9 0,0360
+Alta 4,0 0,0375
+Alta 4,1 0,0390
+Alta 4,2 0,0405
+Alta 4,3 0,0420
+Alta 4,4 0,0300
+Valores limiares ≥ 4,5 a < 5,5 ≥ 0,0450 a 
+< 0,060
+Muito alta 4,5 0,0450
+Muito alta 4,6 0,0465
+Muito alta 4,7 0,0480
+Muito alta 4,8 0,0495
+Muito alta 4,9 0,0510
+Muito alta 5,0 0,0525
+Muito alta 5,1 0,0540
+Muito alta 5,2 0,0555
+Muito alta 5,3 0,0570
+Muito alta 5,4 0,0585
+Valores limiares ≥ 5,5 a ≤ 6,0(1) ≥ 0,060 a ≤ 
+0,1100(2)
+Extremamente alta 5,5 0,0600
+Extremamente alta 5,6 0,0700
+Extremamente alta 5,8 0,0900
+Extremamente alta 6,0 0,1100
+(1) Valores limiares semiquantitativos obtidos pela interpretação especia -
+lista das UM do mapa de solos do Brasil.
+(2) Classes de erodibilidade do solo (fator K) dos modelos USLE, segundo 
+Mannigel et al. (2002).
+Fonte: Mannigel et al. (2002) e IBGE (2018).
+aos valores inteiros de 1 a 6. Utilizando-se esse pro-
+cedimento foram obtidos 48 valores (semiquantitati -
+vos) ponderados e adimensionais (Tabela 5) para as 
+classes de erodibilidade das UM do mapa de solos do 
+Brasil.  A fim de possibilitar o enquadramento de todas 
+as UM em alguma das seis classes de erodibilidade, 
+definiu-se as faixas de valores mostradas na Tabela 4.
+Tabela 5. Valores adimensionais (semiquantitativos) das 
+classes de erodibilidade do solo, em número de 48, ob-
+tidos com a interpretação especialista das 8.143 UM do 
+mapa de solos do Brasil e sua conversão para o fator K.
+Classe de 
+erodibilidade
+Valores 
+numéricos 
+ponderados 
+das UM 
+(Adimensional)
+Fator K
+(Mg ha h 
+ha-1 MJ-1 
+mm-1)
+Valores limiares ≥ 1,0 a < 1,5(1) ≥ 0,0020 a 
+< 0,0090(2)
+Muito baixa 1,0 0,0020
+Muito baixa 1,2 0,0052
+Muito baixa 1,3 0,0068
+Muito baixa 1,4 0,0084
+Valores limiares ≥ 1,5 a < 2,5(1) ≥ 0,0090 a 
+< 0,0150(2)
+Baixa 1,5 0,0090
+Baixa 1,6 0,0096
+Baixa 1,7 0,0102
+Baixa 1,8 0,0108
+Baixa 1,9 0,0114
+Baixa 2,0 0,0120
+Baixa 2,1 0,0126
+Baixa 2,2 0,0132
+Baixa 2,3 0,0138
+Baixa 2,4 0,0144
+Valores limiares ≥ 2,5 a < 3,5(1) ≥ 0,0150 a 
+< 0,0300(2)
+Média 2,5 0,0150
+Média 2,6 0,0165
+Média 2,7 0,0180
+Média 2,8 0,0195
+Média 2,9 0,0210
+Média 3,0 0,0225
+Média 3,1 0,0240
+Média 3,2 0,0255
+Tabela 5. Continuação
+Continua...
+
+--- [PDF PAGINA 15 / 40] ---
+14 Documentos 246
+UF e região, respectivamente. Para isso, o mapa 
+de erodibilidade dos solos do Brasil foi cruzado 
+com os mapas das Unidades da Federação (UF) 
+e das regiões brasileiras, respectivamente. Após 
+o cruzamento, as áreas dos componentes das UM
+presentes em cada polígono foram estimadas a
+partir da área total do polígono, multiplicando-se
+a área do polígono por um peso de acordo com o
+número de componentes da UM. Os pesos apli -
+cados foram: 1 componente - componente único,
+peso 1 (área total do polígono); 2 componentes
+- componente 1, peso 0,6 (60% da área) e compo -
+nente 2, peso 0,4 (40% da área); 3 componentes
+- componente 1, peso 0,5, componente 2, peso
+0,3 e componente 3, peso 0,2; e 4 componentes
+- componente 1 peso 0,4 e componentes 2, 3 e
+4 mesmo peso 0,2. Esses pesos correspondem
+aos mesmos utilizados para se obter os valores
+adimensionais e ponderados de erodibilidade do
+solo para cada UM.
+A área de cada classe de erodibilidade foi, en -
+tão, calculada para cada UF e região somando-se 
+as áreas de todos os componentes contendo aque -
+la classe de erodibilidade na UF e região, respecti -
+vamente. Finalmente, a área total de cada classe de 
+erodibilidade foi calculada para toda a extensão do 
+território brasileiro.
+Validação do mapa de 
+erodibilidade contra dados 
+obtidos da literatura
+Godoi et al. (2021) disponibilizaram, no ma -
+terial suplementar de seu artigo, uma tabela 
+contendo a citação de 33 publicações de onde 
+obtiveram 92 valores de medidas direta de erodi -
+bilidade do solo referentes a 50 municípios bra -
+sileiros. Após a apresentação da referida tabela, 
+os trabalhos são referenciados. Contudo, nela 
+não há dados de coordenadas geográficas das 
+parcelas experimentais que estudaram as per -
+das de solo e água. Assim, recorremos a cada 
+uma das publicações citadas e referenciadas por 
+Godoi et al. (2021) a fim de obtê-las. A Tabela 6 
+apresenta a relação de 43 valores de K obtidos 
+por medidas diretas (chuva natural e chuva simu -
+lada) que conseguimos resgatar dos trabalhos 
+citados e referenciados pelos autores supraci -
+tados, a qual também contêm as coordenadas 
+geográficas, a classe de solo e o município de 
+estudo. Compreendem 31 trabalhos consultados 
+que contêm dados de fator K de 30 municípios 
+brasileiros referentes a 12 Estados, e 1 trabalho 
+Avaliação quantitativa da 
+erodibilidade do solo (fator K)
+Para se obter os valores numéricos ( quantitati-
+vos) de erodibilidade do solo para cada unidade de 
+mapeamento, correspondendo ao fator K do modelo 
+USLE, os 48 valores numéricos ponderados obtidos 
+para as UM do mapa de solos do Brasil, cujo enqua-
+dramento nas classes de erodibilidade (semiquanti -
+tativa) é mostrado na Tabela 4, foram ponderados 
+para cada uma das seis classes de erodibilidade, 
+segundo os valores de fator K propostos por Manni -
+gel et al. (2002). A Tabela 5 mostra a conversão dos 
+48 valores semiquantitativos e adimensionais de 
+erodibilidade do solo, obtidos com a interpretação 
+especialista das UM do mapa de solos do Brasil, em 
+quantitativos (fator K; Mg
+ 
+ha
+ 
+h
+ 
+ha-1 MJ-1 mm-1), bem 
+como a relação entre as seis classes semiquantita -
+tivas de erodibilidade e o fator K, tal como proposto 
+por Mannigel et al. (2002).
+Produção do mapa de 
+erodibilidade do solo 
+do Brasil (fator K)
+As informações para obtenção do mapa de ero -
+dibilidade dos solos do Brasil foram organizadas 
+empregando: (a) planilhas Excel e macros em “Vi -
+sual Basic for Applications” (VBA) para a realização 
+de cálculos (Shepherd, 2004), (b) uso do sistema de 
+informação geográfica (SIG) Quantum GIS (QGIS) 
+para operações espaciais e visualização de arqui -
+vos shapefile (Baghdadi et al., 2018), e (c) Python 
+e R para os processamentos diversos, tanto espa -
+ciais como alfanuméricos.
+Para a geração do mapa, os valores pondera -
+dos do fator K e suas respectivas classes de ero -
+dibilidade, interpretados e ponderados para cada 
+UM, foram atribuídos às respectivas UM do mapa 
+de solos do Brasil (IBGE, 2018) por meio da junção 
+da tabela contendo os valores e classes de fator K 
+e da tabela de atributos do shapefile do mapa de 
+solos. Após a junção, foram eliminadas as colunas 
+do mapa de solos originais, mantendo-se apenas 
+aquelas contendo: a) identificadores originais das 
+UM; b) às legendas das UM e dos seus componen -
+tes; e c) os valores e classes do fator K das UM e 
+dos seus componentes.
+Para contabilizar a ocorrência das classes de 
+erodibilidade dos solos no território brasileiro, as 
+áreas de ocorrência de cada classe de erodibili -
+dade, em termos de valores absolutos (hectares) 
+e percentuais (%), foram calculadas para cada
+
+--- [PDF PAGINA 16 / 40] ---
+15Erodibilidade dos solos do Brasil
+entre os conjuntos de dados, ao intervalo de con -
+fiança de 95%.
+Os passos seguintes consistiram na conver -
+são dos valores do fator K observados nos tra -
+balhos externos para classes de fator K, utilizan -
+do os mesmos limites de classes aplicados no 
+trabalho. Uma tabela de contingência (matriz de 
+confusão) foi elaborada confrontando as classes 
+de fator K do trabalho com as classes de fator K 
+observadas nos trabalhos externos para as mes -
+mas UM.  
+A partir da tabela calculou-se o percentual de 
+concordância. Além disso, aplicou-se o teste de 
+correlação de Kendall (τ) (Kendall, 1938) para tes -
+tar a correlação entre as categorias ordinais de fa -
+tor K do trabalho e as categorias ordinais de fator 
+K observadas nos trabalhos externos para as mes -
+mas UM ao intervalo de confiança de 95%.
+referente ao Distrito Federal (Tabela 6). Embora 
+estejam representadas todas as Grandes Regi -
+ões do Brasil, a maioria dos valores de erodibili -
+dade obtidos se concentra nas Regiões Sul (19) 
+e Sudeste (11), com poucos dados do Centro-O -
+este (8), Nordeste (4) e Norte (1).
+Para fins de validação do mapa aqui gerado, 
+os valores do fator K obtidos de diferentes tra -
+balhos na literatura (Tabela 6) foram tabulados, 
+georreferenciados e extraídos para cada unida -
+de de mapeamento do mapa de erodibilidade do 
+solo produzido neste trabalho. Após o que, foram 
+calculadas a diferença média, a diferença abso -
+luta média e a raiz da diferença quadrática média 
+(RMSD) entre o fator K do trabalho estimado em 
+cada unidade de mapeamento e o fator K obser -
+vado nos trabalhos externos nos mesmos locais. 
+Como os valores do fator K não apresentaram 
+distribuição de frequência normal nos conjuntos 
+de dados, realizou-se o teste de postos sinaliza -
+dos de Wilcoxon para dados pareados (Wilcoxon, 
+1945) a fim de comparar as medianas do fator K 
+Tabela 6. Dados e informações dos trabalhos aqui utilizados para validação do mapa de erodibilidade, individualizados 
+por Grandes Regiões.
+Estado Município Latitude (S) Longitude (W) Método(1) Fator K Citação
+Norte
+Amazonas Manaus 02°53’44,08” 59°58’12,96” CN 0,011 Fernandez Medina e 
+Oliveira Junior (1987)
+Nordeste
+Paraíba Sumé 07°40’ 37°00’ CN 0,013 Albuquerque et al. (2005)
+Paraíba Areia 06°57’53,71” 35°43’43,99” CS 0,002 Silva et al. (1986)
+Ceará Sobral 03°39’10,20” 40°18’01,92” CN 0,035 Ramos e Marinho (1980)
+Ceará Ubajara 03°52’25,16” 40°57’09,04” CS 0,034 Távora et al. (1985)
+Centro-Oeste
+Distrito Federal Planaltina 15°35’55,09” 47°43’02,82” CN 0,013 Dedecek et al. (1986)
+Goiás Ceres 15°19,98’ 49°37,2’ CS 0,021 Marques et al. (2019)
+Goiás Ceres 15°19,98’ 49°37,2’ CS 0,003 Marques et al. (2019)
+Goiás Ceres 15°19,98’ 49°37,2’ CS 0,002 Marques et al. (2019)
+Goiás Goiânia 16°30’08,21” 49°17’08,86” CN 0,009 Silva et al. (1997)
+Mato Grosso 
+do Sul
+Dourados 22°16’41,82” 54°48’54,30” CN 0,004 Carvalho e Hernani 
+(2001)
+Mato Grosso 
+do Sul
+Dourados 22°14’ 54°49’ CN 0,0037 Carvalho e Hernani 
+(2001)
+Mato Grosso 
+do Sul
+Dourados 22°14’ 54°59’ CN 0,0045 Hernani et al. (1997)
+Continua...
+
+--- [PDF PAGINA 17 / 40] ---
+16 Documentos 246
+Estado Município Latitude (S) Longitude (W) Método(1) Fator K Citação
+Sudeste
+São Paulo Campinas 22°51’49,71” 47°04’25,50” CN 0,0122 Bertoni et al. (1975)
+São Paulo Jaboticabal 21°13’00,71” 48°20’16,65” CS 0,009 Martins Filho e Pereira 
+(1993)
+São Paulo Catanduva 21°05’57,11” 49°01’02,08” CS 0,039 Martins Filho et al. (2009)
+Minas Gerais Lavras 21°05’ 45°00’ CS 0,004 Silva et al. (1994 citado 
+por Silva et al., 2000)
+Minas Gerais Lavras 21°05’ 45°00’ CS 0,01 Silva (1997 citado por 
+Silva et al., 2000)
+Minas Gerais Belo Oriente 19°15’30” 42°26’58” CN 0,0002 Silva et al. (2014)
+Minas Gerais Guanhães 18°50’00” 42°51’08” CN 0,0001 Silva et al. (2014)
+Espírito Santo Aracruz 19°35’ 20°15’ CN 0,007 Martins et al. (2011)
+Espírito Santo Aracruz 19°35’ 20°15’ CN 0,017 Martins et al. (2011)
+Espírito Santo Aracruz 19°35’ 20°15’ CN 0,0004 Martins et al. (2011)
+Rio de Janeiro Seropédica 22°46’45,13” 43°41’18,87” CN 0,009 Eduardo et al. (2013)
+Sul
+Paraná Paranavaí 23°06’35,95” 52°23’43,54” CS 0,008 Angulo (1983)
+Paraná Ponta Grossa 25°06’54,20” 50°15’12,11” CN 0,022 Angulo (1983)
+Paraná Bela Vista do 
+Paraiso
+22°59’17,53” 51°10’24,45” CN 0,026 Angulo (1983)
+Paraná Londrina 23°21’59,33” 51°09’59,53” CS 0,023 Biscaia et al. (1981)
+Paraná Londrina 23°19’ 51°19’ CS 0,025 Mondardo et al. (1978 
+citado por Silva et al., 
+2000)
+Paraná Rolândia 23°20’11,07” 51°21’19,64” CN 0,026 Biscaia et al. (1981)
+Paraná Ponta Grossa 25°05’58” 50°09’30” CN 0,0087 Jacobs (1995)
+Paraná Paranavaí 23°05’ 52°27’32” CN 0,0096 Jacobs (1995)
+Santa Catarina Chapecó 27°02’52,33” 52°43’02,87” CN 0,016 Silva et al. (1997 citado 
+por Silva et al., 2000)
+Santa Catarina Lages 27°47’13,17” 50°18’23,96” CN 0,0151 Bertol et al. (2002)
+Santa Catarina Lages 27°47’13,17” 50°18’23,96” CN 0,017 Schick et al. (2014)
+Santa Catarina Lages 27°49’ 50°10’ CN 0,0175 Schick et al. (2014)
+Santa Catarina São Jose do 
+Cerrito
+27°43’42,20” 50°31’46,64” CS 0,011 Bertol et al. (2007)
+Santa Catarina São José do 
+Cerrito
+28°55 ’ 51°08’ CS 0,011 Bertol et al. (2007)
+Rio Grande do 
+Sul
+Coxilha 28°11’44,77” 52°19’15,08” CN 0,021 Denardin e Wünsche 
+(1981)
+Rio Grande do 
+Sul
+Eldorado do 
+Sul
+30°05’ 51°39’ CN 0,0338 Cassol et al. (2018)
+Tabela 6. Continuação.
+Continua...
+
+--- [PDF PAGINA 18 / 40] ---
+17Erodibilidade dos solos do Brasil
+Estado Município Latitude (S) Longitude (W) Método(1) Fator K Citação
+Rio Grande do 
+Sul
+Eldorado do 
+Sul
+441.400 6.661.000 CN 0,032 Denardin (1980)
+Rio Grande do 
+Sul
+Eldorado do 
+Sul
+441.400 6.661.000 CN 0,0026 Silva et al. (2016)
+Rio Grande do 
+Sul
+Ijuí 28°22’03,47” 53°57’55,19” CN 0,009 Denardin (1980)
+Rio Grande do 
+Sul
+Santa Maria 29°45’ 53°42’ CN 0,033 Zufferey (1999 citado por 
+Amado et al., 2002)
+Rio Grande do 
+Sul
+Santo Ângelo 28°15’24,80” 54°10’58,00” CN 0,0091 Cogo et al. (2003)
+(1) CN = chuva natural; CS = chuva simulada.
+Tabela 6. Continuação.
+Desenvolvimento
+Avaliação semiquantitativa 
+da erodibilidade dos solos do 
+Brasil por classe de solo
+A avaliação semiquantitativa da erodibilidade 
+das principais classes de solos do Brasil, conside -
+rados até o 2 o nível categórico do Sistema Brasilei -
+ro de Classificação de Solos (SiBCS) (Santos et al., 
+2018) e avaliados segundo dados da legenda do 
+mapa de solos do Brasil (IBGE, 2018), é apresenta -
+da na Figura 1. Observa-se que os solos avaliados 
+como de maior erodibilidade foram os Planossolos 
+Nátricos e Gleissolos Sálicos: enquanto o elevado 
+gradiente textural e a textura predominantemen -
+te arenosa dos horizontes superficiais (horizontes 
+E) nos primeiros são as causas da grande susce -
+tibilidade à erosão, que também é favorecida pela
+baixa permeabilidade do horizonte B subsuperficial
+devido à alta concentração de sódio e seu efeito
+dispersante, nos Gleissolos Sálicos, as comuns (a)
+variação errática de textura em profundidade; (b)
+ausência de unidades estruturais ou agregados de
+suas camadas (estrutura maciça) subsuperficiais; e,
+sobretudo, (c) predominância de cátions monova -
+lentes, especialmente o sódio (sódico ou solódico),
+associados aos sais, os tornam muito suscetíveis à
+erosão hídrica.
+Godoi et al. (2021) ao determinaram o fator K 
+para os solos do Brasil utilizando dados legados 
+Comparação com o mapa de 
+erodibilidade de Godoi et al. (2021)
+Para realizar a comparação entre o mapa aqui 
+produzido e aquele de Godoi et al. (2021) os valores 
+mínimo, médio e máximo do fator K estimado por 
+nomograma por Godoi et al. (2021) foram extraídos 
+para cada unidade de mapeamento do mapa de 
+erodibilidade do solo produzido no trabalho. Após o 
+que foram calculadas a diferença média, a diferen -
+ça absoluta média e a raiz da diferença quadrática 
+média (RMSD) entre o fator K do trabalho estimado 
+em cada UM e o fator K médio estimado por Godoi 
+et al. (2021) nas mesmas UM. Além disso, foi reali -
+zado teste t de Student para dados pareados (Stu -
+dent, 1908) a fim de comparar as médias do fator K 
+entre os dois conjuntos de dados, ao intervalo de 
+confiança de 95%.
+O passo seguinte foi a conversão dos valo -
+res do fator K (Godoi et al., 2021) médios extra -
+ídos para as UM do mapa de erodibilidade para 
+classes de fator K, utilizando os mesmos limites 
+de classes aplicados no trabalho. Uma tabela de 
+contingência (matriz de confusão) foi elaborada 
+confrontando as classes de fator K do trabalho 
+com as classes de fator K estimadas por Godoi 
+et al. (2021) para as mesmas UM.
+ 
+A partir da ta -
+bela calculou-se o percentual de concordância. 
+Além disso, aplicou-se o teste de correlação de 
+Kendall (τ) (Kendall, 1938) para testar a correla -
+ção entre as categorias ordinais de fator K do tra -
+balho e as categorias ordinais de fator K estima -
+das por Godoi et al. (2021) para as mesmas UM, 
+ao intervalo de confiança de 95%.
+
+--- [PDF PAGINA 19 / 40] ---
+18 Documentos 246
+argila de atividade alta, mineralogia da argila tipo 
+2:1 de maior expansibilidade e maiores teores de 
+silte na sua composição granulométrica em rela -
+ção a maioria de outros solos, o que os caracteriza 
+como solos menos intemperizados e, consequente -
+mente, com menor estabilidade de agregados. Al -
+guns desses solos ainda apresentam (Planossolos) 
+ou podem apresentar (Chernossolos e Luvissolos) 
+elevado gradiente textural (arenosa/argilosa) e mu -
+dança textural abrupta (Santos et al., 2018), atribu -
+tos que também concorrem para a elevada erodibi -
+lidade (Megna et al., 2024).  Estes resultados, em 
+geral, concordam com aqueles apresentados por 
+Albuquerque et al. (2000). Os autores encontraram 
+maiores valores de erodibilidade em entressulcos 
+em solos esmectíticos (argila 2:1) da classe dos 
+Vertissolos, Planossolos e Chernossolos quando 
+comparado a solos cauliníticos (argila 1:1) da classe 
+dos Latossolos Vermelhos, atribuindo estes resulta -
+dos ao menor grau de intemperismo e aos menores 
+índices de estabilidade de agregados dos solos es -
+mectíticos, em clima subtropical da região  Sul do 
+Brasil. 
+A Figura 1 também evidencia que os Espodos -
+solos, Neossolos Quartzarênicos, Neossolos Re -
+golíticos (predominantemente arenosos), também 
+apresentaram elevada erodibilidade, porém, em 
+função da textura arenosa e baixos teores de ma -
+téria orgânica, o que lhes confere menor soma de 
+bases e presença de estrutura com fraco grau de 
+desenvolvimento ou ausente (grãos simples), menor 
+coesão entre partículas e baixos índices de estabili -
+dade de agregados, tornando-os susceptíveis a de -
+sagregação e transporte de partículas pela ação da 
+água, seja pelo impacto da gota de chuva ou pela 
+ação tangencial do escoamento superficial sobre a 
+superfície do solo. De fato, Bertol e Almeida (2000) 
+argumentam que os solos arenosos, como os Ne -
+ossolos Quartzarênicos, normalmente apresentam 
+baixa resistência à erosão hídrica apesar da rápida 
+drenagem de água no perfil e da elevada profundi -
+dade efetiva.
+Em geral, os Latossolos e os Plintossolos Pétricos 
+apresentaram valores muito baixos e baixos de ero -
+dibilidade, indicando serem estes solos os mais re -
+sistentes a desagregação e transporte pelos agentes 
+erosivos. Isto se deve, em geral, aos seus atributos 
+decorrentes do maior grau de intemperismo, com mi-
+neralogia da argila do tipo 1:1 cauliníticos ou gibbsí-
+ticos, podendo ainda conter conteúdos expressivos 
+de óxidos de ferro, o que lhes confere alta estabili -
+dade de agregados frente a ação da água (Denardin, 
+1980; Ferreira et al., 1999). De fato, a estabilidade 
+dos agregados do solo é um fator chave que afeta a 
+de solo e aplicando-os ao nomograma proposto 
+por Wischmeier et al. (1971) e ao modelo EPIC, en -
+contraram que os Gleissolos dos estados do Acre 
+e do Amazonas foram o grupo de solos que apre -
+sentaram a maior suscetibilidade à erosão devido, 
+segundo os autores, ao seu mais elevado conteúdo 
+de silte em relação a outras ordens de solo, o que 
+associado a estrutura laminar e a drenagem impe -
+dida, resultou em elevada erodibilidade. Em vista do 
+exposto, observa-se que os critérios para a parame-
+trização da erodibilidade dos solos divergiram entre 
+ambos os trabalhos: enquanto neste buscou avaliar, 
+por meio do julgamento especialista, todos os atri -
+butos que o nome do solo ou sua classificação, ava-
+liado até o nível de fase taxonômica segundo o Sis -
+tema Brasileiro de Classificação de Solos (Santos 
+et al., 2018), permitiu correlacionar os seus atributos 
+ao próprio potencial erosivo, o de Godoi et al. (2021) 
+generalizam dados (granulometria e conteúdo de 
+carbono obtidos de 0 -30 cm de profundidade do 
+SoilGrids) e informações (permeabilidade e estru -
+tura) por ordens de solo, aplicando-os ao modelo 
+USLE e EPIC. 
+É evidente que ambos os métodos apresentam 
+muitas limitações e fontes de erro, a citar poucas 
+delas: o julgamento especialista da erodibilidade, 
+enquanto método científico qualitativo, é meramente 
+subjetivo e, portanto, fortemente dependente, den -
+tre outros fatores, do nível de conhecimento do pes-
+quisador sobre o objeto de estudo, enquanto que a 
+determinação quantitativa do fator K pelo nomogra -
+ma da USLE, utilizado por Godoi et al. (2021), lança 
+mão de inúmeros pressupostos e generalizações, 
+como, por exemplo, o fato de considerar que 20% 
+da fração areia total é de areia fina e que a estrutura 
+superficial de todos os Gleissolos é laminar. Solos 
+de planícies aluvionares, como os Gleissolos, estão 
+dentre os de maior variabilidade espaço-temporal 
+de seus atributos, incluindo granulometria e estru -
+tura (tipo, tamanho e grau), a qual é magnificada 
+em superfície, com variações tanto lateral como em 
+profundidade, de tal forma que pressupostos, gene -
+ralizações e extrapolações de resultados para esta 
+classe de solo inevitavelmente estão associados a 
+muitos erros.
+Os Chernossolos, Planossolos Háplicos, Lu -
+vissolos e Vertissolos foram outras classes de so -
+los que apresentaram valores altos e muito altos 
+de erodibilidade (Figura 1). Isto se deve às restri -
+ções de drenagem muitas vezes encontradas nes -
+tes solos, com baixas taxas de infiltração de água 
+(quando úmidos, no caso dos Vertissolos; Freebairn, 
+et al., 1996), textura argilosa ou muito argilosa des -
+de a superfície ou em profundidade, presença de
+
+--- [PDF PAGINA 20 / 40] ---
+19Erodibilidade dos solos do Brasil
+et al. (2005) encontraram que o baixo valor de erod-
+ibilidade determinado em experimento de longa du -
+ração sob chuva natural para solos (Luvissolos) con-
+siderados altamente erodíveis foi devido à presença 
+de pavimento desértico, comuns em muitos solos do 
+Nordeste do Brasil. Segundo os autores, os calhaus 
+e matacões de quartzo em superfície do Luvissolo 
+estudado, os quais caracterizam o pavimento desér-
+tico, serviram como agente protetor, interceptando 
+o impacto das gotas de chuva sobre o solo e, por
+conseguinte, interferindo diretamente no processo
+erosivo.
+Embora os Latossolos tenham sido conside -
+rados os solos de maior resistência à erosão, tam -
+bém constatado por Godoi et al. (2021) ao modelar o 
+mapa de erodibilidade dos solos do Brasil, há aque -
+les aqui classificados de erodibilidade extremamente 
+erosão do solo (Wu et al., 2023) de tal forma que so-
+los que manifestam alto grau desse atributo têm sua 
+erodibilidade consideravelmente reduzida (Bronick; 
+Lal, 2005). A muito estável estrutura microgranular 
+(pseudo-areia), comum nos Latossolos desde a su -
+perfície do solo (Martinez; Souza, 2020), concorren-
+do para sua elevada permeabilidade, e a presença 
+de expressivos conteúdos de cascalhos e calhaus 
+de petroplintita nos Plintossolos Pétricos, também 
+se manifestando, muitas vezes, deste à superfície 
+do solo (Almeida et al., 2023), tornam-os bastante 
+resistentes aos processos erosivos lineares, embora 
+a presença exclusiva de petroplintita nos primeiros 
+centímetros superficiais do solo em alguns Plintos -
+solos Pétricos, com pouco ou completa ausência de 
+material terroso, geralmente é relacionada à erosão 
+laminar (Almeida et al., 2023). De fato, Albuquerque 
+0 10 20 30 40 50 60 70 80 90 100
+Argissolo Acinzentado
+Argissolo Amarelo
+Argissolo Bruno-Acinzentado
+Argissolo Vermelho
+Argissolo Vermelho-Amarelo
+Cambissolo Flúvico
+Cambissolo Háplico
+Cambissolo Húmico
+Chernossolo Argilúvico
+Chernossolo Ebânico
+Chernossolo Háplico
+Chernossolo Rêndzico
+Espodossolo Ferri-Humilúvico
+Espodossolo Ferrilúvico
+Espodossolo Humilúvico
+Gleissolo Háplico
+Gleissolo Melânico
+Gleissolo Sálico
+Gleissolo Tiomórfico
+Latossolo Amarelo
+Latossolo Bruno
+Latossolo Vermelho
+Latossolo Vermelho-Amarelo
+Luvissolo Crômico
+Luvissolo Háplico
+Neossolo Flúvico
+Neossolo Litólico
+Neossolo Quartzarênico
+Neossolo Regolítico
+Nitossolo Bruno
+Nitossolo Háplico
+Nitossolo Vermelho
+Organossolo Háplico
+Organossolo Tiomórfico
+Planossolo Háplico
+Planossolo Nátrico
+Plintossolo Argilúvico
+Plintossolo Háplico
+Plintossolo Pétrico
+Vertissolo Ebânico
+Vertissolo Háplico
+Vertissolo Hidromórfico
+Muito baixa Baixa Média Alta Muito alta Extremamente alta
+Figura 1. Percentual de área de ocorrência das classes de erodibilidade muito baixa, baixa, média, alta, muito alta 
+e extremamente alta das principais classes de solos do Brasil, identificadas até o segundo nível categórico.
+Fonte: Santos et al. (2018).
+
+--- [PDF PAGINA 21 / 40] ---
+20 Documentos 246
+Avaliação semiquantitativa 
+da erodibilidade do solo 
+por unidade da federação
+A distribuição das classes de erodibilida -
+de do solo nas unidades federativas do Brasil é 
+apresentada na Figura 2. Observa-se que os solos 
+considerados de maior erodibilidade (classes de 
+erodibilidade alta, muito alta e extremamente alta 
+ocupando 50% ou mais da área do Estado) ocorrem 
+no Acre, Alagoas, Ceará, Mato Grosso do Sul, Pa -
+raíba, Pernambuco, Rio Grande do Norte, e Sergipe, 
+enquanto os de menor erodibilidade (classes muito 
+baixa e baixa ocupando 50% ou mais da área do 
+Estado) estão relacionados aos estados do Amapá, 
+Espírito Santo e Goiás e ao Distrito Federal.
+O predomínio de solos de elevada erodibilida -
+de nos estados supracitados da região  Nordeste 
+(Alagoas, Ceará, Paraíba, Pernambuco, Rio Gran -
+de do Norte e Sergipe) está relacionado, sobretudo, 
+ao clima semiárido: o baixo regime pluviométrico, 
+alta. Os Latossolos Amarelos são exemplos (Figura 
+1). Aqui optou-se por assim classificá-los, bem como 
+a todos os demais componentes das UM de mesma 
+classe de erodibilidade (extremamente alta), devido 
+ao fato de serem identificados no mapa de solos 
+do Brasil (IBGE, 2019) com fase erodida. Segundo 
+Santos et al. (2018), a fase erodida engloba os solos 
+que apresentam classe de erosão forte, muito forte 
+e extremamente forte. Tais classes levam conside -
+ração, sobretudo, a porcentagem de remoção do ho-
+rizonte superficial (horizonte A, incluindo AB ou A + 
+E), a ocorrência e frequência de sulcos e voçorocas 
+(Santos et al., 2015). Embora, provavelmente, fatores 
+outros que não aqueles exclusivamente intrínsecos 
+dos solos contribuam para torná-los fortemente sus-
+cetíveis à erosão, esse fato, a classificação de solos 
+similares em classes de erodibilidade muito distintas 
+entre si (exemplo, baixa e extremamente alta), evi -
+denciam a complexidade tanto de avaliá-la (Wisch -
+meier; Mannering, 1969; Veihe, 2002; Godoi et al., 
+2021), como de se avaliar os processos relacionados 
+à erosão do solo (Poesen, 2018).
+Figura 2. Distribuição percentual das classes de erodibilidade do solo nas unidades federativas do Brasil. Os va-
+lores omitidos que somariam 100% da área do país se referem às áreas urbanas, corpos d’água, afloramentos de 
+rocha, dunas e praias.
+0 10 20 30 40 50 60 70 80 90 100
+Acre
+Alagoas
+Amapá
+Amazonas
+Bahia
+Ceará
+Distrito Federal
+Espírito Santo
+Goiás
+Maranhão
+Mato Grosso
+Mato Grosso do Sul
+Minas Gerais
+Pará
+Paraíba
+Paraná
+Pernambuco
+Piauí
+Rio de Janeiro
+Rio Grande do Norte
+Rio Grande do Sul
+Rondônia
+Roraima
+Santa Catarina
+São Paulo
+Sergipe
+Tocantins
+Muito baixa Baixa Média Alta Muito alta Extremamente alta
+
+--- [PDF PAGINA 22 / 40] ---
+21Erodibilidade dos solos do Brasil
+à classe de erodibilidade alta, a maior percentagem 
+de área observada para essa classe de erodibilidade 
+em relação aos demais Estados, e 38% à classe de 
+erodibilidade média (Figura 2). Godoi et al. (2021) uti-
+lizando modelagem para estimar os valores do fator 
+K a partir de dados legados de perfis de solo (8.888) 
+do SoilGrids, aplicando-os ao nomograma da USLE e 
+ao modelo EPIC, encontraram que os maiores valo -
+res obtidos para o fator K foram para solos do Esta -
+do do Amazonas e Acre, onde, segundo os autores, 
+o conteúdo de silte alcançou os mais elevados valo-
+res em relação aos solos de outros estados brasilei-
+ros. De fato, vários trabalhos têm mostrado a elevada
+correlação positiva entre os conteúdos de silte e o
+fator K, atribuindo o fato à elevada suscetibilidade ao
+seu desprendimento pelas gotas de chuva e transpor-
+te por runoff (Vaezi et al., 2008).
+A baixa erodibilidade dos solos dos estados do 
+Amapá, Espírito Santo e Goiás e do Distrito Fede -
+ral, por outro lado, está relacionada tanto a predo -
+minância absoluta dos Latossolos, ocupando acima 
+de 48% da área daqueles Estados (IBGE, 2019), 
+como a pequena ocorrência de solos de elevada 
+erodibilidade, como os Neossolos Quartzarênicos, 
+Planossolos, Luvissolos e Vertissolos. No Amapá, 
+por exemplo, os Latossolos distribuem-se por 74,7% 
+de sua área, enquanto que os solos supracitados e 
+facilmente erodíveis representam menos que 0,3% 
+daquele Estado (IBGE, 2019).
+Avaliação semiquantitativa 
+da erodibilidade do solo 
+por Grandes Regiões
+A distribuição das classes de erodibilidade do 
+solo nas Grandes Regiões do Brasil é apresentada 
+na Figura 3. Observa-se que os solos de maior ero -
+dibilidade (classes de erodibilidade alta, muito alta 
+e extremamente alta) ocorrem na Região Nordeste 
+(49%), seguida da Região Sul (40%), enquanto os 
+de menor, (classes muito baixa e baixa) distribuem -
+-se predominantemente nas Regiões Centro-Oeste
+(46%) e Sudeste (45%).
+A Região Nordeste do Brasil, em razão da di -
+versidade de climas, formações vegetais, tipos 
+de rochas e conformações de relevo, apresenta 
+uma grande diversidade de ambientes e, conse -
+quentemente, de solos, muitas vezes variando a 
+curtas distâncias (Marques et al., 2014). Embora 
+aproximadamente 31% dessa Região seja domi -
+nada por Latossolos, em geral de muito baixa e 
+baixa erodibilidade e relacionados, sobretudo, às 
+zonas de clima úmido (Coelho et al., 2002), é nela 
+as altas temperaturas, a insolação média de 2.800 
+horas por ano, a umidade relativa anual na faixa 
+de 50% e precipitação média anual inferior a 800 
+mm, com irregularidade espacial e temporal das 
+chuvas e ocorrência de anos secos consecutivos 
+(Moura et al., 2019), resulta em baixas taxas de 
+intemperismo e, consequentemente, presença de 
+solos rasos, pedregosos, muitas vezes de textura 
+arenosa, com baixos teores de matéria orgânica, 
+elevados níveis de salinidade, com altos teores de 
+sódio, embora, em alguns casos, de elevada fertili -
+dade natural (Cunha et al., 2010). 
+Por outro lado, a elevada erodibilidade dos so -
+los do Mato Grosso do Sul, situado na região Cen -
+tro-Oeste do país, tem forte relação com o material 
+de origem dos solos: aproximadamente metade do 
+Estado, que compreende a sua porção oriental, é 
+constituída por sedimentos e solos arenosos, origi -
+nando terrenos altamente permeáveis, porém com 
+alto potencial erosivo, alto potencial de arenização, 
+alta vulnerabilidade à poluição de aquíferos subter -
+râneos e com deficiência de água superficial (The -
+odorovicz, 2010). Tais solos arenosos correspon -
+dem, sobretudo, aos Neossolos Quartzarênicos, 
+que ocupam aproximadamente 25% do Estado 
+(IBGE, 2019).  A sua porção ocidental, por sua vez, 
+é caracterizada pelas áreas baixas do Pantanal 
+(Theodorovicz, 2010), cujos materiais de origem 
+desempenham papel fundamental nos processos 
+de formação dos solos (Nascimento et al., 2015). 
+Nessas áreas, predominam Planossolos (Fernan -
+des et al., 2007) nos quais o expressivo contraste 
+textural geralmente está associado a processos 
+pedogenéticos e geológicos/geomorfológicos re -
+lacionados à sedimentação fluvial (Oliveira Junior 
+et al., 2017; Nascimento et al., 2013). Distribuem -
+-se por aproximadamente 16% do estado do Mato
+Grosso do Sul (IBGE, 2019). Somados aos Neos -
+solos Quartzarênicos, representam cerca de 41%
+do Estado (IBGE, 2019). Embora menos expres -
+sivos em extensão, os Vertissolos somam-se aos
+solos supracitados para embasar o argumento de
+se ter elevada ocorrência de solos mais facilmente
+erodíveis no Estado. Comparando-se a todos os
+demais estados brasileiros e ao Distrito Federal,
+essa classe de solo tem sua maior extensão ter -
+ritorial no Mato Grosso do Sul, estendendo-se por
+5.478 km2, o que corresponde a 1,5% da área do
+Estado (IBGE, 2019).
+A predominância de Luvissolos (52,2%) e Argis -
+solos (37,6%) no Acre, que somados ocupam apro -
+ximadamente 80% da área daquele Estado (IBGE, 
+2019), foram os principais responsáveis pela distribui-
+ção de suas classes de erodibilidade: 54% pertencem
+
+--- [PDF PAGINA 23 / 40] ---
+22 Documentos 246
+aproximadamente 20% da área do Estado, tal como 
+afirma Silva (2018). Segundo esse autor, os Planos-
+solos, juntamente aos Gleissolos, são os principais 
+solos utilizados para a produção de arroz irrigado 
+naquele Estado. Os primeiros ocupam 3,7% da Re -
+gião Sul (IBGE, 2019).
+É nas Regiões Centro-Oeste e Sudeste que 
+solos profundos, permeáveis, bem drenados e de 
+textura predominantemente argilosa e média, per -
+tencentes à classe dos Latossolos, ocupam suas 
+maiores extensões territoriais em relação as demais 
+Regiões brasileiras (Coelho et al., 2002), distribuin -
+do-se por 43,0% e 45,6% de suas áreas, respecti -
+vamente (IBGE, 2019). No Centro-Oeste estão rela -
+cionados ao Planalto Central Brasileiro, recobrindo 
+terrenos de relevo plano e suave ondulado e vege -
+tação predominantemente de cerrado (Motta et al., 
+2002). Os Plintossolos, sobretudo os grandes gru -
+pos pétricos concrecionários, constituem outra clas -
+se de solos bastante expressivos naquela Região 
+(Coelho et al., 2023) e que contribuem para identi -
+ficar suas terras como de menor erodibilidade em 
+relação às demais Regiões brasileiras. Os Plintos -
+solos ocupam 7,4% do Centro-Oeste (IBGE, 2019), 
+cuja Região concentra aproximadamente 28% dos 
+solos desta classe do país (Coelho et al., 2023).
+Para a Região Sudeste, os Latossolos ocupam 
+expressivas áreas, inclusive nos domínios de rochas 
+pré-cambrianas do embasamento cristalino, onde 
+predomina relevo acidentado, como nas Serras e 
+Planaltos do Leste e Sudeste. Nessa região, deno -
+minada por Ab’Saber (1970) de Mares de Morros, 
+há predominância de Argissolos, Latossolos e Cam-
+bissolos (Coelho et al., 2002). Na Região Sudeste, 
+que se concentram as maiores porcentagens de 
+Luvissolos (49,4%), Planossolos (48,7%), Cher -
+nossolos (38,4%) e Neossolos (33,0%) em rela -
+ção às demais Regiões brasileiras (IBGE, 2019). 
+A maioria desses solos estão relacionados ao 
+clima semiárido e a vegetação de caatinga (Co -
+elho et al., 2002), que ocupa cerca de 70% da 
+região Nordeste (Souza, 1979; Kill, 2021), e cujos 
+atributos intrínsecos, já discutidos anteriormente, 
+convergiram para classificá-los como de elevada 
+erodibilidade.
+Na Região Sul, 30% das terras apresentam ero -
+dibilidade muito baixa e baixa, 25% média, sendo 
+que as demais, que ocupam 45% da área, corres -
+pondem as de erodibilidade alta e muito alta. Es -
+sas estão relacionadas, sobretudo, a solos rasos 
+e pouco profundos (Cambissolos e Neossolos Li -
+tólicos) ou arenosos em todo o perfil (Neossolos 
+Quartzarênicos) ou em superfície (Argissolos com 
+mudança textural abrupta) localizados nos terre -
+nos sedimentares de relevos planálticos (Planalto 
+Meridional, Planalto Atlântico e Depressão Perifé -
+rica) da Região (Coelho et al., 2002; Moura-Bueno 
+et al., 2024). De fato, os Neossolos só perdem em 
+distribuição espacial para os Latossolos: enquanto 
+os primeiros ocupam 21,3%, os Neossolos distri -
+buem-se em 18,8% da Região Sul, cuja porcenta -
+gem de distribuição não difere muito em relação aos 
+Cambissolos, que ocupam 17,4% das terras sulinas 
+(IBGE, 2019). A esses solos de elevada erodibilida -
+de (Neossolos e Cambissolos), somam-se os Pla -
+nossolos, presentes, sobretudo, nas terras baixas 
+do Rio Grande do Sul (várzeas, planícies litorânea 
+e de inundação de rios e lagos), as quais ocupam 
+0 10 20 30 40 50 60 70 80 90 100
+Norte
+Nordeste
+Centro-Oeste
+Sudeste
+Sul
+Muito baixa Baixa Média Alta Muito alta Extremamente alta
+Figura 3. Distribuição percentual das classes de erodibilidade dos solos para as Grandes Regiões do Brasil. 
+Os valores omitidos que somariam 100% da área do país se referem às áreas urbanas, corpos d’água, 
+afloramentos de rocha, dunas e praias.
+
+--- [PDF PAGINA 24 / 40] ---
+23Erodibilidade dos solos do Brasil
+Os Argissolos dominam na Região Norte (IBGE, 
+2019), os quais ocupam 41% de sua área (IBGE, 
+2019). Devido à sua grande diversidade de atribu -
+tos (Coelho et al., 2002; Santos et al., 2018), apre -
+sentam diferentes potenciais erosivos (Rossi et al., 
+2022) e valores do fator K (Marques et al., 1997b), 
+sendo tanto mais elevados quanto mais pronuncia -
+do é a manifestação do gradiente textural (Rossi 
+et al., 2022), do conteúdo de areia e de camadas de 
+baixa porosidade e permeabilidade (fragipã, sapro -
+lito) ou de baixo grau de estruturação (saprolito) pró-
+ximas à superfície. Ao se considerar, sobretudo, tais 
+atributos, a grande maioria dos Argissolos do Norte 
+e de todo o Brasil foi aqui classificado na classe de 
+erodibilidade média, seguida da alta, embora varie 
+de baixa até a extremamente alta. Em decorrência, 
+a predominância da classe média de erodibilidade 
+para essa Região (Figura 3), ocupando 42% de sua 
+área, é consequência, sobretudo, da presença ex -
+pressiva de Argissolos, que também contribuem 
+para a classe de erodibilidade alta. Essa distribui-se 
+por 14% da Região Norte (Figura 3). 
+Ao lado dos Argissolos (41%), Gleissolos (7,5%) 
+e Plintossolos (5,7%) se somaram para definir a 
+classe de erodibilidade alta, enquanto que os Es -
+podossolos (3,6%), os Neossolos Quartzarênicos 
+(4,5%) e Litólicos (3,4%), que juntos representam 
+11,5% da Região Norte (IBGE, 2019), são as prin -
+cipais classes de solos que imprimiram a classe de 
+erodibilidade muito alta para aquela Região. Em -
+bora os Espodossolos ocorrem em todas as Regi -
+ões brasileiras, é no Norte que se encontram suas 
+maiores extensões e áreas contínuas, sobretudo na 
+região conhecida como Cabeça do Cachorro, situa -
+da no extremo noroeste do Brasil, município de São 
+Gabriel da Cachoeira, estado do Amazonas. De 
+fato, segundo o IBGE (2019), 93,8% da área total de 
+Espodossolos existentes no país se concentram na 
+Região Norte.
+Os Latossolos, por outro lado, sobretudo os de 
+textura argilosa, são os principais solos responsá -
+veis pela expressão das classes de erodibilidade 
+muito baixa (19%) e baixa (13%), que somadas 
+perfazem 32% da área da Região Norte (Figura 3). 
+Os Latossolos representam 29,6% da área dessa 
+Região e englobam 39,6% dos solos desta classe 
+existentes em todo o país (IBGE, 2019).
+Avaliação semiquantitativa da 
+erodibilidade do solo no Brasil
+A Figura 4 mostra o percentual de distribuição 
+das classes de erodibilidade do solo para todo o 
+os Mares de Morros envolvem predominantemente 
+o Leste do Estado de São Paulo, o Sul e o Leste de
+Minas Gerais, o Estado do Rio de Janeiro e a maior
+parte do Espírito Santo (Ab’Saber, 1996).
+A unidade geotectônica da Bacia do Paraná é de 
+ocorrência expressiva do Sudeste. Nesse ambiente 
+predominam os arenitos cretácicos do Grupo Bauru, 
+que ocupam aproximadamente 40% do estado de 
+São Paulo, sobretudo na sua porção Centro-Oeste, 
+bem como a Oeste de Minas Gerais (Triângulo Minei-
+ro), muitos deles com cimentos e nódulos carbonáti-
+cos (Instituto de Pesquisas Tecnológicas do Estado 
+de São Paulo, 1981). Uma relação solo-paisagem 
+comum nessa região é a presença de Latossolos 
+de textura média e de baixa fertilidade natural nos 
+topos de relevos aplainados em colinas médias, tran-
+sicionando para Argissolos de textura arenosa/mé -
+dia ou arenosa/argilosa e melhor fertilidade natural 
+nas vertentes de perfis convexos e relevo ondulado à 
+medida que se caminha para o talvegue dos interflú-
+vios (Coelho et al., 2002). Esses Argissolos se carac-
+terizam por um manto arenoso superficial, geralmen-
+te transicionando abruptamente para um horizonte 
+inferior de textura média, as vezes argilosa, o que 
+lhes imprime elevada suscetibilidade aos processos 
+erosivos lineares, sendo comuns o desenvolvimen -
+to de ravinas e voçorocas com pouco tempo de uso 
+(Salomão, 1994). Tais solos, geralmente classifica -
+dos como Argissolos Vermelho-Amarelos Eutróficos 
+abrúpticos (Santos et al., 2018), foram identificados 
+no presente trabalho na classe de erodibilidade muito 
+alta, contribuindo para que 11% das áreas da Região 
+Sudeste tenham sido classificadas nessa classe de 
+erodibilidade (Figura 3).
+Os derrames vulcânicos e intrusões de rochas 
+básicas e alcalinas da Bacia do Paraná relacio -
+nados à Formação Serra Geral, constituem outro 
+grande domínio litológico do Sudeste. No estado 
+de São Paulo estão localizados, sobretudo, na pro -
+víncia geomorfológica denominada por Almeida 
+(1964) de Depressão Periférica Paulista. Latosso -
+los, Argissolos e Nitossolos, todos Vermelhos e 
+com elevados conteúdos de óxidos de ferro (férri -
+cos) e de fertilidade variada, são os solos predo -
+minantes originados do intemperismo de basalto e 
+diabásio (Coelho et al., 2002). Especificamente, os 
+Latossolos Vermelhos, argilosos, profundos, muito 
+porosos e com conteúdo de óxidos de ferro ≥ 180 
+g kg-1 ocupam aproximadamente 9% do estado de 
+São Paulo (Rossi; Kanashiro, 2022). O elevado grau 
+de floculação de suas argilas e sua elevada taxa de 
+permeabilidade, comparativamente a outras clas -
+ses de solos, minimizam as perdas de solo quando 
+se encontram saturados (Aquino et al., 2013).
+
+--- [PDF PAGINA 25 / 40] ---
+24 Documentos 246
+Chernossolos, Planossolos e Vertissolos, que ocu -
+pam percentagens territoriais muito superiores no 
+Brasil em relação à Região Norte (Tabela 7), são 
+os responsáveis pela diferença observada para a 
+classe de erodibilidade muito alta.
+Fator K no Brasil: distribuição 
+espacial e sua relação com 
+a erodibilidade do solo 
+dos biomas brasileiros
+Na Figura 5 é apresentado o mapa de erodibi -
+lidade dos solos do Brasil, que também pode ser 
+acessado na Infraestrutura de Dados Espaciais da 
+Embrapa (GeoInfo1).
+Segundo a metodologia aqui utilizada, a qual lan-
+çou mão dos intervalos definidos por Mannigel et al. 
+(2002), os valores de K variaram entre 0,0020 e 0,1100 
+t ha-1 MJ-1 mm-1, diferindo daqueles modelados e en-
+contrados por Godoi et al. (2021) para o Brasil, que 
+variaram de 0,0002 a 0,0636 Mg ha h ha-1 MJ-1 mm-1, 
+com um valor médio de 0,0181 Mg ha h ha-1 MJ-1 mm-1. 
+Segundo esses autores, a erodibilidade dos solos 
+do Brasil é menor que os da Europa e dos Estados 
+Unidos, mas maior em relação aos solos chineses. 
+O fator K médio aqui encontrado foi de 0,0241 
+Mg ha h ha-1 MJ-1 mm-1. Assim, ambos os trabalhos 
+enquadraram os solos do Brasil na classe de erodibi-
+lidade média, seguindo a relação proposta por Man-
+nigel et al. (2002) entre os intervalos de fator K e as 
+classes de erodibilidade (Tabela 5).
+A Tabela 8 mostra o percentual de distribuição das 
+classes de erodibilidade nos biomas brasileiros obti-
+dos no escopo deste trabalho. Os solos do Pantanal 
+foram os de maior potencial erosivo, seguidos pelos 
+da Caatinga e Pampa. Esses resultados coadunam 
+ora com a ocorrência de solos de elevada erodibilida-
+de (elevado fator K), reconhecidos, amplamente ava-
+liados e relatados na literatura como tal, ora com os 
+mais emblemáticos problemas atuais de degradação 
+das terras, amplamente divulgados na mídia e estuda-
+dos no Brasil, e cujas discussões remontam desde a 
+década de 1970: a arenização e a desertificação. De 
+fato, os principais solos do Pantanal são os Planos -
+solos Nátricos (23%), Plintossolos (21%), Espodosso-
+los Ferrilúvicos (19%), Planossolos Háplicos (11,8%), 
+Gleissolos (11,7%) e Vertissolos (5,8%) (Couto et al., 
+2023), que somados distribuem-se por aproximada -
+mente 85% daquele bioma. As inúmeras justificativas 
+para o bem estudado elevado potencial erosivo des-
+ses solos foram amplamente relatadas nesse trabalho, 
+baseando-se na literatura.
+Brasil e a Tabela 7, a área de ocorrência por tipo 
+de solo para o país, segundo suas Grandes Re -
+giões. Devido à Região Norte representar 45,27% 
+do país, espera-se maior similaridade desta em 
+relação à demais Regiões quando comparamos a 
+distribuição de suas classes de erodibilidade a de 
+todo o território brasileiro. De fato, isso acontece 
+(Figuras 3 e 4): a classe de erodibilidade média 
+predomina no Brasil, tal como naquela Região 
+(Figura 3), ocupando aproximadamente 30% de 
+sua área (Figura 4), enquanto a soma das classes 
+muita baixa e baixa (35% e 32% respectivamen -
+te para o Brasil e Região Norte) se sobrepõem à 
+soma das classes alta, muito alta e extremamente 
+alta (32% e 24%, respectivamente para o Brasil 
+e Região Norte). Esses resultados refletem, so -
+bretudo, a predominância de Latossolos (33,6%) 
+e Argissolos (28,7%) no país (Tabela 7), tal como 
+argumentado para a Região Norte, os quais soma -
+dos ocupam 62,3% das terras brasileiras (IBGE, 
+2018): enquanto os primeiros foram classificados 
+predominantemente nas classes de erodibilidade 
+muito baixa e baixa, os Argissolos foram na clas -
+se média, embora ambas tenham sido classifica -
+das em todas as demais classes de erodibilidade, 
+fato já argumentado para os Argissolos.
+As maiores diferenças, no entanto, entre a Re -
+gião Norte e o Brasil em relação à percentagem de 
+ocorrência das classes de erodibilidade se dá para 
+as classes média e muito alta (Figuras 4 e 5). No -
+vamente, a maior área ocupada pelos Argissolos na 
+Região Norte em relação aos Latossolos (Tabela 7) 
+contribuiu para a maiores porcentagens da classe 
+de erodibilidade média naquela Região em rela -
+ção ao país, enquanto solos geralmente mais sus -
+cetíveis à erosão, como Neossolos, Cambissolos, 
+19%
+16%
+30%
+14%
+18%
+0,5%
+Muito baixa
+Baixa
+Média
+Alta
+Muito alta
+Extremamente alta
+Figura 4. Distribuição percentual das classes de ero-
+dibilidade dos solos do Brasil (não foram computadas 
+áreas urbanas, corpos d’água, afloramentos de rocha, 
+dunas e praias)
+1Disponível em: https://geoinfo.dados.embrapa.br/catalogue/#/dataset/6340
+
+--- [PDF PAGINA 26 / 40] ---
+25Erodibilidade dos solos do Brasil
+Tabela 7. Área de ocorrência e distribuição percentual dos tipos de solo para o Brasil e suas Grandes Regiões. 
+Classes de 
+solo e tipos 
+de terreno
+Brasil Norte Nordeste Centro-Oeste Sudeste Sul
+Área
+(km2)
+Percentual
+(%)
+Área
+(km2)
+Percentual
+(%)
+Área
+(km2)
+Percentual
+(%)
+Área
+(km2)
+Percentual
+(%)
+Área
+(km2)
+Percentual
+(%)
+Área
+(km2)
+Percentual
+(%)
+Argissolos 2.390.473 28,7 1.538.674 41,0 269.853 17,6 243.434 15,3 242.420 26,9 96.092 17,5
+Cambissolos 437.262 5,2 41.997 1,1 46.807 3,1 116.493 7,3 136.739 15,2 95.226 17,4
+Chernossolos 27.473 0,3 153 0,0 10.556 0,7 4.364 0,3 611 0,1 11.790 2,2
+Espodossolos 144.686 1,7 135.658 3,6 3.454 0,2 27 0,0 3.055 0,3 2.493 0,5
+Gleissolos 369.119 4,4 282.886 7,5 24.966 1,6 41.252 2,6 8.668 1,0 11.347 2,1
+Latossolos 2.799.703 33,6 1.110.329 29,6 477.073 31,1 685.092 43,0 410.542 45,6 116.667 21,3
+Luvissolos 238.480 2,9 112.370 3,0 117.930 7,7 0 0,0 2.447 0,3 5.732 1,0
+Neossolos 1.138.360 13,7 290.437 7,7 375.272 24,5 292.150 18,3 77.184 8,6 103.318 18,8
+Nitossolos 111.058 1,3 16.739 0,4 7.079 0,5 6.138 0,4 7.824 0,9 73.278 13,4
+Organossolos 6.753 0,1 8 0,0 122 0,0 3.233 0,2 1.217 0,1 2.173 0,4
+Planossolos 196.377 2,4 4.968 0,1 95.632 6,2 72.998 4,6 1.524 0,2 21.255 3,9
+Plintossolos 426.482 5,1 212.490 5,7 91.189 6,0 117.498 7,4 821 0,1 4.484 0,8
+Vertissolos 19.261 0,2 0 0,0 8.829 0,6 8.590 0,5 11 0,0 1.831 0,3
+Outros 25.328 0,3 9.862 0,3 3.330 0,2 2.409 0,2 7.219 0,8 2.508 0,5
+Fonte: IBGE (2019).

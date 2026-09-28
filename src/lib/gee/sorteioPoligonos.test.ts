@@ -165,4 +165,121 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
       expect(doEstrato[1].pi_i).toBeCloseTo(2 / nh, 8);
     }
   });
+
+  it("T3.1: deve garantir determinismo bit-a-bit sob a mesma semente (incluindo hashIntegridade) e sensibilidade à semente preservando a partição 18+18=36", () => {
+    const pool = gerarPoolCandidatosElegiveis(6);
+
+    const execucaoA = sortearPoligonosDroneD16(pool, {
+      semente: 20260928,
+      gitCommit: "commit-a",
+      sha256ConjuntoCandidatos: "sha256-pool",
+      geradoEm: "2026-09-28T15:00:00.000Z",
+    });
+
+    const execucaoB = sortearPoligonosDroneD16(pool, {
+      semente: 20260928,
+      gitCommit: "commit-a",
+      sha256ConjuntoCandidatos: "sha256-pool",
+      geradoEm: "2026-09-28T15:00:00.000Z",
+    });
+
+    const execucaoSementeDiferente = sortearPoligonosDroneD16(pool, {
+      semente: 20260929,
+      gitCommit: "commit-a",
+      sha256ConjuntoCandidatos: "sha256-pool",
+      geradoEm: "2026-09-28T15:00:00.000Z",
+    });
+
+    // Determinismo estrito com a mesma semente
+    expect(execucaoA.hashIntegridade).toBe(execucaoB.hashIntegridade);
+    expect(execucaoA.hashIntegridade).toMatch(/^[0-9a-f]{16}$/);
+    expect(
+      execucaoA.poligonos.map((p) => ({
+        idPoligono: p.idPoligono,
+        idCandidatoOrigem: p.idCandidatoOrigem,
+        estratoId: p.estratoId,
+        papelConjunto: p.papelConjunto,
+        pi_i: p.pi_i,
+        w_i: p.w_i,
+      }))
+    ).toEqual(
+      execucaoB.poligonos.map((p) => ({
+        idPoligono: p.idPoligono,
+        idCandidatoOrigem: p.idCandidatoOrigem,
+        estratoId: p.estratoId,
+        papelConjunto: p.papelConjunto,
+        pi_i: p.pi_i,
+        w_i: p.w_i,
+      }))
+    );
+
+    // Sensibilidade à semente mantendo invariantes de partição
+    expect(execucaoSementeDiferente.hashIntegridade).not.toBe(execucaoA.hashIntegridade);
+    expect(
+      execucaoSementeDiferente.poligonos.map((p) => `${p.idCandidatoOrigem}:${p.papelConjunto}`)
+    ).not.toEqual(
+      execucaoA.poligonos.map((p) => `${p.idCandidatoOrigem}:${p.papelConjunto}`)
+    );
+    expect(execucaoSementeDiferente.poligonos).toHaveLength(36);
+    expect(execucaoSementeDiferente.totalTreino).toBe(18);
+    expect(execucaoSementeDiferente.totalHeldOut).toBe(18);
+    for (const idEstrato of TODOS_ESTRATOS_D12) {
+      const par = execucaoSementeDiferente.poligonos.filter((p) => p.estratoId === idEstrato);
+      expect(par).toHaveLength(2);
+      expect(par.map((p) => p.papelConjunto).sort()).toEqual(["held-out", "treino"]);
+    }
+  });
+
+  it("T3.2: deve satisfazer a identidade de Horvitz-Thompson pi_i * w_i = 1 sobre estratos com tamanhos N_h distintos", () => {
+    // Gera candidatos com quantidades distintas por estrato (ex.: entre 2 e 11 candidatos por estrato, incluindo primos 3, 5, 7, 11)
+    const sTercis = [3.5, 9.5, 18.0];
+    const eTercis = [0.08, 0.38, 0.78];
+    const kNiveis: Array<1 | 2> = [1, 2];
+    const tamanhosDesejados = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 3, 5, 7, 9, 11, 4, 6, 8];
+
+    const candidatosHeterogeneos: CandidatoSorteioD16[] = [];
+    let seq = 1;
+    let estratoCounter = 0;
+    for (let sIdx = 0; sIdx < sTercis.length; sIdx++) {
+      for (let eIdx = 0; eIdx < eTercis.length; eIdx++) {
+        for (const k of kNiveis) {
+          const nNesteEstrato = tamanhosDesejados[estratoCounter];
+          estratoCounter++;
+          for (let i = 0; i < nNesteEstrato; i++) {
+            candidatosHeterogeneos.push({
+              id: `HET-${String(seq).padStart(4, "0")}`,
+              latitude: -24.7 - seq * 0.001,
+              longitude: -53.9 - seq * 0.001,
+              declividadePct: sTercis[sIdx] + i * 0.03 + (eIdx * 2 + k) * 0.001,
+              frequenciaSoloNu: eTercis[eIdx] + i * 0.003 + (sIdx * 2 + k) * 0.0001,
+              nivelK: k,
+              classeWorldCover2020: 40,
+              classeWorldCover2021: 30,
+              kAmbiguoAssociacao: false,
+            });
+            seq++;
+          }
+        }
+      }
+    }
+
+    const selo = sortearPoligonosDroneD16(candidatosHeterogeneos, {
+      semente: 20260928,
+      gitCommit: "commit-ht",
+      sha256ConjuntoCandidatos: "sha256-ht",
+      geradoEm: "2026-09-28T15:05:00.000Z",
+    });
+
+    const tamanhosObservados = Object.values(selo.contagemCandidatosPorEstrato);
+    expect(new Set(tamanhosObservados).size).toBeGreaterThan(4);
+
+    for (const p of selo.poligonos) {
+      const nh = p.nCandidatosEstrato;
+      expect(nh).toBeGreaterThanOrEqual(2);
+      expect(p.pi_i).toBeCloseTo(2 / nh, 8);
+      expect(p.w_i).toBeCloseTo(nh / 2, 8);
+      expect(p.pi_i * p.w_i).toBeCloseTo(1.0, 7);
+    }
+  });
 });
+

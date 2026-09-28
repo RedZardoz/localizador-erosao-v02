@@ -38,13 +38,13 @@ Os quinze commits abaixo trazem no corpo da mensagem a linha `Co-Authored-By: Cl
 
 | # | Commit | Data | Objeto | Prompt que o especificou |
 |---|---|---|---|---|
-| 1 | `53693a8` | 2026-09-26 | Elimina fabricação dos fatores RUSLE no Arquivo 01 e imputação por zero no Arquivo 05 | `PROMPT_CORRECAO_FABRICACAO_RUSLE_2026-09-26.md` |
+| 1 | `53693a8` | 2026-09-26 | Elimina fabricação dos fatores RUSLE no Arquivo 01 e imputação por zero no Arquivo 05 | `docs/planejamento/PROMPT_CORRECAO_FABRICACAO_RUSLE_2026-09-26.md` |
 | 2 | `2774932` | 2026-09-26 | Fecha lacuna do varredor para numerais entre aspas; remove datas padrão em planilha | idem |
 | 3 | `46bf35f` | 2026-09-26 | Card da Linha de Base RUSLE no Inspetor; verificação formal da Regra 8 | idem |
-| 4 | `4ae6d3c` | 2026-09-26 | Deriva alvo supervisionado do Arquivo 01 da rotulagem humana canônica | `PROMPT_CORRECAO_ROTULO_ARQUIVO01_2026-09-26.md` |
+| 4 | `4ae6d3c` | 2026-09-26 | Deriva alvo supervisionado do Arquivo 01 da rotulagem humana canônica | `docs/planejamento/PROMPT_CORRECAO_ROTULO_ARQUIVO01_2026-09-26.md` |
 | 5 | `e66d3a9` | 2026-09-26 | Endurece validação cruzada espacial; descarte proporcional de `Bloco_Espacial` | idem |
 | 6 | `7e42014` | 2026-09-26 | Prova formal da eliminação do alvo fabricado no Arquivo 01 | idem |
-| 7 | `396c50e` | 2026-09-26 | Alinha contagem de amostras entre Arquivo 01 e Arquivo 04 | `PROMPT_CORRECAO_ALVO_TREINO_E_FILA_2026-09-26.md` |
+| 7 | `396c50e` | 2026-09-26 | Alinha contagem de amostras entre Arquivo 01 e Arquivo 04 | `docs/planejamento/PROMPT_CORRECAO_ALVO_TREINO_E_FILA_2026-09-26.md` |
 | 8 | `207dca2` | 2026-09-26 | Elimina alvo circular por `classeAmostral` e heurística de `Tipologia_Feicao` | idem |
 | 9 | `82bd7e7` | 2026-09-26 | Remove literal fabricado de bacia no LOCO; descarte proporcional com aborto | idem |
 | 10 | `903805a` | 2026-09-26 | Elimina imputação de `Classe_Alvo_Binaria` por `fillna` | idem |
@@ -52,15 +52,17 @@ Os quinze commits abaixo trazem no corpo da mensagem a linha `Co-Authored-By: Cl
 | 12 | `bb7e192` | 2026-09-26 | Remove fallback de rótulo no Inspetor; amplia varredor; descarta candidato incompleto | idem |
 | 13 | `28b78e5` | 2026-09-26 | Remove pré-preenchimento de classe no template Kobo; rejeita submissão sem classe | idem |
 | 14 | `4ea31ba` | 2026-09-26 | Prova formal da eliminação do alvo circular no treino | idem |
-| 15 | `b83c5b7` | 2026-09-27 | FASE 0: separa B11/B12, valida domínio do Fator C, elimina `adquiridoEm` literal, guardas D11 e P02, isola `PROJ_LIB` | `PROMPT_OPERACIONALIZACAO_INTEGRAL_SAREL_2026-09-26.md` |
+| 15 | `b83c5b7` | 2026-09-27 | FASE 0: separa B11/B12, valida domínio do Fator C, elimina `adquiridoEm` literal, guardas D11 e P02, isola `PROJ_LIB` | `docs/planejamento/PROMPT_OPERACIONALIZACAO_INTEGRAL_SAREL_2026-09-26.md` |
 
 ### 3.2 Executado pelo **agente de auditoria** (Claude Opus 5)
 
 | # | Commit | Data | Objeto |
 |---|---|---|---|
-| 16 | `7c60756` | 2026-09-27 | Registro de P02 (piso de thinning em 1.000 m) e D20 (Fator C híbrido SPD) como decididas, após confirmação expressa do pesquisador; e substituição de contagem literal por invariante de partição em `decisoes.test.ts` |
+| 16 | `7c60756` | 2026-09-27 | Registro de P02 (piso de thinning em 1.000 m) e D20 (Fator C híbrido SPD) como decididas, após confirmação expressa do pesquisador; e substituição de contagem literal por invariante de partição em `src/config/decisoes.test.ts` |
+| 19 | `a34c86a` | 2026-09-28 | Corrige a citação do Documentos 246 em D08, D09 e D14 em `src/config/decisoes.ts`, conferida na fonte (`Coelho et al., 2024, 40 p.`), e adiciona recomputação da tabela de distorção em `docs/verificacoes/projecao/verifica_tabela_recalculada_2026-09-28.py` |
+| 20 | `184dfd8` | 2026-09-28 | Registra `docs/planejamento/PROMPT_CORRECAO_RELATO_FASE_A0_A1_2026-09-28.md` |
 
-Neste commit a linha `Co-Authored-By: Claude Opus 5` **está correta**.
+Nestes commits a linha `Co-Authored-By: Claude Opus 5` **está correta**.
 
 ### 3.3 Commit anterior a esta sequência
 
@@ -76,8 +78,9 @@ Dos 115 commits da branch `sarel/v2` anteriores a 28/09/2026, 17 trazem linha de
 
 | # | Commit | Data | Objeto | Agente executor |
 |---|---|---|---|---|
-| 17 | `de9e025` | 2026-09-28 | FASE A0: operacionaliza D07/P05 (concordância interanual WorldCover v100∧v200 em `{30,40}`), D08/D09 (`kAmbiguoAssociacao` para UMs associadas com níveis K distintos, fora da matriz de treino) e D15 (projeção EPSG:31982 com distorção recalculada via `pyproj`, máx. `+0.1237%`) sob correções C1–C5 | Antigravity (Google DeepMind) |
-| 18 | *(este commit)* | 2026-09-28 | FASE A1: implementa o mecanismo determinístico de sorteio estratificado de 36 polígonos de 10 ha (`D16` e `D23` — 18 treino + 18 held-out pareados por estrato `E_i`), CLI com `--dry-run`, rota local e painel no modal de Decisões Metodológicas, sem executar sorteio real | Antigravity (Google DeepMind) |
+| 17 | `de9e025` | 2026-09-28 | FASE A0: operacionaliza D07/P05 (concordância interanual WorldCover v100∧v200 em `{30,40}`), D08/D09 (`kAmbiguoAssociacao` para UMs associadas com níveis K distintos, fora da matriz de treino) e D15 (projeção EPSG:31982 com distorção máxima `+0,12%` em 2 casas decimais) sob correções C1–C5 | Antigravity (Google DeepMind) |
+| 18 | `8bc55a7` | 2026-09-28 | FASE A1: implementa o mecanismo determinístico de sorteio estratificado de 36 polígonos de 10 ha (`D16` e `D23` — 18 treino + 18 held-out pareados por estrato `E_i`), CLI com `--dry-run`, rota local e painel no modal de Decisões Metodológicas, sem executar sorteio real | Antigravity (Google DeepMind) |
+| 21 | *(este commit)* | 2026-09-28 | Correção T1–T4 e disciplina R1 (`docs/planejamento/PROMPT_CORRECAO_RELATO_FASE_A0_A1_2026-09-28.md`): extração de `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/CNPS-DOC-246-2024.pdf` em `docs/verificacoes/fontes/doc246/extrair_cnps_doc_246_2024.py`, desmarcação de WFS `bra_erodibilidade_2024_sirgas2000` em `src/lib/embrapa/embrapaSoilClient.ts` e `src/lib/export/pacoteReprodutibilidade.ts`, testes T3.1 (`hashIntegridade`) e T3.2 (`pi_i * w_i = 1`) em `src/lib/gee/sorteioPoligonos.test.ts`, rótulos `[SINTETICO]` em `scripts/sortear_poligonos_d16.ts`, e verificador `src/lib/seguranca/provenienciaCaminhos.test.ts` | Antigravity (Google DeepMind) |
 
 ---
 
@@ -100,10 +103,10 @@ Para a declaração acadêmica, convém distinguir o que a assistência produziu
 
 Em 27/09/2026 os quatro prompts em `docs/planejamento/` passaram a exigir que **cada agente assine com a própria identidade**, com proibição explícita de usar a de outro:
 
-- `PROMPT_CORRECAO_FABRICACAO_RUSLE_2026-09-26.md`
-- `PROMPT_CORRECAO_ROTULO_ARQUIVO01_2026-09-26.md`
-- `PROMPT_CORRECAO_ALVO_TREINO_E_FILA_2026-09-26.md`
-- `PROMPT_OPERACIONALIZACAO_INTEGRAL_SAREL_2026-09-26.md` (Proibição P11)
+- `docs/planejamento/PROMPT_CORRECAO_FABRICACAO_RUSLE_2026-09-26.md`
+- `docs/planejamento/PROMPT_CORRECAO_ROTULO_ARQUIVO01_2026-09-26.md`
+- `docs/planejamento/PROMPT_CORRECAO_ALVO_TREINO_E_FILA_2026-09-26.md`
+- `docs/planejamento/PROMPT_OPERACIONALIZACAO_INTEGRAL_SAREL_2026-09-26.md` (Proibição P11)
 
 A partir da FASE 1 do programa de operacionalização, os commits de Antigravity passam a trazer a sua própria identificação, e cada fase acrescenta suas linhas à §3 deste documento.
 

@@ -112,6 +112,7 @@ function executarCli(): void {
 
   let candidatos: CandidatoSorteioD16[];
   let origemCandidatos: string;
+  let origemSintetica = false;
 
   if (caminhoCandidatos) {
     const absPath = path.resolve(process.cwd(), caminhoCandidatos);
@@ -122,15 +123,29 @@ function executarCli(): void {
     const bruto = JSON.parse(fs.readFileSync(absPath, "utf-8"));
     candidatos = Array.isArray(bruto) ? bruto : bruto.candidatos ?? [];
     origemCandidatos = absPath;
-  } else {
-    if (flagConfirmar && !flagDryRun) {
-      console.error(
-        "[RECUSA] O sorteio real (--confirmar) exige um arquivo de candidatos reais via --candidatos <caminho.json>."
-      );
-      process.exit(1);
+    if (
+      bruto?.origemSintetica === true ||
+      candidatos.some(
+        (c) =>
+          String(c.id).startsWith("DRY-CAND-") ||
+          c.isSynthetic === true ||
+          c.origemSintetica === true
+      )
+    ) {
+      origemSintetica = true;
     }
+  } else {
     candidatos = gerarConjuntoInspecaoDryRun();
     origemCandidatos = "inspecao-estrutural-dry-run (sem arquivo --candidatos informado)";
+    origemSintetica = true;
+  }
+
+  // Garantia de código (T4.3): o selo de D23 jamais pode nascer de candidato sintético, mesmo com --confirmar
+  if (origemSintetica && flagConfirmar) {
+    console.error(
+      "[RECUSA — ORIGEM SINTÉTICA] O selo de D23 jamais pode ser gravado a partir de candidatos sintéticos/fabricados, mesmo com --confirmar. Informe um arquivo real de candidatos da Bacia do Paraná 3 via --candidatos <caminho.json>."
+    );
+    process.exit(1);
   }
 
   const relatorio = verificarPreCondicoesSorteioD16(candidatos, {
@@ -138,17 +153,32 @@ function executarCli(): void {
     lancarErro: false,
   });
 
+  const prefixoNum = origemSintetica ? "[SINTETICO] " : "";
+
   console.log(`Modo de operação: ${flagConfirmar && !flagDryRun ? "CONFIRMAR (REAL)" : "DRY-RUN (SIMULAÇÃO SEGURA — NENHUM SORTEIO EXECUTADO)"}`);
   console.log(`Origem do conjunto: ${origemCandidatos}`);
-  console.log(`Total de candidatos avaliados: ${relatorio.totalCandidatos}`);
-  console.log(`Limiares empíricos S (declividade %): t1=${relatorio.limiaresS.t1.toFixed(4)}%, t2=${relatorio.limiaresS.t2.toFixed(4)}%`);
-  console.log(`Limiares empíricos E (freq. solo nu): t1=${relatorio.limiaresE.t1.toFixed(4)}, t2=${relatorio.limiaresE.t2.toFixed(4)}`);
-  console.log("\nContagem de candidatos por estrato (18 estratos de D12):");
+
+  if (origemSintetica) {
+    console.log(
+      "\n[AVISO — DADOS SINTÉTICOS DE EXERCÍCIO ESTRUTURAL] Os limiares empíricos e as contagens abaixo NÃO descrevem a Bacia do Paraná 3; são 90 candidatos fabricados exclusivamente para exercitar a estrutura das 7 pré-condições no modo --dry-run."
+    );
+  }
+
+  console.log(`${prefixoNum}Total de candidatos avaliados: ${relatorio.totalCandidatos}`);
+  console.log(`${prefixoNum}Limiares empíricos S (declividade %): t1=${relatorio.limiaresS.t1.toFixed(4)}%, t2=${relatorio.limiaresS.t2.toFixed(4)}%`);
+  console.log(`${prefixoNum}Limiares empíricos E (freq. solo nu): t1=${relatorio.limiaresE.t1.toFixed(4)}, t2=${relatorio.limiaresE.t2.toFixed(4)}`);
+  console.log(`\n${prefixoNum}Contagem de candidatos por estrato (18 estratos de D12):`);
 
   for (const idEstrato of TODOS_ESTRATOS_D12) {
     const n = relatorio.contagemCandidatosPorEstrato[idEstrato];
     const piPreview = n >= 2 ? (2 / n).toFixed(4) : "INVIÁVEL (<2)";
-    console.log(`  - ${idEstrato}: ${String(n).padStart(3, " ")} candidatos | pi_i previsto = 2/${n} (${piPreview})`);
+    console.log(`${prefixoNum}  - ${idEstrato}: ${String(n).padStart(3, " ")} candidatos | pi_i previsto = 2/${n} (${piPreview})`);
+  }
+
+  if (origemSintetica) {
+    console.log(
+      "[FIM DO BLOCO SINTÉTICO] Aviso reiterado: os limiares e as contagens acima NÃO descrevem a Bacia do Paraná 3 e servem apenas para exercitar a estrutura.\n"
+    );
   }
 
   if (!relatorio.aprovado) {
@@ -159,7 +189,7 @@ function executarCli(): void {
 
   console.log("\n[OK] Todas as 7 pré-condições de D07, D08, D12, D16 e D23 foram aprovadas.");
 
-  if (flagDryRun || !flagConfirmar) {
+  if (flagDryRun || !flagConfirmar || origemSintetica) {
     console.log(
       "\n[DRY-RUN CONCLUÍDO] Nenhum sorteio foi executado e nenhum selo foi gravado em docs/verificacoes/sorteio/."
     );

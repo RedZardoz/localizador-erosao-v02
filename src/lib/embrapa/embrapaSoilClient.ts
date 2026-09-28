@@ -246,22 +246,31 @@ function lerComponente(
 
 /**
  * Classifica o nível de estrato de erodibilidade K (Decisão D09: 1 = K <= 0,0285 [classes 1–3];
- * 2 = K >= 0,0300 [classes 4–5]) de um componente taxonômico de solo para fins da marcação
+ * 2 = K >= 0,0300 [classes 4–6]) de um componente taxonômico de solo para fins da marcação
  * `kAmbiguoAssociacao` (Decisão D08).
  *
- * Proveniência da regra (verificada em `CNPS-DOC-246-2024.pdf`, Coelho et al., 2024, pp. 13–15 e 17–19,
- * e na camada oficial WFS `geonode:bra_erodibilidade_2024_sirgas2000`, atributos `erod_c1..erod_c4`):
- * 1. Se a feição WFS informar explicitamente `erod_c1..erod_c4`, converte diretamente a classe textual:
- *    {"Muito baixa", "Baixa", "Média"} -> Nível 1; {"Alta", "Muito alta", "Extremamente alta"} -> Nível 2.
- * 2. Ordens/subordens expressamente declaradas no texto do Documentos 246 (pp. 17–19 / PDF pp. 18–20)
- *    e verificadas em `bra_erodibilidade_2024_sirgas2000`:
- *    - Nível 1 (K <= 0,0285): `LATOSSOLO` (exceto fase erodida), `PLINTOSSOLO PETRICO`, `NITOSSOLO`.
- *    - Nível 2 (K >= 0,0300): `CHERNOSSOLO`, `PLANOSSOLO`, `LUVISSOLO`, `VERTISSOLO`, `ESPODOSSOLO`,
- *      `NEOSSOLO` (`QUARTZARENICO`, `REGOLITICO`, `LITOLICO`, `FLUVICO`).
- * 3. Para ordens cuja distribuição na Figura 1 (p. 19) abrange múltiplas classes conforme atributos de família/fase
- *    (`ARGISSOLO`, `CAMBISSOLO`, `GLEISSOLO`, `ORGANOSSOLO`, `PLINTOSSOLO` não-pétrico):
- *    - `ORGANOSSOLO` e `ARGISSOLO` sem caráter abróptico/arenoso -> Nível 1;
- *    - `CAMBISSOLO`, `GLEISSOLO`, `PLINTOSSOLO` (`HAPLICO`/`ARGILUVICO`) e `ARGISSOLO` abróptico/arenoso -> Nível 2.
+ * Proveniência documental e estado de conferência:
+ * - Obra primária (CONFERIDA via `docs/verificacoes/fontes/doc246/extrair_cnps_doc_246_2024.py` ->
+ *   `saida_extracao_cnps_doc_246_2024.txt`):
+ *   Coelho, M. R.; Lumbreras, J. F.; Amaral, A. J. do; Vasques, G. M.; Mansilla Baca, J. F.;
+ *   Dart, R. de O. & Pedreira, J. P. das N. C. (2024). Erodibilidade dos solos do Brasil.
+ *   Rio de Janeiro: Embrapa Solos, Documentos 246, 40 p. (CIP: PDF 38 p.).
+ *   1. Na Tabela 4 (PDF p. 13 / Doc. p. 12) e Tabela 5 (PDF p. 14 / Doc. p. 13), as classes
+ *      {"Muito baixa", "Baixa", "Média"} correspondem a valores ponderados 1,0 a 3,4 e
+ *      K in [0,0020; 0,0285] -> Nível 1 (D09); as classes {"Alta", "Muito alta", "Extremamente alta"}
+ *      correspondem a valores 3,5 a 6,0 e K in [0,0300; 0,1100] -> Nível 2 (D09).
+ *   2. Na prosa das pp. 17–20 do Doc. (PDF pp. 18–21), são declarados de erodibilidade muito baixa/baixa
+ *      (Nível 1) os `LATOSSOLO` (exceto quando identificados com `fase erodida`, PDF p. 21, classificados
+ *      como extremamente alta) e os `PLINTOSSOLO PETRICO` (PDF p. 19); e de erodibilidade alta/muito alta
+ *      (Nível 2) os `PLANOSSOLO NATRICO` e `GLEISSOLO SALICO` (PDF p. 18), `CHERNOSSOLO`, `PLANOSSOLO HAPLICO`,
+ *      `LUVISSOLO`, `VERTISSOLO`, `ESPODOSSOLO`, `NEOSSOLO QUARTZARENICO` e `NEOSSOLO REGOLITICO` (PDF p. 19).
+ * - Estado NÃO CONFERIDO (propagado ao selo de proveniência do pacote de reprodutibilidade, regime D13/D15):
+ *   a camada WFS `geonode:bra_erodibilidade_2024_sirgas2000` (atributos `erod_c1..erod_c4`) NÃO foi
+ *   consultada/conferida em rede (o cliente WFS ativo usa `geonode:brasil_solos_5m_20201104`), e o
+ *   enquadramento por ordem/subordem para as classes cuja distribuição na Figura 1 (PDF p. 20 / Doc. p. 19)
+ *   abrange múltiplas faixas (`NITOSSOLO`, `ORGANOSSOLO`, `ARGISSOLO`, `CAMBISSOLO`, `GLEISSOLO` não-sálico,
+ *   `PLINTOSSOLO` não-pétrico, `NEOSSOLO LITOLICO`/`FLUVICO`) constitui regra operacional NÃO CONFERIDA
+ *   contra a tabela de atributos 1:250.000.
  */
 export function classificarNivelEstratoKComponente(
   comp: SoilComponent,
