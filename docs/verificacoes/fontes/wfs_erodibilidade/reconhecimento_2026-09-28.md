@@ -105,3 +105,64 @@ deslocando `10/19` para cerca de `11/20`.
 
 O sufixo `NV` aparece anexado sistematicamente em `cod_um2`. Sem consequencia para o nivel
 de K (`Media` e `Baixa` sao ambos Nivel 1), mas errado no registro.
+
+---
+
+# Correcao de F7 e novo achado F8 — 28/09/2026 (segunda verificacao)
+
+## F7 estava PARCIALMENTE ERRADO — correcao
+
+Eu havia registrado que o executor anexava um sufixo de duas letras a `cod_um2`
+(`SG21NVef1NV` contra `SG21NVef1` medido). **Estava errado.** A camada tem DOIS campos:
+
+| ponto | `cod_um` | `cod_um2` |
+|---|---|---|
+| R13 / C02 | `SG21NVef1NV` | `SG21NVef1` |
+| R01 Toledo | `SG22LVef1LV` | `SG22LVef1` |
+
+Os valores que ele relatou sao os de **`cod_um`**, corretos, apenas rotulados como
+`cod_um2`. E erro de rotulo de campo, nao valor inventado. A parte de F7 que permanece sem
+explicacao e o ponto de associacao (`SG22NVef2NV` relatado contra `cod_um2 = SG22NVef7`
+medido, padrao que nao encaixa) e o `erod_um` da associacao (`Baixa` relatado contra
+`Media` medido).
+
+## C02 nao era falsa inclusao — minha suspeita era infundada
+
+Suspeitei que a regra de U1 "preferir a feicao com solo" pudesse admitir ponto realmente
+dentro da represa. Testei por ponto-em-poligono e **as duas cartas dizem SOLO** na
+coordenada (-24.8531, -54.3622): PR `LVef1 LATOSSOLO`, 2024 `SG21NVef1 Baixa k=0.012`. O
+rotulo `C02_SantaHelena_CorpoDagua` e que e impropio — a coordenada esta em terra. A
+leitura "Corpo d'agua" que eu obtive antes era artefato do meu proprio metodo, que tomava
+a primeira feicao do GetFeatureInfo.
+
+## F8 (NOVO) — ponto-em-poligono por CQL resolve a ambiguidade de forma determinística
+
+O mecanismo de U1 acerta nos pontos conferidos, mas por heuristica sobre consulta com
+buffer: a ordem das feicoes do GeoServer NAO e ordem de contencao. Em C02 o poligono de
+agua vem primeiro na camada de 2024; em R13 vem primeiro na camada do PR. A regra
+"preferir solo" chega a resposta certa sem garantia de chegar.
+
+Existe caminho determinístico, **testado nesta data**: WFS `GetFeature` com filtro
+espacial de contencao, que devolve exatamente o poligono que contem o ponto.
+
+    service=WFS&version=2.0.0&request=GetFeature&typeNames=<camada>
+    &outputFormat=application/json
+    &CQL_FILTER=INTERSECTS(geometry, POINT(<lat> <lon>))
+
+**Ordem de eixos importa:** na versao 2.0.0 o ponto vai como `POINT(lat lon)`; com
+`POINT(lon lat)` devolve 0 feicoes. A versao 1.0.0 aceita `POINT(lon lat)`. Testadas as
+cinco variantes; apenas essas duas funcionam.
+
+Resultado em quatro pontos, sempre **uma** feicao por camada:
+
+| ponto | PR | 2024 |
+|---|---|---|
+| C02 (-24.8531, -54.3622) | LVef1 LATOSSOLO | SG21NVef1, Baixa, k=0.012 |
+| R13 (-24.8800, -54.2600) | NVef2 NITOSSOLO | SG21NVef1, Baixa, k=0.012 |
+| R01 (-24.62, -53.71) | LVef1 LATOSSOLO | SG22LVef1, Muito baixa, k=0.002 |
+| C01 (-24.286, -53.84) | Area Urbana | SG22Ar, Area urbana, k=0 |
+
+Ganho: elimina a categoria "ponto em fronteira" como fonte de arbitrio — sao 7 de 20
+pontos, 35%, cuja classificacao hoje depende da heuristica. Ressalva: ponto sobre lacuna
+ou sobre poligono de agua devolve ZERO feicoes, o que deve mapear para `indisponivel` e
+NUNCA para "solo nao encontrado, usar fallback".
