@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { converterErodibilidadeFatorK, obterFatorKComProveniencia } from "./fatorK";
+import {
+  converterErodibilidadeFatorK,
+  identificarViaFatorKD14,
+  obterFatorKComProveniencia,
+} from "./fatorK";
 import { montarLinhaDeBaseRUSLE } from "./linhaDeBase";
 import { Proveniencia } from "@/types/proveniencia";
 
@@ -78,8 +82,24 @@ describe("Fator K de Erodibilidade do Solo (Tabela 5 Embrapa Solos / Decisões D
     });
   });
 
-  describe("obterFatorKComProveniencia", () => {
-    it("produz proveniência tabelada com D14 para classe válida", () => {
+  describe("obterFatorKComProveniencia e Decisão D14 emendada (U3)", () => {
+    it("prefere k_solos da camada geonode:bra_erodibilidade_2024_sirgas2000 com proveniência tabelado (U3.1)", () => {
+      const res = obterFatorKComProveniencia(
+        { estado: "tabelado", valor: "Baixa", tabela: "Embrapa", chave: "Baixa" },
+        { kSolos: 0.012, erodUm: "Baixa", codUm: "SG21NVef1NV", ogcFid: 102154 }
+      );
+      expect(res.estado).toBe("tabelado");
+      if (res.estado === "tabelado") {
+        expect(res.valor).toBe(0.012);
+        expect(res.chave).toBe("SG21NVef1NV");
+        expect(res.decisao).toBe("D14");
+        expect(res.tabela).toContain("Tabela 5 do Documentos 246");
+        expect(res.tabela).toContain("bra_erodibilidade_2024_sirgas2000");
+      }
+      expect(identificarViaFatorKD14(res)).toBe("k_solos_camada_2024_tabelado");
+    });
+
+    it("produz proveniência distinta de fallback (faixa-classe:...) quando k_solos está ausente (U3.2)", () => {
       const prov: Proveniencia<string> = {
         estado: "tabelado",
         valor: "Média",
@@ -87,14 +107,65 @@ describe("Fator K de Erodibilidade do Solo (Tabela 5 Embrapa Solos / Decisões D
         chave: "LV",
       };
 
-      const res = obterFatorKComProveniencia(prov);
+      const res = obterFatorKComProveniencia(prov, null);
       expect(res.estado).toBe("tabelado");
       if (res.estado === "tabelado") {
         expect(res.valor).toBe(0.0218);
-        expect(res.chave).toBe("Média");
+        expect(res.chave).toBe("faixa-classe:Média");
         expect(res.decisao).toBe("D14");
-        expect(res.tabela).toContain("Tabela 5 Embrapa Solos");
+        expect(res.tabela).toContain("Fallback D14 derivado de faixa de classe ordinal");
       }
+      expect(identificarViaFatorKD14(res)).toBe("fallback_faixa_classe_d14");
+    });
+
+    it("TESTE OBRIGATÓRIO U3: k_solos = 0 com erod_um = 'Área urbana' devolve indisponivel / fora-do-dominio (NÃO devolve K = 0) e perdaSolo permanece retida pelo Invariante 1", () => {
+      const resUrbana = obterFatorKComProveniencia(
+        { estado: "tabelado", valor: "Area urbana", tabela: "Embrapa", chave: "Urb" },
+        { kSolos: 0, erodUm: "Área urbana", codUm: "SG22Ár", ogcFid: 99999 }
+      );
+      expect(resUrbana.estado).toBe("indisponivel");
+      expect((resUrbana as { valor?: number }).valor).not.toBe(0);
+      if (resUrbana.estado === "indisponivel") {
+        expect(resUrbana.causa).toBe("fora-do-dominio");
+      }
+      expect(identificarViaFatorKD14(resUrbana)).toBe("indisponivel_fora_do_dominio");
+
+      // Mesmo quando R, LS, C e P são fornecidos como números finitos válidos, perdaSolo permanece retida pelo Invariante 1
+      const rusleUrbana = montarLinhaDeBaseRUSLE({
+        ndviProveniencia: {
+          estado: "medido",
+          valor: 0.45,
+          fonte: "Sentinel-2",
+          adquiridoEm: "2026-05-10T12:00:00Z",
+          consultadoEm: "2026-09-10T21:00:00Z",
+        },
+        fatorRSubstituto: {
+          estado: "modelado",
+          valor: 8500,
+          modelo: "CHIRPS regional",
+          insumos: ["CHIRPS"],
+        },
+        fatorLSSubstituto: {
+          estado: "modelado",
+          valor: 2.1,
+          modelo: "Desmet & Govers (1996)",
+          insumos: ["Copernicus DEM GLO-30"],
+        },
+        camadaErodibilidade2024: {
+          kSolos: 0,
+          erodUm: "Área urbana",
+          codUm: "SG22Ár",
+          ogcFid: 99999,
+        },
+      });
+
+      expect(rusleUrbana.fatorK.estado).toBe("indisponivel");
+      expect((rusleUrbana.fatorK as { valor?: number }).valor).not.toBe(0);
+      if (rusleUrbana.fatorK.estado === "indisponivel") {
+        expect(rusleUrbana.fatorK.causa).toBe("fora-do-dominio");
+      }
+      expect(rusleUrbana.perdaSolo.estado).toBe("indisponivel");
+      expect((rusleUrbana.perdaSolo as { valor?: number }).valor).not.toBe(0);
     });
 
     it("retorna fora-do-dominio para feição não agrícola", () => {
@@ -123,8 +194,8 @@ describe("Fator K de Erodibilidade do Solo (Tabela 5 Embrapa Solos / Decisões D
   });
 
   describe("Integração com Linha de Base RUSLE", () => {
-    it("integra Fator K calculado a partir da erodibilidade informada", () => {
-      const rusle = montarLinhaDeBaseRUSLE({
+    it("integra Fator K calculado a partir da erodibilidade informada (fallback por faixa) ou k_solos (camada 2024)", () => {
+      const rusleFallback = montarLinhaDeBaseRUSLE({
         ndviProveniencia: {
           estado: "medido",
           valor: 0.5,
@@ -140,11 +211,34 @@ describe("Fator K de Erodibilidade do Solo (Tabela 5 Embrapa Solos / Decisões D
         },
       });
 
-      expect(rusle.fatorK.estado).toBe("tabelado");
-      if (rusle.fatorK.estado === "tabelado") {
-        expect(rusle.fatorK.valor).toBe(0.0360);
-        expect(rusle.fatorK.chave).toBe("Alta");
-        expect(rusle.fatorK.decisao).toBe("D14");
+      expect(rusleFallback.fatorK.estado).toBe("tabelado");
+      if (rusleFallback.fatorK.estado === "tabelado") {
+        expect(rusleFallback.fatorK.valor).toBe(0.0360);
+        expect(rusleFallback.fatorK.chave).toBe("faixa-classe:Alta");
+        expect(rusleFallback.fatorK.decisao).toBe("D14");
+      }
+
+      const rusleKSolos = montarLinhaDeBaseRUSLE({
+        ndviProveniencia: {
+          estado: "medido",
+          valor: 0.5,
+          fonte: "Sentinel-2",
+          adquiridoEm: "2026-05-10T12:00:00Z",
+          consultadoEm: "2026-09-10T21:00:00Z",
+        },
+        camadaErodibilidade2024: {
+          kSolos: 0.0285,
+          erodUm: "Média",
+          codUm: "SG22NVef7",
+          ogcFid: 105112,
+        },
+      });
+
+      expect(rusleKSolos.fatorK.estado).toBe("tabelado");
+      if (rusleKSolos.fatorK.estado === "tabelado") {
+        expect(rusleKSolos.fatorK.valor).toBe(0.0285);
+        expect(rusleKSolos.fatorK.chave).toBe("SG22NVef7");
+        expect(rusleKSolos.fatorK.decisao).toBe("D14");
       }
     });
   });

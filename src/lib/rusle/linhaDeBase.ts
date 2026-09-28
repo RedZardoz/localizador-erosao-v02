@@ -16,12 +16,13 @@ import { LinhaDeBaseRUSLE } from "@/types/ponto";
 import { Proveniencia } from "@/types/proveniencia";
 import { REGISTRO_DECISOES } from "@/config/decisoes";
 import { obterFatorCComProveniencia } from "./fatorC";
-import { obterFatorKComProveniencia } from "./fatorK";
+import { obterFatorKComProveniencia, InsumoFatorKCamada2024 } from "./fatorK";
 
 export interface ParametrosLinhaDeBaseRUSLE {
   ndviProveniencia?: Proveniencia<number> | null;
   bsiProveniencia?: Proveniencia<number> | null;
   erodibilidadeProveniencia?: Proveniencia<string> | null;
+  camadaErodibilidade2024?: InsumoFatorKCamada2024 | null;
   fatorRSubstituto?: Proveniencia<number>;
   fatorKSubstituto?: Proveniencia<number>;
   fatorLSSubstituto?: Proveniencia<number>;
@@ -51,6 +52,7 @@ export function montarLinhaDeBaseRUSLE(params: ParametrosLinhaDeBaseRUSLE = {}):
     ndviProveniencia,
     bsiProveniencia,
     erodibilidadeProveniencia,
+    camadaErodibilidade2024,
     fatorRSubstituto,
     fatorKSubstituto,
     fatorLSSubstituto,
@@ -78,15 +80,15 @@ export function montarLinhaDeBaseRUSLE(params: ParametrosLinhaDeBaseRUSLE = {}):
         }
   );
 
-  // 4. Fator K (Decisão D14 - Tabela 5 Embrapa Solos / Mannigel et al., 2002)
+  // 4. Fator K (Decisão D14 emendada - k_solos de geonode:bra_erodibilidade_2024_sirgas2000, com fallback por faixa de classe)
   const fatorK: Proveniencia<number> =
     fatorKSubstituto ??
-    (erodibilidadeProveniencia
-      ? obterFatorKComProveniencia(erodibilidadeProveniencia)
+    (camadaErodibilidade2024 || erodibilidadeProveniencia
+      ? obterFatorKComProveniencia(erodibilidadeProveniencia, camadaErodibilidade2024)
       : {
           estado: "indisponivel",
           causa: "insuficiente",
-          motivo: "Fator K numérico para RUSLE requer a classe de erodibilidade pedológica informada (Decisão D14).",
+          motivo: "Fator K numérico para RUSLE requer k_solos da camada 2024 ou a classe de erodibilidade pedológica informada (Decisão D14).",
         });
 
   // 5. Fator LS (Aguardando Decisão D15)

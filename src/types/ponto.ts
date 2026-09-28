@@ -117,6 +117,15 @@ export interface PontoAmostral {
       | "heuristica-fallback-nao-conferida"
       | "divergencia-entre-cartas"
       | "fora-do-dominio";
+    pontoEmFronteiraPedologica?: boolean;
+    totalFeicoesSoloRetornadas?: number;
+    indiceFeicaoSoloEscolhida?: number | null;
+    feicaoSoloEscolhidaId?: string | null;
+    viaFatorKD14?:
+      | "k_solos_camada_2024_tabelado"
+      | "fallback_faixa_classe_d14"
+      | "indisponivel_fora_do_dominio"
+      | "indisponivel_sem_cobertura";
   };
 
   // Metadados de elegibilidade multitemporal ESA WorldCover (D07: 2020 v100 ∩ 2021 v200 em [30, 40])

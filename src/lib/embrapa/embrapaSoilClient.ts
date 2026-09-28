@@ -181,13 +181,17 @@ export interface EmbrapaErodibility {
 export interface EmbrapaErodibility2024 {
   ogcFid: number | null;
   codUm: string;
+  codUm2?: string;
   legenda: string;
   legendasComponentes: string[];
   ordensExtraidas: string[];
   erodComponentes: string[];
   erodUm: string;
   fatorKUm: string;
+  /** Valor de k_solos validado contra o domínio de erod_um (null se erod_um for não-solo ou k_solos <= 0). */
   kSolos: number | null;
+  /** Valor bruto de k_solos retornado pelo GeoServer (0 para Área urbana / Corpo d'água). */
+  kSolosBruto?: number | null;
 }
 
 /** Estado da consulta. Estados distintos jamais são colapsados. */
@@ -209,9 +213,23 @@ export interface EmbrapaSoilQueryResult {
   solo: EmbrapaSoilUnit | null;
   erodibilidade: EmbrapaErodibility | null;
   erodibilidade2024?: EmbrapaErodibility2024 | null;
-  /** Indica se qualquer camada reportou classe não-pedológica ("Area urbana", "Corpos dagua", etc.) na coordenada (T3). */
+  /** Indica se nenhuma das feições de uma camada consultada possui solo mapeado (U1.4 / T3). */
   foraDoDominioSolo?: boolean;
   motivoForaDoDominioSolo?: string | null;
+  /** Marcador de fronteira cartográfica: true quando houver mais de uma feição de solos na resposta (U1.5). */
+  pontoEmFronteiraPedologica?: boolean;
+  /** Quantidade total de feições retornadas pela camada parana_solos_20201105 (U1.3). */
+  totalFeicoesSoloRetornadas?: number;
+  /** Índice (0-based) da feição escolhida em parana_solos_20201105 (U1.3). */
+  indiceFeicaoSoloEscolhida?: number | null;
+  /** Identificador (id ou sbcs) da feição escolhida em parana_solos_20201105 (U1.3). */
+  feicaoSoloEscolhidaId?: string | null;
+  /** Quantidade total de feições retornadas pela camada bra_erodibilidade_2024_sirgas2000 (U1.3). */
+  totalFeicoesErod2024Retornadas?: number;
+  /** Índice (0-based) da feição escolhida em bra_erodibilidade_2024_sirgas2000 (U1.3). */
+  indiceFeicaoErod2024Escolhida?: number | null;
+  /** Identificador (cod_um / cod_um2 / id) da feição escolhida em bra_erodibilidade_2024_sirgas2000 (U1.3). */
+  feicaoErod2024EscolhidaId?: string | null;
   /** Proveniência: o que foi consultado, onde e quando. */
   proveniencia: {
     servico: string;
@@ -452,9 +470,10 @@ export function parseErodibility2024Feature(
   props: Record<string, unknown>
 ): EmbrapaErodibility2024 | null {
   const codUm = texto(props["cod_um"]);
+  const codUm2 = texto(props["cod_um2"]);
   const legenda = texto(props["legenda"]);
   const erodUm = texto(props["erod_um"]);
-  if (!codUm && !legenda && !erodUm) return null;
+  if (!codUm && !codUm2 && !legenda && !erodUm) return null;
 
   const legendasComponentes = ["legenda_c1", "legenda_c2", "legenda_c3", "legenda_c4"]
     .map((k) => texto(props[k]))
@@ -466,16 +485,27 @@ export function parseErodibility2024Feature(
     .map((k) => texto(props[k]))
     .filter((s) => s.length > 0);
 
+  // PROIBIÇÃO CRÍTICA D14 (U3): É VEDADO ler k_solos numericamente sem antes verificar erod_um.
+  // Para categorias não-pedológicas ("Área urbana", "Corpo d'água"), a camada devolve k_solos = 0.
+  const naoSolo =
+    ehCategoriaNaoSolo(erodUm) ||
+    ehCategoriaNaoSolo(erodComponentes[0] ?? "") ||
+    ehCategoriaNaoSolo(legenda);
+  const kSolosBruto = numeroOuNulo(props["k_solos"]);
+  const kSolosValido = !naoSolo && kSolosBruto !== null && kSolosBruto > 0 ? kSolosBruto : null;
+
   return {
     ogcFid: numeroOuNulo(props["ogc_fid"]),
-    codUm,
+    codUm: codUm || codUm2,
+    codUm2,
     legenda,
     legendasComponentes,
     ordensExtraidas,
     erodComponentes,
     erodUm,
     fatorKUm: texto(props["fator_k_um"]),
-    kSolos: numeroOuNulo(props["k_solos"]),
+    kSolos: kSolosValido,
+    kSolosBruto,
   };
 }
 
@@ -701,6 +731,39 @@ export function parseErodibilityFeature(
   return { classe, codnum: numeroOuNulo(props["codnum"]) };
 }
 
+function feicaoSoloPrTemSoloMapeado(props: Record<string, unknown>): boolean {
+  const sbcs = texto(props["sbcs"]);
+  const legenda = texto(props["legenda"]);
+  const ordem1 = texto(props["ordem_1"]);
+  if (!ordem1) return false;
+  if (ehCategoriaNaoSolo(sbcs) || ehCategoriaNaoSolo(legenda) || ehCategoriaNaoSolo(ordem1)) {
+    return false;
+  }
+  return true;
+}
+
+function feicaoErod2024TemSoloMapeado(props: Record<string, unknown>): boolean {
+  const erodUm = texto(props["erod_um"]);
+  const erodC1 = texto(props["erod_c1"]);
+  const legenda = texto(props["legenda"]);
+  const legendaC1 = texto(props["legenda_c1"]);
+  if (
+    ehCategoriaNaoSolo(erodUm) ||
+    ehCategoriaNaoSolo(erodC1) ||
+    ehCategoriaNaoSolo(legenda) ||
+    ehCategoriaNaoSolo(legendaC1)
+  ) {
+    return false;
+  }
+  return Boolean(legendaC1 || erodC1 || erodUm);
+}
+
+function feicaoErodBrTemSoloMapeado(props: Record<string, unknown>): boolean {
+  const classe = texto(props["classe"]);
+  if (!classe || ehCategoriaNaoSolo(classe)) return false;
+  return true;
+}
+
 function resultadoBase(lat: number, lng: number): EmbrapaSoilQueryResult {
   return {
     statusSolo: "servico-indisponivel",
@@ -712,6 +775,13 @@ function resultadoBase(lat: number, lng: number): EmbrapaSoilQueryResult {
     erodibilidade2024: null,
     foraDoDominioSolo: false,
     motivoForaDoDominioSolo: null,
+    pontoEmFronteiraPedologica: false,
+    totalFeicoesSoloRetornadas: 0,
+    indiceFeicaoSoloEscolhida: null,
+    feicaoSoloEscolhidaId: null,
+    totalFeicoesErod2024Retornadas: 0,
+    indiceFeicaoErod2024Escolhida: null,
+    feicaoErod2024EscolhidaId: null,
     proveniencia: {
       servico: EMBRAPA_OWS_URL,
       camadaSolo: LAYER_SOLOS_PR,
@@ -777,40 +847,87 @@ export async function queryEmbrapaSoil(
   resultado.statusErodibilidade = "sem-cobertura";
   resultado.statusErodibilidade2024 = "sem-cobertura";
 
-  let propsSoloPr: Record<string, unknown> | null = null;
-  let propsErod2024: Record<string, unknown> | null = null;
-  const motivosNaoSolo: string[] = [];
+  // U1.1: Coleta TODAS as feições de cada camada devolvidas na resposta
+  const feicoesSoloPr: Array<{ id: string; props: Record<string, unknown> }> = [];
+  const feicoesErodBr: Array<{ id: string; props: Record<string, unknown> }> = [];
+  const feicoesErod2024: Array<{ id: string; props: Record<string, unknown> }> = [];
 
   for (const f of features) {
     const id = typeof f?.id === "string" ? f.id : "";
     const props = (f?.properties ?? {}) as Record<string, unknown>;
 
-    if (id.startsWith("parana_solos_") && !propsSoloPr) {
-      propsSoloPr = props;
-      const sbcsBruto = texto(props["sbcs"]);
-      if (ehCategoriaNaoSolo(sbcsBruto)) {
-        motivosNaoSolo.push(`parana_solos_20201105 reportou '${sbcsBruto}'`);
+    if (id.startsWith("parana_solos_")) {
+      feicoesSoloPr.push({ id, props });
+    } else if (id.startsWith("brasil_erodibilidade_solo")) {
+      feicoesErodBr.push({ id, props });
+    } else if (id.startsWith("bra_erodibilidade_2024")) {
+      feicoesErod2024.push({ id, props });
+    }
+  }
+
+  // U1.3 e U1.5: Registra total de feições e marcador de ponto em fronteira cartográfica
+  resultado.totalFeicoesSoloRetornadas = feicoesSoloPr.length;
+  resultado.pontoEmFronteiraPedologica = feicoesSoloPr.length > 1;
+  resultado.totalFeicoesErod2024Retornadas = feicoesErod2024.length;
+
+  let propsSoloPr: Record<string, unknown> | null = null;
+  let propsErod2024: Record<string, unknown> | null = null;
+  const motivosNaoSolo: string[] = [];
+
+  // U1.2 e U1.4: Preferência pela feição com solo mapeado em parana_solos_20201105
+  if (feicoesSoloPr.length > 0) {
+    const idxComSolo = feicoesSoloPr.findIndex((f) => feicaoSoloPrTemSoloMapeado(f.props));
+    const idxEscolhido = idxComSolo >= 0 ? idxComSolo : 0;
+    const escolhida = feicoesSoloPr[idxEscolhido];
+    propsSoloPr = escolhida.props;
+    resultado.indiceFeicaoSoloEscolhida = idxEscolhido;
+    resultado.feicaoSoloEscolhidaId = escolhida.id || texto(escolhida.props["sbcs"]);
+
+    if (idxComSolo < 0) {
+      // NENHUMA das feições de parana_solos_ tem solo mapeado
+      const sbcsBruto = texto(escolhida.props["sbcs"]) || "sem-ordem_1";
+      motivosNaoSolo.push(`parana_solos_20201105 reportou '${sbcsBruto}' em todas as feições`);
+    }
+  }
+
+  // U1.2 e U1.4: Preferência pela feição com solo mapeado em brasil_erodibilidade_solo
+  if (feicoesErodBr.length > 0) {
+    const idxComSolo = feicoesErodBr.findIndex((f) => feicaoErodBrTemSoloMapeado(f.props));
+    const idxEscolhido = idxComSolo >= 0 ? idxComSolo : 0;
+    const escolhida = feicoesErodBr[idxEscolhido];
+    const ero = parseErodibilityFeature(escolhida.props);
+    if (ero) {
+      resultado.erodibilidade = ero;
+      resultado.statusErodibilidade = "encontrado";
+      if (idxComSolo < 0 && ehCategoriaNaoSolo(ero.classe)) {
+        motivosNaoSolo.push(`brasil_erodibilidade_solo reportou '${ero.classe}' em todas as feições`);
       }
-    } else if (id.startsWith("brasil_erodibilidade_solo") && !resultado.erodibilidade) {
-      const ero = parseErodibilityFeature(props);
-      if (ero) {
-        resultado.erodibilidade = ero;
-        resultado.statusErodibilidade = "encontrado";
-        if (ehCategoriaNaoSolo(ero.classe)) {
-          motivosNaoSolo.push(`brasil_erodibilidade_solo reportou '${ero.classe}'`);
-        }
-      }
-    } else if (id.startsWith("bra_erodibilidade_2024") && !propsErod2024) {
-      propsErod2024 = props;
-      const ero24 = parseErodibility2024Feature(props);
-      if (ero24) {
-        resultado.erodibilidade2024 = ero24;
-        resultado.statusErodibilidade2024 = "encontrado";
-        if (ehCategoriaNaoSolo(ero24.erodUm) || ehCategoriaNaoSolo(ero24.erodComponentes[0] ?? "")) {
-          motivosNaoSolo.push(
-            `bra_erodibilidade_2024_sirgas2000 reportou '${ero24.erodUm || ero24.erodComponentes[0]}'`
-          );
-        }
+    }
+  }
+
+  // U1.2 e U1.4: Preferência pela feição com solo mapeado em bra_erodibilidade_2024_sirgas2000
+  if (feicoesErod2024.length > 0) {
+    const idxComSolo = feicoesErod2024.findIndex((f) => feicaoErod2024TemSoloMapeado(f.props));
+    const idxEscolhido = idxComSolo >= 0 ? idxComSolo : 0;
+    const escolhida = feicoesErod2024[idxEscolhido];
+    propsErod2024 = escolhida.props;
+    resultado.indiceFeicaoErod2024Escolhida = idxEscolhido;
+    resultado.feicaoErod2024EscolhidaId =
+      texto(escolhida.props["cod_um"]) ||
+      texto(escolhida.props["cod_um2"]) ||
+      escolhida.id;
+
+    const ero24 = parseErodibility2024Feature(escolhida.props);
+    if (ero24) {
+      resultado.erodibilidade2024 = ero24;
+      resultado.statusErodibilidade2024 = "encontrado";
+      if (
+        idxComSolo < 0 &&
+        (ehCategoriaNaoSolo(ero24.erodUm) || ehCategoriaNaoSolo(ero24.erodComponentes[0] ?? ""))
+      ) {
+        motivosNaoSolo.push(
+          `bra_erodibilidade_2024_sirgas2000 reportou '${ero24.erodUm || ero24.erodComponentes[0]}' em todas as feições`
+        );
       }
     }
   }

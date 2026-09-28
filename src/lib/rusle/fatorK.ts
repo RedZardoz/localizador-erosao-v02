@@ -152,17 +152,119 @@ export function converterErodibilidadeFatorK(
   };
 }
 
+export type ViaFatorKD14 =
+  | "k_solos_camada_2024_tabelado"
+  | "fallback_faixa_classe_d14"
+  | "indisponivel_fora_do_dominio"
+  | "indisponivel_sem_cobertura";
+
+export interface InsumoFatorKCamada2024 {
+  /** Valor numérico de k_solos (xsd:decimal) da camada geonode:bra_erodibilidade_2024_sirgas2000. */
+  kSolos?: number | null;
+  /** Domínio de erodibilidade da unidade (erod_um) — deve ser verificado ANTES de ler k_solos. */
+  erodUm?: string | null;
+  /** Identificador cod_um ou cod_um2 da feição na camada 2024. */
+  codUm?: string | null;
+  /** Identificador ogc_fid da feição na camada 2024. */
+  ogcFid?: number | string | null;
+}
+
+const TERMOS_NAO_SOLO_K = [
+  "area urbana",
+  "areas urbanas",
+  "corpo d'agua",
+  "corpo dagua",
+  "corpos d'agua",
+  "corpos dagua",
+  "massa d'agua",
+  "massas d'agua",
+  "aflora",
+  "rocha",
+  "dunas",
+  "fase erodida",
+];
+
+export function ehCategoriaNaoSoloFatorK(bruta: string | null | undefined): boolean {
+  if (!bruta || typeof bruta !== "string") return false;
+  const limpo = bruta
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  if (!limpo) return false;
+  if (limpo === "agua" || limpo === "urbano" || limpo === "urbana") return true;
+  return TERMOS_NAO_SOLO_K.some((t) => limpo.includes(t));
+}
+
+export function identificarViaFatorKD14(fatorK?: Proveniencia<number> | null): ViaFatorKD14 {
+  if (!fatorK || fatorK.estado === "indisponivel") {
+    if (fatorK?.estado === "indisponivel" && fatorK.causa === "fora-do-dominio") {
+      return "indisponivel_fora_do_dominio";
+    }
+    return "indisponivel_sem_cobertura";
+  }
+  if (
+    fatorK.estado === "tabelado" &&
+    fatorK.tabela.includes("bra_erodibilidade_2024_sirgas2000")
+  ) {
+    return "k_solos_camada_2024_tabelado";
+  }
+  return "fallback_faixa_classe_d14";
+}
+
 /**
- * Encapsula o cálculo do Fator K com rastreabilidade de proveniência para a Linha de Base RUSLE.
+ * Encapsula o cálculo do Fator K com rastreabilidade de proveniência para a Linha de Base RUSLE (Decisão D14 emendada).
+ *
+ * 1. Fonte primária: `k_solos` (xsd:decimal) de `geonode:bra_erodibilidade_2024_sirgas2000`,
+ *    desde que `erod_um` pertença ao domínio pedológico e `k_solos > 0`.
+ *    PROIBIÇÃO CRÍTICA D14: `k_solos = 0` (devolvido para 'Área urbana' e 'Corpo d'água')
+ *    jamais entra como K numérico — retorna obrigatoriamente `indisponivel` com `fora-do-dominio`.
+ * 2. Fallback: conversão por faixa de classe ordinal da D14 original quando `k_solos` estiver ausente,
+ *    com proveniência distinta (`chave: "faixa-classe:..."`).
  */
 export function obterFatorKComProveniencia(
-  classeProveniencia?: Proveniencia<string> | null
+  classeProveniencia?: Proveniencia<string> | null,
+  camada2024?: InsumoFatorKCamada2024 | null
 ): Proveniencia<number> {
+  // 1. Verificação prioritária da camada 2024 (D14 emendada)
+  if (camada2024) {
+    const erodUm = camada2024.erodUm ?? null;
+    const kSolos = camada2024.kSolos;
+
+    // É VEDADO ler k_solos numericamente sem antes verificar erod_um.
+    // Categoria não-pedológica ou k_solos === 0 obriga indisponivel / fora-do-dominio (P12 e Invariante 1).
+    if (ehCategoriaNaoSoloFatorK(erodUm) || kSolos === 0) {
+      return {
+        estado: "indisponivel",
+        causa: "fora-do-dominio",
+        motivo: `Unidade de mapeamento em categoria não-pedológica ('${erodUm || "k_solos=0"}') fora do domínio de calibração de K (Decisão D14 emendada / P12 / Invariante 1).`,
+      };
+    }
+
+    if (typeof kSolos === "number" && Number.isFinite(kSolos) && kSolos > 0) {
+      const chaveFeicao =
+        (camada2024.codUm && String(camada2024.codUm).trim()) ||
+        (camada2024.ogcFid !== undefined && camada2024.ogcFid !== null
+          ? `ogc_fid:${camada2024.ogcFid}`
+          : "bra_erodibilidade_2024_sirgas2000");
+
+      return {
+        estado: "tabelado",
+        valor: kSolos,
+        tabela:
+          "Tabela 5 do Documentos 246 (Coelho et al., 2024) acessada pela camada oficial geonode:bra_erodibilidade_2024_sirgas2000 (k_solos, valor pontual sem incerteza declarada)",
+        chave: chaveFeicao,
+        decisao: "D14",
+      };
+    }
+  }
+
+  // 2. Fallback quando k_solos estiver ausente: conversão por faixa de classe da D14 original
   if (!classeProveniencia) {
     return {
       estado: "indisponivel",
       causa: "sem-cobertura",
-      motivo: "Classe de erodibilidade da Embrapa ausente para este ponto.",
+      motivo: "Classe de erodibilidade da Embrapa e k_solos ausentes para este ponto.",
     };
   }
 
@@ -172,6 +274,14 @@ export function obterFatorKComProveniencia(
       estado: "indisponivel",
       causa: classeProveniencia.estado === "indisponivel" ? classeProveniencia.causa : "sem-cobertura",
       motivo: classeProveniencia.estado === "indisponivel" ? classeProveniencia.motivo : "Valor de erodibilidade nulo.",
+    };
+  }
+
+  if (ehCategoriaNaoSoloFatorK(texto)) {
+    return {
+      estado: "indisponivel",
+      causa: "fora-do-dominio",
+      motivo: `Classe de erodibilidade '${texto}' fora do domínio agrícola calibrado [1..5] (Decisões D09 e D14).`,
     };
   }
 
@@ -187,8 +297,9 @@ export function obterFatorKComProveniencia(
   return {
     estado: "tabelado",
     valor: conv.kValor,
-    tabela: "Tabela 5 Embrapa Solos (Doc. 246/2024) / Mannigel et al. (2002)",
-    chave: conv.classeNormalizada,
+    tabela:
+      "Fallback D14 derivado de faixa de classe ordinal — Tabela 5 Embrapa Solos (Doc. 246/2024) / Mannigel et al. (2002)",
+    chave: `faixa-classe:${conv.classeNormalizada}`,
     decisao: "D14",
   };
 }

@@ -536,12 +536,15 @@ export function gerarJsonDatasheetMetadados(
       correspondenciaCartas2024: { descricao: "Estado de correspondência da sequência de ordens entre parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000 (excluído da matriz X)", faixaValida: "{correspondente, divergente, sem-camada-2024}", unidade: "Categórica", fonte: "Embrapa Solos GeoServer OWS (2020 vs 2024)" },
       divergenciaEntreCartas2024: { descricao: "Flag booleano indicando divergência de sequência ou de número de componentes entre parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000 (excluído da matriz X)", faixaValida: "{true, false}", unidade: "Booleano", fonte: "Embrapa Solos GeoServer OWS (2020 vs 2024)" },
       provenienciaK: { descricao: "Proveniência metodológica da classificação do nível de K da unidade (tabelado via erod_c1..erod_c4, heurística de fallback não conferida, divergência entre cartas ou fora do domínio — excluído da matriz X)", faixaValida: "{tabelado, heuristica-fallback-nao-conferida, divergencia-entre-cartas, fora-do-dominio}", unidade: "Categórica", fonte: "Embrapa Solos Documentos 246 (2024)" },
+      pontoEmFronteiraPedologica: { descricao: "Marcador de qualidade indicando que o bbox de consulta interceptou mais de uma feição na camada de solos (fronteira cartográfica — excluído da matriz X por Invariante 2)", faixaValida: "{true, false}", unidade: "Booleano", fonte: "Embrapa Solos GeoServer OWS (U1)" },
+      viaFatorKD14: { descricao: "Via operacional que alimentou o Fator K numérico da RUSLE conforme a Decisão D14 emendada (k_solos tabelado da camada 2024 vs fallback por faixa de classe — excluído da matriz X)", faixaValida: "{k_solos_camada_2024_tabelado, fallback_faixa_classe_d14, indisponivel_fora_do_dominio, indisponivel_sem_cobertura}", unidade: "Categórica", fonte: "Decisão D14 (emendada em 28/09/2026)" },
       classeWorldCover2020: { descricao: "Classe de cobertura do solo na época 2020 (Decisão D07 / P05)", faixaValida: "{30, 40}", unidade: "Classe categórica", fonte: "ESA/WorldCover/v100/2020 (10m)" },
       classeWorldCover2021: { descricao: "Classe de cobertura do solo na época 2021 (Decisão D07 / P05)", faixaValida: "{30, 40}", unidade: "Classe categórica", fonte: "ESA/WorldCover/v200/2021 (10m)" },
     },
     auditoriaElegibilidadeEAssociacaoSolo: {
       totalPontosAnalisados: pontos.length,
       pontosComKAmbiguoAssociacao: pontos.filter((p) => (p.solo?.kAmbiguoAssociacao ?? p.kAmbiguoAssociacao) === true).length,
+      pontosEmFronteiraPedologica: pontos.filter((p) => p.solo?.pontoEmFronteiraPedologica === true).length,
       pontosConcordantesWorldCover2020_2021: pontos.filter(
         (p) =>
           p.classeWorldCover2020?.estado === "medido" &&
@@ -549,13 +552,33 @@ export function gerarJsonDatasheetMetadados(
           [30, 40].includes(p.classeWorldCover2020.valor) &&
           [30, 40].includes(p.classeWorldCover2021.valor)
       ).length,
+      contagemViasFatorKD14: {
+        kSolosCamada2024Tabelado: pontos.filter(
+          (p) =>
+            p.solo?.viaFatorKD14 === "k_solos_camada_2024_tabelado" ||
+            (p.linhaDeBase?.fatorK?.estado === "tabelado" &&
+              p.linhaDeBase.fatorK.tabela.includes("bra_erodibilidade_2024_sirgas2000"))
+        ).length,
+        fallbackFaixaClasseD14: pontos.filter(
+          (p) =>
+            p.solo?.viaFatorKD14 === "fallback_faixa_classe_d14" ||
+            (p.linhaDeBase?.fatorK?.estado === "tabelado" &&
+              p.linhaDeBase.fatorK.chave.startsWith("faixa-classe:"))
+        ).length,
+        indisponivelForaDoDominio: pontos.filter(
+          (p) =>
+            p.solo?.viaFatorKD14 === "indisponivel_fora_do_dominio" ||
+            (p.linhaDeBase?.fatorK?.estado === "indisponivel" &&
+              p.linhaDeBase.fatorK.causa === "fora-do-dominio")
+        ).length,
+      },
       frequenciaCorrespondenciaCartas2024: {
         correspondentes: pontos.filter((p) => p.solo?.correspondenciaCartas2024 === "correspondente").length,
         divergentes: pontos.filter((p) => p.solo?.correspondenciaCartas2024 === "divergente").length,
         semCamada2024: pontos.filter(
           (p) => !p.solo?.correspondenciaCartas2024 || p.solo?.correspondenciaCartas2024 === "sem-camada-2024"
         ).length,
-        amostraVerificacaoBp3AoVivo20260928: {
+        amostraVerificacaoBp3AntesU1_20260928: {
           pontosRuraisConsultados: 20,
           pontosComSoloEmAmbasAsCartas: 19,
           correspondenciaEstritaSequenciaCompleta: 10,
@@ -564,12 +587,28 @@ export function gerarJsonDatasheetMetadados(
           correspondenciaEstritaEmAssociacoes: 0,
           artefatoBruto: "docs/verificacoes/fontes/wfs_erodibilidade/relatorio_correspondencia_bp3_2026-09-28.json",
         },
+        amostraVerificacaoBp3PosU1_20260928: {
+          pontosRuraisConsultados: 20,
+          pontosRuraisEmFronteiraParanaSolos: 7,
+          pontosRuraisEmFronteiraCamada2024: 3,
+          pontosRuraisAlteradosPorU1: ["R13_SantaHelena_Rural_Leste"],
+          pontosComSoloEmAmbasAsCartas: 20,
+          correspondenciaEstritaSequenciaCompleta: 11,
+          correspondenciaComponenteDominante: 13,
+          divergenciaEntreCartas: 9,
+          correspondenciaEstritaEmAssociacoes: 0,
+          viaKSolosTabeladoOperou: 20,
+          viaFallbackFaixaClasseOperou: 0,
+          artefatoBruto: "docs/verificacoes/fontes/wfs_erodibilidade/relatorio_correspondencia_bp3_pos_u1_2026-09-28.json",
+        },
       },
       provenienciaFontesKAmbiguo: {
         documentoPrimario: "Coelho, M. R.; Lumbreras, J. F.; Amaral, A. J. do; Vasques, G. M.; Mansilla Baca, J. F.; Dart, R. de O. & Pedreira, J. P. das N. C. (2024). Erodibilidade dos solos do Brasil. Rio de Janeiro: Embrapa Solos, Documentos 246, 40 p. (CIP: PDF 38 p.).",
         statusConferenciaPdfDoc246: "conferido (docs/verificacoes/fontes/doc246/extrair_cnps_doc_246_2024.py: Tabela 4 na PDF p. 13, Tabela 5 na PDF p. 14 e prosa nas PDF pp. 18-21)",
         statusConferenciaCamadaWfs2024:
-          "conferido_em_rede_com_ressalva_de_escala (geonode:bra_erodibilidade_2024_sirgas2000 consultado ao vivo em docs/verificacoes/fontes/wfs_erodibilidade/ com feature_count=10 e campos ogc_fid..erod_c1..erod_c4 verificados via DescribeFeatureType; correspondencia estrita de sequencia observada em 10/19 [52.6%] pontos rurais da BP3 e 0/3 em associacoes entre parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000; permanecem como regra operacional nao conferida [D13/D15] a heuristica de fallback taxonomico para ordens multi-classe da Figura 1 [PDF p. 20] quando erod_cN estiver ausente e os casos de divergenciaEntreCartas2024=true)",
+          "conferido_em_rede_com_ressalva_de_escala (geonode:bra_erodibilidade_2024_sirgas2000 consultado ao vivo em docs/verificacoes/fontes/wfs_erodibilidade/ com feature_count=10, selecao U1 de feicao com solo mapeado em fronteira e campos ogc_fid..erod_c1..erod_c4..k_solos verificados via DescribeFeatureType; apos U1, correspondencia estrita de sequencia observada em 11/20 [55.0%] pontos rurais da BP3 [antes de U1: 10/19, 52.6%] e 0/3 [0.0%] em associacoes entre parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000; permanecem como regra operacional nao_conferido [D13/D15] a heuristica de fallback taxonomico para ordens multi-classe da Figura 1 [PDF p. 20] que governa D08 nas associacoes e os casos de divergenciaEntreCartas2024=true)",
+        statusFatorKNumericoD14:
+          "tabelado_pontual_sem_incerteza (D14 emendada em 28/09/2026: fator K alimentado por k_solos [xsd:decimal] de geonode:bra_erodibilidade_2024_sirgas2000 com proveniencia 'tabelado' apos verificacao obrigatoria de erod_um fora de categorias nao-pedologicas [k_solos=0 para Area urbana / Corpo d'agua bloqueado como indisponivel/fora-do-dominio por P12 e Invariante 1], e fallback por faixa de classe ordinal com proveniencia distinta; LIMITACAO DECLARADA PARA D25: nenhum registro de k_solos na camada traz incerteza associada na forma 'valor (+-erro)', de modo que K entra como valor pontual sem incerteza declarada no orcamento de erro da linha de base RUSLE ate que a incerteza seja lida na Tabela 5 do Documentos 246)",
       },
     },
     referenciasBibliograficasABNT: [

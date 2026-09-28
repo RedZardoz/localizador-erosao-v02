@@ -59,7 +59,7 @@ import {
 } from "@/lib/localizacao/bacias";
 import { pontoEmGeoJson } from "@/lib/localizacao/municipio";
 import { montarLinhaDeBaseRUSLE } from "@/lib/rusle/linhaDeBase";
-import { converterErodibilidadeFatorK } from "@/lib/rusle/fatorK";
+import { converterErodibilidadeFatorK, identificarViaFatorKD14 } from "@/lib/rusle/fatorK";
 import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
 import {
   medirTerrenoCopernicusEmLote,
@@ -1027,6 +1027,10 @@ export async function POST(request: NextRequest) {
             correspondenciaCartas2024: soloEmbrapa?.solo?.correspondenciaCartas2024,
             divergenciaEntreCartas2024: soloEmbrapa?.solo?.divergenciaEntreCartas2024 ?? false,
             provenienciaK: soloEmbrapa?.solo?.provenienciaK,
+            pontoEmFronteiraPedologica: soloEmbrapa?.pontoEmFronteiraPedologica ?? false,
+            totalFeicoesSoloRetornadas: soloEmbrapa?.totalFeicoesSoloRetornadas,
+            indiceFeicaoSoloEscolhida: soloEmbrapa?.indiceFeicaoSoloEscolhida ?? null,
+            feicaoSoloEscolhidaId: soloEmbrapa?.feicaoSoloEscolhidaId ?? null,
           },
           classeWorldCover2020:
             medicaoS2?.classeWorldCover2020 !== null && medicaoS2?.classeWorldCover2020 !== undefined
@@ -1115,11 +1119,23 @@ export async function POST(request: NextRequest) {
               },
             },
           },
-          // Linha de Base RUSLE estrita: Invariante 1 e Decisões D01 (C), D13 (R pendente), D14 (K Embrapa), D15 (LS pendente)
+          // Linha de Base RUSLE estrita: Invariante 1 e Decisões D01 (C), D13 (R pendente), D14 emendada (k_solos da camada 2024 + fallback), D15 (LS pendente)
           linhaDeBase: montarLinhaDeBaseRUSLE({
             ndviProveniencia,
             bsiProveniencia,
             erodibilidadeProveniencia,
+            camadaErodibilidade2024: soloEmbrapa?.erodibilidade2024
+              ? {
+                  kSolos:
+                    soloEmbrapa.erodibilidade2024.kSolosBruto ??
+                    soloEmbrapa.erodibilidade2024.kSolos,
+                  erodUm: soloEmbrapa.erodibilidade2024.erodUm,
+                  codUm:
+                    soloEmbrapa.erodibilidade2024.codUm ||
+                    soloEmbrapa.erodibilidade2024.codUm2,
+                  ogcFid: soloEmbrapa.erodibilidade2024.ogcFid,
+                }
+              : null,
           }),
           fundiario: contextoFundiario,
           rastreio: {
@@ -1129,6 +1145,7 @@ export async function POST(request: NextRequest) {
           },
         };
 
+        ponto.solo.viaFatorKD14 = identificarViaFatorKD14(ponto.linhaDeBase?.fatorK);
         return ponto;
       })
     );

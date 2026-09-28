@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildGetFeatureInfoUrl,
@@ -6,6 +8,7 @@ import {
   ehCategoriaNaoSolo,
   extrairOrdemSibcsDeLegenda,
   formatSoilLabel,
+  parseErodibility2024Feature,
   parseErodibilityFeature,
   parseSoilFeature,
   queryEmbrapaSoil,
@@ -419,4 +422,131 @@ describe("kAmbiguoAssociacao, erod_c1..erod_c4 (camada 2024) e fora-do-dominio (
     expect(r.solo?.foraDoDominioSolo).toBe(true);
   });
 });
+
+describe("U1 — Seleção de feição com solo mapeado em fronteira pedológica e U3 — parseErodibility2024Feature", () => {
+  afterEach(() => {
+    clearEmbrapaSoilCache();
+    vi.unstubAllGlobals();
+  });
+
+  it("U1 (sintético): prefere feição com solo mapeado (NVef2) quando features[0] é 'agua' e features[1] é 'NVef2'", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetchJson({
+        features: [
+          {
+            id: "parana_solos_20201105.338",
+            properties: {
+              sbcs: "agua",
+              tipo_unida: null,
+              ordem_1: null,
+              legenda: "Corpo d'agua",
+            },
+          },
+          {
+            id: "parana_solos_20201105.2807",
+            properties: {
+              sbcs: "NVef2",
+              tipo_unida: "simples",
+              ordem_1: "NITOSSOLO",
+              sub_ordem_: "VERMELHO",
+              grande_gru: "Eutroferrico",
+              sub_grupo_: "tipico",
+              familia_1_: "textura argilosa",
+              legenda: "NVef2 - NITOSSOLO VERMELHO Eutroferrico",
+            },
+          },
+          {
+            id: "bra_erodibilidade_2024_sirgas2000.102154",
+            properties: {
+              ogc_fid: 102154,
+              cod_um: "SG21NVef1NV",
+              cod_um2: "SG21NVef1",
+              legenda_c1: "NITOSSOLO VERMELHO Eutroferrico",
+              erod_c1: "Baixa",
+              erod_um: "Baixa",
+              k_solos: 0.012,
+              fator_k_um: "0.0120",
+            },
+          },
+        ],
+      })
+    );
+
+    const r = await queryEmbrapaSoil(-24.88, -54.26);
+    expect(r.statusSolo).toBe("encontrado");
+    expect(r.foraDoDominioSolo).toBe(false);
+    expect(r.pontoEmFronteiraPedologica).toBe(true);
+    expect(r.totalFeicoesSoloRetornadas).toBe(2);
+    expect(r.indiceFeicaoSoloEscolhida).toBe(1);
+    expect(r.feicaoSoloEscolhidaId).toBe("parana_solos_20201105.2807");
+    expect(r.solo?.sbcs).toBe("NVef2");
+    expect(r.solo?.correspondenciaCartas2024).toBe("correspondente");
+    expect(r.erodibilidade2024?.kSolos).toBe(0.012);
+    expect(r.erodibilidade2024?.codUm).toBe("SG21NVef1NV");
+    expect(r.erodibilidade2024?.codUm2).toBe("SG21NVef1");
+  });
+
+  it("U1 (integração fixada): carrega getfeatureinfo_3camadas_r13_fronteira_bp3.json (-24.8800, -54.2600) e seleciona NVef2 com correspondência estrita", async () => {
+    const fixturePath = path.resolve(
+      process.cwd(),
+      "docs/verificacoes/fontes/wfs_erodibilidade/getfeatureinfo_3camadas_r13_fronteira_bp3.json"
+    );
+    const fixture = JSON.parse(fs.readFileSync(fixturePath, "utf-8"));
+    vi.stubGlobal("fetch", mockFetchJson(fixture));
+
+    const r = await queryEmbrapaSoil(-24.88, -54.26);
+    expect(r.statusSolo).toBe("encontrado");
+    expect(r.foraDoDominioSolo).toBe(false);
+    expect(r.pontoEmFronteiraPedologica).toBe(true);
+    expect(r.totalFeicoesSoloRetornadas).toBe(2);
+    expect(r.indiceFeicaoSoloEscolhida).toBe(1);
+    expect(r.feicaoSoloEscolhidaId).toBe("parana_solos_20201105.2807");
+    expect(r.solo?.sbcs).toBe("NVef2");
+    expect(r.solo?.correspondenciaCartas2024).toBe("correspondente");
+    expect(r.erodibilidade2024?.ogcFid).toBe(102154);
+    expect(r.erodibilidade2024?.codUm).toBe("SG21NVef1NV");
+    expect(r.erodibilidade2024?.codUm2).toBe("SG21NVef1");
+    expect(r.erodibilidade2024?.kSolos).toBe(0.012);
+  });
+
+  it("U1: mantém foraDoDominioSolo === true quando TODAS as feições de uma camada são categorias não-solo", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetchJson({
+        features: [
+          {
+            id: "parana_solos_20201105.338",
+            properties: { sbcs: "agua", tipo_unida: null, ordem_1: null, legenda: "Corpo d'agua" },
+          },
+          {
+            id: "parana_solos_20201105.339",
+            properties: { sbcs: "au", tipo_unida: null, ordem_1: null, legenda: "Area urbana" },
+          },
+        ],
+      })
+    );
+    const r = await queryEmbrapaSoil(-24.2839, -53.8403);
+    expect(r.foraDoDominioSolo).toBe(true);
+    expect(r.pontoEmFronteiraPedologica).toBe(true);
+    expect(r.totalFeicoesSoloRetornadas).toBe(2);
+    expect(r.indiceFeicaoSoloEscolhida).toBe(0);
+  });
+
+  it("U3: parseErodibility2024Feature verifica erod_um ANTES de ler k_solos e anula kSolos para k_solos = 0 / não-solo", () => {
+    const urbano = parseErodibility2024Feature({
+      ogc_fid: 100237,
+      cod_um: "SG21Au",
+      cod_um2: "SG21Au",
+      erod_um: "Área urbana",
+      k_solos: 0,
+      fator_k_um: "0.0000",
+    });
+    expect(urbano).not.toBeNull();
+    expect(urbano!.erodUm).toBe("Área urbana");
+    expect(urbano!.kSolos).toBeNull();
+    expect(urbano!.kSolosBruto).toBe(0);
+  });
+});
+
 
