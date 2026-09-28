@@ -179,10 +179,16 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
   });
 
   describe("14.4 Coerência e Invariante 1", () => {
-    it("com D13 ou D15 pendente, perdaSolo é indisponivel com causa decisao-pendente", () => {
-      expect(REGISTRO_DECISOES.D13.estado).toBe("pendente");
+    // D13 e D15 foram DECIDIDAS em 27/09/2026, mas o calculo de erosividade e o de
+    // acumulo de fluxo NAO foram integrados. O Invariante 1 continua retendo perdaSolo;
+    // o que muda e a CAUSA, que passa de "decisao-pendente" para "insuficiente", porque
+    // R e LS agora sao "nao-calculado". Este teste passa a asseverar o estado real, e a
+    // cobertura do caminho "decisao-pendente" e feita logo abaixo por injecao, para que
+    // o MECANISMO siga testado sem depender do ESTADO do registro de decisoes.
+    it("com D13 e D15 decididas mas nao integradas, perdaSolo é indisponivel por insuficiente", () => {
+      expect(REGISTRO_DECISOES.D13.estado).toBe("decidida");
       expect(REGISTRO_DECISOES.D14.estado).toBe("decidida");
-      expect(REGISTRO_DECISOES.D15.estado).toBe("pendente");
+      expect(REGISTRO_DECISOES.D15.estado).toBe("decidida");
 
       const rusle = montarLinhaDeBaseRUSLE({
         ndviProveniencia: {
@@ -199,6 +205,41 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
       expect(rusle.fatorR.estado).toBe("indisponivel");
       expect(rusle.fatorK.estado).toBe("indisponivel");
       expect(rusle.fatorLS.estado).toBe("indisponivel");
+
+      expect(rusle.fatorR.estado).toBe("indisponivel");
+      if (rusle.fatorR.estado === "indisponivel") {
+        expect(rusle.fatorR.causa).toBe("nao-calculado");
+      }
+      expect(rusle.fatorLS.estado).toBe("indisponivel");
+      if (rusle.fatorLS.estado === "indisponivel") {
+        expect(rusle.fatorLS.causa).toBe("nao-calculado");
+      }
+
+      expect(rusle.perdaSolo.estado).toBe("indisponivel");
+      if (rusle.perdaSolo.estado === "indisponivel") {
+        expect(rusle.perdaSolo.causa).toBe("insuficiente");
+      }
+      expect(rusle.memoriaCalculo).toBeNull();
+    });
+
+    it("propaga causa decisao-pendente para perdaSolo quando um fator a carrega", () => {
+      // Cobertura do caminho "decisao-pendente" por injecao, e nao pelo estado do
+      // registro: e a agregacao do Invariante 1 que esta sob teste, e ela deve preferir
+      // "decisao-pendente" a "insuficiente" sempre que qualquer fator a carregue.
+      const rusle = montarLinhaDeBaseRUSLE({
+        ndviProveniencia: {
+          estado: "medido",
+          valor: 0.5,
+          fonte: "Sentinel-2 L2A",
+          adquiridoEm: "2026-05-10T12:00:00Z",
+          consultadoEm: "2026-09-10T21:00:00Z",
+        },
+        fatorRSubstituto: {
+          estado: "indisponivel",
+          causa: "decisao-pendente",
+          motivo: "Injetado pelo teste para exercitar a agregacao do Invariante 1.",
+        },
+      });
 
       expect(rusle.perdaSolo.estado).toBe("indisponivel");
       if (rusle.perdaSolo.estado === "indisponivel") {
