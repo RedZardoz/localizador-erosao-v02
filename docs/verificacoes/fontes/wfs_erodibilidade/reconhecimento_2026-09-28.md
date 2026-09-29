@@ -189,3 +189,61 @@ ORDEM DE EIXOS, inverte entre versoes e falha em silencio:
 Com a ordem errada a consulta devolve ZERO feicoes sem erro algum, para todos os pontos —
 o que faria todo candidato virar "sem solo mapeado" e esvaziaria o quadro amostral em
 silencio. E o modo de falha mais perigoso da troca.
+
+---
+
+# Verificacao do relato pos-V1 (ponto-em-poligono) — 28/09/2026, terceira rodada
+
+## Conferido por consulta propria em quatro pontos
+
+Consultei por PIP (WFS 1.1.0, POINT(lat lon)) os pontos R13, R11, R18 e R07:
+
+| ponto | PR (medido) | 2024 (medido) |
+|---|---|---|
+| R13 (-24.88, -54.26) | `.2807` NVef2 NITOSSOLO simples | `.102154` SG21NVef1, Baixa, k=0.012 |
+| R11 (-24.63, -54.17) | `.2503` LVef1 LATOSSOLO simples | `.102154` SG21NVef1, Baixa, k=0.012 |
+| R18 (-25.19, -53.84) | `.3439` LVdf13 LATOSSOLO **simples** | `.104539` SG22LVef1, Muito baixa, k=0.002 |
+| R07 (-24.18, -54.18) | `.1948` NVef2 NITOSSOLO simples | `.102059` SG21LVe2, Baixa, k=0.012 |
+
+O R18 confirma-se **unidade simples** `LVdf13`, e nao a associacao `RRe12` vizinha que o bbox
+trazia na posicao 0 — de modo que reduzir o denominador de associacoes de 3 para 2 e legitimo.
+
+## O ARTEFATO esta certo; a TABELA EM PROSA erra — terceira repeticao do padrao
+
+O JSON `relatorio_correspondencia_bp3_pos_v1_pip_2026-09-28.json` confere com as minhas
+medicoes em todos os pontos que conferi. A tabela em prosa do relatorio divergiu dele em
+tres pontos:
+
+| ponto | prosa | JSON e minha medicao |
+|---|---|---|
+| R13 | PR `.2903`; 2024 `.104677` SG21LVef1LV k=0.002; estrito False | PR `.2807`; 2024 `.102154` SG21NVef1 k=0.012; **estrito True** |
+| R07 | 2024 `.101189` k=0.002 | 2024 `.102059` k=0.012 |
+| R03 | PR `.5122` LVef1; estrito True->True | PR `.2136` NVef2; estrito False->False |
+
+## Agregado autoritativo, conferido no JSON
+
+20/20 com solo em ambas; **11/20 (55,0%)** estrito; 13/20 (65,0%) dominante; 9/20 (45,0%)
+divergencia; **2 associacoes, 0 de correspondencia**; via do fator K de D14: **20/20
+tabelado**, zero fallback, zero fora-do-dominio.
+Mudaram de pos-U1 para pos-V1: **4** — R04, R07, R11, R18.
+Eram fronteira no bbox de U1: **8** (7 rurais + o controle C02).
+Zero feicoes: 0/22. Mais de uma feicao na mesma camada: 0/22.
+
+## Leitura: o agregado igual NAO significa que a troca foi inocua
+
+O estrito permaneceu 11/20 porque as correcoes se cancelaram — R04 e R18 passaram de falso
+para verdadeiro, R07 e R11 de verdadeiro para falso. Isso indica que a heuristica de U1 nao
+era sistematicamente enviesada, e sim **aleatoriamente errada**. Para o agregado, tanto faz;
+para o QUADRO AMOSTRAL, nao: **4 de 20 pontos (20%) tinham a unidade pedologica errada**, e
+e a correcao individual que importa ao sorteio, porque cada poligono sorteado herda o
+estrato da sua propria unidade. Era exatamente o motivo de fazer isto antes do sorteio.
+
+## Duas ressalvas para a proxima etapa
+
+1. `LIMIAR_MAXIMO_FRACAO_ZERO_FEICOES_LOTE = 0.5` pega a inversao total de eixos, que
+   produz 100% de zeros. NAO pegaria inversao em UMA das tres camadas, que produziria cerca
+   de 33%. Guarda por camada seria mais estreita.
+2. A divida de D08 segue aberta, mas agora sobre **2** associacoes apenas. `0 de 2` e base
+   probatoria fraca para caracterizar a discordancia entre cartas em unidades compostas; se
+   essa discordancia importa ao desenho, precisa de amostra DIRIGIDA a associacoes, e nao de
+   dois pontos incidentais.
