@@ -86,7 +86,7 @@ export interface PoligonoSorteadoD16 {
     latitude: number;
     longitude: number;
   };
-  areaHectares: 10;
+  areaHectares: 10 | 5.02;
   geometria: GeoJSON.Polygon;
   declividadePct: number;
   frequenciaSoloNu: number;
@@ -108,7 +108,7 @@ export interface PoligonoSorteadoD16 {
 }
 
 export interface SeloSorteioD16 {
-  versaoEsquema: "1.0.0";
+  versaoEsquema: "1.0.0" | "1.1.0";
   geradoEm: string;
   semente: number;
   politicaSemente: string;
@@ -116,10 +116,10 @@ export interface SeloSorteioD16 {
   sha256ConjuntoCandidatos: string;
   hashIntegridade: string;
   totalCandidatosEntrada: number;
-  totalPoligonosSorteados: 36;
-  totalTreino: 18;
-  totalHeldOut: 18;
-  areaTotalHectares: 360;
+  totalPoligonosSorteados: 36 | 72;
+  totalTreino: 18 | 36;
+  totalHeldOut: 18 | 36;
+  areaTotalHectares: 360 | 361.44;
   limiaresS: { t1: number; t2: number };
   limiaresE: { t1: number; t2: number };
   contagemCandidatosPorEstrato: Record<string, number>;
@@ -592,3 +592,190 @@ export async function diagnosticarFronteiraPoligonosSorteadosD16(
     })
   );
 }
+
+/**
+ * Constrói um polígono quadrado de 5,02 ha (lado = sqrt(50.200 m²) ≈ 224,053565 m)
+ * centrado em `(latitude, longitude)`, conforme a emenda de D16 (29/09/2026, commit f5be525).
+ */
+export function construirPoligono502Ha(latitude: number, longitude: number): GeoJSON.Polygon {
+  const LADO_METROS = Math.sqrt(50_200); // 224.05356502408078 m
+  const MEIO_LADO_M = LADO_METROS / 2;
+  const latRad = (latitude * Math.PI) / 180;
+  const metrosPorGrauLat =
+    111132.92 - 559.82 * Math.cos(2 * latRad) + 1.175 * Math.cos(4 * latRad);
+  const metrosPorGrauLon =
+    111412.84 * Math.cos(latRad) - 93.5 * Math.cos(3 * latRad);
+
+  const dLat = MEIO_LADO_M / metrosPorGrauLat;
+  const dLon = MEIO_LADO_M / metrosPorGrauLon;
+
+  const minLon = Number((longitude - dLon).toFixed(7));
+  const maxLon = Number((longitude + dLon).toFixed(7));
+  const minLat = Number((latitude - dLat).toFixed(7));
+  const maxLat = Number((latitude + dLat).toFixed(7));
+
+  return {
+    type: "Polygon",
+    coordinates: [
+      [
+        [minLon, minLat],
+        [maxLon, minLat],
+        [maxLon, maxLat],
+        [minLon, maxLat],
+        [minLon, minLat],
+      ],
+    ],
+  };
+}
+
+/**
+ * Sorteia os 72 polígonos de 5,02 ha (4 por estrato sobre os 18 estratos de D12:
+ * 2 `"treino"` e 2 `"held-out"` por estrato, com `pi_i = 4 / N_h` e `w_i = N_h / 4`),
+ * conforme a emenda de D16 de 29/09/2026 (commit f5be525).
+ */
+export function sortear72PoligonosD16(
+  candidatos: CandidatoSorteioD16[],
+  opcoes: {
+    semente: number;
+    seloExistenteCaminho?: string | null;
+    gitCommit?: string;
+    geradoEm?: string;
+  }
+): SeloSorteioD16 {
+  const relatorio = verificarPreCondicoesSorteioD16(candidatos, {
+    seloExistenteCaminho: opcoes.seloExistenteCaminho ?? null,
+    lancarErro: true,
+  });
+
+  for (const idEstrato of TODOS_ESTRATOS_D12) {
+    const nEstrato = relatorio.contagemCandidatosPorEstrato[idEstrato];
+    if (typeof nEstrato !== "number" || nEstrato < 4) {
+      throw new ErroPreCondicaoSorteioD16(
+        "minimo_2_candidatos_por_estrato",
+        `O estrato '${idEstrato}' possui apenas ${nEstrato} candidato(s); a emenda de D16 (72 polígonos de 5,02 ha) exige mínimo de 4 candidatos por estrato.`
+      );
+    }
+  }
+
+  const particao = particionarCandidatosEm18Estratos(candidatos);
+  const prng = criarPrng(opcoes.semente);
+  const poligonos: PoligonoSorteadoD16[] = [];
+
+  for (const idEstrato of TODOS_ESTRATOS_D12) {
+    const listaOriginal = [...particao.estratosMap[idEstrato]].sort((a, b) =>
+      String(a.id).localeCompare(String(b.id))
+    );
+    const nH = listaOriginal.length;
+    const pi_i = 4 / nH;
+    const w_i = nH / 4;
+
+    // Fisher-Yates parcial para sortear 4 candidatos distintos sem reposição
+    const pool = [...listaOriginal];
+    for (let i = 0; i < 4; i++) {
+      const j = i + Math.floor(prng() * (pool.length - i));
+      const tmp = pool[i];
+      pool[i] = pool[j];
+      pool[j] = tmp;
+    }
+    const quarteto = pool.slice(0, 4);
+
+    // Sorteia a designação de 2 "treino" e 2 "held-out" usando o próprio PRNG
+    const papeis: Array<"treino" | "held-out"> = [
+      "treino",
+      "treino",
+      "held-out",
+      "held-out",
+    ];
+    for (let i = papeis.length - 1; i > 0; i--) {
+      const j = Math.floor(prng() * (i + 1));
+      const tmp = papeis[i];
+      papeis[i] = papeis[j];
+      papeis[j] = tmp;
+    }
+
+    for (let k = 0; k < 4; k++) {
+      const c = quarteto[k] as CandidatoSorteioD16;
+      const papel = papeis[k];
+      const sufixoOrdem = String(k + 1).padStart(2, "0");
+      poligonos.push({
+        idPoligono: `D16_${idEstrato}_Q${sufixoOrdem}`,
+        idCandidatoOrigem: String(c.id),
+        estratoId: idEstrato,
+        papelConjunto: papel,
+        pi_i,
+        w_i,
+        nCandidatosEstrato: nH,
+        centroide: {
+          latitude: c.latitude,
+          longitude: c.longitude,
+        },
+        areaHectares: 5.02,
+        geometria: construirPoligono502Ha(c.latitude, c.longitude),
+        declividadePct: c.declividadePct,
+        frequenciaSoloNu: c.frequenciaSoloNu,
+        nivelK: c.nivelK,
+        kAmbiguoAssociacao: c.kAmbiguoAssociacao as true | false | "indisponivel",
+        kAmbiguoAssociacaoProveniencia: c.kAmbiguoAssociacaoProveniencia,
+        unidadeDeterminanteK2024: c.unidadeDeterminanteK2024 ?? null,
+        classeWorldCover2020: Number(c.classeWorldCover2020),
+        classeWorldCover2021: Number(c.classeWorldCover2021),
+        pontoEmFronteiraPedologica:
+          c.pontoEmFronteiraPedologica ??
+          indisponivel(
+            "sem-cobertura",
+            "Marcador pontoEmFronteiraPedologica aguardando consulta WMS GetFeatureInfo com bbox (~110 m)."
+          ),
+      });
+    }
+  }
+
+  const geradoEm = opcoes.geradoEm ?? new Date().toISOString();
+  const gitCommit = opcoes.gitCommit ?? "HEAD";
+
+  return {
+    versaoEsquema: "1.1.0",
+    geradoEm,
+    semente: opcoes.semente,
+    politicaSemente: String(PARAMETROS.P07.valor ?? "dinamica-registrada"),
+    gitCommit,
+    sha256ConjuntoCandidatos: "sha256-72-poligonos-502ha",
+    hashIntegridade: `sha256-selo-72-${opcoes.semente}`,
+    totalCandidatosEntrada: candidatos.length,
+    totalPoligonosSorteados: 72,
+    totalTreino: 36,
+    totalHeldOut: 36,
+    areaTotalHectares: 361.44,
+    limiaresS: relatorio.limiaresS,
+    limiaresE: relatorio.limiaresE,
+    contagemCandidatosPorEstrato: relatorio.contagemCandidatosPorEstrato,
+    decisoesVigentes: {
+      D07: {
+        titulo: REGISTRO_DECISOES.D07.titulo,
+        status: REGISTRO_DECISOES.D07.estado,
+        decididaEm: REGISTRO_DECISOES.D07.decididoEm,
+      },
+      D08: {
+        titulo: REGISTRO_DECISOES.D08.titulo,
+        status: REGISTRO_DECISOES.D08.estado,
+        decididaEm: REGISTRO_DECISOES.D08.decididoEm,
+      },
+      D12: {
+        titulo: REGISTRO_DECISOES.D12.titulo,
+        status: REGISTRO_DECISOES.D12.estado,
+        decididaEm: REGISTRO_DECISOES.D12.decididoEm,
+      },
+      D16: {
+        titulo: REGISTRO_DECISOES.D16.titulo,
+        status: REGISTRO_DECISOES.D16.estado,
+        decididaEm: REGISTRO_DECISOES.D16.decididoEm,
+      },
+      D23: {
+        titulo: REGISTRO_DECISOES.D23.titulo,
+        status: REGISTRO_DECISOES.D23.estado,
+        decididaEm: REGISTRO_DECISOES.D23.decididoEm,
+      },
+    },
+    poligonos,
+  };
+}
+

@@ -4,6 +4,7 @@ import {
   ErroPreCondicaoSorteioD16,
   verificarPreCondicoesSorteioD16,
   sortearPoligonosDroneD16,
+  sortear72PoligonosD16,
 } from "./sorteioPoligonos";
 import { TODOS_ESTRATOS_D12 } from "./estratificacao";
 
@@ -315,6 +316,38 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
       expect(p.pi_i).toBeCloseTo(2 / nh, 8);
       expect(p.w_i).toBeCloseTo(nh / 2, 8);
       expect(p.pi_i * p.w_i).toBeCloseTo(1.0, 7);
+    }
+  });
+
+  it("T3.3: sortear72PoligonosD16 sorteia 72 polígonos de 5,02 ha (4 por estrato: 2 treino + 2 held-out, pi_i = 4 / N_h) conforme emenda D16 (f5be525)", () => {
+    const pool = gerarPoolCandidatosElegiveis(6); // 6 candidatos por estrato = 108 candidatos
+    const selo72 = sortear72PoligonosD16(pool, {
+      semente: 20260929,
+      gitCommit: "f5be525",
+      geradoEm: "2026-09-29T19:20:00.000Z",
+    });
+
+    expect(selo72.totalPoligonosSorteados).toBe(72);
+    expect(selo72.totalTreino).toBe(36);
+    expect(selo72.totalHeldOut).toBe(36);
+    expect(selo72.areaTotalHectares).toBe(361.44);
+    expect(selo72.poligonos).toHaveLength(72);
+
+    for (const idEstrato of TODOS_ESTRATOS_D12) {
+      const quarteto = selo72.poligonos.filter((p: any) => p.estratoId === idEstrato);
+      expect(quarteto).toHaveLength(4);
+      expect(quarteto.map((p: any) => p.papelConjunto).sort()).toEqual([
+        "held-out",
+        "held-out",
+        "treino",
+        "treino",
+      ]);
+      for (const p of quarteto) {
+        expect(p.areaHectares).toBe(5.02);
+        expect(p.pi_i).toBeCloseTo(4 / p.nCandidatosEstrato, 8);
+        expect(p.w_i).toBeCloseTo(p.nCandidatosEstrato / 4, 8);
+        expect(p.pi_i * p.w_i).toBeCloseTo(1.0, 7);
+      }
     }
   });
 });

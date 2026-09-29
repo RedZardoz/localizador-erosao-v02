@@ -1,0 +1,167 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 5625 >>
+stream
+BT
+/F1 8 Tf
+36 800 Td
+11 TL
+(SAREL v2.0 - ROTEIRO DE CAMPO E PLANOS DE VOO NCONTROL  D16 / D21 / D26 ) '
+(Gerado em: 2026-09-29T19:15:00.000Z | Camera: Micasense Altum | GSD alvo: 4.0 cm | AGL nominal: 92.76 m) '
+(Total de poligonos: 72  361.44 ha  | Total de jornadas: 12) '
+(AVISO DE DECOLAGEM: plannedHomePosition = sugestao_a_confirmar_em_campo  ajustar conforme acesso viario .) '
+(----------------------------------------------------------------------------------------------------) '
+([JORNADA_01] Decolagem sugerida:  -24.75000, -53.72000  | Deslocamento: 25.83 km | Voo: 19.1-20.2 min) '
+(  #1 D16_E_1_1_1_Q01  E_1_1_1/treino  | Mun: Toledo | CAR: PR-4115200-1001A9B8C7D... | Ang: 18g | Desnivel: 4.3m | T: 2.9-3.1m) '
+(  #2 D16_E_1_1_1_Q02  E_1_1_1/treino  | Mun: Cascavel | CAR: PR-4115200-1002A9B8C7D... | Ang: 329g | Desnivel: 10.4m | T: 3.5-3.6m) '
+(  #3 D16_E_1_1_1_Q03  E_1_1_1/held-out  | Mun: Marechal Candido Rondon | CAR: PR-4115200-1003A9B8C7D... | Ang: 317g | Desnivel: 10.7m | T: 3.5-3.6m) '
+(  #4 D16_E_1_1_1_Q04  E_1_1_1/held-out  | Mun: Santa Helena | CAR: PR-4115200-1004A9B8C7D... | Ang: 290g | Desnivel: 3.8m | T: 2.9-3.1m) '
+(  #5 D16_E_1_1_2_Q01  E_1_1_2/treino  | Mun: Medianeira | CAR: PR-4115200-1005A9B8C7D... | Ang: 170g | Desnivel: 8.0m | T: 2.9-3.1m) '
+(  #6 D16_E_1_1_2_Q02  E_1_1_2/treino  | Mun: Sao Miguel do Iguacu | CAR: PR-4115200-1006A9B8C7D... | Ang: 0g | Desnivel: 13.4m | T: 3.5-3.6m) '
+() '
+([JORNADA_02] Decolagem sugerida:  -24.76200, -53.77500  | Deslocamento: 25.83 km | Voo: 18.7-19.7 min) '
+(  #1 D16_E_1_2_2_Q01  E_1_2_2/treino  | Mun: Toledo | CAR: PR-4115200-1013A9B8C7D... | Ang: 189g | Desnivel: 9.9m | T: 2.9-3.1m) '
+(  #2 D16_E_1_2_2_Q02  E_1_2_2/treino  | Mun: Cascavel | CAR: PR-4115200-1014A9B8C7D... | Ang: 256g | Desnivel: 6.9m | T: 3.0-3.1m) '
+(  #3 D16_E_1_2_2_Q03  E_1_2_2/held-out  | Mun: Marechal Candido Rondon | CAR: PR-4115200-1015A9B8C7D... | Ang: 313g | Desnivel: 9.2m | T: 3.5-3.6m) '
+(  #4 D16_E_1_2_2_Q04  E_1_2_2/held-out  | Mun: Santa Helena | CAR: PR-4115200-1016A9B8C7D... | Ang: 356g | Desnivel: 11.2m | T: 3.5-3.7m) '
+(  #5 D16_E_1_3_1_Q01  E_1_3_1/treino  | Mun: Medianeira | CAR: PR-4115200-1017A9B8C7D... | Ang: 348g | Desnivel: 7.3m | T: 2.9-3.1m) '
+(  #6 D16_E_1_3_1_Q02  E_1_3_1/treino  | Mun: Sao Miguel do Iguacu | CAR: PR-4115200-1018A9B8C7D... | Ang: 254g | Desnivel: 7.1m | T: 3.0-3.1m) '
+() '
+([JORNADA_03] Decolagem sugerida:  -24.77400, -53.83000  | Deslocamento: 25.83 km | Voo: 20.3-21.4 min) '
+(  #1 D16_E_2_1_1_Q01  E_2_1_1/treino  | Mun: Toledo | CAR: PR-4115200-1025A9B8C7D... | Ang: 212g | Desnivel: 8.5m | T: 3.5-3.7m) '
+(  #2 D16_E_2_1_1_Q02  E_2_1_1/treino  | Mun: Cascavel | CAR: PR-4115200-1026A9B8C7D... | Ang: 218g | Desnivel: 11.7m | T: 3.5-3.6m) '
+(  #3 D16_E_2_1_1_Q03  E_2_1_1/held-out  | Mun: Marechal Candido Rondon | CAR: PR-4115200-1027A9B8C7D... | Ang: 218g | Desnivel: 8.5m | T: 3.5-3.6m) '
+(  #4 D16_E_2_1_1_Q04  E_2_1_1/held-out  | Mun: Santa Helena | CAR: PR-4115200-1028A9B8C7D... | Ang: 50g | Desnivel: 3.3m | T: 3.5-3.7m) '
+(  #5 D16_E_2_1_2_Q01  E_2_1_2/treino  | Mun: Medianeira | CAR: PR-4115200-1029A9B8C7D... | Ang: 337g | Desnivel: 10.5m | T: 2.9-3.1m) '
+(  #6 D16_E_2_1_2_Q02  E_2_1_2/treino  | Mun: Sao Miguel do Iguacu | CAR: PR-4115200-1030A9B8C7D... | Ang: 320g | Desnivel: 11.4m | T: 3.5-3.6m) '
+() '
+([JORNADA_04] Decolagem sugerida:  -24.78600, -53.88500  | Deslocamento: 25.83 km | Voo: 20.3-21.4 min) '
+(  #1 D16_E_2_2_2_Q01  E_2_2_2/treino  | Mun: Toledo | CAR: PR-4115200-1037A9B8C7D... | Ang: 322g | Desnivel: 10.7m | T: 3.5-3.7m) '
+(  #2 D16_E_2_2_2_Q02  E_2_2_2/treino  | Mun: Cascavel | CAR: PR-4115200-1038A9B8C7D... | Ang: 264g | Desnivel: 7.4m | T: 3.5-3.6m) '
+(  #3 D16_E_2_2_2_Q03  E_2_2_2/held-out  | Mun: Marechal Candido Rondon | CAR: PR-4115200-1039A9B8C7D... | Ang: 201g | Desnivel: 8.3m | T: 3.5-3.6m) '
+(  #4 D16_E_2_2_2_Q04  E_2_2_2/held-out  | Mun: Santa Helena | CAR: PR-4115200-1040A9B8C7D... | Ang: 157g | Desnivel: 11.8m | T: 2.9-3.1m) '
+(  #5 D16_E_2_3_1_Q01  E_2_3_1/treino  | Mun: Medianeira | CAR: PR-4115200-1041A9B8C7D... | Ang: 235g | Desnivel: 7.8m | T: 3.5-3.7m) '
+(  #6 D16_E_2_3_1_Q02  E_2_3_1/treino  | Mun: Sao Miguel do Iguacu | CAR: PR-4115200-1042A9B8C7D... | Ang: 300g | Desnivel: 8.7m | T: 3.5-3.6m) '
+() '
+([JORNADA_05] Decolagem sugerida:  -24.79800, -53.94000  | Deslocamento: 25.83 km | Voo: 20.3-21.4 min) '
+(  #1 D16_E_3_1_1_Q01  E_3_1_1/treino  | Mun: Toledo | CAR: PR-4115200-1049A9B8C7D... | Ang: 318g | Desnivel: 11.8m | T: 2.9-3.1m) '
+(  #2 D16_E_3_1_1_Q02  E_3_1_1/treino  | Mun: Cascavel | CAR: PR-4115200-1050A9B8C7D... | Ang: 325g | Desnivel: 11.1m | T: 3.5-3.6m) '
+(  #3 D16_E_3_1_1_Q03  E_3_1_1/held-out  | Mun: Marechal Candido Rondon | CAR: PR-4115200-1051A9B8C7D... | Ang: 350g | Desnivel: 4.5m | T: 3.5-3.6m) '
+(  #4 D16_E_3_1_1_Q04  E_3_1_1/held-out  | Mun: Santa Helena | CAR: PR-4115200-1052A9B8C7D... | Ang: 124g | Desnivel: 8.1m | T: 3.5-3.7m) '
+(  #5 D16_E_3_1_2_Q01  E_3_1_2/treino  | Mun: Medianeira | CAR: PR-4115200-1053A9B8C7D... | Ang: 216g | Desnivel: 13.6m | T: 3.5-3.7m) '
+(  #6 D16_E_3_1_2_Q02  E_3_1_2/treino  | Mun: Sao Miguel do Iguacu | CAR: PR-4115200-1054A9B8C7D... | Ang: 220g | Desnivel: 10.3m | T: 3.5-3.6m) '
+() '
+([JORNADA_06] Decolagem sugerida:  -24.81000, -53.99500  | Deslocamento: 25.83 km | Voo: 20.3-21.4 min) '
+(  #1 D16_E_3_2_2_Q01  E_3_2_2/treino  | Mun: Toledo | CAR: PR-4115200-1061A9B8C7D... | Ang: 237g | Desnivel: 10.7m | T: 3.5-3.7m) '
+(  #2 D16_E_3_2_2_Q02  E_3_2_2/treino  | Mun: Cascavel | CAR: PR-4115200-1062A9B8C7D... | Ang: 302g | Desnivel: 6.5m | T: 3.5-3.6m) '
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 5760 >>
+stream
+BT
+/F1 8 Tf
+36 800 Td
+11 TL
+(  #3 D16_E_3_2_2_Q03  E_3_2_2/held-out  | Mun: Marechal Candido Rondon | CAR: PR-4115200-1063A9B8C7D... | Ang: 10g | Desnivel: 9.1m | T: 3.5-3.6m) '
+(  #4 D16_E_3_2_2_Q04  E_3_2_2/held-out  | Mun: Santa Helena | CAR: PR-4115200-1064A9B8C7D... | Ang: 40g | Desnivel: 12.6m | T: 3.5-3.7m) '
+(  #5 D16_E_3_3_1_Q01  E_3_3_1/treino  | Mun: Medianeira | CAR: PR-4115200-1065A9B8C7D... | Ang: 281g | Desnivel: 9.0m | T: 2.9-3.1m) '
+(  #6 D16_E_3_3_1_Q02  E_3_3_1/treino  | Mun: Sao Miguel do Iguacu | CAR: PR-4115200-1066A9B8C7D... | Ang: 219g | Desnivel: 8.0m | T: 3.5-3.6m) '
+() '
+([JORNADA_07] Decolagem sugerida:  -25.02000, -53.73600  | Deslocamento: 25.83 km | Voo: 20.4-21.5 min) '
+(  #1 D16_E_1_1_2_Q03  E_1_1_2/held-out  | Mun: Toledo | CAR: PR-4115200-1007A9B8C7D... | Ang: 234g | Desnivel: 9.3m | T: 3.5-3.6m) '
+(  #2 D16_E_1_1_2_Q04  E_1_1_2/held-out  | Mun: Cascavel | CAR: PR-4115200-1008A9B8C7D... | Ang: 311g | Desnivel: 5.5m | T: 3.5-3.7m) '
+(  #3 D16_E_1_2_1_Q01  E_1_2_1/treino  | Mun: Marechal Candido Rondon | CAR: PR-4115200-1009A9B8C7D... | Ang: 7g | Desnivel: 10.3m | T: 3.5-3.7m) '
+(  #4 D16_E_1_2_1_Q02  E_1_2_1/treino  | Mun: Santa Helena | CAR: PR-4115200-1010A9B8C7D... | Ang: 327g | Desnivel: 10.2m | T: 3.5-3.6m) '
+(  #5 D16_E_1_2_1_Q03  E_1_2_1/held-out  | Mun: Medianeira | CAR: PR-4115200-1011A9B8C7D... | Ang: 286g | Desnivel: 7.6m | T: 3.0-3.1m) '
+(  #6 D16_E_1_2_1_Q04  E_1_2_1/held-out  | Mun: Sao Miguel do Iguacu | CAR: PR-4115200-1012A9B8C7D... | Ang: 207g | Desnivel: 7.8m | T: 3.5-3.7m) '
+() '
+([JORNADA_08] Decolagem sugerida:  -25.03200, -53.79100  | Deslocamento: 25.83 km | Voo: 20.3-21.4 min) '
+(  #1 D16_E_1_3_1_Q03  E_1_3_1/held-out  | Mun: Toledo | CAR: PR-4115200-1019A9B8C7D... | Ang: 218g | Desnivel: 10.4m | T: 3.5-3.6m) '
+(  #2 D16_E_1_3_1_Q04  E_1_3_1/held-out  | Mun: Cascavel | CAR: PR-4115200-1020A9B8C7D... | Ang: 185g | Desnivel: 10.4m | T: 3.5-3.7m) '
+(  #3 D16_E_1_3_2_Q01  E_1_3_2/treino  | Mun: Marechal Candido Rondon | CAR: PR-4115200-1021A9B8C7D... | Ang: 205g | Desnivel: 3.5m | T: 2.9-3.1m) '
+(  #4 D16_E_1_3_2_Q02  E_1_3_2/treino  | Mun: Santa Helena | CAR: PR-4115200-1022A9B8C7D... | Ang: 308g | Desnivel: 8.6m | T: 3.5-3.6m) '
+(  #5 D16_E_1_3_2_Q03  E_1_3_2/held-out  | Mun: Medianeira | CAR: PR-4115200-1023A9B8C7D... | Ang: 325g | Desnivel: 11.3m | T: 3.5-3.6m) '
+(  #6 D16_E_1_3_2_Q04  E_1_3_2/held-out  | Mun: Sao Miguel do Iguacu | CAR: PR-4115200-1024A9B8C7D... | Ang: 354g | Desnivel: 7.9m | T: 3.5-3.7m) '
+() '
+([JORNADA_09] Decolagem sugerida:  -25.04400, -53.84600  | Deslocamento: 25.83 km | Voo: 19.1-20.2 min) '
+(  #1 D16_E_2_1_2_Q03  E_2_1_2/held-out  | Mun: Toledo | CAR: PR-4115200-1031A9B8C7D... | Ang: 303g | Desnivel: 6.0m | T: 3.5-3.6m) '
+(  #2 D16_E_2_1_2_Q04  E_2_1_2/held-out  | Mun: Cascavel | CAR: PR-4115200-1032A9B8C7D... | Ang: 161g | Desnivel: 6.1m | T: 2.9-3.1m) '
+(  #3 D16_E_2_2_1_Q01  E_2_2_1/treino  | Mun: Marechal Candido Rondon | CAR: PR-4115200-1033A9B8C7D... | Ang: 200g | Desnivel: 11.9m | T: 2.9-3.1m) '
+(  #4 D16_E_2_2_1_Q02  E_2_2_1/treino  | Mun: Santa Helena | CAR: PR-4115200-1034A9B8C7D... | Ang: 226g | Desnivel: 10.2m | T: 3.5-3.6m) '
+(  #5 D16_E_2_2_1_Q03  E_2_2_1/held-out  | Mun: Medianeira | CAR: PR-4115200-1035A9B8C7D... | Ang: 275g | Desnivel: 5.2m | T: 3.5-3.6m) '
+(  #6 D16_E_2_2_1_Q04  E_2_2_1/held-out  | Mun: Sao Miguel do Iguacu | CAR: PR-4115200-1036A9B8C7D... | Ang: 12g | Desnivel: 9.3m | T: 2.9-3.1m) '
+() '
+([JORNADA_10] Decolagem sugerida:  -25.05600, -53.90100  | Deslocamento: 25.83 km | Voo: 19.9-21.0 min) '
+(  #1 D16_E_2_3_1_Q03  E_2_3_1/held-out  | Mun: Toledo | CAR: PR-4115200-1043A9B8C7D... | Ang: 342g | Desnivel: 9.7m | T: 3.0-3.1m) '
+(  #2 D16_E_2_3_1_Q04  E_2_3_1/held-out  | Mun: Cascavel | CAR: PR-4115200-1044A9B8C7D... | Ang: 27g | Desnivel: 9.9m | T: 3.5-3.7m) '
+(  #3 D16_E_2_3_2_Q01  E_2_3_2/treino  | Mun: Marechal Candido Rondon | CAR: PR-4115200-1045A9B8C7D... | Ang: 272g | Desnivel: 6.5m | T: 3.5-3.7m) '
+(  #4 D16_E_2_3_2_Q02  E_2_3_2/treino  | Mun: Santa Helena | CAR: PR-4115200-1046A9B8C7D... | Ang: 226g | Desnivel: 10.2m | T: 3.5-3.6m) '
+(  #5 D16_E_2_3_2_Q03  E_2_3_2/held-out  | Mun: Medianeira | CAR: PR-4115200-1047A9B8C7D... | Ang: 198g | Desnivel: 9.8m | T: 3.0-3.1m) '
+(  #6 D16_E_2_3_2_Q04  E_2_3_2/held-out  | Mun: Sao Miguel do Iguacu | CAR: PR-4115200-1048A9B8C7D... | Ang: 140g | Desnivel: 7.9m | T: 3.5-3.7m) '
+() '
+([JORNADA_11] Decolagem sugerida:  -25.06800, -53.95600  | Deslocamento: 25.83 km | Voo: 20.4-21.5 min) '
+(  #1 D16_E_3_1_2_Q03  E_3_1_2/held-out  | Mun: Toledo | CAR: PR-4115200-1055A9B8C7D... | Ang: 224g | Desnivel: 2.0m | T: 3.5-3.6m) '
+(  #2 D16_E_3_1_2_Q04  E_3_1_2/held-out  | Mun: Cascavel | CAR: PR-4115200-1056A9B8C7D... | Ang: 40g | Desnivel: 10.9m | T: 3.5-3.7m) '
+(  #3 D16_E_3_2_1_Q01  E_3_2_1/treino  | Mun: Marechal Candido Rondon | CAR: PR-4115200-1057A9B8C7D... | Ang: 324g | Desnivel: 13.7m | T: 3.5-3.7m) '
+(  #4 D16_E_3_2_1_Q02  E_3_2_1/treino  | Mun: Santa Helena | CAR: PR-4115200-1058A9B8C7D... | Ang: 308g | Desnivel: 8.3m | T: 3.5-3.6m) '
+(  #5 D16_E_3_2_1_Q03  E_3_2_1/held-out  | Mun: Medianeira | CAR: PR-4115200-1059A9B8C7D... | Ang: 195g | Desnivel: 3.0m | T: 3.0-3.1m) '
+(  #6 D16_E_3_2_1_Q04  E_3_2_1/held-out  | Mun: Sao Miguel do Iguacu | CAR: PR-4115200-1060A9B8C7D... | Ang: 147g | Desnivel: 12.4m | T: 3.5-3.7m) '
+() '
+([JORNADA_12] Decolagem sugerida:  -25.08000, -54.01100  | Deslocamento: 25.83 km | Voo: 19.7-20.8 min) '
+(  #1 D16_E_3_3_1_Q03  E_3_3_1/held-out  | Mun: Toledo | CAR: PR-4115200-1067A9B8C7D... | Ang: 170g | Desnivel: 9.5m | T: 3.5-3.6m) '
+(  #2 D16_E_3_3_1_Q04  E_3_3_1/held-out  | Mun: Cascavel | CAR: PR-4115200-1068A9B8C7D... | Ang: 129g | Desnivel: 11.0m | T: 3.5-3.7m) '
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 9 0 R >>
+endobj
+9 0 obj
+<< /Length 607 >>
+stream
+BT
+/F1 8 Tf
+36 800 Td
+11 TL
+(  #3 D16_E_3_3_2_Q01  E_3_3_2/treino  | Mun: Marechal Candido Rondon | CAR: PR-4115200-1069A9B8C7D... | Ang: 287g | Desnivel: 9.3m | T: 2.9-3.1m) '
+(  #4 D16_E_3_3_2_Q02  E_3_3_2/treino  | Mun: Santa Helena | CAR: PR-4115200-1070A9B8C7D... | Ang: 329g | Desnivel: 10.1m | T: 3.5-3.6m) '
+(  #5 D16_E_3_3_2_Q03  E_3_3_2/held-out  | Mun: Medianeira | CAR: PR-4115200-1071A9B8C7D... | Ang: 11g | Desnivel: 8.7m | T: 3.5-3.6m) '
+(  #6 D16_E_3_3_2_Q04  E_3_3_2/held-out  | Mun: Sao Miguel do Iguacu | CAR: PR-4115200-1072A9B8C7D... | Ang: 71g | Desnivel: 8.7m | T: 2.9-3.1m) '
+() '
+ET
+endstream
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000127 00000 n 
+0000000195 00000 n 
+0000000321 00000 n 
+0000005998 00000 n 
+0000006124 00000 n 
+0000011936 00000 n 
+0000012062 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+12720
+%%EOF

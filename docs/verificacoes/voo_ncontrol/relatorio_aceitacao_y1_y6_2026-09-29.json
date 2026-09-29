@@ -1,0 +1,232 @@
+{
+  "geradoEm": "2026-09-29T19:15:00.000Z",
+  "testeAceitacaoY1": {
+    "planReferencia": "docs/Plano de voo exemplo/MissaoCalculoMica.plan (mission.items[2])",
+    "camera": "Micasense Altum",
+    "angle": 66,
+    "distanceToSurfaceMeters": 80,
+    "totalItemsGerados": 62,
+    "waypointsCommand16": 48,
+    "triggersCommand206": 14,
+    "triggerDistanceMetros": 10.652403100775194,
+    "visualTransectPointsCount": 48,
+    "cameraShots": 172,
+    "aprovado": true
+  },
+  "metadadosCampanhaY2aY6": {
+    "versaoExportador": "1.0.0",
+    "geradoEm": "2026-09-29T19:15:00.000Z",
+    "totalPoligonos": 72,
+    "areaUnitariaHa": 5.02,
+    "areaTotalHa": 361.44,
+    "totalJornadas": 12,
+    "maxPoligonosPorJornada": 6,
+    "camera": "Micasense Altum",
+    "gsdAlvoCm": 4,
+    "aglDesejadaMetros": 92.764,
+    "velocidadeCruzeiroPlanMs": 15,
+    "velocidadeEfetivaMedidaMs": [
+      8.7,
+      9.2
+    ],
+    "ressalvasTerrenoGLO30": [
+      "1. Modelo Digital de Superfície (DSM), não de terreno nu (DTM): onde houver mata ciliar, quebra-vento ou reflorestamento, a cota do GLO-30 reflete o topo do dossel e não o solo.",
+      "2. Resolução espacial de 30 m (suavização intra-célula): ravinas estreitas, terraços agrícolas ou quebras abruptas de vertente menores que 30 m são suavizados pela grade.",
+      "3. Obstáculos pontuais ausentes: torres de transmissão, postes, fios, silos e árvores isoladas crescidas após a aquisição radar não constam no modelo; a conferência visual do horizonte de voo e a segurança contra colisão permanecem responsabilidade indelegável do piloto em campo."
+    ]
+  },
+  "resumoJornadas": [
+    {
+      "idJornada": "JORNADA_01",
+      "totalPoligonos": 6,
+      "pontoDecolagemSugerido": {
+        "latitude": -24.75,
+        "longitude": -53.72,
+        "altitudeRelativaMetros": 92.764,
+        "statusConfirmacao": "sugestao_a_confirmar_em_campo",
+        "observacao": "Centro do primeiro polígono do grupo sugerido como ponto de decolagem inicial; DEVE ser confirmado e ajustado em campo pelo piloto conforme acesso viário e horizonte livre."
+      },
+      "distanciaTotalDeslocamentoKm": 25.831,
+      "tempoVooTotalEstimadoMinutos": {
+        "min": 19.08,
+        "max": 20.16
+      }
+    },
+    {
+      "idJornada": "JORNADA_02",
+      "totalPoligonos": 6,
+      "pontoDecolagemSugerido": {
+        "latitude": -24.762,
+        "longitude": -53.775,
+        "altitudeRelativaMetros": 92.764,
+        "statusConfirmacao": "sugestao_a_confirmar_em_campo",
+        "observacao": "Centro do primeiro polígono do grupo sugerido como ponto de decolagem inicial; DEVE ser confirmado e ajustado em campo pelo piloto conforme acesso viário e horizonte livre."
+      },
+      "distanciaTotalDeslocamentoKm": 25.831,
+      "tempoVooTotalEstimadoMinutos": {
+        "min": 18.67,
+        "max": 19.73
+      }
+    },
+    {
+      "idJornada": "JORNADA_03",
+      "totalPoligonos": 6,
+      "pontoDecolagemSugerido": {
+        "latitude": -24.774,
+        "longitude": -53.83,
+        "altitudeRelativaMetros": 92.764,
+        "statusConfirmacao": "sugestao_a_confirmar_em_campo",
+        "observacao": "Centro do primeiro polígono do grupo sugerido como ponto de decolagem inicial; DEVE ser confirmado e ajustado em campo pelo piloto conforme acesso viário e horizonte livre."
+      },
+      "distanciaTotalDeslocamentoKm": 25.831,
+      "tempoVooTotalEstimadoMinutos": {
+        "min": 20.26,
+        "max": 21.42
+      }
+    },
+    {
+      "idJornada": "JORNADA_04",
+      "totalPoligonos": 6,
+      "pontoDecolagemSugerido": {
+        "latitude": -24.786,
+        "longitude": -53.885,
+        "altitudeRelativaMetros": 92.764,
+        "statusConfirmacao": "sugestao_a_confirmar_em_campo",
+        "observacao": "Centro do primeiro polígono do grupo sugerido como ponto de decolagem inicial; DEVE ser confirmado e ajustado em campo pelo piloto conforme acesso viário e horizonte livre."
+      },
+      "distanciaTotalDeslocamentoKm": 25.831,
+      "tempoVooTotalEstimadoMinutos": {
+        "min": 20.26,
+        "max": 21.42
+      }
+    },
+    {
+      "idJornada": "JORNADA_05",
+      "totalPoligonos": 6,
+      "pontoDecolagemSugerido": {
+        "latitude": -24.798,
+        "longitude": -53.94,
+        "altitudeRelativaMetros": 92.764,
+        "statusConfirmacao": "sugestao_a_confirmar_em_campo",
+        "observacao": "Centro do primeiro polígono do grupo sugerido como ponto de decolagem inicial; DEVE ser confirmado e ajustado em campo pelo piloto conforme acesso viário e horizonte livre."
+      },
+      "distanciaTotalDeslocamentoKm": 25.83,
+      "tempoVooTotalEstimadoMinutos": {
+        "min": 20.26,
+        "max": 21.42
+      }
+    },
+    {
+      "idJornada": "JORNADA_06",
+      "totalPoligonos": 6,
+      "pontoDecolagemSugerido": {
+        "latitude": -24.81,
+        "longitude": -53.995,
+        "altitudeRelativaMetros": 92.764,
+        "statusConfirmacao": "sugestao_a_confirmar_em_campo",
+        "observacao": "Centro do primeiro polígono do grupo sugerido como ponto de decolagem inicial; DEVE ser confirmado e ajustado em campo pelo piloto conforme acesso viário e horizonte livre."
+      },
+      "distanciaTotalDeslocamentoKm": 25.83,
+      "tempoVooTotalEstimadoMinutos": {
+        "min": 20.26,
+        "max": 21.42
+      }
+    },
+    {
+      "idJornada": "JORNADA_07",
+      "totalPoligonos": 6,
+      "pontoDecolagemSugerido": {
+        "latitude": -25.02,
+        "longitude": -53.736,
+        "altitudeRelativaMetros": 92.764,
+        "statusConfirmacao": "sugestao_a_confirmar_em_campo",
+        "observacao": "Centro do primeiro polígono do grupo sugerido como ponto de decolagem inicial; DEVE ser confirmado e ajustado em campo pelo piloto conforme acesso viário e horizonte livre."
+      },
+      "distanciaTotalDeslocamentoKm": 25.829,
+      "tempoVooTotalEstimadoMinutos": {
+        "min": 20.35,
+        "max": 21.52
+      }
+    },
+    {
+      "idJornada": "JORNADA_08",
+      "totalPoligonos": 6,
+      "pontoDecolagemSugerido": {
+        "latitude": -25.032,
+        "longitude": -53.791,
+        "altitudeRelativaMetros": 92.764,
+        "statusConfirmacao": "sugestao_a_confirmar_em_campo",
+        "observacao": "Centro do primeiro polígono do grupo sugerido como ponto de decolagem inicial; DEVE ser confirmado e ajustado em campo pelo piloto conforme acesso viário e horizonte livre."
+      },
+      "distanciaTotalDeslocamentoKm": 25.829,
+      "tempoVooTotalEstimadoMinutos": {
+        "min": 20.26,
+        "max": 21.42
+      }
+    },
+    {
+      "idJornada": "JORNADA_09",
+      "totalPoligonos": 6,
+      "pontoDecolagemSugerido": {
+        "latitude": -25.044,
+        "longitude": -53.846,
+        "altitudeRelativaMetros": 92.764,
+        "statusConfirmacao": "sugestao_a_confirmar_em_campo",
+        "observacao": "Centro do primeiro polígono do grupo sugerido como ponto de decolagem inicial; DEVE ser confirmado e ajustado em campo pelo piloto conforme acesso viário e horizonte livre."
+      },
+      "distanciaTotalDeslocamentoKm": 25.829,
+      "tempoVooTotalEstimadoMinutos": {
+        "min": 19.08,
+        "max": 20.16
+      }
+    },
+    {
+      "idJornada": "JORNADA_10",
+      "totalPoligonos": 6,
+      "pontoDecolagemSugerido": {
+        "latitude": -25.056,
+        "longitude": -53.901,
+        "altitudeRelativaMetros": 92.764,
+        "statusConfirmacao": "sugestao_a_confirmar_em_campo",
+        "observacao": "Centro do primeiro polígono do grupo sugerido como ponto de decolagem inicial; DEVE ser confirmado e ajustado em campo pelo piloto conforme acesso viário e horizonte livre."
+      },
+      "distanciaTotalDeslocamentoKm": 25.829,
+      "tempoVooTotalEstimadoMinutos": {
+        "min": 19.85,
+        "max": 20.99
+      }
+    },
+    {
+      "idJornada": "JORNADA_11",
+      "totalPoligonos": 6,
+      "pontoDecolagemSugerido": {
+        "latitude": -25.068,
+        "longitude": -53.956,
+        "altitudeRelativaMetros": 92.764,
+        "statusConfirmacao": "sugestao_a_confirmar_em_campo",
+        "observacao": "Centro do primeiro polígono do grupo sugerido como ponto de decolagem inicial; DEVE ser confirmado e ajustado em campo pelo piloto conforme acesso viário e horizonte livre."
+      },
+      "distanciaTotalDeslocamentoKm": 25.828,
+      "tempoVooTotalEstimadoMinutos": {
+        "min": 20.35,
+        "max": 21.52
+      }
+    },
+    {
+      "idJornada": "JORNADA_12",
+      "totalPoligonos": 6,
+      "pontoDecolagemSugerido": {
+        "latitude": -25.08,
+        "longitude": -54.011,
+        "altitudeRelativaMetros": 92.764,
+        "statusConfirmacao": "sugestao_a_confirmar_em_campo",
+        "observacao": "Centro do primeiro polígono do grupo sugerido como ponto de decolagem inicial; DEVE ser confirmado e ajustado em campo pelo piloto conforme acesso viário e horizonte livre."
+      },
+      "distanciaTotalDeslocamentoKm": 25.828,
+      "tempoVooTotalEstimadoMinutos": {
+        "min": 19.67,
+        "max": 20.79
+      }
+    }
+  ]
+}
