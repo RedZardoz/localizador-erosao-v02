@@ -97,6 +97,42 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
     }
   });
 
+  it("deve aceitar e preservar os três estados de kAmbiguoAssociacao (true, false, 'indisponivel') e unidadeDeterminanteK2024 (W2/W3)", () => {
+    const pool = gerarPoolCandidatosElegiveis(3);
+    pool[0].kAmbiguoAssociacao = true;
+    for (let i = 1; i < pool.length; i++) {
+      if (i % 2 === 1) {
+        pool[i].kAmbiguoAssociacao = "indisponivel";
+        pool[i].unidadeDeterminanteK2024 = {
+          codUm: "LVdf30",
+          codUm2: "LVdf30",
+          ogcFid: 14132,
+          erodUm: "Baixa",
+          kSolos: 0.0148,
+          kSolosBruto: 0.0148,
+          nivelK: pool[i].nivelK,
+        };
+      }
+    }
+    const relatorio = verificarPreCondicoesSorteioD16(pool);
+    expect(relatorio.aprovado).toBe(true);
+
+    const selo = sortearPoligonosDroneD16(pool, {
+      semente: 42,
+      gitCommit: "commit-w3",
+      sha256ConjuntoCandidatos: "sha256-w3",
+      geradoEm: "2026-09-28T15:00:00.000Z",
+    });
+    const sorteadoIndisponivel = selo.poligonos.find(
+      (p) => p.kAmbiguoAssociacao === "indisponivel"
+    );
+    expect(sorteadoIndisponivel).toBeDefined();
+    expect(sorteadoIndisponivel!.kAmbiguoAssociacao).toBe("indisponivel");
+    expect(sorteadoIndisponivel!.kAmbiguoAssociacao).not.toBe(false);
+    expect(sorteadoIndisponivel!.unidadeDeterminanteK2024?.ogcFid).toBe(14132);
+    expect(sorteadoIndisponivel!.unidadeDeterminanteK2024?.codUm2).toBe("LVdf30");
+  });
+
   it("deve recusar e nomear 'minimo_2_candidatos_por_estrato' listando os estratos deficientes", () => {
     const pool = gerarPoolCandidatosElegiveis(1);
     try {

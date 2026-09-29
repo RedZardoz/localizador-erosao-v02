@@ -532,10 +532,11 @@ export function gerarJsonDatasheetMetadados(
       Declividade_pct: { descricao: "Gradiente de inclinação do relevo", faixaValida: "[0.0, 150.0]", unidade: "%", fonte: "Copernicus DEM (30m)" },
       RUSLE_Fator_K: { descricao: "Erodibilidade do solo conforme Tabela 5 da Embrapa Solos (Documentos 246/2024, PDF p. 14 / Doc. p. 13)", faixaValida: "[0.0020, 0.1100]", unidade: "t*h*MJ^-1*mm^-1", fonte: "Embrapa Solos GeoServer / Documentos 246 (2024)" },
       RUSLE_Fator_R: { descricao: "Erosividade da precipitação pluvial", faixaValida: "[3000, 12000]", unidade: "MJ*mm*ha^-1*h^-1*ano^-1", fonte: "CHIRPS / GPM / INMET" },
-      kAmbiguoAssociacao: { descricao: "Flag auditável de associação pedológica com componentes em níveis opostos de erodibilidade K (Decisões D08 e D09 — excluído da matriz X)", faixaValida: "{true, false}", unidade: "Booleano", fonte: "Embrapa Solos Documentos 246 (2024)" },
+      kAmbiguoAssociacao: { descricao: "Marcador ternário auditável de ambiguidade na fonte em associação pedológica (Decisão D08 emendada: Ramo (a) true/false via erod_c1..erod_c4; Ramo (b) indisponivel('insuficiente') quando 1 componente em 2024 sobre associação estadual — excluído da matriz X por CAMPOS_PROIBIDOS_MATRIZ_TREINO)", faixaValida: "{true, false, indisponivel}", unidade: "Marcador ternário (true | false | indisponivel)", fonte: "Embrapa Solos GeoServer (geonode:bra_erodibilidade_2024_sirgas2000 + geonode:parana_solos_20201105)" },
+      unidadeDeterminanteK2024: { descricao: "Unidade de mapeamento da carta de erodibilidade de 2024 (cod_um / cod_um2 e ogc_fid) que determinou o nível de K̂ (1 | 2) do ponto (Decisão D12 emendada — excluído da matriz X por CAMPOS_PROIBIDOS_MATRIZ_TREINO)", faixaValida: "{codUm, codUm2, ogcFid, erodUm, kSolos, nivelK}", unidade: "Registro de proveniência espacial", fonte: "Embrapa Solos GeoServer (geonode:bra_erodibilidade_2024_sirgas2000)" },
       correspondenciaCartas2024: { descricao: "Estado de correspondência da sequência de ordens entre parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000 (excluído da matriz X)", faixaValida: "{correspondente, divergente, sem-camada-2024}", unidade: "Categórica", fonte: "Embrapa Solos GeoServer OWS (2020 vs 2024)" },
       divergenciaEntreCartas2024: { descricao: "Flag booleano indicando divergência de sequência ou de número de componentes entre parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000 (excluído da matriz X)", faixaValida: "{true, false}", unidade: "Booleano", fonte: "Embrapa Solos GeoServer OWS (2020 vs 2024)" },
-      provenienciaK: { descricao: "Proveniência metodológica da classificação do nível de K da unidade (tabelado via erod_c1..erod_c4, heurística de fallback não conferida, divergência entre cartas ou fora do domínio — excluído da matriz X)", faixaValida: "{tabelado, heuristica-fallback-nao-conferida, divergencia-entre-cartas, fora-do-dominio}", unidade: "Categórica", fonte: "Embrapa Solos Documentos 246 (2024)" },
+      provenienciaK: { descricao: "Proveniência metodológica da classificação do nível de K da unidade (tabelado via erod_c1..erod_c4, insuficiente-ramo-b-d08 ou fora-do-dominio — excluído da matriz X)", faixaValida: "{tabelado, insuficiente-ramo-b-d08, divergencia-entre-cartas, fora-do-dominio}", unidade: "Categórica", fonte: "Embrapa Solos Documentos 246 (2024)" },
       pontoEmFronteiraPedologica: { descricao: "Marcador de qualidade Proveniencia<boolean> indicando proximidade de fronteira cartográfica (~110 m via WMS GetFeatureInfo bbox, ou fronteira compartilhada exata no WFS 1.1.0 GetFeature; indisponivel('nao-calculado') quando não computado — excluído da matriz X por Invariante 2)", faixaValida: "{medido(true), medido(false), indisponivel}", unidade: "Proveniencia<boolean>", fonte: "Embrapa Solos GeoServer OWS (V2)" },
       viaFatorKD14: { descricao: "Via operacional que alimentou o Fator K numérico da RUSLE conforme a Decisão D14 emendada (k_solos tabelado da camada 2024 vs fallback por faixa de classe — excluído da matriz X)", faixaValida: "{k_solos_camada_2024_tabelado, fallback_faixa_classe_d14, indisponivel_fora_do_dominio, indisponivel_sem_cobertura, indisponivel_fronteira_exata}", unidade: "Categórica", fonte: "Decisão D14 (emendada em 28/09/2026)" },
       classeWorldCover2020: { descricao: "Classe de cobertura do solo na época 2020 (Decisão D07 / P05)", faixaValida: "{30, 40}", unidade: "Classe categórica", fonte: "ESA/WorldCover/v100/2020 (10m)" },
@@ -544,6 +545,27 @@ export function gerarJsonDatasheetMetadados(
     auditoriaElegibilidadeEAssociacaoSolo: {
       totalPontosAnalisados: pontos.length,
       pontosComKAmbiguoAssociacao: pontos.filter((p) => (p.solo?.kAmbiguoAssociacao ?? p.kAmbiguoAssociacao) === true).length,
+      contagemEstadosKAmbiguoD08: {
+        true: pontos.filter((p) => (p.solo?.kAmbiguoAssociacao ?? p.kAmbiguoAssociacao) === true).length,
+        false: pontos.filter((p) => (p.solo?.kAmbiguoAssociacao ?? p.kAmbiguoAssociacao) === false).length,
+        indisponivel: pontos.filter(
+          (p) => (p.solo?.kAmbiguoAssociacao ?? p.kAmbiguoAssociacao ?? "indisponivel") === "indisponivel"
+        ).length,
+        removiveisAnaliseSensibilidadeD25: pontos.filter((p) => {
+          const estado = p.solo?.kAmbiguoAssociacao ?? p.kAmbiguoAssociacao ?? "indisponivel";
+          return estado === true || estado === "indisponivel";
+        }).length,
+      },
+      registrosPorPontoK2024EAmbiguidadeD08: pontos.map((p) => ({
+        pontoId: p.id,
+        codigo: p.codigo,
+        estratoId: p.estratoId,
+        nivelK: p.criterioSelecao?.nivelK ?? p.solo?.unidadeDeterminanteK2024?.nivelK ?? null,
+        kAmbiguoAssociacao: p.solo?.kAmbiguoAssociacao ?? p.kAmbiguoAssociacao ?? "indisponivel",
+        kAmbiguoAssociacaoProveniencia: p.solo?.kAmbiguoAssociacaoProveniencia ?? null,
+        unidadeDeterminanteK2024:
+          p.criterioSelecao?.unidadeDeterminanteK2024 ?? p.solo?.unidadeDeterminanteK2024 ?? null,
+      })),
       pontosEmFronteiraPedologica: pontos.filter(
         (p) =>
           p.solo?.pontoEmFronteiraPedologica?.estado === "medido" &&
@@ -610,7 +632,7 @@ export function gerarJsonDatasheetMetadados(
         documentoPrimario: "Coelho, M. R.; Lumbreras, J. F.; Amaral, A. J. do; Vasques, G. M.; Mansilla Baca, J. F.; Dart, R. de O. & Pedreira, J. P. das N. C. (2024). Erodibilidade dos solos do Brasil. Rio de Janeiro: Embrapa Solos, Documentos 246, 40 p. (CIP: PDF 38 p.).",
         statusConferenciaPdfDoc246: "conferido (docs/verificacoes/fontes/doc246/extrair_cnps_doc_246_2024.py: Tabela 4 na PDF p. 13, Tabela 5 na PDF p. 14 e prosa nas PDF pp. 18-21)",
         statusConferenciaCamadaWfs2024:
-          "conferido_em_rede_com_ressalva_de_escala (geonode:bra_erodibilidade_2024_sirgas2000 consultado ao vivo em docs/verificacoes/fontes/wfs_erodibilidade/ com feature_count=10, selecao U1 de feicao com solo mapeado em fronteira e campos ogc_fid..erod_c1..erod_c4..k_solos verificados via DescribeFeatureType; apos U1, correspondencia estrita de sequencia observada em 11/20 [55.0%] pontos rurais da BP3 [antes de U1: 10/19, 52.6%] e 0/3 [0.0%] em associacoes entre parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000; permanecem como regra operacional nao_conferido [D13/D15] a heuristica de fallback taxonomico para ordens multi-classe da Figura 1 [PDF p. 20] que governa D08 nas associacoes e os casos de divergenciaEntreCartas2024=true)",
+          "conferido_em_rede_opcao_a_emendada (D08 e D12 emendadas em 28/09/2026 [commit f629451]: K̂ da estratificação derivado de erod_um da unidade de 2024 [geonode:bra_erodibilidade_2024_sirgas2000] com registro de cod_um/cod_um2 e ogc_fid por ponto; kAmbiguoAssociacao avaliado na fonte em dois ramos sem heurística taxonômica: Ramo (a) >=2 componentes em erod_c1..erod_c4 retorna true/false tabelado; Ramo (b) 1 componente em 2024 com tipo_unida='associacao' em parana_solos_20201105 retorna indisponivel('insuficiente'); heurística classificarNivelEstratoKComponente aposentada e removida)",
         statusFatorKNumericoD14:
           "tabelado_pontual_sem_incerteza (D14 emendada em 28/09/2026: fator K alimentado por k_solos [xsd:decimal] de geonode:bra_erodibilidade_2024_sirgas2000 com proveniencia 'tabelado' apos verificacao obrigatoria de erod_um fora de categorias nao-pedologicas [k_solos=0 para Area urbana / Corpo d'agua bloqueado como indisponivel/fora-do-dominio por P12 e Invariante 1], e fallback por faixa de classe ordinal com proveniencia distinta; LIMITACAO DECLARADA PARA D25: nenhum registro de k_solos na camada traz incerteza associada na forma 'valor (+-erro)', de modo que K entra como valor pontual sem incerteza declarada no orcamento de erro da linha de base RUSLE ate que a incerteza seja lida na Tabela 5 do Documentos 246)",
       },

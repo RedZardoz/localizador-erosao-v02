@@ -59,7 +59,17 @@ export class ErroPreCondicaoSorteioD16 extends Error {
 export interface CandidatoSorteioD16 extends CandidatoEstratificacao {
   classeWorldCover2020: number | null | undefined;
   classeWorldCover2021: number | null | undefined;
-  kAmbiguoAssociacao: boolean | undefined;
+  kAmbiguoAssociacao: true | false | "indisponivel" | undefined;
+  kAmbiguoAssociacaoProveniencia?: Proveniencia<boolean>;
+  unidadeDeterminanteK2024?: {
+    codUm: string;
+    codUm2: string;
+    ogcFid: number | null;
+    erodUm: string;
+    kSolos: number | null;
+    kSolosBruto: number | null;
+    nivelK: 1 | 2 | null;
+  } | null;
   pontoEmFronteiraPedologica?: Proveniencia<boolean>;
   [chaveAdicional: string]: unknown;
 }
@@ -81,7 +91,17 @@ export interface PoligonoSorteadoD16 {
   declividadePct: number;
   frequenciaSoloNu: number;
   nivelK: 1 | 2;
-  kAmbiguoAssociacao: boolean;
+  kAmbiguoAssociacao: true | false | "indisponivel";
+  kAmbiguoAssociacaoProveniencia?: Proveniencia<boolean>;
+  unidadeDeterminanteK2024?: {
+    codUm: string;
+    codUm2: string;
+    ogcFid: number | null;
+    erodUm: string;
+    kSolos: number | null;
+    kSolosBruto: number | null;
+    nivelK: 1 | 2 | null;
+  } | null;
   classeWorldCover2020: number;
   classeWorldCover2021: number;
   pontoEmFronteiraPedologica: Proveniencia<boolean>;
@@ -138,6 +158,9 @@ const CAMPOS_ESTRUTURAIS_PERMITIDOS_CANDIDATO = new Set<string>([
   "classeWorldCover2020",
   "classeWorldCover2021",
   "kAmbiguoAssociacao",
+  "kAmbiguoAssociacaoProveniencia",
+  "ramoAmbiguidadeD08",
+  "unidadeDeterminanteK2024",
 ]);
 
 const CAMPOS_RASTREIO_PROIBIDOS_SORTEIO = new Set<string>([
@@ -319,14 +342,19 @@ export function verificarPreCondicoesSorteioD16(
     }
   }
 
-  // Pré-condição 4: todo candidato traz kAmbiguoAssociacao como booleano, nunca undefined
+  // Pré-condição 4: todo candidato traz kAmbiguoAssociacao nos três estados de D08 emendada (true, false ou "indisponivel"), nunca undefined
   for (const cand of candidatos) {
-    if (typeof cand.kAmbiguoAssociacao !== "boolean") {
+    const valKAmbiguo = cand.kAmbiguoAssociacao;
+    const ehEstadoValidoD08 =
+      valKAmbiguo === true ||
+      valKAmbiguo === false ||
+      valKAmbiguo === "indisponivel";
+    if (!ehEstadoValidoD08) {
       return falhar(
         "k_ambiguo_associacao_booleano",
         `Candidato '${cand.id}' possui kAmbiguoAssociacao=${String(
           cand.kAmbiguoAssociacao
-        )} (deve ser booleano estrito conforme Tarefa 4 / D08).`
+        )} (deve ser estritamente um dos três estados de D08/W3: true, false ou 'indisponivel').`
       );
     }
   }
@@ -456,7 +484,12 @@ export function sortearPoligonosDroneD16(
         declividadePct: cand.declividadePct,
         frequenciaSoloNu: cand.frequenciaSoloNu,
         nivelK: cand.nivelK,
-        kAmbiguoAssociacao: cand.kAmbiguoAssociacao as boolean,
+        kAmbiguoAssociacao: cand.kAmbiguoAssociacao as true | false | "indisponivel",
+        ...(cand.kAmbiguoAssociacaoProveniencia
+          ? { kAmbiguoAssociacaoProveniencia: cand.kAmbiguoAssociacaoProveniencia }
+          : {}),
+        unidadeDeterminanteK2024:
+          cand.unidadeDeterminanteK2024 !== undefined ? cand.unidadeDeterminanteK2024 : null,
         classeWorldCover2020: cand.classeWorldCover2020 as number,
         classeWorldCover2021: cand.classeWorldCover2021 as number,
         pontoEmFronteiraPedologica:

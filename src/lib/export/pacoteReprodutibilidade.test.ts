@@ -367,4 +367,82 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
     expect(datasheet.projeto.totalAmostrasTreinamento).toBe(2);
     expect(datasheet.projeto.totalAmostrasTreinamento).toBe(linhasArquivo01.length);
   });
+
+  it("W2 e W3: persiste e exporta kAmbiguoAssociacao nos três estados (true, false, 'indisponivel') e unidadeDeterminanteK2024 por ponto no Arquivo 04 sem vazar para a matriz de treino (Arquivo 01)", async () => {
+    const p1 = criarPontoTeste("1", -25.14, -53.84, "erosao");
+    p1.kAmbiguoAssociacao = true;
+    p1.solo!.kAmbiguoAssociacao = true;
+    p1.criterioSelecao.unidadeDeterminanteK2024 = {
+      codUm: "PVAd12",
+      codUm2: "PVAd12",
+      ogcFid: 1001,
+      erodUm: "Muito alta",
+      kSolos: 0.0412,
+      kSolosBruto: 0.0412,
+      nivelK: 2,
+    };
+
+    const p2 = criarPontoTeste("2", -25.15, -53.85, "ausente");
+    p2.kAmbiguoAssociacao = false;
+    p2.solo!.kAmbiguoAssociacao = false;
+    p2.criterioSelecao.unidadeDeterminanteK2024 = {
+      codUm: "LVdf1",
+      codUm2: "LVdf1",
+      ogcFid: 1002,
+      erodUm: "Baixa",
+      kSolos: 0.0117,
+      kSolosBruto: 0.0117,
+      nivelK: 1,
+    };
+
+    const p3 = criarPontoTeste("3", -25.16, -53.86, "erosao");
+    p3.kAmbiguoAssociacao = "indisponivel";
+    p3.solo!.kAmbiguoAssociacao = "indisponivel";
+    p3.solo!.kAmbiguoAssociacaoProveniencia = {
+      estado: "indisponivel",
+      causa: "insuficiente",
+      motivo: "Ramo (b) D08: 1 componente em 2024 sobre associação estadual",
+    };
+    p3.criterioSelecao.unidadeDeterminanteK2024 = {
+      codUm: "LVdf30",
+      codUm2: "LVdf30",
+      ogcFid: 14132,
+      erodUm: "Baixa",
+      kSolos: 0.0148,
+      kSolosBruto: 0.0148,
+      nivelK: 1,
+    };
+
+    const pontos = [p1, p2, p3];
+    const mapa = extrairMapaRotulos(pontos);
+    const pacote = await gerarConteudoPacoteReprodutibilidade(pontos, mapa);
+    const datasheet = JSON.parse(pacote.datasheetJson);
+
+    const contagens = datasheet.auditoriaElegibilidadeEAssociacaoSolo.contagemEstadosKAmbiguoD08;
+    expect(contagens).toEqual({
+      true: 1,
+      false: 1,
+      indisponivel: 1,
+      removiveisAnaliseSensibilidadeD25: 2,
+    });
+
+    const registros =
+      datasheet.auditoriaElegibilidadeEAssociacaoSolo.registrosPorPontoK2024EAmbiguidadeD08;
+    expect(registros).toHaveLength(3);
+    expect(registros[2].kAmbiguoAssociacao).toBe("indisponivel");
+    expect(registros[2].kAmbiguoAssociacao).not.toBe(false);
+    expect(registros[2].unidadeDeterminanteK2024?.ogcFid).toBe(14132);
+    expect(registros[2].unidadeDeterminanteK2024?.codUm2).toBe("LVdf30");
+
+    // Verifica que nem kAmbiguoAssociacao nem unidadeDeterminanteK2024 entram nas colunas da matriz X (Arquivo 01)
+    const cabecalhoCsv = pacote.matrizTreinamentoCsv
+      .replace(/^\uFEFF/, "")
+      .split(/\r?\n/)
+      .find((l) => l.startsWith("Ponto_ID,"));
+    expect(cabecalhoCsv).toBeDefined();
+    expect(cabecalhoCsv).not.toContain("kAmbiguoAssociacao");
+    expect(cabecalhoCsv).not.toContain("Marcador_K_Ambiguo_D08");
+    expect(cabecalhoCsv).not.toContain("Unidade_Determinante_K_2024");
+  });
 });
+

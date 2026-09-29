@@ -75,6 +75,22 @@ export function extrairLinhasAbaDados(pontos: PontoAmostral[]): Record<string, u
       Confianca_Pedologica: p.solo?.confiancaPedologica ?? "indisponivel",
       Erodibilidade_Classe: valorOuNulo(p.solo?.erodibilidadeClasse) ?? "não determinado",
       Erodibilidade_Classe_Origem: formatarDescricaoOrigem(p.solo?.erodibilidadeClasse),
+      Marcador_K_Ambiguo_D08: String(p.solo?.kAmbiguoAssociacao ?? p.kAmbiguoAssociacao ?? "indisponivel"),
+      Marcador_K_Ambiguo_D08_Origem: formatarDescricaoOrigem(p.solo?.kAmbiguoAssociacaoProveniencia),
+      Unidade_Determinante_K_2024_CodUm:
+        (p.criterioSelecao?.unidadeDeterminanteK2024?.codUm2 ||
+          p.criterioSelecao?.unidadeDeterminanteK2024?.codUm ||
+          p.solo?.unidadeDeterminanteK2024?.codUm2 ||
+          p.solo?.unidadeDeterminanteK2024?.codUm) ??
+        "não determinado",
+      Unidade_Determinante_K_2024_OgcFid:
+        (p.criterioSelecao?.unidadeDeterminanteK2024?.ogcFid ??
+          p.solo?.unidadeDeterminanteK2024?.ogcFid) ??
+        "",
+      Unidade_Determinante_K_2024_ErodUm:
+        (p.criterioSelecao?.unidadeDeterminanteK2024?.erodUm ??
+          p.solo?.unidadeDeterminanteK2024?.erodUm) ??
+        "não determinado",
 
       Frequencia_Solo_Nu: valorOuNulo(p.temporal?.D?.serie?.frequenciaSoloNu ?? p.temporal?.P?.serie?.frequenciaSoloNu) ?? "",
       Frequencia_Solo_Nu_Origem: formatarDescricaoOrigem(p.temporal?.D?.serie?.frequenciaSoloNu ?? p.temporal?.P?.serie?.frequenciaSoloNu),

@@ -53,6 +53,7 @@ import {
   queryEmbrapaSoil,
   diagnosticarFronteiraPedologicaBbox,
   verificarSanidadeZeroFeicoesLoteEmbrapa,
+  derivarNivelKDaCarta2024,
 } from "@/lib/embrapa/embrapaSoilClient";
 import { matchRuralProperty, toContextoFundiario } from "@/lib/fundiario/matcher";
 import {
@@ -419,39 +420,37 @@ export async function POST(request: NextRequest) {
       poolEfetivo.map((c) => ({ latitude: c.latitude, longitude: c.longitude }))
     );
 
-    // Cache espacial de células pedológicas (0.05° ≈ 5,5 km, compatível com a escala 1:250.000 da carta Embrapa)
-    const celulasUnicas = new Map<string, { lat: number; lon: number }>();
+    // Consulta pontual exata por coordenada de candidato (WFS 1.1.0 PIP geonode:parana_solos_20201105 + geonode:bra_erodibilidade_2024_sirgas2000)
+    const coordenadasUnicas = new Map<string, { lat: number; lon: number }>();
     for (const c of poolEfetivo) {
-      const chaveCelula = `${(Math.round(c.latitude * 20) / 20).toFixed(2)}_${(
-        Math.round(c.longitude * 20) / 20
-      ).toFixed(2)}`;
-      if (!celulasUnicas.has(chaveCelula)) {
-        celulasUnicas.set(chaveCelula, { lat: c.latitude, lon: c.longitude });
+      const chaveCoord = `${c.latitude.toFixed(6)}_${c.longitude.toFixed(6)}`;
+      if (!coordenadasUnicas.has(chaveCoord)) {
+        coordenadasUnicas.set(chaveCoord, { lat: c.latitude, lon: c.longitude });
       }
     }
 
-    const resultadosEmbrapaPorCelula = new Map<
+    const resultadosEmbrapaPorCoord = new Map<
       string,
       Awaited<ReturnType<typeof queryEmbrapaSoil>> | null
     >();
-    const entradasCelulas = Array.from(celulasUnicas.entries());
+    const entradasCoords = Array.from(coordenadasUnicas.entries());
     const CONCORRENCIA_EMBRAPA = 15;
-    for (let b = 0; b < entradasCelulas.length; b += CONCORRENCIA_EMBRAPA) {
-      const loteCelulas = entradasCelulas.slice(b, b + CONCORRENCIA_EMBRAPA);
+    for (let b = 0; b < entradasCoords.length; b += CONCORRENCIA_EMBRAPA) {
+      const loteCoords = entradasCoords.slice(b, b + CONCORRENCIA_EMBRAPA);
       await Promise.all(
-        loteCelulas.map(async ([chave, coord]) => {
+        loteCoords.map(async ([chave, coord]) => {
           try {
             const res = await queryEmbrapaSoil(coord.lat, coord.lon, { timeoutMs: 6000 });
-            resultadosEmbrapaPorCelula.set(chave, res);
+            resultadosEmbrapaPorCoord.set(chave, res);
           } catch {
-            resultadosEmbrapaPorCelula.set(chave, null);
+            resultadosEmbrapaPorCoord.set(chave, null);
           }
         })
       );
     }
 
     // V3.4: Guarda de sanidade contra esvaziamento silencioso por inversão de eixos POINT(lon lat) na WFS 1.1.0
-    const listaResultadosCelulasEmbrapa = Array.from(resultadosEmbrapaPorCelula.values()).filter(
+    const listaResultadosCelulasEmbrapa = Array.from(resultadosEmbrapaPorCoord.values()).filter(
       (r): r is NonNullable<typeof r> => r !== null
     );
     verificarSanidadeZeroFeicoesLoteEmbrapa(listaResultadosCelulasEmbrapa);
@@ -462,10 +461,8 @@ export async function POST(request: NextRequest) {
     );
     const soloMap = new Map(
       poolEfetivo.map((c) => {
-        const chaveCelula = `${(Math.round(c.latitude * 20) / 20).toFixed(2)}_${(
-          Math.round(c.longitude * 20) / 20
-        ).toFixed(2)}`;
-        return [c.id, resultadosEmbrapaPorCelula.get(chaveCelula) ?? null];
+        const chaveCoord = `${c.latitude.toFixed(6)}_${c.longitude.toFixed(6)}`;
+        return [c.id, resultadosEmbrapaPorCoord.get(chaveCoord) ?? null];
       })
     );
 
@@ -505,11 +502,16 @@ export async function POST(request: NextRequest) {
         const medTerreno = terrenoMap.get(c.id);
         const medSolo = soloMap.get(c.id);
         const medS2 = mapaSentinel2.get(c.id);
-        if (medSolo?.foraDoDominioSolo === true || medSolo?.solo?.foraDoDominioSolo === true) {
+        const derivacaoK2024 = derivarNivelKDaCarta2024(medSolo?.erodibilidade2024);
+        if (
+          medSolo?.foraDoDominioSolo === true ||
+          medSolo?.solo?.foraDoDominioSolo === true ||
+          (derivacaoK2024.provenienciaNivelK.estado === "indisponivel" &&
+            derivacaoK2024.provenienciaNivelK.causa === "fora-do-dominio")
+        ) {
           descartadosForaDominioSolo += 1;
           return null;
         }
-        const convK = converterErodibilidadeFatorK(medSolo?.erodibilidade?.classe);
         if (!medTerreno || typeof medTerreno.declividadePct !== "number") {
           descartadosSemTerreno += 1;
           return null;
@@ -518,7 +520,7 @@ export async function POST(request: NextRequest) {
           descartadosSemFrequenciaSoloNu += 1;
           return null;
         }
-        if (!convK || (convK.nivelEstratoK !== 1 && convK.nivelEstratoK !== 2)) {
+        if (derivacaoK2024.nivelK !== 1 && derivacaoK2024.nivelK !== 2) {
           descartadosSemNivelK += 1;
           return null;
         }
@@ -529,7 +531,7 @@ export async function POST(request: NextRequest) {
           longitude: c.longitude,
           declividadePct: medTerreno.declividadePct,
           frequenciaSoloNu: medS2.frequenciaSoloNu,
-          nivelK: convK.nivelEstratoK,
+          nivelK: derivacaoK2024.nivelK,
         };
       })
       .filter((item): item is CandidatoEstratificacao => item !== null);
@@ -697,25 +699,40 @@ export async function POST(request: NextRequest) {
         );
 
         const compDominante = soloEmbrapa?.solo?.componentes?.[0];
+        const derivacaoK2024Ponto = derivarNivelKDaCarta2024(soloEmbrapa?.erodibilidade2024);
+        const unidadeDetK2024Ponto =
+          soloEmbrapa?.unidadeDeterminanteK2024 ?? derivacaoK2024Ponto.unidadeDeterminante2024;
+        const marcadorKAmbiguoPonto =
+          soloEmbrapa?.solo?.kAmbiguoAssociacao ?? "indisponivel";
 
-        const erodibilidadeProveniencia = soloEmbrapa?.erodibilidade?.classe
+        const erodibilidadeProveniencia = soloEmbrapa?.erodibilidade2024?.erodUm
           ? {
               estado: "tabelado" as const,
-              valor: soloEmbrapa.erodibilidade.classe,
+              valor: soloEmbrapa.erodibilidade2024.erodUm,
               tabela:
-                "Embrapa Solos - Levantamento Pedológico do Estado do Paraná (geonode:brasil_erodibilidade_solo)",
-              chave: soloEmbrapa.erodibilidade.classe,
+                "Embrapa Solos / PRONASOLOS — Carta de Erodibilidade 2024 (geonode:bra_erodibilidade_2024_sirgas2000)",
+              chave: `${soloEmbrapa.erodibilidade2024.codUm2 || soloEmbrapa.erodibilidade2024.codUm || "s/cod"}|ogc_fid=${soloEmbrapa.erodibilidade2024.ogcFid ?? "s/fid"}|erod_um=${soloEmbrapa.erodibilidade2024.erodUm}`,
+              norma: "D12",
             }
-          : {
-              estado: "indisponivel" as const,
-              causa:
-                soloEmbrapa?.statusErodibilidade === "sem-cobertura"
-                  ? ("sem-cobertura" as const)
-                  : ("nao-calculado" as const),
-              motivo:
-                soloEmbrapa?.motivo ||
-                "Aguardando consulta pontual ao GeoServer OGC WMS da Embrapa GeoInfo.",
-            };
+          : soloEmbrapa?.erodibilidade?.classe
+            ? {
+                estado: "tabelado" as const,
+                valor: soloEmbrapa.erodibilidade.classe,
+                tabela:
+                  "Embrapa Solos - Levantamento Pedológico do Estado do Paraná (geonode:brasil_erodibilidade_solo)",
+                chave: soloEmbrapa.erodibilidade.classe,
+              }
+            : {
+                estado: "indisponivel" as const,
+                causa:
+                  soloEmbrapa?.statusErodibilidade2024 === "sem-cobertura" ||
+                  soloEmbrapa?.statusErodibilidade === "sem-cobertura"
+                    ? ("sem-cobertura" as const)
+                    : ("nao-calculado" as const),
+                motivo:
+                  soloEmbrapa?.motivo ||
+                  "Aguardando consulta pontual ao GeoServer OGC WFS da Embrapa GeoInfo.",
+              };
 
         const dataAquisicaoS2 =
           medicaoS2?.adquiridoEm ??
@@ -869,6 +886,7 @@ export async function POST(request: NextRequest) {
           criterioSelecao: {
             ...pe.criterioSelecao,
             raioThinningEfetivoMetros: raioMetros,
+            unidadeDeterminanteK2024: unidadeDetK2024Ponto,
           },
           espectral: {
             ndvi: ndviProveniencia,
@@ -1040,7 +1058,9 @@ export async function POST(request: NextRequest) {
                 },
             confiancaPedologica: soloEmbrapa?.solo?.confianca ?? "indisponivel",
             erodibilidadeClasse: erodibilidadeProveniencia,
-            kAmbiguoAssociacao: soloEmbrapa?.solo?.kAmbiguoAssociacao ?? false,
+            kAmbiguoAssociacao: marcadorKAmbiguoPonto,
+            kAmbiguoAssociacaoProveniencia: soloEmbrapa?.solo?.kAmbiguoAssociacaoProveniencia,
+            unidadeDeterminanteK2024: unidadeDetK2024Ponto,
             correspondenciaCartas2024: soloEmbrapa?.solo?.correspondenciaCartas2024,
             divergenciaEntreCartas2024: soloEmbrapa?.solo?.divergenciaEntreCartas2024 ?? false,
             provenienciaK: soloEmbrapa?.solo?.provenienciaK,
@@ -1082,7 +1102,7 @@ export async function POST(request: NextRequest) {
                   causa: "nao-calculado",
                   motivo: "Época 2021 do ESA WorldCover v200 aguarda extração via API REST v1 do GEE (D07).",
                 },
-          kAmbiguoAssociacao: soloEmbrapa?.solo?.kAmbiguoAssociacao ?? false,
+          kAmbiguoAssociacao: marcadorKAmbiguoPonto,
           temporal: {
             D: {
               janela: { inicio: "2018-01-01", fim: "2023-12-31" },

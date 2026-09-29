@@ -131,31 +131,64 @@ export interface EmbrapaSoilUnit {
    */
   confianca: "alta" | "media";
   /**
-   * Marcação de ambiguidade do estrato de erodibilidade K (Decisões D08 e D09).
-   * - `true`: unidade do tipo "associacao" na qual o componente dominante (`ordem_1`)
-   *   e ao menos um componente subordinado (`ordem_2`, `ordem_3`) pertencem a níveis
-   *   opostos de estratificação de K em D09 (Nível 1: K <= 0,0285 [classes 1–3] vs.
-   *   Nível 2: K >= 0,0300 [classes 4–6]), OU quando há divergência de composição entre
-   *   a carta estadual (`parana_solos_20201105`) e a carta nacional (`bra_erodibilidade_2024_sirgas2000`).
-   * - `false`: unidade simples (com correspondência ou fallback sem conflito) ou associação em que
-   *   todos os componentes pertencem ao mesmo nível de K de D09.
+   * Marcação de ambiguidade do estrato de erodibilidade K em três estados (Decisões D08 emendada, D09 e W3 — 28/09/2026):
+   * - `true`: Ramo (a) de D08 — a carta de 2024 traz >= 2 componentes (`erod_c1..erod_c4`) cujos níveis de D09
+   *   atravessam a fronteira (algum em nível 1 [K <= 0,0285] e algum em nível 2 [K >= 0,0300]).
+   * - `false`: Ramo (a) de D08 em que todos os >= 2 componentes da carta de 2024 caem do mesmo lado da fronteira,
+   *   OU unidade simples (`tipo_unida = 'simples'`) com 1 componente válido na carta de 2024.
+   * - `"indisponivel"`: Ramo (b) de D08 — a carta de 2024 traz 1 único componente enquanto a carta estadual
+   *   (`parana_solos_20201105`) declara `tipo_unida = 'associacao'` (composição não resolvida na fonte,
+   *   causa `insuficiente`), ou ponto fora do domínio / sem camada de 2024. JAMAIS é convertido em `false` (P12).
    * Nunca entra na matriz X de preditores (protegido em CAMPOS_PROIBIDOS_MATRIZ_TREINO).
    */
-  kAmbiguoAssociacao: boolean;
-  /** Estado da verificação de correspondência entre `parana_solos_20201105` e `bra_erodibilidade_2024_sirgas2000`. */
+  kAmbiguoAssociacao: MarcadorKAmbiguoD08;
+  /** Proveniência formal (`Proveniencia<boolean>`) do marcador de ambiguidade D08 (`tabelado(true/false)` no Ramo (a); `indisponivel('insuficiente')` no Ramo (b)). */
+  kAmbiguoAssociacaoProveniencia: Proveniencia<boolean>;
+  /** Ramo de D08 emendada que governou a avaliação (`ramo-a-tabelado-multiplos-componentes`, `ramo-b-indisponivel-generalizacao-1-componente`, `unidade-simples-1-componente`, `fora-do-dominio`, `sem-camada-2024`). */
+  ramoAmbiguidadeD08: RamoAmbiguidadeD08;
+  /** Estado informativo de correspondência da sequência de ordens entre `parana_solos_20201105` e `bra_erodibilidade_2024_sirgas2000` (declarado irrelevante para D08 na emenda de 28/09/2026). */
   correspondenciaCartas2024: "correspondente" | "divergente" | "sem-camada-2024";
-  /** Marcador explícito de divergência taxonômica entre a carta do Paraná e a carta nacional de 2024 (T2.3). */
+  /** Marcador informativo de divergência de sequência ou número de componentes entre as duas cartas. */
   divergenciaEntreCartas2024: boolean;
-  /** Proveniência efetiva usada para classificar os níveis de K na unidade. */
+  /** Proveniência efetiva usada para avaliar `kAmbiguoAssociacao` na unidade. */
   provenienciaK:
     | "tabelado"
-    | "divergencia-entre-cartas"
-    | "heuristica-fallback-nao-conferida"
+    | "indisponivel-ramo-b-generalizacao"
+    | "indisponivel-sem-camada-2024"
     | "fora-do-dominio";
-  /** Identificador (`cod_um` ou `ogc_fid`) da feição `bra_erodibilidade_2024_sirgas2000` quando `provenienciaK === "tabelado"`. */
+  /** Identificador (`cod_um` ou `ogc_fid`) da feição `bra_erodibilidade_2024_sirgas2000` quando avaliada na fonte. */
   chaveProvenienciaK: string | null;
   /** Indica se a coordenada caiu em classe não-pedológica ("Area urbana", "Corpos dagua", etc.) em qualquer camada (T3). */
   foraDoDominioSolo: boolean;
+}
+
+/**
+ * Marcador em três estados exigido por D08 emendada (W1) e pela sensibilidade de D25 (W3):
+ * - `true`: ambiguidade confirmada na fonte (`>= 2` componentes em `erod_c1..erod_c4` atravessando a fronteira de D09)
+ * - `false`: ausência de ambiguidade confirmada na fonte
+ * - `"indisponivel"`: composição não resolvida na fonte (Ramo (b): 1 componente em 2024 com `tipo_unida = 'associacao'` no PR) ou fora do domínio
+ */
+export type MarcadorKAmbiguoD08 = true | false | "indisponivel";
+
+export type RamoAmbiguidadeD08 =
+  | "ramo-a-tabelado-multiplos-componentes"
+  | "ramo-b-indisponivel-generalizacao-1-componente"
+  | "unidade-simples-1-componente"
+  | "fora-do-dominio"
+  | "sem-camada-2024";
+
+/**
+ * Registro auditável da unidade de 2024 (`geonode:bra_erodibilidade_2024_sirgas2000`)
+ * que determinou o nível de K̂ na estratificação de D12 (W2.3 — 28/09/2026).
+ */
+export interface UnidadeDeterminanteK2024 {
+  codUm: string;
+  codUm2: string;
+  ogcFid: number | null;
+  erodUm: string;
+  kSolos: number | null;
+  kSolosBruto: number | null;
+  nivelK: 1 | 2 | null;
 }
 
 /**
@@ -214,7 +247,11 @@ export interface EmbrapaSoilQueryResult {
   solo: EmbrapaSoilUnit | null;
   erodibilidade: EmbrapaErodibility | null;
   erodibilidade2024?: EmbrapaErodibility2024 | null;
-  /** Indica se a coordenada caiu em categoria não-solo, lacuna ou água (V3.1 / T3). */
+  /** Nível de K̂ (1 | 2) derivado de `erod_um` / `k_solos` da unidade que contém o ponto na carta de 2024 (D12 emendada / W2). */
+  nivelK2024?: Proveniencia<1 | 2>;
+  /** Unidade de 2024 (`cod_um`, `cod_um2`, `ogc_fid`, `erod_um`, `k_solos`) que determinou o nível de K̂ (W2.3). */
+  unidadeDeterminanteK2024?: UnidadeDeterminanteK2024 | null;
+  /** Indica se a coordenada caiu em categoria não-solo, lacuna ou água (V3.1 / T3 / W2.2). */
   foraDoDominioSolo?: boolean;
   motivoForaDoDominioSolo?: string | null;
   /** Indica se o ponto caiu exatamente sobre a fronteira compartilhada de >=2 polígonos na mesma camada no WFS 1.1.0 INTERSECTS (V1.3). */
@@ -417,93 +454,394 @@ function lerComponente(
 }
 
 /**
- * Classifica o nível de estrato de erodibilidade K (Decisão D09: 1 = K <= 0,0285 [classes 1–3];
- * 2 = K >= 0,0300 [classes 4–6]) de um componente taxonômico de solo para fins da marcação
- * `kAmbiguoAssociacao` (Decisão D08), retornando `Proveniencia<1 | 2>` (T3.2).
+ * APOSENTADORIA DA HEURÍSTICA TAXONÔMICA (Decisões D08 e D12 emendadas em `f629451` — 28/09/2026 / W1 e W2):
+ * A função `classificarNivelEstratoKComponente` (que aplicava regras taxonômicas não conferidas por
+ * ordem/subordem/família do SiBCS quando a camada de 2024 divergia ou faltava) foi REMOVIDA deste módulo.
+ * Antes da remoção, seus únicos chamadores em todo o repositório eram `parseSoilFeature` (neste arquivo)
+ * e os testes unitários em `src/lib/embrapa/embrapaSoilClient.test.ts`.
  *
- * Proveniência documental e correção dos achados F1–F5 (28/09/2026):
- * - Achado F1 corrigido: a camada estadual de solos (`geonode:parana_solos_20201105`, 38 atributos)
- *   NÃO possui campos `erod_c1..erod_c4`. Ler `props["erod_c1"]` da feição de solos fazia o ramo
- *   oficial ser código morto. Agora `erod_c1..erod_c4` são lidos da feição de 2024
- *   (`geonode:bra_erodibilidade_2024_sirgas2000`, 20 atributos, confirmados por `DescribeFeatureType`
- *   em `docs/verificacoes/fontes/wfs_erodibilidade/describe_feature_type_bra_erodibilidade_2024.xml`),
- *   condicionados à verificação de correspondência entre `legenda_c1..legenda_c4` e `ordem_1..ordem_3` (T2).
- * - Achado F5 corrigido: o cliente WMS/WFS ativo já consultava `geonode:brasil_erodibilidade_solo`
- *   (e não `geonode:brasil_solos_5m_20201104`), e agora consulta as 3 camadas simultaneamente:
- *   `geonode:parana_solos_20201105`, `geonode:brasil_erodibilidade_solo` e `geonode:bra_erodibilidade_2024_sirgas2000`.
- * - Tratamento de não-solo (T3 / P12): valores como `"Area urbana"`, `"Área urbana"`, `"Corpo d'água"` e
- *   `"Corpos dagua"` retornam `indisponivel("fora-do-dominio", [...])` e jamais são convertidos em `1 | 2`.
- * - Quando a camada de 2024 correspondente fornece `erod_cN`, o retorno é `tabelado(nivel, tabela, chave)`.
- * - Quando a camada de 2024 não cobre o ponto, opera a heurística taxonômica de fallback, cujo enquadramento
- *   para ordens multi-classe da Figura 1 (`NITOSSOLO`, `ORGANOSSOLO`, `ARGISSOLO`, `CAMBISSOLO`, `GLEISSOLO`
- *   não-sálico, `PLINTOSSOLO` não-pétrico, `NEOSSOLO LITOLICO`/`FLUVICO`) permanece declarado como
- *   regra operacional NÃO CONFERIDA contra a tabela de atributos 1:250.000 (T4.3).
+ * A partir de W1 e W2:
+ * 1. O nível de K̂ (`1 | 2`) da estratificação de D12 é derivado exclusivamente de `erod_um` (ou da faixa
+ *    de `k_solos`) da unidade que CONTÉM o ponto em `geonode:bra_erodibilidade_2024_sirgas2000` (`derivarNivelKDaCarta2024`).
+ * 2. A ambiguidade `kAmbiguoAssociacao` de D08 é avaliada exclusivamente na fonte em dois ramos (`avaliarAmbiguidadeKAssociacaoD08`):
+ *    - Ramo (a): `>= 2` componentes em `erod_c1..erod_c4` -> `tabelado(true | false)` conforme atravessem ou não a fronteira de D09;
+ *    - Ramo (b): `1` componente na carta de 2024 com `tipo_unida = 'associacao'` na carta estadual -> `indisponivel("insuficiente")`
+ *      (marcador `"indisponivel"`, JAMAIS `false`).
  */
-export function classificarNivelEstratoKComponente(
-  comp: SoilComponent,
-  erodAtributoExplicito?: string,
+export function classificarNivelKDaCarta2024(
+  classeErod: string | null | undefined,
   opcoesProveniencia?: {
     tabela?: string;
     chave?: string;
+    decisao?: string;
   }
 ): Proveniencia<1 | 2> {
-  if (erodAtributoExplicito && ehCategoriaNaoSolo(erodAtributoExplicito)) {
-    return indisponivel("fora-do-dominio", [
-      `Categoria não-pedológica em erod_cN fora do domínio de K: '${erodAtributoExplicito}'`,
+  const bruto = texto(classeErod);
+  if (!bruto) {
+    return indisponivel("insuficiente", [
+      "Classe de erodibilidade ausente na feição de geonode:bra_erodibilidade_2024_sirgas2000",
     ]);
   }
-  if (ehCategoriaNaoSolo(comp.ordem)) {
+  if (ehCategoriaNaoSolo(bruto)) {
     return indisponivel("fora-do-dominio", [
-      `Ordem não-pedológica fora do domínio de K: '${comp.ordem}'`,
+      `Categoria não-pedológica fora do domínio de K̂: '${bruto}'`,
     ]);
   }
 
-  if (erodAtributoExplicito) {
-    const norm = erodAtributoExplicito
-      .trim()
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-    const tabela = opcoesProveniencia?.tabela ?? LAYER_ERODIBILIDADE_2024;
-    const chave = opcoesProveniencia?.chave ?? "erod_cN";
-    if (norm === "muito baixa" || norm === "baixa" || norm === "media") {
-      return tabelado(1, tabela, chave);
+  const norm = bruto
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  const tabela = opcoesProveniencia?.tabela ? opcoesProveniencia.tabela : LAYER_ERODIBILIDADE_2024;
+  const chave = opcoesProveniencia?.chave ? opcoesProveniencia.chave : bruto;
+  const decisao = opcoesProveniencia?.decisao ? opcoesProveniencia.decisao : "D09/D12";
+
+  if (norm === "muito baixa" || norm === "baixa" || norm === "media") {
+    return tabelado(1, tabela, chave, decisao);
+  }
+  if (norm === "alta" || norm === "muito alta" || norm === "extremamente alta") {
+    return tabelado(2, tabela, chave, decisao);
+  }
+
+  return indisponivel("insuficiente", [
+    `Classe de erodibilidade não reconhecida na escala de D09: '${bruto}'`,
+  ]);
+}
+
+/**
+ * Deriva o nível de K̂ (`1 | 2`) e o registro da unidade determinante a partir da feição que contém
+ * o ponto na carta `geonode:bra_erodibilidade_2024_sirgas2000` (Decisão D12 emendada / PARTE II — W2).
+ *
+ * REGRAS NORMATIVAS (W2.1 a W2.3):
+ * - O nível de K̂ vem de `erod_um` (ou equivalentemente da faixa de `k_solos`: `0 < k_solos <= 0,0285` -> 1;
+ *   `k_solos >= 0,0300` -> 2) da unidade de 2024 que contém o ponto por ponto-em-polígono.
+ * - Categoria não-pedológica (`Área urbana`, `Corpo d'água`, `k_solos = 0`) NÃO tem nível de K̂ e retira
+ *   o ponto do domínio (`indisponivel("fora-do-dominio")`, `nivelK: null`), sem cair em fallback algum.
+ * - Registra `cod_um`, `cod_um2`, `ogc_fid`, `erod_um` e `k_solos` em `unidadeDeterminante2024`.
+ */
+export function derivarNivelKDaCarta2024(
+  erod2024: EmbrapaErodibility2024 | Record<string, unknown> | null | undefined
+): {
+  nivelK: 1 | 2 | null;
+  provenienciaNivelK: Proveniencia<1 | 2>;
+  unidadeDeterminante2024: UnidadeDeterminanteK2024 | null;
+} {
+  if (!erod2024) {
+    return {
+      nivelK: null,
+      provenienciaNivelK: indisponivel(
+        "sem-cobertura",
+        "Feição de geonode:bra_erodibilidade_2024_sirgas2000 ausente no ponto (W2)."
+      ),
+      unidadeDeterminante2024: null,
+    };
+  }
+
+  const parsed: EmbrapaErodibility2024 | null =
+    "erodComponentes" in erod2024 && Array.isArray(erod2024.erodComponentes)
+      ? (erod2024 as EmbrapaErodibility2024)
+      : parseErodibility2024Feature(erod2024 as Record<string, unknown>);
+
+  if (!parsed) {
+    return {
+      nivelK: null,
+      provenienciaNivelK: indisponivel(
+        "sem-cobertura",
+        "Propriedades de geonode:bra_erodibilidade_2024_sirgas2000 vazias no ponto (W2)."
+      ),
+      unidadeDeterminante2024: null,
+    };
+  }
+
+  const codUm = parsed.codUm || "";
+  const codUm2 = parsed.codUm2 ? parsed.codUm2 : codUm;
+  const ogcFid = parsed.ogcFid;
+  const erodUm = parsed.erodUm || "";
+  const kSolosBruto = parsed.kSolosBruto !== undefined ? parsed.kSolosBruto : parsed.kSolos;
+  const chaveUnidade = `${codUm || codUm2 || "sem-cod_um"}:ogc_fid=${ogcFid !== null ? ogcFid : "null"}`;
+
+  // W2.2: Categoria não-pedológica (Área urbana, Corpo d'água, k_solos = 0) retira o ponto do domínio
+  if (
+    ehCategoriaNaoSolo(erodUm) ||
+    ehCategoriaNaoSolo(parsed.legenda) ||
+    ehCategoriaNaoSolo(parsed.erodComponentes[0] ? parsed.erodComponentes[0] : "") ||
+    kSolosBruto === 0
+  ) {
+    return {
+      nivelK: null,
+      provenienciaNivelK: indisponivel(
+        "fora-do-dominio",
+        `Categoria não-pedológica na carta de 2024 ('${erodUm || parsed.legenda || "k_solos=0"}', ${chaveUnidade}) retira o ponto do domínio de K̂ (D07, D12 e D14).`
+      ),
+      unidadeDeterminante2024: {
+        codUm,
+        codUm2,
+        ogcFid,
+        erodUm,
+        kSolos: null,
+        kSolosBruto,
+        nivelK: null,
+      },
+    };
+  }
+
+  const classifPorErodUm = classificarNivelKDaCarta2024(erodUm, {
+    tabela: LAYER_ERODIBILIDADE_2024,
+    chave: `${chaveUnidade}:erod_um=${erodUm}`,
+    decisao: "D12",
+  });
+
+  if (classifPorErodUm.estado !== "indisponivel") {
+    return {
+      nivelK: classifPorErodUm.valor,
+      provenienciaNivelK: classifPorErodUm,
+      unidadeDeterminante2024: {
+        codUm,
+        codUm2,
+        ogcFid,
+        erodUm,
+        kSolos: parsed.kSolos,
+        kSolosBruto,
+        nivelK: classifPorErodUm.valor,
+      },
+    };
+  }
+
+  // Equivalência pela faixa de k_solos de D09 quando erod_um não estiver preenchido e k_solos > 0
+  if (parsed.kSolos !== null && parsed.kSolos > 0) {
+    if (parsed.kSolos <= 0.0285) {
+      const prov1 = tabelado<1 | 2>(
+        1,
+        LAYER_ERODIBILIDADE_2024,
+        `${chaveUnidade}:k_solos=${parsed.kSolos}`,
+        "D12"
+      );
+      return {
+        nivelK: 1,
+        provenienciaNivelK: prov1,
+        unidadeDeterminante2024: {
+          codUm,
+          codUm2,
+          ogcFid,
+          erodUm,
+          kSolos: parsed.kSolos,
+          kSolosBruto,
+          nivelK: 1,
+        },
+      };
     }
-    if (norm === "alta" || norm === "muito alta" || norm === "extremamente alta") {
-      return tabelado(2, tabela, chave);
+    if (parsed.kSolos >= 0.03) {
+      const prov2 = tabelado<1 | 2>(
+        2,
+        LAYER_ERODIBILIDADE_2024,
+        `${chaveUnidade}:k_solos=${parsed.kSolos}`,
+        "D12"
+      );
+      return {
+        nivelK: 2,
+        provenienciaNivelK: prov2,
+        unidadeDeterminante2024: {
+          codUm,
+          codUm2,
+          ogcFid,
+          erodUm,
+          kSolos: parsed.kSolos,
+          kSolosBruto,
+          nivelK: 2,
+        },
+      };
     }
   }
 
-  const ordem = normalizarSemAcento(comp.ordem);
-  const subOrdem = normalizarSemAcento(comp.subOrdem);
-  const grandeGrupo = normalizarSemAcento(comp.grandeGrupo);
-  const subGrupo = normalizarSemAcento(comp.subGrupo);
-  const familiaTexto = normalizarSemAcento(comp.familia.join(" "));
-  const tabelaFallback = "heuristica-taxonomica-fallback-nao-conferida";
+  return {
+    nivelK: null,
+    provenienciaNivelK: indisponivel(
+      "insuficiente",
+      `Unidade ${chaveUnidade} sem erod_um e sem k_solos enquadrável nos níveis 1 ou 2 de D09.`
+    ),
+    unidadeDeterminante2024: {
+      codUm,
+      codUm2,
+      ogcFid,
+      erodUm,
+      kSolos: parsed.kSolos,
+      kSolosBruto,
+      nivelK: null,
+    },
+  };
+}
 
-  if (ordem.includes("LATOSSOLO")) {
-    return tabelado(familiaTexto.includes("ERODID") ? 2 : 1, tabelaFallback, comp.ordem);
-  }
-  if (ordem.includes("NITOSSOLO")) {
-    return tabelado(1, tabelaFallback, comp.ordem);
-  }
-  if (ordem.includes("PLINTOSSOLO")) {
-    return tabelado(subOrdem.includes("PETRICO") ? 1 : 2, tabelaFallback, comp.ordem);
-  }
-  if (ordem.includes("ORGANOSSOLO")) {
-    return tabelado(1, tabelaFallback, comp.ordem);
-  }
-  if (ordem.includes("ARGISSOLO")) {
-    const abrupticoOuArenoso =
-      grandeGrupo.includes("ABRUPTIC") ||
-      subGrupo.includes("ABRUPTIC") ||
-      familiaTexto.includes("ABRUPTIC") ||
-      familiaTexto.includes("ARENOS");
-    return tabelado(abrupticoOuArenoso ? 2 : 1, tabelaFallback, comp.ordem);
+/**
+ * Avalia `kAmbiguoAssociacao` na fonte oficial em dois ramos, sem heurística taxonômica
+ * (Decisão D08 emendada em `f629451` — PARTE I / W1 e PARTE III / W3):
+ *
+ * - **Ramo (a) — dois ou mais componentes em `erod_c1..erod_c4`:**
+ *   Converte cada classe ao nível de D09 (`{Muito baixa, Baixa, Média}` -> 1; `{Alta, Muito alta, Extremamente alta}` -> 2).
+ *   Se os níveis atravessarem a fronteira (algum 1 e algum 2), retorna `kAmbiguoAssociacao = true` com
+ *   `tabelado(true, tabela, chave, "D08")`. Se todos caírem do mesmo lado, retorna `kAmbiguoAssociacao = false`
+ *   com `tabelado(false, tabela, chave, "D08")`. Sem heurística em nenhum dos dois desfechos.
+ *
+ * - **Ramo (b) — um único componente na carta de 2024, com `tipo_unida = 'associacao'` na carta estadual:**
+ *   A composição NÃO está resolvida na fonte. Retorna `kAmbiguoAssociacao = "indisponivel"` e
+ *   `indisponivel("insuficiente", ...)`. **É estritamente proibido devolver `false` no ramo (b)** (P12).
+ *
+ * - **Unidade simples (`tipo_unida = 'simples'` na carta estadual e 1 componente válido na carta de 2024):**
+ *   Retorna `kAmbiguoAssociacao = false` com `tabelado(false, tabela, chave, "D08")`.
+ */
+export function avaliarAmbiguidadeKAssociacaoD08(
+  tipoUnidadeEstadual: string,
+  numComponentesEstaduais: number,
+  fonte2024?: Record<string, unknown> | null
+): {
+  kAmbiguoAssociacao: MarcadorKAmbiguoD08;
+  kAmbiguoAssociacaoProveniencia: Proveniencia<boolean>;
+  ramoAmbiguidadeD08: RamoAmbiguidadeD08;
+  niveisComponentes2024: Array<1 | 2>;
+  chaveProvenienciaK: string | null;
+  foraDoDominioSolo: boolean;
+} {
+  const tipoNorm = normalizarSemAcento(tipoUnidadeEstadual).toLowerCase();
+  const ehAssociacaoEstadual =
+    tipoNorm === "associacao" || numComponentesEstaduais > 1;
+
+  if (!fonte2024) {
+    return {
+      kAmbiguoAssociacao: "indisponivel",
+      kAmbiguoAssociacaoProveniencia: indisponivel(
+        "insuficiente",
+        "Camada geonode:bra_erodibilidade_2024_sirgas2000 ausente no ponto; vedado inferir ambiguidade de D08 por heurística taxonômica (W1 / P12)."
+      ),
+      ramoAmbiguidadeD08: "sem-camada-2024",
+      niveisComponentes2024: [],
+      chaveProvenienciaK: null,
+      foraDoDominioSolo: false,
+    };
   }
 
-  // NEOSSOLO, CHERNOSSOLO, PLANOSSOLO, LUVISSOLO, VERTISSOLO, ESPODOSSOLO, CAMBISSOLO, GLEISSOLO
-  return tabelado(2, tabelaFallback, comp.ordem);
+  const codUm = texto(fonte2024["cod_um"]);
+  const codUm2 = texto(fonte2024["cod_um2"]);
+  const ogcFid = fonte2024["ogc_fid"];
+  const idUnidade2024 =
+    codUm ||
+    codUm2 ||
+    (ogcFid !== undefined && ogcFid !== null ? `ogc_fid:${String(ogcFid)}` : LAYER_ERODIBILIDADE_2024);
+
+  const erodUm2024 = texto(fonte2024["erod_um"]);
+  const leg2024 = texto(fonte2024["legenda"]);
+  const kSolosBruto = numeroOuNulo(fonte2024["k_solos"]);
+  const erodsBrutos = ["erod_c1", "erod_c2", "erod_c3", "erod_c4"]
+    .map((k) => texto(fonte2024[k]))
+    .filter((s) => s.length > 0);
+
+  if (
+    ehCategoriaNaoSolo(erodUm2024) ||
+    ehCategoriaNaoSolo(leg2024) ||
+    erodsBrutos.some((e) => ehCategoriaNaoSolo(e)) ||
+    kSolosBruto === 0
+  ) {
+    return {
+      kAmbiguoAssociacao: "indisponivel",
+      kAmbiguoAssociacaoProveniencia: indisponivel(
+        "fora-do-dominio",
+        `Categoria não-pedológica na feição ${idUnidade2024} ('${erodUm2024 || leg2024 || "k_solos=0"}'); fora do domínio de D08/D09.`
+      ),
+      ramoAmbiguidadeD08: "fora-do-dominio",
+      niveisComponentes2024: [],
+      chaveProvenienciaK: idUnidade2024,
+      foraDoDominioSolo: true,
+    };
+  }
+
+  const niveisComponentes2024: Array<1 | 2> = [];
+  for (const erodC of erodsBrutos) {
+    const classif = classificarNivelKDaCarta2024(erodC, {
+      tabela: LAYER_ERODIBILIDADE_2024,
+      chave: idUnidade2024,
+      decisao: "D08",
+    });
+    if (classif.estado === "indisponivel") {
+      return {
+        kAmbiguoAssociacao: "indisponivel",
+        kAmbiguoAssociacaoProveniencia: indisponivel(
+          classif.causa,
+          `Componente '${erodC}' na feição ${idUnidade2024} não pôde ser enquadrado em D09: ${classif.motivo}`
+        ),
+        ramoAmbiguidadeD08:
+          classif.causa === "fora-do-dominio" ? "fora-do-dominio" : "sem-camada-2024",
+        niveisComponentes2024: [],
+        chaveProvenienciaK: idUnidade2024,
+        foraDoDominioSolo: classif.causa === "fora-do-dominio",
+      };
+    }
+    niveisComponentes2024.push(classif.valor);
+  }
+
+  const chaveDetalhada = `${idUnidade2024}:erod_c=[${erodsBrutos.join(",")}]`;
+
+  // RAMO (a) — dois ou mais componentes em erod_c1..erod_c4 na carta de 2024
+  if (niveisComponentes2024.length >= 2) {
+    const temNivel1 = niveisComponentes2024.includes(1);
+    const temNivel2 = niveisComponentes2024.includes(2);
+    const atravessaFronteiraD09 = temNivel1 && temNivel2;
+    return {
+      kAmbiguoAssociacao: atravessaFronteiraD09,
+      kAmbiguoAssociacaoProveniencia: tabelado(
+        atravessaFronteiraD09,
+        LAYER_ERODIBILIDADE_2024,
+        chaveDetalhada,
+        "D08"
+      ),
+      ramoAmbiguidadeD08: "ramo-a-tabelado-multiplos-componentes",
+      niveisComponentes2024,
+      chaveProvenienciaK: chaveDetalhada,
+      foraDoDominioSolo: false,
+    };
+  }
+
+  // RAMO (b) — um único componente na carta de 2024, com tipo_unida = 'associacao' na carta estadual
+  if (niveisComponentes2024.length === 1 && ehAssociacaoEstadual) {
+    return {
+      kAmbiguoAssociacao: "indisponivel",
+      kAmbiguoAssociacaoProveniencia: indisponivel(
+        "insuficiente",
+        `Ramo (b) de D08: a carta de 2024 (${idUnidade2024}) traz 1 único componente (${erodsBrutos[0]}) onde a carta estadual declara tipo_unida='${tipoUnidadeEstadual || "associacao"}'; composição não resolvida na fonte oficial (vedado devolver false por P12).`
+      ),
+      ramoAmbiguidadeD08: "ramo-b-indisponivel-generalizacao-1-componente",
+      niveisComponentes2024,
+      chaveProvenienciaK: chaveDetalhada,
+      foraDoDominioSolo: false,
+    };
+  }
+
+  // Unidade simples (tipo_unida = 'simples' e 1 componente válido na carta de 2024)
+  if (niveisComponentes2024.length === 1 && !ehAssociacaoEstadual) {
+    return {
+      kAmbiguoAssociacao: false,
+      kAmbiguoAssociacaoProveniencia: tabelado(
+        false,
+        LAYER_ERODIBILIDADE_2024,
+        chaveDetalhada,
+        "D08"
+      ),
+      ramoAmbiguidadeD08: "unidade-simples-1-componente",
+      niveisComponentes2024,
+      chaveProvenienciaK: chaveDetalhada,
+      foraDoDominioSolo: false,
+    };
+  }
+
+  return {
+    kAmbiguoAssociacao: "indisponivel",
+    kAmbiguoAssociacaoProveniencia: indisponivel(
+      "insuficiente",
+      `Feição ${idUnidade2024} não possui componentes erod_c1..erod_c4 preenchidos para avaliação de D08.`
+    ),
+    ramoAmbiguidadeD08: "sem-camada-2024",
+    niveisComponentes2024: [],
+    chaveProvenienciaK: idUnidade2024,
+    foraDoDominioSolo: false,
+  };
 }
 
 /**
@@ -532,7 +870,7 @@ export function parseErodibility2024Feature(
   // Para categorias não-pedológicas ("Área urbana", "Corpo d'água"), a camada devolve k_solos = 0.
   const naoSolo =
     ehCategoriaNaoSolo(erodUm) ||
-    ehCategoriaNaoSolo(erodComponentes[0] ?? "") ||
+    ehCategoriaNaoSolo(erodComponentes[0] ? erodComponentes[0] : "") ||
     ehCategoriaNaoSolo(legenda);
   const kSolosBruto = numeroOuNulo(props["k_solos"]);
   const kSolosValido = !naoSolo && kSolosBruto !== null && kSolosBruto > 0 ? kSolosBruto : null;
@@ -553,9 +891,9 @@ export function parseErodibility2024Feature(
 }
 
 /**
- * Converte as propriedades brutas da camada de solos na estrutura tipada, alimentando
- * `erod_c1..erod_c4` a partir da feição `geonode:bra_erodibilidade_2024_sirgas2000`
- * com verificação obrigatória de correspondência entre `legenda_c1..legenda_c4` e `ordem_1..ordem_3` (T2).
+ * Converte as propriedades brutas da camada de solos na estrutura tipada, avaliando
+ * `kAmbiguoAssociacao` exclusivamente pelos dois ramos da fonte oficial `geonode:bra_erodibilidade_2024_sirgas2000`
+ * conforme a Decisão D08 emendada (`f629451` — PARTE I / W1), sem heurística taxonômica.
  */
 export function parseSoilFeature(
   props: Record<string, unknown>,
@@ -605,148 +943,61 @@ export function parseSoilFeature(
   if (componentes.length === 0) return null;
 
   const tipoUnidade = texto(props["tipo_unida"]);
-  const ehAssociacao =
-    tipoUnidade.toLowerCase() === "associacao" ||
-    tipoUnidade.toLowerCase() === "associação" ||
-    componentes.length > 1;
-
   const confianca: "alta" | "media" =
     tipoUnidade.toLowerCase() === "simples" && componentes.length === 1 ? "alta" : "media";
 
   const ordensPr = componentes.map((c) => extrairOrdemSibcsDeLegenda(c.ordem));
   const fonte2024 =
-    erod2024Props ??
-    (texto(props["erod_c1"]) || texto(props["legenda_c1"]) ? props : null);
+    erod2024Props !== undefined && erod2024Props !== null
+      ? erod2024Props
+      : texto(props["erod_c1"]) || texto(props["legenda_c1"]) || texto(props["erod_um"])
+      ? props
+      : null;
 
-  let kAmbiguoAssociacao = false;
   let correspondenciaCartas2024: "correspondente" | "divergente" | "sem-camada-2024" =
     "sem-camada-2024";
   let divergenciaEntreCartas2024 = false;
-  let provenienciaK:
-    | "tabelado"
-    | "divergencia-entre-cartas"
-    | "heuristica-fallback-nao-conferida"
-    | "fora-do-dominio" = "heuristica-fallback-nao-conferida";
-  let chaveProvenienciaK: string | null = null;
-  let foraDoDominioSolo = false;
 
   if (fonte2024) {
-    const erodUm2024 = texto(fonte2024["erod_um"]);
-    const erodC1_2024 = texto(fonte2024["erod_c1"]);
-    const leg2024 = texto(fonte2024["legenda"]);
+    const legs2024 = ["legenda_c1", "legenda_c2", "legenda_c3", "legenda_c4"]
+      .map((k) => texto(fonte2024[k]))
+      .filter((s) => s.length > 0);
+    const ordens2024 = legs2024
+      .map((l) => extrairOrdemSibcsDeLegenda(l))
+      .filter((s) => s.length > 0);
+    const sequenciasCorrespondem =
+      ordens2024.length > 0 &&
+      ordens2024.length === ordensPr.length &&
+      ordensPr.every((ord, idx) => ord === ordens2024[idx]);
 
-    if (
-      ehCategoriaNaoSolo(erodUm2024) ||
-      ehCategoriaNaoSolo(erodC1_2024) ||
-      ehCategoriaNaoSolo(leg2024)
-    ) {
-      foraDoDominioSolo = true;
-      correspondenciaCartas2024 = "divergente";
-      divergenciaEntreCartas2024 = true;
-      provenienciaK = "fora-do-dominio";
-      kAmbiguoAssociacao = true;
-    } else {
-      const legs2024 = ["legenda_c1", "legenda_c2", "legenda_c3", "legenda_c4"]
-        .map((k) => texto(fonte2024[k]))
-        .filter((s) => s.length > 0);
-      const ordens2024 = legs2024
-        .map((l) => extrairOrdemSibcsDeLegenda(l))
-        .filter((s) => s.length > 0);
+    correspondenciaCartas2024 = sequenciasCorrespondem ? "correspondente" : "divergente";
+    divergenciaEntreCartas2024 = !sequenciasCorrespondem;
 
-      const sequenciasCorrespondem =
-        ordens2024.length === ordensPr.length &&
-        ordensPr.every((ord, idx) => ord === ordens2024[idx]);
-
-      if (sequenciasCorrespondem) {
-        correspondenciaCartas2024 = "correspondente";
-        divergenciaEntreCartas2024 = false;
-        provenienciaK = "tabelado";
-        const idUnidade2024 =
-          texto(fonte2024["cod_um"]) ||
-          texto(fonte2024["cod_um2"]) ||
-          (fonte2024["ogc_fid"] !== undefined && fonte2024["ogc_fid"] !== null
-            ? String(fonte2024["ogc_fid"])
-            : LAYER_ERODIBILIDADE_2024);
-        chaveProvenienciaK = erodC1_2024
-          ? `${idUnidade2024}:erod_c1=${erodC1_2024}`
-          : idUnidade2024;
-
-        for (let i = 0; i < componentes.length; i++) {
-          const chaveErod = `erod_c${componentes[i].posicao}`;
-          componentes[i].erodibilidadeComponente2024 = texto(fonte2024[chaveErod]) || null;
-        }
-
-        const provDominante = classificarNivelEstratoKComponente(
-          componentes[0],
-          erodC1_2024 || undefined,
-          { tabela: LAYER_ERODIBILIDADE_2024, chave: chaveProvenienciaK }
-        );
-
-        if (provDominante.estado === "indisponivel") {
-          foraDoDominioSolo = true;
-          provenienciaK = "fora-do-dominio";
-          kAmbiguoAssociacao = true;
-        } else if (ehAssociacao && componentes.length > 1) {
-          for (let i = 1; i < componentes.length; i++) {
-            const chaveErod = `erod_c${componentes[i].posicao}`;
-            const erodSub = texto(fonte2024[chaveErod]);
-            const provSub = classificarNivelEstratoKComponente(
-              componentes[i],
-              erodSub || undefined,
-              { tabela: LAYER_ERODIBILIDADE_2024, chave: chaveProvenienciaK }
-            );
-            if (provSub.estado === "indisponivel") {
-              foraDoDominioSolo = true;
-              provenienciaK = "fora-do-dominio";
-              kAmbiguoAssociacao = true;
-              break;
-            }
-            if (provSub.valor !== provDominante.valor) {
-              kAmbiguoAssociacao = true;
-              break;
-            }
-          }
-        }
-      } else {
-        // T2.3: As sequências de componentes entre a carta estadual e a carta nacional 2024 NÃO correspondem.
-        // Não pareia por posição: marca kAmbiguoAssociacao = true de forma conservadora e registra divergência entre cartas.
-        for (const comp of componentes) {
-          comp.erodibilidadeComponente2024 = null;
-        }
-        correspondenciaCartas2024 = "divergente";
-        divergenciaEntreCartas2024 = true;
-        provenienciaK = "divergencia-entre-cartas";
-        kAmbiguoAssociacao = true;
-      }
+    for (let i = 0; i < componentes.length; i++) {
+      const chaveErod = `erod_c${componentes[i].posicao}`;
+      const valErod = texto(fonte2024[chaveErod]);
+      componentes[i].erodibilidadeComponente2024 = valErod ? valErod : null;
     }
   } else {
-    // Fallback declarado: quando a camada de 2024 não cobre o ponto ou não foi fornecida
     for (const comp of componentes) {
       comp.erodibilidadeComponente2024 = null;
     }
-    correspondenciaCartas2024 = "sem-camada-2024";
-    divergenciaEntreCartas2024 = false;
-    provenienciaK = "heuristica-fallback-nao-conferida";
+  }
 
-    const provDominante = classificarNivelEstratoKComponente(componentes[0]);
-    if (provDominante.estado === "indisponivel") {
-      foraDoDominioSolo = true;
-      provenienciaK = "fora-do-dominio";
-    } else if (ehAssociacao && componentes.length > 1) {
-      for (let i = 1; i < componentes.length; i++) {
-        const provSub = classificarNivelEstratoKComponente(componentes[i]);
-        if (provSub.estado === "indisponivel") {
-          foraDoDominioSolo = true;
-          provenienciaK = "fora-do-dominio";
-          kAmbiguoAssociacao = true;
-          break;
-        }
-        if (provSub.valor !== provDominante.valor) {
-          kAmbiguoAssociacao = true;
-          break;
-        }
-      }
-    }
+  // Avaliação de D08 emendada (W1) nos dois ramos, sem heurística taxonômica
+  const avalD08 = avaliarAmbiguidadeKAssociacaoD08(
+    tipoUnidade,
+    componentes.length,
+    fonte2024
+  );
+
+  let provenienciaK: EmbrapaSoilUnit["provenienciaK"] = "tabelado";
+  if (avalD08.foraDoDominioSolo) {
+    provenienciaK = "fora-do-dominio";
+  } else if (avalD08.ramoAmbiguidadeD08 === "ramo-b-indisponivel-generalizacao-1-componente") {
+    provenienciaK = "indisponivel-ramo-b-generalizacao";
+  } else if (avalD08.ramoAmbiguidadeD08 === "sem-camada-2024") {
+    provenienciaK = "indisponivel-sem-camada-2024";
   }
 
   return {
@@ -756,12 +1007,14 @@ export function parseSoilFeature(
     componentes,
     areaKm2: numeroOuNulo(props["area_km2"]),
     confianca,
-    kAmbiguoAssociacao,
+    kAmbiguoAssociacao: avalD08.kAmbiguoAssociacao,
+    kAmbiguoAssociacaoProveniencia: avalD08.kAmbiguoAssociacaoProveniencia,
+    ramoAmbiguidadeD08: avalD08.ramoAmbiguidadeD08,
     correspondenciaCartas2024,
     divergenciaEntreCartas2024,
     provenienciaK,
-    chaveProvenienciaK,
-    foraDoDominioSolo,
+    chaveProvenienciaK: avalD08.chaveProvenienciaK,
+    foraDoDominioSolo: avalD08.foraDoDominioSolo,
   };
 }
 
@@ -1071,9 +1324,12 @@ export async function queryEmbrapaSoil(
     if (ero24) {
       resultado.erodibilidade2024 = ero24;
       resultado.statusErodibilidade2024 = "encontrado";
+      const derivK2024 = derivarNivelKDaCarta2024(ero24);
+      resultado.nivelK2024 = derivK2024.provenienciaNivelK;
+      resultado.unidadeDeterminanteK2024 = derivK2024.unidadeDeterminante2024;
       if (
         ehCategoriaNaoSolo(ero24.erodUm) ||
-        ehCategoriaNaoSolo(ero24.erodComponentes[0] ?? "") ||
+        ehCategoriaNaoSolo(ero24.erodComponentes[0] ? ero24.erodComponentes[0] : "") ||
         ero24.kSolosBruto === 0
       ) {
         motivosNaoSolo.push(
@@ -1081,6 +1337,12 @@ export async function queryEmbrapaSoil(
         );
       }
     }
+  } else {
+    resultado.nivelK2024 = indisponivel(
+      "sem-cobertura",
+      "Camada geonode:bra_erodibilidade_2024_sirgas2000 sem feição no ponto."
+    );
+    resultado.unidadeDeterminanteK2024 = null;
   }
 
   if (propsSoloPr) {
@@ -1185,11 +1447,12 @@ export class ErroSanidadeEixosWfsEmbrapa extends Error {
     public readonly totalConsultados: number,
     public readonly totalZeroFeicoes: number,
     public readonly fracaoZeroFeicoes: number,
-    public readonly limiarMaximo: number
+    public readonly limiarMaximo: number,
+    public readonly camadaAfetada: string = "todas-as-tres-camadas"
   ) {
     super(
-      `[GUARDA DE SANIDADE WFS 1.1.0 EMBRAPA — V3.4] Abortando lote: ${totalZeroFeicoes} de ${totalConsultados} ` +
-        `candidatos (${(fracaoZeroFeicoes * 100).toFixed(1)}%) devolveram ZERO feições nas três camadas, ` +
+      `[GUARDA DE SANIDADE WFS 1.1.0 EMBRAPA — V3.4] Abortando lote (${camadaAfetada}): ${totalZeroFeicoes} de ${totalConsultados} ` +
+        `candidatos (${(fracaoZeroFeicoes * 100).toFixed(1)}%) devolveram ZERO feições, ` +
         `excedendo o limiar máximo de ${(limiarMaximo * 100).toFixed(1)}%. ` +
         `Suspeita crítica de inversão de eixos na consulta WFS 1.1.0 (verifique se CQL_FILTER usa POINT(<lat> <lon>) e não POINT(<lon> <lat>)).`
     );
@@ -1199,11 +1462,8 @@ export class ErroSanidadeEixosWfsEmbrapa extends Error {
 
 /**
  * Verifica a sanidade de um lote de consultas `queryEmbrapaSoil` contra esvaziamento silencioso
- * por inversão da ordem dos eixos na WFS 1.1.0 (`V3.4`).
- *
- * Se o lote tiver ao menos `minimoPontos` consultas respondidas pelo serviço e a fração de
- * coordenadas com zero feições nas três camadas (`!r.totalFeicoesSoloRetornadas && !r.totalFeicoesErod2024Retornadas && !r.totalFeicoesErodBrRetornadas`)
- * exceder `limiarMaximo` (padrão `0.50`), lança `ErroSanidadeEixosWfsEmbrapa`.
+ * por inversão da ordem dos eixos na WFS 1.1.0 (`V3.4`), tanto globalmente quanto **por camada individual**
+ * (conforme ressalva registrada em `5706595`, para capturar eventual inversão em apenas uma das 3 camadas).
  */
 export function verificarSanidadeZeroFeicoesLoteEmbrapa(
   resultados: EmbrapaSoilQueryResult[],
@@ -1213,6 +1473,11 @@ export function verificarSanidadeZeroFeicoesLoteEmbrapa(
   totalRespondidos: number;
   totalZeroFeicoesNasTresCamadas: number;
   fracaoZeroFeicoes: number;
+  fracoesPorCamada: {
+    paranaSolos: number;
+    erodibilidade2024: number;
+    erodibilidadeBr: number;
+  };
 } {
   const respondidos = resultados.filter((r) => r.statusSolo !== "servico-indisponivel");
   const totalRespondidos = respondidos.length;
@@ -1222,23 +1487,64 @@ export function verificarSanidadeZeroFeicoesLoteEmbrapa(
       !r.totalFeicoesErod2024Retornadas &&
       !r.totalFeicoesErodBrRetornadas
   ).length;
+  const zeroSoloPr = respondidos.filter((r) => !r.totalFeicoesSoloRetornadas).length;
+  const zeroErod2024 = respondidos.filter((r) => !r.totalFeicoesErod2024Retornadas).length;
+  const zeroErodBr = respondidos.filter((r) => !r.totalFeicoesErodBrRetornadas).length;
 
   const fracaoZeroFeicoes =
     totalRespondidos > 0 ? totalZeroFeicoesNasTresCamadas / totalRespondidos : 0;
+  const fracaoSoloPr = totalRespondidos > 0 ? zeroSoloPr / totalRespondidos : 0;
+  const fracaoErod2024 = totalRespondidos > 0 ? zeroErod2024 / totalRespondidos : 0;
+  const fracaoErodBr = totalRespondidos > 0 ? zeroErodBr / totalRespondidos : 0;
 
-  if (totalRespondidos >= minimoPontos && fracaoZeroFeicoes > limiarMaximo) {
-    throw new ErroSanidadeEixosWfsEmbrapa(
-      totalRespondidos,
-      totalZeroFeicoesNasTresCamadas,
-      fracaoZeroFeicoes,
-      limiarMaximo
-    );
+  if (totalRespondidos >= minimoPontos) {
+    if (fracaoZeroFeicoes > limiarMaximo) {
+      throw new ErroSanidadeEixosWfsEmbrapa(
+        totalRespondidos,
+        totalZeroFeicoesNasTresCamadas,
+        fracaoZeroFeicoes,
+        limiarMaximo,
+        "todas-as-tres-camadas"
+      );
+    }
+    if (fracaoSoloPr > limiarMaximo) {
+      throw new ErroSanidadeEixosWfsEmbrapa(
+        totalRespondidos,
+        zeroSoloPr,
+        fracaoSoloPr,
+        limiarMaximo,
+        LAYER_SOLOS_PR
+      );
+    }
+    if (fracaoErod2024 > limiarMaximo) {
+      throw new ErroSanidadeEixosWfsEmbrapa(
+        totalRespondidos,
+        zeroErod2024,
+        fracaoErod2024,
+        limiarMaximo,
+        LAYER_ERODIBILIDADE_2024
+      );
+    }
+    if (fracaoErodBr > limiarMaximo) {
+      throw new ErroSanidadeEixosWfsEmbrapa(
+        totalRespondidos,
+        zeroErodBr,
+        fracaoErodBr,
+        limiarMaximo,
+        LAYER_ERODIBILIDADE_BR
+      );
+    }
   }
 
   return {
     totalRespondidos,
     totalZeroFeicoesNasTresCamadas,
     fracaoZeroFeicoes,
+    fracoesPorCamada: {
+      paranaSolos: fracaoSoloPr,
+      erodibilidade2024: fracaoErod2024,
+      erodibilidadeBr: fracaoErodBr,
+    },
   };
 }
 

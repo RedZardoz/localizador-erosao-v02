@@ -2,10 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  avaliarAmbiguidadeKAssociacaoD08,
   buildGetFeatureInfoUrl,
   buildGetFeaturePointInPolygonUrl,
-  classificarNivelEstratoKComponente,
+  classificarNivelKDaCarta2024,
   clearEmbrapaSoilCache,
+  derivarNivelKDaCarta2024,
   diagnosticarFronteiraPedologicaBbox,
   ehCategoriaNaoSolo,
   ErroSanidadeEixosWfsEmbrapa,
@@ -266,62 +268,136 @@ describe("formatSoilLabel", () => {
   });
 });
 
-describe("kAmbiguoAssociacao, erod_c1..erod_c4 (camada 2024) e fora-do-dominio (Decisões D08 e D09, T2-T4)", () => {
-  it("testa a heurística de fallback taxonômico (sem erod2024Props): marca kAmbiguoAssociacao === true para associação LATOSSOLO + NEOSSOLO LITÓLICO e na feição RRe12", () => {
-    const assocLvNeossolo = parseSoilFeature({
-      sbcs: "LVef3",
-      tipo_unida: "associacao",
-      ordem_1: "LATOSSOLO",
-      sub_ordem_: "VERMELHO",
-      grande_gru: "Eutroferrico",
-      sub_grupo_: "tipico",
-      familia_1_: "textura muito argilosa",
-      ordem_2: "NEOSSOLO",
-      sub_ordem1: "LITOLICO",
-      grande_g_1: "Eutrofico",
-      sub_grupo1: "fragmentario",
-      familia_2_: "textura media",
-      legenda: "LVef3 - Associação Latossolo Vermelho + Neossolo Litólico",
-    });
-    expect(assocLvNeossolo).not.toBeNull();
-    expect(assocLvNeossolo!.kAmbiguoAssociacao).toBe(true);
-    expect(assocLvNeossolo!.correspondenciaCartas2024).toBe("sem-camada-2024");
-    expect(assocLvNeossolo!.provenienciaK).toBe("heuristica-fallback-nao-conferida");
-
-    const assocRRe12 = parseSoilFeature(FEATURE_SOLO_ASSOCIACAO.properties);
-    expect(assocRRe12).not.toBeNull();
-    expect(assocRRe12!.kAmbiguoAssociacao).toBe(true);
-    expect(assocRRe12!.provenienciaK).toBe("heuristica-fallback-nao-conferida");
+describe("W1 e W2: kAmbiguoAssociacao na fonte em dois ramos (D08 emendada) e nível K̂ da carta de 2024 (D12 emendada)", () => {
+  it("W1 Ramo (a) — dois ou mais componentes em erod_c1..erod_c4 que ATRAVESSAM a fronteira de D09: devolve kAmbiguoAssociacao === true com proveniência tabelado (mesmo se a sequência de ordens divergir entre cartas)", () => {
+    // Caso real R02 / RRe12 sobre SG22NVef2NV+RRe+RLd+MTe (4 componentes: Baixa [1], Alta [2], Muito alta [2], Alta [2])
+    const erod2024QuatroComponentesAtravessa = {
+      ogc_fid: 103981,
+      cod_um: "SG22NVef3NV",
+      cod_um2: "SG22NVef3",
+      legenda_c1: "NITOSSOLO VERMELHO Eutroferrico",
+      legenda_c2: "NEOSSOLO REGOLITICO Eutrofico",
+      legenda_c3: "NEOSSOLO LITOLICO Distrofico",
+      legenda_c4: "CHERNOSSOLO ARGILUVICO Ferrico",
+      erod_c1: "Baixa",
+      erod_c2: "Alta",
+      erod_c3: "Muito alta",
+      erod_c4: "Alta",
+      erod_um: "Baixa",
+      k_solos: 0.012,
+    };
+    const u = parseSoilFeature(FEATURE_SOLO_ASSOCIACAO.properties, erod2024QuatroComponentesAtravessa);
+    expect(u).not.toBeNull();
+    expect(u!.ramoAmbiguidadeD08).toBe("ramo-a-tabelado-multiplos-componentes");
+    expect(u!.kAmbiguoAssociacao).toBe(true);
+    expect(u!.kAmbiguoAssociacaoProveniencia.estado).toBe("tabelado");
+    if (u!.kAmbiguoAssociacaoProveniencia.estado === "tabelado") {
+      expect(u!.kAmbiguoAssociacaoProveniencia.valor).toBe(true);
+      expect(u!.kAmbiguoAssociacaoProveniencia.decisao).toBe("D08");
+      expect(u!.kAmbiguoAssociacaoProveniencia.chave).toContain("SG22NVef3NV");
+    }
+    expect(u!.provenienciaK).toBe("tabelado");
   });
 
-  it("testa a heurística de fallback taxonômico (sem erod2024Props): marca kAmbiguoAssociacao === false para associação LATOSSOLO + NITOSSOLO (ambos K <= 0,0285)", () => {
-    const assocMesmoNivel = parseSoilFeature({
-      sbcs: "LVdf1",
-      tipo_unida: "associacao",
-      ordem_1: "LATOSSOLO",
-      sub_ordem_: "VERMELHO",
-      grande_gru: "Distroferrico",
-      sub_grupo_: "tipico",
-      familia_1_: "textura muito argilosa",
-      ordem_2: "NITOSSOLO",
-      sub_ordem1: "VERMELHO",
-      grande_g_1: "Distroferrico",
-      sub_grupo1: "tipico",
-      familia_2_: "textura muito argilosa",
-      legenda: "LVdf1 - Associação Latossolo Vermelho + Nitossolo Vermelho",
-    });
-    expect(assocMesmoNivel).not.toBeNull();
-    expect(assocMesmoNivel!.confianca).toBe("media");
-    expect(assocMesmoNivel!.kAmbiguoAssociacao).toBe(false);
-    expect(assocMesmoNivel!.provenienciaK).toBe("heuristica-fallback-nao-conferida");
+  it("W1 Ramo (a) — dois ou mais componentes em erod_c1..erod_c4 que caem TODOS DO MESMO LADO da fronteira de D09: devolve kAmbiguoAssociacao === false com proveniência tabelado", () => {
+    // Dois componentes na carta de 2024: Muito baixa (nível 1) e Baixa (nível 1) -> mesmo lado da fronteira de D09
+    const erod2024DoisComponentesMesmoLado = {
+      ogc_fid: 104112,
+      cod_um: "SG21LVef2LV",
+      cod_um2: "SG21LVef2",
+      legenda_c1: "LATOSSOLO VERMELHO Eutroferrico",
+      legenda_c2: "NITOSSOLO VERMELHO Eutroferrico",
+      erod_c1: "Muito baixa",
+      erod_c2: "Baixa",
+      erod_um: "Muito baixa",
+      k_solos: 0.0084,
+    };
+    const u = parseSoilFeature(
+      {
+        sbcs: "LVef2",
+        tipo_unida: "associacao",
+        ordem_1: "LATOSSOLO",
+        sub_ordem_: "VERMELHO",
+        grande_gru: "Eutroferrico",
+        sub_grupo_: "tipico",
+        familia_1_: "textura muito argilosa",
+        ordem_2: "NITOSSOLO",
+        sub_ordem1: "VERMELHO",
+        grande_g_1: "Eutroferrico",
+        sub_grupo1: "tipico",
+        familia_2_: "textura argilosa",
+        legenda: "LVef2 - Associação Latossolo Vermelho + Nitossolo Vermelho",
+      },
+      erod2024DoisComponentesMesmoLado
+    );
+    expect(u).not.toBeNull();
+    expect(u!.ramoAmbiguidadeD08).toBe("ramo-a-tabelado-multiplos-componentes");
+    expect(u!.kAmbiguoAssociacao).toBe(false);
+    expect(u!.kAmbiguoAssociacaoProveniencia.estado).toBe("tabelado");
+    if (u!.kAmbiguoAssociacaoProveniencia.estado === "tabelado") {
+      expect(u!.kAmbiguoAssociacaoProveniencia.valor).toBe(false);
+      expect(u!.kAmbiguoAssociacaoProveniencia.decisao).toBe("D08");
+    }
+    expect(u!.provenienciaK).toBe("tabelado");
   });
 
-  it("usa erod_c1..erod_c4 tabelado quando a sequência de ordens coincide entre parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000 (T2.1 / T4.1)", () => {
-    const erod2024Compativel = {
-      cod_um2: "SG22NVef2NV",
+  it("W1 Ramo (b) [ASSERÇÃO OBRIGATÓRIA DE PROTEÇÃO DE D08] — um único componente na carta de 2024 com tipo_unida = 'associacao' na carta estadual: devolve estritamente indisponivel (causa 'insuficiente') e JAMAIS false", () => {
+    // Metade das associações da BP3 (16/32 na campanha dirigida): a carta nacional 1:250.000 generaliza
+    // a associação para unidade simples (apenas erod_c1 preenchido), enquanto parana_solos_20201105 declara tipo_unida='associacao'.
+    const erod2024Generalizada1Componente = {
+      ogc_fid: 104677,
+      cod_um: "SG21LVdf1LV",
+      cod_um2: "SG21LVdf1",
+      legenda_c1: "LATOSSOLO VERMELHO Distroferrico",
+      erod_c1: "Muito baixa",
+      erod_c2: "",
+      erod_c3: "",
+      erod_c4: "",
+      erod_um: "Muito baixa",
+      k_solos: 0.002,
+    };
+
+    const u = parseSoilFeature(
+      {
+        sbcs: "NVef4",
+        tipo_unida: "associacao",
+        ordem_1: "NITOSSOLO",
+        sub_ordem_: "VERMELHO",
+        grande_gru: "Eutroferrico",
+        sub_grupo_: "tipico",
+        familia_1_: "textura muito argilosa",
+        ordem_2: "LATOSSOLO",
+        sub_ordem1: "VERMELHO",
+        grande_g_1: "Eutroferrico",
+        sub_grupo1: "tipico",
+        familia_2_: "textura muito argilosa",
+        legenda: "NVef4 - Associação Nitossolo Vermelho + Latossolo Vermelho",
+      },
+      erod2024Generalizada1Componente
+    );
+
+    expect(u).not.toBeNull();
+    // PROIBIÇÃO CRÍTICA DE W1: é proibido devolver false no ramo (b)
+    expect(u!.kAmbiguoAssociacao).not.toBe(false);
+    expect(u!.kAmbiguoAssociacao).toBe("indisponivel");
+    expect(u!.ramoAmbiguidadeD08).toBe("ramo-b-indisponivel-generalizacao-1-componente");
+    expect(u!.kAmbiguoAssociacaoProveniencia.estado).toBe("indisponivel");
+    if (u!.kAmbiguoAssociacaoProveniencia.estado === "indisponivel") {
+      expect(u!.kAmbiguoAssociacaoProveniencia.causa).toBe("insuficiente");
+      expect(u!.kAmbiguoAssociacaoProveniencia.motivo).toContain("Ramo (b) de D08");
+    }
+    expect(u!.provenienciaK).toBe("indisponivel-ramo-b-generalizacao");
+  });
+
+  it("Unidade simples na carta estadual (tipo_unida = 'simples') com 1 componente válido na carta de 2024: devolve kAmbiguoAssociacao === false tabelado", () => {
+    const erod2024Simples = {
+      ogc_fid: 102154,
+      cod_um: "SG22NVef2NV",
+      cod_um2: "SG22NVef2",
       legenda_c1: "NITOSSOLO VERMELHO Eutroferrico tipico",
       erod_c1: "Baixa",
       erod_um: "Baixa",
+      k_solos: 0.012,
     };
     const u = parseSoilFeature(
       {
@@ -334,77 +410,69 @@ describe("kAmbiguoAssociacao, erod_c1..erod_c4 (camada 2024) e fora-do-dominio (
         familia_1_: "textura argilosa",
         legenda: "NVef2 - NITOSSOLO VERMELHO Eutroferrico",
       },
-      erod2024Compativel
+      erod2024Simples
     );
     expect(u).not.toBeNull();
-    expect(u!.correspondenciaCartas2024).toBe("correspondente");
-    expect(u!.divergenciaEntreCartas2024).toBe(false);
-    expect(u!.provenienciaK).toBe("tabelado");
-    expect(u!.chaveProvenienciaK).toBe("SG22NVef2NV:erod_c1=Baixa");
+    expect(u!.ramoAmbiguidadeD08).toBe("unidade-simples-1-componente");
     expect(u!.kAmbiguoAssociacao).toBe(false);
+    expect(u!.kAmbiguoAssociacaoProveniencia.estado).toBe("tabelado");
+    if (u!.kAmbiguoAssociacaoProveniencia.estado === "tabelado") {
+      expect(u!.kAmbiguoAssociacaoProveniencia.valor).toBe(false);
+    }
   });
 
-  it("não pareia por posição quando parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000 divergem em sequência/número de componentes (T2.3)", () => {
-    // Caso real R02_Cascavel_Rural_Oeste_RRe12 (-25.066904, -53.688038):
-    // parana_solos: ['NEOSSOLO', 'CHERNOSSOLO', 'NITOSSOLO'] (3 componentes)
-    // bra_erodibilidade_2024: ['NITOSSOLO', 'NEOSSOLO', 'NEOSSOLO', 'CHERNOSSOLO'] (4 componentes)
-    const erod2024Divergente = {
-      cod_um2: "SG22NVef2NV+RRe+RLd+MTe",
-      legenda_c1: "NITOSSOLO VERMELHO Eutroferrico",
-      legenda_c2: "NEOSSOLO REGOLITICO Eutrofico",
-      legenda_c3: "NEOSSOLO LITOLICO Distrofico",
-      legenda_c4: "CHERNOSSOLO ARGILUVICO Ferrico",
-      erod_c1: "Baixa",
-      erod_c2: "Alta",
-      erod_c3: "Muito alta",
-      erod_c4: "Alta",
+  it("W2: derivarNivelKDaCarta2024 deriva nivelK (1 | 2) de erod_um / k_solos, registra cod_um, cod_um2 e ogc_fid, e retira categorias não-pedológicas do domínio", () => {
+    const resNivel1 = derivarNivelKDaCarta2024({
+      ogc_fid: 103981,
+      cod_um: "SG22NVef3NV",
+      cod_um2: "SG22NVef3",
       erod_um: "Baixa",
-    };
-    const u = parseSoilFeature(FEATURE_SOLO_ASSOCIACAO.properties, erod2024Divergente);
-    expect(u).not.toBeNull();
-    expect(u!.correspondenciaCartas2024).toBe("divergente");
-    expect(u!.divergenciaEntreCartas2024).toBe(true);
-    expect(u!.provenienciaK).toBe("divergencia-entre-cartas");
-    expect(u!.kAmbiguoAssociacao).toBe(true);
-    // Componente 1 de parana_solos (NEOSSOLO) NÃO recebeu erod_c1 ('Baixa', que era do NITOSSOLO em 2024)
-    expect(u!.componentes[0].erodibilidadeComponente2024).toBeNull();
-  });
+      k_solos: 0.012,
+      legenda: "Nitossolo Vermelho",
+    });
+    expect(resNivel1.nivelK).toBe(1);
+    expect(resNivel1.provenienciaNivelK.estado).toBe("tabelado");
+    expect(resNivel1.unidadeDeterminante2024).toEqual({
+      codUm: "SG22NVef3NV",
+      codUm2: "SG22NVef3",
+      ogcFid: 103981,
+      erodUm: "Baixa",
+      kSolos: 0.012,
+      kSolosBruto: 0.012,
+      nivelK: 1,
+    });
 
-  it("classificarNivelEstratoKComponente retorna Proveniencia<1|2> indisponivel('fora-do-dominio') para Area urbana e Corpos dagua (T3.1 / T3.2)", () => {
-    const provUrbana = classificarNivelEstratoKComponente(
-      {
-        posicao: 1,
-        ordem: "Area urbana",
-        subOrdem: "",
-        grandeGrupo: "",
-        subGrupo: "",
-        familia: [],
-        faseVegetacao: "",
-        faseRelevo: "",
-      },
-      "Area urbana"
-    );
-    expect(provUrbana.estado).toBe("indisponivel");
-    if (provUrbana.estado === "indisponivel") {
-      expect(provUrbana.causa).toBe("fora-do-dominio");
+    const resNivel2 = derivarNivelKDaCarta2024({
+      ogc_fid: 104901,
+      cod_um: "SG21RLm4RL",
+      cod_um2: "SG21RLm4",
+      erod_um: "Alta",
+      k_solos: 0.0315,
+      legenda: "Neossolo Litolico",
+    });
+    expect(resNivel2.nivelK).toBe(2);
+    expect(resNivel2.provenienciaNivelK.estado).toBe("tabelado");
+    expect(resNivel2.unidadeDeterminante2024?.codUm2).toBe("SG21RLm4");
+    expect(resNivel2.unidadeDeterminante2024?.ogcFid).toBe(104901);
+
+    const resUrbana = derivarNivelKDaCarta2024({
+      ogc_fid: 155805,
+      cod_um: "SG21Ár",
+      cod_um2: "SG21Ár",
+      erod_um: "Área urbana",
+      k_solos: 0,
+      legenda: "Área urbana",
+    });
+    expect(resUrbana.nivelK).toBeNull();
+    expect(resUrbana.provenienciaNivelK.estado).toBe("indisponivel");
+    if (resUrbana.provenienciaNivelK.estado === "indisponivel") {
+      expect(resUrbana.provenienciaNivelK.causa).toBe("fora-do-dominio");
     }
 
-    const provAgua = classificarNivelEstratoKComponente(
-      {
-        posicao: 1,
-        ordem: "Corpos dagua",
-        subOrdem: "",
-        grandeGrupo: "",
-        subGrupo: "",
-        familia: [],
-        faseVegetacao: "",
-        faseRelevo: "",
-      },
-      "Corpos dagua"
-    );
-    expect(provAgua.estado).toBe("indisponivel");
-    if (provAgua.estado === "indisponivel") {
-      expect(provAgua.causa).toBe("fora-do-dominio");
+    const resAgua = classificarNivelKDaCarta2024("Corpos d'água");
+    expect(resAgua.estado).toBe("indisponivel");
+    if (resAgua.estado === "indisponivel") {
+      expect(resAgua.causa).toBe("fora-do-dominio");
     }
     expect(ehCategoriaNaoSolo("Corpo d'água")).toBe(true);
     expect(ehCategoriaNaoSolo("Área urbana")).toBe(true);

@@ -59,6 +59,8 @@ export const PainelSorteioD16: React.FC = () => {
         classeWorldCover2020: wc2020,
         classeWorldCover2021: wc2021,
         kAmbiguoAssociacao: kAmbiguo,
+        unidadeDeterminanteK2024:
+          p.criterioSelecao.unidadeDeterminanteK2024 ?? p.solo?.unidadeDeterminanteK2024 ?? null,
       };
     });
   }, [pontos]);
