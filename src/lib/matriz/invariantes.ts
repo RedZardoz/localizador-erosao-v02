@@ -56,6 +56,8 @@ export const CAMPOS_PROIBIDOS_MATRIZ_TREINO = [
   "chaveProvenienciaK",
   "foraDoDominioSolo",
   "pontoEmFronteiraPedologica",
+  "fronteiraCompartilhadaExata",
+  "causaZeroFeicoes",
   "totalFeicoesSoloRetornadas",
   "indiceFeicaoSoloEscolhida",
   "feicaoSoloEscolhidaId",

@@ -117,7 +117,14 @@ export interface PontoAmostral {
       | "heuristica-fallback-nao-conferida"
       | "divergencia-entre-cartas"
       | "fora-do-dominio";
-    pontoEmFronteiraPedologica?: boolean;
+    pontoEmFronteiraPedologica?: Proveniencia<boolean>;
+    fronteiraCompartilhadaExata?: boolean;
+    causaZeroFeicoes?:
+      | "fora-cobertura-camada-estadual"
+      | "dentro-cobertura-lacuna-ou-agua"
+      | "dentro-cobertura-categoria-nao-solo"
+      | "fronteira-compartilhada-exata"
+      | null;
     totalFeicoesSoloRetornadas?: number;
     indiceFeicaoSoloEscolhida?: number | null;
     feicaoSoloEscolhidaId?: string | null;
@@ -125,7 +132,8 @@ export interface PontoAmostral {
       | "k_solos_camada_2024_tabelado"
       | "fallback_faixa_classe_d14"
       | "indisponivel_fora_do_dominio"
-      | "indisponivel_sem_cobertura";
+      | "indisponivel_sem_cobertura"
+      | "indisponivel_fronteira_exata";
   };
 
   // Metadados de elegibilidade multitemporal ESA WorldCover (D07: 2020 v100 ∩ 2021 v200 em [30, 40])

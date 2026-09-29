@@ -27,6 +27,23 @@ export function ehMedido(p?: Proveniencia<unknown> | null): boolean {
   return p?.estado === "medido";
 }
 
+export function medido<T>(
+  valor: T,
+  fonte: string,
+  adquiridoEm: string = "2024-01-01",
+  consultadoEm: string = new Date().toISOString(),
+  detalhe?: string
+): Proveniencia<T> {
+  return {
+    estado: "medido",
+    valor,
+    fonte,
+    adquiridoEm,
+    consultadoEm,
+    ...(detalhe ? { detalhe } : {}),
+  };
+}
+
 export function tabelado<T>(
   valor: T,
   tabela: string,

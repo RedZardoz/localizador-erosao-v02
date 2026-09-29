@@ -49,7 +49,11 @@ import {
   calcularSemivariogramaEmpirico,
   atribuirBlocoEspacial,
 } from "@/lib/gee/blocosEspaciais";
-import { queryEmbrapaSoil } from "@/lib/embrapa/embrapaSoilClient";
+import {
+  queryEmbrapaSoil,
+  diagnosticarFronteiraPedologicaBbox,
+  verificarSanidadeZeroFeicoesLoteEmbrapa,
+} from "@/lib/embrapa/embrapaSoilClient";
 import { matchRuralProperty, toContextoFundiario } from "@/lib/fundiario/matcher";
 import {
   identificarBacia,
@@ -446,6 +450,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // V3.4: Guarda de sanidade contra esvaziamento silencioso por inversão de eixos POINT(lon lat) na WFS 1.1.0
+    const listaResultadosCelulasEmbrapa = Array.from(resultadosEmbrapaPorCelula.values()).filter(
+      (r): r is NonNullable<typeof r> => r !== null
+    );
+    verificarSanidadeZeroFeicoesLoteEmbrapa(listaResultadosCelulasEmbrapa);
+
     const candidatosMap = new Map(poolEfetivo.map((c) => [c.id, c]));
     const terrenoMap = new Map(
       poolEfetivo.map((c, idx) => [c.id, medicoesTerreno[idx] ?? null])
@@ -650,6 +660,13 @@ export async function POST(request: NextRequest) {
         const soloEmbrapa = soloMap.get(pe.id) ?? null;
         const medicaoS2 = mapaSentinel2.get(pe.id) ?? null;
         const codigoFormatado = "PR-2026-" + String(i + 1).padStart(4, "0");
+
+        // V2.2: Diagnóstico de fronteira por bbox restrito aos candidatos que chegam ao sorteio
+        const diagFronteiraBbox = await diagnosticarFronteiraPedologicaBbox(
+          bruto.latitude,
+          bruto.longitude,
+          { timeoutMs: 6000 }
+        );
 
         const baciaNome =
           identificarBacia(bruto.latitude, bruto.longitude) || "Bacia Hidrográfica do Paraná 3";
@@ -1027,7 +1044,12 @@ export async function POST(request: NextRequest) {
             correspondenciaCartas2024: soloEmbrapa?.solo?.correspondenciaCartas2024,
             divergenciaEntreCartas2024: soloEmbrapa?.solo?.divergenciaEntreCartas2024 ?? false,
             provenienciaK: soloEmbrapa?.solo?.provenienciaK,
-            pontoEmFronteiraPedologica: soloEmbrapa?.pontoEmFronteiraPedologica ?? false,
+            pontoEmFronteiraPedologica:
+              soloEmbrapa?.fronteiraCompartilhadaExata === true
+                ? soloEmbrapa.pontoEmFronteiraPedologica
+                : diagFronteiraBbox.pontoEmFronteiraPedologica,
+            fronteiraCompartilhadaExata: soloEmbrapa?.fronteiraCompartilhadaExata ?? false,
+            causaZeroFeicoes: soloEmbrapa?.causaZeroFeicoes ?? null,
             totalFeicoesSoloRetornadas: soloEmbrapa?.totalFeicoesSoloRetornadas,
             indiceFeicaoSoloEscolhida: soloEmbrapa?.indiceFeicaoSoloEscolhida ?? null,
             feicaoSoloEscolhidaId: soloEmbrapa?.feicaoSoloEscolhidaId ?? null,
@@ -1124,16 +1146,23 @@ export async function POST(request: NextRequest) {
             ndviProveniencia,
             bsiProveniencia,
             erodibilidadeProveniencia,
-            camadaErodibilidade2024: soloEmbrapa?.erodibilidade2024
+            camadaErodibilidade2024: soloEmbrapa
               ? {
                   kSolos:
-                    soloEmbrapa.erodibilidade2024.kSolosBruto ??
-                    soloEmbrapa.erodibilidade2024.kSolos,
-                  erodUm: soloEmbrapa.erodibilidade2024.erodUm,
+                    soloEmbrapa.erodibilidade2024?.kSolosBruto ??
+                    soloEmbrapa.erodibilidade2024?.kSolos ??
+                    null,
+                  erodUm: soloEmbrapa.erodibilidade2024?.erodUm ?? null,
                   codUm:
-                    soloEmbrapa.erodibilidade2024.codUm ||
-                    soloEmbrapa.erodibilidade2024.codUm2,
-                  ogcFid: soloEmbrapa.erodibilidade2024.ogcFid,
+                    soloEmbrapa.erodibilidade2024?.codUm ||
+                    soloEmbrapa.erodibilidade2024?.codUm2 ||
+                    null,
+                  ogcFid: soloEmbrapa.erodibilidade2024?.ogcFid ?? null,
+                  temUnidadeSoloMapeada: Boolean(
+                    soloEmbrapa.solo && !soloEmbrapa.foraDoDominioSolo
+                  ),
+                  fronteiraCompartilhadaExata: Boolean(soloEmbrapa.fronteiraCompartilhadaExata),
+                  causaZeroFeicoes: soloEmbrapa.causaZeroFeicoes ?? null,
                 }
               : null,
           }),

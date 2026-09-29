@@ -191,6 +191,54 @@ describe("Fator K de Erodibilidade do Solo (Tabela 5 Embrapa Solos / Decisões D
         expect(res.causa).toBe("sem-cobertura");
       }
     });
+
+    it("V3.1: VEDA usar o fallback por faixa de classe quando temUnidadeSoloMapeada === false (zero feições ou água), mesmo que brasil_erodibilidade_solo traga classe válida", () => {
+      const classePresente: Proveniencia<string> = {
+        estado: "tabelado",
+        valor: "Baixa",
+        tabela: "Embrapa Solos (brasil_erodibilidade_solo)",
+        chave: "Baixa",
+      };
+
+      const resLacuna = obterFatorKComProveniencia(classePresente, {
+        temUnidadeSoloMapeada: false,
+        causaZeroFeicoes: "dentro-cobertura-lacuna-ou-agua",
+      });
+      expect(resLacuna.estado).toBe("indisponivel");
+      if (resLacuna.estado === "indisponivel") {
+        expect(resLacuna.causa).toBe("fora-do-dominio");
+      }
+      expect(identificarViaFatorKD14(resLacuna)).toBe("indisponivel_fora_do_dominio");
+
+      const resForaCoberturaPr = obterFatorKComProveniencia(classePresente, {
+        temUnidadeSoloMapeada: false,
+        causaZeroFeicoes: "fora-cobertura-camada-estadual",
+      });
+      expect(resForaCoberturaPr.estado).toBe("indisponivel");
+      if (resForaCoberturaPr.estado === "indisponivel") {
+        expect(resForaCoberturaPr.causa).toBe("sem-cobertura");
+      }
+      expect(identificarViaFatorKD14(resForaCoberturaPr)).toBe("indisponivel_sem_cobertura");
+    });
+
+    it("V1.3: retorna indisponivel('insuficiente') quando fronteiraCompartilhadaExata === true (>1 feição na mesma camada no ponto-em-polígono)", () => {
+      const classePresente: Proveniencia<string> = {
+        estado: "tabelado",
+        valor: "Baixa",
+        tabela: "Embrapa Solos",
+        chave: "Baixa",
+      };
+      const resFronteira = obterFatorKComProveniencia(classePresente, {
+        kSolos: 0.012,
+        erodUm: "Baixa",
+        fronteiraCompartilhadaExata: true,
+      });
+      expect(resFronteira.estado).toBe("indisponivel");
+      if (resFronteira.estado === "indisponivel") {
+        expect(resFronteira.causa).toBe("insuficiente");
+      }
+      expect(identificarViaFatorKD14(resFronteira)).toBe("indisponivel_fronteira_exata");
+    });
   });
 
   describe("Integração com Linha de Base RUSLE", () => {

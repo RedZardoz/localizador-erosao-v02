@@ -156,7 +156,8 @@ export type ViaFatorKD14 =
   | "k_solos_camada_2024_tabelado"
   | "fallback_faixa_classe_d14"
   | "indisponivel_fora_do_dominio"
-  | "indisponivel_sem_cobertura";
+  | "indisponivel_sem_cobertura"
+  | "indisponivel_fronteira_exata";
 
 export interface InsumoFatorKCamada2024 {
   /** Valor numérico de k_solos (xsd:decimal) da camada geonode:bra_erodibilidade_2024_sirgas2000. */
@@ -167,6 +168,17 @@ export interface InsumoFatorKCamada2024 {
   codUm?: string | null;
   /** Identificador ogc_fid da feição na camada 2024. */
   ogcFid?: number | string | null;
+  /**
+   * Indica se existe uma unidade de solo mapeada contendo o ponto (V3.1).
+   * Quando `false` (zero feições ou categoria não-solo na atribuição ponto-em-polígono),
+   * é VEDADO recorrer ao fallback por faixa de classe (`faixa-classe:...`), pois o fallback
+   * de D14 existe apenas para quando há unidade de solo mas a camada de 2024 não traz `k_solos`.
+   */
+  temUnidadeSoloMapeada?: boolean;
+  /** Indica se a coordenada caiu exatamente sobre a fronteira compartilhada de >=2 polígonos na mesma camada (V1.3). */
+  fronteiraCompartilhadaExata?: boolean;
+  /** Causa nomeada quando `temUnidadeSoloMapeada === false` (`fora-cobertura-camada-estadual`, `dentro-cobertura-lacuna-ou-agua`, etc.). */
+  causaZeroFeicoes?: string | null;
 }
 
 const TERMOS_NAO_SOLO_K = [
@@ -198,6 +210,9 @@ export function ehCategoriaNaoSoloFatorK(bruta: string | null | undefined): bool
 
 export function identificarViaFatorKD14(fatorK?: Proveniencia<number> | null): ViaFatorKD14 {
   if (!fatorK || fatorK.estado === "indisponivel") {
+    if (fatorK?.estado === "indisponivel" && fatorK.causa === "insuficiente") {
+      return "indisponivel_fronteira_exata";
+    }
     if (fatorK?.estado === "indisponivel" && fatorK.causa === "fora-do-dominio") {
       return "indisponivel_fora_do_dominio";
     }
@@ -213,19 +228,47 @@ export function identificarViaFatorKD14(fatorK?: Proveniencia<number> | null): V
 }
 
 /**
- * Encapsula o cálculo do Fator K com rastreabilidade de proveniência para a Linha de Base RUSLE (Decisão D14 emendada).
+ * Encapsula o cálculo do Fator K com rastreabilidade de proveniência para a Linha de Base RUSLE (Decisão D14 emendada, V1.3 e V3.1).
  *
- * 1. Fonte primária: `k_solos` (xsd:decimal) de `geonode:bra_erodibilidade_2024_sirgas2000`,
+ * 1. Bloqueio de fronteira exata (V1.3): se `fronteiraCompartilhadaExata === true` (>1 feição na mesma camada
+ *    em ponto-em-polígono), retorna `indisponivel("insuficiente", ...)`.
+ * 2. Bloqueio de zero feições / ausência de unidade de solo (V3.1): se `temUnidadeSoloMapeada === false`,
+ *    é VEDADO usar o fallback por faixa de classe — retorna `indisponivel("fora-do-dominio" | "sem-cobertura", ...)`.
+ * 3. Fonte primária: `k_solos` (xsd:decimal) de `geonode:bra_erodibilidade_2024_sirgas2000`,
  *    desde que `erod_um` pertença ao domínio pedológico e `k_solos > 0`.
  *    PROIBIÇÃO CRÍTICA D14: `k_solos = 0` (devolvido para 'Área urbana' e 'Corpo d'água')
  *    jamais entra como K numérico — retorna obrigatoriamente `indisponivel` com `fora-do-dominio`.
- * 2. Fallback: conversão por faixa de classe ordinal da D14 original quando `k_solos` estiver ausente,
- *    com proveniência distinta (`chave: "faixa-classe:..."`).
+ * 4. Fallback: conversão por faixa de classe ordinal da D14 original quando há unidade de solo mapeada,
+ *    mas `k_solos` está ausente, com proveniência distinta (`chave: "faixa-classe:..."`).
  */
 export function obterFatorKComProveniencia(
   classeProveniencia?: Proveniencia<string> | null,
   camada2024?: InsumoFatorKCamada2024 | null
 ): Proveniencia<number> {
+  if (camada2024?.fronteiraCompartilhadaExata === true) {
+    return {
+      estado: "indisponivel",
+      causa: "insuficiente",
+      motivo:
+        "Coordenada exatamente sobre fronteira compartilhada de múltiplos polígonos na mesma camada (WFS 1.1.0 INTERSECTS retornou >1 feição); vedado desempate por ordem de retorno (V1.3).",
+    };
+  }
+
+  if (camada2024?.temUnidadeSoloMapeada === false) {
+    const causa =
+      camada2024.causaZeroFeicoes === "fora-cobertura-camada-estadual"
+        ? "sem-cobertura"
+        : "fora-do-dominio";
+    return {
+      estado: "indisponivel",
+      causa,
+      motivo:
+        causa === "sem-cobertura"
+          ? "Zero feições na camada estadual geonode:parana_solos_20201105 (coordenada fora da cobertura da carta estadual); vedado usar fallback de faixa de classe sem unidade de solo (V3.1)."
+          : `Ausência de unidade de solo mapeada na coordenada (${camada2024.causaZeroFeicoes || "zero-feicoes-ou-agua"}); vedado usar fallback de faixa de classe de D14 sobre lâmina d'água ou lacuna (V3.1 / P12).`,
+    };
+  }
+
   // 1. Verificação prioritária da camada 2024 (D14 emendada)
   if (camada2024) {
     const erodUm = camada2024.erodUm ?? null;

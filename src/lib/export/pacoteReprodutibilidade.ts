@@ -536,15 +536,19 @@ export function gerarJsonDatasheetMetadados(
       correspondenciaCartas2024: { descricao: "Estado de correspondência da sequência de ordens entre parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000 (excluído da matriz X)", faixaValida: "{correspondente, divergente, sem-camada-2024}", unidade: "Categórica", fonte: "Embrapa Solos GeoServer OWS (2020 vs 2024)" },
       divergenciaEntreCartas2024: { descricao: "Flag booleano indicando divergência de sequência ou de número de componentes entre parana_solos_20201105 e bra_erodibilidade_2024_sirgas2000 (excluído da matriz X)", faixaValida: "{true, false}", unidade: "Booleano", fonte: "Embrapa Solos GeoServer OWS (2020 vs 2024)" },
       provenienciaK: { descricao: "Proveniência metodológica da classificação do nível de K da unidade (tabelado via erod_c1..erod_c4, heurística de fallback não conferida, divergência entre cartas ou fora do domínio — excluído da matriz X)", faixaValida: "{tabelado, heuristica-fallback-nao-conferida, divergencia-entre-cartas, fora-do-dominio}", unidade: "Categórica", fonte: "Embrapa Solos Documentos 246 (2024)" },
-      pontoEmFronteiraPedologica: { descricao: "Marcador de qualidade indicando que o bbox de consulta interceptou mais de uma feição na camada de solos (fronteira cartográfica — excluído da matriz X por Invariante 2)", faixaValida: "{true, false}", unidade: "Booleano", fonte: "Embrapa Solos GeoServer OWS (U1)" },
-      viaFatorKD14: { descricao: "Via operacional que alimentou o Fator K numérico da RUSLE conforme a Decisão D14 emendada (k_solos tabelado da camada 2024 vs fallback por faixa de classe — excluído da matriz X)", faixaValida: "{k_solos_camada_2024_tabelado, fallback_faixa_classe_d14, indisponivel_fora_do_dominio, indisponivel_sem_cobertura}", unidade: "Categórica", fonte: "Decisão D14 (emendada em 28/09/2026)" },
+      pontoEmFronteiraPedologica: { descricao: "Marcador de qualidade Proveniencia<boolean> indicando proximidade de fronteira cartográfica (~110 m via WMS GetFeatureInfo bbox, ou fronteira compartilhada exata no WFS 1.1.0 GetFeature; indisponivel('nao-calculado') quando não computado — excluído da matriz X por Invariante 2)", faixaValida: "{medido(true), medido(false), indisponivel}", unidade: "Proveniencia<boolean>", fonte: "Embrapa Solos GeoServer OWS (V2)" },
+      viaFatorKD14: { descricao: "Via operacional que alimentou o Fator K numérico da RUSLE conforme a Decisão D14 emendada (k_solos tabelado da camada 2024 vs fallback por faixa de classe — excluído da matriz X)", faixaValida: "{k_solos_camada_2024_tabelado, fallback_faixa_classe_d14, indisponivel_fora_do_dominio, indisponivel_sem_cobertura, indisponivel_fronteira_exata}", unidade: "Categórica", fonte: "Decisão D14 (emendada em 28/09/2026)" },
       classeWorldCover2020: { descricao: "Classe de cobertura do solo na época 2020 (Decisão D07 / P05)", faixaValida: "{30, 40}", unidade: "Classe categórica", fonte: "ESA/WorldCover/v100/2020 (10m)" },
       classeWorldCover2021: { descricao: "Classe de cobertura do solo na época 2021 (Decisão D07 / P05)", faixaValida: "{30, 40}", unidade: "Classe categórica", fonte: "ESA/WorldCover/v200/2021 (10m)" },
     },
     auditoriaElegibilidadeEAssociacaoSolo: {
       totalPontosAnalisados: pontos.length,
       pontosComKAmbiguoAssociacao: pontos.filter((p) => (p.solo?.kAmbiguoAssociacao ?? p.kAmbiguoAssociacao) === true).length,
-      pontosEmFronteiraPedologica: pontos.filter((p) => p.solo?.pontoEmFronteiraPedologica === true).length,
+      pontosEmFronteiraPedologica: pontos.filter(
+        (p) =>
+          p.solo?.pontoEmFronteiraPedologica?.estado === "medido" &&
+          p.solo.pontoEmFronteiraPedologica.valor === true
+      ).length,
       pontosConcordantesWorldCover2020_2021: pontos.filter(
         (p) =>
           p.classeWorldCover2020?.estado === "medido" &&

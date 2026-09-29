@@ -3,15 +3,20 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildGetFeatureInfoUrl,
+  buildGetFeaturePointInPolygonUrl,
   classificarNivelEstratoKComponente,
   clearEmbrapaSoilCache,
+  diagnosticarFronteiraPedologicaBbox,
   ehCategoriaNaoSolo,
+  ErroSanidadeEixosWfsEmbrapa,
   extrairOrdemSibcsDeLegenda,
   formatSoilLabel,
+  LIMIAR_MAXIMO_FRACAO_ZERO_FEICOES_LOTE,
   parseErodibility2024Feature,
   parseErodibilityFeature,
   parseSoilFeature,
   queryEmbrapaSoil,
+  verificarSanidadeZeroFeicoesLoteEmbrapa,
 } from "./embrapaSoilClient";
 
 /**
@@ -423,46 +428,145 @@ describe("kAmbiguoAssociacao, erod_c1..erod_c4 (camada 2024) e fora-do-dominio (
   });
 });
 
-describe("U1 — Seleção de feição com solo mapeado em fronteira pedológica e U3 — parseErodibility2024Feature", () => {
+describe("V1, V2 e V3 — Ponto-em-polígono WFS 1.1.0, marcador de fronteira por bbox e trava da ordem dos eixos", () => {
   afterEach(() => {
     clearEmbrapaSoilCache();
     vi.unstubAllGlobals();
   });
 
-  it("U1 (sintético): prefere feição com solo mapeado (NVef2) quando features[0] é 'agua' e features[1] é 'NVef2'", async () => {
+  it("V3.2.2 (trava da ordem dos eixos): buildGetFeaturePointInPolygonUrl contém POINT(<lat> <lon>) nessa exata ordem nas 3 cláusulas e jamais POINT(<lon> <lat>)", () => {
+    const lat = -24.88;
+    const lng = -54.26;
+    const url = buildGetFeaturePointInPolygonUrl(lat, lng);
+    const parsed = new URL(url);
+
+    expect(parsed.searchParams.get("service")).toBe("WFS");
+    expect(parsed.searchParams.get("version")).toBe("1.1.0");
+    expect(parsed.searchParams.get("request")).toBe("GetFeature");
+    expect(parsed.searchParams.get("typeName")).toBe(
+      "geonode:parana_solos_20201105,geonode:bra_erodibilidade_2024_sirgas2000,geonode:brasil_erodibilidade_solo"
+    );
+
+    const cql = parsed.searchParams.get("CQL_FILTER") ?? "";
+    const esperado = `INTERSECTS(geometry, POINT(${lat} ${lng}))`;
+    expect(cql).toBe(`${esperado};${esperado};${esperado}`);
+    expect(cql).toContain(`POINT(${lat} ${lng})`);
+    expect(cql).not.toContain(`POINT(${lng} ${lat})`);
+  });
+
+  it("V3.2.1 (teste de fixture): carrega getfeature_pip_3camadas_r13_bp3.json (-24.8800, -54.2600) com exatamente 3 feições (uma por camada: sbcs='NVef2', cod_um2='SG21NVef1', classe='Baixa')", async () => {
+    const fixturePath = path.resolve(
+      process.cwd(),
+      "docs/verificacoes/fontes/wfs_erodibilidade/getfeature_pip_3camadas_r13_bp3.json"
+    );
+    const fixture = JSON.parse(fs.readFileSync(fixturePath, "utf-8"));
+    expect(fixture.features).toHaveLength(3);
+
+    vi.stubGlobal("fetch", mockFetchJson(fixture));
+
+    const r = await queryEmbrapaSoil(-24.88, -54.26);
+    expect(r.statusSolo).toBe("encontrado");
+    expect(r.foraDoDominioSolo).toBe(false);
+    expect(r.fronteiraCompartilhadaExata).toBe(false);
+    expect(r.totalFeicoesSoloRetornadas).toBe(1);
+    expect(r.totalFeicoesErod2024Retornadas).toBe(1);
+    expect(r.totalFeicoesErodBrRetornadas).toBe(1);
+    expect(r.solo?.sbcs).toBe("NVef2");
+    expect(r.erodibilidade2024?.codUm2).toBe("SG21NVef1");
+    expect(r.erodibilidade2024?.codUm).toBe("SG21NVef1NV");
+    expect(r.erodibilidade2024?.kSolos).toBe(0.012);
+    expect(r.erodibilidade?.classe).toBe("Baixa");
+    expect(r.solo?.correspondenciaCartas2024).toBe("correspondente");
+
+    // V2.1: Quando não computado por bbox, pontoEmFronteiraPedologica é indisponivel("nao-calculado"), NUNCA false
+    expect(r.pontoEmFronteiraPedologica).not.toBe(false);
+    expect(r.pontoEmFronteiraPedologica.estado).toBe("indisponivel");
+    if (r.pontoEmFronteiraPedologica.estado === "indisponivel") {
+      expect(r.pontoEmFronteiraPedologica.causa).toBe("nao-calculado");
+    }
+  });
+
+  it("V1.3 (fronteira compartilhada exata): quando GetFeature devolve >1 feição na mesma camada, trata como indisponivel('insuficiente') sem desempatar por ordem", async () => {
+    const fixtureBboxPath = path.resolve(
+      process.cwd(),
+      "docs/verificacoes/fontes/wfs_erodibilidade/getfeatureinfo_3camadas_r13_fronteira_bp3.json"
+    );
+    const fixtureMultiplas = JSON.parse(fs.readFileSync(fixtureBboxPath, "utf-8"));
+    vi.stubGlobal("fetch", mockFetchJson(fixtureMultiplas));
+
+    const r = await queryEmbrapaSoil(-24.88, -54.26);
+    expect(r.fronteiraCompartilhadaExata).toBe(true);
+    expect(r.causaZeroFeicoes).toBe("fronteira-compartilhada-exata");
+    expect(r.solo).toBeNull();
+    expect(r.provenienciaAtribuicao?.estado).toBe("indisponivel");
+    if (r.provenienciaAtribuicao?.estado === "indisponivel") {
+      expect(r.provenienciaAtribuicao.causa).toBe("insuficiente");
+    }
+    expect(r.pontoEmFronteiraPedologica.estado).toBe("medido");
+    if (r.pontoEmFronteiraPedologica.estado === "medido") {
+      expect(r.pontoEmFronteiraPedologica.valor).toBe(true);
+    }
+  });
+
+  it("V2.2: diagnosticarFronteiraPedologicaBbox computa medido(true) sobre getfeatureinfo_3camadas_r13_fronteira_bp3.json e medido(false) quando há 1 feição por camada", async () => {
+    const fixtureBboxPath = path.resolve(
+      process.cwd(),
+      "docs/verificacoes/fontes/wfs_erodibilidade/getfeatureinfo_3camadas_r13_fronteira_bp3.json"
+    );
+    const fixtureBbox = JSON.parse(fs.readFileSync(fixtureBboxPath, "utf-8"));
+    vi.stubGlobal("fetch", mockFetchJson(fixtureBbox));
+
+    const diagTrue = await diagnosticarFronteiraPedologicaBbox(-24.88, -54.26);
+    expect(diagTrue.pontoEmFronteiraPedologica.estado).toBe("medido");
+    if (diagTrue.pontoEmFronteiraPedologica.estado === "medido") {
+      expect(diagTrue.pontoEmFronteiraPedologica.valor).toBe(true);
+    }
+    expect(diagTrue.totalFeicoesSoloBbox).toBe(2);
+    expect(diagTrue.fronteiraComNaoSoloBbox).toBe(true);
+
+    const fixturePipPath = path.resolve(
+      process.cwd(),
+      "docs/verificacoes/fontes/wfs_erodibilidade/getfeature_pip_3camadas_r13_bp3.json"
+    );
+    const fixtureSingle = JSON.parse(fs.readFileSync(fixturePipPath, "utf-8"));
+    vi.stubGlobal("fetch", mockFetchJson(fixtureSingle));
+
+    const diagFalse = await diagnosticarFronteiraPedologicaBbox(-24.62, -53.71);
+    expect(diagFalse.pontoEmFronteiraPedologica.estado).toBe("medido");
+    if (diagFalse.pontoEmFronteiraPedologica.estado === "medido") {
+      expect(diagFalse.pontoEmFronteiraPedologica.valor).toBe(false);
+    }
+  });
+
+  it("V3.1: distingue zero feições por fora-cobertura-camada-estadual versus dentro-cobertura-lacuna-ou-agua", async () => {
+    // Caso 1: 0 feições nas 3 camadas -> dentro-cobertura-lacuna-ou-agua (fora-do-dominio)
+    vi.stubGlobal("fetch", mockFetchJson({ features: [] }));
+    const rLacuna = await queryEmbrapaSoil(-24.85, -54.36);
+    expect(rLacuna.causaZeroFeicoes).toBe("dentro-cobertura-lacuna-ou-agua");
+    expect(rLacuna.foraDoDominioSolo).toBe(true);
+    expect(rLacuna.provenienciaAtribuicao?.estado).toBe("indisponivel");
+    if (rLacuna.provenienciaAtribuicao?.estado === "indisponivel") {
+      expect(rLacuna.provenienciaAtribuicao.causa).toBe("fora-do-dominio");
+    }
+
+    clearEmbrapaSoilCache();
+
+    // Caso 2: 0 feições em parana_solos, mas cobertura nacional de solo presente -> fora-cobertura-camada-estadual (sem-cobertura)
     vi.stubGlobal(
       "fetch",
       mockFetchJson({
         features: [
           {
-            id: "parana_solos_20201105.338",
-            properties: {
-              sbcs: "agua",
-              tipo_unida: null,
-              ordem_1: null,
-              legenda: "Corpo d'agua",
-            },
+            id: "brasil_erodibilidade_solo.10",
+            properties: { codnum: 2, classe: "Baixa" },
           },
           {
-            id: "parana_solos_20201105.2807",
+            id: "bra_erodibilidade_2024_sirgas2000.10",
             properties: {
-              sbcs: "NVef2",
-              tipo_unida: "simples",
-              ordem_1: "NITOSSOLO",
-              sub_ordem_: "VERMELHO",
-              grande_gru: "Eutroferrico",
-              sub_grupo_: "tipico",
-              familia_1_: "textura argilosa",
-              legenda: "NVef2 - NITOSSOLO VERMELHO Eutroferrico",
-            },
-          },
-          {
-            id: "bra_erodibilidade_2024_sirgas2000.102154",
-            properties: {
-              ogc_fid: 102154,
-              cod_um: "SG21NVef1NV",
-              cod_um2: "SG21NVef1",
-              legenda_c1: "NITOSSOLO VERMELHO Eutroferrico",
+              ogc_fid: 10,
+              cod_um: "SE22LVd1",
+              cod_um2: "SE22LVd1",
+              legenda_c1: "LATOSSOLO VERMELHO Distrofico",
               erod_c1: "Baixa",
               erod_um: "Baixa",
               k_solos: 0.012,
@@ -472,65 +576,27 @@ describe("U1 — Seleção de feição com solo mapeado em fronteira pedológica
         ],
       })
     );
-
-    const r = await queryEmbrapaSoil(-24.88, -54.26);
-    expect(r.statusSolo).toBe("encontrado");
-    expect(r.foraDoDominioSolo).toBe(false);
-    expect(r.pontoEmFronteiraPedologica).toBe(true);
-    expect(r.totalFeicoesSoloRetornadas).toBe(2);
-    expect(r.indiceFeicaoSoloEscolhida).toBe(1);
-    expect(r.feicaoSoloEscolhidaId).toBe("parana_solos_20201105.2807");
-    expect(r.solo?.sbcs).toBe("NVef2");
-    expect(r.solo?.correspondenciaCartas2024).toBe("correspondente");
-    expect(r.erodibilidade2024?.kSolos).toBe(0.012);
-    expect(r.erodibilidade2024?.codUm).toBe("SG21NVef1NV");
-    expect(r.erodibilidade2024?.codUm2).toBe("SG21NVef1");
+    const rForaPr = await queryEmbrapaSoil(-21.17, -47.81);
+    expect(rForaPr.causaZeroFeicoes).toBe("fora-cobertura-camada-estadual");
+    expect(rForaPr.provenienciaAtribuicao?.estado).toBe("indisponivel");
+    if (rForaPr.provenienciaAtribuicao?.estado === "indisponivel") {
+      expect(rForaPr.provenienciaAtribuicao.causa).toBe("sem-cobertura");
+    }
   });
 
-  it("U1 (integração fixada): carrega getfeatureinfo_3camadas_r13_fronteira_bp3.json (-24.8800, -54.2600) e seleciona NVef2 com correspondência estrita", async () => {
-    const fixturePath = path.resolve(
-      process.cwd(),
-      "docs/verificacoes/fontes/wfs_erodibilidade/getfeatureinfo_3camadas_r13_fronteira_bp3.json"
+  it("V3.4 (guarda de sanidade no código): verificarSanidadeZeroFeicoesLoteEmbrapa aborta com ErroSanidadeEixosWfsEmbrapa quando >50% de >=5 pontos devolvem zero feições", async () => {
+    vi.stubGlobal("fetch", mockFetchJson({ features: [] }));
+    const loteVazio: Awaited<ReturnType<typeof queryEmbrapaSoil>>[] = [];
+    for (let i = 0; i < 6; i++) {
+      loteVazio.push(await queryEmbrapaSoil(-24.5 - i * 0.01, -54.0 - i * 0.01));
+    }
+    expect(LIMIAR_MAXIMO_FRACAO_ZERO_FEICOES_LOTE).toBe(0.5);
+    expect(() => verificarSanidadeZeroFeicoesLoteEmbrapa(loteVazio)).toThrowError(
+      ErroSanidadeEixosWfsEmbrapa
     );
-    const fixture = JSON.parse(fs.readFileSync(fixturePath, "utf-8"));
-    vi.stubGlobal("fetch", mockFetchJson(fixture));
-
-    const r = await queryEmbrapaSoil(-24.88, -54.26);
-    expect(r.statusSolo).toBe("encontrado");
-    expect(r.foraDoDominioSolo).toBe(false);
-    expect(r.pontoEmFronteiraPedologica).toBe(true);
-    expect(r.totalFeicoesSoloRetornadas).toBe(2);
-    expect(r.indiceFeicaoSoloEscolhida).toBe(1);
-    expect(r.feicaoSoloEscolhidaId).toBe("parana_solos_20201105.2807");
-    expect(r.solo?.sbcs).toBe("NVef2");
-    expect(r.solo?.correspondenciaCartas2024).toBe("correspondente");
-    expect(r.erodibilidade2024?.ogcFid).toBe(102154);
-    expect(r.erodibilidade2024?.codUm).toBe("SG21NVef1NV");
-    expect(r.erodibilidade2024?.codUm2).toBe("SG21NVef1");
-    expect(r.erodibilidade2024?.kSolos).toBe(0.012);
-  });
-
-  it("U1: mantém foraDoDominioSolo === true quando TODAS as feições de uma camada são categorias não-solo", async () => {
-    vi.stubGlobal(
-      "fetch",
-      mockFetchJson({
-        features: [
-          {
-            id: "parana_solos_20201105.338",
-            properties: { sbcs: "agua", tipo_unida: null, ordem_1: null, legenda: "Corpo d'agua" },
-          },
-          {
-            id: "parana_solos_20201105.339",
-            properties: { sbcs: "au", tipo_unida: null, ordem_1: null, legenda: "Area urbana" },
-          },
-        ],
-      })
+    expect(() => verificarSanidadeZeroFeicoesLoteEmbrapa(loteVazio)).toThrowError(
+      /POINT\(<lat> <lon>\)/
     );
-    const r = await queryEmbrapaSoil(-24.2839, -53.8403);
-    expect(r.foraDoDominioSolo).toBe(true);
-    expect(r.pontoEmFronteiraPedologica).toBe(true);
-    expect(r.totalFeicoesSoloRetornadas).toBe(2);
-    expect(r.indiceFeicaoSoloEscolhida).toBe(0);
   });
 
   it("U3: parseErodibility2024Feature verifica erod_um ANTES de ler k_solos e anula kSolos para k_solos = 0 / não-solo", () => {

@@ -34,6 +34,8 @@ import {
   criarPrng,
 } from "./estratificacao";
 import { CAMPOS_PROIBIDOS_MATRIZ_TREINO } from "@/lib/matriz/invariantes";
+import { Proveniencia, indisponivel } from "@/types/proveniencia";
+import { diagnosticarFronteiraPedologicaBbox } from "@/lib/embrapa/embrapaSoilClient";
 
 export type IdPreCondicaoSorteioD16 =
   | "decisoes_fechadas"
@@ -58,6 +60,7 @@ export interface CandidatoSorteioD16 extends CandidatoEstratificacao {
   classeWorldCover2020: number | null | undefined;
   classeWorldCover2021: number | null | undefined;
   kAmbiguoAssociacao: boolean | undefined;
+  pontoEmFronteiraPedologica?: Proveniencia<boolean>;
   [chaveAdicional: string]: unknown;
 }
 
@@ -81,6 +84,7 @@ export interface PoligonoSorteadoD16 {
   kAmbiguoAssociacao: boolean;
   classeWorldCover2020: number;
   classeWorldCover2021: number;
+  pontoEmFronteiraPedologica: Proveniencia<boolean>;
 }
 
 export interface SeloSorteioD16 {
@@ -455,6 +459,12 @@ export function sortearPoligonosDroneD16(
         kAmbiguoAssociacao: cand.kAmbiguoAssociacao as boolean,
         classeWorldCover2020: cand.classeWorldCover2020 as number,
         classeWorldCover2021: cand.classeWorldCover2021 as number,
+        pontoEmFronteiraPedologica:
+          cand.pontoEmFronteiraPedologica ??
+          indisponivel(
+            "nao-calculado",
+            "Diagnóstico de fronteira por bbox aguarda enriquecimento via diagnosticarFronteiraPoligonosSorteadosD16 (V2.1/V2.2)."
+          ),
       });
     }
   }
@@ -522,4 +532,30 @@ export function sortearPoligonosDroneD16(
     },
     poligonos,
   };
+}
+
+/**
+ * Computa o marcador `pontoEmFronteiraPedologica` por consulta com bbox (`WMS GetFeatureInfo` ~110 m)
+ * especificamente para os 36 polígonos sorteados (PARTE III / V2.2).
+ */
+export async function diagnosticarFronteiraPoligonosSorteadosD16(
+  poligonos: PoligonoSorteadoD16[],
+  options: { timeoutMs?: number } = {}
+): Promise<PoligonoSorteadoD16[]> {
+  return Promise.all(
+    poligonos.map(async (p) => {
+      if (p.pontoEmFronteiraPedologica.estado !== "indisponivel") {
+        return p;
+      }
+      const diag = await diagnosticarFronteiraPedologicaBbox(
+        p.centroide.latitude,
+        p.centroide.longitude,
+        options
+      );
+      return {
+        ...p,
+        pontoEmFronteiraPedologica: diag.pontoEmFronteiraPedologica,
+      };
+    })
+  );
 }

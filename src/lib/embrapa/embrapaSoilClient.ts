@@ -5,39 +5,33 @@
  * (PPGTCA - 2026)
  * ============================================================================
  *
- * SERVIÇO EXTERNO ACESSADO
- * - Embrapa GeoInfo / GeoServer (dados abertos)
- * - Endpoint OGC WMS 1.1.1, operação GetFeatureInfo, saída application/json
- * - https://geoinfo.dados.embrapa.br/geoserver/ows
+ * DIVISÃO DE RESPONSABILIDADES ENTRE OPERAÇÕES OGC (V1 e V2 — 28/09/2026)
+ * 1. ATRIBUIÇÃO PEDOLÓGICA DETERMINÍSTICA POR PONTO-EM-POLÍGONO (V1):
+ *    - Operação: OGC WFS 1.1.0 `GetFeature` (`buildGetFeaturePointInPolygonUrl`)
+ *    - Filtro espacial: `CQL_FILTER=INTERSECTS(geometry, POINT(<lat> <lon>))` para cada
+ *      uma das 3 camadas (`parana_solos_20201105`, `bra_erodibilidade_2024_sirgas2000`,
+ *      `brasil_erodibilidade_solo`), separados por `;`.
+ *    - Ordem de eixos travada na WFS 1.1.0: `POINT(<lat> <lon>)` (inverter para `POINT(<lon> <lat>)`
+ *      devolve zero feições silenciosamente).
+ *    - Autoridade de atribuição: devolve exatamente o polígono que contém a coordenada (<= 1 feição
+ *      por camada). Se retornar > 1 feição na mesma camada, a coordenada está exatamente sobre a
+ *      fronteira compartilhada entre polígonos e recebe `indisponivel("insuficiente", ...)` sem desempate.
  *
- * CAMADAS CONSULTADAS
- * 1. geonode:parana_solos_20201105
- *    Levantamento de solos do Estado do Paraná. Unidades de mapeamento com
- *    classificação no SiBCS (Santos et al., 2018) em até três componentes.
- *    Cobertura: apenas Paraná.
- * 2. geonode:brasil_erodibilidade_solo
- *    Classes qualitativas de erodibilidade do solo. Cobertura: Brasil.
- *
- * CAPACIDADE VERIFICADA EM 2026-09-10
- * VERIFICADO 2026-09-10 — evidência: docs/verificacoes/2026-09-10_embrapa_capabilities.xml
- * - GetCapabilities declara GetFeatureInfo com application/json.
- * - Ambas as camadas expõem queryable="1".
- * - Consulta combinada (query_layers com as duas camadas) retorna as duas
- *   feições em uma única requisição, discrimináveis pelo prefixo de `id`.
- * - Amostras reais arquivadas em docs/verificacoes/2026-09-10_embrapa_featureinfo_oeste.json,
- *   docs/verificacoes/2026-09-10_embrapa_featureinfo_noroeste.json e
- *   docs/verificacoes/2026-09-10_embrapa_featureinfo_oceano.json.
+ * 2. DIAGNÓSTICO DE PROXIMIDADE DE FRONTEIRA CARTOGRÁFICA POR BBOX (V2):
+ *    - Operação: OGC WMS 1.1.1 `GetFeatureInfo` com caixa `bbox` de ~110 m (`buildGetFeatureInfoUrl` /
+ *      `diagnosticarFronteiraPedologicaBbox`).
+ *    - Computa `pontoEmFronteiraPedologica: Proveniencia<boolean>` para os candidatos que chegam
+ *      ao sorteio e para os 36 polígonos sorteados. Quando não computado, permanece obrigatoriamente
+ *      `indisponivel("nao-calculado", ...)` — nunca `false`.
  *
  * PRINCÍPIO DE PROJETO — DADO VERDADEIRO OU AUSÊNCIA DECLARADA
  * Este módulo NUNCA inventa, estima ou infere um valor. Em qualquer situação
  * em que o dado não puder ser obtido, o retorno traz `status` explícito e o
  * motivo textual. Não existe valor padrão. Ausência de cobertura, falha de
- * rede e resposta malformada são estados DISTINTOS e nunca são colapsados —
- * afirmar "não há solo mapeado aqui" quando o serviço caiu seria uma
- * afirmação falsa sobre o território.
+ * rede e resposta malformada são estados DISTINTOS e nunca são colapsados.
  */
 
-import { Proveniencia, tabelado, indisponivel } from "@/types/proveniencia";
+import { Proveniencia, medido, tabelado, indisponivel } from "@/types/proveniencia";
 
 /** Raiz do serviço OGC da Embrapa GeoInfo. */
 export const EMBRAPA_OWS_URL = "https://geoinfo.dados.embrapa.br/geoserver/ows";
@@ -203,6 +197,13 @@ export type EmbrapaQueryStatus =
   /** Serviço indisponível, tempo esgotado ou resposta malformada. Nada se afirma. */
   | "servico-indisponivel";
 
+/** Causas distintas e nomeadas para zero feições ou rejeição na atribuição por ponto-em-polígono (V1.3 / V3.1). */
+export type CausaZeroFeicoesEmbrapa =
+  | "fora-cobertura-camada-estadual"
+  | "dentro-cobertura-lacuna-ou-agua"
+  | "dentro-cobertura-categoria-nao-solo"
+  | "fronteira-compartilhada-exata";
+
 /** Resultado completo, com proveniência suficiente para auditoria. */
 export interface EmbrapaSoilQueryResult {
   statusSolo: EmbrapaQueryStatus;
@@ -213,26 +214,39 @@ export interface EmbrapaSoilQueryResult {
   solo: EmbrapaSoilUnit | null;
   erodibilidade: EmbrapaErodibility | null;
   erodibilidade2024?: EmbrapaErodibility2024 | null;
-  /** Indica se nenhuma das feições de uma camada consultada possui solo mapeado (U1.4 / T3). */
+  /** Indica se a coordenada caiu em categoria não-solo, lacuna ou água (V3.1 / T3). */
   foraDoDominioSolo?: boolean;
   motivoForaDoDominioSolo?: string | null;
-  /** Marcador de fronteira cartográfica: true quando houver mais de uma feição de solos na resposta (U1.5). */
-  pontoEmFronteiraPedologica?: boolean;
-  /** Quantidade total de feições retornadas pela camada parana_solos_20201105 (U1.3). */
+  /** Indica se o ponto caiu exatamente sobre a fronteira compartilhada de >=2 polígonos na mesma camada no WFS 1.1.0 INTERSECTS (V1.3). */
+  fronteiraCompartilhadaExata?: boolean;
+  /** Causa nomeada quando o ponto devolve zero feições de solo, categoria não-solo ou fronteira exata (V1.3 / V3.1). */
+  causaZeroFeicoes?: CausaZeroFeicoesEmbrapa | null;
+  /** Proveniência formal da atribuição pedológica pontual (medido quando 1 polígono de solo válido; indisponivel caso contrário). */
+  provenienciaAtribuicao?: Proveniencia<string>;
+  /**
+   * Marcador de fronteira cartográfica (V2.1 e V2.2):
+   * - `medido(true/false, ...)` quando conferido por consulta bbox (`WMS GetFeatureInfo` ~110 m) ou fronteira exata (`>1` feição no PIP).
+   * - `indisponivel("nao-calculado", ...)` quando não computado. NUNCA é `false` por indisponibilidade.
+   */
+  pontoEmFronteiraPedologica: Proveniencia<boolean>;
+  /** Quantidade total de feições retornadas pela camada parana_solos_20201105 na consulta de atribuição. */
   totalFeicoesSoloRetornadas?: number;
-  /** Índice (0-based) da feição escolhida em parana_solos_20201105 (U1.3). */
+  /** Índice (0-based) da feição escolhida em parana_solos_20201105 (0 quando há 1 feição; null se 0 ou >1). */
   indiceFeicaoSoloEscolhida?: number | null;
-  /** Identificador (id ou sbcs) da feição escolhida em parana_solos_20201105 (U1.3). */
+  /** Identificador (id ou sbcs) da feição escolhida em parana_solos_20201105. */
   feicaoSoloEscolhidaId?: string | null;
-  /** Quantidade total de feições retornadas pela camada bra_erodibilidade_2024_sirgas2000 (U1.3). */
+  /** Quantidade total de feições retornadas pela camada bra_erodibilidade_2024_sirgas2000 na consulta de atribuição. */
   totalFeicoesErod2024Retornadas?: number;
-  /** Índice (0-based) da feição escolhida em bra_erodibilidade_2024_sirgas2000 (U1.3). */
+  /** Índice (0-based) da feição escolhida em bra_erodibilidade_2024_sirgas2000. */
   indiceFeicaoErod2024Escolhida?: number | null;
-  /** Identificador (cod_um / cod_um2 / id) da feição escolhida em bra_erodibilidade_2024_sirgas2000 (U1.3). */
+  /** Identificador (cod_um / cod_um2 / id) da feição escolhida em bra_erodibilidade_2024_sirgas2000. */
   feicaoErod2024EscolhidaId?: string | null;
+  /** Quantidade total de feições retornadas pela camada brasil_erodibilidade_solo na consulta de atribuição. */
+  totalFeicoesErodBrRetornadas?: number;
   /** Proveniência: o que foi consultado, onde e quando. */
   proveniencia: {
     servico: string;
+    operacaoAtribuicao?: string;
     camadaSolo: string;
     camadaErodibilidade: string;
     camadaErodibilidade2024?: string;
@@ -254,8 +268,8 @@ export function clearEmbrapaSoilCache(): void {
   cache.clear();
 }
 
-function cacheKey(lat: number, lng: number): string {
-  return `${lat.toFixed(CACHE_GRID_DECIMALS)},${lng.toFixed(CACHE_GRID_DECIMALS)}`;
+function cacheKey(lat: number, lng: number, computarFronteiraBbox: boolean): string {
+  return `${lat.toFixed(CACHE_GRID_DECIMALS)},${lng.toFixed(CACHE_GRID_DECIMALS)},bbox=${computarFronteiraBbox ? 1 : 0}`;
 }
 
 function texto(v: unknown): string {
@@ -317,12 +331,41 @@ export function extrairOrdemSibcsDeLegenda(legenda: string): string {
 }
 
 /**
- * Monta a URL de GetFeatureInfo para as três camadas em uma única requisição:
- * 1. `geonode:parana_solos_20201105` (carta estadual de solos do Paraná)
- * 2. `geonode:brasil_erodibilidade_solo` (corroborante independente de classe única no ponto)
- * 3. `geonode:bra_erodibilidade_2024_sirgas2000` (classes `erod_c1..erod_c4` e `legenda_c1..legenda_c4` do Documentos 246)
+ * Monta a URL determinística de atribuição por ponto-em-polígono (V1.1 / PARTE I):
+ * Operação OGC WFS 1.1.0 `GetFeature` nas três camadas em uma única requisição,
+ * usando três filtros `INTERSECTS(geometry, POINT(<lat> <lon>))` separados por `;`
+ * na mesma ordem de `typeName`:
+ *   1. `geonode:parana_solos_20201105`
+ *   2. `geonode:bra_erodibilidade_2024_sirgas2000`
+ *   3. `geonode:brasil_erodibilidade_solo`
  *
- * `feature_count` é fixado em 10 (`FEATURE_COUNT_PADRAO`) para acomodar as três camadas sem truncamento.
+ * ATENÇÃO CRÍTICA À ORDEM DOS EIXOS (PARTE I / V3.2):
+ * Na versão WFS `1.1.0`, a ordem exigida pelo GeoServer da Embrapa é `POINT(<lat> <lon>)`.
+ * Adotar `POINT(<lon> <lat>)` na WFS 1.1.0 devolve zero feições silenciosamente sem erro HTTP.
+ */
+export function buildGetFeaturePointInPolygonUrl(lat: number, lng: number): string {
+  const typeName = `${LAYER_SOLOS_PR},${LAYER_ERODIBILIDADE_2024},${LAYER_ERODIBILIDADE_BR}`;
+  const cqlSingle = `INTERSECTS(geometry, POINT(${lat} ${lng}))`;
+  const cqlFilter = `${cqlSingle};${cqlSingle};${cqlSingle}`;
+  const params = new URLSearchParams({
+    service: "WFS",
+    version: "1.1.0",
+    request: "GetFeature",
+    typeName,
+    outputFormat: "application/json",
+    CQL_FILTER: cqlFilter,
+  });
+  return `${EMBRAPA_OWS_URL}?${params.toString()}`;
+}
+
+/**
+ * Monta a URL de GetFeatureInfo com caixa de consulta (`bbox` de ~110 m) para as três camadas.
+ *
+ * PAPEL METODOLÓGICO APÓS V1/V2 (28/09/2026):
+ * Não governa mais a atribuição pedológica (que é feita por `buildGetFeaturePointInPolygonUrl`).
+ * Mantida especificamente para o diagnóstico de proximidade de fronteira cartográfica
+ * (`diagnosticarFronteiraPedologicaBbox` — PARTE III / V2) nos candidatos que chegam ao sorteio
+ * e nos 36 polígonos sorteados.
  */
 export function buildGetFeatureInfoUrl(lat: number, lng: number): string {
   const d = BBOX_HALF_DEG;
@@ -731,7 +774,16 @@ export function parseErodibilityFeature(
   return { classe, codnum: numeroOuNulo(props["codnum"]) };
 }
 
-function feicaoSoloPrTemSoloMapeado(props: Record<string, unknown>): boolean {
+/**
+ * Auxiliar mantido EXCLUSIVAMENTE para o diagnóstico de fronteira por bbox (`diagnosticarFronteiraPedologicaBbox` — PARTE III / V2.2).
+ *
+ * PAPEL APÓS V1.4 (28/09/2026):
+ * Deixou de governar a atribuição em `queryEmbrapaSoil`, pois a atribuição é agora determinística
+ * por ponto-em-polígono (`WFS 1.1.0 GetFeature INTERSECTS(geometry, POINT(lat lon))`), que retorna
+ * o único polígono que contém a coordenada. Serve apenas para distinguir no bbox de ~110 m se a
+ * fronteira vizinha ocorre entre duas unidades de solo ou entre solo e corpo d'água/área urbana.
+ */
+export function feicaoSoloPrTemSoloMapeado(props: Record<string, unknown>): boolean {
   const sbcs = texto(props["sbcs"]);
   const legenda = texto(props["legenda"]);
   const ordem1 = texto(props["ordem_1"]);
@@ -739,28 +791,6 @@ function feicaoSoloPrTemSoloMapeado(props: Record<string, unknown>): boolean {
   if (ehCategoriaNaoSolo(sbcs) || ehCategoriaNaoSolo(legenda) || ehCategoriaNaoSolo(ordem1)) {
     return false;
   }
-  return true;
-}
-
-function feicaoErod2024TemSoloMapeado(props: Record<string, unknown>): boolean {
-  const erodUm = texto(props["erod_um"]);
-  const erodC1 = texto(props["erod_c1"]);
-  const legenda = texto(props["legenda"]);
-  const legendaC1 = texto(props["legenda_c1"]);
-  if (
-    ehCategoriaNaoSolo(erodUm) ||
-    ehCategoriaNaoSolo(erodC1) ||
-    ehCategoriaNaoSolo(legenda) ||
-    ehCategoriaNaoSolo(legendaC1)
-  ) {
-    return false;
-  }
-  return Boolean(legendaC1 || erodC1 || erodUm);
-}
-
-function feicaoErodBrTemSoloMapeado(props: Record<string, unknown>): boolean {
-  const classe = texto(props["classe"]);
-  if (!classe || ehCategoriaNaoSolo(classe)) return false;
   return true;
 }
 
@@ -775,15 +805,26 @@ function resultadoBase(lat: number, lng: number): EmbrapaSoilQueryResult {
     erodibilidade2024: null,
     foraDoDominioSolo: false,
     motivoForaDoDominioSolo: null,
-    pontoEmFronteiraPedologica: false,
+    fronteiraCompartilhadaExata: false,
+    causaZeroFeicoes: null,
+    provenienciaAtribuicao: indisponivel(
+      "nao-calculado",
+      "Atribuição pedológica ainda não realizada."
+    ),
+    pontoEmFronteiraPedologica: indisponivel(
+      "nao-calculado",
+      "Diagnóstico de fronteira por bbox restrito aos candidatos que chegam ao sorteio e aos 36 polígonos sorteados (V2.1/V2.2); atribuição realizada por ponto-em-polígono WFS 1.1.0."
+    ),
     totalFeicoesSoloRetornadas: 0,
     indiceFeicaoSoloEscolhida: null,
     feicaoSoloEscolhidaId: null,
     totalFeicoesErod2024Retornadas: 0,
     indiceFeicaoErod2024Escolhida: null,
     feicaoErod2024EscolhidaId: null,
+    totalFeicoesErodBrRetornadas: 0,
     proveniencia: {
       servico: EMBRAPA_OWS_URL,
+      operacaoAtribuicao: "WFS 1.1.0 GetFeature INTERSECTS(geometry, POINT(lat lon))",
       camadaSolo: LAYER_SOLOS_PR,
       camadaErodibilidade: LAYER_ERODIBILIDADE_BR,
       camadaErodibilidade2024: LAYER_ERODIBILIDADE_2024,
@@ -799,10 +840,103 @@ export interface EmbrapaQueryOptions {
   timeoutMs?: number;
   /** Ignora o cache em memória e força nova consulta ao serviço. */
   forceRefresh?: boolean;
+  /**
+   * Quando `true`, executa também a consulta WMS 1.1.1 GetFeatureInfo com bbox (~110 m)
+   * para computar `pontoEmFronteiraPedologica: medido(true/false, ...)` (PARTE III / V2.2).
+   * Restrito aos candidatos que chegam ao sorteio e aos 36 polígonos sorteados.
+   * Quando omitido ou `false`, `pontoEmFronteiraPedologica` permanece `indisponivel("nao-calculado", ...)` — nunca `false`.
+   */
+  computarFronteiraBbox?: boolean;
+}
+
+export interface DiagnosticoFronteiraBboxResult {
+  pontoEmFronteiraPedologica: Proveniencia<boolean>;
+  totalFeicoesSoloBbox: number;
+  totalFeicoesErod2024Bbox: number;
+  fronteiraComNaoSoloBbox: boolean;
+  fronteiraEntreSolosBbox: boolean;
 }
 
 /**
- * Consulta a classe pedológica e as duas camadas de erodibilidade de uma coordenada.
+ * Executa a consulta com caixa de vizinhança (`WMS 1.1.1 GetFeatureInfo`, bbox ~110 m)
+ * exclusivamente para diagnosticar proximidade de fronteira cartográfica (`V2.1` e `V2.2`).
+ *
+ * - `medido(true, ...)` quando o bbox intercepta >1 feição em `parana_solos_20201105` ou `bra_erodibilidade_2024_sirgas2000`.
+ * - `medido(false, ...)` quando o bbox foi conferido e intercepta no máximo 1 feição por camada.
+ * - `indisponivel("erro-de-consulta", ...)` quando a requisição falha (nunca retorna `false` por indisponibilidade).
+ */
+export async function diagnosticarFronteiraPedologicaBbox(
+  lat: number,
+  lng: number,
+  options: { timeoutMs?: number } = {}
+): Promise<DiagnosticoFronteiraBboxResult> {
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  try {
+    const res = await fetch(buildGetFeatureInfoUrl(lat, lng), {
+      signal: AbortSignal.timeout(timeoutMs),
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) {
+      return {
+        pontoEmFronteiraPedologica: indisponivel(
+          "servico-indisponivel",
+          `Diagnóstico de fronteira via WMS GetFeatureInfo retornou HTTP ${res.status}.`
+        ),
+        totalFeicoesSoloBbox: 0,
+        totalFeicoesErod2024Bbox: 0,
+        fronteiraComNaoSoloBbox: false,
+        fronteiraEntreSolosBbox: false,
+      };
+    }
+    const payload = (await res.json()) as { features?: GeoJsonFeature[] };
+    const features = Array.isArray(payload?.features) ? payload.features : [];
+    const feicoesSoloPrBbox: Array<Record<string, unknown>> = [];
+    const feicoesErod2024Bbox: Array<Record<string, unknown>> = [];
+
+    for (const f of features) {
+      const id = typeof f?.id === "string" ? f.id : "";
+      const props = (f?.properties ?? {}) as Record<string, unknown>;
+      if (id.startsWith("parana_solos_")) {
+        feicoesSoloPrBbox.push(props);
+      } else if (id.startsWith("bra_erodibilidade_2024")) {
+        feicoesErod2024Bbox.push(props);
+      }
+    }
+
+    const emFronteira = feicoesSoloPrBbox.length > 1 || feicoesErod2024Bbox.length > 1;
+    const qtdComSoloPr = feicoesSoloPrBbox.filter((p) => feicaoSoloPrTemSoloMapeado(p)).length;
+    const fronteiraComNaoSoloBbox =
+      feicoesSoloPrBbox.length > 1 && qtdComSoloPr > 0 && qtdComSoloPr < feicoesSoloPrBbox.length;
+    const fronteiraEntreSolosBbox = feicoesSoloPrBbox.length > 1 && qtdComSoloPr >= 2;
+
+    return {
+      pontoEmFronteiraPedologica: medido(
+        emFronteira,
+        `WMS 1.1.1 GetFeatureInfo bbox ~110m (n_pr=${feicoesSoloPrBbox.length}, n_2024=${feicoesErod2024Bbox.length})`
+      ),
+      totalFeicoesSoloBbox: feicoesSoloPrBbox.length,
+      totalFeicoesErod2024Bbox: feicoesErod2024Bbox.length,
+      fronteiraComNaoSoloBbox,
+      fronteiraEntreSolosBbox,
+    };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return {
+      pontoEmFronteiraPedologica: indisponivel(
+        "servico-indisponivel",
+        `Falha ao consultar bbox WMS GetFeatureInfo para diagnóstico de fronteira: ${msg}`
+      ),
+      totalFeicoesSoloBbox: 0,
+      totalFeicoesErod2024Bbox: 0,
+      fronteiraComNaoSoloBbox: false,
+      fronteiraEntreSolosBbox: false,
+    };
+  }
+}
+
+/**
+ * Consulta determinística da unidade pedológica e das duas camadas de erodibilidade
+ * por ponto-em-polígono (`WFS 1.1.0 GetFeature INTERSECTS(geometry, POINT(lat lon))` — PARTE II / V1).
  */
 export async function queryEmbrapaSoil(
   lat: number,
@@ -812,10 +946,12 @@ export async function queryEmbrapaSoil(
   if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
     const r = resultadoBase(lat, lng);
     r.motivo = `Coordenada inválida (${lat}, ${lng}). Nenhuma consulta foi realizada.`;
+    r.provenienciaAtribuicao = indisponivel("servico-indisponivel", r.motivo);
     return r;
   }
 
-  const key = cacheKey(lat, lng);
+  const computarFronteiraBbox = Boolean(options.computarFronteiraBbox);
+  const key = cacheKey(lat, lng, computarFronteiraBbox);
   if (!options.forceRefresh) {
     const hit = cache.get(key);
     if (hit) return hit;
@@ -826,18 +962,20 @@ export async function queryEmbrapaSoil(
 
   let payload: { features?: GeoJsonFeature[] };
   try {
-    const res = await fetch(buildGetFeatureInfoUrl(lat, lng), {
+    const res = await fetch(buildGetFeaturePointInPolygonUrl(lat, lng), {
       signal: AbortSignal.timeout(timeoutMs),
       headers: { Accept: "application/json" },
     });
     if (!res.ok) {
-      resultado.motivo = `Serviço GeoInfo da Embrapa retornou HTTP ${res.status}. Nada se afirma sobre esta coordenada.`;
+      resultado.motivo = `Serviço GeoInfo da Embrapa (WFS 1.1.0 GetFeature) retornou HTTP ${res.status}. Nada se afirma sobre esta coordenada.`;
+      resultado.provenienciaAtribuicao = indisponivel("servico-indisponivel", resultado.motivo);
       return resultado;
     }
     payload = await res.json();
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
-    resultado.motivo = `Falha ao consultar o serviço GeoInfo da Embrapa: ${msg}. Nada se afirma sobre esta coordenada.`;
+    resultado.motivo = `Falha ao consultar o serviço GeoInfo da Embrapa (WFS 1.1.0 GetFeature): ${msg}. Nada se afirma sobre esta coordenada.`;
+    resultado.provenienciaAtribuicao = indisponivel("servico-indisponivel", resultado.motivo);
     return resultado;
   }
 
@@ -847,7 +985,6 @@ export async function queryEmbrapaSoil(
   resultado.statusErodibilidade = "sem-cobertura";
   resultado.statusErodibilidade2024 = "sem-cobertura";
 
-  // U1.1: Coleta TODAS as feições de cada camada devolvidas na resposta
   const feicoesSoloPr: Array<{ id: string; props: Record<string, unknown> }> = [];
   const feicoesErodBr: Array<{ id: string; props: Record<string, unknown> }> = [];
   const feicoesErod2024: Array<{ id: string; props: Record<string, unknown> }> = [];
@@ -865,68 +1002,82 @@ export async function queryEmbrapaSoil(
     }
   }
 
-  // U1.3 e U1.5: Registra total de feições e marcador de ponto em fronteira cartográfica
   resultado.totalFeicoesSoloRetornadas = feicoesSoloPr.length;
-  resultado.pontoEmFronteiraPedologica = feicoesSoloPr.length > 1;
   resultado.totalFeicoesErod2024Retornadas = feicoesErod2024.length;
+  resultado.totalFeicoesErodBrRetornadas = feicoesErodBr.length;
+
+  // V1.3: Mais de uma feição na mesma camada significa que a coordenada caiu EXATAMENTE
+  // sobre a fronteira compartilhada de dois polígonos (INTERSECTS inclui o contorno).
+  // Vedado escolher por ordem de retorno: trata-se como indisponivel("insuficiente", ...).
+  if (feicoesSoloPr.length > 1 || feicoesErod2024.length > 1 || feicoesErodBr.length > 1) {
+    const msgFronteiraExata =
+      `Coordenada (${lat}, ${lng}) está exatamente sobre a fronteira compartilhada entre polígonos ` +
+      `(WFS 1.1.0 INTERSECTS retornou n_pr=${feicoesSoloPr.length}, n_2024=${feicoesErod2024.length}, n_br=${feicoesErodBr.length}); ` +
+      `vedado desempate por ordem de retorno (V1.3).`;
+    resultado.fronteiraCompartilhadaExata = true;
+    resultado.causaZeroFeicoes = "fronteira-compartilhada-exata";
+    resultado.motivo = msgFronteiraExata;
+    resultado.provenienciaAtribuicao = indisponivel("insuficiente", msgFronteiraExata);
+    resultado.pontoEmFronteiraPedologica = medido(
+      true,
+      `WFS 1.1.0 GetFeature INTERSECTS (>1 feição na mesma camada: n_pr=${feicoesSoloPr.length}, n_2024=${feicoesErod2024.length}, n_br=${feicoesErodBr.length})`
+    );
+    cache.set(key, resultado);
+    return resultado;
+  }
 
   let propsSoloPr: Record<string, unknown> | null = null;
   let propsErod2024: Record<string, unknown> | null = null;
   const motivosNaoSolo: string[] = [];
 
-  // U1.2 e U1.4: Preferência pela feição com solo mapeado em parana_solos_20201105
-  if (feicoesSoloPr.length > 0) {
-    const idxComSolo = feicoesSoloPr.findIndex((f) => feicaoSoloPrTemSoloMapeado(f.props));
-    const idxEscolhido = idxComSolo >= 0 ? idxComSolo : 0;
-    const escolhida = feicoesSoloPr[idxEscolhido];
-    propsSoloPr = escolhida.props;
-    resultado.indiceFeicaoSoloEscolhida = idxEscolhido;
-    resultado.feicaoSoloEscolhidaId = escolhida.id || texto(escolhida.props["sbcs"]);
+  if (feicoesSoloPr.length === 1) {
+    const unica = feicoesSoloPr[0];
+    propsSoloPr = unica.props;
+    resultado.indiceFeicaoSoloEscolhida = 0;
+    resultado.feicaoSoloEscolhidaId = unica.id || texto(unica.props["sbcs"]);
 
-    if (idxComSolo < 0) {
-      // NENHUMA das feições de parana_solos_ tem solo mapeado
-      const sbcsBruto = texto(escolhida.props["sbcs"]) || "sem-ordem_1";
-      motivosNaoSolo.push(`parana_solos_20201105 reportou '${sbcsBruto}' em todas as feições`);
+    const sbcsBruto = texto(unica.props["sbcs"]);
+    const legendaBruta = texto(unica.props["legenda"]);
+    const ordem1Bruta = texto(unica.props["ordem_1"]);
+    if (!ordem1Bruta || ehCategoriaNaoSolo(sbcsBruto) || ehCategoriaNaoSolo(legendaBruta) || ehCategoriaNaoSolo(ordem1Bruta)) {
+      motivosNaoSolo.push(
+        `parana_solos_20201105 reportou categoria não-solo '${sbcsBruto || legendaBruta || "sem-ordem_1"}'`
+      );
     }
   }
 
-  // U1.2 e U1.4: Preferência pela feição com solo mapeado em brasil_erodibilidade_solo
-  if (feicoesErodBr.length > 0) {
-    const idxComSolo = feicoesErodBr.findIndex((f) => feicaoErodBrTemSoloMapeado(f.props));
-    const idxEscolhido = idxComSolo >= 0 ? idxComSolo : 0;
-    const escolhida = feicoesErodBr[idxEscolhido];
-    const ero = parseErodibilityFeature(escolhida.props);
+  if (feicoesErodBr.length === 1) {
+    const unica = feicoesErodBr[0];
+    const ero = parseErodibilityFeature(unica.props);
     if (ero) {
       resultado.erodibilidade = ero;
       resultado.statusErodibilidade = "encontrado";
-      if (idxComSolo < 0 && ehCategoriaNaoSolo(ero.classe)) {
-        motivosNaoSolo.push(`brasil_erodibilidade_solo reportou '${ero.classe}' em todas as feições`);
+      if (ehCategoriaNaoSolo(ero.classe)) {
+        motivosNaoSolo.push(`brasil_erodibilidade_solo reportou categoria não-solo '${ero.classe}'`);
       }
     }
   }
 
-  // U1.2 e U1.4: Preferência pela feição com solo mapeado em bra_erodibilidade_2024_sirgas2000
-  if (feicoesErod2024.length > 0) {
-    const idxComSolo = feicoesErod2024.findIndex((f) => feicaoErod2024TemSoloMapeado(f.props));
-    const idxEscolhido = idxComSolo >= 0 ? idxComSolo : 0;
-    const escolhida = feicoesErod2024[idxEscolhido];
-    propsErod2024 = escolhida.props;
-    resultado.indiceFeicaoErod2024Escolhida = idxEscolhido;
+  if (feicoesErod2024.length === 1) {
+    const unica = feicoesErod2024[0];
+    propsErod2024 = unica.props;
+    resultado.indiceFeicaoErod2024Escolhida = 0;
     resultado.feicaoErod2024EscolhidaId =
-      texto(escolhida.props["cod_um"]) ||
-      texto(escolhida.props["cod_um2"]) ||
-      escolhida.id;
+      texto(unica.props["cod_um"]) ||
+      texto(unica.props["cod_um2"]) ||
+      unica.id;
 
-    const ero24 = parseErodibility2024Feature(escolhida.props);
+    const ero24 = parseErodibility2024Feature(unica.props);
     if (ero24) {
       resultado.erodibilidade2024 = ero24;
       resultado.statusErodibilidade2024 = "encontrado";
       if (
-        idxComSolo < 0 &&
-        (ehCategoriaNaoSolo(ero24.erodUm) || ehCategoriaNaoSolo(ero24.erodComponentes[0] ?? ""))
+        ehCategoriaNaoSolo(ero24.erodUm) ||
+        ehCategoriaNaoSolo(ero24.erodComponentes[0] ?? "") ||
+        ero24.kSolosBruto === 0
       ) {
         motivosNaoSolo.push(
-          `bra_erodibilidade_2024_sirgas2000 reportou '${ero24.erodUm || ero24.erodComponentes[0]}' em todas as feições`
+          `bra_erodibilidade_2024_sirgas2000 reportou categoria não-solo '${ero24.erodUm || "k_solos=0"}'`
         );
       }
     }
@@ -943,16 +1094,66 @@ export async function queryEmbrapaSoil(
     }
   }
 
-  if (motivosNaoSolo.length > 0) {
+  // V3.1: Tratamento de zero feições e categorias não-solo com causas distintas e nomeadas
+  if (feicoesSoloPr.length === 0) {
+    const dentroRetanguloParana =
+      lat >= -26.75 && lat <= -22.5 && lng >= -54.65 && lng <= -48.0;
+    const nacionalTemSolo =
+      (resultado.erodibilidade2024 !== null &&
+        resultado.erodibilidade2024 !== undefined &&
+        resultado.erodibilidade2024.kSolos !== null &&
+        resultado.erodibilidade2024.kSolos > 0) ||
+      (resultado.erodibilidade !== null && !ehCategoriaNaoSolo(resultado.erodibilidade.classe));
+
+    if (nacionalTemSolo || !dentroRetanguloParana) {
+      resultado.causaZeroFeicoes = "fora-cobertura-camada-estadual";
+      resultado.provenienciaAtribuicao = indisponivel(
+        "sem-cobertura",
+        "Zero feições na carta estadual geonode:parana_solos_20201105 (coordenada fora da cobertura da camada estadual do Paraná — V3.1)."
+      );
+    } else {
+      resultado.causaZeroFeicoes = "dentro-cobertura-lacuna-ou-agua";
+      resultado.foraDoDominioSolo = true;
+      resultado.motivoForaDoDominioSolo =
+        motivosNaoSolo.length > 0
+          ? motivosNaoSolo.join("; ")
+          : "Zero feições de solo nas três camadas dentro do domínio do Paraná (coordenada sobre lâmina d'água ou lacuna do mapeamento cartográfico — V3.1).";
+      resultado.provenienciaAtribuicao = indisponivel(
+        "fora-do-dominio",
+        resultado.motivoForaDoDominioSolo
+      );
+    }
+  } else if (motivosNaoSolo.length > 0 || !resultado.solo) {
+    resultado.causaZeroFeicoes = "dentro-cobertura-categoria-nao-solo";
     resultado.foraDoDominioSolo = true;
     resultado.motivoForaDoDominioSolo = motivosNaoSolo.join("; ");
+    resultado.provenienciaAtribuicao = indisponivel(
+      "fora-do-dominio",
+      resultado.motivoForaDoDominioSolo
+    );
+  } else {
+    resultado.provenienciaAtribuicao = medido(
+      resultado.solo.sbcs,
+      `WFS 1.1.0 GetFeature INTERSECTS(geometry, POINT(${lat} ${lng})) -> ${resultado.feicaoSoloEscolhidaId}`
+    );
+  }
+
+  if (computarFronteiraBbox) {
+    const diagBbox = await diagnosticarFronteiraPedologicaBbox(lat, lng, { timeoutMs });
+    resultado.pontoEmFronteiraPedologica = diagBbox.pontoEmFronteiraPedologica;
   }
 
   const pendencias: string[] = [];
   if (resultado.statusSolo === "sem-cobertura") {
-    pendencias.push(
-      "Carta de solos sem cobertura nesta coordenada (a camada abrange apenas o Estado do Paraná)."
-    );
+    if (resultado.causaZeroFeicoes === "dentro-cobertura-lacuna-ou-agua") {
+      pendencias.push(
+        "Zero feições de solo mapeado na coordenada na carta do Estado do Paraná (lâmina d'água ou lacuna do mapeamento cartográfico)."
+      );
+    } else {
+      pendencias.push(
+        "Carta de solos sem cobertura nesta coordenada (a camada abrange apenas o Estado do Paraná)."
+      );
+    }
   }
   if (resultado.statusErodibilidade === "sem-cobertura") {
     pendencias.push("Carta de erodibilidade sem cobertura nesta coordenada.");
@@ -961,6 +1162,84 @@ export async function queryEmbrapaSoil(
 
   cache.set(key, resultado);
   return resultado;
+}
+
+/**
+ * Limiar máximo permitido para a fração de candidatos que devolvem zero feições
+ * nas três camadas num lote de consulta ao GeoServer da Embrapa (`V3.4`).
+ *
+ * JUSTIFICATIVA:
+ * No domínio terrestre da Bacia Hidrográfica do Paraná 3 (quadro amostral já filtrado
+ * por cobertura agrícola/pastagem `WorldCover v100 ∩ v200 ∈ {30, 40}`), as três camadas
+ * da Embrapa cobrem quase 100% das coordenadas terrestres (0/20 pontos rurais com zero
+ * feições na campanha medida). Uma fração de zero feições superior a 50% (`0.50`) em um
+ * lote com ao menos 5 pontos é fisicamente incompatível com a cobertura cartográfica da
+ * bacia e constitui a assinatura inequívoca de inversão da ordem dos eixos (`POINT(lon lat)`
+ * em vez de `POINT(lat lon)` na WFS 1.1.0).
+ */
+export const LIMIAR_MAXIMO_FRACAO_ZERO_FEICOES_LOTE = 0.5;
+export const MINIMO_PONTOS_GUARDA_SANIDADE_WFS = 5;
+
+export class ErroSanidadeEixosWfsEmbrapa extends Error {
+  constructor(
+    public readonly totalConsultados: number,
+    public readonly totalZeroFeicoes: number,
+    public readonly fracaoZeroFeicoes: number,
+    public readonly limiarMaximo: number
+  ) {
+    super(
+      `[GUARDA DE SANIDADE WFS 1.1.0 EMBRAPA — V3.4] Abortando lote: ${totalZeroFeicoes} de ${totalConsultados} ` +
+        `candidatos (${(fracaoZeroFeicoes * 100).toFixed(1)}%) devolveram ZERO feições nas três camadas, ` +
+        `excedendo o limiar máximo de ${(limiarMaximo * 100).toFixed(1)}%. ` +
+        `Suspeita crítica de inversão de eixos na consulta WFS 1.1.0 (verifique se CQL_FILTER usa POINT(<lat> <lon>) e não POINT(<lon> <lat>)).`
+    );
+    this.name = "ErroSanidadeEixosWfsEmbrapa";
+  }
+}
+
+/**
+ * Verifica a sanidade de um lote de consultas `queryEmbrapaSoil` contra esvaziamento silencioso
+ * por inversão da ordem dos eixos na WFS 1.1.0 (`V3.4`).
+ *
+ * Se o lote tiver ao menos `minimoPontos` consultas respondidas pelo serviço e a fração de
+ * coordenadas com zero feições nas três camadas (`!r.totalFeicoesSoloRetornadas && !r.totalFeicoesErod2024Retornadas && !r.totalFeicoesErodBrRetornadas`)
+ * exceder `limiarMaximo` (padrão `0.50`), lança `ErroSanidadeEixosWfsEmbrapa`.
+ */
+export function verificarSanidadeZeroFeicoesLoteEmbrapa(
+  resultados: EmbrapaSoilQueryResult[],
+  limiarMaximo: number = LIMIAR_MAXIMO_FRACAO_ZERO_FEICOES_LOTE,
+  minimoPontos: number = MINIMO_PONTOS_GUARDA_SANIDADE_WFS
+): {
+  totalRespondidos: number;
+  totalZeroFeicoesNasTresCamadas: number;
+  fracaoZeroFeicoes: number;
+} {
+  const respondidos = resultados.filter((r) => r.statusSolo !== "servico-indisponivel");
+  const totalRespondidos = respondidos.length;
+  const totalZeroFeicoesNasTresCamadas = respondidos.filter(
+    (r) =>
+      !r.totalFeicoesSoloRetornadas &&
+      !r.totalFeicoesErod2024Retornadas &&
+      !r.totalFeicoesErodBrRetornadas
+  ).length;
+
+  const fracaoZeroFeicoes =
+    totalRespondidos > 0 ? totalZeroFeicoesNasTresCamadas / totalRespondidos : 0;
+
+  if (totalRespondidos >= minimoPontos && fracaoZeroFeicoes > limiarMaximo) {
+    throw new ErroSanidadeEixosWfsEmbrapa(
+      totalRespondidos,
+      totalZeroFeicoesNasTresCamadas,
+      fracaoZeroFeicoes,
+      limiarMaximo
+    );
+  }
+
+  return {
+    totalRespondidos,
+    totalZeroFeicoesNasTresCamadas,
+    fracaoZeroFeicoes,
+  };
 }
 
 /**
