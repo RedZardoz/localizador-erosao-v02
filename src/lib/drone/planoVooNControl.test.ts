@@ -16,6 +16,7 @@ import {
   gerarCodigoOpacoInterprete,
   gerarSurveyMicasenseAltum,
   validarIsolamentoCegoInterprete,
+  verificarCoberturaGLO30Poligonos,
   ErroEmissaoPlanoSinteticoRecusada,
   ErroTerrenoForaDeCoberturaGLO30,
 } from "./planoVooNControl";
@@ -120,35 +121,79 @@ describe("Exportação de Planos de Voo QGroundControl (.plan v1) para o NContro
     expect(erroGeodesicoMaximoMetros).toBeLessThan(0.01);
   });
 
-  it("Z1: amostrador real do Copernicus DEM GLO-30 lê os tiles oficiais com isolamento de PROJ_LIB, confere cota contra benchmark independente e recusa NoData (P12)", () => {
-    const amostradorReal = criarAmostradorCopernicusGLO30Real();
-    expect(amostradorReal.proveniencia).toBe("copernicus-glo30");
-    expect(amostradorReal.descricaoFonte).toContain("COPERNICUS/DEM/GLO30");
+  it(
+    "Z1 & W3: amostrador real do Copernicus DEM GLO-30 lê os tiles oficiais com isolamento de PROJ_LIB, confere cota contra benchmark independente e recusa NoData / fora de borda (P12)",
+    () => {
+      const amostradorReal = criarAmostradorCopernicusGLO30Real();
+      expect(amostradorReal.proveniencia).toBe("copernicus-glo30");
+      expect(amostradorReal.descricaoFonte).toContain("COPERNICUS/DEM/GLO30");
 
-    // Benchmark independente 1: Aeroporto Municipal de Toledo (SBTD, Bacia do Paraná 3)
-    // Coordenadas ARP oficiais ROTAER / AIP Brasil: 24° 41' 09'' S, 053° 41' 52'' W (-24.685833, -53.697778)
-    // Cota oficial de referência do aeródromo (ROTAER): 562 m
-    const cotaSbtd = amostradorReal.amostrar(-24.685833, -53.697778);
-    expect(cotaSbtd).toBeCloseTo(555.89, 1);
-    expect(Math.abs(cotaSbtd - 562.0)).toBeLessThan(10.0); // Diferença de ~6,1 m frente ao topo pavimentado do ARP
+      // Benchmark independente 1: Aeroporto Municipal de Toledo (SBTD, Bacia do Paraná 3)
+      // Coordenadas ARP oficiais ROTAER / AIP Brasil: 24° 41' 09'' S, 053° 41' 52'' W (-24.685833, -53.697778)
+      // Cota oficial de referência do aeródromo (ROTAER): 562 m
+      const cotaSbtd = amostradorReal.amostrar(-24.685833, -53.697778);
+      expect(cotaSbtd).toBeCloseTo(555.89, 1);
+      expect(Math.abs(cotaSbtd - 562.0)).toBeLessThan(10.0); // Diferença de ~6,1 m frente ao topo pavimentado do ARP
 
-    // Benchmark 2: Coordenada de lavoura em Cascavel/Toledo (-25.1362, -53.8569)
-    const cotaCascavel = amostradorReal.amostrar(-25.1362, -53.8569);
-    expect(cotaCascavel).toBeCloseTo(586.43, 1);
+      // Benchmark 2: Coordenada de lavoura em Cascavel/Toledo (-25.1362, -53.8569)
+      const cotaCascavel = amostradorReal.amostrar(-25.1362, -53.8569);
+      expect(cotaCascavel).toBeCloseTo(586.43, 1);
 
-    // Amostragem em lote com pre-carregamento instantâneo
-    if (amostradorReal.preCarregarCoordenadas) {
-      amostradorReal.preCarregarCoordenadas([
-        [-24.685833, -53.697778],
-        [-25.1362, -53.8569],
-      ]);
-    }
-    expect(amostradorReal.amostrar(-24.685833, -53.697778)).toBeCloseTo(555.89, 1);
+      // Benchmark 3 (W4): Medianeira no quadrante S26/W055 (-25.295, -54.095)
+      const cotaMedianeira = amostradorReal.amostrar(-25.295, -54.095);
+      expect(cotaMedianeira).toBeCloseTo(413.63, 1);
 
-    // P12: Coordenada fora de cobertura ou inválida deve lançar ErroTerrenoForaDeCoberturaGLO30
-    expect(() => amostradorReal.amostrar(999.0, 999.0)).toThrow(
-      ErroTerrenoForaDeCoberturaGLO30
-    );
+      // Amostragem em lote com pre-carregamento
+      if (amostradorReal.preCarregarCoordenadas) {
+        amostradorReal.preCarregarCoordenadas([
+          [-24.685833, -53.697778],
+          [-25.1362, -53.8569],
+          [-25.295, -54.095],
+        ]);
+      }
+      expect(amostradorReal.amostrar(-24.685833, -53.697778)).toBeCloseTo(555.89, 1);
+
+      // W3: Ponto imediatamente fora da borda física do tile em cache (não pode devolver 0.0)
+      // (-24.99990, -53.5000) cai na margem sul de S25_W054 fora dos limites físicos do raster
+      expect(() => amostradorReal.amostrar(-24.99990, -53.5000)).toThrow(
+        ErroTerrenoForaDeCoberturaGLO30
+      );
+
+      // P12: Coordenada no Atlântico (0, 0) fora de cobertura
+      expect(() => amostradorReal.amostrar(0.0, 0.0)).toThrow(
+        ErroTerrenoForaDeCoberturaGLO30
+      );
+    },
+    35000
+  );
+
+  it("W4: verificação prévia de cobertura de tiles DEM antes de emitir planos aborta cedo polígonos sem tile em cache", () => {
+    const poligonosValidos = [
+      { idPoligono: "P1", centroide: { latitude: -24.75, longitude: -53.72 } }, // S25_W054 (Toledo)
+      { idPoligono: "P2", centroide: { latitude: -24.55, longitude: -54.05 } }, // S25_W055 (M.C. Rondon)
+      { idPoligono: "P3", centroide: { latitude: -25.20, longitude: -53.80 } }, // S26_W054 (Capanema)
+      { idPoligono: "P4", centroide: { latitude: -25.50, longitude: -54.50 } }, // S26_W055 (Foz do Iguaçu)
+    ];
+
+    const checagemOk = verificarCoberturaGLO30Poligonos(poligonosValidos);
+    expect(checagemOk.coberturaCompleta).toBe(true);
+    expect(checagemOk.tilesUtilizados).toEqual([
+      "S25_00_W054_00",
+      "S25_00_W055_00",
+      "S26_00_W054_00",
+      "S26_00_W055_00",
+    ]);
+
+    const poligonosComDescoberto = [
+      ...poligonosValidos,
+      { idPoligono: "P_FORA", centroide: { latitude: -12.50, longitude: -41.50 } }, // Bahia (S13_W042)
+    ];
+
+    const checagemFalha = verificarCoberturaGLO30Poligonos(poligonosComDescoberto);
+    expect(checagemFalha.coberturaCompleta).toBe(false);
+    expect(checagemFalha.poligonosDescobertos.length).toBe(1);
+    expect(checagemFalha.poligonosDescobertos[0].idPoligono).toBe("P_FORA");
+    expect(checagemFalha.poligonosDescobertos[0].tileRequerido).toBe("S13_00_W042_00");
   });
 
   it("Z2 & Y2: amostrador sintético explicitamente rotulado (amostradorSinteticoParaTeste) permite validar cálculo de altitude relativa por waypoint sem fingir terreno real", () => {

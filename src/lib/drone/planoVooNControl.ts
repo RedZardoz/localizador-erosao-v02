@@ -27,6 +27,7 @@
  */
 
 import crypto from "crypto";
+import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
 import { CAMPOS_PROIBIDOS_MATRIZ_TREINO } from "@/lib/matriz/invariantes";
@@ -1087,7 +1088,6 @@ export interface ItemRoteiroJornadaPoligono {
   ordemNaJornada: number;
   idJornada: string;
   idPoligono: string;
-  codigoOpacoInterprete: string;
   estratoId: string;
   papelConjunto: "treino" | "held-out";
   municipio: string;
@@ -1178,6 +1178,7 @@ export interface PacoteExportacaoCompletoNControl {
     velocidadeEfetivaMedidaMs: [8.7, 9.2];
     ressalvasTerrenoGLO30: readonly string[];
     ehPlanoSinteticoDemonstracao: boolean;
+    tilesDEMUtilizados: string[];
   };
   exportacaoPiloto: {
     jornadas: PacoteJornadaNControl[];
@@ -1185,18 +1186,22 @@ export interface PacoteExportacaoCompletoNControl {
     roteiroCsv: string;
     tabelaAutorizacaoCsv: string;
     roteiroPdfBytes: Buffer;
-    mapaChaveSecretaPilotoInterprete: Array<{
-      idPoligono: string;
-      codigoOpacoInterprete: string;
-      estratoId: string;
-      papelConjunto: "treino" | "held-out";
-      idJornada: string;
-    }>;
   };
   exportacaoInterprete: {
     registrosCegos: RegistroExportacaoInterpreteCego[];
     manifestoInterpreteCsv: string;
   };
+  /**
+   * Registro exclusivo para o selo de sorteio do pesquisador (D16).
+   * JAMAIS exportado para pilotos, intérpretes ou comitado em artefatos do repositório (W2).
+   */
+  seloPesquisadorCorrespondenciaCega?: Array<{
+    idPoligono: string;
+    codigoOpacoInterprete: string;
+    estratoId: string;
+    papelConjunto: "treino" | "held-out";
+    idJornada: string;
+  }>;
 }
 
 /**
@@ -1493,6 +1498,85 @@ export interface OpcoesExportarCampanhaVooNControl {
 }
 
 /**
+ * Identifica o nome oficial do tile DEM Copernicus GLO-30 para uma coordenada (W4).
+ */
+export function identificarTileCopernicus(lat: number, lon: number): string {
+  const latFloor = Math.floor(lat);
+  const lonFloor = Math.floor(lon);
+  const latPrefix = latFloor < 0 ? "S" : "N";
+  const lonPrefix = lonFloor < 0 ? "W" : "E";
+  const latVal = Math.abs(latFloor);
+  const lonVal = Math.abs(lonFloor);
+  return `${latPrefix}${String(latVal).padStart(2, "0")}_00_${lonPrefix}${String(lonVal).padStart(3, "0")}_00`;
+}
+
+export interface ResultadoVerificacaoCoberturaGLO30 {
+  coberturaCompleta: boolean;
+  tilesUtilizados: string[];
+  poligonosDescobertos: Array<{
+    idPoligono: string;
+    centroide: [number, number];
+    tileRequerido: string;
+  }>;
+}
+
+/**
+ * Verifica previamente a cobertura de tiles do Copernicus DEM GLO-30 no cache local
+ * para um conjunto de polígonos antes de emitir qualquer plano de voo (W4).
+ * Princípio P12 e disciplina pericial: falhar cedo e inteiro é melhor do que falhar no meio.
+ */
+export function verificarCoberturaGLO30Poligonos(
+  poligonos: Array<{
+    idPoligono: string;
+    centroide: { latitude: number; longitude: number };
+  }>,
+  opcoes?: { pastaCache?: string; tilesDisponiveis?: string[] }
+): ResultadoVerificacaoCoberturaGLO30 {
+  const pastaCache =
+    opcoes?.pastaCache || path.resolve(process.cwd(), "data/dem_cache");
+  let tilesDisponiveis = opcoes?.tilesDisponiveis;
+
+  if (!tilesDisponiveis) {
+    if (fs.existsSync(pastaCache)) {
+      tilesDisponiveis = fs
+        .readdirSync(pastaCache)
+        .filter((f) => f.endsWith(".tif"))
+        .map((f) => {
+          const m = f.match(/Copernicus_DSM_COG_10_([A-Z0-9_]+)_DEM\.tif/i);
+          return m ? m[1] : f;
+        });
+    } else {
+      tilesDisponiveis = [];
+    }
+  }
+
+  const tilesDispSet = new Set(tilesDisponiveis);
+  const tilesUtilizadosSet = new Set<string>();
+  const poligonosDescobertos: ResultadoVerificacaoCoberturaGLO30["poligonosDescobertos"] = [];
+
+  for (const p of poligonos) {
+    const tile = identificarTileCopernicus(
+      p.centroide.latitude,
+      p.centroide.longitude
+    );
+    tilesUtilizadosSet.add(tile);
+    if (!tilesDispSet.has(tile)) {
+      poligonosDescobertos.push({
+        idPoligono: p.idPoligono,
+        centroide: [p.centroide.latitude, p.centroide.longitude],
+        tileRequerido: tile,
+      });
+    }
+  }
+
+  return {
+    coberturaCompleta: poligonosDescobertos.length === 0,
+    tilesUtilizados: Array.from(tilesUtilizadosSet).sort(),
+    poligonosDescobertos,
+  };
+}
+
+/**
  * Função mestra de exportação dos planos de voo para o NControl (Y1–Y6 e Z1–Z6).
  *
  * GUARDA OBRIGATÓRIA DE SEGURANÇA FÍSICA (Z3):
@@ -1541,6 +1625,21 @@ export function exportarCampanhaVooNControl(
     );
   }
 
+  // W4: Verificação prévia de cobertura GLO-30 antes de emitir qualquer arquivo
+  const checagemCobertura = verificarCoberturaGLO30Poligonos(poligonos);
+  if (ehTerrenoReal && !checagemCobertura.coberturaCompleta) {
+    const listaFaltantes = checagemCobertura.poligonosDescobertos
+      .map(
+        (d) =>
+          `${d.idPoligono} (centroide: ${d.centroide[0].toFixed(4)}, ${d.centroide[1].toFixed(4)} -> tile ${d.tileRequerido})`
+      )
+      .join("; ");
+    throw new ErroTerrenoForaDeCoberturaGLO30(
+      `Cobertura DEM GLO-30 incompleta no cache local antes da geração. Polígonos descobertos: [${listaFaltantes}]. ` +
+      "Falhar cedo: nenhum plano de voo ou roteiro foi emitido (P12 / W4)."
+    );
+  }
+
   const prefixoNomeArquivo = ehPlanoVoavel ? "" : "SINTETICO_NAO_VOAR_";
 
   const aglDesejadaMetros = Number(
@@ -1553,8 +1652,9 @@ export function exportarCampanhaVooNControl(
 
   const jornadas: PacoteJornadaNControl[] = [];
   const tabelaAutorizacaoProprietarios: LinhaAutorizacaoProprietario[] = [];
-  const mapaChaveSecretaPilotoInterprete: PacoteExportacaoCompletoNControl["exportacaoPiloto"]["mapaChaveSecretaPilotoInterprete"] =
-    [];
+  const seloPesquisadorCorrespondenciaCega: NonNullable<
+    PacoteExportacaoCompletoNControl["seloPesquisadorCorrespondenciaCega"]
+  > = [];
   const registrosCegos: RegistroExportacaoInterpreteCego[] = [];
 
   for (let jIdx = 0; jIdx < gruposJornada.length; jIdx++) {
@@ -1657,11 +1757,11 @@ export function exportarCampanhaVooNControl(
       tempoTotalMin = Number((tempoTotalMin + tMin).toFixed(2));
       tempoTotalMax = Number((tempoTotalMax + tMax).toFixed(2));
 
+      // W2: O roteiro do piloto NÃO recebe codigoOpacoInterprete
       poligonosRoteiro.push({
         ordemNaJornada,
         idJornada,
         idPoligono: item.idPoligono,
-        codigoOpacoInterprete: codigoOpaco,
         estratoId: item.estratoId,
         papelConjunto: item.papelConjunto,
         municipio: item.imovelCar.municipio,
@@ -1701,7 +1801,8 @@ export function exportarCampanhaVooNControl(
         formaAutorizacao: "",
       });
 
-      mapaChaveSecretaPilotoInterprete.push({
+      // W2: Mapeamento guardado exclusivamente para o selo de auditoria do pesquisador
+      seloPesquisadorCorrespondenciaCega.push({
         idPoligono: item.idPoligono,
         codigoOpacoInterprete: codigoOpaco,
         estratoId: item.estratoId,
@@ -1762,12 +1863,11 @@ export function exportarCampanhaVooNControl(
     a.codigoOpacoInterprete.localeCompare(b.codigoOpacoInterprete)
   );
 
-  // Gera CSV do roteiro do piloto
+  // Gera CSV do roteiro do piloto (W2: sem codigoOpacoInterprete)
   const cabecalhoRoteiroCsv = [
     "idJornada",
     "ordemNaJornada",
     "idPoligono",
-    "codigoOpacoInterprete",
     "estratoId",
     "papelConjunto",
     "municipio",
@@ -1799,7 +1899,6 @@ export function exportarCampanhaVooNControl(
         r.idJornada,
         r.ordemNaJornada,
         r.idPoligono,
-        r.codigoOpacoInterprete,
         r.estratoId,
         r.papelConjunto,
         `"${r.municipio}"`,
@@ -1936,6 +2035,7 @@ export function exportarCampanhaVooNControl(
       velocidadeEfetivaMedidaMs: [8.7, 9.2],
       ressalvasTerrenoGLO30: RESSALVAS_TERRENO_GLO30,
       ehPlanoSinteticoDemonstracao: !ehPlanoVoavel,
+      tilesDEMUtilizados: checagemCobertura.tilesUtilizados,
     },
     exportacaoPiloto: {
       jornadas,
@@ -1943,8 +2043,8 @@ export function exportarCampanhaVooNControl(
       roteiroCsv,
       tabelaAutorizacaoCsv,
       roteiroPdfBytes,
-      mapaChaveSecretaPilotoInterprete,
     },
     exportacaoInterprete,
+    seloPesquisadorCorrespondenciaCega,
   };
 }

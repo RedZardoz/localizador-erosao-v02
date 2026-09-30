@@ -180,9 +180,13 @@ def extrair_atributos_terreno(
         with rasterio.open(fonte_raster) as src:
             row, col = src.index(lon, lat)
 
-            # Verifica se o ponto está dentro dos limites matriciais do raster (3600 x 3600)
-            if row < 0 or row >= src.height or col < 0 or col >= src.width:
-                return _gerar_terreno_indisponivel("fora-do-dominio", "Coordenada fora da abrangência do tile DEM.")
+            # Verifica se o ponto está estritamente dentro dos limites matriciais e geográficos do raster
+            if (
+                row < 0 or row >= src.height or
+                col < 0 or col >= src.width or
+                not (src.bounds.left <= lon <= src.bounds.right and src.bounds.bottom <= lat <= src.bounds.top)
+            ):
+                return _gerar_terreno_indisponivel("fora-do-dominio", f"Coordenada ({lat}, {lon}) fora da abrangência física do tile DEM {tile}.")
 
             # Define janela focal 3x3 com tratamento de bordas
             col_min = max(0, col - 1)
@@ -201,9 +205,10 @@ def extrair_atributos_terreno(
             # Altitude ortométrica no ponto central
             z_centro = float(mat[1, 1])
 
-            # Verificação de valores NoData / implausíveis
-            if np.isnan(z_centro) or z_centro <= -9999 or z_centro < -500 or z_centro > 9000:
-                return _gerar_terreno_indisponivel("sem-cobertura", "Pixel DEM com valor NoData ou inválido.")
+            # Verificação estrita de valores NoData / nulos / implausíveis (P12)
+            # Em relevo interior da BP3 (cotas > 100 m), 0.0 m indica ausência de dado em COG sem tag nodata explícita
+            if np.isnan(z_centro) or z_centro <= -9999 or z_centro < -500 or z_centro > 9000 or z_centro == 0.0:
+                return _gerar_terreno_indisponivel("sem-cobertura", f"Pixel DEM com valor NoData, nulo ({z_centro} m) ou inválido.")
 
             # =========================================================================
             # Resolução métrica na latitude do ponto (EPSG:31982 / SIRGAS 2000 UTM 22S)
@@ -397,11 +402,12 @@ def reduzir_pontos_amostrais(
 def amostrar_altitudes_copernicus(
     coords: List[Tuple[float, float]],
     pasta_cache: str = "data/dem_cache",
-    baixar_tiles: bool = True
+    baixar_tiles: bool = False,
+    permitir_remoto: bool = False,
 ) -> List[float]:
     """
     Amostra a cota ortométrica real (m) diretamente sobre o Copernicus DEM GLO-30 (30 m).
-    Lança RuntimeError se qualquer coordenada estiver fora de cobertura ou com valor NoData (P12).
+    Lança RuntimeError se qualquer coordenada estiver fora de cobertura ou com valor NoData/0.0m (P12).
     """
     import rasterio
 
@@ -416,21 +422,39 @@ def amostrar_altitudes_copernicus(
 
     for tile, lista in coords_por_tile.items():
         caminho_local = obter_caminho_tile_local(tile, pasta_cache)
-        if not os.path.exists(caminho_local) or os.path.getsize(caminho_local) < 1024 * 1024:
+        tem_cache_local = os.path.exists(caminho_local) and os.path.getsize(caminho_local) > 1024 * 1024
+
+        if not tem_cache_local:
             if baixar_tiles:
                 caminho_local = baixar_tile_se_necessario(tile, pasta_cache, verbose=False)
-            else:
+            elif permitir_remoto:
                 caminho_local = obter_url_copernicus(tile)
+            else:
+                raise RuntimeError(
+                    f"Tile '{tile}' não encontrado no cache local '{pasta_cache}' para a coordenada ({lista[0][1]}, {lista[0][2]}). "
+                    f"Modo offline estrito: download remoto desabilitado (P12)."
+                )
 
         with rasterio.open(caminho_local) as src:
+            for (orig_idx, lat, lon) in lista:
+                row, col = src.index(lon, lat)
+                if (
+                    row < 0 or row >= src.height or
+                    col < 0 or col >= src.width or
+                    not (src.bounds.left <= lon <= src.bounds.right and src.bounds.bottom <= lat <= src.bounds.top)
+                ):
+                    raise RuntimeError(
+                        f"Coordenada ({lat}, {lon}) fora dos limites físicos do tile {tile} (bounds: {src.bounds}). Princípio P12 violação evitada: interpolação artificial proibida."
+                    )
+
             sample_inputs = [(lon, lat) for _, lat, lon in lista]
             sampled_vals = list(src.sample(sample_inputs))
 
             for (orig_idx, lat, lon), val_arr in zip(lista, sampled_vals):
                 val = float(val_arr[0])
-                if math.isnan(val) or val <= -9999 or val < -500 or val > 9000:
+                if math.isnan(val) or val <= -9999 or val < -500 or val > 9000 or val == 0.0:
                     raise RuntimeError(
-                        f"Coordenada ({lat}, {lon}) fora de cobertura ou sem dado (NoData={val}) no Copernicus DEM GLO-30 (tile {tile})."
+                        f"Coordenada ({lat}, {lon}) no tile {tile} retornou valor inválido, nulo ou NoData ({val} m). Princípio P12 violação evitada: interpolação artificial proibida."
                     )
                 resultados[orig_idx] = round(val, 2)
 
@@ -445,6 +469,8 @@ def main():
     parser.add_argument("--output", type=str, help="Arquivo de saída enriquecido (.json)")
     parser.add_argument("--cache", type=str, default="data/dem_cache", help="Diretório de cache local dos tiles DEM")
     parser.add_argument("--baixar-tiles", action="store_true", help="Faz pré-download dos tiles completos para o cache")
+    parser.add_argument("--permitir-download", action="store_true", help="Permite download remoto de tiles se faltarem no cache")
+    parser.add_argument("--permitir-remoto", action="store_true", help="Permite leitura remota via HTTPS se faltar no cache")
 
     args = parser.parse_args()
 
@@ -456,7 +482,12 @@ def main():
                     coords = json.load(f)
             else:
                 coords = json.loads(payload_str)
-            altitudes = amostrar_altitudes_copernicus(coords, pasta_cache=args.cache, baixar_tiles=args.baixar_tiles)
+            altitudes = amostrar_altitudes_copernicus(
+                coords,
+                pasta_cache=args.cache,
+                baixar_tiles=args.baixar_tiles or args.permitir_download,
+                permitir_remoto=args.permitir_remoto,
+            )
             print(json.dumps({"status": "sucesso", "altitudes": altitudes}, ensure_ascii=False))
         except Exception as err:
             print(json.dumps({"status": "erro", "motivo": str(err)}, ensure_ascii=False))

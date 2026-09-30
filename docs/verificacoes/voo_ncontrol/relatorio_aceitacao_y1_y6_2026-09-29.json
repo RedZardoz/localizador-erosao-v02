@@ -29,6 +29,12 @@
       "2. Resolução espacial de 30 m (suavização intra-célula): ravinas estreitas, terraços agrícolas ou quebras abruptas de vertente menores que 30 m são suavizados pela grade.",
       "3. Obstáculos pontuais ausentes: torres de transmissão, postes, fios, silos e árvores isoladas crescidas após a aquisição radar não constam no modelo; a conferência visual do horizonte de voo e a segurança contra colisão permanecem responsabilidade indelegável do piloto em campo."
     ],
-    "ehPlanoSinteticoDemonstracao": true
+    "ehPlanoSinteticoDemonstracao": true,
+    "tilesDEMUtilizados": [
+      "S25_00_W054_00",
+      "S25_00_W055_00",
+      "S26_00_W054_00",
+      "S26_00_W055_00"
+    ]
   }
 }
