@@ -394,9 +394,53 @@ def reduzir_pontos_amostrais(
     return processados
 
 
+def amostrar_altitudes_copernicus(
+    coords: List[Tuple[float, float]],
+    pasta_cache: str = "data/dem_cache",
+    baixar_tiles: bool = True
+) -> List[float]:
+    """
+    Amostra a cota ortométrica real (m) diretamente sobre o Copernicus DEM GLO-30 (30 m).
+    Lança RuntimeError se qualquer coordenada estiver fora de cobertura ou com valor NoData (P12).
+    """
+    import rasterio
+
+    coords_por_tile: Dict[str, List[Tuple[int, float, float]]] = {}
+    for idx, (lat, lon) in enumerate(coords):
+        if not (-90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0):
+            raise ValueError(f"Coordenada geográfica inválida no índice {idx}: lat={lat}, lon={lon}")
+        tile = identificar_tile_copernicus(lat, lon)
+        coords_por_tile.setdefault(tile, []).append((idx, lat, lon))
+
+    resultados = [0.0] * len(coords)
+
+    for tile, lista in coords_por_tile.items():
+        caminho_local = obter_caminho_tile_local(tile, pasta_cache)
+        if not os.path.exists(caminho_local) or os.path.getsize(caminho_local) < 1024 * 1024:
+            if baixar_tiles:
+                caminho_local = baixar_tile_se_necessario(tile, pasta_cache, verbose=False)
+            else:
+                caminho_local = obter_url_copernicus(tile)
+
+        with rasterio.open(caminho_local) as src:
+            sample_inputs = [(lon, lat) for _, lat, lon in lista]
+            sampled_vals = list(src.sample(sample_inputs))
+
+            for (orig_idx, lat, lon), val_arr in zip(lista, sampled_vals):
+                val = float(val_arr[0])
+                if math.isnan(val) or val <= -9999 or val < -500 or val > 9000:
+                    raise RuntimeError(
+                        f"Coordenada ({lat}, {lon}) fora de cobertura ou sem dado (NoData={val}) no Copernicus DEM GLO-30 (tile {tile})."
+                    )
+                resultados[orig_idx] = round(val, 2)
+
+    return resultados
+
+
 def main():
     parser = argparse.ArgumentParser(description="Módulo Pericial de Redução de Terreno — Copernicus DEM GLO30")
     parser.add_argument("--ponto", type=str, help="Coordenada lat,lon para consulta pontual direta (ex: -24.5,-53.8)")
+    parser.add_argument("--amostrar-altitudes", type=str, help="JSON com lista de [lat, lon] ou caminho para arquivo .json")
     parser.add_argument("--input", type=str, help="Arquivo de entrada (.json com lista de PontoAmostral)")
     parser.add_argument("--output", type=str, help="Arquivo de saída enriquecido (.json)")
     parser.add_argument("--cache", type=str, default="data/dem_cache", help="Diretório de cache local dos tiles DEM")
@@ -404,7 +448,21 @@ def main():
 
     args = parser.parse_args()
 
-    if args.ponto:
+    if args.amostrar_altitudes:
+        payload_str = args.amostrar_altitudes
+        try:
+            if os.path.exists(payload_str):
+                with open(payload_str, "r", encoding="utf-8") as f:
+                    coords = json.load(f)
+            else:
+                coords = json.loads(payload_str)
+            altitudes = amostrar_altitudes_copernicus(coords, pasta_cache=args.cache, baixar_tiles=args.baixar_tiles)
+            print(json.dumps({"status": "sucesso", "altitudes": altitudes}, ensure_ascii=False))
+        except Exception as err:
+            print(json.dumps({"status": "erro", "motivo": str(err)}, ensure_ascii=False))
+            sys.exit(1)
+
+    elif args.ponto:
         partes = args.ponto.split(",")
         if len(partes) != 2:
             print("Erro: Formato de ponto inválido. Use: --ponto lat,lon")

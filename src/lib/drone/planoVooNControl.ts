@@ -4,37 +4,31 @@
  * SAREL v2.0 — Decisões D06, D16, D21, D23 e D26 (PPGTCA 2026)
  * ============================================================================
  *
- * Implementa os requisitos Y1 a Y6 do Prompt de Execução de Exportação de Planos
- * de Voo para o NControl (2026-09-29):
+ * Implementa os requisitos Y1 a Y6 do Planejamento e as correções periciais Z1 a Z6
+ * (Prompt de Correção de 30/09/2026):
  *
- * - Y1: Gerador determinístico de transectos (`TransectStyleComplexItem`) para a
- *   câmera multiespectral **Micasense Altum**, reproduzindo exatamente a projeção
- *   azimutal equidistante (`R = 6371000 m`) e a malha rotacionada do QGroundControl
- *   (`SurveyComplexItem.cc`), validado contra `MissaoCalculoMica.plan` (survey #2).
- * - Y2: Acompanhamento de terreno resolvido diretamente na altitude relativa (`params[6]`)
- *   de cada waypoint (`command: 16`) usando o Copernicus DEM GLO-30 (30 m), cancelando
- *   diferenças de datum vertical entre waypoint e ponto de decolagem, e emitindo ambas
- *   as variantes (`_terrainfollow.plan` com `FollowTerrain: true` e `_altfixa.plan` com
- *   `FollowTerrain: false`).
- * - Y3: Ângulo das faixas de voo calculado a partir do aspecto médio do terreno no
- *   Copernicus DEM GLO-30 (faixas orientadas no sentido do declive), com suporte a
- *   polígonos quadrados (224,05 m × 224,05 m = 5,02 ha) ou retangulares (até 1:2,
- *   158,43 m × 316,86 m = 5,02 ha) e registro explícito de conflito quando a geometria
- *   do imóvel impedir orientar pelo declive.
- * - Y4: Agrupamento dos 72 polígonos de 5,02 ha (4 por estrato × 18 estratos de D12)
- *   por jornada de campo (padrão ajustável de 6 polígonos/jornada = 12 jornadas),
- *   com `plannedHomePosition` marcado como `"sugestao_a_confirmar_em_campo"` e roteiro
- *   em CSV e PDF com tempo estimado na velocidade efetiva medida em campo (8,7–9,2 m/s).
- * - Y5: Segregação estrita sob protocolo cego em duas exportações distintas:
- *   `exportacaoPiloto` (arquivos `.plan`, roteiro, tabela de proprietários e mapa secreto)
- *   e `exportacaoInterprete` (apenas identificador opaco não decodificável + metadados da
- *   imagem, com zero vazamento de estrato, treino/held-out ou variáveis de `CAMPOS_PROIBIDOS_MATRIZ_TREINO`).
- * - Y6: Tabela de autorização de proprietário (código do polígono, código CAR, nome do
- *   proprietário, município, área do imóvel, área do polígono de 5,02 ha, data e forma
- *   da autorização em branco).
+ * - Z1: Amostrador real do Copernicus DEM GLO-30 (30 m) via `criarAmostradorCopernicusGLO30Real`,
+ *   reaproveitando o pipeline unificado de `scripts/reduzir_terreno_copernicus.py` com isolamento
+ *   completo de `PROJ_LIB`/`PROJ_DATA` no Windows 11 / PostGIS e recusa explícita de NoData/fora
+ *   de cobertura (P12).
+ * - Z2: Renomeação explícita de todos os fixtures sintéticos para `amostradorSinteticoParaTeste`,
+ *   com proveniência formal `"sintetico"`.
+ * - Z3: Guarda rígida em código (`ErroEmissaoPlanoSinteticoRecusada`): o exportador RECUSA
+ *   por padrão emitir `.plan` com terreno sintético ou polígonos não selados de D16.
+ *   Sob o sinalizador de demonstração (`permitirPlanoSinteticoDemonstracao: true`), os arquivos
+ *   são obrigatoriamente carimbados com o prefixo `SINTETICO_NAO_VOAR_`.
+ * - Z4: Artefatos sintéticos renomeados no repositório com o prefixo `SINTETICO_NAO_VOAR_`.
+ * - Z5: Cegamento do intérprete não reproduzível a partir do repositório sozinho:
+ *   sem chave externa fornecida pelo selo de sorteio, gera identificadores estocásticos
+ *   aleatórios (`crypto.randomBytes`), sem chave padrão literal no código.
+ * - Z6: Faixas de voo (transectos) em CURVA DE NÍVEL (`anguloFaixasGraus = (aspectoMedidoGraus + 90°) % 360`),
+ *   preservando o eixo maior do polígono orientado no sentido do declive (D16) e registrando
+ *   os três ângulos separadamente no roteiro.
  */
 
 import crypto from "crypto";
+import path from "path";
+import { execFileSync } from "child_process";
 import { CAMPOS_PROIBIDOS_MATRIZ_TREINO } from "@/lib/matriz/invariantes";
 
 /** Raio médio esférico adotado pelo QGroundControl em `QGCGeo.cc` (`CONSTANTS_RADIUS_OF_EARTH`). */
@@ -157,10 +151,154 @@ export interface QGCPlanFile {
   version: 1;
 }
 
+// ============================================================================
+// Z1 e Z3 — Proveniência Formal de Terreno e Amostradores
+// ============================================================================
+
+export type ProvenienciaAmostradorTerreno = "copernicus-glo30" | "sintetico";
+
+export interface AmostradorElevacaoGLO30Objeto {
+  amostrar: (latitude: number, longitude: number) => number;
+  preCarregarCoordenadas?: (coordenadas: [number, number][]) => void;
+  proveniencia: ProvenienciaAmostradorTerreno;
+  descricaoFonte: string;
+}
+
+export type AmostradorElevacaoGLO30 =
+  | AmostradorElevacaoGLO30Objeto
+  | ((latitude: number, longitude: number) => number);
+
+export class ErroEmissaoPlanoSinteticoRecusada extends Error {
+  constructor(mensagem: string) {
+    super(`[SEGURANCA_PLANO_VOO_RECUSADO] ${mensagem}`);
+    this.name = "ErroEmissaoPlanoSinteticoRecusada";
+  }
+}
+
+export class ErroTerrenoForaDeCoberturaGLO30 extends Error {
+  constructor(mensagem: string) {
+    super(`[ERRO_TERRENO_GLO30] ${mensagem}`);
+    this.name = "ErroTerrenoForaDeCoberturaGLO30";
+  }
+}
+
+export function normalizarAmostradorTerreno(
+  amostrador: AmostradorElevacaoGLO30
+): AmostradorElevacaoGLO30Objeto {
+  if (typeof amostrador === "function") {
+    return {
+      amostrar: amostrador,
+      proveniencia: "sintetico",
+      descricaoFonte:
+        "Função avulsa sem proveniência declarada (tratada como sintética por segurança)",
+    };
+  }
+  return amostrador;
+}
+
+export function criarAmostradorSinteticoParaTeste(
+  fn: (latitude: number, longitude: number) => number,
+  descricaoFonte: string = "Amostrador sintético para testes unitários"
+): AmostradorElevacaoGLO30Objeto {
+  return {
+    amostrar: fn,
+    proveniencia: "sintetico",
+    descricaoFonte,
+  };
+}
+
 /**
- * Amostrador de cota ortométrica (m) sobre o Copernicus DEM GLO-30 (30 m).
+ * Cria o amostrador real sobre os tiles do Copernicus DEM GLO-30 (30 m) da ESA,
+ * invocando o pipeline unificado de `scripts/reduzir_terreno_copernicus.py` com
+ * isolamento prévio de `PROJ_LIB`/`PROJ_DATA` no ambiente Windows/PostGIS (Z1).
+ *
+ * Lança `ErroTerrenoForaDeCoberturaGLO30` se qualquer coordenada estiver fora da
+ * cobertura oficial ou possuir valor NoData (P12).
  */
-export type AmostradorElevacaoGLO30 = (latitude: number, longitude: number) => number;
+export function criarAmostradorCopernicusGLO30Real(opcoes?: {
+  pastaCache?: string;
+  pythonCmd?: string;
+}): AmostradorElevacaoGLO30Objeto {
+  const pastaCache = opcoes?.pastaCache || path.resolve(process.cwd(), "data/dem_cache");
+  const pythonCmd = opcoes?.pythonCmd || process.env.PYTHON_PATH || "python";
+  const scriptPath = path.resolve(process.cwd(), "scripts/reduzir_terreno_copernicus.py");
+
+  const cacheMemoria = new Map<string, number>();
+
+  function chaveCoord(lat: number, lon: number): string {
+    return `${lat.toFixed(6)},${lon.toFixed(6)}`;
+  }
+
+  function preCarregarCoordenadas(coordenadas: [number, number][]): void {
+    const pendentes: [number, number][] = [];
+    for (const [lat, lon] of coordenadas) {
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        throw new ErroTerrenoForaDeCoberturaGLO30(
+          `Coordenada não numérica inválida: lat=${lat}, lon=${lon}`
+        );
+      }
+      if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+        throw new ErroTerrenoForaDeCoberturaGLO30(
+          `Coordenada fora do globo terrestre: lat=${lat}, lon=${lon}`
+        );
+      }
+      const ch = chaveCoord(lat, lon);
+      if (!cacheMemoria.has(ch)) {
+        pendentes.push([lat, lon]);
+      }
+    }
+    if (pendentes.length === 0) return;
+
+    try {
+      const payloadStr = JSON.stringify(pendentes);
+      const out = execFileSync(
+        pythonCmd,
+        [scriptPath, "--amostrar-altitudes", payloadStr, "--cache", pastaCache],
+        { encoding: "utf-8", maxBuffer: 10 * 1024 * 1024 }
+      );
+      const res = JSON.parse(out.trim());
+      if (res.status !== "sucesso" || !Array.isArray(res.altitudes)) {
+        throw new ErroTerrenoForaDeCoberturaGLO30(
+          res.motivo || "Falha desconhecida na amostragem do Copernicus DEM GLO-30."
+        );
+      }
+      for (let i = 0; i < pendentes.length; i++) {
+        const [lat, lon] = pendentes[i];
+        cacheMemoria.set(chaveCoord(lat, lon), res.altitudes[i]);
+      }
+    } catch (err: any) {
+      if (err instanceof ErroTerrenoForaDeCoberturaGLO30) {
+        throw err;
+      }
+      throw new ErroTerrenoForaDeCoberturaGLO30(
+        `Falha ao executar amostragem do Copernicus DEM GLO-30 via Python: ${err.message}`
+      );
+    }
+  }
+
+  function amostrar(latitude: number, longitude: number): number {
+    const ch = chaveCoord(latitude, longitude);
+    const emCache = cacheMemoria.get(ch);
+    if (emCache !== undefined) {
+      return emCache;
+    }
+    preCarregarCoordenadas([[latitude, longitude]]);
+    const val = cacheMemoria.get(ch);
+    if (val === undefined) {
+      throw new ErroTerrenoForaDeCoberturaGLO30(
+        `Coordenada (${latitude}, ${longitude}) sem dado de elevação no Copernicus DEM GLO-30.`
+      );
+    }
+    return val;
+  }
+
+  return {
+    amostrar,
+    preCarregarCoordenadas,
+    proveniencia: "copernicus-glo30",
+    descricaoFonte: "COPERNICUS/DEM/GLO30 (ESA 30m / AWS S3 Open Data / EPSG:31982)",
+  };
+}
 
 /**
  * Deriva a altura de voo sobre o solo (`DistanceToSurface` / `AGL_desejada`, em metros)
@@ -486,7 +624,6 @@ export function gerarSurveyMicasenseAltum(
   }
 
   // Constrói os 4 pontos de cada transecto alternando o sentido (boustrophedon)
-  // No QGC, para entryLocation = 0, o transecto 0 vai de yMax + turnAround até yMin - turnAround
   const reverseFirst = entryLocation === 0 || entryLocation === 1;
   const visualTransectPoints: [number, number][] = [];
   const transectGeoQuads: [number, number][][] = [];
@@ -527,18 +664,40 @@ export function gerarSurveyMicasenseAltum(
     cameraShotsTotal += Math.ceil(activeTriggerLen / triggerDistance);
   }
 
-  // Cálculo da altitude relativa por waypoint (Y2)
+  // Comprimento total da trajetória dentro do survey
+  let comprimentoTotalVooMetros = 0;
+  for (let i = 1; i < visualTransectPoints.length; i++) {
+    comprimentoTotalVooMetros += calcularDistanciaGeodesicaMetros(
+      visualTransectPoints[i - 1],
+      visualTransectPoints[i]
+    );
+  }
+
+  if (cameraTriggerInTurnAround && triggerDistance > 0) {
+    cameraShotsTotal = Math.ceil(comprimentoTotalVooMetros / triggerDistance);
+  }
+
+  // Normaliza o amostrador de terreno
+  const amostradorObj = amostradorElevacaoGLO30
+    ? normalizarAmostradorTerreno(amostradorElevacaoGLO30)
+    : undefined;
+
   const homeCoord: [number, number] = pontoDecolagem ?? vertices[0];
-  const cotaTerrenoDecolagemMetros = amostradorElevacaoGLO30
-    ? amostradorElevacaoGLO30(homeCoord[0], homeCoord[1])
+
+  if (amostradorObj?.preCarregarCoordenadas) {
+    amostradorObj.preCarregarCoordenadas([homeCoord, ...visualTransectPoints]);
+  }
+
+  const cotaTerrenoDecolagemMetros = amostradorObj
+    ? amostradorObj.amostrar(homeCoord[0], homeCoord[1])
     : null;
 
   const cotasTerrenoWps: number[] = [];
   const altitudesRelativasWps: number[] = [];
 
   for (const coord of visualTransectPoints) {
-    if (amostradorElevacaoGLO30 && cotaTerrenoDecolagemMetros !== null) {
-      const cotaWp = amostradorElevacaoGLO30(coord[0], coord[1]);
+    if (amostradorObj && cotaTerrenoDecolagemMetros !== null) {
+      const cotaWp = amostradorObj.amostrar(coord[0], coord[1]);
       cotasTerrenoWps.push(cotaWp);
       const altRel = aglDesejadaMetros + (cotaWp - cotaTerrenoDecolagemMetros);
       altitudesRelativasWps.push(Number(altRel.toFixed(4)));
@@ -666,19 +825,6 @@ export function gerarSurveyMicasenseAltum(
     });
   }
 
-  // Comprimento total da trajetória dentro do survey
-  let comprimentoTotalVooMetros = 0;
-  for (let i = 1; i < visualTransectPoints.length; i++) {
-    comprimentoTotalVooMetros += calcularDistanciaGeodesicaMetros(
-      visualTransectPoints[i - 1],
-      visualTransectPoints[i]
-    );
-  }
-
-  if (cameraTriggerInTurnAround && triggerDistance > 0) {
-    cameraShotsTotal = Math.ceil(comprimentoTotalVooMetros / triggerDistance);
-  }
-
   const cotaMinPoligonoMetros =
     cotasTerrenoWps.length > 0 ? Math.min(...cotasTerrenoWps) : null;
   const cotaMaxPoligonoMetros =
@@ -748,14 +894,13 @@ export function gerarSurveyMicasenseAltum(
 
 /**
  * ============================================================================
- * Y3 — Cálculo do Ângulo das Faixas pelo Aspecto do Terreno (GLO-30)
- * e Geometria do Polígono de 5,02 ha (Quadrado 224,05 m ou Retângulo até 1:2)
+ * Y3 & Z6 — Cálculo do Aspecto do Terreno e Geometria do Polígono
  * ============================================================================
  */
 
 export interface ResultadoAspectoEGeometriaPoligono {
-  aspectoMedidoGraus: number;
-  anguloAdotadoGraus: number;
+  anguloOrientacaoEcoado: number;
+  orientacaoPoligonoGraus: number;
   formaPoligono: "quadrado_224x224m" | "retangulo_158x317m";
   razaoAspecto: number;
   areaHectares: 5.02;
@@ -765,29 +910,41 @@ export interface ResultadoAspectoEGeometriaPoligono {
 }
 
 /**
- * Calcula o aspecto médio do terreno (azimute de maior declive, 0°..360° a partir do Norte)
+ * Calcula o aspecto médio do terreno (azimute de maior descida, 0°..360° a partir do Norte)
  * sobre uma janela 3×3 com passo de 30 m (grade nativa do Copernicus DEM GLO-30) centrada
- * no polígono.
+ * no polígono via operador de Horn (1981).
  */
 export function calcularAspectoMedioGLO30Graus(
   centroLat: number,
   centroLon: number,
   amostradorElevacaoGLO30: AmostradorElevacaoGLO30
 ): number {
+  const amostrador = normalizarAmostradorTerreno(amostradorElevacaoGLO30);
   const PASSO_METROS = 30.0;
   const [latN] = qgcPlanoLocalToGeo(0, PASSO_METROS, centroLat, centroLon);
   const [latS] = qgcPlanoLocalToGeo(0, -PASSO_METROS, centroLat, centroLon);
   const [, lonE] = qgcPlanoLocalToGeo(PASSO_METROS, 0, centroLat, centroLon);
   const [, lonW] = qgcPlanoLocalToGeo(-PASSO_METROS, 0, centroLat, centroLon);
 
-  const zNW = amostradorElevacaoGLO30(latN, lonW);
-  const zN = amostradorElevacaoGLO30(latN, centroLon);
-  const zNE = amostradorElevacaoGLO30(latN, lonE);
-  const zW = amostradorElevacaoGLO30(centroLat, lonW);
-  const zE = amostradorElevacaoGLO30(centroLat, lonE);
-  const zSW = amostradorElevacaoGLO30(latS, lonW);
-  const zS = amostradorElevacaoGLO30(latS, centroLon);
-  const zSE = amostradorElevacaoGLO30(latS, lonE);
+  amostrador.preCarregarCoordenadas?.([
+    [latN, lonW],
+    [latN, centroLon],
+    [latN, lonE],
+    [centroLat, lonW],
+    [centroLat, lonE],
+    [latS, lonW],
+    [latS, centroLon],
+    [latS, lonE],
+  ]);
+
+  const zNW = amostrador.amostrar(latN, lonW);
+  const zN = amostrador.amostrar(latN, centroLon);
+  const zNE = amostrador.amostrar(latN, lonE);
+  const zW = amostrador.amostrar(centroLat, lonW);
+  const zE = amostrador.amostrar(centroLat, lonE);
+  const zSW = amostrador.amostrar(latS, lonW);
+  const zS = amostrador.amostrar(latS, centroLon);
+  const zSE = amostrador.amostrar(latS, lonE);
 
   // Operador de Horn (1981) para derivadas topográficas dz/dx (Leste) e dz/dy (Norte)
   const dzDx = ((zNE + 2 * zE + zSE) - (zNW + 2 * zW + zSW)) / (8 * PASSO_METROS);
@@ -812,6 +969,9 @@ export function calcularAspectoMedioGLO30Graus(
  *
  * - Para `razaoAspecto = 1` (quadrado): lado = `sqrt(50200) = 224,053565 m`.
  * - Para `razaoAspecto = 2` (retângulo 1:2): largura = `158,429795 m`, comprimento = `316,859590 m`.
+ *
+ * Em conformidade com Z6, o campo retornado ecoa `anguloOrientacaoEcoado` e informa
+ * `orientacaoPoligonoGraus` (sem rotular como "medido").
  */
 export function construirVerticesPoligono502Ha(
   centroLat: number,
@@ -821,7 +981,7 @@ export function construirVerticesPoligono502Ha(
     anguloOrientacaoGraus?: number;
     envelopeImovelMetros?: { larguraLesteOesteM: number; alturaNorteSulM: number };
   } = {}
-): ResultadoAspectoEGeometriaPoligono & { aspectoMedidoGraus: number } {
+): ResultadoAspectoEGeometriaPoligono {
   const AREA_M2 = 50_200.0; // 5,02 ha exatos
   const RAZAO_MIN = 1.0;
   const RAZAO_MAX = 2.0;
@@ -837,18 +997,18 @@ export function construirVerticesPoligono502Ha(
     typeof opcoes.anguloOrientacaoGraus === "number"
       ? opcoes.anguloOrientacaoGraus
       : 0;
-  const aspectoMedidoGraus = Number(((anguloEntrada % 360) + 360) % 360);
+  const anguloOrientacaoEcoado = Number(((anguloEntrada % 360) + 360) % 360);
 
   const comprimentoLongoM = Math.sqrt(AREA_M2 * razaoSolicitada);
   const larguraCurtaM = Math.sqrt(AREA_M2 / razaoSolicitada);
 
-  let anguloAdotadoGraus = aspectoMedidoGraus;
+  let orientacaoPoligonoGraus = anguloOrientacaoEcoado;
   let conflitoOrientacaoImovel = false;
   let motivoConflitoOrientacao: string | null = null;
 
-  // Verifica se o envelope do imóvel comporta o polígono orientado no sentido do declive
+  // Verifica se o envelope do imóvel comporta o polígono orientado no sentido solicitado
   if (opcoes.envelopeImovelMetros) {
-    const rad = (aspectoMedidoGraus * Math.PI) / 180.0;
+    const rad = (anguloOrientacaoEcoado * Math.PI) / 180.0;
     const projEast =
       Math.abs(comprimentoLongoM * Math.sin(rad)) +
       Math.abs(larguraCurtaM * Math.cos(rad));
@@ -860,16 +1020,15 @@ export function construirVerticesPoligono502Ha(
     if (projEast > larguraLesteOesteM || projNorth > alturaNorteSulM) {
       conflitoOrientacaoImovel = true;
       // Orienta o lado mais longo segundo o maior eixo do envelope do imóvel
-      anguloAdotadoGraus = larguraLesteOesteM >= alturaNorteSulM ? 90 : 0;
+      orientacaoPoligonoGraus = larguraLesteOesteM >= alturaNorteSulM ? 90 : 0;
       motivoConflitoOrientacao =
         `Geometria do imóvel (${larguraLesteOesteM.toFixed(0)} m E-W × ${alturaNorteSulM.toFixed(0)} m N-S) ` +
-        `não comporta polígono de 5,02 ha orientado no aspecto do declive (${aspectoMedidoGraus.toFixed(1)}°); ` +
-        `adotado ângulo ${anguloAdotadoGraus}° alinhado ao eixo maior do imóvel.`;
+        `não comporta polígono de 5,02 ha orientado em ${anguloOrientacaoEcoado.toFixed(1)}°; ` +
+        `adotado ângulo ${orientacaoPoligonoGraus}° alinhado ao eixo maior do imóvel.`;
     }
   }
 
-  // Eixo along (sentido do voo / declive) e eixo cross (perpendicular)
-  const radAdotado = (anguloAdotadoGraus * Math.PI) / 180.0;
+  const radAdotado = (orientacaoPoligonoGraus * Math.PI) / 180.0;
   const uEast = Math.sin(radAdotado);
   const uNorth = Math.cos(radAdotado);
   const pEast = Math.sin(radAdotado + Math.PI / 2.0);
@@ -890,8 +1049,8 @@ export function construirVerticesPoligono502Ha(
   );
 
   return {
-    aspectoMedidoGraus: Number(aspectoMedidoGraus.toFixed(2)),
-    anguloAdotadoGraus: Number(anguloAdotadoGraus.toFixed(2)),
+    anguloOrientacaoEcoado: Number(anguloOrientacaoEcoado.toFixed(2)),
+    orientacaoPoligonoGraus: Number(orientacaoPoligonoGraus.toFixed(2)),
     formaPoligono:
       razaoSolicitada > 1.05 ? "retangulo_158x317m" : "quadrado_224x224m",
     razaoAspecto: Number(razaoSolicitada.toFixed(2)),
@@ -904,8 +1063,7 @@ export function construirVerticesPoligono502Ha(
 
 /**
  * ============================================================================
- * Y4, Y5 e Y6 — Agrupamento por Jornada, Duas Exportações (Piloto vs Intérprete)
- * e Tabela de Autorização de Proprietário
+ * Y4, Y5, Y6 e Z5, Z6 — Agrupamento por Jornada, Protocolo Cego Real e Roteiro
  * ============================================================================
  */
 
@@ -939,6 +1097,8 @@ export interface ItemRoteiroJornadaPoligono {
   areaPoligonoHa: 5.02;
   formaPoligono: "quadrado_224x224m" | "retangulo_158x317m";
   aspectoMedidoGraus: number;
+  orientacaoPoligonoGraus: number;
+  anguloFaixasGraus: number;
   anguloAdotadoGraus: number;
   conflitoOrientacaoImovel: boolean;
   motivoConflitoOrientacao: string | null;
@@ -1017,6 +1177,7 @@ export interface PacoteExportacaoCompletoNControl {
     velocidadeCruzeiroPlanMs: 15;
     velocidadeEfetivaMedidaMs: [8.7, 9.2];
     ressalvasTerrenoGLO30: readonly string[];
+    ehPlanoSinteticoDemonstracao: boolean;
   };
   exportacaoPiloto: {
     jornadas: PacoteJornadaNControl[];
@@ -1039,21 +1200,41 @@ export interface PacoteExportacaoCompletoNControl {
 }
 
 /**
- * Gera um código opaco determinístico e não decodificável para o intérprete (Y5),
- * usando HMAC-SHA256 com chave de cegamento para que seja impossível deduzir o estrato,
- * o papel (`treino` vs `held-out`) ou a localização a partir do identificador.
+ * Gera um código opaco para o intérprete sob protocolo cego (Y5 & Z5).
+ *
+ * REGRAS CRÍTICAS DE SEGURANÇA (Z5):
+ * - Jamais utiliza chave padrão literal no código.
+ * - Se `segredoSeloSorteio` for fornecido (chave única gerada e guardada no selo D16 do pesquisador),
+ *   produz HMAC determinístico para aquele selo.
+ * - Se `segredoSeloSorteio` NÃO for fornecido, gera um identificador criptograficamente aleatório
+ *   não reproduzível a partir do repositório sozinho (`crypto.randomBytes`).
  */
 export function gerarCodigoOpacoInterprete(
   idPoligono: string,
-  chaveSecretaCegamento: string = "SAREL_D16_BLIND_PROTOCOL_2026"
+  segredoSeloSorteio?: string
 ): string {
-  const digest = crypto
-    .createHmac("sha256", chaveSecretaCegamento)
-    .update(idPoligono)
-    .digest("hex")
+  if (segredoSeloSorteio) {
+    if (typeof segredoSeloSorteio !== "string" || segredoSeloSorteio.trim().length === 0) {
+      throw new Error(
+        "[CEGAMENTO_INVALIDO] Segredo do selo de sorteio deve ser string não vazia."
+      );
+    }
+    const digest = crypto
+      .createHmac("sha256", segredoSeloSorteio)
+      .update(idPoligono)
+      .digest("hex")
+      .slice(0, 10)
+      .toUpperCase();
+    return `VANT-BLIND-${digest}`;
+  }
+
+  // Geração aleatória independente e não derivável a partir do repositório sozinho
+  const randomHex = crypto
+    .randomBytes(6)
+    .toString("hex")
     .slice(0, 10)
     .toUpperCase();
-  return `VANT-BLIND-${digest}`;
+  return `VANT-BLIND-${randomHex}`;
 }
 
 /**
@@ -1095,7 +1276,6 @@ export function validarIsolamentoCegoInterprete(
   function inspecionarRecursivo(valor: unknown, caminho: string): void {
     if (valor === null || valor === undefined) return;
     if (typeof valor === "string") {
-      // Verifica se o texto vaza identificadores de estrato como S1_E2_K1 ou treino/held-out
       if (/S[123]_E[123]_K[12]/i.test(valor)) {
         throw new Error(
           `[VIOLACAO_PROTOCOLO_CEGO_Y5] Valor em '${caminho}' vaza identificador de estrato D12: '${valor}'.`
@@ -1129,11 +1309,6 @@ export function validarIsolamentoCegoInterprete(
   return { aprovado: true, totalRegistrosVerificados: visitados };
 }
 
-/**
- * Agrupa os polígonos em jornadas de campo por proximidade geográfica (heurística gulosa
- * determinística do vizinho mais próximo a partir do extremo norte-oeste da bacia),
- * respeitando `maxPoligonosPorJornada` (padrão = 6 -> 12 jornadas para 72 polígonos).
- */
 export const MAX_POLIGONOS_JORNADA_PADRAO = 6;
 
 export function agruparPoligonosPorProximidade(
@@ -1182,10 +1357,6 @@ export function agruparPoligonosPorProximidade(
   return grupos;
 }
 
-/**
- * Gera um arquivo PDF binário válido (`%PDF-1.4`) sem dependências externas contendo o
- * resumo do roteiro de jornadas e das autorizações de proprietário (Y4/Y6).
- */
 export function gerarPdfRoteiroJornadas(
   linhasTexto: string[]
 ): Buffer {
@@ -1205,12 +1376,11 @@ export function gerarPdfRoteiroJornadas(
     paginas.push(["Roteiro de Voo NControl - SAREL v2.0"]);
   }
 
-  // Objetos PDF: 1 = Catalog, 2 = Pages, 3 = Font, 4.. = Page + Contents
   const objetos: string[] = [];
   const kidsRefs: string[] = [];
 
   objetos.push("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj");
-  objetos.push(""); // placeholder para obj 2 (Pages)
+  objetos.push("");
   objetos.push(
     "3 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>\nendobj"
   );
@@ -1258,13 +1428,6 @@ export function gerarPdfRoteiroJornadas(
   return Buffer.from(corpo, "ascii");
 }
 
-/**
- * Monta um arquivo `.plan` completo (versão 1, QGroundControl) para uma jornada de campo,
- * contendo:
- * - Item inicial `SimpleItem` `command: 22` (Takeoff)
- * - Todos os `ComplexItem` `survey` da jornada em ordem de visita
- * - Item final `SimpleItem` `command: 20` (Return to Launch)
- */
 export function montarPlanJornadaQGC(opcoes: {
   surveys: QGCSurveyComplexItem[];
   pontoDecolagem: [number, number];
@@ -1318,30 +1481,67 @@ export function montarPlanJornadaQGC(opcoes: {
   };
 }
 
-/**
- * Função mestra de exportação dos planos de voo para o NControl (Y1–Y6).
- * Recebe os polígonos sorteados (72 polígonos de 5,02 ha por padrão), calcula
- * orientação pelo aspecto GLO-30 (Y3), altitudes relativas GLO-30 por waypoint (Y2),
- * agrupa em jornadas com ambos os arquivos `_terrainfollow.plan` e `_altfixa.plan` (Y4),
- * gera a tabela de autorização de proprietários (Y6) e segrega estritamente as
- * exportações do piloto e do intérprete sob protocolo cego (Y5).
- */
-export function exportarCampanhaVooNControl(opcoes: {
+export interface OpcoesExportarCampanhaVooNControl {
   poligonos: EntradaPoligonoCampanhaNControl[];
   amostradorElevacaoGLO30: AmostradorElevacaoGLO30;
+  poligonosAuditadosD16?: boolean;
+  permitirPlanoSinteticoDemonstracao?: boolean;
   maxPoligonosPorJornada?: number;
   gsdCm?: number;
-  chaveSecretaCegamento?: string;
+  segredoSeloSorteio?: string;
   geradoEm?: string;
-}): PacoteExportacaoCompletoNControl {
+}
+
+/**
+ * Função mestra de exportação dos planos de voo para o NControl (Y1–Y6 e Z1–Z6).
+ *
+ * GUARDA OBRIGATÓRIA DE SEGURANÇA FÍSICA (Z3):
+ * - Recusa terminantemente emitir planos voáveis com terreno sintético ou polígonos
+ *   sem selo de sorteio real auditado de D16.
+ * - Sob o sinalizador explícito `permitirPlanoSinteticoDemonstracao: true`, os nomes
+ *   dos arquivos são obrigatoriamente prefixados com `SINTETICO_NAO_VOAR_`.
+ *
+ * ORIENTAÇÃO DE FAIXAS (Z6):
+ * - Transectos voam em CURVA DE NÍVEL (`anguloFaixasGraus = (aspectoMedidoGraus + 90°) % 360`),
+ *   com o polígono mantido orientado ao longo do declive (D16).
+ */
+export function exportarCampanhaVooNControl(
+  opcoes: OpcoesExportarCampanhaVooNControl
+): PacoteExportacaoCompletoNControl {
   const {
     poligonos,
     amostradorElevacaoGLO30,
-    maxPoligonosPorJornada = 6,
+    poligonosAuditadosD16 = false,
+    permitirPlanoSinteticoDemonstracao = false,
+    maxPoligonosPorJornada = MAX_POLIGONOS_JORNADA_PADRAO,
     gsdCm = GSD_ALVO_CAMPANHA_CM,
-    chaveSecretaCegamento = "SAREL_D16_BLIND_PROTOCOL_2026",
+    segredoSeloSorteio,
     geradoEm = new Date().toISOString(),
   } = opcoes;
+
+  const amostradorObj = normalizarAmostradorTerreno(amostradorElevacaoGLO30);
+  const ehTerrenoReal = amostradorObj.proveniencia === "copernicus-glo30";
+  const ehPoligonosReais = poligonosAuditadosD16 === true;
+  const ehPlanoVoavel = ehTerrenoReal && ehPoligonosReais;
+
+  if (!ehPlanoVoavel && permitirPlanoSinteticoDemonstracao !== true) {
+    const motivos: string[] = [];
+    if (!ehTerrenoReal) {
+      motivos.push(
+        `terreno com proveniência '${amostradorObj.proveniencia}' (não é Copernicus DEM GLO-30 real)`
+      );
+    }
+    if (!ehPoligonosReais) {
+      motivos.push("polígonos sintéticos sem selo auditado de D16");
+    }
+    throw new ErroEmissaoPlanoSinteticoRecusada(
+      `Recusada a emissão de plano de voo .plan voável com ${motivos.join(" e ")}. ` +
+      "Planos voáveis exigem obrigatoriamente Copernicus DEM GLO-30 real (D21) e sorteio selado de D16. " +
+      "Para fins exclusivos de teste ou demonstração em bancada, forneça explicitamente a opção 'permitirPlanoSinteticoDemonstracao: true'."
+    );
+  }
+
+  const prefixoNomeArquivo = ehPlanoVoavel ? "" : "SINTETICO_NAO_VOAR_";
 
   const aglDesejadaMetros = Number(
     calcularAglParaGsdMicasenseAltum(gsdCm).toFixed(4)
@@ -1379,17 +1579,21 @@ export function exportarCampanhaVooNControl(opcoes: {
     for (let pIdx = 0; pIdx < grupo.length; pIdx++) {
       const item = grupo[pIdx];
       const ordemNaJornada = pIdx + 1;
+
+      // Z5: Código opaco do intérprete gerado com segredo do selo ou aleatório estocástico
       const codigoOpaco = gerarCodigoOpacoInterprete(
         item.idPoligono,
-        chaveSecretaCegamento
+        segredoSeloSorteio
       );
 
+      // Z6: Aspecto medido do terreno (Horn, 1981)
       const aspectoGraus = calcularAspectoMedioGLO30Graus(
         item.centroide.latitude,
         item.centroide.longitude,
-        amostradorElevacaoGLO30
+        amostradorObj
       );
 
+      // O eixo maior do polígono é orientado no sentido do declive (D16)
       const geomInfo = construirVerticesPoligono502Ha(
         item.centroide.latitude,
         item.centroide.longitude,
@@ -1400,29 +1604,34 @@ export function exportarCampanhaVooNControl(opcoes: {
         }
       );
 
+      // Z6: As faixas de voo correm em CURVA DE NÍVEL (perpendicular ao declive)
+      const anguloFaixasGraus = Number(
+        (((geomInfo.orientacaoPoligonoGraus + 90.0) % 360.0 + 360.0) % 360.0).toFixed(2)
+      );
+
       const vertices = item.verticesPoligono ?? geomInfo.verticesPoligono;
 
-      // Variante 1: FollowTerrain = true (com altitudes relativas GLO-30 em cada waypoint)
+      // Variante 1: FollowTerrain = true
       const resTf = gerarSurveyMicasenseAltum({
         polygon: vertices,
-        angle: geomInfo.anguloAdotadoGraus,
+        angle: anguloFaixasGraus,
         gsdCm,
         followTerrain: true,
         startDoJumpId: doJumpIdTf,
-        amostradorElevacaoGLO30,
+        amostradorElevacaoGLO30: amostradorObj,
         pontoDecolagem,
       });
       doJumpIdTf = resTf.nextDoJumpId;
       surveysTerrainFollow.push(resTf.surveyItem);
 
-      // Variante 2: FollowTerrain = false (com as mesmas altitudes relativas GLO-30 em cada waypoint)
+      // Variante 2: FollowTerrain = false
       const resAf = gerarSurveyMicasenseAltum({
         polygon: vertices,
-        angle: geomInfo.anguloAdotadoGraus,
+        angle: anguloFaixasGraus,
         gsdCm,
         followTerrain: false,
         startDoJumpId: doJumpIdAf,
-        amostradorElevacaoGLO30,
+        amostradorElevacaoGLO30: amostradorObj,
         pontoDecolagem,
       });
       doJumpIdAf = resAf.nextDoJumpId;
@@ -1443,7 +1652,6 @@ export function exportarCampanhaVooNControl(opcoes: {
         (distanciaTotalDeslocamentoKm + distAnteriorKm).toFixed(3)
       );
 
-      // Tempo estimado com base na velocidade efetiva medida em cobertura_voos.geojson (8,7 a 9,2 m/s)
       const tMin = Number((resTf.comprimentoTotalVooMetros / 9.2 / 60.0).toFixed(2));
       const tMax = Number((resTf.comprimentoTotalVooMetros / 8.7 / 60.0).toFixed(2));
       tempoTotalMin = Number((tempoTotalMin + tMin).toFixed(2));
@@ -1462,8 +1670,10 @@ export function exportarCampanhaVooNControl(opcoes: {
         centroideLon: item.centroide.longitude,
         areaPoligonoHa: 5.02,
         formaPoligono: geomInfo.formaPoligono,
-        aspectoMedidoGraus: geomInfo.aspectoMedidoGraus,
-        anguloAdotadoGraus: geomInfo.anguloAdotadoGraus,
+        aspectoMedidoGraus: aspectoGraus,
+        orientacaoPoligonoGraus: geomInfo.orientacaoPoligonoGraus,
+        anguloFaixasGraus,
+        anguloAdotadoGraus: anguloFaixasGraus,
         conflitoOrientacaoImovel: geomInfo.conflitoOrientacaoImovel,
         motivoConflitoOrientacao: geomInfo.motivoConflitoOrientacao,
         desnivelMetros: resTf.diagnosticoTerreno.desnivelMetros,
@@ -1537,8 +1747,8 @@ export function exportarCampanhaVooNControl(opcoes: {
           "Centro do primeiro polígono do grupo sugerido como ponto de decolagem inicial; " +
           "DEVE ser confirmado e ajustado em campo pelo piloto conforme acesso viário e horizonte livre.",
       },
-      nomeArquivoTerrainFollow: `${idJornada.toLowerCase()}_terrainfollow.plan`,
-      nomeArquivoAltFixa: `${idJornada.toLowerCase()}_altfixa.plan`,
+      nomeArquivoTerrainFollow: `${prefixoNomeArquivo}${idJornada.toLowerCase()}_terrainfollow.plan`,
+      nomeArquivoAltFixa: `${prefixoNomeArquivo}${idJornada.toLowerCase()}_altfixa.plan`,
       planTerrainFollow,
       planAltFixa,
       poligonosRoteiro,
@@ -1547,7 +1757,7 @@ export function exportarCampanhaVooNControl(opcoes: {
     });
   }
 
-  // Ordena os registros cegos do intérprete alfabeticamente pelo código opaco para eliminar até a ordem das jornadas
+  // Z5: Ordena os registros cegos do intérprete alfabeticamente pelo código opaco
   registrosCegos.sort((a, b) =>
     a.codigoOpacoInterprete.localeCompare(b.codigoOpacoInterprete)
   );
@@ -1567,6 +1777,8 @@ export function exportarCampanhaVooNControl(opcoes: {
     "areaPoligonoHa",
     "formaPoligono",
     "aspectoMedidoGraus",
+    "orientacaoPoligonoGraus",
+    "anguloFaixasGraus",
     "anguloAdotadoGraus",
     "conflitoOrientacaoImovel",
     "desnivelMetros",
@@ -1597,6 +1809,8 @@ export function exportarCampanhaVooNControl(opcoes: {
         r.areaPoligonoHa.toFixed(2),
         r.formaPoligono,
         r.aspectoMedidoGraus.toFixed(2),
+        r.orientacaoPoligonoGraus.toFixed(2),
+        r.anguloFaixasGraus.toFixed(2),
         r.anguloAdotadoGraus.toFixed(2),
         r.conflitoOrientacaoImovel,
         r.desnivelMetros.toFixed(2),
@@ -1676,11 +1890,11 @@ export function exportarCampanhaVooNControl(opcoes: {
     ...linhasInterpreteCsv,
   ].join("\n");
 
-  // Gera o PDF do roteiro de jornadas e tabela de proprietários
   const linhasPdf: string[] = [
     "SAREL v2.0 - ROTEIRO DE CAMPO E PLANOS DE VOO NCONTROL (D16 / D21 / D26)",
     `Gerado em: ${geradoEm} | Camera: Micasense Altum | GSD alvo: ${gsdCm.toFixed(1)} cm | AGL nominal: ${aglDesejadaMetros.toFixed(2)} m`,
     `Total de poligonos: ${poligonos.length} (${(poligonos.length * 5.02).toFixed(2)} ha) | Total de jornadas: ${jornadas.length}`,
+    `Status dos planos: ${ehPlanoVoavel ? "OFICIAL_VOAVEL" : "SINTETICO_NAO_VOAR (Demonstracao em bancada)"}`,
     "AVISO DE DECOLAGEM: plannedHomePosition = sugestao_a_confirmar_em_campo (ajustar conforme acesso viario).",
     "----------------------------------------------------------------------------------------------------",
   ];
@@ -1691,7 +1905,7 @@ export function exportarCampanhaVooNControl(opcoes: {
     );
     for (const r of j.poligonosRoteiro) {
       linhasPdf.push(
-        `  #${r.ordemNaJornada} ${r.idPoligono} (${r.estratoId}/${r.papelConjunto}) | Mun: ${r.municipio} | CAR: ${r.codigoCar.slice(0, 22)}... | Ang: ${r.anguloAdotadoGraus.toFixed(0)}g | Desnivel: ${r.desnivelMetros.toFixed(1)}m | T: ${r.tempoVooEstimadoMinutosMin.toFixed(1)}-${r.tempoVooEstimadoMinutosMax.toFixed(1)}m`
+        `  #${r.ordemNaJornada} ${r.idPoligono} (${r.estratoId}/${r.papelConjunto}) | Mun: ${r.municipio} | CAR: ${r.codigoCar.slice(0, 22)}... | Asp: ${r.aspectoMedidoGraus.toFixed(0)}g | Pol: ${r.orientacaoPoligonoGraus.toFixed(0)}g | Faixas: ${r.anguloFaixasGraus.toFixed(0)}g (curva de nivel) | Desnivel: ${r.desnivelMetros.toFixed(1)}m | T: ${r.tempoVooEstimadoMinutosMin.toFixed(1)}-${r.tempoVooEstimadoMinutosMax.toFixed(1)}m`
       );
     }
     linhasPdf.push("");
@@ -1704,7 +1918,6 @@ export function exportarCampanhaVooNControl(opcoes: {
     manifestoInterpreteCsv,
   };
 
-  // Executa a guarda obrigatória Y5 antes de devolver o pacote
   validarIsolamentoCegoInterprete(exportacaoInterprete);
 
   return {
@@ -1722,6 +1935,7 @@ export function exportarCampanhaVooNControl(opcoes: {
       velocidadeCruzeiroPlanMs: 15,
       velocidadeEfetivaMedidaMs: [8.7, 9.2],
       ressalvasTerrenoGLO30: RESSALVAS_TERRENO_GLO30,
+      ehPlanoSinteticoDemonstracao: !ehPlanoVoavel,
     },
     exportacaoPiloto: {
       jornadas,
