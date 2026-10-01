@@ -75,6 +75,16 @@ export const MapViewer: React.FC = () => {
             tileSize: 256,
             attribution: "CARTO",
           },
+          "mapbox-satellite": {
+            type: "raster",
+            tiles: [
+              credenciais.mapboxToken?.trim()
+                ? `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.png?access_token=${credenciais.mapboxToken.trim()}`
+                : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            ],
+            tileSize: 256,
+            attribution: "Mapbox / OpenStreetMap",
+          },
           "terrain-dem": {
             type: "raster-dem",
             tiles: [
@@ -102,6 +112,12 @@ export const MapViewer: React.FC = () => {
             id: "esri-satellite-layer",
             type: "raster",
             source: "esri-satellite",
+            paint: { "raster-opacity": 0.0 },
+          },
+          {
+            id: "mapbox-satellite-layer",
+            type: "raster",
+            source: "mapbox-satellite",
             paint: { "raster-opacity": 0.0 },
           },
           {
@@ -404,9 +420,13 @@ export const MapViewer: React.FC = () => {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
 
+    const hasMapbox = Boolean(credenciais.mapboxToken?.trim());
     const isGoogleEarth = mapState.basemap === "google-earth";
     const isGoogleHybrid = mapState.basemap === "google-hybrid";
-    const isEsriSat = mapState.basemap === "satellite" || mapState.basemap === "mapbox-hd";
+    const isMapboxHd = mapState.basemap === "mapbox-hd" && hasMapbox;
+    const isEsriSat =
+      mapState.basemap === "satellite" ||
+      (mapState.basemap === "mapbox-hd" && !hasMapbox);
     const isTopo = mapState.basemap === "topo";
     const isDark = mapState.basemap === "dark" || mapState.basemap === "voyager";
 
@@ -429,6 +449,13 @@ export const MapViewer: React.FC = () => {
         "esri-satellite-layer",
         "raster-opacity",
         isEsriSat ? 1.0 : 0.0
+      );
+    }
+    if (map.getLayer("mapbox-satellite-layer")) {
+      map.setPaintProperty(
+        "mapbox-satellite-layer",
+        "raster-opacity",
+        isMapboxHd ? 1.0 : 0.0
       );
     }
     if (map.getLayer("osm-topo-layer")) {

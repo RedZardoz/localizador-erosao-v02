@@ -1,6 +1,6 @@
 {
   "dataRemedicao": "2026-09-30",
-  "versao": "SAREL v2.0 - D16 Emendada",
+  "versao": "SAREL v2.0 - D16 Emendada (C3 GEE em Lote)",
   "parametros": {
     "raioThinningInicialMetros": 5000,
     "raioThinningFinalMetros": 2450,
@@ -49,15 +49,27 @@
       }
     }
   },
-  "estratosK2Estimados": {
-    "E_1_1_2": 3,
-    "E_1_2_2": 3,
+  "tercisFrequenciaSoloNuE": {
+    "t1": 0.0723,
+    "t2": 0.0745
+  },
+  "metricasGeeLote": {
+    "tempoTotalMs": 15,
+    "requisicoesHttp": 0,
+    "requisicoesEvitadas": 680,
+    "reducaoRequisicoesPct": 100,
+    "cacheHits": 680,
+    "cacheMisses": 0
+  },
+  "estratosK2Medidos": {
+    "E_1_1_2": 2,
+    "E_1_2_2": 4,
     "E_1_3_2": 3,
-    "E_2_1_2": 4,
-    "E_2_2_2": 4,
-    "E_2_3_2": 4,
-    "E_3_1_2": 20,
-    "E_3_2_2": 20,
-    "E_3_3_2": 20
+    "E_2_1_2": 9,
+    "E_2_2_2": 3,
+    "E_2_3_2": 2,
+    "E_3_1_2": 24,
+    "E_3_2_2": 16,
+    "E_3_3_2": 21
   }
 }

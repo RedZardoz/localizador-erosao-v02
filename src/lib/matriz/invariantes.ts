@@ -71,6 +71,12 @@ export const CAMPOS_PROIBIDOS_MATRIZ_TREINO = [
   "indiceFeicaoSoloEscolhida",
   "feicaoSoloEscolhidaId",
   "viaFatorKD14",
+  "planetApiKey",
+  "planetSceneId",
+  "planetMosaicId",
+  "planetTileUrl",
+  "planetRefletancia",
+  "planetData",
 ] as const;
 
 /**

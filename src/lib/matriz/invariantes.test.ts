@@ -90,6 +90,18 @@ describe("Invariantes de Exportação — Validações e Meta-Testes", () => {
       const v2 = res.violacoes.filter((v) => v.invariante === 2);
       expect(v2.length).toBe(2); // Frequencia_Solo_Nu e Rotulo_Classe
     });
+
+    it("recusa campos derivados de Planet na matriz de treino (Decisão D05)", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "matriz-treino",
+        cabecalho: ["Codigo", "planetApiKey", "planetRefletancia"],
+        linhas: [{ Codigo: "PR-001", planetApiKey: "chave", planetRefletancia: 0.15 }],
+      };
+
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.valido).toBe(false);
+      expect(res.violacoes.some((v) => v.invariante === 2)).toBe(true);
+    });
   });
 
   describe("Invariante 6: Lista Negra de Literais Geográficos", () => {

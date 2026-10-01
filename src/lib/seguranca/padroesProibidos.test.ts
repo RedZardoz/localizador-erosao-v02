@@ -33,6 +33,13 @@ const REGEX_PADROES = [
     id: "sintese-aleatoria-atributos-fisicos",
     regex: /(bsi|ndvi|decliv|slope|elev|perda|fator)[a-z_0-9]*\s*=\s*(float\()?((np\.)?random\.(uniform|normal|random|choice)|random\.(uniform|random|choice))/i,
   },
+  { id: "credencial-begin-private-key", regex: /-----BEGIN\s+((RSA|EC|DSA|OPENSSH)\s+)?PRIVATE\s+KEY-----/i },
+  { id: "credencial-literal-private-key", regex: /"private_key"\s*:\s*["'][A-Za-z0-9+/=\s-]{20,}/ },
+  { id: "credencial-planet-plak", regex: /\bPLAK[0-9a-zA-Z]{10,}\b/ },
+  { id: "credencial-google-aizasy", regex: /\bAIzaSy[0-9a-zA-Z_-]{20,}\b/ },
+  { id: "credencial-mapbox-pkey", regex: /\bpk\.eyJ[0-9a-zA-Z_-]{15,}\b/ },
+  { id: "credencial-jev-ts", regex: /\bts_[0-9a-fA-F]{20,}\b/ },
+  { id: "credencial-bearer-jwt", regex: /Bearer\s+eyJ[0-9a-zA-Z_-]{20,}\b/ },
 ];
 
 export function varrerLinha(linha: string, numeroLinha: number, arquivo: string): ViolacaoPadrao[] {
@@ -155,6 +162,16 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
       const code = `decliv = float(np.random.uniform(3.0, 14.0)) # permitido: geracao explicita de benchmark de pipeline quando solicitado via flag dry-run`;
       const v = varrerCodigo(code, "teste.py");
       expect(v.length).toBe(0);
+    });
+
+    it("detecta literais com formato de credenciais secretas no código (Regra C1)", () => {
+      expect(varrerCodigo('const key = "-----BEGIN PRIVATE KEY-----\\nMIIEvgIBA...";', "teste.ts").some((x) => x.padrao === "credencial-begin-private-key")).toBe(true);
+      expect(varrerCodigo('const json = { "private_key": "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC..." };', "teste.ts").some((x) => x.padrao === "credencial-literal-private-key")).toBe(true);
+      expect(varrerCodigo('const plak = "PLAK1234567890abcdef";', "teste.ts").some((x) => x.padrao === "credencial-planet-plak")).toBe(true);
+      expect(varrerCodigo('const gmKey = "AIzaSyAbcdef1234567890_-ABCDEF";', "teste.ts").some((x) => x.padrao === "credencial-google-aizasy")).toBe(true);
+      expect(varrerCodigo('const mbToken = "pk.eyJ1234567890abcdef12345";', "teste.ts").some((x) => x.padrao === "credencial-mapbox-pkey")).toBe(true);
+      expect(varrerCodigo('const jev = "ts_0123456789abcdef0123456789abcdef";', "teste.ts").some((x) => x.padrao === "credencial-jev-ts")).toBe(true);
+      expect(varrerCodigo('const h = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";', "teste.ts").some((x) => x.padrao === "credencial-bearer-jwt")).toBe(true);
     });
   });
 
