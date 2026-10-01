@@ -19,6 +19,8 @@ import fs from "fs";
 import path from "path";
 import { isClasseUsoElegivel } from "./elegibilidade";
 import { WORLDCOVER_V100_ASSET_ID, WORLDCOVER_V200_ASSET_ID } from "./copernicusGeeClient";
+import { Proveniencia, medido, indisponivel, valorOuNulo } from "../../types/proveniencia";
+import { DiarioRequisicoes, registrarChamadaDiario } from "../seguranca/diarioRequisicoes";
 
 export const DEFINICAO_METRICA_SOLO_NU =
   "s2_sr_harmonized_2016_2026_ndvi_lt_0.25_worldcover_v100_v200";
@@ -37,7 +39,7 @@ export interface MedicaoSoloNuLote {
   id: string;
   latitude: number;
   longitude: number;
-  frequenciaSoloNu: number | null; // Fração de cenas válidas com solo nu [0, 1]
+  frequenciaSoloNu: Proveniencia<number>; // Fração de cenas válidas com solo nu [0, 1] ou indisponível
   nObservacoes: number;
   classeWorldCover2020: number | null;
   classeWorldCover2021: number | null;
@@ -63,6 +65,7 @@ export interface MetricasExecucaoLote {
   tempoTotalMs: number;
   requisicoesEvitadas: number;
   reducaoRequisicoesPct: number;
+  pontosIndisponiveis: number;
 }
 
 export interface OpcoesAmostragemSoloNuLote {
@@ -71,6 +74,7 @@ export interface OpcoesAmostragemSoloNuLote {
   ignorarCache?: boolean;
   salvarCache?: boolean;
   timeoutMs?: number;
+  diario?: DiarioRequisicoes;
 }
 
 /**
@@ -406,14 +410,29 @@ export function processarRespostaGeeReduceRegions(
 
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
 
-    const rawSoloNu = props.solo_nu_mean ?? props.solo_nu ?? props.frequenciaSoloNu;
-    const frequenciaSoloNu =
-      typeof rawSoloNu === "number" && Number.isFinite(rawSoloNu)
-        ? Number(Math.max(0, Math.min(1, rawSoloNu)).toFixed(4)) // permitido: clamp de seguranca numerica para fracao normalizada de satelite no intervalo 0 a 1
-        : null;
-
     const rawCount = props.solo_nu_count ?? props.count ?? props.n_observacoes;
     const nObservacoes = typeof rawCount === "number" && Number.isFinite(rawCount) ? Math.round(rawCount) : 0;
+
+    const rawSoloNu = props.solo_nu_mean ?? props.solo_nu ?? props.frequenciaSoloNu;
+    let freqNuProv: Proveniencia<number>;
+
+    if (rawSoloNu && typeof rawSoloNu === "object" && "estado" in rawSoloNu) {
+      freqNuProv = rawSoloNu as Proveniencia<number>;
+    } else if (typeof rawSoloNu === "number" && Number.isFinite(rawSoloNu)) {
+      const clamped = Number(Math.max(0, Math.min(1, rawSoloNu)).toFixed(4)); // permitido: clamp de seguranca numerica para fracao normalizada de satelite no intervalo 0 a 1
+      freqNuProv = medido(
+        clamped,
+        "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "2016-2026",
+        new Date().toISOString(),
+        `reduceRegions first(solo_nu_mean), nObservacoes=${nObservacoes}`
+      );
+    } else {
+      freqNuProv = indisponivel(
+        "insuficiente",
+        "Sem observações válidas ou pixel sem dado para cálculo de frequência de solo nu"
+      );
+    }
 
     const raw2020 = props.Map_2020 ?? props.classeWorldCover2020;
     const classeWorldCover2020 =
@@ -435,7 +454,7 @@ export function processarRespostaGeeReduceRegions(
       id: pontoId,
       latitude: lat,
       longitude: lon,
-      frequenciaSoloNu,
+      frequenciaSoloNu: freqNuProv,
       nObservacoes,
       classeWorldCover2020,
       classeWorldCover2021,
@@ -458,10 +477,10 @@ export async function medirFrequenciaSoloNuEmLoteGeeRest(
   opcoes?: OpcoesAmostragemSoloNuLote
 ): Promise<{ resultados: Map<string, MedicaoSoloNuLote>; metricas: MetricasExecucaoLote }> {
   const inicioWallClock = performance.now();
-  const tamanhoBloco = opcoes?.tamanhoBloco ?? TAMANHO_BLOCO_PADRAO;
+  const tamanhoBloco = typeof opcoes?.tamanhoBloco === "number" ? opcoes.tamanhoBloco : TAMANHO_BLOCO_PADRAO;
   const caminhoCache = opcoes?.caminhoCache || obterCaminhoPadraoCacheFrequenciaSoloNu();
-  const ignorarCache = opcoes?.ignorarCache ?? false;
-  const salvarAoFinal = opcoes?.salvarCache ?? true;
+  const ignorarCache = Boolean(opcoes?.ignorarCache);
+  const salvarAoFinal = opcoes?.salvarCache !== false;
   const timeoutMs = typeof opcoes?.timeoutMs === "number" ? opcoes.timeoutMs : 30000; // permitido: timeout de rede de requisicao http em milissegundos para conexao gee
 
   const resultados = new Map<string, MedicaoSoloNuLote>();
@@ -504,8 +523,28 @@ export async function medirFrequenciaSoloNuEmLoteGeeRest(
 
   let houveAtualizacaoCache = false;
 
-  // Se houver pontos pendentes e credenciais fornecidas, executa em blocos via REST
-  if (pontosParaConsultar.length > 0 && credenciais?.accessToken && credenciais?.projectId) {
+  // Se houver pontos pendentes e credenciais NÃO fornecidas, declara-os como indisponíveis (P12)
+  if (pontosParaConsultar.length > 0 && (!credenciais?.accessToken || !credenciais?.projectId)) {
+    for (const pt of pontosParaConsultar) {
+      const chave = gerarChaveCacheSoloNu(pt.id, pt.latitude, pt.longitude, hashDef);
+      resultados.set(pt.id, {
+        id: pt.id,
+        latitude: pt.latitude,
+        longitude: pt.longitude,
+        frequenciaSoloNu: indisponivel(
+          "servico-indisponivel",
+          "Credenciais GEE não configuradas (SAREL_GEE_SERVICE_ACCOUNT_FILE ausente)"
+        ),
+        nObservacoes: 0,
+        classeWorldCover2020: null,
+        classeWorldCover2021: null,
+        ehElegivelUso: false,
+        fonte: "GEE REST v1 (sem credencial)",
+        chaveCache: chave,
+      });
+    }
+  } else if (pontosParaConsultar.length > 0 && credenciais?.accessToken && credenciais?.projectId) {
+    // Executa em blocos via REST com credencial real
     for (let i = 0; i < pontosParaConsultar.length; i += tamanhoBloco) {
       const lote = pontosParaConsultar.slice(i, i + tamanhoBloco);
       const expr = construirExpressaoGeeSoloNuLote(lote);
@@ -515,9 +554,14 @@ export async function medirFrequenciaSoloNuEmLoteGeeRest(
       )}/value:compute`;
 
       requisicoesHttp++;
+      const inicioReq = performance.now();
+      let res: Response | null = null;
+      let textoResposta = "";
+      let bytesResposta = 0;
+      let statusHttp = 0;
 
       try {
-        const res = await fetch(endpoint, {
+        res = await fetch(endpoint, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${credenciais.accessToken}`,
@@ -526,9 +570,31 @@ export async function medirFrequenciaSoloNuEmLoteGeeRest(
           body: JSON.stringify({ expression: expr }),
           signal: AbortSignal.timeout(timeoutMs),
         });
+        statusHttp = res.status;
+        textoResposta = await res.text();
+        bytesResposta = Buffer.byteLength(textoResposta, "utf8");
+      } catch {
+        statusHttp = 0;
+      }
 
-        if (res.ok) {
-          const dados = await res.json();
+      const duracaoReq = Math.round(performance.now() - inicioReq);
+
+      if (opcoes?.diario) {
+        registrarChamadaDiario(opcoes.diario, {
+          timestampIso: new Date().toISOString(),
+          servico: "GEE",
+          endpoint,
+          metodoHttp: "POST",
+          quantidadeItens: lote.length,
+          tamanhoRespostaBytes: bytesResposta,
+          codigoHttp: statusHttp,
+          duracaoMs: duracaoReq,
+        });
+      }
+
+      if (res && res.ok && textoResposta) {
+        try {
+          const dados = JSON.parse(textoResposta);
           const processados = processarRespostaGeeReduceRegions(dados, lote);
 
           for (const [id, med] of processados.entries()) {
@@ -536,9 +602,31 @@ export async function medirFrequenciaSoloNuEmLoteGeeRest(
             cacheAtual.itens[med.chaveCache] = med;
             houveAtualizacaoCache = true;
           }
+        } catch {
+          // Erro de parse de JSON
         }
-      } catch {
-        // Se a chamada remota falhar, pontos ausentes ficam sem resultado neste lote
+      }
+
+      // Pontos que não receberam resultado nesta chamada são marcados como indisponíveis
+      for (const pt of lote) {
+        if (!resultados.has(pt.id)) {
+          const chave = gerarChaveCacheSoloNu(pt.id, pt.latitude, pt.longitude, hashDef);
+          resultados.set(pt.id, {
+            id: pt.id,
+            latitude: pt.latitude,
+            longitude: pt.longitude,
+            frequenciaSoloNu: indisponivel(
+              "servico-indisponivel",
+              `Falha na requisição HTTP GEE REST (status ${statusHttp})`
+            ),
+            nObservacoes: 0,
+            classeWorldCover2020: null,
+            classeWorldCover2021: null,
+            ehElegivelUso: false,
+            fonte: "GEE REST v1",
+            chaveCache: chave,
+          });
+        }
       }
     }
   }
@@ -554,6 +642,13 @@ export async function medirFrequenciaSoloNuEmLoteGeeRest(
   const reducaoRequisicoesPct =
     totalPontos > 0 ? Number(((requisicoesEvitadas / totalPontos) * 100).toFixed(1)) : 0;
 
+  let pontosIndisponiveis = 0;
+  for (const med of resultados.values()) {
+    if (med.frequenciaSoloNu.estado === "indisponivel") {
+      pontosIndisponiveis++;
+    }
+  }
+
   return {
     resultados,
     metricas: {
@@ -564,6 +659,7 @@ export async function medirFrequenciaSoloNuEmLoteGeeRest(
       tempoTotalMs,
       requisicoesEvitadas,
       reducaoRequisicoesPct,
+      pontosIndisponiveis,
     },
   };
 }

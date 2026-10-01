@@ -1,6 +1,6 @@
 {
   "dataRemedicao": "2026-09-30",
-  "versao": "SAREL v2.0 - D16 Emendada (C3 GEE em Lote)",
+  "versao": "SAREL v2.0 - D16 Emendada (Remedição Pericial P12)",
   "parametros": {
     "raioThinningInicialMetros": 5000,
     "raioThinningFinalMetros": 2450,
@@ -20,7 +20,8 @@
     "candidatosPosThinning": 687,
     "candidatosComTerrenoD07": 680,
     "candidatosRealocadosParteElegivelX3": 139,
-    "candidatosValidosPedologia": 677
+    "candidatosValidosPedologia": 677,
+    "candidatosComSoloNuMedido": 0
   },
   "pedologia": {
     "totalK1": 593,
@@ -49,27 +50,39 @@
       }
     }
   },
-  "tercisFrequenciaSoloNuE": {
-    "t1": 0.0723,
-    "t2": 0.0745
+  "tercisFrequenciaSoloNuE": null,
+  "dimensoesMedidas": {
+    "S": {
+      "estado": "medido",
+      "fonte": "Copernicus DEM GLO-30 Local COG (data/dem_cache/)",
+      "totalItens": 680,
+      "fonteExterna": false
+    },
+    "K": {
+      "estado": "medido",
+      "fonte": "Embrapa GeoInfo WFS / Cache Auditado (docs/verificacoes/cache_pedologia_bp3.json)",
+      "totalItens": 677,
+      "fonteExterna": false
+    },
+    "E": {
+      "estado": "indisponivel",
+      "fonte": "Google Earth Engine REST (COPERNICUS/S2_SR_HARMONIZED)",
+      "causa": "servico-indisponivel",
+      "motivo": "Credenciais GEE não configuradas no ambiente (SAREL_GEE_SERVICE_ACCOUNT_FILE ausente) — nenhuma chamada de rede realizada",
+      "totalItens": 0,
+      "fonteExterna": true,
+      "diarioRequisicoes": null
+    }
   },
   "metricasGeeLote": {
-    "tempoTotalMs": 15,
+    "tempoTotalMs": 7,
     "requisicoesHttp": 0,
     "requisicoesEvitadas": 680,
     "reducaoRequisicoesPct": 100,
-    "cacheHits": 680,
-    "cacheMisses": 0
+    "cacheHits": 0,
+    "cacheMisses": 680,
+    "pontosIndisponiveis": 680
   },
-  "estratosK2Medidos": {
-    "E_1_1_2": 2,
-    "E_1_2_2": 4,
-    "E_1_3_2": 3,
-    "E_2_1_2": 9,
-    "E_2_2_2": 3,
-    "E_2_3_2": 2,
-    "E_3_1_2": 24,
-    "E_3_2_2": 16,
-    "E_3_3_2": 21
-  }
+  "estratosK2Medidos": null,
+  "statusSorteio": "BLOQUEADO — Dimensão Ê não foi medida; as 9 células de K̂=2 e os 18 estratos tridimensionais não podem ser povoados sem observações reais de satélite (P12)"
 }

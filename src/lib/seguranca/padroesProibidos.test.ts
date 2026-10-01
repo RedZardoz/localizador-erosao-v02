@@ -341,4 +341,21 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
       expect(medicaoInsuf!.frequenciaSoloNu).toBeNull();
     });
   });
+
+  describe("FASE 2 / F5 — Detector de Sequência Monotônica e Correlação Espúria com Índice (|r| > 0.95)", () => {
+    it("assevera que nenhum artefato JSON de medição em docs/verificacoes/ contém séries numéricas correlacionadas com a ordem do arquivo", async () => {
+      const { varrerDiretorioParaSequencias } = await import("./detectorSequencia");
+      const pastaVerificacoes = path.resolve(process.cwd(), "docs/verificacoes");
+      const violacoes = varrerDiretorioParaSequencias(pastaVerificacoes, 0.95);
+
+      if (violacoes.length > 0) {
+        const msg = violacoes
+          .map((v) => `  ${v.arquivo} [${v.propriedade}] -> |r| = ${v.correlacao} (${v.motivo})`)
+          .join("\n");
+        expect.fail(`Violação de sequência monotônica artificial detectada em artefato:\n${msg}`);
+      }
+      expect(violacoes).toHaveLength(0);
+    });
+  });
 });
+

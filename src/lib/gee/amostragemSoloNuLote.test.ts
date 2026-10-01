@@ -15,6 +15,8 @@ import {
   CacheFrequenciaSoloNuArquivo,
 } from "./amostragemSoloNuLote";
 import { WORLDCOVER_V100_ASSET_ID, WORLDCOVER_V200_ASSET_ID } from "./copernicusGeeClient";
+import { medido, valorOuNulo } from "../../types/proveniencia";
+import { criarDiarioRequisicoes } from "../seguranca/diarioRequisicoes";
 
 describe("Amostragem de Solo Nu em Lote via GEE REST e Cache Determinístico (C3)", () => {
   let pastaTemp: string;
@@ -129,7 +131,8 @@ describe("Amostragem de Solo Nu em Lote via GEE REST e Cache Determinístico (C3
 
     const c1 = processados.get("cand-1");
     expect(c1).toBeDefined();
-    expect(c1!.frequenciaSoloNu).toBe(0.185);
+    expect(c1!.frequenciaSoloNu.estado).toBe("medido");
+    expect(valorOuNulo(c1!.frequenciaSoloNu)).toBe(0.185);
     expect(c1!.nObservacoes).toBe(92);
     expect(c1!.classeWorldCover2020).toBe(40);
     expect(c1!.classeWorldCover2021).toBe(40);
@@ -137,7 +140,8 @@ describe("Amostragem de Solo Nu em Lote via GEE REST e Cache Determinístico (C3
 
     const c2 = processados.get("cand-2");
     expect(c2).toBeDefined();
-    expect(c2!.frequenciaSoloNu).toBe(0.082);
+    expect(c2!.frequenciaSoloNu.estado).toBe("medido");
+    expect(valorOuNulo(c2!.frequenciaSoloNu)).toBe(0.082);
     expect(c2!.classeWorldCover2021).toBe(10);
     expect(c2!.ehElegivelUso).toBe(false);
   });
@@ -156,7 +160,7 @@ describe("Amostragem de Solo Nu em Lote via GEE REST e Cache Determinístico (C3
           id: "cand-1",
           latitude: -24.71,
           longitude: -53.74,
-          frequenciaSoloNu: 0.15,
+          frequenciaSoloNu: medido(0.15, "Teste", "2024-01-01", "2026-10-01T00:00:00Z"),
           nObservacoes: 75,
           classeWorldCover2020: 40,
           classeWorldCover2021: 40,
@@ -259,4 +263,84 @@ describe("Amostragem de Solo Nu em Lote via GEE REST e Cache Determinístico (C3
     // fetchMock não deve ter sido chamado novamente
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
+
+  it("sem credenciais, a rotina de medição de Ê devolve indisponivel — e assevera que NUNCA devolve número (P12)", async () => {
+    const pontos: PontoAmostragemSoloNu[] = [
+      { id: "cand-sem-cred-1", latitude: -24.71, longitude: -53.74 },
+      { id: "cand-sem-cred-2", latitude: -24.82, longitude: -53.65 },
+    ];
+
+    // Sem credenciais (null) e com cache vazio/ignorado
+    const { resultados, metricas } = await medirFrequenciaSoloNuEmLoteGeeRest(
+      pontos,
+      null,
+      { ignorarCache: true }
+    );
+
+    expect(resultados.size).toBe(2);
+    expect(metricas.requisicoesHttp).toBe(0);
+    expect(metricas.pontosIndisponiveis).toBe(2);
+
+    for (const pt of pontos) {
+      const res = resultados.get(pt.id);
+      expect(res).toBeDefined();
+      expect(res!.frequenciaSoloNu.estado).toBe("indisponivel");
+      if (res!.frequenciaSoloNu.estado === "indisponivel") {
+        expect(res!.frequenciaSoloNu.causa).toBe("servico-indisponivel");
+        expect(res!.frequenciaSoloNu.motivo).toContain("Credenciais GEE");
+      }
+      // ASSEVERAÇÃO COMPULSÓRIA P12: NUNCA DEVOLVE NÚMERO
+      expect(valorOuNulo(res!.frequenciaSoloNu)).toBeNull();
+      expect(typeof (res!.frequenciaSoloNu as any).valor).toBe("undefined");
+      expect(typeof res!.frequenciaSoloNu).not.toBe("number");
+    }
+  });
+
+  it("deve registrar as chamadas HTTP no Diário de Requisições quando fornecido", async () => {
+    const pontos: PontoAmostragemSoloNu[] = [
+      { id: "cand-diario-1", latitude: -24.71, longitude: -53.74 },
+    ];
+
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
+      const body = {
+        result: {
+          features: [
+            {
+              type: "Feature",
+              id: "0",
+              properties: {
+                ponto_id: "cand-diario-1",
+                solo_nu_mean: 0.14,
+                solo_nu_count: 50,
+                Map_2020: 40,
+                Map_2021: 40,
+              },
+            },
+          ],
+        },
+      };
+      return new Response(JSON.stringify(body), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+
+    const diario = criarDiarioRequisicoes("docs/verificacoes/teste_diario.json");
+    const credenciais = { accessToken: "tok-abc", projectId: "proj-xyz" };
+
+    const { resultados } = await medirFrequenciaSoloNuEmLoteGeeRest(pontos, credenciais, {
+      ignorarCache: true,
+      salvarCache: false,
+      caminhoCache: path.join(pastaTemp, "cache_diario_teste.json"),
+      diario,
+    });
+
+    expect(resultados.size).toBe(1);
+    expect(diario.totalChamadas).toBe(1);
+    expect(diario.totalItensProcessados).toBe(1);
+    expect(diario.chamadas[0].servico).toBe("GEE");
+    expect(diario.chamadas[0].codigoHttp).toBe(200);
+    expect(diario.chamadas[0].quantidadeItens).toBe(1);
+  });
 });
+
