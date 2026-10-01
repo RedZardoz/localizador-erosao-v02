@@ -19,6 +19,9 @@ import { pctParaGraus } from "./terreno";
 import { calcularNdvi, calcularBsi } from "./serieTemporal";
 import { isClasseUsoElegivel } from "./elegibilidade";
 import { extrairDataAquisicaoSentinel2 } from "./metadadosColecoes";
+import fs from "fs";
+import path from "path";
+import { medirTerrenoCopernicusGLO30RealEmLote } from "@/lib/drone/planoVooNControl";
 
 export let ultimoErroGee: string | null = null;
 
@@ -78,6 +81,32 @@ export async function medirTerrenoCopernicusEmLote(
   pontos: Array<{ latitude: number; longitude: number }>
 ): Promise<Array<MedicaoTerrenoReal | null>> {
   if (pontos.length === 0) return [];
+
+  // Tenta prioritariamente a via pericial unificada local do Copernicus DEM GLO-30 (Z1 / PARTE II)
+  try {
+    const demCacheDir = path.resolve(process.cwd(), "data/dem_cache");
+    if (fs.existsSync(demCacheDir)) {
+      const arquivos = fs.readdirSync(demCacheDir);
+      if (arquivos.some((f) => f.endsWith(".tif"))) {
+        const medicoesLocais = medirTerrenoCopernicusGLO30RealEmLote(pontos, { pastaCache: demCacheDir });
+        const temValidos = medicoesLocais.some((m) => m !== null);
+        if (temValidos) {
+          return medicoesLocais.map((m) =>
+            m
+              ? {
+                  elevacaoMetros: m.elevacaoMetros,
+                  declividadePct: m.declividadePct,
+                  declividadeGraus: m.declividadeGraus,
+                  fonte: m.fonte,
+                }
+              : null
+          );
+        }
+      }
+    }
+  } catch {
+    // Se indisponível, cai no método web de contingência
+  }
 
   // 30 metros em graus na latitude média da Bacia do Paraná 3 (~24.8° S):
   // dLat (30 m Norte) ≈ 30 / 111132 = 0.000270°

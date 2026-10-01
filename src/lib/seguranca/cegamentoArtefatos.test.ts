@@ -22,7 +22,7 @@ const PADROES_PROIBIDOS_COM_CODIGO_CEGO: Array<{ nome: string; regex: RegExp }> 
  * Inspeciona o conteúdo de um artefato emitido para garantir que NENHUM documento
  * contenha, simultaneamente, um código opaco de intérprete (VANT-BLIND-*) e qualquer
  * atributo de desenho amostral (estratoId, papelConjunto, nivelK, idPoligono ou coordenada).
- * Disciplina pericial W2 / Y5 / Z5.
+ * Disciplina pericial W2 / Y5 / Z5 / X5.
  */
 export function verificarCegamentoArtefato(
   conteudo: string,
@@ -49,7 +49,24 @@ export function verificarCegamentoArtefato(
   return violacoes;
 }
 
-describe("Auditoria Pericial de Cegamento nos Artefatos Emitidos (W2 / Y5 / Z5)", () => {
+function coletarArquivosDeDiretorios(diretorios: string[]): string[] {
+  const arquivos: string[] = [];
+  for (const dir of diretorios) {
+    if (!fs.existsSync(dir)) continue;
+    const entradas = fs.readdirSync(dir, { withFileTypes: true });
+    for (const e of entradas) {
+      const caminho = path.join(dir, e.name);
+      if (e.isDirectory()) {
+        arquivos.push(...coletarArquivosDeDiretorios([caminho]));
+      } else if (e.isFile()) {
+        arquivos.push(caminho);
+      }
+    }
+  }
+  return arquivos;
+}
+
+describe("Auditoria Pericial de Cegamento nos Artefatos Emitidos (W2 / Y5 / Z5 / X5)", () => {
   it("meta-teste: detector deve sinalizar vazamento quando código cego e atributos coexistirem", () => {
     const docComVazamento = "codigoOpacoInterprete,estratoId\nVANT-BLIND-A1B2C3D4E5,E_1_1_1";
     const violacoes = verificarCegamentoArtefato(docComVazamento, "teste_vazamento.csv");
@@ -63,22 +80,21 @@ describe("Auditoria Pericial de Cegamento nos Artefatos Emitidos (W2 / Y5 / Z5)"
     expect(verificarCegamentoArtefato(docPilotoValido, "roteiro_valido.csv")).toHaveLength(0);
   });
 
-  it("nenhum artefato emitido em docs/verificacoes/voo_ncontrol/ deve conter código opaco e atributos de desenho", () => {
-    const dirVoo = path.resolve(process.cwd(), "docs/verificacoes/voo_ncontrol");
-    if (!fs.existsSync(dirVoo)) {
-      return;
-    }
+  it("nenhum artefato emitido em docs/verificacoes/voo_ncontrol/ e docs/verificacoes/calculadora/ deve conter código opaco e atributos de desenho", () => {
+    const dirsAlvo = [
+      path.resolve(process.cwd(), "docs/verificacoes/voo_ncontrol"),
+      path.resolve(process.cwd(), "docs/verificacoes/calculadora"),
+    ];
 
-    const arquivos = fs.readdirSync(dirVoo);
+    const arquivos = coletarArquivosDeDiretorios(dirsAlvo);
     const todasViolacoes: ViolacaoCegamentoArtefato[] = [];
 
-    for (const arq of arquivos) {
-      const caminhoCompleto = path.join(dirVoo, arq);
-      const stat = fs.statSync(caminhoCompleto);
-      if (!stat.isFile()) continue;
+    for (const caminhoCompleto of arquivos) {
+      if (caminhoCompleto.endsWith(".tif") || caminhoCompleto.endsWith(".db")) continue;
 
       const conteudo = fs.readFileSync(caminhoCompleto, "utf-8");
-      const v = verificarCegamentoArtefato(conteudo, arq);
+      const nomeRelativo = path.relative(process.cwd(), caminhoCompleto);
+      const v = verificarCegamentoArtefato(conteudo, nomeRelativo);
       todasViolacoes.push(...v);
     }
 

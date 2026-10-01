@@ -42,7 +42,7 @@ export type IdPreCondicaoSorteioD16 =
   | "p05_estrito_30_40"
   | "worldcover_duas_epocas"
   | "k_ambiguo_associacao_booleano"
-  | "minimo_2_candidatos_por_estrato"
+  | "minimo_4_candidatos_por_estrato"
   | "nenhum_selo_anterior"
   | "guarda_anticircularidade_d16";
 
@@ -237,7 +237,7 @@ export function verificarPreCondicoesSorteioD16(
     contagemCandidatosPorEstrato[idEstrato] = Array.isArray(lista) ? lista.length : [].length;
   }
   const estratosDeficientes = TODOS_ESTRATOS_D12.filter(
-    (idEstrato) => contagemCandidatosPorEstrato[idEstrato] < 2
+    (idEstrato) => contagemCandidatosPorEstrato[idEstrato] < 4
   );
 
   const falhar = (
@@ -359,14 +359,14 @@ export function verificarPreCondicoesSorteioD16(
     }
   }
 
-  // Pré-condição 5: os 18 estratos têm ao menos 2 candidatos cada
+  // Pré-condição 5: os 18 estratos têm ao menos 4 candidatos cada
   if (estratosDeficientes.length > 0) {
     const detalhe = estratosDeficientes
       .map((e) => `${e} (${contagemCandidatosPorEstrato[e]} candidato(s))`)
       .join(", ");
     return falhar(
-      "minimo_2_candidatos_por_estrato",
-      `Os 18 estratos de D12 exigem ao menos 2 candidatos cada para formar o par treino/held-out de D16. Estratos deficientes (${estratosDeficientes.length}/18): ${detalhe}.`
+      "minimo_4_candidatos_por_estrato",
+      `Os 18 estratos de D12 exigem ao menos 4 candidatos cada para formar dois de treino e dois de held-out de D16. Estratos deficientes (${estratosDeficientes.length}/18): ${detalhe}.`
     );
   }
 
@@ -440,6 +440,13 @@ export function sortearPoligonosDroneD16(
     const poolEstrato = [...estratosMap[idEstrato]].sort((a, b) => a.id.localeCompare(b.id));
     const nCandidatosEstrato = poolEstrato.length;
 
+    // Defesa em profundidade: guarda de sanidade no próprio sorteio
+    if (nCandidatosEstrato < 4) {
+      throw new Error(
+        `[SORTEIO_D16_INVALIDO] Estrato '${idEstrato}' possui apenas ${nCandidatosEstrato} candidato(s) (mínimo absoluto exigido: 4 conforme D16 emendada).`
+      );
+    }
+
     for (let i = poolEstrato.length - 1; i > 0; i--) {
       const j = Math.floor(prng() * (i + 1));
       const temp = poolEstrato[i];
@@ -460,6 +467,12 @@ export function sortearPoligonosDroneD16(
     // e peso de Horvitz-Thompson w_i = N_h / 2 tal que pi_i * w_i = 1
     const pi_i = Number((2 / nCandidatosEstrato).toFixed(8));
     const w_i = Number((nCandidatosEstrato / 2).toFixed(8));
+
+    if (pi_i <= 0 || pi_i > 1) {
+      throw new Error(
+        `[SORTEIO_D16_INVALIDO] Probabilidade de inclusão inválida pi_i=${pi_i} no estrato '${idEstrato}' (deve satisfazer 0 < pi_i <= 1).`
+      );
+    }
 
     for (let idxPar = 0; idxPar < 2; idxPar++) {
       const cand = parSorteado[idxPar];
@@ -651,7 +664,7 @@ export function sortear72PoligonosD16(
     const nEstrato = relatorio.contagemCandidatosPorEstrato[idEstrato];
     if (typeof nEstrato !== "number" || nEstrato < 4) {
       throw new ErroPreCondicaoSorteioD16(
-        "minimo_2_candidatos_por_estrato",
+        "minimo_4_candidatos_por_estrato",
         `O estrato '${idEstrato}' possui apenas ${nEstrato} candidato(s); a emenda de D16 (72 polígonos de 5,02 ha) exige mínimo de 4 candidatos por estrato.`
       );
     }
@@ -666,11 +679,31 @@ export function sortear72PoligonosD16(
       String(a.id).localeCompare(String(b.id))
     );
     const nH = listaOriginal.length;
+
+    // Defesa em profundidade: guarda de sanidade no próprio sorteio independente da pré-condição
+    if (nH < 4) {
+      throw new Error(
+        `[SORTEIO_72_INVALIDO] Estrato '${idEstrato}' possui apenas ${nH} candidato(s) no pool (mínimo absoluto exigido: 4 para amostragem 2+2 sem reposição).`
+      );
+    }
+
     const pi_i = 4 / nH;
     const w_i = nH / 4;
 
+    // Asseverar 0 < pi_i <= 1 (invariante de amostragem)
+    if (pi_i <= 0 || pi_i > 1) {
+      throw new Error(
+        `[SORTEIO_72_INVALIDO] Probabilidade de inclusão inválida pi_i=${pi_i} no estrato '${idEstrato}' (deve satisfazer 0 < pi_i <= 1).`
+      );
+    }
+
     // Fisher-Yates parcial para sortear 4 candidatos distintos sem reposição
     const pool = [...listaOriginal];
+    if (pool.length < 4) {
+      throw new Error(
+        `[SORTEIO_72_INVALIDO] Pool insuficiente no estrato '${idEstrato}' para Fisher-Yates (${pool.length} < 4).`
+      );
+    }
     for (let i = 0; i < 4; i++) {
       const j = i + Math.floor(prng() * (pool.length - i));
       const tmp = pool[i];
@@ -694,7 +727,15 @@ export function sortear72PoligonosD16(
     }
 
     for (let k = 0; k < 4; k++) {
-      const c = quarteto[k] as CandidatoSorteioD16;
+      const c = quarteto[k] as CandidatoSorteioD16 | undefined;
+      if (!c) {
+        throw new Error(
+          `[SORTEIO_72_INVALIDO] Candidato sorteado no índice ${k} do estrato '${idEstrato}' é indefinido.`
+        );
+      }
+      if (pi_i <= 0 || pi_i > 1) {
+        throw new Error(`[SORTEIO_72_INVALIDO] pi_i fora do intervalo (0, 1]: ${pi_i}`);
+      }
       const papel = papeis[k];
       const sufixoOrdem = String(k + 1).padStart(2, "0");
       poligonos.push({

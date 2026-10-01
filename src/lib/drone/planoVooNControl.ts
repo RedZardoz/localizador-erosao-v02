@@ -915,11 +915,23 @@ export interface ResultadoAspectoEGeometriaPoligono {
  * sobre uma janela 3×3 com passo de 30 m (grade nativa do Copernicus DEM GLO-30) centrada
  * no polígono via operador de Horn (1981).
  */
-export function calcularAspectoMedioGLO30Graus(
+export interface MedicaoTerrenoGLO30 {
+  elevacaoMetros: number;
+  declividadePct: number;
+  declividadeGraus: number;
+  aspectoGraus: number;
+  fonte: string;
+}
+
+/**
+ * Calcula atributos morfométricos completos do terreno (Elevação, Declividade % e Graus, Aspecto)
+ * sobre o Copernicus DEM GLO-30 via operador de Horn (1981) e Invariante 2.
+ */
+export function calcularTerrenoGLO30(
   centroLat: number,
   centroLon: number,
   amostradorElevacaoGLO30: AmostradorElevacaoGLO30
-): number {
+): MedicaoTerrenoGLO30 {
   const amostrador = normalizarAmostradorTerreno(amostradorElevacaoGLO30);
   const PASSO_METROS = 30.0;
   const [latN] = qgcPlanoLocalToGeo(0, PASSO_METROS, centroLat, centroLon);
@@ -932,6 +944,7 @@ export function calcularAspectoMedioGLO30Graus(
     [latN, centroLon],
     [latN, lonE],
     [centroLat, lonW],
+    [centroLat, centroLon],
     [centroLat, lonE],
     [latS, lonW],
     [latS, centroLon],
@@ -942,6 +955,7 @@ export function calcularAspectoMedioGLO30Graus(
   const zN = amostrador.amostrar(latN, centroLon);
   const zNE = amostrador.amostrar(latN, lonE);
   const zW = amostrador.amostrar(centroLat, lonW);
+  const zCentro = amostrador.amostrar(centroLat, centroLon);
   const zE = amostrador.amostrar(centroLat, lonE);
   const zSW = amostrador.amostrar(latS, lonW);
   const zS = amostrador.amostrar(latS, centroLon);
@@ -951,17 +965,83 @@ export function calcularAspectoMedioGLO30Graus(
   const dzDx = ((zNE + 2 * zE + zSE) - (zNW + 2 * zW + zSW)) / (8 * PASSO_METROS);
   const dzDy = ((zNW + 2 * zN + zNE) - (zSW + 2 * zS + zSE)) / (8 * PASSO_METROS);
 
+  const gradiente = Math.hypot(dzDx, dzDy);
+  const declividadeRad = Math.atan(gradiente);
+  const declividadeGraus = Number(((declividadeRad * 180.0) / Math.PI).toFixed(2));
+  const declividadePct = Number((gradiente * 100.0).toFixed(2));
+
   // Sentido de maior descida (downslope vector = [-dzDx, -dzDy])
   const downEast = -dzDx;
   const downNorth = -dzDy;
 
-  if (Math.hypot(downEast, downNorth) < 1e-9) {
-    return 0;
+  let aspectoGraus = 0;
+  if (Math.hypot(downEast, downNorth) >= 1e-9) {
+    const azimuteRad = Math.atan2(downEast, downNorth);
+    aspectoGraus = Number((((azimuteRad * 180.0) / Math.PI + 360.0) % 360.0).toFixed(2));
   }
 
-  const azimuteRad = Math.atan2(downEast, downNorth);
-  const azimuteGraus = ((azimuteRad * 180.0) / Math.PI + 360.0) % 360.0;
-  return Number(azimuteGraus.toFixed(2));
+  return {
+    elevacaoMetros: Number(zCentro.toFixed(2)),
+    declividadePct,
+    declividadeGraus,
+    aspectoGraus,
+    fonte: amostrador.descricaoFonte || "Copernicus DEM GLO-30 (30 m)",
+  };
+}
+
+export function calcularAspectoMedioGLO30Graus(
+  centroLat: number,
+  centroLon: number,
+  amostradorElevacaoGLO30: AmostradorElevacaoGLO30
+): number {
+  return calcularTerrenoGLO30(centroLat, centroLon, amostradorElevacaoGLO30).aspectoGraus;
+}
+
+export function medirTerrenoCopernicusGLO30RealEmLote(
+  pontos: Array<{ latitude: number; longitude: number }>,
+  opcoes?: { pastaCache?: string; pythonCmd?: string; amostrador?: AmostradorElevacaoGLO30 }
+): Array<MedicaoTerrenoGLO30 | null> {
+  if (pontos.length === 0) return [];
+  const amostrador =
+    opcoes?.amostrador
+      ? normalizarAmostradorTerreno(opcoes.amostrador)
+      : criarAmostradorCopernicusGLO30Real(opcoes);
+
+  const PASSO_METROS = 30.0;
+  const coordenadasParaPrecarregar: [number, number][] = [];
+
+  for (const pt of pontos) {
+    const [latN] = qgcPlanoLocalToGeo(0, PASSO_METROS, pt.latitude, pt.longitude);
+    const [latS] = qgcPlanoLocalToGeo(0, -PASSO_METROS, pt.latitude, pt.longitude);
+    const [, lonE] = qgcPlanoLocalToGeo(PASSO_METROS, 0, pt.latitude, pt.longitude);
+    const [, lonW] = qgcPlanoLocalToGeo(-PASSO_METROS, 0, pt.latitude, pt.longitude);
+
+    coordenadasParaPrecarregar.push(
+      [latN, lonW],
+      [latN, pt.longitude],
+      [latN, lonE],
+      [pt.latitude, lonW],
+      [pt.latitude, pt.longitude],
+      [pt.latitude, lonE],
+      [latS, lonW],
+      [latS, pt.longitude],
+      [latS, lonE]
+    );
+  }
+
+  try {
+    amostrador.preCarregarCoordenadas?.(coordenadasParaPrecarregar);
+  } catch {
+    // Caso de borda individual
+  }
+
+  return pontos.map((pt) => {
+    try {
+      return calcularTerrenoGLO30(pt.latitude, pt.longitude, amostrador);
+    } catch {
+      return null;
+    }
+  });
 }
 
 /**

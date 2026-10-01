@@ -1,0 +1,63 @@
+{
+  "dataRemedicao": "2026-09-30",
+  "versao": "SAREL v2.0 - D16 Emendada",
+  "parametros": {
+    "raioThinningInicialMetros": 5000,
+    "raioThinningFinalMetros": 2450,
+    "pisoThinningP02Metros": 1000,
+    "sementeP07": 42,
+    "dominioDeclividadeD07": {
+      "minPct": 3,
+      "maxPct": 20
+    },
+    "poligonosPorEstratoD16": 4,
+    "estratosK2": 9,
+    "candidatosNecessariosK2": 36
+  },
+  "funilContagem": {
+    "imoveisEnvelopeBP3": 8651,
+    "imoveisDivisorBP3ForaUC": 4679,
+    "candidatosPosThinning": 687,
+    "candidatosComTerrenoD07": 680,
+    "candidatosRealocadosParteElegivelX3": 139,
+    "candidatosValidosPedologia": 677
+  },
+  "pedologia": {
+    "totalK1": 593,
+    "totalK2": 84,
+    "fracaoK2Pct": 12.41,
+    "metaK2Atingida": true
+  },
+  "tercisDeclividadeS": {
+    "t1": 5.12,
+    "t2": 8.46,
+    "contagemPorTercil": {
+      "S1": {
+        "total": 227,
+        "k1": 218,
+        "k2": 9
+      },
+      "S2": {
+        "total": 225,
+        "k1": 211,
+        "k2": 14
+      },
+      "S3": {
+        "total": 225,
+        "k1": 164,
+        "k2": 61
+      }
+    }
+  },
+  "estratosK2Estimados": {
+    "E_1_1_2": 3,
+    "E_1_2_2": 3,
+    "E_1_3_2": 3,
+    "E_2_1_2": 4,
+    "E_2_2_2": 4,
+    "E_2_3_2": 4,
+    "E_3_1_2": 20,
+    "E_3_2_2": 20,
+    "E_3_3_2": 20
+  }
+}

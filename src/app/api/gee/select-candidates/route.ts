@@ -57,6 +57,11 @@ import {
 } from "@/lib/embrapa/embrapaSoilClient";
 import { matchRuralProperty, toContextoFundiario } from "@/lib/fundiario/matcher";
 import {
+  selecionarPontoElegivelImovel,
+  gerarMalhaCelulasImovel,
+  validarAusenciaCamposProibidos,
+} from "@/lib/fundiario/selecaoPontoElegivel";
+import {
   identificarBacia,
   estaNoCorredorExperimentalBp3,
   estaNoDivisorHidrologicoBp3,
@@ -234,7 +239,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Obtenção de Coordenadas de Imóveis Rurais Reais (SICAR / SNCR)
     // permitido: limite computacional de busca inicial de centroides no indice SQLite
-    const numCandidatosBusca = Math.min(Math.max(tamanhoAmostra * 16, 600), 6000);
+    const numCandidatosBusca = Math.min(Math.max(tamanhoAmostra * 25, 1200), 10000);
     const imoveisReais = await buscarImoveisReaisPython(minLng, minLat, maxLng, maxLat, numCandidatosBusca);
 
     if (imoveisReais.length === 0) {
@@ -310,9 +315,12 @@ export async function POST(request: NextRequest) {
     let raioMetros = raioThinningKm * 1000;
     let candidatosAposThinning = aplicarThinningDeterminista(candidatosBase, raioMetros, semente);
 
-    // Garante pool com folga (>= 1.8x tamanhoAmostra) para descartar eventuais centroides sobre Reserva Legal / APP
-    // permitido: dimensionamento operacional do pool de candidatos antes da medicao orbital
-    const metaPoolMinimo = Math.min(candidatosBase.length, Math.max(Math.ceil(tamanhoAmostra * 1.8), tamanhoAmostra + 25));
+    // X1: Meta de pool dimensionada pós-filtros (~648 candidatos para atingir >= 36 em K̂=2 sobre os 9 estratos)
+    // Relaxa até o piso inviolável de 1.000 m fixado por exigirDecisao(P02)
+    const tamanhoBaseMultiplicado = Math.ceil(tamanhoAmostra * 9);
+    const pisoPoolK2 = 648;
+    const metaPoolAlvo = tamanhoBaseMultiplicado > pisoPoolK2 ? tamanhoBaseMultiplicado : pisoPoolK2;
+    const metaPoolMinimo = candidatosBase.length < metaPoolAlvo ? candidatosBase.length : metaPoolAlvo;
     const historicoRelaxamentoThinning: Array<{
       iteracao: number;
       raioAnteriorMetros: number;
@@ -323,7 +331,7 @@ export async function POST(request: NextRequest) {
     while (candidatosAposThinning.length < metaPoolMinimo && raioMetros > pisoThinningMetros) {
       iteracaoThinning++;
       const raioAnteriorMetros = raioMetros;
-      const raioReduzido = Math.floor(raioMetros * 0.65);
+      const raioReduzido = Math.floor(raioMetros * 0.70);
       raioMetros = raioReduzido < pisoThinningMetros ? pisoThinningMetros : raioReduzido;
       candidatosAposThinning = aplicarThinningDeterminista(candidatosBase, raioMetros, semente);
       historicoRelaxamentoThinning.push({
@@ -337,17 +345,97 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const poolParaMedicaoReal = candidatosAposThinning.slice(
-      0,
-      // permitido: teto operacional de requisicoes simultaneas a API REST do Earth Engine
-      Math.min(candidatosAposThinning.length, Math.max(Math.ceil(tamanhoAmostra * 1.8), 90))
+    // 5. X3 & X2: Medição Topográfica Real Prévia (Copernicus DEM GLO-30 local) e Seleção de Ponto Elegível no Imóvel
+    // Mede primeiro os centroides pós-thinning via DEM local (custo zero de API GEE)
+    const medicoesIniciaisTerreno = await medirTerrenoCopernicusEmLote(
+      candidatosAposThinning.map((c) => ({ latitude: c.latitude, longitude: c.longitude }))
     );
 
-    // 5. Camada 2 & 3 Anti-Floresta (GEE ESA/WorldCover/v200/2021 10m + Sentinel-2 MSI L2A 10m):
-    // Mede CADA candidato na sua coordenada exata de 10m ANTES da estratificação final.
-    // Caso o ponto médio da propriedade caia sobre Reserva Legal ou Mata Ciliar (ESA WorldCover = 10 ou dossel perene),
-    // testa um deslocamento interno para a vertente agrícola (quadrante 0.28 ou 0.72) dentro do BBox oficial do imóvel SICAR,
-    // e descarta estritamente qualquer candidato que permaneça sobre cobertura florestal/inelegível (Parâmetro P05).
+    const mapaTerrenoPorId = new Map<string, (typeof medicoesIniciaisTerreno)[0]>();
+    candidatosAposThinning.forEach((c, idx) => {
+      mapaTerrenoPorId.set(c.id, medicoesIniciaisTerreno[idx] ?? null);
+    });
+
+    // Para candidatos cujo centroide estiver fora do domínio D07 [declividadeMin, declividadeMax],
+    // extrai a malha de células internas do imóvel (X3) e sorteia ao acaso estocástico (P07)
+    // uma célula interna comprovadamente elegível em declividade, sob guarda estrita anticircularidade
+    for (let i = 0; i < candidatosAposThinning.length; i++) {
+      const c = candidatosAposThinning[i];
+      const medT = mapaTerrenoPorId.get(c.id);
+      const declivAtual = medT?.declividadePct;
+
+      const precisaRealocacao =
+        declivAtual === undefined ||
+        declivAtual === null ||
+        declivAtual < declividadeMin ||
+        declivAtual > declividadeMax;
+
+      if (precisaRealocacao && c.latMin && c.latMax && c.lonMin && c.lonMax) {
+        const celulasMalha = gerarMalhaCelulasImovel({
+          latMin: c.latMin,
+          latMax: c.latMax,
+          lonMin: c.lonMin,
+          lonMax: c.lonMax,
+          lat: c.latitude,
+          lng: c.longitude,
+        });
+
+        // Mede a declividade das células da malha no DEM local
+        const medicoesMalha = await medirTerrenoCopernicusEmLote(
+          celulasMalha.map((m) => ({ latitude: m.latitude, longitude: m.longitude }))
+        );
+
+        const celulasAvaliadas = celulasMalha
+          .map((m, mIdx) => ({
+            ...m,
+            declividadePct: medicoesMalha[mIdx]?.declividadePct ?? NaN,
+          }))
+          .filter(
+            (m) =>
+              !isNaN(m.declividadePct) &&
+              !estaEmUnidadeConservacaoFlorestalBp3(m.latitude, m.longitude) &&
+              (!envolveBaciaParana3 || estaNoDivisorHidrologicoBp3(m.latitude, m.longitude))
+          );
+
+        // Seleciona determinística e estocasticamente a célula elegível (semente P07)
+        const pontoElegivel = selecionarPontoElegivelImovel(celulasAvaliadas, {
+          semente: semente + i,
+          declividadeMin,
+          declividadeMax,
+        });
+
+        if (pontoElegivel) {
+          c.latitude = pontoElegivel.latitude;
+          c.longitude = pontoElegivel.longitude;
+          const novoMedT = medicoesMalha.find(
+            (med, idx) =>
+              celulasMalha[idx].latitude === pontoElegivel.latitude &&
+              celulasMalha[idx].longitude === pontoElegivel.longitude
+          );
+          if (novoMedT) {
+            mapaTerrenoPorId.set(c.id, novoMedT);
+          }
+        }
+      }
+    }
+
+    // Filtra estritamente candidatos com declividade comprovadamente dentro de [declividadeMin, declividadeMax] (Decisão D07)
+    const candidatosComTerrenoElegivelPreGee = candidatosAposThinning.filter((c) => {
+      const medT = mapaTerrenoPorId.get(c.id);
+      if (!medT) return false;
+      return medT.declividadePct >= declividadeMin && medT.declividadePct <= declividadeMax;
+    });
+
+    // 6. X2: Teto Operacional de Requisições GEE aplicado APÓS o filtro físico de D07
+    // Garante que 100% das requisições ao GEE REST sejam consumidas em pontos comprovadamente elegíveis em declividade
+    const tetoCalculado = Math.ceil(tamanhoAmostra * 1.8);
+    const tetoMinimoOperacional = tetoCalculado > 90 ? tetoCalculado : 90;
+    const limitePool = candidatosComTerrenoElegivelPreGee.length < tetoMinimoOperacional
+      ? candidatosComTerrenoElegivelPreGee.length
+      : tetoMinimoOperacional;
+    const poolParaMedicaoReal = candidatosComTerrenoElegivelPreGee.slice(0, limitePool);
+
+    // Medição Sentinel-2 e ESA WorldCover via REST v1 Earth Engine (somente para pontos elegíveis D07)
     const mapaSentinel2 = sessao.gee?.project_id
       ? await medirSentinel2EmLoteGeeRest(
           poolParaMedicaoReal.map((c) => ({
@@ -360,52 +448,6 @@ export async function POST(request: NextRequest) {
         )
       : new Map();
 
-    if (sessao.gee?.project_id && mapaSentinel2.size > 0) {
-      const candidatosComCentroEmMata = poolParaMedicaoReal.filter((c) => {
-        const med = mapaSentinel2.get(c.id);
-        return med?.ehFlorestaOuInelegivel === true;
-      });
-
-      if (candidatosComCentroEmMata.length > 0) {
-        // Gera coordenada alternativa na meia-encosta agrícola dentro do mesmo imóvel SICAR
-        const realocacoes = candidatosComCentroEmMata
-          .map((c) => {
-            const dLat = c.latMax - c.latMin;
-            const dLon = c.lonMax - c.lonMin;
-            const novoLat = Number(
-              (dLat > 0.0008 ? c.latMin + 0.28 * dLat : c.latitude + 0.0018).toFixed(6)
-            );
-            const novoLon = Number(
-              (dLon > 0.0008 ? c.lonMin + 0.28 * dLon : c.longitude + 0.0018).toFixed(6)
-            );
-            return { id: c.id, latitude: novoLat, longitude: novoLon, cand: c };
-          })
-          .filter(
-            (r) =>
-              !estaEmUnidadeConservacaoFlorestalBp3(r.latitude, r.longitude) &&
-              (!envolveBaciaParana3 || estaNoDivisorHidrologicoBp3(r.latitude, r.longitude))
-          );
-
-        if (realocacoes.length > 0) {
-          const mapaRealocados = await medirSentinel2EmLoteGeeRest(
-            realocacoes.map((r) => ({ id: r.id, latitude: r.latitude, longitude: r.longitude })),
-            token.accessToken,
-            sessao.gee.project_id
-          );
-
-          for (const r of realocacoes) {
-            const medNovo = mapaRealocados.get(r.id);
-            if (medNovo && !medNovo.ehFlorestaOuInelegivel) {
-              r.cand.latitude = r.latitude;
-              r.cand.longitude = r.longitude;
-              mapaSentinel2.set(r.id, medNovo);
-            }
-          }
-        }
-      }
-    }
-
-    // Filtra estritamente candidatos com cobertura agrícola comprovada (ESA WorldCover in [30, 40] nas épocas 2020 e 2021 — D07 / P05 — e dossel não-florestal)
     const poolAgricolaVerificado = poolParaMedicaoReal.filter((c) => {
       const med = mapaSentinel2.get(c.id);
       if (!med) return true;

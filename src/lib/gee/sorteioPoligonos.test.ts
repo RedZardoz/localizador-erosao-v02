@@ -39,14 +39,14 @@ function gerarPoolCandidatosElegiveis(nPorEstrato = 4): CandidatoSorteioD16[] {
 }
 
 describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", () => {
-  it("deve aprovar as 7 pré-condições para um pool íntegro com >= 2 candidatos nos 18 estratos", () => {
-    const pool = gerarPoolCandidatosElegiveis(4);
+  it("deve aprovar as 7 pré-condições para um pool íntegro com >= 4 candidatos nos 18 estratos", () => {
+    const pool = gerarPoolCandidatosElegiveis(5);
     const rel = verificarPreCondicoesSorteioD16(pool, { seloExistenteCaminho: null });
     expect(rel.aprovado).toBe(true);
     expect(rel.condicaoFalha).toBeNull();
     expect(rel.estratosDeficientes).toHaveLength(0);
     for (const idEstrato of TODOS_ESTRATOS_D12) {
-      expect(rel.contagemCandidatosPorEstrato[idEstrato]).toBeGreaterThanOrEqual(2);
+      expect(rel.contagemCandidatosPorEstrato[idEstrato]).toBeGreaterThanOrEqual(4);
     }
   });
 
@@ -87,7 +87,7 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
   });
 
   it("deve recusar e nomear 'k_ambiguo_associacao_booleano' se kAmbiguoAssociacao for undefined", () => {
-    const pool = gerarPoolCandidatosElegiveis(3);
+    const pool = gerarPoolCandidatosElegiveis(4);
     pool[2].kAmbiguoAssociacao = undefined;
     try {
       verificarPreCondicoesSorteioD16(pool, { lancarErro: true });
@@ -99,7 +99,7 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
   });
 
   it("deve aceitar e preservar os três estados de kAmbiguoAssociacao (true, false, 'indisponivel') e unidadeDeterminanteK2024 (W2/W3)", () => {
-    const pool = gerarPoolCandidatosElegiveis(3);
+    const pool = gerarPoolCandidatosElegiveis(5);
     pool[0].kAmbiguoAssociacao = true;
     for (let i = 1; i < pool.length; i++) {
       if (i % 2 === 1) {
@@ -134,22 +134,34 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
     expect(sorteadoIndisponivel!.unidadeDeterminanteK2024?.codUm2).toBe("LVdf30");
   });
 
-  it("deve recusar e nomear 'minimo_2_candidatos_por_estrato' listando os estratos deficientes", () => {
-    const pool = gerarPoolCandidatosElegiveis(1);
-    try {
-      verificarPreCondicoesSorteioD16(pool, { lancarErro: true });
-      expect.fail("Deveria ter recusado estratos com 1 candidato");
-    } catch (e) {
-      expect(e).toBeInstanceOf(ErroPreCondicaoSorteioD16);
-      expect((e as ErroPreCondicaoSorteioD16).condicaoFalha).toBe(
-        "minimo_2_candidatos_por_estrato"
-      );
-      expect((e as Error).message).toContain("E_1_1_1");
+  it("deve recusar e nomear 'minimo_4_candidatos_por_estrato' listando os estratos deficientes para 1, 2 e 3 candidatos", () => {
+    for (const qtd of [1, 2, 3]) {
+      const pool = gerarPoolCandidatosElegiveis(qtd);
+      try {
+        verificarPreCondicoesSorteioD16(pool, { lancarErro: true });
+        expect.fail(`Deveria ter recusado estratos com ${qtd} candidato(s)`);
+      } catch (e) {
+        expect(e).toBeInstanceOf(ErroPreCondicaoSorteioD16);
+        expect((e as ErroPreCondicaoSorteioD16).condicaoFalha).toBe(
+          "minimo_4_candidatos_por_estrato"
+        );
+        expect((e as Error).message).toContain("E_1_1_1");
+        expect((e as Error).message).toContain("ao menos 4 candidatos cada");
+      }
+    }
+  });
+
+  it("X0: chamando o sorteio diretamente com nH = 2 ou nH = 3, deve lançar em lugar de devolver undefined ou pi_i > 1", () => {
+    for (const qtd of [2, 3]) {
+      const pool = gerarPoolCandidatosElegiveis(qtd);
+      expect(() => {
+        sortear72PoligonosD16(pool, { semente: 42 });
+      }).toThrow();
     }
   });
 
   it("deve recusar e nomear 'guarda_anticircularidade_d16' se candidato contiver scoreSuscetibilidade, scoreJev ou severidade", () => {
-    const pool = gerarPoolCandidatosElegiveis(3);
+    const pool = gerarPoolCandidatosElegiveis(4);
     pool[0].scorePrioridade = 0.88;
     try {
       verificarPreCondicoesSorteioD16(pool, { lancarErro: true });
@@ -272,7 +284,7 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
     const sTercis = [3.5, 9.5, 18.0];
     const eTercis = [0.08, 0.38, 0.78];
     const kNiveis: Array<1 | 2> = [1, 2];
-    const tamanhosDesejados = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 3, 5, 7, 9, 11, 4, 6, 8];
+    const tamanhosDesejados = [4, 5, 6, 7, 8, 9, 10, 11, 4, 5, 7, 9, 11, 4, 6, 8, 5, 7];
 
     const candidatosHeterogeneos: CandidatoSorteioD16[] = [];
     let seq = 1;
@@ -312,7 +324,7 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
 
     for (const p of selo.poligonos) {
       const nh = p.nCandidatosEstrato;
-      expect(nh).toBeGreaterThanOrEqual(2);
+      expect(nh).toBeGreaterThanOrEqual(4);
       expect(p.pi_i).toBeCloseTo(2 / nh, 8);
       expect(p.w_i).toBeCloseTo(nh / 2, 8);
       expect(p.pi_i * p.w_i).toBeCloseTo(1.0, 7);
