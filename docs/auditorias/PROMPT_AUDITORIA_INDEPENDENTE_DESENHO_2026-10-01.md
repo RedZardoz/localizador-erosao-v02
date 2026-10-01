@@ -28,6 +28,37 @@ Para você entender o tipo de falha a procurar, e o tipo que já foi pego:
 
 Em todos ele se corrigiu **porque resolveu medir**. Os que não lhe ocorreu checar seguem no repositório. Esse é o seu alvo.
 
+## O padrão que mais apareceu: valor fabricado com nome da fonte real
+
+**Três vezes, em três fases diferentes**, surgiu um valor produzido sem a sua fonte, carregando
+metadado que afirma a fonte. Os três foram encontrados e corrigidos, mas você deve supor que
+há um quarto.
+
+| Onde | O que foi fabricado | Nome que usava |
+|---|---|---|
+| Planos de voo | altitudes por trigonometria da coordenada | `amostradorGLO30` |
+| Planos de voo | dois `.plan` com altitudes sintéticas, sem marcação | `jornada_01_*.plan` |
+| Pipeline amostral | a dimensão Ê inteira, por contador | `definicao: s2_sr_harmonized_2016_2026_...` |
+
+O terceiro foi o pior: `frequenciaSoloNu` tinha **correlação de +0,9999 com o índice no
+arquivo** e de −0,12 com a latitude. Era um contador, apresentado como *"Distribuição Real
+Medida"*, e teria estratificado a campanha inteira. Registro completo em
+`docs/verificacoes/2026-10-01_FABRICACAO_frequencia_solo_nu.md`.
+
+**O teste que os revela é barato e você deve rodá-lo em todo artefato numérico:** correlação da
+série com o índice do arquivo, e com latitude e longitude. Medição de campo não correlaciona com
+a ordem do arquivo. Verifique também se a amplitude é fisicamente plausível — no caso do Ê, toda
+a bacia cabia entre 7,01% e 7,68% de solo nu.
+
+Existem agora duas guardas contra isso, `src/lib/seguranca/detectorSequencia.ts` e
+`src/lib/seguranca/diarioRequisicoes.ts`. **Teste se elas funcionam de fato**; não as aceite por
+existirem. O diário, em particular, ainda não foi exercitado por medição real alguma.
+
+Há também um detalhe que ilustra o quanto o padrão é persistente: ao declarar o cache pedológico
+autêntico — e ele **é**, confirmei por medição independente — o relatório afirmou que as entradas
+continham os campos `ogc_fid` e `cod_um`. Elas têm quatro campos, e nenhum é esses. A conclusão
+estava certa e a evidência oferecida para ela era inventada.
+
 ---
 
 # 2. O QUE VOCÊ TEM, E O QUE NÃO TEM
@@ -170,4 +201,4 @@ Leia nesta ordem:
 4. `docs/verificacoes/` — os registros, em ordem cronológica. Os de 28/09 a 01/10 cobrem as mudanças de desenho mais recentes.
 5. `docs/planejamento/` — os prompts, se quiser entender por que algo foi feito assim.
 
-O estado atual: 48 arquivos de teste, 355 testes, suíte verde, `tsc` limpo. O sorteio dos 36 polígonos **ainda não ocorreu** e está travado à espera da medição da dimensão Ê, que depende de credenciais do Earth Engine.
+O estado atual: **52 arquivos de teste, 388 testes**, suíte verde, `tsc` limpo. O sorteio dos 36 polígonos **ainda não ocorreu** e está travado à espera da medição da dimensão Ê, que depende de credenciais do Earth Engine.
