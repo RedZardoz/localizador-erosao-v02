@@ -1,0 +1,92 @@
+{
+  "type": "FeatureCollection",
+  "url_getfeature_wfs_110": "https://geoinfo.dados.embrapa.br/geoserver/ows?service=WFS&version=1.1.0&request=GetFeature&typeName=geonode%3Aparana_solos_20201105%2Cgeonode%3Abra_erodibilidade_2024_sirgas2000%2Cgeonode%3Abrasil_erodibilidade_solo&outputFormat=application%2Fjson&CQL_FILTER=INTERSECTS%28geometry%2C+POINT%28-24.88+-54.26%29%29%3BINTERSECTS%28geometry%2C+POINT%28-24.88+-54.26%29%29%3BINTERSECTS%28geometry%2C+POINT%28-24.88+-54.26%29%29",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "parana_solos_20201105.2807",
+      "geometry": null,
+      "geometry_name": "geometry",
+      "properties": {
+        "ogc_fid": 2807,
+        "objectid": 2761,
+        "sbcs": "NVef2",
+        "tipo_unida": "simples",
+        "ordem_1": "NITOSSOLO",
+        "sub_ordem_": "VERMELHO",
+        "grande_gru": "Eutroferrico",
+        "sub_grupo_": "tipico",
+        "familia_1_": "textura argilosa",
+        "familia_11": null,
+        "familia_12": "A moderado",
+        "familia_13": null,
+        "familia_14": null,
+        "fase_veget": "floresta subtropical perenifolia",
+        "fase_relev": "ondulado",
+        "ordem_2": null,
+        "sub_ordem1": null,
+        "grande_g_1": null,
+        "sub_grupo1": null,
+        "familia_2_": null,
+        "familia_21": null,
+        "familia_23": null,
+        "familia_24": null,
+        "familia_26": null,
+        "fase_veg_1": null,
+        "fase_rel_1": null,
+        "ordem_3": null,
+        "sub_orde_1": null,
+        "grande_g_2": null,
+        "sub_grup_1": null,
+        "familia_3_": null,
+        "familia_31": null,
+        "familia_33": null,
+        "familia_34": null,
+        "familia_36": null,
+        "fase_veg_2": null,
+        "fase_rel_2": null,
+        "legenda": "NVef2 - NITOSSOLO VERMELHO Eutroferrico",
+        "area_km2": 413.945776395
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "bra_erodibilidade_2024_sirgas2000.102154",
+      "geometry": null,
+      "geometry_name": "geometry",
+      "properties": {
+        "ogc_fid": 102154,
+        "cd_fcim": "SG21",
+        "nom_unidad": "NVef1",
+        "cod_um": "SG21NVef1NV",
+        "cod_um2": "SG21NVef1",
+        "legenda": "NVef - Nitossolo Vermelho Eutroférrico",
+        "legenda_c1": "D NITOSSOLO VERMELHO Eutroférrico típico muito argilosa A moderado mesoeutrófico ondulado",
+        "legenda_c2": null,
+        "legenda_c3": null,
+        "legenda_c4": null,
+        "erod_c1": "Baixa",
+        "erod_c2": null,
+        "erod_c3": null,
+        "erod_c4": null,
+        "erod_um": "Baixa",
+        "fator_k_um": "0.0120",
+        "area_ha": null,
+        "area_km2": 706.96,
+        "k_solos": 0.012
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "brasil_erodibilidade_solo.75362",
+      "geometry": null,
+      "geometry_name": "geometry",
+      "properties": {
+        "ogc_fid": 75362,
+        "codnum": 2,
+        "classe": "Baixa",
+        "area_km2": 756.220579791
+      }
+    }
+  ]
+}

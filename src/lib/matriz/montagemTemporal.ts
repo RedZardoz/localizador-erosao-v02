@@ -53,9 +53,9 @@ export interface PreditoresTemporaisPonto {
 
 export interface OpcoesMontagemTemporal {
   dataReferencia: string; // Data t0 (YYYY-MM-DD)
-  intervaloGuardaMeses?: number; // Para Modelo P (Padrão: 12 meses)
+  intervaloGuardaMeses?: number; // Para Modelo P (Padrão: 24 meses / 2 anos - Decisão D04)
   duracaoJanelaAnos?: number;   // Padrão: 3 anos
-  limiarNdviSoloNu?: number;    // Padrão: 0.40 (D10)
+  limiarNdviSoloNu?: number;    // Padrão: 0.25 (Decisão D10: GEOS3 / Demattê et al., 2018)
 }
 
 const TOLERANCIA_BUSCA_CENA_DIAS = 45;
@@ -93,10 +93,10 @@ function buscarCenaMaisProxima(
  * A predição e detecção de erosão dependem criticamente do histórico de uso e cobertura do solo.
  * Sob o Modelo D (Detecção contemporânea), mapeia-se a feição no momento t0 da observação.
  * Sob o Modelo P (Prognóstico preventivo), é mandatório isolar a série temporal através de uma
- * janela de guarda rigorosa (>= 12 meses antes do evento erosivo). Esse isolamento impede o
- * vazamento temporal de informação (data leakage), garantindo que o algoritmo preveja o surgimento
+ * janela de guarda rigorosa (24 meses / 2 anos antes do evento erosivo — Decisão D04). Esse isolamento
+ * impede o vazamento temporal de informação (data leakage), garantindo que o algoritmo preveja o surgimento
  * de erosão exclusivamente a partir de fraquezas históricas de manejo e vulnerabilidades físicas
- * antecedentes à manifestação do dano pericial.
+ * antecedentes à manifestação do dano pericial (Kaufman et al., 2012; Roberts et al., 2017).
  */
 export function montarPreditoresTemporais(
   cenas: ObservacaoCena[],
@@ -105,16 +105,16 @@ export function montarPreditoresTemporais(
 ): PreditoresTemporaisPonto {
   const {
     dataReferencia,
-    intervaloGuardaMeses = 12,
+    intervaloGuardaMeses = 24,
     duracaoJanelaAnos = 3,
-    limiarNdviSoloNu = 0.40,
+    limiarNdviSoloNu = 0.25,
   } = opcoes;
 
   const guardaAnos = intervaloGuardaMeses / 12;
   const janelas = definirJanelasModelo(dataReferencia, guardaAnos, duracaoJanelaAnos);
   const janelaAtiva = tipoModelo === "D" ? janelas.modeloD : janelas.modeloP;
 
-  // Filtrar cenas estritamente pertencentes ? janela permitida
+  // Filtrar cenas estritamente pertencentes à janela permitida
   const cenasJanela = filtrarSeriePorJanela(cenas, janelaAtiva);
   const validas = cenasJanela
     .filter((c) => !c.nuvemSombra && c.b4 !== null && c.b8 !== null)
@@ -145,17 +145,13 @@ export function montarPreditoresTemporais(
     };
   }
 
-  // Perfis de NDVI e BSI
-  const serieProcessada = validas.map((c) => {
-    const ndvi = calcularNdvi(c.b8, c.b4)!;
-    const bsi = calcularBsi(c.b11, c.b4, c.b8, c.b2);
-    return {
-      data: c.data,
-      dataMs: new Date(c.data).getTime(),
-      ndvi,
-      bsi,
-    };
-  });
+  // Estatísticas agregadas de NDVI e BSI
+  const serieProcessada = validas.map((c) => ({
+    data: c.data,
+    dataMs: new Date(c.data).getTime(),
+    ndvi: calcularNdvi(c.b8, c.b4)!,
+    bsi: calcularBsi(c.b11, c.b4, c.b8, c.b2),
+  }));
 
   const ndvis = serieProcessada.map((p) => p.ndvi).sort((a, b) => a - b);
   const bsis = serieProcessada
@@ -163,17 +159,17 @@ export function montarPreditoresTemporais(
     .filter((v): v is number => v !== null && Number.isFinite(v))
     .sort((a, b) => a - b);
 
-  const p10Idx = Math.floor(ndvis.length * 0.1);
-  const p50Idx = Math.floor(ndvis.length * 0.5);
-  const p90Idx = Math.floor(ndvis.length * 0.9);
+  const p10Idx = Math.floor(nValidas * 0.1);
+  const p50Idx = Math.floor(nValidas * 0.5);
+  const p90Idx = Math.floor(nValidas * 0.9);
 
   const ndvi_p10 = Number(ndvis[p10Idx].toFixed(4));
   const ndvi_p50 = Number(ndvis[p50Idx].toFixed(4));
   const ndvi_p90 = Number(ndvis[p90Idx].toFixed(4));
   const bsi_p50 = bsis.length > 0 ? Number(bsis[Math.floor(bsis.length * 0.5)].toFixed(4)) : null;
 
-  // Frequência de solo nu (E^)
-  const nSoloNu = ndvis.filter((v) => v < limiarNdviSoloNu).length;
+  // Frequência de solo nu (E^) — Decisão D10: NDVI <= 0.25 (GEOS3 / Demattê et al., 2018)
+  const nSoloNu = ndvis.filter((v) => v <= limiarNdviSoloNu).length;
   const frequenciaSoloNu = Number((nSoloNu / nValidas).toFixed(4));
 
   // Harmônicos do SWIR B12 (tendência de degradação)

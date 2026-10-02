@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
   validarOpcoesElegibilidade,
   normalizarAoIGeoJson,
@@ -23,10 +23,10 @@ describe("Critérios de Elegibilidade Espacial (P04 / P05)", () => {
     );
   });
 
-  it("deve verificar classes de uso da terra da ESA WorldCover (P05)", () => {
+  it("deve verificar classes de uso da terra da ESA WorldCover (D07 / P05)", () => {
     expect(isClasseUsoElegivel(30)).toBe(true);  // Pastagem
     expect(isClasseUsoElegivel(40)).toBe(true);  // Agricultura
-    expect(isClasseUsoElegivel(60)).toBe(true);  // Solo exposto
+    expect(isClasseUsoElegivel(60)).toBe(false); // Solo exposto — excluído por D07 / P05
     expect(isClasseUsoElegivel(10)).toBe(false); // Floresta
     expect(isClasseUsoElegivel(50)).toBe(false); // Urbano
     expect(isClasseUsoElegivel(80)).toBe(false); // Água

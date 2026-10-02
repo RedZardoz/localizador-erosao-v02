@@ -1,0 +1,4088 @@
+{
+  "versao": "2.0",
+  "descricao": "Cache persistente oficial de pedologia e erodibilidade Embrapa GeoInfo na BP3",
+  "atualizadoEm": "2026-10-01T20:45:43.931Z",
+  "totalItens": 680,
+  "itens": {
+    "cand-753": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-805": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3540": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1953": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4288": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-174": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2437": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-966": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2902": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1213": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2868": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4215": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3254": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3317": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1501": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3132": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2050": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-121": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-675": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4000": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-48": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-347": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-999": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1566": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1191": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-454": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-3625": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2269": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1451": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2352": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1622": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4463": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4485": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3284": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4111": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3628": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-3330": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3656": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2967": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4190": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4176": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2524": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3438": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1128": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3144": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3607": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3154": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-409": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3225": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4102": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-4612": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2094": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2928": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-585": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3818": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1288": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1463": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1265": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-370": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2939": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2878": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1624": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2052": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2608": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3192": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3897": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3957": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-986": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-4171": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3778": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1990": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3814": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2971": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1505": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4583": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1059": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3456": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3354": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3100": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0052,
+      "foraDoDominioSolo": false
+    },
+    "cand-1324": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1644": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-438": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2317": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1522": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4415": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1742": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4265": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1250": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2628": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3914": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1855": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1950": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3930": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-695": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1996": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-915": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.0096,
+      "foraDoDominioSolo": false
+    },
+    "cand-1541": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-796": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-930": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1962": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-746": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2221": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-3494": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2313": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3734": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-832": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-601": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3618": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4127": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3419": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1722": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-635": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1383": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3047": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-3549": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1886": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3674": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1496": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3938": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1453": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4398": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4052": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-4364": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1749": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0255,
+      "foraDoDominioSolo": false
+    },
+    "cand-2086": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-396": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-4512": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2535": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2400": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2139": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1359": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0255,
+      "foraDoDominioSolo": false
+    },
+    "cand-1915": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2174": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-4651": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2599": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1787": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4497": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1651": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4151": {
+      "nivelK": 1,
+      "classeErodibilidade": "Media",
+      "kSolos": 0.0225,
+      "foraDoDominioSolo": false
+    },
+    "cand-1007": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3561": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1706": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1412": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4157": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-658": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1302": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-558": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2684": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1578": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2736": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-738": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-760": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-732": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-791": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.0096,
+      "foraDoDominioSolo": false
+    },
+    "cand-3222": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1157": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1808": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1681": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3759": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4665": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2411": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3401": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3840": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4531": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4205": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4238": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3288": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3042": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3107": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2012": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2357": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1104": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1280": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2705": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4197": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3858": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-692": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-898": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-3278": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2418": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2729": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2304": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3000": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2537": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-530": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.0096,
+      "foraDoDominioSolo": false
+    },
+    "cand-141": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1370": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1242": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1130": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4250": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1076": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-422": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-3652": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2784": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1590": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-13": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2009": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3869": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3142": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1716": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4469": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3292": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3972": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3399": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2293": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3147": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4556": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2882": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2796": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1386": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1960": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-665": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3359": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1938": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-297": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3511": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2467": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2704": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1921": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2243": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-511": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2427": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3024": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1592": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-351": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2260": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4134": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0525,
+      "foraDoDominioSolo": false
+    },
+    "cand-828": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.0096,
+      "foraDoDominioSolo": false
+    },
+    "cand-3536": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3280": {
+      "nivelK": 1,
+      "classeErodibilidade": "Area urbana",
+      "kSolos": null,
+      "foraDoDominioSolo": true
+    },
+    "cand-4242": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-629": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3637": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1044": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-979": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-4055": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3669": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-163": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4570": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3979": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-682": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2864": {
+      "nivelK": 1,
+      "classeErodibilidade": "Area urbana",
+      "kSolos": null,
+      "foraDoDominioSolo": true
+    },
+    "cand-2044": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2653": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2617": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1711": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-101": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3856": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-78": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1873": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1775": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1036": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1630": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-14": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3847": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3084": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2004": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4073": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2550": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3087": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0052,
+      "foraDoDominioSolo": false
+    },
+    "cand-4593": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-708": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3680": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1547": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-4044": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4180": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3935": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4539": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3732": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-670": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-469": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1882": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1548": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-4092": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-4428": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2074": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2248": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4621": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1350": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-4327": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3774": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-202": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2443": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2473": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1568": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-418": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-651": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4132": {
+      "nivelK": 1,
+      "classeErodibilidade": "Media",
+      "kSolos": 0.0225,
+      "foraDoDominioSolo": false
+    },
+    "cand-4030": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-4229": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2169": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1337": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-16": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-168": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1423": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1117": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2197": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-211": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1712": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3982": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-195": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2635": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3808": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2477": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3909": {
+      "nivelK": 1,
+      "classeErodibilidade": "Media",
+      "kSolos": 0.0225,
+      "foraDoDominioSolo": false
+    },
+    "cand-2802": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-936": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1396": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1772": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2501": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-257": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2481": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4511": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1177": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3508": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2100": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2564": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1717": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-107": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1197": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1868": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1922": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3829": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2081": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2111": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2368": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3161": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-403": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-215": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1499": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-623": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2018": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2229": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1912": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4118": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-34": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3893": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4037": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3963": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1022": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1366": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2344": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1330": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1817": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3739": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4062": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2783": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-54": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4543": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-25": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3706": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-711": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3885": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3267": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1982": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1362": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1448": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2334": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2332": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2848": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-24": {
+      "nivelK": 1,
+      "classeErodibilidade": "Media",
+      "kSolos": 0.0165,
+      "foraDoDominioSolo": false
+    },
+    "cand-276": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1974": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3526": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-487": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-62": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1779": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1057": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-158": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3713": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-186": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4204": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1140": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3032": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3753": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1792": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2228": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-45": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1166": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1826": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4423": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-637": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1976": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2886": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1390": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3786": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2826": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-279": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3381": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-342": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2089": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3397": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-687": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3985": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1388": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3393": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1544": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2380": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4416": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1894": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1735": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0255,
+      "foraDoDominioSolo": false
+    },
+    "cand-2389": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-531": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1228": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1381": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-951": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2515": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-148": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1727": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1650": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3158": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0052,
+      "foraDoDominioSolo": false
+    },
+    "cand-1012": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1260": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3096": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1295": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2067": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2607": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2302": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2463": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4618": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-564": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4104": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-4267": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4506": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1019": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-227": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-3844": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-8": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-377": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1689": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1653": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1582": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2775": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2843": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1171": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2181": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1836": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4009": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2325": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4451": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4362": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0052,
+      "foraDoDominioSolo": false
+    },
+    "cand-1092": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1432": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1637": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1206": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2488": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-475": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-244": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1467": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3469": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-642": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4341": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1435": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4137": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2508": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-68": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1730": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1030": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1863": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1004": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-30": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3008": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2711": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4221": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1001": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1556": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2835": {
+      "nivelK": 1,
+      "classeErodibilidade": "Area urbana",
+      "kSolos": null,
+      "foraDoDominioSolo": true
+    },
+    "cand-4448": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1673": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-879": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.0096,
+      "foraDoDominioSolo": false
+    },
+    "cand-2421": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3441": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1834": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2059": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1193": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-366": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-89": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-4638": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3921": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1461": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-745": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2479": {
+      "nivelK": 1,
+      "classeErodibilidade": "Media",
+      "kSolos": 0.0225,
+      "foraDoDominioSolo": false
+    },
+    "cand-1400": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-577": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-740": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2434": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1028": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2854": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2408": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1196": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1236": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2942": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4646": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1278": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-4530": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-569": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2255": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2449": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1726": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1668": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-938": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1112": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3294": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1139": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4236": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1339": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4656": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3445": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2492": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1153": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4122": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0525,
+      "foraDoDominioSolo": false
+    },
+    "cand-3553": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2577": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4430": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2977": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4420": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0052,
+      "foraDoDominioSolo": false
+    },
+    "cand-86": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-955": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-145": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-98": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3053": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-3768": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-176": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1581": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2491": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-206": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3137": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1933": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3116": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1051": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-720": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-429": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3905": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-326": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3889": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2161": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2211": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1164": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2183": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-3719": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4148": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0525,
+      "foraDoDominioSolo": false
+    },
+    "cand-2308": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1010": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1344": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-91": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1218": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1444": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2739": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1403": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3895": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-850": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.0096,
+      "foraDoDominioSolo": false
+    },
+    "cand-2583": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-971": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3853": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-865": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-533": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-52": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3213": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-71": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-80": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-134": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1576": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-446": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1489": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3864": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3478": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1225": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-4548": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-542": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-3835": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1146": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2506": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4426": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-253": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-717": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-716": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1017": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1988": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1481": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2441": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4258": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-3408": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3874": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2812": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4334": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4383": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1430": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3188": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2453": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2721": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1464": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4549": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4566": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3141": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1437": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3127": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1443": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2362": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-379": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1516": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-142": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1583": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2695": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-611": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4368": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0052,
+      "foraDoDominioSolo": false
+    },
+    "cand-22": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-85": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-4317": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-55": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-130": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2299": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2622": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2769": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1688": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1331": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-118": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-800": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2432": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2484": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1720": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-3430": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3436": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1392": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2036": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1659": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-2379": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1511": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4223": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3949": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2062": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-664": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4133": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0525,
+      "foraDoDominioSolo": false
+    },
+    "cand-498": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2620": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-191": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1329": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-4085": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-499": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-28": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2115": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1182": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2954": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-4516": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1358": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-975": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1871": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-69": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-269": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4499": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-171": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1561": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-428": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2950": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1194": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-3987": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2989": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1440": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1375": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2278": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-1785": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-3005": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1546": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1027": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-2163": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1142": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-3953": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-1984": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-1332": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2342": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-4563": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.0084,
+      "foraDoDominioSolo": false
+    },
+    "cand-2468": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-3074": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    },
+    "cand-1338": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-3975": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-1877": {
+      "nivelK": 1,
+      "classeErodibilidade": "Muito baixa",
+      "kSolos": 0.002,
+      "foraDoDominioSolo": false
+    },
+    "cand-4336": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-4615": {
+      "nivelK": 1,
+      "classeErodibilidade": "Baixa",
+      "kSolos": 0.012,
+      "foraDoDominioSolo": false
+    },
+    "cand-2130": {
+      "nivelK": 2,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0315,
+      "foraDoDominioSolo": false
+    },
+    "cand-2426": {
+      "nivelK": 1,
+      "classeErodibilidade": "Alta",
+      "kSolos": 0.0285,
+      "foraDoDominioSolo": false
+    }
+  }
+}

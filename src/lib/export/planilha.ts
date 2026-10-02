@@ -1,6 +1,9 @@
 import type { PontoAmostral } from "@/types/ponto";
+import type { RotuloConsolidado } from "@/types/rotulo";
 import { formatarDescricaoOrigem, valorOuNulo } from "@/types/proveniencia";
 import { derivarCamposNaoMedidos, assegurarInvariantesArtefato, ArtefatoProjetado } from "@/lib/matriz/invariantes";
+import { montarMatrizTreino } from "@/lib/matriz/montagem";
+import { assegurarSegregacaoTreino } from "@/lib/rotulos/ingestaoDrone";
 import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
 import { formatToDMS } from "./dms";
 import { generateXlsxBuffer, XlsxSheet, XlsxRowValue } from "./xlsxWriter";
@@ -13,6 +16,7 @@ A anonimização dos dados de titularidade é originária das bases públicas fe
 
 export interface OpcoesExportacao {
   perfil?: PerfilExportacao;
+  rotulosConsolidados?: Record<string, RotuloConsolidado>;
   filtrosAtivos?: string[];
   janelaTemporal?: { inicio: string; fim: string };
   responsavelEmissao?: string;
@@ -71,6 +75,22 @@ export function extrairLinhasAbaDados(pontos: PontoAmostral[]): Record<string, u
       Confianca_Pedologica: p.solo?.confiancaPedologica ?? "indisponivel",
       Erodibilidade_Classe: valorOuNulo(p.solo?.erodibilidadeClasse) ?? "não determinado",
       Erodibilidade_Classe_Origem: formatarDescricaoOrigem(p.solo?.erodibilidadeClasse),
+      Marcador_K_Ambiguo_D08: String(p.solo?.kAmbiguoAssociacao ?? p.kAmbiguoAssociacao ?? "indisponivel"),
+      Marcador_K_Ambiguo_D08_Origem: formatarDescricaoOrigem(p.solo?.kAmbiguoAssociacaoProveniencia),
+      Unidade_Determinante_K_2024_CodUm:
+        (p.criterioSelecao?.unidadeDeterminanteK2024?.codUm2 ||
+          p.criterioSelecao?.unidadeDeterminanteK2024?.codUm ||
+          p.solo?.unidadeDeterminanteK2024?.codUm2 ||
+          p.solo?.unidadeDeterminanteK2024?.codUm) ??
+        "não determinado",
+      Unidade_Determinante_K_2024_OgcFid:
+        (p.criterioSelecao?.unidadeDeterminanteK2024?.ogcFid ??
+          p.solo?.unidadeDeterminanteK2024?.ogcFid) ??
+        "",
+      Unidade_Determinante_K_2024_ErodUm:
+        (p.criterioSelecao?.unidadeDeterminanteK2024?.erodUm ??
+          p.solo?.unidadeDeterminanteK2024?.erodUm) ??
+        "não determinado",
 
       Frequencia_Solo_Nu: valorOuNulo(p.temporal?.D?.serie?.frequenciaSoloNu ?? p.temporal?.P?.serie?.frequenciaSoloNu) ?? "",
       Frequencia_Solo_Nu_Origem: formatarDescricaoOrigem(p.temporal?.D?.serie?.frequenciaSoloNu ?? p.temporal?.P?.serie?.frequenciaSoloNu),
@@ -125,19 +145,119 @@ export function extrairLinhasAbaDados(pontos: PontoAmostral[]): Record<string, u
 }
 
 /**
+ * Projeta estritamente as linhas conforme as colunas permitidas por cada Perfil de Exportação
+ * (Invariante 2 e Regra 6: Segregação Cega de Exportação).
+ */
+export function extrairLinhasPorPerfil(
+  pontos: PontoAmostral[],
+  perfil: PerfilExportacao = "planilha",
+  rotulosConsolidados?: Record<string, RotuloConsolidado>
+): Record<string, unknown>[] {
+  if (perfil === "planilha") {
+    return extrairLinhasAbaDados(pontos);
+  }
+
+  if (perfil === "interpretacao-cega") {
+    return pontos.map((p) => ({
+      Codigo: p.codigo,
+      Latitude: Number(p.latitude.toFixed(6)),
+      Longitude: Number(p.longitude.toFixed(6)),
+      Janela_Inicio: p.temporal?.D?.janela?.inicio ?? "",
+      Janela_Fim: p.temporal?.D?.janela?.fim ?? "",
+      Referencia_Cena_Tile: p.rastreio?.cenas?.join("; ") || "COPERNICUS/S2_SR_HARMONIZED",
+    }));
+  }
+
+  if (perfil === "campo-cego") {
+    return pontos.map((p) => ({
+      Codigo: p.codigo,
+      Latitude: Number(p.latitude.toFixed(6)),
+      Longitude: Number(p.longitude.toFixed(6)),
+      Latitude_DMS: formatToDMS(p.latitude, true),
+      Longitude_DMS: formatToDMS(p.longitude, false),
+      Municipio: valorOuNulo(p.localizacao?.municipio) ?? "não determinado",
+      Status_Fundiario: p.fundiario?.status ?? "sem-correspondencia",
+      Motivo_Acesso: p.fundiario?.motivo ?? "Inspeção presencial de campanha PPGTCA",
+      Codigo_CAR: p.fundiario?.codigoCar ?? "",
+      Titular_Mascarado: p.fundiario?.titularMascarado ?? "",
+      Rota_Acesso: `${p.latitude.toFixed(6)},${p.longitude.toFixed(6)}`,
+    }));
+  }
+
+  if (perfil === "voo-cego") {
+    return pontos.map((p) => ({
+      Codigo: p.codigo,
+      Latitude: Number(p.latitude.toFixed(6)),
+      Longitude: Number(p.longitude.toFixed(6)),
+      Area_Voo_Poligono: p.fundiario?.areaImovelHa ? `${p.fundiario.areaImovelHa} ha` : "Buffer 250 m",
+    }));
+  }
+
+  // perfil === "matriz-treino": Delega integralmente a montarMatrizTreino (Regra 4, Regra 6 e Postura 2/9)
+  if (!rotulosConsolidados || (pontos.length > 0 && Object.keys(rotulosConsolidados).length === 0)) {
+    throw new Error(
+      "[ABORTO — REGRA 4 / POSTURA 9] O perfil 'matriz-treino' exige o mapa autoritativo 'rotulosConsolidados' não vazio. " +
+      "Exportar a matriz de treinamento sem rótulos humanos consolidados produziria degradação silenciosa."
+    );
+  }
+
+  const resultadoMatriz = montarMatrizTreino(pontos, rotulosConsolidados, { modeloJanela: "D" });
+
+  // Pós-condição de segregação held-out (Decisão D16 e Regra 4):
+  for (const linhaTreino of resultadoMatriz.linhas) {
+    assegurarSegregacaoTreino(linhaTreino.rotuloModalidade);
+  }
+
+  return resultadoMatriz.linhas.map((l) => ({
+    Ponto_ID: l.pontoId,
+    Bloco_Espacial: l.blocoEspacial ?? "BLOCO_INDEFINIDO",
+    Elevacao_m: l.elevacao ?? "",
+    Declividade_pct: l.declividadePct ?? "",
+    Declividade_graus: l.declividadeGraus ?? "",
+    Curvatura_Perfil: l.curvaturaPerfil ?? "",
+    Curvatura_Plana: l.curvaturaPlana ?? "",
+    Acumulo_Fluxo: l.acumuloFluxo ?? "",
+    TWI: l.twi ?? "",
+    Ordem_Solo: l.ordemSolo ?? "",
+    Subordem_Solo: l.subOrdemSolo ?? "",
+    Grande_Grupo_Solo: l.grandeGrupoSolo ?? "",
+    Erodibilidade_Classe: l.erodibilidadeClasse ?? "",
+    Frequencia_Solo_Nu: l.frequenciaSoloNu ?? "",
+    Banda_B2: l.bandaB2 ?? "",
+    Banda_B4: l.bandaB4 ?? "",
+    Banda_B8: l.bandaB8 ?? "",
+    Banda_B12: l.bandaB12 ?? "",
+    NDVI: l.ndvi ?? "",
+    BSI: l.bsi ?? "",
+    RUSLE_Fator_K: l.fatorK ?? "",
+    RUSLE_Fator_R: l.fatorR ?? "",
+    Precip_Acum_30d_mm: l.precipAcum30d ?? "",
+    Precip_Acum_90d_mm: l.precipAcum90d ?? "",
+    I30_Max_mm_h: l.i30Max ?? "",
+    N_Eventos_Erosivos: l.nEventosErosivos ?? "",
+    Indice_Mecanismo: l.indiceMecanismo ?? "",
+    Classe_Alvo_Binaria: l.classeAlvoBinaria,
+    Rotulo_Classe: l.rotuloClasse,
+    Rotulo_Modalidade: l.rotuloModalidade,
+  }));
+}
+
+/**
  * Gera a planilha XLSX completa com 3 abas, garantindo guarda e invariantes.
  */
 export async function gerarPlanilhaXLSX(pontos: PontoAmostral[], opcoes: OpcoesExportacao = {}): Promise<Buffer> {
   // 1. Guarda antissintético
   assegurarApenasPontosReais(pontos, "geração de planilha XLSX");
 
-  // 2. Extração e montagem da Aba 1
-  const linhasDados = extrairLinhasAbaDados(pontos);
+  const perfilAtivo = opcoes.perfil ?? "planilha";
+
+  // 2. Extração e montagem da Aba 1 projetada pelo perfil
+  const linhasDados = extrairLinhasPorPerfil(pontos, perfilAtivo, opcoes.rotulosConsolidados);
   const cabecalho = linhasDados.length > 0 ? Object.keys(linhasDados[0]) : [];
 
   // 3. Validação de Invariantes sobre o artefato projetado
   const artefato: ArtefatoProjetado = {
-    perfil: opcoes.perfil ?? "planilha",
+    perfil: perfilAtivo,
     cabecalho,
     linhas: linhasDados,
   };

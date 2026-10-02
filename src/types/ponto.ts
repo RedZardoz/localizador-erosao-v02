@@ -28,6 +28,9 @@ export interface BlocoSerie {
   maiorSequenciaSoloNu: Proveniencia<number>;
   mesModalExposicao: Proveniencia<number>;
   compostoSoloNu: Record<string, Proveniencia<number>>;
+  persistenciaTemporal?: Proveniencia<number>;
+  tendenciaSenSlope?: Proveniencia<number>;
+  amplitudeSazonal?: Proveniencia<number>;
 }
 
 export interface BlocoChuva {
@@ -71,6 +74,7 @@ export interface PontoAmostral {
     b2?: Proveniencia<number>;
     b4?: Proveniencia<number>;
     b8?: Proveniencia<number>;
+    b11?: Proveniencia<number>;
     b12?: Proveniencia<number>;
   };
 
@@ -82,6 +86,16 @@ export interface PontoAmostral {
     nivelK: 1 | 2;
     phiDiag: number | null;                   // null quando alguma dimensao tem amplitude zero
     semente: number;
+    raioThinningEfetivoMetros?: number;
+    unidadeDeterminanteK2024?: {
+      codUm: string;
+      codUm2: string;
+      ogcFid: number | null;
+      erodUm: string;
+      kSolos: number | null;
+      kSolosBruto: number | null;
+      nivelK: 1 | 2 | null;
+    } | null;
   };
 
   localizacao: {
@@ -107,10 +121,60 @@ export interface PontoAmostral {
     tipoUnidade: Proveniencia<string>;        // simples | associacao
     confiancaPedologica: "alta" | "media" | "indisponivel";
     erodibilidadeClasse: Proveniencia<string>; // CATEGORICA
+    kAmbiguoAssociacao?: true | false | "indisponivel"; // D08 emendada / W1 e W3: três estados (true, false, "indisponivel")
+    kAmbiguoAssociacaoProveniencia?: Proveniencia<boolean>;
+    ramoAmbiguidadeD08?:
+      | "ramo-a-tabelado-multiplos-componentes"
+      | "ramo-b-indisponivel-generalizacao-1-componente"
+      | "unidade-simples-1-componente"
+      | "fora-do-dominio"
+      | "sem-camada-2024";
+    unidadeDeterminanteK2024?: {
+      codUm: string;
+      codUm2: string;
+      ogcFid: number | null;
+      erodUm: string;
+      kSolos: number | null;
+      kSolosBruto: number | null;
+      nivelK: 1 | 2 | null;
+    } | null;
+    correspondenciaCartas2024?: "correspondente" | "divergente" | "sem-camada-2024";
+    divergenciaEntreCartas2024?: boolean;
+    provenienciaK?:
+      | "tabelado"
+      | "indisponivel-ramo-b-generalizacao"
+      | "indisponivel-sem-camada-2024"
+      | "heuristica-fallback-nao-conferida"
+      | "divergencia-entre-cartas"
+      | "fora-do-dominio";
+    pontoEmFronteiraPedologica?: Proveniencia<boolean>;
+    fronteiraCompartilhadaExata?: boolean;
+    causaZeroFeicoes?:
+      | "fora-cobertura-camada-estadual"
+      | "dentro-cobertura-lacuna-ou-agua"
+      | "dentro-cobertura-categoria-nao-solo"
+      | "fronteira-compartilhada-exata"
+      | null;
+    totalFeicoesSoloRetornadas?: number;
+    indiceFeicaoSoloEscolhida?: number | null;
+    feicaoSoloEscolhidaId?: string | null;
+    viaFatorKD14?:
+      | "k_solos_camada_2024_tabelado"
+      | "fallback_faixa_classe_d14"
+      | "indisponivel_fora_do_dominio"
+      | "indisponivel_sem_cobertura"
+      | "indisponivel_fronteira_exata";
   };
+
+  // Metadados de elegibilidade multitemporal ESA WorldCover (D07: 2020 v100 ∩ 2021 v200 em [30, 40])
+  classeWorldCover2020?: Proveniencia<number>;
+  classeWorldCover2021?: Proveniencia<number>;
+  // Espelho de conveniencia de solo.kAmbiguoAssociacao nos três estados (D08 / W3 — nunca entra na matriz X)
+  kAmbiguoAssociacao?: true | false | "indisponivel";
 
   temporal: Partial<Record<"D" | "P", BlocoTemporal>>;  // uma janela por modelo (D04)
 
+  papelConjunto?: "treino" | "held-out" | "indisponivel"; // designação de D16 (do sorteio de polígonos)
   rotulo?: RotuloConsolidado;                 // Fase 6 — sempre de observacao
   fundiario?: ContextoFundiario;
   linhaDeBase?: LinhaDeBaseRUSLE;             // Fase 8 — nunca em matriz

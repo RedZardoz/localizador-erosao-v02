@@ -1,0 +1,61 @@
+========================================================================================
+RELATORIO DE VERIFICACAO WFS/WMS DE ERODIBILIDADE (28/09/2026)
+========================================================================================
+
+1. DESCRIBEFEATURETYPE DE geonode:bra_erodibilidade_2024_sirgas2000
+Total de atributos: 20
+Lista completa de campos: ogc_fid, cd_fcim, nom_unidad, cod_um, cod_um2, legenda, legenda_c1, legenda_c2, legenda_c3, legenda_c4, erod_c1, erod_c2, erod_c3, erod_c4, erod_um, fator_k_um, area_ha, area_km2, k_solos, geometry
+erod_c4 existe? True
+  - ogc_fid: xsd:int
+  - cd_fcim: xsd:string
+  - nom_unidad: xsd:string
+  - cod_um: xsd:string
+  - cod_um2: xsd:string
+  - legenda: xsd:string
+  - legenda_c1: xsd:string
+  - legenda_c2: xsd:string
+  - legenda_c3: xsd:string
+  - legenda_c4: xsd:string
+  - erod_c1: xsd:string
+  - erod_c2: xsd:string
+  - erod_c3: xsd:string
+  - erod_c4: xsd:string
+  - erod_um: xsd:string
+  - fator_k_um: xsd:string
+  - area_ha: xsd:int
+  - area_km2: xsd:double
+  - k_solos: xsd:double
+  - geometry: gml:MultiPolygonPropertyType
+
+2. CONSULTA GETFEATUREINFO (3 CAMADAS, feature_count=10) E CORRESPONDENCIA (T2.4)
+  [R01_Toledo_Rural_Norte] (-24.6200, -53.7100) | PR: LVef1 ['LATOSSOLO'] (simples) | 2024: cod_um=SG22LVef1LV ordens=['LATOSSOLO'] erods=['Muito baixa'] erod_um=Muito baixa | BR: Muito baixa | Estrito=True (Dom=True)
+  [R02_Cascavel_Rural_Oeste_RRe12] (-25.0669, -53.6880) | PR: RRe12 ['NEOSSOLO', 'CHERNOSSOLO', 'NITOSSOLO'] (associacao) | 2024: cod_um=SG22NVef7NV ordens=['NITOSSOLO', 'NEOSSOLO', 'NEOSSOLO', 'CHERNOSSOLO'] erods=['Baixa', 'Alta', 'Muito alta', 'Alta'] erod_um=Média | BR: Alta | Estrito=False (Dom=False)
+  [R03_Palotina_Rural_Leste] (-24.2860, -53.7500) | PR: NVef2 ['NITOSSOLO'] (simples) | 2024: cod_um=SG22LVef1LV ordens=['LATOSSOLO'] erods=['Muito baixa'] erod_um=Muito baixa | BR: Muito baixa | Estrito=False (Dom=False)
+  [R04_AssisChateaubriand_Sul] (-24.4200, -53.8200) | PR: NVef2 ['NITOSSOLO'] (simples) | 2024: cod_um=SG22LVef1LV ordens=['LATOSSOLO'] erods=['Muito baixa'] erod_um=Muito baixa | BR: Muito baixa | Estrito=False (Dom=False)
+  [R05_MarechalCandidoRondon_Rural_Leste] (-24.5300, -53.9800) | PR: LVdf13 ['LATOSSOLO'] (simples) | 2024: cod_um=SG22LVdf3LV ordens=['LATOSSOLO'] erods=['Muito baixa'] erod_um=Muito baixa | BR: Muito baixa | Estrito=True (Dom=True)
+  [R06_TerraRoxa_Rural_Sul] (-24.2200, -54.0800) | PR: LVd13 ['LATOSSOLO'] (simples) | 2024: cod_um=SG21LVe2LV ordens=['LATOSSOLO'] erods=['Baixa'] erod_um=Baixa | BR: Baixa | Estrito=True (Dom=True)
+  [R07_Guaira_Rural_Sudeste] (-24.1800, -54.1800) | PR: LVe2 ['LATOSSOLO'] (simples) | 2024: cod_um=SG21LVe2LV ordens=['LATOSSOLO'] erods=['Baixa'] erod_um=Baixa | BR: Baixa | Estrito=True (Dom=True)
+  [R08_NovaSantaRosa_Rural_Norte] (-24.4300, -53.9200) | PR: NVef2 ['NITOSSOLO'] (simples) | 2024: cod_um=SG22NVef2NV ordens=['NITOSSOLO'] erods=['Baixa'] erod_um=Baixa | BR: Baixa | Estrito=True (Dom=True)
+  [R09_QuatroPontes_Rural_Sul] (-24.6100, -53.9600) | PR: LVdf13 ['LATOSSOLO'] (simples) | 2024: cod_um=SG22LVdf3LV ordens=['LATOSSOLO'] erods=['Muito baixa'] erod_um=Muito baixa | BR: Muito baixa | Estrito=True (Dom=True)
+  [R10_Mercedes_Rural_Leste] (-24.4500, -54.1000) | PR: NVef2 ['NITOSSOLO'] (simples) | 2024: cod_um=SG21NVef5NV ordens=['NITOSSOLO', 'NEOSSOLO', 'NEOSSOLO', 'CHERNOSSOLO'] erods=['Baixa', 'Alta', 'Muito alta', 'Alta'] erod_um=Média | BR: Alta | Estrito=False (Dom=True)
+  [R11_PatoBragado_Rural_Leste] (-24.6300, -54.1700) | PR: LVef1 ['LATOSSOLO'] (simples) | 2024: cod_um=SG21LVef1LV ordens=['LATOSSOLO'] erods=['Muito baixa'] erod_um=Muito baixa | BR: Baixa | Estrito=True (Dom=True)
+  [R12_EntreRiosDoOeste_Rural_Leste] (-24.7000, -54.1800) | PR: NVef2 ['NITOSSOLO'] (simples) | 2024: cod_um=SG21NVef1NV ordens=['NITOSSOLO'] erods=['Baixa'] erod_um=Baixa | BR: Baixa | Estrito=True (Dom=True)
+  [R13_SantaHelena_Rural_Leste] (-24.8800, -54.2600) | PR: agua [] (None) | 2024: cod_um=SG21NVef1NV ordens=['NITOSSOLO'] erods=['Baixa'] erod_um=Baixa | BR: Baixa | Estrito=False (Dom=False)
+  [R14_Missal_Rural_Leste] (-25.0900, -54.1900) | PR: LVef2 ['LATOSSOLO', 'NITOSSOLO'] (associacao) | 2024: cod_um=SG21NVef3NV ordens=['NITOSSOLO', 'LATOSSOLO'] erods=['Baixa', 'Muito baixa'] erod_um=Baixa | BR: Baixa | Estrito=False (Dom=False)
+  [R15_Itaipulandia_Rural_Norte] (-25.1000, -54.4200) | PR: LVef3 ['LATOSSOLO'] (simples) | 2024: cod_um=SG21LVdf1LV ordens=['LATOSSOLO'] erods=['Muito baixa'] erod_um=Muito baixa | BR: Muito baixa | Estrito=True (Dom=True)
+  [R16_SaoMiguelDoIguacu_Rural_Norte] (-25.2800, -54.2200) | PR: NVef8 ['NITOSSOLO'] (simples) | 2024: cod_um=SG21NVef5NV ordens=['NITOSSOLO', 'NEOSSOLO', 'NEOSSOLO', 'CHERNOSSOLO'] erods=['Baixa', 'Alta', 'Muito alta', 'Alta'] erod_um=Média | BR: Alta | Estrito=False (Dom=True)
+  [R17_Medianeira_Rural_Norte] (-25.2200, -54.0800) | PR: NVdf3 ['NITOSSOLO'] (simples) | 2024: cod_um=SG21LVef1LV ordens=['LATOSSOLO'] erods=['Muito baixa'] erod_um=Muito baixa | BR: Baixa | Estrito=False (Dom=False)
+  [R18_CeuAzul_Rural_Sul] (-25.1900, -53.8400) | PR: RRe12 ['NEOSSOLO', 'CHERNOSSOLO', 'NITOSSOLO'] (associacao) | 2024: cod_um=SG22LVef1LV ordens=['LATOSSOLO'] erods=['Muito baixa'] erod_um=Muito baixa | BR: Muito baixa | Estrito=False (Dom=False)
+  [R19_Matelandia_Rural_Norte] (-25.1800, -53.9800) | PR: NVef2 ['NITOSSOLO'] (simples) | 2024: cod_um=SG22RLm2RL ordens=['NEOSSOLO', 'CHERNOSSOLO'] erods=['Alta', 'Média'] erod_um=Alta | BR: Alta | Estrito=False (Dom=False)
+  [R20_SantaTerezinhaItaipu_Rural_Norte] (-25.3800, -54.4200) | PR: LVdf13 ['LATOSSOLO'] (simples) | 2024: cod_um=SG21LVdf1LV ordens=['LATOSSOLO'] erods=['Muito baixa'] erod_um=Muito baixa | BR: Muito baixa | Estrito=True (Dom=True)
+  [C01_Palotina_Urbano] (-24.2860, -53.8400) | PR: Area Urbana [] (None) | 2024: cod_um=SG22Ár ordens=[] erods=['Área urbana'] erod_um=Área urbana | BR: Area urbana | Estrito=False (Dom=False)
+  [C02_SantaHelena_CorpoDagua] (-24.8531, -54.3622) | PR: LVef1 ['LATOSSOLO'] (simples) | 2024: cod_um=SG21Co ordens=[] erods=["Corpo d'água"] erod_um=Corpo d'água | BR: Corpos dagua | Estrito=False (Dom=False)
+
+3. RESUMO QUANTITATIVO DE CORRESPONDENCIA (T2.4)
+  Total de pontos rurais consultados: 20
+  Pontos rurais com solo mapeado em ambas as cartas (PR e 2024): 19
+  Pontos rurais em que 2024 retornou poligono nao-solo (urbano/agua de escala 1:250k): 0
+  Correspondencia estrita da sequencia completa de componentes (ordens PR == ordens 2024): 10 / 19
+  Correspondencia apenas do componente dominante (ordem_1 == legenda_c1): 12 / 19
+  Divergencia entre as duas cartas sobre solo mapeado: 9 / 19
+  Unidades de associacao rurais avaliadas: 3 (correspondentes estritas: 0)

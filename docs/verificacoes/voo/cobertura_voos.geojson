@@ -1,0 +1,113 @@
+{
+ "type": "FeatureCollection",
+ "name": "cobertura_voos_spectral2_altum",
+ "metadata": {
+  "gerado_em": "2026-09-27T16:19:52",
+  "metodo": "mascara de dados validos do ortomosaico ODM, vetorizada, simplificada a 2 m e reprojetada para WGS84",
+  "sensor": "MicaSense Altum (2064x1544 multiespectral + 160x120 termica)",
+  "excluida": "Missao 002 — ortomosaico degenerado (26x42 px a 6,3 m); 12 de 80 cameras mal reconstruidas",
+  "nota_area": "area_ha e o footprint de dados validos do ortomosaico; area_reconstruida_ha e a area do bloco reconstruido pelo ODM. Medem coisas diferentes."
+ },
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "missao": "Missao_000",
+    "municipio": "Céu Azul",
+    "area_ha": 12.2,
+    "crs_origem": "EPSG:32722",
+    "gsd_cm": 5.0,
+    "bandas": 7,
+    "centroide_lat": -25.158071,
+    "centroide_lon": -53.859226,
+    "fonte": "Dados de voo/Erosão Laminar/Missões/Missão 000/Processado/odm_orthophoto/odm_orthophoto.tif",
+    "gsd_nativo_cm": 3.59,
+    "area_reconstruida_ha": 6.84,
+    "disparos_reconstruidos": 159,
+    "disparos_iniciais": 164,
+    "erro_reprojecao_px": 0.692,
+    "gps_ce90_m": 1.47,
+    "gps_le90_m": 4.25,
+    "duracao_voo_min": 13.0,
+    "produtividade_ha_por_min": 0.53
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -53.86119099846066,
+       -25.156667257717952
+      ],
+      [
+       -53.86125473838266,
+       -25.15939758645911
+      ],
+      [
+       -53.857261090167086,
+       -25.15947476527585
+      ],
+      [
+       -53.85719743891585,
+       -25.156744427015205
+      ],
+      [
+       -53.86119099846066,
+       -25.156667257717952
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "missao": "Missao_009",
+    "municipio": "Medianeira",
+    "area_ha": 30.01,
+    "crs_origem": "EPSG:32721",
+    "gsd_cm": 5.0,
+    "bandas": 7,
+    "centroide_lat": -25.359279,
+    "centroide_lon": -54.033212,
+    "fonte": "Dados de voo/Erosão Laminar/Missões/Missão 009/Processado/Missao-009-orthophoto.tif",
+    "gsd_nativo_cm": 3.96,
+    "area_reconstruida_ha": 21.56,
+    "disparos_reconstruidos": 200,
+    "disparos_iniciais": 200,
+    "erro_reprojecao_px": 0.585,
+    "gps_ce90_m": 7.04,
+    "gps_le90_m": 1.01,
+    "duracao_voo_min": 9.3,
+    "produtividade_ha_por_min": 2.32
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -54.03607398406898,
+       -25.35694018519444
+      ],
+      [
+       -54.03595703831995,
+       -25.361731724118442
+      ],
+      [
+       -54.030350466585475,
+       -25.36161863705342
+      ],
+      [
+       -54.03046763274866,
+       -25.356827122464537
+      ],
+      [
+       -54.03607398406898,
+       -25.35694018519444
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

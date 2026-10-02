@@ -13,6 +13,9 @@ import { PainelMatrizModal } from "@/components/matriz/PainelMatrizModal";
 import { DecisoesModal } from "@/components/decisoes/DecisoesModal";
 import { ExportModal } from "@/components/export/ExportModal";
 import { SystemLogsModal } from "@/components/diagnostics/SystemLogsModal";
+import { ApresentacaoSpotlight } from "@/components/presentation/ApresentacaoSpotlight";
+import { ApresentacaoManager } from "@/components/presentation/ApresentacaoManager";
+import { ModalExplicativaMetodologica } from "@/components/presentation/ModalExplicativaMetodologica";
 import { useSarelStore } from "@/store/useSarelStore";
 
 // Carregamento dinâmico do MapViewer com WebGL desabilitando SSR
@@ -35,6 +38,66 @@ export default function HomePage() {
 
   useEffect(() => {
     setMontado(true);
+
+    if (typeof window === "undefined") return;
+
+    // 1. Remove e impede qualquer overlay flutuante de erro na frente da interface
+    const suprimirBadgeFlutuante = () => {
+      document
+        .querySelectorAll("nextjs-portal, [data-nextjs-toast], [data-nextjs-dialog-overlay]")
+        .forEach((el) => {
+          (el as HTMLElement).style.setProperty("display", "none", "important");
+          el.remove();
+        });
+    };
+    suprimirBadgeFlutuante();
+
+    const observer = new MutationObserver(() => suprimirBadgeFlutuante());
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+
+    // 2. Redireciona erros de runtime e console.error exclusivamente para Governança & Sistema
+    const origConsoleError = console.error;
+    console.error = (...args: unknown[]) => {
+      try {
+        const msg = args
+          .map((a) => (a instanceof Error ? a.message : typeof a === "string" ? a : JSON.stringify(a)))
+          .join(" ")
+          .trim();
+        if (msg && !/abort|cancel|tile|ResizeObserver/i.test(msg)) {
+          useSarelStore.getState().adicionarLog("error", "Runtime / Console", msg.slice(0, 320));
+        }
+      } catch {
+        // Ignora falha de serialização
+      }
+    };
+
+    const onWinError = (ev: ErrorEvent) => {
+      const msg = ev.message || ev.error?.message || "Erro de execução capturado";
+      if (!/abort|cancel|ResizeObserver/i.test(msg)) {
+        useSarelStore.getState().adicionarLog("error", "Runtime / Sistema", msg.slice(0, 320));
+      }
+      ev.preventDefault();
+    };
+
+    const onUnhandledRejection = (ev: PromiseRejectionEvent) => {
+      const msg =
+        ev.reason?.message ||
+        (typeof ev.reason === "string" ? ev.reason : "Promessa rejeitada em segundo plano");
+      if (!/abort|cancel/i.test(msg)) {
+        useSarelStore.getState().adicionarLog("warning", "Assíncrono / Rede", msg.slice(0, 320));
+      }
+      ev.preventDefault();
+    };
+
+    window.addEventListener("error", onWinError);
+    window.addEventListener("unhandledrejection", onUnhandledRejection);
+
+    return () => {
+      observer.disconnect();
+      console.error = origConsoleError;
+      window.removeEventListener("error", onWinError);
+      window.removeEventListener("unhandledrejection", onUnhandledRejection);
+    };
   }, []);
 
   useEffect(() => {
@@ -75,16 +138,23 @@ export default function HomePage() {
         <MapViewer />
       </div>
 
-      {/* 3. Modais e Centrais de Trabalho */}
-      <SettingsModal />
-      <RegionRequestModal />
-      <CandidateSelectionModal />
-      <AuditDossierModal />
-      <PainelCampanhaModal />
-      <PainelMatrizModal />
-      <DecisoesModal />
-      <ExportModal />
-      <SystemLogsModal />
+      {/* 3. Modais, Popups e Centrais de Trabalho (Sempre em Modo Claro de Alto Contraste) */}
+      <div className="light-popup">
+        <SettingsModal />
+        <RegionRequestModal />
+        <CandidateSelectionModal />
+        <AuditDossierModal />
+        <PainelCampanhaModal />
+        <PainelMatrizModal />
+        <DecisoesModal />
+        <ExportModal />
+        <SystemLogsModal />
+
+        {/* 4. Modo de Apresentação & Tour Metodológico (PPGTCA 2026) */}
+        <ApresentacaoSpotlight />
+        <ApresentacaoManager />
+        <ModalExplicativaMetodologica />
+      </div>
     </main>
   );
 }

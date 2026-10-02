@@ -1,10 +1,11 @@
-﻿/**
+/**
  * ============================================================================
  * Máscara e Critérios de Elegibilidade Espacial — SAREL (PPGTCA 2026)
  * ============================================================================
  *
- * CRITÉRIOS DE ELEGIBILIDADE (PLANEJAMENTO V3, §10.1):
- * 1. Uso do Solo (P05): ESA WorldCover 10m [30: Pastagem, 40: Lavouras, 60: Solo Exposto].
+ * CRITÉRIOS DE ELEGIBILIDADE (PLANEJAMENTO V3, §10.1 / DECISÃO D07 / P05):
+ * 1. Uso do Solo (D07 / P05): ESA WorldCover 10m [30: Pastagem, 40: Lavouras].
+ *    A classe 60 (Solo Exposto / Bare / sparse vegetation) é estritamente excluída (D07 / P05).
  * 2. Declividade (P04): Calculada estritamente em EPSG:31982 (SIRGAS 2000 / UTM 22S)
  *    na faixa de escoamento superficial (padrão: 3% a 20%, relevo suave-ondulado e ondulado).
  * 3. Exclusão Hídrica (P04): Buffer de 30 metros ao redor de corpos d''água (JRC Global Surface Water).
@@ -27,7 +28,7 @@ export interface OpcoesElegibilidade {
 }
 
 export const OPCOES_ELEGIBILIDADE_PADRAO: Required<OpcoesElegibilidade> = {
-  allowedLandCoverClasses: [30, 40, 60], // P05
+  allowedLandCoverClasses: [30, 40], // D07 / P05 (classe 60 excluída)
   minSlopePercent: 3.0,                  // P04
   maxSlopePercent: 20.0,                 // P04
   waterOccurrenceThreshold: 10,          // P04

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * Estratificação Multivariada no Espaço Ŝ × Ê × K̂ — SAREL (PPGTCA 2026)
  * ============================================================================
@@ -42,6 +42,7 @@ export interface PontoEstratificado {
     nivelK: 1 | 2;
     phiDiag: number | null;  // null quando amplitude de S ou E for zero
     semente: number;
+    raioThinningEfetivoMetros?: number;
   };
 }
 
@@ -96,6 +97,60 @@ export function classificarTercil(valor: number, limiares: { t1: number; t2: num
 }
 
 /**
+ * Lista canônica dos 18 estratos tridimensionais (3 × 3 × 2) da Decisão D12.
+ */
+export const TODOS_ESTRATOS_D12: readonly string[] = [
+  "E_1_1_1", "E_1_1_2",
+  "E_1_2_1", "E_1_2_2",
+  "E_1_3_1", "E_1_3_2",
+  "E_2_1_1", "E_2_1_2",
+  "E_2_2_1", "E_2_2_2",
+  "E_2_3_1", "E_2_3_2",
+  "E_3_1_1", "E_3_1_2",
+  "E_3_2_1", "E_3_2_2",
+  "E_3_3_1", "E_3_3_2",
+] as const;
+
+/**
+ * Particiona um conjunto de candidatos nos 18 estratos de D12 usando os tercis
+ * empíricos calculados sobre o próprio conjunto (calcularLimiaresTercis + classificarTercil).
+ */
+export function particionarCandidatosEm18Estratos<T extends CandidatoEstratificacao>(
+  candidatos: T[]
+): {
+  limiaresS: { t1: number; t2: number };
+  limiaresE: { t1: number; t2: number };
+  todosPossiveisEstratos: string[];
+  estratosMap: Record<string, T[]>;
+} {
+  const sVals = candidatos.map((c) => c.declividadePct);
+  const eVals = candidatos.map((c) => c.frequenciaSoloNu);
+  const limiaresS = calcularLimiaresTercis(sVals);
+  const limiaresE = calcularLimiaresTercis(eVals);
+
+  const estratosMap: Record<string, T[]> = {};
+  const todosPossiveisEstratos = [...TODOS_ESTRATOS_D12];
+  for (const idEstrato of todosPossiveisEstratos) {
+    estratosMap[idEstrato] = [];
+  }
+
+  for (const c of candidatos) {
+    const tercilS = classificarTercil(c.declividadePct, limiaresS);
+    const tercilE = classificarTercil(c.frequenciaSoloNu, limiaresE);
+    const id = `E_${tercilS}_${tercilE}_${c.nivelK}`;
+    if (!estratosMap[id]) estratosMap[id] = [];
+    estratosMap[id].push(c);
+  }
+
+  return {
+    limiaresS,
+    limiaresE,
+    todosPossiveisEstratos,
+    estratosMap,
+  };
+}
+
+/**
  * Executa a amostragem estratificada multivariada sobre os 18 estratos físicos.
  */
 export function executarAmostragemEstratificada(
@@ -126,12 +181,11 @@ export function executarAmostragemEstratificada(
     };
   }
 
-  // 1. Limiares empíricos de terços dentro da AOI
+  // 1. Limiares empíricos e partição canônica nos 18 estratos
   const sVals = candidatos.map(c => c.declividadePct);
   const eVals = candidatos.map(c => c.frequenciaSoloNu);
-
-  const limiaresS = calcularLimiaresTercis(sVals);
-  const limiaresE = calcularLimiaresTercis(eVals);
+  const { limiaresS, limiaresE, todosPossiveisEstratos, estratosMap } =
+    particionarCandidatosEm18Estratos(candidatos);
 
   // Amplitudes para cálculo do Phi_diag
   let sMin = sVals[0];
@@ -151,27 +205,6 @@ export function executarAmostragemEstratificada(
   const amplitudeSValida = sMax > sMin;
   const amplitudeEValida = eMax > eMin;
   const podeCalcularPhi = amplitudeSValida && amplitudeEValida;
-
-  // 2. Agrupamento dos candidatos nos 18 estratos
-  const estratosMap: Record<string, CandidatoEstratificacao[]> = {};
-  const todosPossiveisEstratos: string[] = [];
-
-  for (let s = 1; s <= 3; s++) {
-    for (let e = 1; e <= 3; e++) {
-      for (const k of [1, 2] as const) {
-        const idEstrato = `E_${s}_${e}_${k}`;
-        todosPossiveisEstratos.push(idEstrato);
-        estratosMap[idEstrato] = [];
-      }
-    }
-  }
-
-  for (const c of candidatos) {
-    const tercilS = classificarTercil(c.declividadePct, limiaresS);
-    const tercilE = classificarTercil(c.frequenciaSoloNu, limiaresE);
-    const id = `E_${tercilS}_${tercilE}_${c.nivelK}`;
-    estratosMap[id].push(c);
-  }
 
   // 3. Identificação de ocupação dos estratos
   const estratosOcupadosIds = todosPossiveisEstratos.filter(id => estratosMap[id].length > 0);

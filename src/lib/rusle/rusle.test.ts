@@ -84,6 +84,66 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
       const respIndisp = obterFatorCComProveniencia(null);
       expect(respIndisp.estado).toBe("indisponivel");
     });
+
+    it("rejeita saída híbrida C > 1 (ex.: NDVI = -1.0, BSI = 1.0 -> C = 2.0) devolvendo indisponivel com causa fora-do-dominio (F0.2, Regra 2)", () => {
+      expect(() => calcularFatorC(-1.0, 1.0)).toThrow(ErroForaDoDominio);
+
+      const resForaDominio = obterFatorCComProveniencia(
+        {
+          estado: "medido",
+          valor: -1.0,
+          fonte: "Sentinel-2 L2A",
+          adquiridoEm: "2026-05-10",
+          consultadoEm: "2026-09-10",
+        },
+        {
+          estado: "medido",
+          valor: 1.0,
+          fonte: "Sentinel-2 L2A",
+          adquiridoEm: "2026-05-10",
+          consultadoEm: "2026-09-10",
+        }
+      );
+      expect(resForaDominio.estado).toBe("indisponivel");
+      if (resForaDominio.estado === "indisponivel") {
+        expect(resForaDominio.causa).toBe("fora-do-dominio");
+        expect(resForaDominio.motivo).toContain("NDVI=-1");
+        expect(resForaDominio.motivo).toContain("BSI=1");
+        expect(resForaDominio.motivo).toContain("2.0000");
+      }
+    });
+
+    it("exercita o caminho híbrido ativo com BSI presente em ao menos três pontos do domínio físico [0, 1] (F0.2)", () => {
+      const casos: Array<{ ndvi: number; bsi: number; esperado: number }> = [
+        { ndvi: 0.10, bsi: 0.50, esperado: 0.6750 },
+        { ndvi: 0.30, bsi: -0.20, esperado: 0.2800 }, // palhada senescente (NDVI baixo, BSI negativo)
+        { ndvi: 0.20, bsi: 0.25, esperado: 0.5000 },  // solo mineral exposto (NDVI baixo, BSI positivo)
+      ];
+
+      for (const caso of casos) {
+        const res = obterFatorCComProveniencia(
+          {
+            estado: "medido",
+            valor: caso.ndvi,
+            fonte: "Sentinel-2 L2A",
+            adquiridoEm: "2026-05-10",
+            consultadoEm: "2026-09-10",
+          },
+          {
+            estado: "medido",
+            valor: caso.bsi,
+            fonte: "Sentinel-2 L2A",
+            adquiridoEm: "2026-05-10",
+            consultadoEm: "2026-09-10",
+          }
+        );
+        expect(res.estado).toBe("modelado");
+        if (res.estado === "modelado") {
+          expect(res.valor).toBeCloseTo(caso.esperado, 4);
+          expect(res.insumos).toEqual(["NDVI Sentinel-2 L2A", "BSI Sentinel-2 L2A"]);
+        }
+      }
+    });
   });
 
   describe("14.2 Fator P (Renard et al., 1997)", () => {
@@ -119,10 +179,13 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
   });
 
   describe("14.4 Coerência e Invariante 1", () => {
-    it("com D13, D14 ou D15 pendente, perdaSolo é indisponivel com causa decisao-pendente", () => {
-      expect(REGISTRO_DECISOES.D13.estado).toBe("pendente");
-      expect(REGISTRO_DECISOES.D14.estado).toBe("pendente");
-      expect(REGISTRO_DECISOES.D15.estado).toBe("pendente");
+    // D13 e D15 estao integradas. Sem insumos de R e LS fornecidos, o Invariante 1
+    // continua retendo perdaSolo com a causa "insuficiente", pois os fatores
+    // nao puderam ser calculados por falta de dados.
+    it("com D13 e D15 integradas mas sem insumos fornecidos, R, LS e perdaSolo são indisponíveis por insuficiente", () => {
+      expect(REGISTRO_DECISOES.D13.estado).toBe("decidida");
+      expect(REGISTRO_DECISOES.D14.estado).toBe("decidida");
+      expect(REGISTRO_DECISOES.D15.estado).toBe("decidida");
 
       const rusle = montarLinhaDeBaseRUSLE({
         ndviProveniencia: {
@@ -139,6 +202,137 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
       expect(rusle.fatorR.estado).toBe("indisponivel");
       expect(rusle.fatorK.estado).toBe("indisponivel");
       expect(rusle.fatorLS.estado).toBe("indisponivel");
+
+      if (rusle.fatorR.estado === "indisponivel") {
+        expect(rusle.fatorR.causa).toBe("insuficiente");
+      }
+      if (rusle.fatorLS.estado === "indisponivel") {
+        expect(rusle.fatorLS.causa).toBe("insuficiente");
+      }
+
+      expect(rusle.perdaSolo.estado).toBe("indisponivel");
+      if (rusle.perdaSolo.estado === "indisponivel") {
+        expect(rusle.perdaSolo.causa).toBe("insuficiente");
+      }
+      expect(rusle.memoriaCalculo).toBeNull();
+    });
+
+    it("calcula RUSLE de ponta a ponta com insumos reais dos 5 fatores (D01, D13, D14, D15 e Renard 1997) sem substitutos", () => {
+      const dataIso = "2026-09-10T21:00:00Z";
+      const rusle = montarLinhaDeBaseRUSLE({
+        // Fator C (D01): NDVI 0.5 -> C = (1 - 0.5) / 2 = 0.25
+        ndviProveniencia: {
+          estado: "medido",
+          valor: 0.5,
+          fonte: "Sentinel-2 L2A",
+          adquiridoEm: dataIso,
+          consultadoEm: dataIso,
+        },
+        // Fator K (D14): Camada oficial 2024 -> kSolos = 0.0285
+        camadaErodibilidade2024: {
+          kSolos: 0.0285,
+          erodUm: "Média",
+          codUm: "SG22NVef7",
+          ogcFid: 105112,
+        },
+        // Fator R (D13): Coordenadas de Toledo (BP3) -> CHIRPS climatológico regional
+        insumoFatorR: {
+          latitude: -24.72,
+          longitude: -53.74,
+          identificadorFonte: "CHIRPS v2.0 0.05° Toledo",
+        },
+        // Fator LS (D15): Rampa típica em Toledo (declividade 5.143° = 9%, área contribuição 22.13 * 30 = 663.9 m²)
+        insumoFatorLS: {
+          declividadeGraus: 5.143,
+          areaContribuicaoMontanteM2: 663.9,
+          latitude: -24.72,
+          longitude: -53.74,
+        },
+        // Fator P: Padrão (Renard et al., 1997) -> P = 1.0 tabelado
+      });
+
+      // Sob a Diretriz H1 (02/10/2026), sem fonte primária arquivada contendo os coeficientes,
+      // fatorR é compulsoriamente indisponivel ('insuficiente') e perdaSolo fica retida (Invariante 1).
+      expect(rusle.fatorC.estado).toBe("modelado");
+      expect(rusle.fatorK.estado).toBe("tabelado");
+      expect(rusle.fatorR.estado).toBe("indisponivel");
+      if (rusle.fatorR.estado === "indisponivel") {
+        expect(rusle.fatorR.causa).toBe("insuficiente");
+        expect(rusle.fatorR.motivo).toContain("Diretriz H1");
+      }
+      expect(rusle.fatorLS.estado).toBe("modelado");
+      expect(rusle.fatorP.estado).toBe("tabelado");
+
+      expect(rusle.perdaSolo.estado).toBe("indisponivel");
+      if (rusle.perdaSolo.estado === "indisponivel") {
+        expect(rusle.perdaSolo.causa).toBe("insuficiente");
+        expect(rusle.perdaSolo.motivo).toContain("R (insuficiente)");
+      }
+
+      // Quando o Fator R é fornecido com proveniência modelada comprovada (ex: calibração controlada):
+      const rusleCompleto = montarLinhaDeBaseRUSLE({
+        ndviProveniencia: {
+          estado: "medido",
+          valor: 0.2,
+          fonte: "Sentinel-2 L2A",
+          adquiridoEm: "2026-05-10T12:00:00Z",
+          consultadoEm: "2026-09-10T21:00:00Z",
+        },
+        camadaErodibilidade2024: {
+          kSolos: 0.0285,
+          erodUm: "Média",
+          codUm: "SG22NVef7",
+          ogcFid: 105112,
+        },
+        fatorRSubstituto: {
+          estado: "modelado",
+          valor: 10623,
+          modelo: "Equação regional do Paraná",
+          insumos: ["CHIRPS v2.0 Toledo", "P_anual = 1820 mm"],
+          decisoes: ["D13"],
+        },
+        insumoFatorLS: {
+          declividadeGraus: 5.143,
+          areaContribuicaoMontanteM2: 663.9,
+          latitude: -24.72,
+          longitude: -53.74,
+        },
+      });
+
+      expect(rusleCompleto.fatorC.estado).toBe("modelado");
+      expect(rusleCompleto.fatorK.estado).toBe("tabelado");
+      expect(rusleCompleto.fatorR.estado).toBe("modelado");
+      expect(rusleCompleto.fatorLS.estado).toBe("modelado");
+      expect(rusleCompleto.fatorP.estado).toBe("tabelado");
+
+      expect(rusleCompleto.perdaSolo.estado).toBe("modelado");
+      if (rusleCompleto.perdaSolo.estado === "modelado") {
+        expect(rusleCompleto.perdaSolo.valor).toBeGreaterThan(0);
+        expect(rusleCompleto.perdaSolo.decisoes).toEqual(["D01", "D13", "D14", "D15"]);
+      }
+      expect(rusleCompleto.memoriaCalculo).not.toBeNull();
+      expect(rusleCompleto.memoriaCalculo).toContain("RUSLE A = R");
+      expect(rusleCompleto.memoriaCalculo).toContain("t/ha/ano");
+    });
+
+    it("propaga causa decisao-pendente para perdaSolo quando um fator a carrega", () => {
+      // Cobertura do caminho "decisao-pendente" por injecao, e nao pelo estado do
+      // registro: e a agregacao do Invariante 1 que esta sob teste, e ela deve preferir
+      // "decisao-pendente" a "insuficiente" sempre que qualquer fator a carregue.
+      const rusle = montarLinhaDeBaseRUSLE({
+        ndviProveniencia: {
+          estado: "medido",
+          valor: 0.5,
+          fonte: "Sentinel-2 L2A",
+          adquiridoEm: "2026-05-10T12:00:00Z",
+          consultadoEm: "2026-09-10T21:00:00Z",
+        },
+        fatorRSubstituto: {
+          estado: "indisponivel",
+          causa: "decisao-pendente",
+          motivo: "Injetado pelo teste para exercitar a agregacao do Invariante 1.",
+        },
+      });
 
       expect(rusle.perdaSolo.estado).toBe("indisponivel");
       if (rusle.perdaSolo.estado === "indisponivel") {

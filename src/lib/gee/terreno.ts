@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * Processamento e Validação de Derivadas de Terreno (DEM SRTM / NASADEM) — SAREL
  * Programa de Pós-Graduação em Tecnologias Computacionais para o Agronegócio (PPGTCA 2026)
@@ -21,6 +21,21 @@ import {
   validateSlopePlausibility,
 } from "./versaoMotor";
 
+/**
+ * Sistema de Referência de Coordenadas padrão para processamento morfométrico (Decisão D15).
+ *
+ * Verificação empírica de distorção linear (GRS80 geodésico via pyproj vs. EPSG:31982 — SIRGAS 2000 / UTM 22S,
+ * meridiano central -51°W, k0 = 0.9996) sobre 20 segmentos distribuídos na Bacia do Paraná 3
+ * (incluindo 6 segmentos na borda oeste entre -54.6199°W e -54.4875°W, Foz do Iguaçu / Itaipu):
+ * - Distorção linear máxima medida (2 casas decimais): +0,12% (razão L_proj/L_geo = 1.0012 em -54.6199°W,
+ *   verificada via `docs/verificacoes/projecao/calcula_distorcao_20_segmentos_bp3_2026-09-28.py`),
+ *   estritamente inferior ao limiar máximo de 0,5% fixado na Decisão D15.
+ * - Sinal estritamente positivo em toda a bacia (+0,04% em Cascavel a -53.4550°W até +0,12% em Foz do Iguaçu),
+ *   crescendo monotonicamente com o afastamento ao meridiano central de -51°W.
+ * - Ressalva geométrica: a verificação abrange o polígono codificado em src/lib/localizacao/bacias.ts
+ *   (que apresenta erro de área de -24,8% a +33,0% frente aos limites oficiais do Instituto Águas Paraná / ANA),
+ *   estendendo-se até o extremo oeste da fronteira internacional (-54.6199°W).
+ */
 export const CRS_TERRENO_PADRAO = "EPSG:31982";
 
 /**

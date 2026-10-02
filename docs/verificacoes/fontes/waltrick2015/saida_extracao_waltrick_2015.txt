@@ -1,0 +1,976 @@
+========================================================================
+EXTRACAO DIRETA DE waltrick_2015.pdf VIA pypdf.PdfReader
+========================================================================
+Caminho relativo: docs/verificacoes/fontes/waltrick2015/waltrick_2015.pdf
+Tamanho do arquivo (bytes): 1043486
+Total de paginas do PDF (len(reader.pages)): 12
+PDF Metadata (/Title): None
+PDF Metadata (/Author): None
+PDF Metadata (/CreationDate): 2015-03-23 10:20:10-03:00
+PDF Metadata (/Producer): Adobe PDF Library 10.0.1
+
+--- [PDF PAGINA 1 / 12 (RBCS p. 256)] ---
+R. Bras. Ci. Solo, 39:256-267, 2015
+ESTIMATIVA DA EROSIVIDADE DE CHUVAS NO ESTADO DO 
+PARANÁ PELO MÉTODO DA PLUVIOMETRIA: ATUALIZAÇÃO 
+COM DADOS DE 1986 A 2008
+Paulo Cesar Waltrick(1), Marco Aurélio de Mello Machado(2), Jeferson Dieckow(2)* e Dalziza 
+de Oliveira(3)
+(1) Secretaria de Educação do Estado do Paraná, Curitiba, Paraná, Brasil.
+(2) Universidade Federal do Paraná, Departamento de Solos e Engenharia Agrícola, Curitiba, Paraná, Brasil.
+(3) Instituto Agronômico do Paraná, Londrina, Paraná, Brasil.
+* Corresponding author.
+E-mail: jefersondieckow@ufpr.br 
+RESUMO
+Três estimativas de erosividade de chuvas no Estado do Paraná foram feitas nas décadas 
+de 1980-90, mas nenhuma outra depois. Os objetivos deste trabalho foram atualizar, numa 
+quarta estimativa, as informações de erosividade anual das chuvas para o Paraná, com dados 
+pluviométricos de 1986 a 2008; e gerar informações de erosividade mensal para identificar a 
+distribuição temporal da erosividade. Foram utilizados os métodos pluviográfico e pluviométrico 
+de determinação de erosividade. O primeiro serviu para revalidar equações prévias de correlação 
+entre erosividade por pluviografia e por pluviometria, isso feito em três localidades; já o segundo, 
+para calcular o coeficiente de chuva em 114 localidades, utilizando-se dados de precipitação 
+média mensal e anual, e então a erosividade, com as equações de correlação revalidadas. Mapas 
+de erosividade anual e mensal foram gerados por interpolações geoestatísticas. A erosividade 
+variou entre 5.449 e 12.581 MJ mm ha-1 h-1 ano-1 e aumentou no sentido oeste, a partir da região 
+metropolitana de Curitiba; e no sentido sul, a partir do noroeste paranaense. Isso resultou em 
+maiores erosividades nas regiões centro-sul (Guarapuava), centro-ocidental (Campo Mourão), 
+oeste (Cascavel) e, principalmente, sudoeste (Pato Branco). Também houve incremento de 
+erosividade a partir da região metropolitana de Curitiba, no sentido leste, indicando o litoral como 
+outra região crítica em termos de erosividade. A maior erosividade mensal ocorreu em janeiro 
+(média estadual de 1394 MJ mm ha-1 h-1 mês-1), seguida por tendência de diminuição até agosto 
+(331 MJ mm ha-1 h-1 mês-1), quando então tornou a aumentar. Porém, ocorrem dois importantes 
+repiques de erosividade: um em maio e outro em outubro (843 e 1.173 MJ mm ha -1 h-1 mês-1, 
+Recebido para publicação em 27 de março de 2014 e em 8 de outubro de 2014.
+DOI: 10.1590/01000683rbcs20150147
+
+--- [PDF PAGINA 2 / 12 (RBCS p. 257)] ---
+R. Bras. Ci. Solo, 39:256-267, 2015
+ESTIMATIVA DA EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ PELO MÉTODO...
+257
+INTRODUÇÃO
+As estimativas de perda de solo por erosão hídrica 
+e a quantificação de fatores que a influenciam são 
+importantes subsídios na definição de melhores 
+estratégias de uso e manejo do solo em dada região 
+(Silva, 2004; Carvalho et al., 2005). A equação 
+universal de perdas de solo (USLE), bem como 
+sua versão revisada (RUSLE), estima perdas 
+médias anuais de solo a partir da erosividade 
+da chuva, erodibilidade do solo, comprimento e 
+declividade da encosta, uso e manejo do solo e 
+práticas conservacionistas (Renard et al., 1997; 
+Mello et al., 2006). Entre esses fatores, erosividade 
+(R) é a capacidade potencial da chuva em causar 
+erosão (Hudson, 1995) e, por ser dependente do 
+respectivamente), principalmente nas regiões sudoeste e oeste. Esses repiques coincidem com 
+períodos de implantação de culturas de inverno ou de verão nessas regiões. Em relação à última 
+estimativa de erosividade anual, feita em 1993, houve aumento da área delimitada pela linha 
+isoerodente de 11.000 MJ mm ha-1 h-1 ano-1 nas regiões sudoeste e oeste e um deslocamento das 
+linhas isoerodentes de 7.000 e 8.000 MJ mm ha-1 h-1 ano-1 para o sentido leste nas regiões norte 
+pioneiro, centro-oriental e sudeste, sugerindo elevação da erosividade nessas regiões. Tais 
+alterações de erosividade podem estar associadas às eventuais mudanças no clima da região, 
+mas também ao simples fato de este estudo estar considerando maior quantidade de dados em 
+relação aos estudos anteriores. Concluiu-se que as equações de correlação determinadas entre 
+os métodos pluviográfico e pluviométrico, obtidas para o Paraná em trabalhos anteriores, 
+continuam válidas; os meses críticos quanto à erosividade são janeiro, maio e outubro; e as 
+menores erosividades ocorrem nas regiões noroeste e metropolitana do Estado.
+Palavras-chave: isoerodentes, geoestatística, EI30.
+ABSTRACT: ESTIMATE OF RAINFALL EROSIVITY IN PARANA, BRAZIL, BY THE 
+PLUVIOMETRY METHOD: UPDATING WITH DATA FROM 1986 TO 2008
+Three estimates of rainfall erosivity in the State of Parana, Brazil, were carried out in the 1980s 
+and 1990s, but none afterwards. The objectives of this study were to update information, as a fourth 
+estimate, on rainfall annual erosivity for Parana, with rainfall data from 1986-2008; and to generate 
+information on monthly erosivity in order to identify its seasonal distribution. We used the pluviographic 
+and pluviometric methods of erosivity determination. The first served to revalidate previous correlation 
+equations between erosivity by pluviography and by pluviometry, which was performed at three sites. 
+The second served to calculate the rainfall coefficient in 114 sites, using monthly and annual mean 
+pluvial precipitation data, and, after that, erosivity, with revalidated correlation equations. Annual and 
+monthly erosivity maps were generated by geostatistical interpolations. Erosivity ranged from 5,449 to 
+12,581 MJ mm ha-1 h-1 yr-1 and increased in a westerly direction from the Curitiba metropolitan region; 
+and in a southerly direction as of the northwestern region of Parana. That resulted in greater erosivity in 
+the south-central (Guarapuava), west-central (Campo Mourão), west (Cascavel) and, mainly, southwest 
+(Pato Branco) regions. There was also an increase in erosivity from the Curitiba metropolitan region to 
+the east, which indicated the Atlantic Coast as another critical region in terms of erosivity. The highest 
+monthly erosivity occurred in January (average of 1,394 MJ mm ha -1 h-1 month-1 statewide), followed 
+by a trend to decrease until August (331 MJ mm ha-1 h-1 month-1), at which time it increased once more. 
+However, there are two important intermediate peaks in erosivity: one in May and another in October 
+(843 and 1,173 MJ mm ha-1 h-1 month-1, respectively), mainly in the southwest and west regions. Those 
+two intermediate peaks coincide with periods of winter or summer crop establishment in those regions. 
+Compared to the last annual erosivity estimate, carried out in 1993, the area delimited by the isoerodent 
+line of 11,000 MJ mm ha-1 h-1 yr-1 in the southeast and west regions increased, and the isoerodent lines 
+of 7,000 and 8,000 MJ mm ha-1 h-1 yr-1 advanced towards the east in the “pioneering” north, east-central, 
+and southeast regions, suggesting an increase in erosivity in those regions. Such changes in erosivity may 
+be associated with climate changes in the region, but also with the simple fact that the current study is 
+considering a larger amount of data compared to previous studies. We conclude that correlation equations 
+determined between the pluviographic and pluviometric methods of erosivity obtained for Parana in 
+previous studies are still valid. The critical months with respect to erosivity are January, May, and October; 
+and the lowest erosivities occur in the northwest and metropolitan regions of the State. 
+Keywords: isoerodents, geostatistics, EI30.
+
+--- [PDF PAGINA 3 / 12 (RBCS p. 258)] ---
+R. Bras. Ci. Solo, 39:256-267, 2015
+258
+Paulo Cesar Waltrick et al.
+clima, varia de uma região para outra. Conhecer a 
+erosividade e sua variabilidade espacial subsidia a 
+tomada de decisão sobre qual a melhor estratégia 
+de uso e manejo de solo para dada região ou gleba 
+com suas particularidades de solo e topografia, 
+bem como de adoção de práticas conservacionistas 
+de suporte, como cultivo em nível e terraceamento, 
+para que perdas de solo por erosão sejam mínimas 
+(Cogo et al., 2003; Hickmann et al., 2008). Em planos 
+de recuperação de áreas degradadas, a erosividade 
+é informação-chave. Além disso, erosividade pode 
+subsidiar políticas públicas permitindo a alocação 
+de recursos financeiros para a conservação do 
+solo, prioritariamente a regiões mais críticas 
+(Oliveira et al., 2011; Rodrigues et al., 2011).
+A determinação do fator R da USLE necessita 
+de pelo menos 20 anos de séries históricas de 
+precipitação e o EI 30 é um dos parâmetros mais 
+utilizados para a quantificação da erosividade, 
+sendo o produto entre energia cinética da chuva 
+(E) e sua maior intensidade num período contínuo 
+de 30 min (I 30) (Wischmeier e Smith, 1958, 1978). 
+Existem outros parâmetros, mas no Brasil o EI30 é o 
+que apresenta melhor correlação com perda de solo 
+(Lombardi Neto, 1977; Morais et al., 1988; Carvalho 
+et al., 1989; Silva et al., 2010; Eltz et al., 2011).
+O Paraná é o segundo maior produtor nacional 
+de grãos (IBGE, 2013) e, para manter ou melhorar 
+essa posição, depende muito da qualidade do 
+manejo e da conservação do solo. Visando melhorar 
+a modelagem matemática de perdas de solo por 
+erosão, até este momento foram realizadas três 
+estimativas de erosividade média anual para esse 
+Estado, utilizando o parâmetro EI30. A primeira foi 
+feita por Castro Filho et al. (1982), ao desenvolver 
+uma equação geral de determinação do EI30 a partir 
+do método de Wilkinson (1975), que considera a 
+precipitação total e I 30 da chuva. A determinação 
+da equação geral de Castro Filho et al. (1982) foi 
+com base em dados pluviais obtidos em cinco locais 
+(Londrina, Ponta Grossa, Paranavaí, Umuarama e 
+Bela Vista do Paraíso), em séries históricas de três 
+a cinco anos, entre 1975 e 1980.
+A segunda estimativa de erosividade para o 
+Estado foi feita por Rufino (1986), que utilizou a 
+mesma equação geral de Castro Filho et al. (1982), 
+mas com uma ampliação de dados pluviográficos 
+para 31 locais até o ano de 1984, incluindo séries 
+históricas de quatro a 13 anos. Com maior número 
+de locais em relação ao trabalho de Castro Filho et al. 
+(1982), Rufino (1986) gerou um mapa de erosividade 
+com sete linhas isoerodentes, abrangendo todo o 
+Estado do Paraná.
+Tanto a primeira quanto a segunda estimativa 
+de erosividade para o Paraná se basearam no 
+método-padrão de determinação do EI 30, ou seja, 
+o pluviográfico, com análise de pluviogramas 
+diários para determinado período de tempo 
+(Wischmeier e Smith, 1978). Porém, esse método 
+de determinação se torna extremamente lento e 
+trabalhoso, além de que só pode ser aplicado para 
+localidade que disponha de registros pluviográficos, 
+normalmente muito mais escassos. Uma alternativa 
+ao método pluviográfico é a utilização do método 
+pluviométrico, pois dados de pluviômetros são 
+mais simples de serem obtidos e possuem séries 
+históricas longas na maioria das localidades 
+brasileiras (Rufino et al., 1993; Moreti et al., 2003; 
+Carvalho et al., 2005; Gonçalves et al., 2006; 
+Peñalva Bazzano et al., 2007; Cassol et al., 2008; 
+Mazurana et al., 2009). No entanto, para a utilização 
+do método pluviométrico, há necessidade de uma 
+equação de correlação com o método pluviográfico, 
+que foi apresentada por Rufino et al. (1993).
+Após utilizar o mesmo método pluviográfico 
+empregado na segunda estimativa e considerando 
+os mesmos 31 locais, porém com ampliação de 
+dados pluviais para o período de 1972-1989, 
+Rufino et al. (1993), numa terceira estimativa, 
+dividiram o Estado em oito regiões e para cada uma 
+delas determinaram uma equação de correlação 
+entre EI30, definido pelo método pluviográfico e o 
+coeficiente de relação da chuva (Rc), obtido a partir 
+da precipitação média mensal e precipitação média 
+anual. Com essas oito equações de correlação, foi 
+possível incorporar ao mapa de isoerodentes do 
+Estado mais 144 locais, que dispunham somente 
+de dados de pluviômetro e, com isso, estimar com 
+melhor precisão a erosividade nas diferentes regiões.
+Considerando que essas três estimativas 
+de erosividade foram feitas para um período 
+de praticamente uma década, e que nenhuma 
+outra atualização tenha sido feita nas duas 
+décadas seguintes à publicação do trabalho de 
+Rufino et al. (1993), e levando em conta possíveis 
+mudanças na precipitação durante esse período no 
+sul do Brasil (Alexander et al., 2006; Marengo e 
+Valverde 2007; Sansigolo e Kayano 2010; Back et 
+al., 2013), é possível que alterações na erosividade 
+também tenham ocorrido no Paraná.
+Normalmente, mapas de isoerodentes apresentam 
+somente a erosividade média anual. Apesar da 
+utilidade dessa informação para uma análise da 
+variação espacial da erosividade e identificação 
+de regiões geográficas críticas, ela não serve para 
+identificar períodos críticos ao longo dos meses do 
+ano. Mapas com informações mensais de erosividade 
+passam então a ter importância significativa, pois 
+cruzando essas informações com aquelas de ciclo 
+de culturas é possível identificar as situações mais 
+críticas em termos de erosividade e manejo agrícola 
+para dada região.
+Os objetivos deste trabalho foram atualizar, numa 
+quarta estimativa, as informações de erosividade 
+anual das chuvas para o Estado do Paraná, 
+utilizando-se dados pluviométricos de 1986 a 2008; 
+e gerar informações de erosividade mensal para 
+identificar a distribuição temporal da erosividade.
+
+--- [PDF PAGINA 4 / 12 (RBCS p. 259)] ---
+R. Bras. Ci. Solo, 39:256-267, 2015
+ESTIMATIVA DA EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ PELO MÉTODO...
+259
+MATERIAL E MÉTODOS
+Localização e características climáticas do 
+Estado do Paraná
+O trabalho incluiu todo o território paranaense, 
+localizado entre 22° 29’ 30” e 26° 43’ 00” de latitudes 
+sul e 48° 05’ 37” e 54° 37’ 08” de longitudes oeste. 
+Segundo a classificação de Köppen, o clima do estado 
+compreende os tipos Cfa (subtropical), nas regiões 
+norte, oeste, sudoeste e litoral; e Cfb (temperado), 
+predominantemente nas porções sul e sudeste do 
+estado (Caviglione et al., 2000).
+Determinação da erosividade por pluviometria
+Foram selecionados 114 locais que possuíam 
+séries históricas completas de precipitação pluvial 
+para o período de 01/01/1986 a 31/12/2008. As 
+estações pluviométricas nesses locais pertencem 
+ao Instituto Agronômico do Paraná (IAPAR), ou ao 
+Instituto Tecnológico SIMEPAR, ou ao Instituto de 
+Águas do Paraná.
+A erosividade foi estimada pelo método 
+pluviométrico. Como esse não é o método-padrão, 
+mas sim o pluviográfico (Silva e Dias, 2003), foram 
+empregadas as oito equações de correlação entre 
+esses dois métodos obtidas por Rufino et al. (1993), 
+para as diferentes regiões do Estado do Paraná. Tais 
+equações permitiram o cálculo do EI30 para cada mês 
+e para cada ano entre 1986 e 2008. A erosividade 
+média anual (R) em cada local foi dada pela média 
+dos valores de EI30 anuais da série.
+Nas equações de Rufino et al. (1993), a variável 
+independente é o coeficiente de relação da chuva 
+(Rc), calculado pela equação 1, adaptada por 
+Lombardi Neto (1977):
+    Rc = p2/P   (1)
+em que p é a precipitação pluvial média mensal 
+(mm); e P, a precipitação pluvial média anual (mm).
+Revalidação das equações de correlação de 
+Rufino et al. (1993)
+Após a determinação da erosividade pelo método 
+pluviométrico nos 114 locais, três locais assistidos 
+por pluviógrafo foram selecionados para determinar 
+a erosividade também pelo método pluviográfico 
+(Silva e Dias, 2003). Por regressão linear, foram 
+comparados os resultados de erosividade média 
+mensal por ambos os métodos para verificar se 
+as equações de correlação de Rufino et al. (1993) 
+continuam válidas para o período deste estudo 
+(1986 a 2008). Os critérios de escolha dessas três 
+localidades foram: apresentar a maior alteração 
+positiva de erosividade, a maior alteração negativa 
+de erosividade e a menor alteração de erosividade 
+em relação à última estimativa (terceira), feita por 
+Rufino et al. (1993).
+A obtenção do parâmetro EI 30 no método 
+pluviográfico foi feita pela equação geral proposta 
+por Castro Filho et al. (1982):
+EI = [28,814 + (10,800 + 7,896 logI30)] P × I30 × 10-3  (2)
+em que I 30 é a quantidade máxima de chuva que 
+ocorre no intervalo de 30 min, expressa em mm 
+h-1; e P, a precipitação total da chuva, em mm. O 
+somatório dos valores de EI30 de cada chuva erosiva 
+de um dado mês gerou o respectivo EI 30 mensal, e 
+o somatório desse ao longo de um ano, o EI30 anual. 
+A média anual desse parâmetro, considerando a 
+mais longa série histórica de dados de pluviografia 
+disponível, correspondeu à erosividade média anual 
+(R) (Dias e Silva, 2003).
+As chuvas foram consideradas independentes 
+com base nos critérios propostos por Wischmeier 
+e Smith (1965), modificado por Cabeda (1976); ou 
+seja, foram independentes quando separadas por um 
+intervalo mínimo de 6 h com precipitação inferior 
+a 1 mm. Foram consideradas erosivas a partir de 
+um volume total precipitado superior a 10 mm, ou 
+quando foram iguais ou superiores a 6 mm, em um 
+período máximo de 15 min.
+Análise geoestatística
+As análises descritivas e geoestatísticas, bem 
+como a produção de mapas de isoerodentes, foram 
+realizadas utilizando o programa estatístico R (R. 
+Development Core Team, 2008) e o pacote geoR 
+(Ribeiro Júnior e Diggle, 2001). Inicialmente, 
+foi elaborada uma planilha contendo localização 
+geográfica (UTM), pluviometria e erosividades 
+médias mensais e anuais dos 114 locais. Os dados 
+foram submetidos à análise exploratória para 
+verificar a condição de normalidade e determinar as 
+variáveis estatísticas descritivas, como os valores 
+máximo, mínimo, médio e de mediana. Para a 
+espacialização da erosividade, foram utilizadas 
+técnicas de interpolação geoestatísticas, que são 
+mais eficazes por considerarem a existência de forte 
+dependência espacial (Mello et al., 2007). Para o 
+ajuste do semivariograma, foi aplicado o modelo 
+matern do pacote estatístico geoR, pois esse foi o 
+que melhor se ajustou à forma da curva gerada a 
+partir dos pontos. O procedimento de ajuste não 
+é automático e depende do usuário para fazer um 
+primeiro ajuste e verificar se o modelo é adequado 
+ou não, podendo ser redefinido até que se obtenha 
+um modelo satisfatório. Esse semivariograma 
+ajustado fornece apenas os valores iniciais para o 
+bom ajuste que se espera pelo método da máxima 
+verossimilhança, que não se baseia nos pontos do 
+semivariograma e sim nas diferenças dos pares 
+de pontos. Depois do ajuste do semivariograma e 
+da verificação da dependência espacial dos dados 
+avaliados, foi utilizada a krigagem ordinária para 
+interpolar os valores de erosividade para a área 
+de estudo.
+
+--- [PDF PAGINA 5 / 12 (RBCS p. 260)] ---
+R. Bras. Ci. Solo, 39:256-267, 2015
+260
+Paulo Cesar Waltrick et al.
+RESULTADOS E DISCUSSÃO
+Revalidação das equações de correlação de 
+Rufino et al. (1993)
+Os três locais escolhidos para revalidar, para o 
+período de 1986 a 2008, as equações de correlação 
+propostas por Rufino et al. (1993) para estimar 
+a erosividade pelo método pluviométrico foram: 
+Planalto, que apresentou a maior alteração 
+positiva (+1.238 MJ mm ha-1 h-1 ano-1); Paranavaí, 
+que demonstrou a maior alteração negativa 
+(-618 MJ mm ha -1  h -1  ano -1 ); e Umuarama, 
+que praticamente não sofreu alteração 
+(+19 MJ mm ha -1 h -1 ano -1) em relação à  última 
+atualização da erosividade para o Estado, feita no 
+mesmo trabalho de Rufino et al. (1993).
+Nos três locais, o coeficiente de correlação entre 
+a erosividade média mensal obtida pelo método 
+pluviográfico (dados extraídos de pluviogramas) 
+e erosividade obtida pelo método pluviométrico 
+[equações de Rufino et al. (1993)] foi igual ou 
+superior a 0,92 (Figura 1). Esse alto coeficiente de 
+correlação confirma que as equações propostas por 
+Rufino et al. (1993) continuam válidas para obtenção 
+da erosividade pelo método pluviométrico com a 
+utilização de dados de 1986 a 2008. Isso permite, 
+portanto, a utilização dos dados pluviométricos da 
+rede de 114 estações, melhorando a cobertura do 
+território do Estado na estimativa da erosividade. 
+Alta correlação entre o método pluviométrico 
+e pluviográfico também foi encontrada para a 
+região de Santa Rosa, no Rio Grande do Sul 
+(Mazurana et al., 2009).
+Variação espacial da erosividade da chuva
+A erosividade anual, em MJ mm ha -1 h-1 ano-1, 
+variou consideravelmente entre os 114 locais, desde 
+um valor mínimo de 5.449, em Piraquara, até um 
+máximo de 12.581, em Ampére (Quadro 1). Com 
+a interpolação desses resultados de erosividade, 
+foi gerado o novo mapa de isoerodentes para o 
+Paraná (Figura 2).
+Houve incremento de erosividade no sentido 
+oeste, a partir da região metropolitana de Curitiba, 
+localizada no Primeiro Planalto, e que avança para o 
+Segundo e desse para o Terceiro (Figura 2). Também 
+houve incremento no sentido norte-sul, a partir 
+do noroeste paranaense (Figura 2). A resultante 
+desses dois sentidos de incremento faz com que as 
+regiões centro-sul (Guarapuava), centro-ocidental 
+(Campo Mourão), oeste (Cascavel) e, principalmente, 
+sudoeste (Pato Branco) tenham os maiores índices de 
+erosividade, superando 9.000 MJ mm ha-1 h-1 ano-1, 
+e sejam as mais críticas em termos de potencial da 
+chuva para causar erosão. Essas regiões são também 
+aquelas que apresentam os maiores valores de 
+precipitação anual no Estado, com algumas partes 
+superando 2.000 mm (Caviglione et al., 2000).
+ŷ = 103,31 + 0,73 x
+r = 0,92
+0
+40 0
+80 0
+1.60 0
+1.20 0
+04 00 80 01 .200 1.60 0
+Erosividad e pluviográfiŷa
+(MJ mm ha -1  h -1  mês -1 ) 
+(ŷ)  Paranavaí
+Erosividad e pluviométriŷa (MJ mm ha -1  h -1  mês -1 )
+ŷ = -103,63 + 1,08 x
+r = 0,92
+40 0
+80 0
+1.20 0
+1.60 0
+0
+2.00 0
+2.40 0
+40 08 00 1.20 01 .600 2.00 002 .400
+(a)  Planalt o
+ŷ = -74,47 + 1,05 x 
+r = 0,94 
+0
+40 0
+80 0
+1.20 0
+1.60 0
+04 00 80 01 .200 1.60 0
+(b)  U mu aram a
+Figura 1. Correlação entre erosividade média mensal 
+das chuvas obtida pelo método pluviográfico 
+(dados extraídos de pluviogramas) e pelo 
+pluviométrico [equações de Rufino et al. (1993)] 
+em (a) Planalto, (b) Umuarama e (c) Paranavaí, 
+no Estado do Paraná, para dados do período 
+de 1986 a 2008. Cada ponto corresponde à 
+erosividade média mensal.
+
+--- [PDF PAGINA 6 / 12 (RBCS p. 261)] ---
+R. Bras. Ci. Solo, 39:256-267, 2015
+ESTIMATIVA DA EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ PELO MÉTODO...
+261
+Quadro 1. Erosividade média anual (R) das chuvas, para 114 locais do Estado do Paraná, estimada com 
+dados pluviométricos do período 1986-2008
+Nº Localidade R Nº Localidade R Nº Localidade R
+MJ mm ha-1 h-1 ano-1 MJ mm ha-1 h-1 ano-1 MJ mm ha-1 h-1 ano-1
+1 Adrianópolis 6368 39 General Carneiro 8670 77 Pato Branco 11861
+2 Alto Piquiri 10312 40 Goioerê 10645 78 Pinhão 9843
+3 Altonia 10084 41 Grandes Rios 10014 79 Piraquara 5449
+4 Ampére 12581 42 Guairá 10509 80 Pitanga 8819
+5 Andirá 7544 43 Guaraniaçu 12384 81 Planalto 11571
+6 Antonina 11088 44 Guarapuava 9140 82 Ponta Grossa 6790
+7 Arapongas 7880 45 Guaraqueçaba 10613 83 Porecatu 8257
+8 Assis 
+Chateaubriand 10982 46 Ibiporã 8531 84 Porto Amazonas 6739
+9 Bandeirantes 7529 47 Inácio Martins 8753 85 Porto Vitória 8557
+10 Barbosa Ferraz 9264 48 Irati 7442 86 Prudentópolis 8586
+11 Barracão 12412 49 Iretama 11456 87 Quedas do 
+Iguaçu 12173
+12 Bela Vista do 
+Paraíso 8611 50 Itapejara do 
+Oeste 11463 88 Realeza 10719
+13 Bituruna 8669 51 Ivaiporã 9682 89 Rio Branco do 
+Sul 6001
+14 Bocaiúva do Sul 6194 52 Ivaí 7077 90 Rio Negro 6810
+15 Cambará 7520 53 Jaguariaíva 6657 91 Roncador 11906
+16 Campina da 
+Lagoa 11461 54 Janiópolis 10762 92 Salto do Lontra 11712
+17 Campo Largo 6104 55 Joaquim Távora 6771 93 Santa Fé 7415
+18 Campo Mourão 10430 56 Lapa 6578 94 Santa Helena 11261
+19 Cândido de 
+Abreu 7281 57 Laranjeiras do 
+Sul 9687 95 Santa Izabel 
+Ivaí 6683
+20 Capanema 10984 58 Londrina 7945 96 Santa Izabel do 
+Oeste 11573
+21 Cascavel 11588 59 Mallet 7068 97 São Jerônimo da 
+Serra 8489
+22 Castro 5627 60 Mamborê 11492 98 São José dos 
+Pinhais 8777
+23 Cerro Azul 5959 61 Mandirituba 5670 99 São Mateus Sul 7090
+24 Céu Azul 12121 62 Manoel Ribas 10761 100 São Miguel do 
+Iguaçu 10701
+25 Cianorte 9713 63 Mariluz 9663 101 Tapejara 9429
+26 Clevelândia 9614 64 Maringá 7664 102 Telêmaco Borba 7102
+27 Corbélia 12088 65 Mariópolis 11651 103 Terra Roxa 10415
+28 Coronel Vivida 10880 66 Matelândia 11531 104 Tibagi 7007
+29 Cruz Machado 9058 67 Morretes 8550 105 Tijucas do Sul 6377
+30 Cruzeiro do Oeste 10026 68 Nova Cantu 12018 106 Toledo 10623
+31 Curitiba 5937 69 Nova Fátima 7698 107 Tomazina 7089
+32 Dois Vizinhos 11864 70 Palmas 9842 108 Tuneiras do 
+Oeste 10126
+33 Entre Rios 10495 71 Palmeira 6022 109 Ubiratã 10910
+34 Fênix 8948 72 Palmital 12164 110 Umuarama 10313
+35 Fernandes 
+Pinheiro 7024 73 Palotina 10436 111 União da Vitória 8274
+36 Formosa do 
+Oeste 10286 74 Paranacity 6563 112 Verê 12408
+37 Foz do Iguaçu 11037 75 Paranaguá 9064 113 Vitorino 12023
+38 Francisco Beltrão 11896 76 Paranavaí 7340 114 Xambrê 9364
+
+--- [PDF PAGINA 7 / 12 (RBCS p. 262)] ---
+R. Bras. Ci. Solo, 39:256-267, 2015
+262
+Paulo Cesar Waltrick et al.
+Segundo Zipser et al. (2006), a região que engloba 
+o sudoeste do Paraná, oeste de Santa Catarina, 
+noroeste do Rio Grande do Sul, nordeste da 
+Argentina e sudeste do Paraguai é uma das regiões 
+do globo onde ocorrem as mais fortes tempestades. O 
+principal sistema meteorológico que contribui para 
+a formação dessas tempestades e para a elevada 
+precipitação anual na região são os complexos 
+convectivos de mesoescala (CCM), constituídos 
+de espessa cobertura de nuvens frias com forma 
+aproximadamente circular e com diâmetro na 
+ordem de centenas de km, que duram no mínimo 
+6 h (Grimm, 2009). Os CCM ocorrem geralmente à 
+tarde e início da noite, quando as primeiras células 
+de chuva convectiva se desenvolvem e quando 
+as condições à convecção são favoráveis, como 
+topografia, umidade e fonte de calor localizada 
+(Silva Dias et al., 2009). A frequente formação dos 
+CCM nessa região ocorre em razão do jato de baixos 
+níveis (JBN), que transporta calor e umidade da 
+Amazônia pelo corredor topográfico imposto pela 
+cordilheira dos Andes, que tem como saída a Bacia 
+do Prata. Os CCM perdem força ao se dissiparem 
+sobre os planaltos paranaenses e consequentemente 
+a intensidade da precipitação diminui, o que pode 
+explicar a maior erosividade na região sudoeste do 
+Estado e sua diminuição nos sentidos norte e leste.
+Frentes frias também contribuem para a 
+intensa e elevada precipitação na região sudoeste 
+do Paraná e têm como características principais a 
+diminuição da temperatura, o aumento da pressão 
+atmosférica e os ventos de sul. Essas frentes 
+frias se deslocam com trajetória de sudoeste 
+para nordeste (Rodrigues et al., 2004) e quando 
+encontram o ar quente e úmido sobre o sudoeste 
+do Paraná ocorre forte e excessiva precipitação 
+(Cavalcanti e Kousky, 2009).
+A maior erosividade no litoral em relação à região 
+metropolitana de Curitiba pode ser explicada pelo 
+aquecimento diferenciado entre continente e oceano. 
+Esse gradiente de temperatura origina uma célula 
+de circulação que carrega calor e umidade para o 
+continente, causando forte e elevada precipitação 
+Figura 2. Mapa das linhas isoerodentes anuais para o Estado do Paraná. Estimativa atualizada com 
+dados de 1986 a 2008 e valores médios anuais. A subdivisão de fundo corresponde às mesorregiões 
+geográficas do IBGE.
+23º S
+24º S
+25º S
+26º S
+27º S
+54º W
+5800 6000 7000 8000 9000 10000 11000 12000 12100
+53º W 52º W 51º W
+MJ mm ha-1 h-1 mês-1 
+50º W 49º W 48º W
+ANUAL
+
+--- [PDF PAGINA 8 / 12 (RBCS p. 263)] ---
+R. Bras. Ci. Solo, 39:256-267, 2015
+ESTIMATIVA DA EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ PELO MÉTODO...
+263
+e erosividade, no litoral (Rebiota et al., 2010). O 
+efeito orográfico da serra do Mar que se apresenta 
+como barreira para os ventos quentes e úmidos de 
+superfície vindos do oceano também faz aumentar a 
+precipitação na região, mas, como é melhor distribuída, 
+a erosividade diminui. O arrefecimento no primeiro 
+planalto na região de Curitiba reduz a intensidade da 
+precipitação e consequentemente a erosividade.
+Mudanças na erosividade da chuva no longo 
+prazo
+De maneira geral, os padrões de variação 
+espacial da erosividade observados neste estudo, 
+com chuvas mais erosivas nas regiões centro-sul, 
+centro-ocidental, oeste, sudoeste e litoral, não 
+diferiram daqueles observados há duas décadas 
+por Rufino et al. (1993), na terceira e última 
+estimativa de erosividade para o Estado. No 
+entanto, duas importantes alterações na posição de 
+linhas isoerodentes foram observadas em relação 
+ao trabalho anterior. A primeira foi o aumento da 
+área delimitada pela linha isoerodente de 11.000, 
+nas regiões sudoeste e oeste (Figura 2), sugerindo 
+aumento da erosividade nessas. A segunda foi um 
+deslocamento das linhas isoerodentes de 7.000 e 
+8.000 para o sentido leste nas regiões norte pioneiro 
+(Bandeirantes), centro-oriental (Telêmaco Borba, 
+Ponta Grossa) e sudeste (Teixeira Soares), também 
+sugerindo aumento da erosividade.
+Alterações no clima podem ter contribuído para 
+o aumento da área de abrangência da isolinha 
+11.000 e o deslocamento das isolinhas 7.000 e 8.000. 
+No período de 1913 a 2006, foi observado na região 
+Sul do Brasil aumento na temperatura mínima 
+sazonal de 1,5 ºC no outono, de 1,8 ºC no inverno e na 
+primavera e de 1,9 ºC no verão (Sansigolo e Kayano, 
+2010). Alexander et al. (2006) encontraram para o 
+período de 1960 a 2000 tendência de aumento no 
+número de noites e dias quentes e redução no número 
+de noites e dias frios na região Sul do Brasil. Nessa 
+mesma região e período, esses autores também 
+identificaram aumento na precipitação, indicando 
+a relação entre o aquecimento e a precipitação. 
+Resultado similar foi encontrado por Back et al. 
+(2013), no Vale do Rio do Peixe, SC, no período de 
+1970 a 2010. Pequenas alterações na temperatura 
+média global podem causar grandes perturbações 
+como aumento do nível do mar, ondas de calor e frio, 
+fortes e frequentes tempestades de chuva, neve e 
+furacões (Marengo, 2001, 2007; IPCC, 2007).
+No entanto, alterações nos valores de erosividade 
+também podem estar relacionadas ao simples fato 
+de este estudo estar considerando um volume 
+maior de dados de precipitação e usando técnicas 
+geoestatísticas, que são mais eficazes na interpolação 
+de fatores com forte dependência espacial, como 
+erosividade, em relação aos estudos anteriores. 
+Foram utilizados dados de 23 anos de séries 
+completas de precipitação, atendendo o requisito da 
+(R)USLE de um período mínimo de 20 anos.
+Erosividade mensal da chuva
+A erosividade da chuva no Paraná possui 
+considerável variação temporal ao longo dos meses do 
+ano. Em média, a maior erosividade ocorre em janeiro 
+(média estadual de 1.394 MJ mm ha -1 h-1 mês-1), 
+seguida por tendência geral de diminuição até agosto 
+(331 MJ mm ha -1 h-1 mês-1), quando então torna a 
+aumentar até janeiro do ano seguinte (Figura 3). 
+Porém, nessa tendência geral de variação, existem 
+dois importantes repiques de erosividade: um em 
+maio (843 MJ mm ha-1 h-1 mês-1) e outro em outubro 
+(1.173 MJ mm ha-1 h-1 mês-1), este sendo o segundo 
+mês mais erosivo (Figura 3). Esses resultados de 
+erosividade e sua variação ao longo do ano estão 
+associados com o regime de precipitação e se 
+expressam principalmente nas regiões sudoeste e 
+oeste (Figura 4e,j).
+1.173
+741
+933
+0
+200
+400
+600
+800
+1.000
+1.200
+1.400
+1.600
+1.394
+Jan
+965
+Fev
+614
+Mar
+631
+Abr
+843
+Mai
+512
+Jun
+380
+Jul
+331
+Ago
+754
+Set Out Nov Dez
+Erosividade
+(MJ mm ha-1 h-1 mês-1) 
+Mês
+Figura 3. Erosividade média mensal das chuvas do Estado do Paraná, considerando dados de precipitação 
+pluvial de 114 locais, para o período de 1986 a 2008.
+
+--- [PDF PAGINA 9 / 12 (RBCS p. 264)] ---
+R. Bras. Ci. Solo, 39:256-267, 2015
+264
+Paulo Cesar Waltrick et al.
+A menor erosividade em agosto está associada 
+com o deslocamento do jato subtropical (JS) das 
+latitudes paranaenses para maiores latitudes, no 
+Rio Grande do Sul, diminuindo assim a precipitação. 
+O JS é uma corrente de ar de alto nível em forma 
+de um estreito cano quase horizontal que se desloca 
+de oeste para leste; esse possui centenas de km 
+de largura e aparece geralmente acima de 13 km 
+de altitude na faixa de latitude que vai de 20º S a 
+40º S, dependendo da estação do ano (Escobar, 2009). 
+Considerando a incidência de baixa erosividade com 
+o pleno desenvolvimento vegetativo e de cobertura 
+do solo das culturas e pastagens de inverno durante 
+o mês de agosto, é possível inferir que, de maneira 
+geral, esse é o período menos crítico em termos de 
+risco de erosão no Estado.
+Em setembro, ao final do inverno, o JS retorna 
+para as latitudes paranaenses, aumentando a 
+precipitação; em outubro, é intensificado com o 
+JBN, levando a formação dos CCM, explicados 
+anteriormente (Grimm, 2009). Esses sistemas 
+atmosféricos sazonais somados aos ciclones e frentes 
+200 300
+(a) Jan (b) Fev (c) Mar
+(d) Abr (e) Mai (f) Jun
+(g) Jul (h) Ago (i) Set
+(j) Out (k) Nov (l) Dez
+400 500 600 700 800
+MJ mm ha-1 h-1 mês-1 
+1000 1200 1400 1600 1800 2000 2400100 2600
+Figura 4. Estimativa da erosividade média mensal das chuvas para o Estado do Paraná.
+
+--- [PDF PAGINA 10 / 12 (RBCS p. 265)] ---
+R. Bras. Ci. Solo, 39:256-267, 2015
+ESTIMATIVA DA EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ PELO MÉTODO...
+265
+frias que atingem a região aumentam a precipitação 
+em outubro e explicam o repique de erosividade para 
+esse mês. A partir de abril e culminando em maio, 
+outro mês com valores elevados de erosividade, 
+o fenômeno se repete com a aproximação do JS e 
+a consequente formação de CCM, com o calor e a 
+umidade transportada da Amazônia pelo JBN.
+Os repiques de erosividade da chuva observados 
+em outubro e maio nas regiões oeste e sudoeste 
+podem ser considerados como os mais críticos no 
+Estado, pois ocorrem em períodos de implantação 
+das culturas de verão, no caso de outubro, e 
+de inverno, no caso de maio, quando há menor 
+cobertura vegetal sobre o solo. Essa combinação 
+de alta erosividade com menor cobertura vegetal 
+aumenta consideravelmente o potencial de erosão 
+hídrica, principalmente se o preparo do solo foi 
+com base num sistema convencional. A adoção de 
+práticas conservacionistas de suporte e o manejo 
+adequado do solo são fundamentais para superar 
+este período crítico de alta erosividade.
+Em novembro, o JS se afasta do Paraná, os 
+sistemas atmosféricos se estabilizam, a precipitação 
+normaliza e a erosividade diminui. Em dezembro, 
+a precipitação torna a aumentar e atinge o pico em 
+janeiro, em razão do regime de chuvas de verão, 
+associado ao sistema de monções sul-americano 
+(Grimm, 2009). Durante o verão, o aquecimento 
+da superfície e o aumento de umidade para dentro 
+do continente tendem a instabilizar a atmosfera, 
+produzindo mais precipitação (Grimm, 2009).
+A alta erosividade registrada em janeiro, apesar 
+de ocorrer em praticamente todo o Estado, não é tão 
+crítica quanto à de outubro nas regiões sudoeste e 
+oeste, pois ocorre num período em que a maioria das 
+culturas de verão está em pleno desenvolvimento 
+vegetativo e com isso propiciam maior cobertura 
+vegetal do solo. Porém, para a região do litoral, onde 
+a erosividade supera 2.000 MJ mm ha-1 h-1 mês-1, a 
+situação é considerada crítica, especialmente para 
+cultivos como mandioca e olerí colas, importantes 
+na região (Ipardes, 2013), mas com baixo índice de 
+cobertura do solo.
+CONCLUSÕES
+As equações lineares propostas por Rufino et al. 
+(1993), utilizadas para estimar a erosividade da 
+chuva pelo método pluvimétrico, continuam válidas.
+As chuvas nas regiões sudoeste, oeste, norte 
+pioneiro, centro-oriental e sudeste paranaense estão 
+mais erosivas em relação à última estimativa feita 
+por Rufino et al. (1993). Para as demais regiões, a 
+erosividade não foi alterada.
+As regiões mais críticas em termos de erosividade 
+média anual das chuvas são a sudoeste, oeste e litoral.
+Os meses de maior erosividade média mensal 
+são: janeiro, maio e outubro.
+À medida que os sistemas atmosféricos como 
+os CCM e as frentes frias que causam intensa 
+precipitação se afastam da sua origem e perdem 
+força, a precipitação se distribui melhor reduzindo 
+a erosividade na direção norte do Estado e na região 
+de Curitiba.
+AGRADECIMENTOS
+Ao Instituto Agronômico do Paraná (IAPAR), 
+ao Instituto Tecnológico SIMEPAR e ao Instituto 
+de Águas do Paraná, pelo fornecimento dos dados, 
+sem os quais este trabalho não teria sido possível.
+REFERÊNCIAS
+Alexander LV, Zhang X, Peterson TC, Caesar J, Gleason B, Tank 
+AK, Haylock M, Collins, D, Trewin, B, Rahimzadeh, F, Tagipour, 
+A, Ambenje, P, Rupa Kumar, K, Revadekar, J, Griffiths, G, 
+Vincent, L, Stephenson, D, Burn, J, Aguilar, E, Brunet, M, Taylor, 
+M, New, M, Zhai, P, Rusticucci, M, Vazquez-Aguirre, JL. Global 
+observed changes in daily climate extremes of temperature and 
+precipitation. J Geophys Res. 2006;111:1-22.
+Back AJ, Della Bruna E, Dalbo MA. Mudanças climáticas e 
+a produção de uva no vale do Rio do Peixe-SC. R Bras Frutic, 
+2013;35:159-69.
+Cabeda MSV. Computation of storm EI value. West Lafayette: 
+Purdue University; 1976.
+Carvalho DF, Montebeller CA, Franco EM, Valcarcel R, Bertol I. 
+Padrões de precipitação e índices de erosividade para as chuvas 
+de Seropédica e Nova Friburgo, RJ. R Bras Eng Agríc Amb. 
+2005;9:7-14.
+Carvalho MP, Lombardi Neto F, Vasques Filho J, Cataneo A. 
+Índices de erosividade da chuva correlacionados com as perdas 
+de um Podzólico Vermelho-Amarelo eutrófico textura argilosa 
+de Mococa (SP): Primeira aproximação do fator erodibilidade do 
+solo. R Bras Ci Solo. 1989;13:237-42.
+Cassol EA, Eltz FLF, Martins D, Lemos AM, Lima VS, Bueno 
+AC. Erosividade, padrões hidrológicos, período de retorno e 
+probabilidade de ocorrência das chuvas em São Borja, RS. R Bras 
+Ci Solo. 2008;32:1239-51.
+Castro Filho C, Cataneo A, Biscaia RCM. Utilização da 
+metodologia de Wilkinson para cálculo do potencial erosivo 
+das chuvas em cinco localidades do Paraná. R Bras Ci Solo. 
+1982;6:240-1.
+Cavalcanti IFA, Kousky VE. Frente frias sobre o Brasil. In: 
+Cavalcanti IFA, Ferreira NJ, Justi da Silva MGA, Silva Dias 
+MAF, editores. Tempo e clima no Brasil. São Paulo: Oficina de 
+Textos; 2009. p.135-47.
+Caviglione JH, Kiihl LRB, Caramori PH, Oliveira D, Galdino J, 
+Borrozino E, Giacomini CC; Sonomura, MGY, Pugsley, L. Cartas 
+Climáticas do Estado do Paraná [CD-ROM]. Londrina: Instituto 
+Agronômico do Paraná; 2000.
+
+--- [PDF PAGINA 11 / 12 (RBCS p. 266)] ---
+R. Bras. Ci. Solo, 39:256-267, 2015
+266
+Paulo Cesar Waltrick et al.
+Cogo NP, Levien R, Schwarz RA. Perdas de solo e água por 
+erosão hídrica influenciadas por métodos de preparo, classes 
+de declive e níveis de fertilidade do solo. R Bras Ci Solo. 
+2003;27:743-53.
+Dias AS, Silva JRC. A erosividade das chuvas em Fortaleza (CE): 
+I - Distribuição, probabilidade de ocorrência e período de retorno 
+- 1ª aproximação. R Bras Ci Solo. 2003;27:335-45.
+Eltz FLF, Cassol EA, Pascotini PB. Potencial erosivo e 
+características das chuvas de Encruzilhada do Sul, RS. R Bras 
+Eng Agríc Amb. 2011;15:331-7.
+Escobar G. Jatos de altos níveis. In: Cavalcanti IFA, Ferreira NJ, 
+Justi da Silva MGA, Silva Dias MAF, editores. Tempo e clima no 
+Brasil. São Paulo: Oficina de Textos; 2009. p.127-34.
+Gonçalves FA, Silva DD, Pruski FF, Carvalho DF, Cruz ES. 
+Índices e espacialização da erosividade das chuvas para o estado 
+do Rio de Janeiro. R Bras Eng Agríc Amb. 2006;10:269-76.
+Grimm AM. Clima na Região Sul. In: Cavalcanti IFA, Ferreira 
+NJ, Justi da Silva MGA, Silva Dias MAF, editores. Tempo e clima 
+no Brasil. São Paulo: Oficina de Textos; 2009. p.259-75.
+Hickmann C, Eltz FLF, Cassol EA, Cogo C.. Erosividade 
+das chuvas em Uruguaiana, RS, determinada pelo índice 
+EI30, com base no período de 1963 a 1991. R Bras Ci Solo. 
+2008;32:825-31.
+Hudson N. Soil conservation. 3rd ed. Ames: Iowa State University 
+Press; 1995.
+Instituto Brasileiro de Geografia e Estatística - IBGE. 
+Levantamento sistemático da produção agrícola: Pesquisa mensal 
+de previsão e acompanhamento das safras agrícolas no ano civil. 
+Levant Sist Prod Agríc. 2013;26:1-84.
+Instituto Paranaense de Desenvolvimento Econômico e Social - 
+IPARDES. Caderno Estatístico Municipal [internet]. 2013 [acesso 
+em 15 nov 2013]. Disponível em: http://www.ipardes.gov.br/index.
+php?pg_conteudo=1&cod_conteudo=30.
+Intergovernmental Panel on Climate Change - IPCC. 
+Climate Change 2007: The physical science basis summary 
+for policymakers contribution of Working Group I to the 
+Fourth Assessment Report of the Intergovernmental Panel 
+on Climate Change. 2007. Cambridge (UK): Cambridge 
+University Press; 2007.
+Lombardi Neto F. Rainfall erosivity - its distribution and 
+relationship with soil loss at Campinas, Brazil [dissertation]. 
+West Lafayette: Purdue University; 1977.
+Marengo JA. Mudanças climáticas globais e seus efeitos sobre 
+a biodiversidade - Caracterização do clima atual e definição das 
+alterações climáticas para o território brasileiro ao longo do Século 
+XXI. Brasília: Ministério do Meio Ambiente; 2007.
+Marengo JA. Mudanças climáticas globais e regionais: Avaliação 
+do clima atual do Brasil e projeções de cenários climáticos do 
+futuro. R Bras Meteorol. 2001;16:1-18.
+Marengo JA, Valverde MC. Caracterização do clima no Século 
+XX e cenário de mudanças de clima para o Brasil no Século XXI 
+usando os modelos de IPCC AR4. Multiciência. 2007;8:5-28.
+Mazurana J, Cassol EA, Santos LC, Eltz FLF, Bueno AC. 
+Erosividade, padrões hidrológicos e período de retorno das 
+chuvas erosivas de Santa Rosa (RS). R Bras Eng Agríc Amb. 
+2009;13:975-83.
+Mello G, Bueno CRP, Pereira GT. Variabilidade espacial 
+de perdas de solo, do potencial natural e risco de erosão 
+em áreas intensamente cultivadas. R Bras Eng Agríc Amb. 
+2006;10:315-22.
+Mello CR, Sá MCA, Curi N, Mello JM, Viola MR, Silva AM. 
+Erosividade mensal e anual da chuva no estado de Minas Gerais. 
+Pesq Agropec Bras. 2007;42:537-45.
+Morais LFB, Mutti LSM, Eltz FLF. Relações entre características 
+físicas da chuva e perdas de solo no Rio Grande do Sul. R Bras 
+Ci Solo. 1988;12:285-8.
+Moreti D, Carvalho MP, Mannigel AR, Medeiros LR. Importantes 
+características de chuva para a conservação do solo e da água no 
+município de São Manuel (SP). R Bras Ci Solo. 2003;27:713-25.
+Oliveira PTS, Alves Sobrinho T, Rodrigues DBB, Panachuki E. 
+Erosion risk mapping applied to environmental zoning. Water 
+Res Manage. 2011;25:1021-36.
+Peñalva Bazzano MG, Eltz FLF, Cassol EA. Erosividade, 
+coeficiente de chuva, padrões e período de retorno das chuvas de 
+Quaraí, RS. R Bras Ci Solo. 2007;31:1205-17.
+R Development Core Team. R: A language and environment 
+for statistical computing. Vienna: R Foundation for Statistical 
+Computing; 2008.
+Rebiota MS, Gan MA, Rocha RP, Ambrizi T. Regimes de 
+precipitação na América do Sul: Uma revisão bibliográfica. R 
+Bras Meteorol. 2010;25:185-204.
+Renard KG, Foster GR, Weesies GA, McColl DK, Yoder DC. 
+Predicting soil erosion by water. A guide to conservation planning 
+with the revised Universal Soil Loss Equation. Washington: 
+United States Department of Agriculture; 1997. (Agricultural 
+Handbook, 703).
+Ribeiro Junior PJ, Diggle PJ. GeoR: A package for geostatistical 
+analysis. R-News. 2001 [acesso em 20 out 2009];1:609-3631. 
+Disponível em: http://cran.r-project.org/doc/Rnews.
+Rodrigues DBB, Alves Sobrinho T, Oliveira PTS, Panachuki E. 
+Nova abordagem sobre o modelo brasileiro de serviços ambientais. 
+R Bras Ci Solo. 2011;35:1037-45.
+Rodrigues MLG, Franco D, Sugahara S. Climatologia de frentes 
+frias no litoral de Santa Catarina. R Bras Geofis. 2004;22:135-51.
+Rufino RL, Biscaia RCM, Merten GH. Determinação do potencial 
+erosivo da chuva do estado do Paraná através da pluviometria: 
+Terceira aproximação. R Bras Ci Solo. 1993;17:439-44.
+Rufino RL. Avaliação do potencial erosivo da chuva para o estado 
+do Paraná: Segunda aproximação. R Bras Ci Solo. 1986;10:279-81.
+Sansigolo CA, Kayano MT. Trends of seasonal maximum and 
+minimum temperatures and precipitations in Southern Brazil 
+for de 1913-2006 period. Theor Appl Climatol. 2010;101:209-16.
+Silva AM. Rainfal erosivity map for Brazil. Catena. 2004;57:251-9.
+Silva JRC, Dias AS. A erosividade das chuvas em Fortaleza 
+(CE): II - Correlação com o coeficiente de chuva e atualização 
+do fator R no período de 1962 a 2000. R Bras Ci Solo. 
+2003;27:347-54.
+Silva MA, Silva MLN, Curi N, Santos GR, Marques JJGSM, 
+Menezes MD, Leite FP. Avaliação e espacialização da erosividade 
+da chuva no Vale do Rio Doce, Região Centro-Leste do Estado de 
+Minas Gerais. R. Bras Ci Solo. 2010;34:1029-39.
+
+--- [PDF PAGINA 12 / 12 (RBCS p. 267)] ---
+R. Bras. Ci. Solo, 39:256-267, 2015
+ESTIMATIVA DA EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ PELO MÉTODO...
+267
+Silva Dias MAF, Rozante JR, Machado LAT. Complexos 
+convectivos de mesoescala na América do Sul. In: Cavalcanti 
+IFA, Ferreira NJ, Justi da Silva MGA, Silva Dias MAF, 
+editores. Tempo e clima no Brasil. São Paulo: Oficina de Textos; 
+2009. p.181-94.
+Wilkinson GE. Rainfall characteristics and soil erosion in the 
+rainforest area of Western Nigeria. Explor Agron. 1975;2:247-55.
+Wischmeier WH, Smith DD. Predicting rainfall-erosion losses 
+from cropland east of the Rocky Mountains: Guide for selection 
+of practices for soil and water conservation. Washington: 
+United States Department of Agriculture; 1965. (Agricultural 
+Handbook, 282).
+Wischmeier WH, Smith DD. Predicting rainfall erosion losses: 
+A guide to conservation planning. Washington: United States 
+Department of Agriculture; 1978.
+Wischmeier WH, Smith DD. Rainfall energy and its relationship 
+to soil loss. Trans Am Geoph Union. 1958;29:285-91.
+Zipser EJ, Cecil DJ, Liu C, Nesbitt SW, Yorty DP. Where are 
+the most intense thunderstorms on earth? Bull Am Meteorol 
+Soc. 2006;87:1057-71.

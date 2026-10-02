@@ -13,6 +13,7 @@ tsconfig.tsbuildinfo
 # Production build artifacts
 /build
 /dist
+/runtime
 
 # Security & Credentials Protection (CRITICAL)
 .env
@@ -26,11 +27,15 @@ tsconfig.tsbuildinfo
 *credentials*.json
 *service-account*.json
 *service_account*.json
+*serviceaccount*.json
+*.sa.json
 gcp-key*.json
 google-key*.json
 minhas_chaves_locais/
 credentials/
 chaves/
+secrets/
+tokens/
 
 # Debug and Logs
 npm-debug.log*
@@ -76,6 +81,8 @@ data/*.bak
 data/shapes/
 data/sicar_cache/
 data/sigef_cache/
+data/dem_cache/
+data/chirps_cache/
 
 # Python cache
 __pycache__/
@@ -88,3 +95,36 @@ legado/**/__pycache__/
 data/planet/
 
 Descrição da versão atual/
+
+# Bibliografia pesada (PDFs brutos locais mantidos fora do git - Opção A)
+docs/Selecao Bibliografica/**/*.pdf
+
+# Dados brutos de VANT (Spectral 2 / MicaSense) — pesados, ficam fora do git.
+# Versiona-se apenas o manifesto, os logs de voo e os relatorios de processamento.
+data/drone/**/raw/
+data/drone/**/ortomosaico/
+data/drone/**/nuvem_pontos/
+*.tif
+*.tiff
+*.las
+*.laz
+*.obj
+*.ply
+# Excecoes: figuras pequenas de documentacao
+!docs/**/*.png
+
+# ============================================================================
+# Dados brutos de voo VANT — 40 GB fora do versionamento (medido em 2026-09-27)
+# ============================================================================
+# 'git add .' adicionaria 23 GB (19,7 GB .zip, 2,0 GB .mp4, 876 MB .jpg,
+# 235 MB .dat). Git preserva todo blob permanentemente: um unico commit
+# desses inutilizaria o repositorio de forma irreversivel.
+# Os dados ficam no disco e FORA do git. O que e probatorio e leve entra
+# versionado em docs/verificacoes/voo/ como manifesto e relatorio derivado.
+/Dados de voo/
+
+# ============================================================================
+# Selos de sorteio D16 — contêm tabela reversa de correspondência opaca (K2)
+# Jamais devem ser versionados sob pena de quebra irremediável do cegamento duplo.
+# ============================================================================
+docs/verificacoes/sorteio/

@@ -1,0 +1,39 @@
+========================================================================================
+REMEDICAO DE CORRESPONDENCIA WFS/WMS POS-U1 E FATOR K NUMERICO (U3 / D14) — 28/09/2026
+========================================================================================
+Pontos rurais avaliados: 20
+Pontos rurais em fronteira cartografica (parana_solos > 1 feicao): 7 -> ['R03_Palotina_Rural_Leste', 'R04_AssisChateaubriand_Sul', 'R07_Guaira_Rural_Sudeste', 'R11_PatoBragado_Rural_Leste', 'R13_SantaHelena_Rural_Leste', 'R15_Itaipulandia_Rural_Norte', 'R18_CeuAzul_Rural_Sul']
+Pontos rurais em fronteira cartografica (bra_erodibilidade_2024 > 1 feicao): 3 -> ['R11_PatoBragado_Rural_Leste', 'R15_Itaipulandia_Rural_Norte', 'R17_Medianeira_Rural_Norte']
+Pontos rurais que mudaram de classificacao por U1: 1 -> ['R13_SantaHelena_Rural_Leste']
+
+--- COMPARATIVO ANTES DE U1 vs DEPOIS DE U1 ---
+Solo mapeado em ambas as cartas: ANTES = 19/20 | DEPOIS = 20/20
+Correspondencia estrita de sequencia: ANTES = 10/19 (52.6%) | DEPOIS = 11/20 (55.0%)
+Correspondencia do componente dominante: ANTES = 12/19 (63.2%) | DEPOIS = 13/20 (65.0%)
+Divergencia entre as duas cartas: ANTES = 9/19 (47.4%) | DEPOIS = 9/20 (45.0%)
+Correspondencia estrita em ASSOCIACOES: ANTES = 0/3 (0.0%) | DEPOIS = 0/3 (0.0%)
+Via Fator K D14 (pos-U1 nos 20 pontos rurais): tabelado(k_solos)=20 | fallback(faixa)=0 | fora_do_dominio=0
+
+--- DETALHAMENTO POR PONTO (POS-U1) ---
+R01_Toledo_Rural_Norte (-24.62, -53.71) | n_pr=1 (idx=0, sbcs=LVef1, ord=['LATOSSOLO']) | n_24=1 (idx=0, cod_um=SG22LVef1LV, cod_um2=SG22LVef1, ord24=['LATOSSOLO'], erod_um=Muito baixa, k_solos=0.002, fator_k_um=0.0020) | estrito=True | dom=True | viaK=k_solos_camada_2024_tabelado
+R02_Cascavel_Rural_Oeste_RRe12 (-25.0669, -53.688) | n_pr=1 (idx=0, sbcs=RRe12, ord=['NEOSSOLO', 'CHERNOSSOLO', 'NITOSSOLO']) | n_24=1 (idx=0, cod_um=SG22NVef7NV, cod_um2=SG22NVef7, ord24=['NITOSSOLO', 'NEOSSOLO', 'NEOSSOLO', 'CHERNOSSOLO'], erod_um=Média, k_solos=0.0285, fator_k_um=0.0285) | estrito=False | dom=False | viaK=k_solos_camada_2024_tabelado
+R03_Palotina_Rural_Leste (-24.286, -53.75) | n_pr=2 (idx=0, sbcs=NVef2, ord=['NITOSSOLO']) | n_24=1 (idx=0, cod_um=SG22LVef1LV, cod_um2=SG22LVef1, ord24=['LATOSSOLO'], erod_um=Muito baixa, k_solos=0.002, fator_k_um=0.0020) | estrito=False | dom=False | viaK=k_solos_camada_2024_tabelado
+R04_AssisChateaubriand_Sul (-24.42, -53.82) | n_pr=2 (idx=0, sbcs=NVef2, ord=['NITOSSOLO']) | n_24=1 (idx=0, cod_um=SG22LVef1LV, cod_um2=SG22LVef1, ord24=['LATOSSOLO'], erod_um=Muito baixa, k_solos=0.002, fator_k_um=0.0020) | estrito=False | dom=False | viaK=k_solos_camada_2024_tabelado
+R05_MarechalCandidoRondon_Rural_Leste (-24.53, -53.98) | n_pr=1 (idx=0, sbcs=LVdf13, ord=['LATOSSOLO']) | n_24=1 (idx=0, cod_um=SG22LVdf3LV, cod_um2=SG22LVdf3, ord24=['LATOSSOLO'], erod_um=Muito baixa, k_solos=0.002, fator_k_um=0.0020) | estrito=True | dom=True | viaK=k_solos_camada_2024_tabelado
+R06_TerraRoxa_Rural_Sul (-24.22, -54.08) | n_pr=1 (idx=0, sbcs=LVd13, ord=['LATOSSOLO']) | n_24=1 (idx=0, cod_um=SG21LVe2LV, cod_um2=SG21LVe2, ord24=['LATOSSOLO'], erod_um=Baixa, k_solos=0.012, fator_k_um=0.0120) | estrito=True | dom=True | viaK=k_solos_camada_2024_tabelado
+R07_Guaira_Rural_Sudeste (-24.18, -54.18) | n_pr=2 (idx=0, sbcs=LVe2, ord=['LATOSSOLO']) | n_24=1 (idx=0, cod_um=SG21LVe2LV, cod_um2=SG21LVe2, ord24=['LATOSSOLO'], erod_um=Baixa, k_solos=0.012, fator_k_um=0.0120) | estrito=True | dom=True | viaK=k_solos_camada_2024_tabelado
+R08_NovaSantaRosa_Rural_Norte (-24.43, -53.92) | n_pr=1 (idx=0, sbcs=NVef2, ord=['NITOSSOLO']) | n_24=1 (idx=0, cod_um=SG22NVef2NV, cod_um2=SG22NVef2, ord24=['NITOSSOLO'], erod_um=Baixa, k_solos=0.012, fator_k_um=0.0120) | estrito=True | dom=True | viaK=k_solos_camada_2024_tabelado
+R09_QuatroPontes_Rural_Sul (-24.61, -53.96) | n_pr=1 (idx=0, sbcs=LVdf13, ord=['LATOSSOLO']) | n_24=1 (idx=0, cod_um=SG22LVdf3LV, cod_um2=SG22LVdf3, ord24=['LATOSSOLO'], erod_um=Muito baixa, k_solos=0.002, fator_k_um=0.0020) | estrito=True | dom=True | viaK=k_solos_camada_2024_tabelado
+R10_Mercedes_Rural_Leste (-24.45, -54.1) | n_pr=1 (idx=0, sbcs=NVef2, ord=['NITOSSOLO']) | n_24=1 (idx=0, cod_um=SG21NVef5NV, cod_um2=SG21NVef5, ord24=['NITOSSOLO', 'NEOSSOLO', 'NEOSSOLO', 'CHERNOSSOLO'], erod_um=Média, k_solos=0.0285, fator_k_um=0.0285) | estrito=False | dom=True | viaK=k_solos_camada_2024_tabelado
+R11_PatoBragado_Rural_Leste (-24.63, -54.17) | n_pr=2 (idx=0, sbcs=LVef1, ord=['LATOSSOLO']) | n_24=2 (idx=0, cod_um=SG21LVef1LV, cod_um2=SG21LVef1, ord24=['LATOSSOLO'], erod_um=Muito baixa, k_solos=0.002, fator_k_um=0.0020) | estrito=True | dom=True | viaK=k_solos_camada_2024_tabelado
+R12_EntreRiosDoOeste_Rural_Leste (-24.7, -54.18) | n_pr=1 (idx=0, sbcs=NVef2, ord=['NITOSSOLO']) | n_24=1 (idx=0, cod_um=SG21NVef1NV, cod_um2=SG21NVef1, ord24=['NITOSSOLO'], erod_um=Baixa, k_solos=0.012, fator_k_um=0.0120) | estrito=True | dom=True | viaK=k_solos_camada_2024_tabelado
+R13_SantaHelena_Rural_Leste (-24.88, -54.26) | n_pr=2 (idx=1, sbcs=NVef2, ord=['NITOSSOLO']) | n_24=1 (idx=0, cod_um=SG21NVef1NV, cod_um2=SG21NVef1, ord24=['NITOSSOLO'], erod_um=Baixa, k_solos=0.012, fator_k_um=0.0120) | estrito=True | dom=True | viaK=k_solos_camada_2024_tabelado
+R14_Missal_Rural_Leste (-25.09, -54.19) | n_pr=1 (idx=0, sbcs=LVef2, ord=['LATOSSOLO', 'NITOSSOLO']) | n_24=1 (idx=0, cod_um=SG21NVef3NV, cod_um2=SG21NVef3, ord24=['NITOSSOLO', 'LATOSSOLO'], erod_um=Baixa, k_solos=0.0096, fator_k_um=0.0096) | estrito=False | dom=False | viaK=k_solos_camada_2024_tabelado
+R15_Itaipulandia_Rural_Norte (-25.1, -54.42) | n_pr=2 (idx=0, sbcs=LVef3, ord=['LATOSSOLO']) | n_24=2 (idx=0, cod_um=SG21LVdf1LV, cod_um2=SG21LVdf1, ord24=['LATOSSOLO'], erod_um=Muito baixa, k_solos=0.002, fator_k_um=0.0020) | estrito=True | dom=True | viaK=k_solos_camada_2024_tabelado
+R16_SaoMiguelDoIguacu_Rural_Norte (-25.28, -54.22) | n_pr=1 (idx=0, sbcs=NVef8, ord=['NITOSSOLO']) | n_24=1 (idx=0, cod_um=SG21NVef5NV, cod_um2=SG21NVef5, ord24=['NITOSSOLO', 'NEOSSOLO', 'NEOSSOLO', 'CHERNOSSOLO'], erod_um=Média, k_solos=0.0285, fator_k_um=0.0285) | estrito=False | dom=True | viaK=k_solos_camada_2024_tabelado
+R17_Medianeira_Rural_Norte (-25.22, -54.08) | n_pr=1 (idx=0, sbcs=NVdf3, ord=['NITOSSOLO']) | n_24=2 (idx=0, cod_um=SG21LVef1LV, cod_um2=SG21LVef1, ord24=['LATOSSOLO'], erod_um=Muito baixa, k_solos=0.002, fator_k_um=0.0020) | estrito=False | dom=False | viaK=k_solos_camada_2024_tabelado
+R18_CeuAzul_Rural_Sul (-25.19, -53.84) | n_pr=2 (idx=0, sbcs=RRe12, ord=['NEOSSOLO', 'CHERNOSSOLO', 'NITOSSOLO']) | n_24=1 (idx=0, cod_um=SG22LVef1LV, cod_um2=SG22LVef1, ord24=['LATOSSOLO'], erod_um=Muito baixa, k_solos=0.002, fator_k_um=0.0020) | estrito=False | dom=False | viaK=k_solos_camada_2024_tabelado
+R19_Matelandia_Rural_Norte (-25.18, -53.98) | n_pr=1 (idx=0, sbcs=NVef2, ord=['NITOSSOLO']) | n_24=1 (idx=0, cod_um=SG22RLm2RL, cod_um2=SG22RLm2, ord24=['NEOSSOLO', 'CHERNOSSOLO'], erod_um=Alta, k_solos=0.0315, fator_k_um=0.0315) | estrito=False | dom=False | viaK=k_solos_camada_2024_tabelado
+R20_SantaTerezinhaItaipu_Rural_Norte (-25.38, -54.42) | n_pr=1 (idx=0, sbcs=LVdf13, ord=['LATOSSOLO']) | n_24=1 (idx=0, cod_um=SG21LVdf1LV, cod_um2=SG21LVdf1, ord24=['LATOSSOLO'], erod_um=Muito baixa, k_solos=0.002, fator_k_um=0.0020) | estrito=True | dom=True | viaK=k_solos_camada_2024_tabelado
+C01_Palotina_Urbano (-24.286, -53.84) | n_pr=1 (idx=0, sbcs=Area Urbana, ord=[]) | n_24=1 (idx=0, cod_um=SG22Ár, cod_um2=SG22Ár, ord24=[], erod_um=Área urbana, k_solos=0, fator_k_um=Área urbana) | estrito=False | dom=False | viaK=indisponivel_fora_do_dominio
+C02_SantaHelena_CorpoDagua (-24.8531, -54.3622) | n_pr=2 (idx=0, sbcs=LVef1, ord=['LATOSSOLO']) | n_24=2 (idx=1, cod_um=SG21NVef1NV, cod_um2=SG21NVef1, ord24=['NITOSSOLO'], erod_um=Baixa, k_solos=0.012, fator_k_um=0.0120) | estrito=False | dom=False | viaK=k_solos_camada_2024_tabelado

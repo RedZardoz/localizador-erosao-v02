@@ -1,0 +1,143 @@
+{
+  "versao": "1.0",
+  "artefatoAlvo": "docs/verificacoes/climatologia_chirps_bp3.json",
+  "criadoEm": "2026-10-02T14:59:12.712640+00:00",
+  "atualizadoEm": "2026-10-02T15:00:39.834425+00:00",
+  "totalChamadas": 12,
+  "totalItensProcessados": 12,
+  "totalBytesRecebidos": 174956340,
+  "chamadas": [
+    {
+      "timestampIso": "2026-10-02T14:59:12.712735+00:00",
+      "servico": "CHIRPS_UCSB",
+      "endpoint": "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/chirps-v2.0.2022.01.tif.gz",
+      "metodoHttp": "GET",
+      "quantidadeItens": 1,
+      "tamanhoRespostaBytes": 14474572,
+      "codigoHttp": 200,
+      "duracaoMs": 5940,
+      "detalhe": "CHIRPS v2.0 Global Monthly 0.05 deg - 2022-01"
+    },
+    {
+      "timestampIso": "2026-10-02T14:59:19.940253+00:00",
+      "servico": "CHIRPS_UCSB",
+      "endpoint": "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/chirps-v2.0.2022.02.tif.gz",
+      "metodoHttp": "GET",
+      "quantidadeItens": 1,
+      "tamanhoRespostaBytes": 14576256,
+      "codigoHttp": 200,
+      "duracaoMs": 9806,
+      "detalhe": "CHIRPS v2.0 Global Monthly 0.05 deg - 2022-02"
+    },
+    {
+      "timestampIso": "2026-10-02T14:59:30.007317+00:00",
+      "servico": "CHIRPS_UCSB",
+      "endpoint": "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/chirps-v2.0.2022.03.tif.gz",
+      "metodoHttp": "GET",
+      "quantidadeItens": 1,
+      "tamanhoRespostaBytes": 14538682,
+      "codigoHttp": 200,
+      "duracaoMs": 7437,
+      "detalhe": "CHIRPS v2.0 Global Monthly 0.05 deg - 2022-03"
+    },
+    {
+      "timestampIso": "2026-10-02T14:59:38.092468+00:00",
+      "servico": "CHIRPS_UCSB",
+      "endpoint": "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/chirps-v2.0.2022.04.tif.gz",
+      "metodoHttp": "GET",
+      "quantidadeItens": 1,
+      "tamanhoRespostaBytes": 14508968,
+      "codigoHttp": 200,
+      "duracaoMs": 5977,
+      "detalhe": "CHIRPS v2.0 Global Monthly 0.05 deg - 2022-04"
+    },
+    {
+      "timestampIso": "2026-10-02T14:59:44.464371+00:00",
+      "servico": "CHIRPS_UCSB",
+      "endpoint": "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/chirps-v2.0.2022.05.tif.gz",
+      "metodoHttp": "GET",
+      "quantidadeItens": 1,
+      "tamanhoRespostaBytes": 14551058,
+      "codigoHttp": 200,
+      "duracaoMs": 5947,
+      "detalhe": "CHIRPS v2.0 Global Monthly 0.05 deg - 2022-05"
+    },
+    {
+      "timestampIso": "2026-10-02T14:59:50.765935+00:00",
+      "servico": "CHIRPS_UCSB",
+      "endpoint": "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/chirps-v2.0.2022.06.tif.gz",
+      "metodoHttp": "GET",
+      "quantidadeItens": 1,
+      "tamanhoRespostaBytes": 14623884,
+      "codigoHttp": 200,
+      "duracaoMs": 5993,
+      "detalhe": "CHIRPS v2.0 Global Monthly 0.05 deg - 2022-06"
+    },
+    {
+      "timestampIso": "2026-10-02T14:59:57.058802+00:00",
+      "servico": "CHIRPS_UCSB",
+      "endpoint": "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/chirps-v2.0.2022.07.tif.gz",
+      "metodoHttp": "GET",
+      "quantidadeItens": 1,
+      "tamanhoRespostaBytes": 14669139,
+      "codigoHttp": 200,
+      "duracaoMs": 9031,
+      "detalhe": "CHIRPS v2.0 Global Monthly 0.05 deg - 2022-07"
+    },
+    {
+      "timestampIso": "2026-10-02T15:00:07.176260+00:00",
+      "servico": "CHIRPS_UCSB",
+      "endpoint": "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/chirps-v2.0.2022.08.tif.gz",
+      "metodoHttp": "GET",
+      "quantidadeItens": 1,
+      "tamanhoRespostaBytes": 14647247,
+      "codigoHttp": 200,
+      "duracaoMs": 6640,
+      "detalhe": "CHIRPS v2.0 Global Monthly 0.05 deg - 2022-08"
+    },
+    {
+      "timestampIso": "2026-10-02T15:00:14.106191+00:00",
+      "servico": "CHIRPS_UCSB",
+      "endpoint": "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/chirps-v2.0.2022.09.tif.gz",
+      "metodoHttp": "GET",
+      "quantidadeItens": 1,
+      "tamanhoRespostaBytes": 14617828,
+      "codigoHttp": 200,
+      "duracaoMs": 6002,
+      "detalhe": "CHIRPS v2.0 Global Monthly 0.05 deg - 2022-09"
+    },
+    {
+      "timestampIso": "2026-10-02T15:00:21.040463+00:00",
+      "servico": "CHIRPS_UCSB",
+      "endpoint": "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/chirps-v2.0.2022.10.tif.gz",
+      "metodoHttp": "GET",
+      "quantidadeItens": 1,
+      "tamanhoRespostaBytes": 14588874,
+      "codigoHttp": 200,
+      "duracaoMs": 5979,
+      "detalhe": "CHIRPS v2.0 Global Monthly 0.05 deg - 2022-10"
+    },
+    {
+      "timestampIso": "2026-10-02T15:00:27.232402+00:00",
+      "servico": "CHIRPS_UCSB",
+      "endpoint": "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/chirps-v2.0.2022.11.tif.gz",
+      "metodoHttp": "GET",
+      "quantidadeItens": 1,
+      "tamanhoRespostaBytes": 14581202,
+      "codigoHttp": 200,
+      "duracaoMs": 6094,
+      "detalhe": "CHIRPS v2.0 Global Monthly 0.05 deg - 2022-11"
+    },
+    {
+      "timestampIso": "2026-10-02T15:00:33.537359+00:00",
+      "servico": "CHIRPS_UCSB",
+      "endpoint": "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/chirps-v2.0.2022.12.tif.gz",
+      "metodoHttp": "GET",
+      "quantidadeItens": 1,
+      "tamanhoRespostaBytes": 14578630,
+      "codigoHttp": 200,
+      "duracaoMs": 5925,
+      "detalhe": "CHIRPS v2.0 Global Monthly 0.05 deg - 2022-12"
+    }
+  ]
+}

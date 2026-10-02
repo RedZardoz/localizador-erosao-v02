@@ -58,7 +58,7 @@ export const MapControls: React.FC = () => {
         </button>
 
         {menuBasemapAberto && (
-          <div className="absolute top-11 left-0 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl p-1.5 space-y-1 z-30 animate-in fade-in">
+          <div className="light-popup absolute top-11 left-0 w-48 bg-white border-2 border-slate-300 ring-2 ring-black/15 rounded-xl shadow-2xl p-1.5 space-y-1 z-30 animate-in fade-in text-slate-900">
             {basemaps.map((b) => (
               <button
                 key={b.id}
@@ -66,10 +66,10 @@ export const MapControls: React.FC = () => {
                   setMapState({ basemap: b.id });
                   setMenuBasemapAberto(false);
                 }}
-                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   mapState.basemap === b.id
-                    ? "bg-emerald-600 text-white font-bold"
-                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    ? "bg-emerald-600 text-white font-bold shadow-xs"
+                    : "text-slate-800 hover:bg-slate-100"
                 }`}
               >
                 {b.label}
@@ -93,12 +93,12 @@ export const MapControls: React.FC = () => {
         </button>
 
         {menuCamadasAberto && (
-          <div className="absolute top-11 left-0 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl p-3 space-y-2 z-30 animate-in fade-in text-xs">
-            <span className="font-bold text-slate-900 dark:text-white block border-b border-slate-100 dark:border-slate-800 pb-1">
+          <div className="light-popup absolute top-11 left-0 w-60 bg-white border-2 border-slate-300 ring-2 ring-black/15 rounded-xl shadow-2xl p-3 space-y-2 z-30 animate-in fade-in text-xs text-slate-900">
+            <span className="font-black text-slate-950 block border-b border-slate-200 pb-1.5">
               Camadas Visíveis
             </span>
 
-            <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+            <label className="flex items-center gap-2 cursor-pointer text-slate-800 font-medium">
               <input
                 type="checkbox"
                 checked={mapState.mostrarLimites}
@@ -110,7 +110,10 @@ export const MapControls: React.FC = () => {
               <span>Fronteira Paraná (IBGE)</span>
             </label>
 
-            <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+            <label
+              data-metodologia="aoi-selector"
+              className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300"
+            >
               <input
                 type="checkbox"
                 checked={mapState.mostrarBacias}
@@ -122,7 +125,10 @@ export const MapControls: React.FC = () => {
               <span>Macrobacias Hidrográficas</span>
             </label>
 
-            <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+            <label
+              data-metodologia="fator-k-pedologia"
+              className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300"
+            >
               <input
                 type="checkbox"
                 checked={mapState.mostrarSolosEmbrapa}
@@ -152,7 +158,28 @@ export const MapControls: React.FC = () => {
         )}
       </div>
 
-      {/* 3. Exagero DEM 3D (apenas ativo se terreno3d estiver ligado) */}
+      {/* 3. Relevo 3D / 2D Flutuante sobre o Mapa */}
+      <button
+        data-metodologia="terreno-3d"
+        onClick={() => setMapState((prev) => ({ terreno3d: !prev.terreno3d }))}
+        className={`h-9 px-3 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 shadow-lg backdrop-blur-md cursor-pointer ${
+          mapState.terreno3d
+            ? "bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-600/30 ring-2 ring-emerald-400/40"
+            : "bg-white/95 dark:bg-slate-900/95 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700"
+        }`}
+        title="Alternar relevo 3D DEM Copernicus (Botão direito: Ver fórmula do Fator LS e Declividade)"
+      >
+        <Mountain
+          className={`w-3.5 h-3.5 ${
+            mapState.terreno3d
+              ? "text-white"
+              : "text-emerald-600 dark:text-emerald-400"
+          }`}
+        />
+        <span>{mapState.terreno3d ? "Relevo 3D" : "Modo 2D"}</span>
+      </button>
+
+      {/* 4. Exagero DEM 3D (apenas ativo se terreno3d estiver ligado) */}
       {mapState.terreno3d && (
         <div className="h-9 px-2 bg-white/95 dark:bg-slate-900/95 border border-slate-300 dark:border-slate-700 rounded-xl shadow-lg backdrop-blur-md flex items-center gap-1 text-xs">
           <span className="text-[10px] text-slate-500 font-bold uppercase pl-1">DEM:</span>

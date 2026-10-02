@@ -24,8 +24,9 @@ import type {
   ModalType,
   SystemLogEntry,
 } from "@/types/ui";
-import { PARANA_BASINS_GEOJSON } from "@/lib/localizacao/bacias";
+import { PARANA_BASINS_GEOJSON, PARANA_ESTADO_IBGE_GEOMETRY } from "@/lib/localizacao/bacias";
 import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
+import { PASSOS_TOUR_APRESENTACAO } from "@/config/tourMetodologico";
 
 export type AbaAtiva = "mapa" | "inspetor" | "matriz" | "campanha" | "decisoes";
 
@@ -55,6 +56,20 @@ interface SarelStoreState {
   abaSidebar: "triagem" | "filtros";
   setAbaSidebar: (aba: "triagem" | "filtros") => void;
 
+  // Modo Apresentação & Tour Metodológico
+  modoApresentacaoAtivo: boolean;
+  passoTourAtual: number;
+  itemMetodologicoAtivoId: string | null;
+  modalMetodologiaAberta: boolean;
+  setModoApresentacaoAtivo: (ativo: boolean) => void;
+  toggleModoApresentacao: () => void;
+  iniciarTour: () => void;
+  encerrarTour: () => void;
+  avancarPassoTour: () => void;
+  voltarPassoTour: () => void;
+  abrirItemMetodologico: (id: string) => void;
+  fecharModalMetodologia: () => void;
+
   // Pontos Salvos e Pontos Provisórios (Memória Efêmera)
   pontos: PontoAmostral[];
   pontosProvisorios: PontoAmostral[];
@@ -72,6 +87,7 @@ interface SarelStoreState {
   setPontoAuditoria: (ponto: PontoAmostral | null) => void;
   definirRotuloConsolidado: (codigo: string, rotulo: RotuloConsolidado) => void;
   obterPontoSelecionado: () => PontoAmostral | undefined;
+  atualizarPontoIndividual: (pontoAtualizado: PontoAmostral) => void;
 
   // Áreas Territoriais e Polígonos Persistentes no Mapa
   areas: AreaEstudo[];
@@ -100,7 +116,7 @@ interface SarelStoreState {
   limparFiltros: () => void;
   setTopN: (n: number | "todas") => void;
 
-  // Estado Cartográfico (MapLibre GL 3D)
+  // Estado Cartográfica (MapLibre GL 3D)
   mapState: MapViewState;
   setMapState: (
     updater:
@@ -121,55 +137,19 @@ interface SarelStoreState {
     message: string,
     details?: Record<string, unknown>
   ) => void;
+  limparLogs: () => void;
 }
 
-// Bacia padrão Paraná como área territorial inicial
+// Malha oficial do Estado do Paraná (IBGE 41) como área territorial de referência
 const AREA_PARANA_INICIAL: AreaEstudo = {
   id: "area-pr-estado",
-  nome: "Estado do Paraná (IBGE)",
+  nome: "Estado do Paraná (Malha Oficial IBGE)",
   tipo: "estado",
   codigoIbge: "41",
   areaKm2: 199315,
   ativa: true,
   cor: "#059669",
-  geometry: {
-    type: "Polygon",
-    coordinates: [
-      [
-        [-54.25, -24.01],
-        [-54.08, -23.70],
-        [-53.72, -23.25],
-        [-53.40, -22.85],
-        [-52.95, -22.52],
-        [-52.50, -22.58],
-        [-51.85, -22.65],
-        [-51.20, -22.75],
-        [-50.45, -22.95],
-        [-49.95, -23.15],
-        [-49.60, -23.40],
-        [-49.30, -23.85],
-        [-48.95, -24.30],
-        [-48.50, -24.70],
-        [-48.15, -25.05],
-        [-48.40, -25.55],
-        [-48.60, -25.90],
-        [-49.00, -25.95],
-        [-49.55, -26.05],
-        [-50.10, -26.15],
-        [-50.80, -26.10],
-        [-51.40, -26.25],
-        [-51.95, -26.45],
-        [-52.30, -26.10],
-        [-52.80, -26.20],
-        [-53.10, -26.15],
-        [-53.70, -26.25],
-        [-54.20, -25.85],
-        [-54.60, -25.55],
-        [-54.35, -24.70],
-        [-54.25, -24.01],
-      ],
-    ],
-  },
+  geometry: PARANA_ESTADO_IBGE_GEOMETRY as any,
 };
 
 const FILTROS_INICIAIS: FiltrosState = {
@@ -226,6 +206,75 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
   abaSidebar: "triagem",
   setAbaSidebar: (aba) => set({ abaSidebar: aba }),
 
+  // Modo Apresentação & Tour Metodológico
+  modoApresentacaoAtivo: false,
+  passoTourAtual: 0,
+  itemMetodologicoAtivoId: null,
+  modalMetodologiaAberta: false,
+
+  setModoApresentacaoAtivo: (ativo) =>
+    set((state) => ({
+      modoApresentacaoAtivo: ativo,
+      modalMetodologiaAberta: ativo ? state.modalMetodologiaAberta : false,
+    })),
+
+  toggleModoApresentacao: () =>
+    set((state) => {
+      const proximo = !state.modoApresentacaoAtivo;
+      return {
+        modoApresentacaoAtivo: proximo,
+        modalMetodologiaAberta: proximo ? state.modalMetodologiaAberta : false,
+      };
+    }),
+
+  iniciarTour: () =>
+    set({
+      modoApresentacaoAtivo: true,
+      passoTourAtual: 0,
+      itemMetodologicoAtivoId: PASSOS_TOUR_APRESENTACAO[0],
+      modalMetodologiaAberta: true,
+    }),
+
+  encerrarTour: () =>
+    set({
+      modalMetodologiaAberta: false,
+    }),
+
+  avancarPassoTour: () =>
+    set((state) => {
+      const proximo = Math.min(
+        state.passoTourAtual + 1,
+        PASSOS_TOUR_APRESENTACAO.length - 1
+      );
+      return {
+        passoTourAtual: proximo,
+        itemMetodologicoAtivoId: PASSOS_TOUR_APRESENTACAO[proximo],
+        modalMetodologiaAberta: true,
+      };
+    }),
+
+  voltarPassoTour: () =>
+    set((state) => {
+      // permitido: controle de indice de paginacao de interface do tour metodologico (>= 0)
+      const anterior = Math.max(state.passoTourAtual - 1, 0);
+      return {
+        passoTourAtual: anterior,
+        itemMetodologicoAtivoId: PASSOS_TOUR_APRESENTACAO[anterior],
+        modalMetodologiaAberta: true,
+      };
+    }),
+
+  abrirItemMetodologico: (id) => {
+    const idx = PASSOS_TOUR_APRESENTACAO.indexOf(id);
+    set((state) => ({
+      itemMetodologicoAtivoId: id,
+      modalMetodologiaAberta: true,
+      passoTourAtual: idx !== -1 ? idx : state.passoTourAtual,
+    }));
+  },
+
+  fecharModalMetodologia: () => set({ modalMetodologiaAberta: false }),
+
   // Pontos Salvos e Pontos Provisórios
   // ZERO dados sintéticos: tela limpa inicialmente
   pontos: [],
@@ -237,18 +286,36 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
   carregarPontos: (novosPontos) => {
     assegurarApenasPontosReais(novosPontos);
     const harmonizados = novosPontos.map(harmonizarClasseAmostral);
-    set({
-      pontos: harmonizados,
-      pontoSelecionadoId: harmonizados.length > 0 ? harmonizados[0].id : null,
+    set((state) => {
+      const novosRotulos = { ...state.rotulosConsolidados };
+      for (const p of harmonizados) {
+        if (p.rotulo) {
+          novosRotulos[p.codigo] = p.rotulo;
+        }
+      }
+      return {
+        pontos: harmonizados,
+        rotulosConsolidados: novosRotulos,
+        pontoSelecionadoId: harmonizados.length > 0 ? harmonizados[0].id : null,
+      };
     });
   },
 
   carregarPontosProvisorios: (novosPontos) => {
     assegurarApenasPontosReais(novosPontos);
     const harmonizados = novosPontos.map(harmonizarClasseAmostral);
-    set({
-      pontosProvisorios: harmonizados,
-      pontoSelecionadoId: harmonizados.length > 0 ? harmonizados[0].id : null,
+    set((state) => {
+      const novosRotulos = { ...state.rotulosConsolidados };
+      for (const p of harmonizados) {
+        if (p.rotulo) {
+          novosRotulos[p.codigo] = p.rotulo;
+        }
+      }
+      return {
+        pontosProvisorios: harmonizados,
+        rotulosConsolidados: novosRotulos,
+        pontoSelecionadoId: harmonizados.length > 0 ? harmonizados[0].id : null,
+      };
     });
   },
 
@@ -287,6 +354,20 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
 
   selecionarPonto: (id) => set({ pontoSelecionadoId: id }),
 
+  atualizarPontoIndividual: (pontoAtualizado) => {
+    assegurarApenasPontosReais([pontoAtualizado]);
+    const harmonizado = harmonizarClasseAmostral(pontoAtualizado);
+    set((state) => ({
+      pontos: state.pontos.map((p) => (p.id === harmonizado.id ? harmonizado : p)),
+      pontosProvisorios: state.pontosProvisorios.map((p) =>
+        p.id === harmonizado.id ? harmonizado : p
+      ),
+      rotulosConsolidados: harmonizado.rotulo
+        ? { ...state.rotulosConsolidados, [harmonizado.codigo]: harmonizado.rotulo }
+        : state.rotulosConsolidados,
+    }));
+  },
+
   setPontoAuditoria: (ponto) => set({ pontoAuditoria: ponto }),
 
   definirRotuloConsolidado: (codigo, rotulo) =>
@@ -295,6 +376,12 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
         ...state.rotulosConsolidados,
         [codigo]: rotulo,
       },
+      pontos: state.pontos.map((p) =>
+        p.codigo === codigo ? harmonizarClasseAmostral({ ...p, rotulo }) : p
+      ),
+      pontosProvisorios: state.pontosProvisorios.map((p) =>
+        p.codigo === codigo ? harmonizarClasseAmostral({ ...p, rotulo }) : p
+      ),
     })),
 
   obterPontoSelecionado: () => {
@@ -424,6 +511,7 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
     cartoApiKey: "",
     planetApiKey: "",
     embrapaToken: "",
+    jevApiKey: "",
   },
 
   setCredenciais: (creds) =>
@@ -448,19 +536,38 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
   ],
 
   adicionarLog: (severity, component, message, details) =>
-    set((state) => ({
+    set((state) => {
+      // Evita duplicar a mesma mensagem consecutiva no relatório
+      if (state.systemLogs[0]?.message === message && state.systemLogs[0]?.component === component) {
+        return state;
+      }
+      return {
+        systemLogs: [
+          {
+            id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            timestamp: new Date().toISOString(),
+            severity,
+            component,
+            message,
+            details,
+          },
+          ...state.systemLogs.slice(0, 149),
+        ],
+      };
+    }),
+
+  limparLogs: () =>
+    set({
       systemLogs: [
         {
-          id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          id: `log-clear-${Date.now()}`,
           timestamp: new Date().toISOString(),
-          severity,
-          component,
-          message,
-          details,
+          severity: "info",
+          component: "Governança & Sistema",
+          message: "Relatório de erros e eventos limpo pelo pesquisador.",
         },
-        ...state.systemLogs.slice(0, 99),
       ],
-    })),
+    }),
 }));
 
 /**

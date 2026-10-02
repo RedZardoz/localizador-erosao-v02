@@ -45,6 +45,12 @@ export interface SitioPadraoOuroProperties {
   resolucaoGradeSateliteM: number;
   totalPixels10mEstimados: number;
   papelConjunto: 'held-out';
+  vantModelo?: string;
+  fabricanteVant?: string;
+  sensorTipo?: string;
+  bandasMultiespectrais?: ("blue" | "green" | "red" | "rededge" | "nir")[];
+  georreferenciamento?: string;
+  calibracaoRadiometrica?: string;
   compartimentos?: CompartimentoTopoSequencial[];
 }
 
@@ -95,13 +101,19 @@ export const SITIOS_PADRAO_OURO: SitioPadraoOuroFeature[] = [
       "codigoCar": "PR-4115804-63E945FC816944DA84D2DB2C9C3AF6F3",
       "nomeIdentificador": "Sitio Alfa (Medianeira)",
       "municipio": "Medianeira",
-      "baciaHidrografica": "Bacia do Rio Piquiri / Parana 3",
+      "baciaHidrografica": "Bacia Hidrográfica do Paraná 3",
       "areaHa": 49.94,
       "altitudeMediaM": 395,
       "resolucaoVantGsdCm": 7.5,
       "resolucaoGradeSateliteM": 10,
       "totalPixels10mEstimados": 4994,
-      "papelConjunto": "held-out"
+      "papelConjunto": "held-out",
+      "vantModelo": "Spectral 2 (Nuvem UAV)",
+      "fabricanteVant": "Nuvem UAV",
+      "sensorTipo": "Multiespectral 5 bandas (Azul, Verde, Vermelho, RedEdge, NIR)",
+      "bandasMultiespectrais": ["blue", "green", "red", "rededge", "nir"],
+      "georreferenciamento": "PPK/RTK centimétrico",
+      "calibracaoRadiometrica": "Sensor DLS + Painel de Reflectância Difusa"
     },
     "geometry": {
       "type": "Polygon",
@@ -365,13 +377,19 @@ export const SITIOS_PADRAO_OURO: SitioPadraoOuroFeature[] = [
       "codigoCar": "PR-4115804-4ACF9DE20F19462B89232E3E54565B6E",
       "nomeIdentificador": "Sitio Beta (Medianeira)",
       "municipio": "Medianeira",
-      "baciaHidrografica": "Bacia do Rio Piquiri / Parana 3",
+      "baciaHidrografica": "Bacia Hidrográfica do Paraná 3",
       "areaHa": 49.54,
       "altitudeMediaM": 410,
       "resolucaoVantGsdCm": 7.5,
       "resolucaoGradeSateliteM": 10,
       "totalPixels10mEstimados": 4954,
-      "papelConjunto": "held-out"
+      "papelConjunto": "held-out",
+      "vantModelo": "Spectral 2 (Nuvem UAV)",
+      "fabricanteVant": "Nuvem UAV",
+      "sensorTipo": "Multiespectral 5 bandas (Azul, Verde, Vermelho, RedEdge, NIR)",
+      "bandasMultiespectrais": ["blue", "green", "red", "rededge", "nir"],
+      "georreferenciamento": "PPK/RTK centimétrico",
+      "calibracaoRadiometrica": "Sensor DLS + Painel de Reflectância Difusa"
     },
     "geometry": {
       "type": "Polygon",
@@ -495,13 +513,19 @@ export const SITIOS_PADRAO_OURO: SitioPadraoOuroFeature[] = [
       "codigoCar": "PR-4105300-DD634A8A94FB403B8C5492F9BF22EF5B",
       "nomeIdentificador": "Sitio Gama (Ceu Azul)",
       "municipio": "Ceu Azul",
-      "baciaHidrografica": "Bacia do Rio Piquiri / Parana 3",
+      "baciaHidrografica": "Bacia Hidrográfica do Paraná 3",
       "areaHa": 49.54,
       "altitudeMediaM": 580,
       "resolucaoVantGsdCm": 7.5,
       "resolucaoGradeSateliteM": 10,
       "totalPixels10mEstimados": 4954,
-      "papelConjunto": "held-out"
+      "papelConjunto": "held-out",
+      "vantModelo": "Spectral 2 (Nuvem UAV)",
+      "fabricanteVant": "Nuvem UAV",
+      "sensorTipo": "Multiespectral 5 bandas (Azul, Verde, Vermelho, RedEdge, NIR)",
+      "bandasMultiespectrais": ["blue", "green", "red", "rededge", "nir"],
+      "georreferenciamento": "PPK/RTK centimétrico",
+      "calibracaoRadiometrica": "Sensor DLS + Painel de Reflectância Difusa"
     },
     "geometry": {
       "type": "Polygon",
@@ -605,13 +629,19 @@ export const SITIOS_PADRAO_OURO: SitioPadraoOuroFeature[] = [
       "codigoCar": "PR-4105300-DED72F1D0CA84A9AA5413B121592E6C0",
       "nomeIdentificador": "Sitio Delta (Ceu Azul)",
       "municipio": "Ceu Azul",
-      "baciaHidrografica": "Bacia do Rio Piquiri / Parana 3",
+      "baciaHidrografica": "Bacia Hidrográfica do Paraná 3",
       "areaHa": 49.54,
       "altitudeMediaM": 575,
       "resolucaoVantGsdCm": 7.5,
       "resolucaoGradeSateliteM": 10,
       "totalPixels10mEstimados": 4954,
-      "papelConjunto": "held-out"
+      "papelConjunto": "held-out",
+      "vantModelo": "Spectral 2 (Nuvem UAV)",
+      "fabricanteVant": "Nuvem UAV",
+      "sensorTipo": "Multiespectral 5 bandas (Azul, Verde, Vermelho, RedEdge, NIR)",
+      "bandasMultiespectrais": ["blue", "green", "red", "rededge", "nir"],
+      "georreferenciamento": "PPK/RTK centimétrico",
+      "calibracaoRadiometrica": "Sensor DLS + Painel de Reflectância Difusa"
     },
     "geometry": {
       "type": "Polygon",

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useSarelStore } from "@/store/useSarelStore";
+import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
 
 /**
  * Mapa Amostral — SAREL (§19 e Regra 4)
@@ -90,9 +91,10 @@ export function MapaAmostral() {
                 {/* Marcadores posicionados */}
                 {pontosFiltrados.map((p) => {
                   const isSelected = p.id === pontoSelecionadoId;
-                  // Cálculo de posição relativa aproximada no Paraná (-26.5 a -23.5 lat, -54.5 a -49.5 lng)
-                  const topPct = ((p.latitude - (-23.5)) / (-26.5 - (-23.5))) * 80 + 10;
-                  const leftPct = ((p.longitude - (-54.5)) / (-49.5 - (-54.5))) * 80 + 10;
+                  // Cálculo de posição relativa parametrizada (nesta bacia: BP3 — parâmetro do estudo)
+                  const env = AREA_INTERESSE_PADRAO.envelope;
+                  const topPct = ((p.latitude - env.latMax) / (env.latMin - env.latMax)) * 80 + 10;
+                  const leftPct = ((p.longitude - env.lonMin) / (env.lonMax - env.lonMin)) * 80 + 10;
 
                   return (
                     <button

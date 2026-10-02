@@ -1,0 +1,15 @@
+{
+  "nomeSistema": "SAREL - Sistema de Amostragem e Rotulagem para Erosão Laminar (PPGTCA 2026)",
+  "versao": "2.0.0",
+  "googleDriveFolderUrl": "https://drive.google.com/drive/folders/1S6UsUYGM3dUh7w_hLrmvcsuh0nSfjyYR?usp=sharing",
+  "googleDriveDbFileUrl": "https://drive.google.com/drive/folders/1S6UsUYGM3dUh7w_hLrmvcsuh0nSfjyYR?usp=sharing",
+  "caminhoBancoRelativo": "data\\fundiario_brasil.db",
+  "bancosComplementares": [
+    "Banco_Consolidado_SAREL_GoogleDrive.zip / fundiario_brasil.db (Banco SQLite Consolidado ~1.6 GB)",
+    "Dados INCRA (Acervo Fundiário)",
+    "Dados SICAR (Malha CAR - PR/SC/SP)",
+    "Dados SIGEF (Imóveis Certificados INCRA)",
+    "Dados SNCR (Cadastro Rural)"
+  ],
+  "instrucoesPosInstalacao": "Após concluir a instalação dos atalhos, clique em 'Baixar Banco Automaticamente do Google Drive' ou acesse o diretório oficial do Google Drive (https://drive.google.com/drive/folders/1S6UsUYGM3dUh7w_hLrmvcsuh0nSfjyYR?usp=sharing) para baixar os bancos de dados complementares."
+}

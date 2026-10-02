@@ -13,10 +13,23 @@ echo ===========================================================================
 echo.
 echo [1/3] Verificando ambiente e dependencias...
 
+cd /d "%~dp0"
+
+:: Suporte ao Modo Portatil Autonomo (sem necessidade de instalar Node.js ou Python no Windows)
+if exist "%~dp0runtime\node\node.exe" (
+    set "PATH=%~dp0runtime\node;%PATH%"
+    echo [INFO] Utilizando Node.js portatil embutido ^(runtime\node^).
+)
+if exist "%~dp0runtime\python\python.exe" (
+    set "PATH=%~dp0runtime\python;%~dp0runtime\python\Scripts;%PATH%"
+    set "PYTHON_PATH=%~dp0runtime\python\python.exe"
+    echo [INFO] Utilizando Python portatil embutido ^(runtime\python^).
+)
+
 where node >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [ERRO] Node.js nao encontrado no sistema!
-    echo Por favor, instale o Node.js v18 ou superior em: https://nodejs.org/
+    echo [ERRO] Node.js nao encontrado no sistema nem em runtime\node!
+    echo Execute Gerar_Pacote_Portatil.bat na maquina de origem ou instale o Node.js v18+ em: https://nodejs.org/
     echo.
     pause
     exit /b 1
@@ -24,22 +37,23 @@ if %errorlevel% neq 0 (
 
 where python >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [ERRO] Python nao encontrado no sistema!
-    echo Por favor, instale o Python 3.10 ou superior em: https://www.python.org/
-    echo Certifique-se de marcar a opcao "Add Python to PATH" durante a instalacao.
+    echo [ERRO] Python nao encontrado no sistema nem em runtime\python!
+    echo Execute Gerar_Pacote_Portatil.bat na maquina de origem ou instale o Python 3.10+ em: https://www.python.org/
     echo.
     pause
     exit /b 1
 )
 
-cd /d "%~dp0"
-
 :: Os parenteses literais dentro de blocos if precisam de ^ ; sem o escape o ")"
 :: fecha o bloco antes da hora e o script aborta com erro de sintaxe no [1/3].
 if not exist "data\fundiario_brasil.db" (
     echo [AVISO] Banco fundiario local ^(data\fundiario_brasil.db^) nao localizado.
-    echo As consultas cadastrais aos imoveis estarao desabilitadas ate a ingestao dos dados.
-    echo Para ingerir os dados, execute: python scripts/ingest_data.py --uf PR
+    echo Diretorio oficial dos bancos no Google Drive:
+    echo https://drive.google.com/drive/folders/1S6UsUYGM3dUh7w_hLrmvcsuh0nSfjyYR?usp=sharing
+    if exist "Instalador_SAREL.exe" (
+        echo Abrindo o Assistente de Instalacao e Download do Google Drive...
+        start "" "Instalador_SAREL.exe"
+    )
     echo.
 )
 

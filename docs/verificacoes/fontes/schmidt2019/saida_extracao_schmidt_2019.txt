@@ -1,0 +1,433 @@
+========================================================================
+EXTRACAO DIRETA E CONFERENCIA DE schmidt_2019_methodsx.pdf (Elsevier MethodsX)
+========================================================================
+Caminho relativo: docs/verificacoes/fontes/schmidt2019/schmidt_2019_methodsx.pdf
+Tamanho do arquivo (bytes): 4339190
+Hash SHA-256: f5aabe02b9bf20312018ccf43e17b29c6ed1343b7d2c933581387ea9c6cf927e
+Total de paginas do PDF: 11
+PDF Metadata (/Title): Modification of the RUSLE slope length and steepness factor (LS-factor) based on rainfall experiments at steep alpine grasslands
+PDF Metadata (/Author): Simon Schmidt
+PDF Metadata (/CreationDate): 2019-01-30 21:51:16+05:30
+PDF Metadata (/Producer): Acrobat Distiller 9.0.0 (Windows)
+
+--- [PDF PAGINA 1 / 11] ---
+Method Article
+Modiﬁcation of the RUSLE slope length and
+steepness factor (LS-factor) based on rainfall
+experiments at steep alpine grasslands
+Simon Schmidta,*, Simon Treschb,c,d, Katrin Meusburgere
+a Environmental Geosciences, University of Basel, Bernoullistrasse 30, CH-4056 Basel, Switzerland
+b Department of Soil Sciences, Research Institute of Organic Agriculture (FiBL), Ackerstrasse 113 , CH-5070
+Frick, Switzerland
+c Functional Ecology Laboratory, Institute of Biology, University of Neuchâtel, Rue Emile-Argand 11, CH- 2000
+Neuchâtel, Switzerland
+d Biodiversity and Conservation Biology, Swiss Federal Institute for Forest, Snow and Landscape Research
+(WSL), Zürcherstrasse 111, CH-8903 Birmensdorf, Switzerland
+e Forest Soils and Biogeochemistry, Swiss Federal Institute for Forest, Snow and Landscape Research (WSL),
+Zürcherstrasse 111, CH-8903 Birmensdorf, Switzerland
+A B S T R A C T
+The slope length and slope steepness factor (LS-factor) is one of ﬁve factors of the Universal Soil Loss Equation (USLE)
+and its revised version (RUSLE) describing the inﬂuence of topography on soil erosion risk. The LS-factor was
+originally developed for slopes less than 50% inclination and has not been tested for steeper slopes. To overcome this
+limitation, we adapted both factors slope length L and slope steepness S for conditions experimentally observed at
+Swiss alpine grasslands. For the new L-factor (Lalpine), a maximal ﬂow path threshold, corresponding to 100 m, was
+implemented to take into account short runoff ﬂow paths and rapid inﬁltration that has been observed in our
+experiments. For the S-factor, a ﬁtted quadratic polynomial function (Salpine) has been established, compiling the
+most extensive empirical studies. As a model evaluation, uncertainty intervals are presented for this modiﬁed S-
+factor. We observed that uncertainty increases with slope gradient. In summary, the proposed modiﬁcation of the LS-
+factor to alpine environments enables an improved prediction of soil erosion risk including steep slopes.
+/C15 Empirical experiments (rainfall simulation, sediment measurements) were conducted on Swiss alpine
+grasslands to assess the maximal ﬂow length and slope steepness factor (S-factor).
+/C15 Flow accumulation is limited to a maximal ﬂow threshold (100 m) at which overland runoff is realistic in alpine
+grassland.
+/C15 Slope steepness factor is modiﬁed by a ﬁtted S-factor equation from existing empirical S-factor functions.
+© 2019 The Author(s). Published by Elsevier B.V. This is an open access article under the CC BY license (http://
+creativecommons.org/licenses/by/4.0/).
+* Corresponding author.
+E-mail addresses: simon@simonschmidt.de, si.schmidt@unibas.ch, simon.schmidt@bgr.de (S. Schmidt),
+simon.tresch@ﬁbl.org (S. Tresch), katrin.meusburger@wsl.ch (K. Meusburger).
+https://doi.org/10.1016/j.mex.2019.01.004
+2215-0161/© 2019 The Author(s). Published by Elsevier B.V. This is an open access article under the CC BY license (http://
+creativecommons.org/licenses/by/4.0/).
+MethodsX 6 (2019) 219– 229
+Contents lists available at ScienceDirect
+MethodsX
+journal  homepage:  www.elsevier.com/locate/mex
+
+--- [PDF PAGINA 2 / 11] ---
+A R T I C L E I N F O
+Method name: Lalpine, Salpine, LSalpine
+Keywords: Revised Universal Soil Loss Equation, Erosion modeling, Switzerland, Terrain features, Maximal, Flow length
+Article history: Received 13 November 2018; Accepted 19 January 2019; Available online 26 January 2019
+Speciﬁcations Table
+Subject area Environmental Science
+More speciﬁc subject area Soil erosion modeling
+Method name - Lalpine
+- Salpine
+- LSalpine
+Name and reference of
+original method
+USLE LS-factor: Wischmeier, W.H., & Smith, D.D. (1978). Predicting rainfall erosion losses.
+Washington.
+S-factor: McCool, D.K., Brown, L.C., Foster, G.R., Mutchler, C.K., & Meyer, L.D. (1987). Revised
+Slope Steepness Factor for the Universal Soil Loss Equation. Transactions of the ASAE, 30,
+1387– 1396. https://doi.org/doi:10.13031/2013.30576.
+S-factor: Smith, D.D., & Whitt, D. (1948). Estimating soil losses from ﬁeld areas. Agricultural
+Engineering, 29, 394– 396.
+Resource availability - SAGA GIS (http://www.saga-gis.org; [31])
+- RSAGA (https://cran.r-project.org/web/packages/RSAGA/index.html; [30])
+Method details
+Existing approaches for S- and L-factor parametrization
+The LS-factor is a product of the slope length (L-) and the slope steepness (S-factor). The most
+widely used slope length factor represents the ratio of observed soil loss related to the soil loss of a
+standardized plot (22.13 m). Originally Wischmeier and Smith [1] deﬁned the L-factor as Eq. (1):
+L ¼ l
+22:13
+/C18  /C19 m
+ð1Þ
+where l represents the length of the slope in meters and m the different slope steepness. Later, Eq. (2)
+was adapted for the RUSLE-approach to better describe soil loss with increasing slope steepness.
+Desmet and Govers [2] transformed the original L-factor (Eq. (1)) into a GIS-approach (Eq. (2))
+considering the ﬂow accumulation and adding a ratio of rill to interrill erosion (Eq. (3)):
+Li;j ¼
+Ai;j/C0 in þ D2
+/C16  /C17 mþ1
+/C0  Amþ1
+i;j/C0 in
+Dmþ2 /C3  Xm
+i;j /C3  22:13m ð2Þ
+where Ai,j-in is the ﬂow accumulation in m2 at the inlet of a grid cell (i,j). D is the grid cell size in m and
+Xi;j equals to sinai;j þ cosai;j where ai,j is the aspect of the grid cell (i,j). The coefﬁcient m (Eq. (3))
+represents the ratio of rill and interrill erosion and is calculated by the β-value (Eq. (4)):
+m ¼ b
+b þ 1 ð3Þ
+220 S. Schmidt et al. / MethodsX 6 (2019) 219–229
+
+--- [PDF PAGINA 3 / 11] ---
+with a range between 0 (ratio of rill to interrill erosion close to 0) and 1.
+b ¼
+sinu
+0:0896
+0:56 þ 3 /C3  sinuð Þ0:8
+h i ð4Þ
+where u is the slope angle in degrees.
+For the S-factor, most often the empiric function proposed by McCool et al. [3] is used to determine
+the slope steepness factor in the Revised Universal Soil Loss Equation (RUSLE). McCool et al. [3]
+differentiate the relation between soil loss and slope steepness in radians (s) with two functions. One
+for slopes with an inclination less than 9% and the other greater or equal 9%. The functions are as
+follows:
+S ¼ 10:8s þ 0:03 f or slope steepness in percent < 9% ð5Þ
+S ¼ 16:8s /C0  0:50 f or slope steepness in percent /C21  9% ð6Þ
+The S-factor after McCool et al. [3] is particular recommended for areas with low summer rainfall
+amounts [4]. Many other empirical S-factors were developed since the 1940s (Table 1) but all S-factors
+have in common that empirical evidence and thus validity is limited to slope gradients less than 50%.
+Proposed adaption of the L-factor
+Often, GIS modeled potential ﬂow path length on slopes, expressed as ﬂow accumulation in a GIS-
+environment, is driven by gravity and theoretically unlimited [13]. In particular cases, these potential
+ﬂow path lengths can reach many kilometers and enormous runoff volumes. The ﬂow accumulation
+can be constrained by streets or houses as ending points of the potential ﬂow paths as discussed by
+Winchell et al. [14].
+In 2016, we conducted 19 different rainfall simulation experiments on south facing slopes in an alpine
+environment (Val Piora, Switzerland) with different conditions regarding soil moisture (dry, moist),
+steepness (36/C14 – 82/C14 ), and vegetation (low, medium, full vegetation cover) to observe the ﬂow path
+lengths. The rainfall simulations were realized with an Eijkelkamp mini rainfall simulator (type M1 .09.06.
+E, Eijkelkamp, NL; Fig. 1) for erosion tests with a rainfall intensity of 640 mm/h and an energy of
+4 J mm/C0 1 m/C0 2. This rainfall energy is comparable with the average rainfall energy of Val Piora (station
+Piotta; 5.6 J mm/C0 1 m/C0 2; [15]). Regardless of the conditions, our observations revealed short surface ﬂow
+path lengths at the scale of meters with a rapid inﬁltration into shallow alpine soils (see Appendix A.
+Table 1
+Review of selected S-factors (S).
+Source function Description
+Zingg [5] S ¼ s
+9
+/C0  /C1 1:4 s = slope steepness in percent
+Musgrave [6] S ¼ s
+9
+/C0  /C1 1:35 s = slope steepness in percent
+Smith and Whitt [7] S ¼ 0:025 þ 0:052s
+4
+3 s = slope steepness in percent
+Smith [8] S ¼ 0:00650s2 þ 0:0453s þ 0:065 s = slope steepness in percent
+Smith [8] S ¼ 0:044 þ 0:10s /C0  0:00073s2 s = slope steepness in percent
+Wischmeier and Smith [1] S ¼ 65:4sinu2 þ 4:56sinu þ 0:0654 u = slope steepness in radians
+McCool et al. [9] S ¼ sinu
+0:00896
+/C0  /C1 0:6 u = slope steepness in radians
+Foster [10] S ¼ 3 sinuð Þ0:8 þ 0:56 u = slope steepness in radians
+McCool et al. [3] S ¼ 16:8sinu /C0  0:5 u = slope steepness in radians
+McCool et al. [3] S ¼ 10:8sinu þ 0:03 u = slope steepness in radians
+Nearing [11] S ¼ /C0  1:5 þ 17
+1þ e2:3/C0 6:1sinu
+u = slope steepness in radians
+Liu et al. [12] S ¼ 21:91sinu /C0  0:96 u = slope steepness in radians
+Salpine present study S ¼ 0:0005s2 þ 0:1795s /C0  0:4418 s = slope steepness in percent
+S. Schmidt et al. / MethodsX 6 (2019) 219–229 221
+
+--- [PDF PAGINA 4 / 11] ---
+supplementary material). Our measurements and observations show, that potential ﬂow paths without
+considering inﬁltration is not realistic for alpine environments and thus, requesting a maximal ﬂow
+threshold for the estimation of the slope length factor L. McCool et al. [16] and Winchell et al. [14] limited
+the slope length to a maximal threshold of 333 m (1 000 feet) as longer slope length appear only
+occasionally. According to McCool et al. [16], the usual threshold in many cases is 121 m (400 feet). As a
+compromise of their suggestion and our observed short ﬂow path lengths in the Swiss Alps, we decided to
+limit the maximal ﬂow length to 100 m.
+The threshold is implemented as a condition either directly in SAGA GIS or in RSAGA after creating
+the ﬂow accumulation grid:
+Aalpine i;j/C0 in ¼ if else Ai;j/C0 in > thresh; thresh; Ai;j/C0 in
+/C0  /C1
+ð7Þ
+where Aalpine i,j-in is the constraint ﬂow accumulation in m2 at the inlet of a grid cell (i,j) considering a
+threshold value thresh. That constraint ﬂow accumulation value is inserted into the L-factor equation
+for the alpine environment (Eq. (8)):
+Lalpine i;j ¼
+Aalpine i;j/C0 in þ D2
+/C16  /C17 mþ1
+/C0  Amþ1
+alpine i;j/C0 in
+Dmþ2 /C3  Xm
+i;j /C3  22:13m ð8Þ
+Likewise to Eq. (2), D is the grid cell size in m and Xi;j equals to sinai;j þ cosai;j where ai,j is the aspect of
+the grid cell (i,j). The coefﬁcient m is the ratio of rill (β-value) to interrill erosion according to the above
+mentioned Eqs. (3) and (4).
+For our calculation of L-factor using a 2 m resolution Digital Elevation Model, the maximal ﬂow
+length of 10 0 m, corresponds to a threshold of 50 cells multiplied by the cell size of 2 m (Fig. 2).
+Additionally, maximal ﬂow path length was constrained by a ﬁeld block cadaster. The cadaster
+deﬁnes hydrological units of continuous agricultural land, that are separated by landscape elements
+acting as ﬂow boundaries (e.g., forests, streets, urban areas, water bodies, or ditches) following the
+approach of Winchell et al. [14].
+Proposed adaption of the S-factor
+In 2014, we conducted a total of 16 rainfall simulations on alpine slopes to assess the soil loss rates
+related to different slope inclinations (Table 2; [17]). The experiments were conducted at a north and
+south facing slope both with grassland cover in the mountains of the Urseren Valley, Switzerland. At
+each slope two transects were selected with slope gradient ranging from 20 to 90%. We used a ﬁeld
+hybrid rainfall simulator modiﬁed after Schindler Wildhaber et al. [18] with an intensity of 60 mm h/C0 1,
+which is comparable to a high rainfall event in this area.
+The experimental sites showed small variation in vegetation cover, soil erodibility, and slope length
+(due to the effect of slope angle), therefore all experimental plots were normalized to average values of
+Fig. 1. Different set ups and preconditions of the rainfall simulation experiment on steep slopes in Val Piora, Ticino, Switzerland.
+222 S. Schmidt et al. / MethodsX 6 (2019) 219–229
+
+--- [PDF PAGINA 5 / 11] ---
+the respective factors. S-factors were ﬁtted to observed soil loss versus sine of the slope angle using an
+exponential, power, and polynomial equation to the original dataset with all observation and a dataset
+excluding one outlier (N/C14 13), and three outliers (N/C14 12, 13, 16). The nine regression lines yield R2
+estimates between 0.18 and 0.70, but differ largely with increasing slope steepness. This range of S-
+factors with increasing steepness is comparable to previous developed empirical S-factor equations
+(Table 1,Fig. 1). Therefore, we decided that a ﬁtted function (Salpine in Table 1, Fig. 3) complying the
+most important S-factors from the literature would be most suitable to describe the soil loss behavior
+Fig. 2. Constraint ﬂow accumulation grid with a maximal ﬂow path length of 100 m.
+Table 2
+Rainfall simulation measurements at the two study sites on steep alpine slopes in Switzerland under consideration of different
+inclinations and vegetation cover.
+No inclination
+(/C14 )
+vegetation
+cover (%)
+measured sediment
+rate (t ha/C0 1 yr/C0 1)
+normalizeda sediment
+rate (t ha/C0 1 yr/C0 1)
+normalizeda sediment rate without
+outliers (t ha/C0 1 yr/C0 1)
+1 17 23 13.8 8.5 8.5
+2 22 33 0.6 0.7 0.7
+3 11 27 0.0 0.0 0.0
+4 27 41 1.2 1.6 1.6
+5 31 35 0.2 0.2 0.2
+6 35 34 6.8 5.6 5.6
+7 42 53 9.4 19.0 19.0
+8 39 26 31.0 17.4 17. 4
+9 11 33 0.6 0.7 0.7
+10 17 36 1.4 1.8 1.8
+11 22 47 1.3 2.0 2.0
+12 27 33 34.3 40.6
+13 31 63 26.1 111. 3
+14 35 38 11.1 13.1 13.1
+15 39 34 40.2 26.0 26.0
+16 42 40 75.4 69.8
+a By C-factor with 35% vegetation cover, L-factor of 1.2, and K-factor of 0.031.
+S. Schmidt et al. / MethodsX 6 (2019) 219–229 223
+
+--- [PDF PAGINA 6 / 11] ---
+at steep slopes. The aggregated S function and is a quadratic polynomic function with progressive
+growth (Eq. (9)):
+Salpine ¼ 0:0005s2 þ 0:7956s /C0  0:4418 ð9Þ
+where s is the slope steepness in percent.
+Salpine is very close to the empirical normalized function proposed by Musgrave [6] for a slope
+steepness of 9%.
+The Swiss LS-factor map including the Alps
+The resulting modeled mean LSalpine-factor of Switzerland is 14.8. The LS-factor increases with
+elevation gradient from a mean of 7.0 in the zone <150 0 m a.s.l. to 30.4 in the zone >150 0 m a.s.l. A
+cluster of highest mean LS-factors can be found across the Alps (Fig. 4). The lowest mean LS-factors are
+Fig. 3. Review and behavior of different empirical S-factor functions and the ﬁtted function for steep alpine environments
+(Salpine).
+Fig. 4. LSalpine-factor map (spatial resolution 2 m) for Switzerland derived by the digital elevation model SwissAlti3D.
+224 S. Schmidt et al. / MethodsX 6 (2019) 219–229
+
+--- [PDF PAGINA 7 / 11] ---
+in the Swiss lowlands. South-western facing slopes have higher LS-factors (17.6) compared to plain
+surfaces (0.04) and north facing slopes (12.5).
+Quality assessment and method uncertainties
+The original LS-factor has its origin in empirical ﬁeld experiments and is developed for a maximum
+slope steepness of 50%. Validation of existing equations for slopes that are steeper than 50% is a
+challenge. However, while previous studies at inclinations >25% with approximately 20 plot
+measurements ([19], 24 plots; [20], 19 plots; [12], 9 plots; [21], 22 plots; [18], 6 plots) were successful
+in delineating and S-factor equation, in our case the variability of the data impeded a unique solution
+of the S-factor equation. To account for this high variability and still existing uncertainty, the way
+forward is to include the variability in the LS-factor calculation.
+We investigated the deviation in percentage of our proposed Salpine to a conservative function and a
+rather progressive function. The conservative function (Scons) is based on the translated and scaled sine
+functions of Eqs. (5) and (6) by McCool et al. [3] with a proportional and slightly digressive growth. The
+progressive function (Sprog) is a quadratic polynomic function according to Smith and Whitt [7] with a
+progressive growth, but a higher coefﬁcient than the here presented ﬁtted function Salpine (Eq. (10)) for
+Salpine.
+Sprog ¼ 0:00650s2 þ 0:0453s þ 0:065 ð10Þ
+where s is the slope steepness in percent.
+Low uncertainty has a deviation close to 0%. Higher percentages equals to a higher deviation of
+Scons/prog to Salpine.
+Fig. 5. Deviation in percentage of Salpine to Scons as an indicator of quality for the proposed Salpine-factor. Salpine is a lumped S-
+factor of a total of 12 empiric S-factor equations of the literature (Eq. (9)). It can be seen as an approximation to the high slope
+gradients in alpine environments. Scons complies with the proposed S-factor of McCool et al. [3] (Eqs. (5) and (6)). The deviation
+is presented in percentage.
+S. Schmidt et al. / MethodsX 6 (2019) 219–229 225
+
+--- [PDF PAGINA 8 / 11] ---
+The deviation of Salpine to Scons shows higher deviations in areas with less slope gradiants (parts of
+Swiss midland) (Fig. 5). The steep slope areas in the Alps have deviations of 25%– 50%. Both functions,
+Salpine and Scons predict the steep alpine environment in a comparable way. The deviation of the
+progressive S-factor (Sprog) and Salpine diverge much more in the Alps whereas the equations are
+rather ﬁtting in ﬂatter regions (Fig. 6). A sharp edge of low divergence to high divergence is marked by
+the northern Alpine foothill with increasing slope gradients.
+This relationship of deviation and slope gradient is not surprising as the uncertainty of many
+equations rises with slope steepness (cf. Fig. 3). García-Ruiz et al. [22] identiﬁed an increasing trend of
+uncertainty for 624 measured erosion rates and slope gradients across the world for slope steepness
+>11/C14 .
+The LS-Factor  map of the Swiss agricultural  land use unit is visually compatible  with the LS-
+factor maps of the European  Union provided by Panagos et al. [23] (Fig. 7). In contrast  to the
+modeling  of the total country area by Panagos et al. [23] we constrained  the LS-factor  to
+agricultural  soils incl. grasslands  using a ﬁeld cadaster. The main differences  are found on steeper
+slopes >50%, which have been excluded in the European approach.  Furthermore,  the European
+map relies on the conservative  Eqs. (5) and (6) by McCool et al. [3]. Additionally,  different  spatial
+resolutions  of Digital Elevation  Models (2 m versus 25 m) are inﬂuencing the slope and aspect
+mapping and thus the LS-factor  [24– 26].
+It should be considered that the number of rainfall experiments for the L-factor (n = 19) and the S-
+factor (S = 16) is short and limited only to grasslands which are the predominant land use at Swiss
+alpine slopes [27]. Rainfall simulations in alpine environments are difﬁcult to conduct due to the harsh
+terrain and climate conditions. Often, the temporal period for measurements is limited by the late
+melt out of snow cover and the short vegetation period [28]. To better model the S-factor for steep
+Fig. 6. Deviation in percentage of Salpine to Sprog as an indicator of quality for the proposed Salpine-factor. Salpine is a lumped S-
+factor of a total of 12 empiric S-factor equations of the literature (Eq. (9)). It can be seen as an approximation to the high slope
+gradients in alpine environments. Sprog complies with the proposed S-factor of Smith and Whitt [7] (Eq. (10)). The deviation is
+presented in percentage.
+226 S. Schmidt et al. / MethodsX 6 (2019) 219–229
+
+--- [PDF PAGINA 9 / 11] ---
+alpine slopes further measurements (e.g., rainfall simulation experiments) are needed to constrain S-
+factor assessment for steep slopes.
+Additional information
+Introduction
+The slope length factor L and slope steepness factor S, often lumped together as the topographic
+factor LS. The LS-factor is one of the factors (R rainfall erosivity, C cover and management factor, K soil
+erodibility, P support practices) of the Universal Soil Loss Equation (USLE) and its revised version
+(RUSLE) [1,29]. LS is a factor that describes the inﬂuence of the topography to the soil erosion risk by
+considering the length of a slope and the inﬂuence of surface runoff which can be active on eroding soil
+material before it inﬁltrates or continuous as interﬂow. Furthermore, it includes the steepness of a
+slope as runoff on steeper slopes has a higher gravity and therefore is more relevant for erosion.
+With the availability of Digital Elevation Models the calculation of LS-factors in GIS environments
+was made possible even for large-scale erosion modeling approaches. Winchell et al. [14] revealed a
+reasonable agreement of GIS-based LS-factor and ﬁeld measured LS-factors of the US Natural Resource
+Inventory database for the Mississippi Catchment.
+Originally, the LS-factor was assessed on a 9% steep slope with a length of 22.13 m (72.6 feet) [1].
+Owing to its empirical character, LS-factors are usually limited to a maximum slope angle of 50%
+(26.6/C14 ) [3,12]. As Switzerland is a country with a high elevation gradient from 192 m a.s.l. to 4633 m a.s.
+l. (mean elevation 1288 m a.s.l.) and a mean slope gradient of up to 36% (20/C14 ), a not negligible fraction
+of slopes (4.7%) exceeds the limitation of 50%. Yet, no uniform equation to assess the LS-factor for steep
+slopes like in the alpine environment of Switzerland was presented to the scientiﬁc community. Only a
+few studies are dealing with LS-factors on steep slopes (e.g. [12]). For example, slopes >50% were
+disregarded in the most recent European Union’s LS-factor map by Panagos et al. [23].
+Fig. 7. LS-factor for the Swiss agricultural area (incl. Liechtenstein) embedded in the European Union’s LS-factor map (for total
+country area) by Panagos et al. [23].
+S. Schmidt et al. / MethodsX 6 (2019) 219–229 227
+
+--- [PDF PAGINA 10 / 11] ---
+To overcome that limitation in LS-factor modeling on steep slopes, we (i) limited the potential ﬂow
+path length to a maximal ﬂow and (ii) choose the most representative equation for Swiss steep slopes.
+Data statement
+Raw data were generated at Swisstopo and provided only for scientiﬁc purposes. Derived data
+supporting the ﬁndings of this study are available from the corresponding author SS on request.
+Acknowledgments
+This work was supported by the Swiss Federal Ofﬁce for the Environment (FOEN) (grant numbers N/C14
+N222-0350 and N/C14 P182-1535). The authors would like to thank Christine Alewell for the methodological
+support and Pascal Bircher for the advice in data handling with SAGA GIS/RSAGA and the upgrade of the
+existing ﬁeld block cadaster of Switzerland. Our thank goes to M. Schulthess, C. Keller, N. Bongni, S.
+Rothenbühler, and A. Aeschbach for the support in the ﬁeld and the footage. The authors thank Swisstopo
+for making their data available for this research. The authors would like to thank two anonymous referees
+for their valuable comments and suggestions to improve the quality of the paper.
+Appendix A. Supplementary data
+Supplementary material related to this article can be found, in the online version, at doi:https://doi.
+org/10.1016/j.mex.2019.01.004.
+References
+[1] W.H. Wischmeier, D.D. Smith, Predicting Rainfall Erosion Losses Washington, (1978) .
+[2] P.J.J. Desmet, G. Govers, A GIS procedure for automatically calculating the USLE LS factor on topographically complex
+landscape units, J. Soil Water Conserv. 51 (1996) 427– 433.
+[3] D.K. McCool, L.C. Brown, G.R. Foster, C.K. Mutchler, L.D. Meyer, Revised slope steepness factor for the universal soil loss
+equation, Trans. ASAE 30 (1987) 1387– 1396, doi:http://dx.doi.org/10.13031/2013.30576.
+[4] K. Auerswald, Eignung der Hangneigungsfaktoren verschiedener Erosionsmodelle unter bayerischen Anbauverhältnissen,
+Zeitschrift für Kulturtechnik und Flurbereinigung 27 (1986) 218– 224.
+[5] A. Zingg, Degree and length of land slope as it affects soil loss in run-off, Agric. Eng. (1940) 59– 64.
+[6] G.W. Musgrave, The quantitative evaluation of factors in water erosion— a ﬁrst approximation, J. Soil Water Conserv. (1947)
+133– 138.
+[7] D.D. Smith, D. Whitt, Estimating soil losses from ﬁeld areas, Agric. Eng. 29 (1948) 394– 396.
+[8] D.D. Smith, Factors affecting rainfall erosion and their evaluation, Int. Assoc. Sci. Hydrol. Publ. 43 (1958) 97– 107.
+[9] D. McCool, L. Brown, G.R. Foster, C. Mutchler, L. Meyer, Revised slope steepness factor for the universal soil loss equation,
+Trans. ASAE 30 (1987) 1387– 1398.
+[10] G.R. Foster, Modeling the erosion process, in: I.C.T. Haan, H.P. Johnson, D.L. Brakenslek (Eds.), Hydrologic Modeling of Small
+Watersheds, St. Joseph, 1982, pp. 297– 382.
+[1 1] M.A. Nearing, A single, continuous function for slope steepness inﬂuence on soil loss, Soil Sci. Soc. Am. J. 61 (1997) 917, doi:
+http://dx.doi.org/10.2136/sssaj1997.03615995006100030029x.
+[12] B.Y. Liu, M.A. Nearing, P.J. Shi, Z.W. Jia, Slope length effects on soil loss for steep slopes, Soil Sci. Soc. Am. J. 64 (2000) 1759,
+doi:http://dx.doi.org/10.2136/sssaj2000.6451759x.
+[13] S. Orlandini, G. Moretti, M.A. Corticelli, P.E. Santangelo, A. Capra, R. Rivola, J.D. Albertson, Evaluation of ﬂow direction
+methods against ﬁeld observations of overland ﬂow dispersion, Water Resour. Res. 48 (2012) 412, doi:http://dx.doi.org/
+10.1029/2012WR012067.
+[14] M.F. Winchell, S.H. Jackson, A.M. Wadley, R. Srinivasan, Extension and validation of a geographic information system-based
+method for calculating the revised universal soil loss equation length-slope factor for erosion risk assessments in large
+watersheds, J. Soil Water Conserv. 63 (2008) 105– 111, doi:http://dx.doi.org/10.2489/jswc.63.3.105.
+[15] MeteoSwiss, Automatic Monitoring Network, (2018) . https://www.meteoswiss.admin.ch/home/measurement-and-
+forecasting-systems/land-based-stations/automatisches-messnetz.html.
+[16] D.K. McCool, G. Foster, G. Weesies, Slope length and steepness factor (LS). Chapter 4, in: K.G. Renard, G.R. Foster, G.A.
+Weesies, D.K. McCool, D.C. Yoder (Eds.), Predicting Soil Erosion by Water: A Guide to Conservation Planning with the
+Revised Universal Soil Loss Equation (RUSLE), USDA, Washington, D.C, 1997, pp. 101– 142.
+[17] S. Tresch, Inﬂuence of the Slope Steepness on Soil Erosion Modelling Measured with Rainfall Simulations in the Urseren
+Valley. Master Thesis Basel, (2014), doi:http://dx.doi.org/10.13140/RG.2.2.15260.54409.
+[18] Y. Schindler Wildhaber, D. Bänninger, K. Burri, C. Alewell, Evaluation and application of a portable rainfall simulator on
+subalpine grassland, Catena 91 (2012) 56– 62, doi:http://dx.doi.org/10.1016/j.catena.201 1.03.004.
+[19] A.W. Kilinc, E.V. Richardson, Mechanics of Soil Erosion from Overland Flow Generated by Simulated Rainfall, Colorado State
+University, 1973.
+[20] B.Y. Liu, M.A. Nearing, L.M. Risse, Slope gradient effects on soil loss for steep slopes, Trans. ASAE 37 (1994) 1835– 1840.
+228 S. Schmidt et al. / MethodsX 6 (2019) 219–229
+
+--- [PDF PAGINA 11 / 11] ---
+[21] A. Merz, C. Alewell, E. Hiltbrunner, D. Bänninger, Plant-compositional effects on surface runoff and sediment yield in
+subalpine grassland, J. Plant Nutr. Soil Sci. 172 (2009) 777– 788, doi:http://dx.doi.org/10.1002/jpln.200800231.
+[22] J.M. García-Ruiz, S. Beguería, E. Nadal-Romero, J.C. González-Hidalgo, N. Lana-Renault, Y. Sanjuán, A meta-analysis of soil
+erosion rates across the world, Geomorphology 239 (2015) 160– 173, doi:http://dx.doi.org/10.1016/j.
+geomorph.2015.03.008.
+[23] P. Panagos, P. Borrelli, K. Meusburger, A new european slope length and steepness factor (LS-factor) for modeling soil
+erosion by water, Geosciences 5 (2015) 117– 126, doi:http://dx.doi.org/10.3390/geosciences50201 17.
+[24] K.-t. Chang, B.-w. Tsai, The effect of DEM resolution on slope and aspect mapping, Cartogr. Geogr. Inf. Syst. 18 (1991) 69– 77,
+doi:http://dx.doi.org/10.1559/152304091 783805626.
+[25] M.F. Ramli, M.K. Yusoff, S. Mustapha, T.S. Hiang, The effect of digital elevation model scale factor on soil erosion studies.
+Case study in Cameron Highlands, Malaysia, J. Environ. Hydrol. 14 (2006) 1– 9.
+[26] Q. Zhu, X. Yang, Q. Yu, Assess the topographic resolution impact on soil loss, 2016 IEEE International Geoscience and
+Remote Sensing Symposium (IGARSS) (2016) 6055– 6058.
+[27] S. Schmidt, C. Alewell, K. Meusburger, Swiss national grassland map and change (1996– 2015) of permanent grasslands
+extent in Switzerland, Data Brief 20 (2018) 1992– 1998, doi:http://dx.doi.org/10.1016/j.dib.2018.09.039.
+[28] S. Schmidt, C. Alewell, K. Meusburger, Mapping spatio-temporal dynamics of the cover and management factor (C-factor)
+for grasslands in Switzerland, Remote Sens. Environ. 211 (2018) 89– 104, doi:http://dx.doi.org/10.1016/j.rse.2018.04.008.
+[29] K. Renard, G. Foster, G. Weesies, J. Porter, RUSLE. Revised universal soil loss equation, J. Soil Water Conserv. 46 (1991).
+[30] A. Brenning, D. Bangs, M. Becker, Package ‘RSAGA’, (2018) . https://cran.r-project.org/web/packages/RSAGA/RSAGA.pdf.
+[31] O. Conrad, B. Bechtel, M. Bock, H. Dietrich, E. Fischer, L. Gerlitz, J. Wehberg, V. Wichmann, J. Böhner, System for automated
+geoscientiﬁc analyses (SAGA) v. 2.1.4, Geosci. Model. Dev. Discuss. 8 (2015) 1991– 2007 , doi:http://dx.doi.org/10.5194/gmd-
+8-1991-2015.
+S. Schmidt et al. / MethodsX 6 (2019) 219–229 229

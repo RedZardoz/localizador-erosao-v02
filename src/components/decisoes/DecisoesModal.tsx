@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { X, BookOpen, Search, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { useSarelStore } from "@/store/useSarelStore";
 import { DECISOES, Decisao } from "@/config/decisoes";
+import { PainelSorteioD16 } from "./PainelSorteioD16";
+import { PainelCriterioRefutacaoD25 } from "./PainelCriterioRefutacaoD25";
 
 export const DecisoesModal: React.FC = () => {
   const { modalAtiva, setModalAtiva } = useSarelStore();
@@ -36,7 +38,7 @@ export const DecisoesModal: React.FC = () => {
             <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" />
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                Registro Oficial de Decisões Metodológicas (Regra 9 — D01 a D19)
+                Registro Oficial de Decisões Metodológicas (Regra 9 — D01 a D26)
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Todo parâmetro tem dono, referência e estado registrado. Decisões pendentes geram estado indisponível no sistema.
@@ -81,8 +83,10 @@ export const DecisoesModal: React.FC = () => {
           </div>
         </div>
 
-        {/* Grid de Decisões */}
-        <div className="p-5 overflow-y-auto custom-scrollbar flex-1">
+        {/* Grid de Decisões, Critério de Refutação D25 e Sorteio D16 */}
+        <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+          <PainelCriterioRefutacaoD25 />
+          <PainelSorteioD16 />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {decisoesFiltradas.map((dec) => (
               <div

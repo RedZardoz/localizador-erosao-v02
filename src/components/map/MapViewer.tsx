@@ -7,7 +7,8 @@ import { useSarelStore, usePontosVisiveis } from "@/store/useSarelStore";
 import { MapControls } from "./MapControls";
 import { DrawingToolbar } from "@/components/polygon/DrawingToolbar";
 import { PointPopup } from "./PointPopup";
-import { PARANA_BASINS_GEOJSON } from "@/lib/localizacao/bacias";
+import { PARANA_BASINS_GEOJSON, PARANA3_28_MUNICIPIOS_GEOJSON } from "@/lib/localizacao/bacias";
+import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
 import { SITIOS_PADRAO_OURO_GEOJSON } from "@/lib/padraoOuro/sitiosReferencia";
 
 export const MapViewer: React.FC = () => {
@@ -75,6 +76,16 @@ export const MapViewer: React.FC = () => {
             tileSize: 256,
             attribution: "CARTO",
           },
+          "mapbox-satellite": {
+            type: "raster",
+            tiles: [
+              credenciais.mapboxToken?.trim()
+                ? `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.png?access_token=${credenciais.mapboxToken.trim()}`
+                : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            ],
+            tileSize: 256,
+            attribution: "Mapbox / OpenStreetMap",
+          },
           "terrain-dem": {
             type: "raster-dem",
             tiles: [
@@ -105,6 +116,12 @@ export const MapViewer: React.FC = () => {
             paint: { "raster-opacity": 0.0 },
           },
           {
+            id: "mapbox-satellite-layer",
+            type: "raster",
+            source: "mapbox-satellite",
+            paint: { "raster-opacity": 0.0 },
+          },
+          {
             id: "osm-topo-layer",
             type: "raster",
             source: "osm-topo",
@@ -129,6 +146,13 @@ export const MapViewer: React.FC = () => {
       "bottom-right"
     );
     map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
+
+    // Captura silenciosa de eventos de tile/rede do MapLibre GL encaminhando para Governança & Sistema
+    map.on("error", (ev: any) => {
+      const msg = ev?.error?.message || ev?.message || "";
+      if (!msg || /abort|cancel|tile|fetch/i.test(msg)) return;
+      useSarelStore.getState().adicionarLog("warning", "MapLibre-WebGL", msg);
+    });
 
     map.on("load", () => {
       // 1. Fonte e camadas de Macrobacias Hidrográficas do Paraná
@@ -161,6 +185,59 @@ export const MapViewer: React.FC = () => {
           "line-color": ["get", "color"],
           "line-width": 1.5,
           "line-dasharray": [3, 2],
+        },
+      });
+
+      // 1.05 Malha Legal dos 28 Municípios da Bacia Hidrográfica do Paraná 3 (IBGE/ITCG)
+      map.addSource("parana3-28-municipios-source", {
+        type: "geojson",
+        data: PARANA3_28_MUNICIPIOS_GEOJSON as any,
+      });
+
+      map.addLayer({
+        id: "parana3-28-municipios-fill",
+        type: "fill",
+        source: "parana3-28-municipios-source",
+        layout: {
+          visibility: "none",
+        },
+        paint: {
+          "fill-color": [
+            "case",
+            ["==", ["get", "corredorExperimental"], true],
+            "#F59E0B",
+            "#10B981",
+          ],
+          "fill-opacity": [
+            "case",
+            ["==", ["get", "corredorExperimental"], true],
+            0.12,
+            0.05,
+          ],
+        },
+      });
+
+      map.addLayer({
+        id: "parana3-28-municipios-line",
+        type: "line",
+        source: "parana3-28-municipios-source",
+        layout: {
+          visibility: "none",
+        },
+        paint: {
+          "line-color": [
+            "case",
+            ["==", ["get", "corredorExperimental"], true],
+            "#FBBF24",
+            "#94A3B8",
+          ],
+          "line-width": [
+            "case",
+            ["==", ["get", "corredorExperimental"], true],
+            1.4,
+            0.9,
+          ],
+          "line-dasharray": [2, 2],
         },
       });
 
@@ -344,9 +421,13 @@ export const MapViewer: React.FC = () => {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
 
+    const hasMapbox = Boolean(credenciais.mapboxToken?.trim());
     const isGoogleEarth = mapState.basemap === "google-earth";
     const isGoogleHybrid = mapState.basemap === "google-hybrid";
-    const isEsriSat = mapState.basemap === "satellite" || mapState.basemap === "mapbox-hd";
+    const isMapboxHd = mapState.basemap === "mapbox-hd" && hasMapbox;
+    const isEsriSat =
+      mapState.basemap === "satellite" ||
+      (mapState.basemap === "mapbox-hd" && !hasMapbox);
     const isTopo = mapState.basemap === "topo";
     const isDark = mapState.basemap === "dark" || mapState.basemap === "voyager";
 
@@ -369,6 +450,13 @@ export const MapViewer: React.FC = () => {
         "esri-satellite-layer",
         "raster-opacity",
         isEsriSat ? 1.0 : 0.0
+      );
+    }
+    if (map.getLayer("mapbox-satellite-layer")) {
+      map.setPaintProperty(
+        "mapbox-satellite-layer",
+        "raster-opacity",
+        isMapboxHd ? 1.0 : 0.0
       );
     }
     if (map.getLayer("osm-topo-layer")) {
@@ -464,7 +552,37 @@ export const MapViewer: React.FC = () => {
       type: "FeatureCollection",
       features,
     });
-  }, [areas, mapLoaded]);
+
+    // Exibe a malha legal interna dos municípios do estudo (nesta bacia: BP3 - 28 municípios)
+    // sempre que a área de interesse (ou Corredor Experimental) estiver ativa na tela
+    const parana3Ativa =
+      mapState.mostrarBacias ||
+      mapState.mostrarLimites ||
+      areasAtivas.some(
+        (a) =>
+          a.id.includes("parana3") ||
+          a.id.includes("corredor-foz-ceu-azul") ||
+          a.nome.toLowerCase().includes(AREA_INTERESSE_PADRAO.sigla.toLowerCase()) ||
+          a.nome.toLowerCase().includes(AREA_INTERESSE_PADRAO.nome.toLowerCase()) ||
+          a.nome.toLowerCase().includes("paraná 3") ||
+          a.nome.toLowerCase().includes("parana 3")
+      );
+
+    if (mapRef.current.getLayer("parana3-28-municipios-fill")) {
+      mapRef.current.setLayoutProperty(
+        "parana3-28-municipios-fill",
+        "visibility",
+        parana3Ativa ? "visible" : "none"
+      );
+    }
+    if (mapRef.current.getLayer("parana3-28-municipios-line")) {
+      mapRef.current.setLayoutProperty(
+        "parana3-28-municipios-line",
+        "visibility",
+        parana3Ativa ? "visible" : "none"
+      );
+    }
+  }, [areas, mapState.mostrarBacias, mapState.mostrarLimites, mapLoaded]);
 
   // Atualização do Desenho em Progresso
   useEffect(() => {
