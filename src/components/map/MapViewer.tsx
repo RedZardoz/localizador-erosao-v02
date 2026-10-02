@@ -8,6 +8,7 @@ import { MapControls } from "./MapControls";
 import { DrawingToolbar } from "@/components/polygon/DrawingToolbar";
 import { PointPopup } from "./PointPopup";
 import { PARANA_BASINS_GEOJSON, PARANA3_28_MUNICIPIOS_GEOJSON } from "@/lib/localizacao/bacias";
+import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
 import { SITIOS_PADRAO_OURO_GEOJSON } from "@/lib/padraoOuro/sitiosReferencia";
 
 export const MapViewer: React.FC = () => {
@@ -552,8 +553,8 @@ export const MapViewer: React.FC = () => {
       features,
     });
 
-    // Exibe a malha legal interna dos 28 municípios da Bacia do Paraná 3 (IBGE/ITCG)
-    // sempre que a Bacia do Paraná 3 (ou Corredor Experimental) estiver ativa na tela
+    // Exibe a malha legal interna dos municípios do estudo (nesta bacia: BP3 - 28 municípios)
+    // sempre que a área de interesse (ou Corredor Experimental) estiver ativa na tela
     const parana3Ativa =
       mapState.mostrarBacias ||
       mapState.mostrarLimites ||
@@ -561,6 +562,8 @@ export const MapViewer: React.FC = () => {
         (a) =>
           a.id.includes("parana3") ||
           a.id.includes("corredor-foz-ceu-azul") ||
+          a.nome.toLowerCase().includes(AREA_INTERESSE_PADRAO.sigla.toLowerCase()) ||
+          a.nome.toLowerCase().includes(AREA_INTERESSE_PADRAO.nome.toLowerCase()) ||
           a.nome.toLowerCase().includes("paraná 3") ||
           a.nome.toLowerCase().includes("parana 3")
       );

@@ -5,6 +5,7 @@ import { X, BookOpen, Search, CheckCircle2, Clock, AlertCircle } from "lucide-re
 import { useSarelStore } from "@/store/useSarelStore";
 import { DECISOES, Decisao } from "@/config/decisoes";
 import { PainelSorteioD16 } from "./PainelSorteioD16";
+import { PainelCriterioRefutacaoD25 } from "./PainelCriterioRefutacaoD25";
 
 export const DecisoesModal: React.FC = () => {
   const { modalAtiva, setModalAtiva } = useSarelStore();
@@ -82,8 +83,9 @@ export const DecisoesModal: React.FC = () => {
           </div>
         </div>
 
-        {/* Grid de Decisões e Gatilho de Sorteio D16 (exclusivo do pesquisador) */}
+        {/* Grid de Decisões, Critério de Refutação D25 e Sorteio D16 */}
         <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+          <PainelCriterioRefutacaoD25 />
           <PainelSorteioD16 />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {decisoesFiltradas.map((dec) => (

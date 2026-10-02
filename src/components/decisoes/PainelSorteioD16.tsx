@@ -21,6 +21,15 @@ export const PainelSorteioD16: React.FC = () => {
   const { pontos, adicionarLog } = useSarelStore();
   const [seloExistenteCaminho, setSeloExistenteCaminho] = useState<string | null>(null);
   const [seloGravado, setSeloGravado] = useState<SeloSorteioD16 | null>(null);
+  const [artefatoRemedicao, setArtefatoRemedicao] = useState<{
+    statusSorteio?: string;
+    dimensoesMedidas?: {
+      S?: { estado: string; fonte?: string };
+      K?: { estado: string; fonte?: string };
+      E?: { estado: string; motivo?: string; fonte?: string };
+    };
+    [chave: string]: unknown;
+  } | null>(null);
   const [etapaConfirmacao, setEtapaConfirmacao] = useState<0 | 1>(0);
   const [executando, setExecutando] = useState(false);
   const [erroExecucao, setErroExecucao] = useState<string | null>(null);
@@ -31,9 +40,14 @@ export const PainelSorteioD16: React.FC = () => {
     fetch("/api/gee/sorteio-d16")
       .then((r) => r.json())
       .then((d) => {
-        if (!cancelado && d?.seloExistenteCaminho) {
-          setSeloExistenteCaminho(d.seloExistenteCaminho);
-          if (d.selo) setSeloGravado(d.selo);
+        if (!cancelado) {
+          if (d?.seloExistenteCaminho) {
+            setSeloExistenteCaminho(d.seloExistenteCaminho);
+            if (d.selo) setSeloGravado(d.selo);
+          }
+          if (d?.artefatoRemedicao) {
+            setArtefatoRemedicao(d.artefatoRemedicao);
+          }
         }
       })
       .catch(() => {
@@ -105,6 +119,16 @@ export const PainelSorteioD16: React.FC = () => {
       setExecutando(false);
     }
   };
+
+  const bloqueioENaoMedido =
+    artefatoRemedicao?.dimensoesMedidas?.E?.estado === "indisponivel" ||
+    (typeof artefatoRemedicao?.statusSorteio === "string" &&
+      artefatoRemedicao.statusSorteio.includes("BLOQUEADO"));
+
+  const motivoBloqueioArtefato =
+    artefatoRemedicao?.statusSorteio ||
+    artefatoRemedicao?.dimensoesMedidas?.E?.motivo ||
+    null;
 
   return (
     <div className="space-y-4">
@@ -183,12 +207,18 @@ export const PainelSorteioD16: React.FC = () => {
             </div>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                relatorioPre.aprovado
+                bloqueioENaoMedido
+                  ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-200"
+                  : relatorioPre.aprovado
                   ? "bg-emerald-100 text-emerald-800"
                   : "bg-rose-100 text-rose-800"
               }`}
             >
-              {relatorioPre.aprovado ? "Pré-condições OK" : `Bloqueado (${relatorioPre.condicaoFalha})`}
+              {bloqueioENaoMedido
+                ? "Bloqueado (Ê não medido — P12)"
+                : relatorioPre.aprovado
+                ? "Pré-condições OK"
+                : `Bloqueado (${relatorioPre.condicaoFalha})`}
             </span>
           </div>
 
@@ -198,7 +228,27 @@ export const PainelSorteioD16: React.FC = () => {
             Esta ação é <b>irreversível</b> (D23 proíbe descartar <code>pi_i</code> registrado).
           </p>
 
-          {!relatorioPre.aprovado && (
+          {bloqueioENaoMedido && (
+            <div className="p-3 rounded-lg border border-rose-300 bg-rose-50 dark:bg-rose-950/40 dark:border-rose-800 text-rose-950 dark:text-rose-200 flex items-start gap-2.5">
+              <Lock className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+              <div className="space-y-1">
+                <div className="font-bold flex flex-wrap items-center gap-2">
+                  <span>Sorteio D16 Bloqueado — Dimensão Ê Não Medida no GEE (P12)</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-rose-200 dark:bg-rose-900 text-rose-900 dark:text-rose-200">
+                    Fonte: docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json
+                  </span>
+                </div>
+                <p className="text-[11px] leading-relaxed">
+                  {motivoBloqueioArtefato}
+                </p>
+                <div className="text-[10px] font-mono opacity-85 pt-1">
+                  Ŝ: {artefatoRemedicao?.dimensoesMedidas?.S?.estado?.toUpperCase() ?? "MEDIDO"} | K̂: {artefatoRemedicao?.dimensoesMedidas?.K?.estado?.toUpperCase() ?? "MEDIDO"} | Ê: {artefatoRemedicao?.dimensoesMedidas?.E?.estado?.toUpperCase() ?? "INDISPONÍVEL"}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!bloqueioENaoMedido && !relatorioPre.aprovado && (
             <div className="p-2.5 rounded-lg border border-rose-200 bg-rose-50 dark:bg-rose-950/40 dark:border-rose-800 text-rose-900 dark:text-rose-200 flex items-start gap-2">
               <Lock className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
               <div>
@@ -218,11 +268,13 @@ export const PainelSorteioD16: React.FC = () => {
           {etapaConfirmacao === 0 ? (
             <button
               type="button"
-              disabled={!relatorioPre.aprovado || executando}
+              disabled={bloqueioENaoMedido || !relatorioPre.aprovado || executando}
               onClick={() => setEtapaConfirmacao(1)}
               className="px-3.5 py-2 rounded-lg font-bold text-white bg-amber-600 hover:bg-amber-700 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed transition-all cursor-pointer"
             >
-              {relatorioPre.aprovado
+              {bloqueioENaoMedido
+                ? "Sorteio Bloqueado (Ê não medido — P12)"
+                : relatorioPre.aprovado
                 ? "Etapa 1/2 — Preparar Sorteio Irreversível de 72 Polígonos (361 ha)"
                 : `Sorteio Desabilitado (${relatorioPre.condicaoFalha})`}
             </button>

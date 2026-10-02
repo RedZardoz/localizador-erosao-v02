@@ -33,6 +33,7 @@ import {
   PARANA3_28_MUNICIPIOS_GEOJSON,
 } from "@/lib/localizacao/bacias";
 import type { AreaEstudo } from "@/types/ui";
+import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
 import * as toGeoJSON from "@tmcw/togeojson";
 
 export const RegionRequestModal: React.FC = () => {
@@ -237,9 +238,15 @@ export const RegionRequestModal: React.FC = () => {
       geometry: baciaFeature.geometry,
     };
     adicionarArea(novaArea);
-    if (String(props.code).startsWith("BP3")) {
+    if (String(props.code).startsWith(AREA_INTERESSE_PADRAO.codigoBaciaIat)) {
       setMapState({
-        flyToTarget: { lng: -54.05, lat: -24.85, zoom: 8.1, pitch: 35, bearing: 0 },
+        flyToTarget: {
+          lng: AREA_INTERESSE_PADRAO.centro.lng,
+          lat: AREA_INTERESSE_PADRAO.centro.lat,
+          zoom: AREA_INTERESSE_PADRAO.zoomPadrao,
+          pitch: AREA_INTERESSE_PADRAO.pitchPadrao,
+          bearing: AREA_INTERESSE_PADRAO.bearingPadrao,
+        },
       });
     }
     setFeedback({
@@ -292,7 +299,13 @@ export const RegionRequestModal: React.FC = () => {
     });
 
     setMapState({
-      flyToTarget: { lng: -54.05, lat: -24.85, zoom: 8.1, pitch: 35, bearing: 0 },
+      flyToTarget: {
+        lng: AREA_INTERESSE_PADRAO.centro.lng,
+        lat: AREA_INTERESSE_PADRAO.centro.lat,
+        zoom: AREA_INTERESSE_PADRAO.zoomPadrao,
+        pitch: AREA_INTERESSE_PADRAO.pitchPadrao,
+        bearing: AREA_INTERESSE_PADRAO.bearingPadrao,
+      },
     });
 
     setFeedback({
@@ -669,14 +682,14 @@ export const RegionRequestModal: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-600 text-white">
-                      Recorte Oficial da Pesquisa (PPGTCA 2026)
+                      {AREA_INTERESSE_PADRAO.rotuloEstudo}
                     </span>
                     <h3 className="text-xs font-bold text-slate-900 dark:text-white mt-1">
-                      Bacia Hidrográfica do Paraná 3 — Solução Híbrida Legal &amp; Hidrológica
+                      {AREA_INTERESSE_PADRAO.nome} — Solução Híbrida Legal &amp; Hidrológica
                     </h3>
                     <p className="text-[11px] text-slate-600 dark:text-slate-400">
                       Combina o <strong>Divisor Hidrológico Oficial (IAT — 7.979 km²)</strong>, os{" "}
-                      <strong>Limites Legais dos 28 Municípios (IBGE/ITCG — 13.350 km²)</strong> e o{" "}
+                      <strong>Limites Legais dos {AREA_INTERESSE_PADRAO.totalMunicipios} Municípios (IBGE/ITCG — 13.350 km²)</strong> e o{" "}
                       <strong>Corredor Experimental In-Loco Foz do Iguaçu – Céu Azul (6 Municípios)</strong>.
                     </p>
                   </div>
@@ -685,7 +698,7 @@ export const RegionRequestModal: React.FC = () => {
                     onClick={ativarRecorteHibridoParana3}
                     className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/25 cursor-pointer shrink-0 transition-all"
                   >
-                    Ativar Combo Híbrido BP3 (IAT + 28 Mun + Corredor)
+                    Ativar Combo Híbrido {AREA_INTERESSE_PADRAO.sigla} (nesta bacia — IAT + {AREA_INTERESSE_PADRAO.totalMunicipios} Mun + Corredor)
                   </button>
                 </div>
 

@@ -88,6 +88,20 @@ export const ARTEFATOS_PADRAO_CAMPANHA_VOO = [
   "docs/verificacoes/climatologia_chirps_bp3.json",
   "docs/verificacoes/diario_climatologia_chirps_bp3.json",
   "scripts/baixar_chirps_climatologia.py",
+  "src/components/inspetor/InspetorPonto.tsx",
+  "src/components/inspetor/InspetorPonto.test.ts",
+  "src/lib/rotulos/ingestaoColetor.ts",
+  "src/lib/rotulos/ingestaoColetor.test.ts",
+  "src/components/decisoes/PainelCriterioRefutacaoD25.tsx",
+  "src/components/decisoes/PainelCriterioRefutacaoD25.test.ts",
+  "src/config/areaInteresse.ts",
+  "src/config/areaInteresse.test.ts",
+  "src/components/campanha/PainelCampanha.tsx",
+  "src/components/campanha/PainelCampanhaModal.tsx",
+  "src/components/decisoes/DecisoesModal.tsx",
+  "src/components/decisoes/PainelSorteioD16.tsx",
+  "src/components/region/RegionRequestModal.tsx",
+  "src/components/sidebar/FiltersPanel.tsx",
 ];
 
 export function calcularSha256Arquivo(caminhoAbsoluto: string): string {
@@ -359,59 +373,58 @@ export function gerarRelatorioFasePericial(
   };
 }
 
-export const NARRATIVA_JUIZO_PADRAO = `### 1. Diretriz H1 — Auditoria de Fontes de R e Desativação dos Coeficientes
-- **Fontes Primárias Arquivadas no Repositório:**
-  - \`docs/verificacoes/fontes/waltrick2015/waltrick_2015.pdf\` (artigo autêntico, RBCS 39:256-267) com extração em \`saida_extracao_waltrick_2015.txt\`.
-  - \`docs/verificacoes/fontes/nepar2011/nepar_boletim_01_2011.pdf\` (Boletim Informativo NEPAR n. 01, 2011) com extração em \`saida_extracao_nepar_2011.txt\`.
-- **Conferência Textual dos Coeficientes:**
-  - Foi efetuada busca estrita pelos valores \`107,52\` e \`46,89\` (bem como \`107.52\` e \`46.89\`) no texto extraído das duas obras arquivadas.
-  - **Nenhum dos dois números aparece nos textos extraídos.** Ambas as obras citam Rufino et al. (1993) como a fonte das 8 equações lineares de erosividade do Paraná, mas nenhuma delas reproduz os coeficientes no texto. Rufino et al. (1993) é artigo impresso histórico pré-digitalização sem exemplar físico arquivado no repositório.
-- **Juízo e Ação em Código:**
-  - Em conformidade estrita com a regra bloqueante H1 e a regra P12, **os coeficientes a = 107,52 e b = 46,89 SAÍRAM do código ativo**.
-  - O Fator R retorna estritamente \`{ estado: "indisponivel", causa: "insuficiente", motivo: "..." }\`.
-  - A propriedade \`referencia\` no código foi retificada para citar unicamente as obras autenticamente arquivadas: \`"Waltrick et al. (2015) / SBCS-NEPAR Bol. 01 (2011)"\`.
+export const NARRATIVA_JUIZO_PADRAO = `### 1. Diretriz J1 — Cegamento Efetivo e Separação entre Registro e Inspeção
+- **Cegamento Dinamicamente Derivado:**
+  - O campo \`cego\` no rótulo humano deixou de ser um literal estático \`true\` fixo em código e passou a ser estritamente **derivado** do modo de exibição (\`modo === "registro"\`).
+  - No modo de registro, a interface é blindada: nenhum estrato (\`estratoId\`), tercil (S, E), nível de K ou campo proibido de predição/modelo (\`CAMPOS_PROIBIDOS_MATRIZ_TREINO\`, como \`scoreJev\`, \`scoreSuscetibilidade\`, \`laudoJev\`, \`phiDiag\`) é renderizado ou acessível.
+- **Bifurcação Estrita de Telas:**
+  - **Modo de Registro:** mostra unicamente o código do ponto, coordenadas geográficas, imagens e formulário de observação com alvo contínuo D26. Contém o botão exclusivo para gravar/consolidar o laudo humano sob protocolo cego.
+  - **Modo de Inspeção:** exibe a estratificação completa, séries temporais, proveniências e laudos de auditoria. O botão de gravar rótulo humano **não existe** e é substituído por aviso de gravação desabilitada.
+- **Evidência por Teste Automatizado:**
+  - Testes unitários em \`src/components/inspetor/InspetorPonto.test.ts\` (4 testes aprovados) asseveram que \`estratoId\` e os termos de modelo nunca vazam no modo de registro, e que \`cego\` é atestado com rigor epistêmico.
 
-### 2. Diretriz H2 — Download Real do CHIRPS v2.0, Diário de Requisições e Suporte Nativo
-- **Download Real e Cache:**
-  - Foram baixados 12 arquivos mensais globais do CHIRPS v2.0 cobrindo o ano completo de 2022 (\`chirps-v2.0.2022.01.tif.gz\` a \`chirps-v2.0.2022.12.tif.gz\`), diretamente do servidor oficial UCSB Climate Hazards Center (\`https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/\`).
-  - Total baixado: ~166,6 MB compactados (~691 MB descompactados), armazenados em \`data/chirps_cache/\` (ignorado no \`.gitignore\`).
-- **Diário de Requisições de Rede (Guarda Estrutural F5):**
-  - Foi emitido o diário em \`docs/verificacoes/diario_climatologia_chirps_bp3.json\` registrando as 12 chamadas HTTP GET diretas (timestamp, endpoint UCSB, status 200, bytes recebidos e duração em ms).
-  - O diário foi submetido à validação formal via \`src/lib/seguranca/diarioRequisicoes.ts:validarArtefatoComDiario\` resultando em **\`valido: true\` e 0 inconsistências**.
-- **Resolução e Conferência Cruzada:**
-  - Suporte espacial estritamente nativo de 0,05° (~5,5 km) em EPSG:4326, sem qualquer reamostragem para 10 m (D06).
-  - A tabela histórica municipal de estações foi formalmente declarada no código como conferência cruzada (Quadro 1 de Waltrick et al., 2015) e jamais como fonte primária dos totais CHIRPS.
-  - Artefato científico de medição gerado em \`docs/verificacoes/climatologia_chirps_bp3.json\`.
+### 2. Diretriz J1 — Papel no Conjunto, Concordância Inter-Observador e Divergência
+- **Papel no Conjunto (\`papelConjunto\`):**
+  - Eliminado o literal padrão \`"treino"\` na gravação do rótulo humano. O papel é agora herdado da designação oficial de D16 selada no sorteio (\`ponto.papelConjunto\`), ou assume \`"indisponivel"\` quando o ponto não possuir designação formal de partição.
+- **Concordância Inter-Observador (\`kappa\` e \`divergencia\`):**
+  - Eliminada a afirmação fictícia de concordância (\`kappa: null\` com \`divergencia: "nenhuma"\`).
+  - Sem a realização de uma segunda observação independente pericial, a divergência inicial é estritamente tipada e gravada como \`"indisponivel"\`, e o kappa permanece \`null\`.
 
-### 3. Diretriz H3 — Declaração Precisa e Conteúdo Conferido por OCR no Renard et al. (1997)
-- **Separação de Estados:**
-  - A redação de \`docs/verificacoes/fontes/renard1997/saida_extracao_renard_1997.txt\` foi reestruturada para separar categoricamente o **acesso comprovado** (407 páginas, hash SHA-256 \`cd198687...\`, metadados oficiais) da limitação física da camada de texto embutida (PDF digitalizado como imagem pré-OCR).
-- **Conferência Textual por OCR Neural:**
-  - Foi executado OCR neural (RapidOCR ONNX com arquitetura DBNet + SVTR) diretamente sobre as páginas escaneadas do Capítulo 4 (pp. 105, 106, 107) e do Apêndice A (p. 325) do \`ah_703.pdf\`.
-  - A saída textual bruta com as pontuações de confiança por linha foi comitada em \`docs/verificacoes/fontes/renard1997/saida_ocr_renard_1997.txt\`.
-  - Conferência direta comprovada: Equações [4-1] ($L = (\\lambda/72{,}6)^m$), [4-2] ($m = \\beta/(1+\\beta)$), [4-3] ($\\beta = (\\sin\\theta/0{,}0896)/[3{,}0(\\sin\\theta)^{0{,}8} + 0{,}56]$), [4-4] ($S = 10{,}8\\sin\\theta + 0{,}03$ para $s < 9\\%$), [4-5] ($S = 16{,}8\\sin\\theta - 0{,}50$ para $s \\ge 9\\%$) e a conversão métrica de 72,6 ft para 22,13 m.
-- **Registro no Código:**
-  - O módulo \`src/lib/rusle/fatorLS.ts\` foi atualizado para registrar explicitamente que as constantes estão em estado de "Conteúdo conferido por OCR neural na fonte primária arquivada".
+### 3. Diretriz J2 — Aposentadoria de Kobo e Fotointerpretação e Ingestão do SAREL Coletor
+- **Substituição do KoboCollect pelo SAREL Coletor (D16 item 5):**
+  - Criado o módulo \`src/lib/rotulos/ingestaoColetor.ts\`, processando as 28 colunas canônicas do formulário móvel Android + métricas GNSS de média estática.
+  - Validação da tolerância geodésica P03 (15 m nominal, 25 m com ressalva, rejeição acima de 25 m) e rejeição compulsória de coordenadas simuladas (\`fix_simulado\`, Invariante 5 / P12).
+- **Aposentadoria Formal da Fotointerpretação (D16 item 4):**
+  - Sob D16, a fotointerpretação satélite foi aposentada em favor da delineação vetorial sobre ortomosaicos centimétricos de VANT (~4 cm GSD).
+  - Todas as referências no front-end (\`FiltersPanel.tsx\`, \`PainelCampanha.tsx\`, \`PainelCampanhaModal.tsx\`) foram atualizadas com notas explícitas registrando a aposentadoria por D16.
+- **Preservação de Histórico e Legado:**
+  - Nenhum dado antigo foi apagado: criada a aba dedicada "Legado e Histórico" em \`PainelCampanha.tsx\` com visualização isolada e advertência metodológica clara.
+  - A aba de campanha foi reenquadrada para refletir os 3 conjuntos de D16: 72 polígonos de VANT (36 treino + 36 held-out), 60 a 80 pontos de campo âncora fora dos polígonos para calibração de prevalência, e confirmação prospectiva.
 
-### 4. Retenção de Perda de Solo e Invariante 1
-- **Quantos pontos passam a ter perdaSolo calculada:** **0 pontos** (ZERO).
-- **Quantos pontos seguem retidos:** **Todos os 72 pontos** da campanha de amostragem.
-- **Por qual fator:** **Fator R de erosividade da chuva** (estado: \`indisponivel\`, causa: \`insuficiente\`).
-- **Disciplina Científica:**
-  - Em conformidade estrita com o Invariante 1 e a Decisão D25, a perda de solo $A = R \\cdot K \\cdot LS \\cdot C \\cdot P$ só é gerada se todos os cinco fatores estiverem simultaneamente disponíveis com proveniências consolidadas.
-  - A indisponibilidade de R bloqueia a perda de solo sem contaminações ad-hoc, mantendo a integridade da régua de avaliação contra a qual o XGBoost será julgado.
+### 4. Diretriz J3 — Alvo Contínuo (D26), Critério de Refutação (D25) e Regime de Dados (D24)
+- **Hierarquia Rígida de Alvos (D26):**
+  - A interface exibe como **alvo primário** a fração contínua $[0, 1]$ da célula de 10 m delineada como erodida sob VANT, ajustada com objetivo Tweedie (\`reg:tweedie\`) para tratar inflação de zeros e comparada por correlação de Spearman ($\rho$).
+  - O alvo binário derivado a 25% ($\ge 25\\text{ m}^2$ em célula de $100\\text{ m}^2$) é exibido como **estritamente secundário** e assim rotulado na hierarquia pericial.
+- **Painel do Critério de Refutação Pré-Registrado (D25):**
+  - Implementado o componente \`src/components/decisoes/PainelCriterioRefutacaoD25.tsx\` integrado em \`DecisoesModal.tsx\`.
+  - Exibe os 3 competidores emparelhados (RUSLE, Regressão Penalizada, XGBoost), o piso de utilidade $\\rho \\ge 0,40$, a margem $\\Delta\\rho \\ge 0,10$, o IC 95% por bootstrap agrupado por polígono, os 3 desfechos ternários (Corroborada | Inconclusiva | Refutada) e a regra de parcimônia.
+  - **Estado Obrigatório da Avaliação:** O painel estampa expressamente **"ESTADO: NÃO AVALIADO"**, acompanhado de alerta metodológico proibindo antecipação de resultados antes do sobrevoo e delineação do held-out de VANT (P12).
+- **Regime de Dados (D24):**
+  - Tabela dos tetos por bloco físico (Espectro-temporal: 8; Terreno: 4; Solo: 1; Chuva: 1; máx: 14 preditores).
+  - Evidencia com transparência que 3 dos 4 blocos operam abaixo do regime recomendado de 200 eventos/variável, sendo mantidos por necessidade física (Invariante 1) com mitigação por monotonicidade.
+- **Estado do Sorteio no \`PainelSorteioD16.tsx\`:**
+  - O painel consome o artefato real \`docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json\` via \`/api/gee/sorteio-d16\`, estampando o estado real **BLOQUEADO (Ê NÃO MEDIDO — P12)** e desabilitando o botão de sorteio.
 
-### 5. Isolamento Estrito do JEV e Heurística Local de Suscetibilidade
-- **Renomeação do Motor Local:**
-  - O motor determinístico foi renomeado de \`MOTOR_LOCAL_RUSLE\` para \`HEURISTICA_LOCAL_SUSCETIBILIDADE\` em todos os tipos (\`src/types/jev.ts\`), clientes (\`src/lib/jev/jevClient.ts\`), fallbacks (\`src/lib/jev/fallbackLocal.ts\`), rotas de API e componentes de UI.
-  - Esta alteração elimina qualquer risco de confusão entre o escore ordinal (0 a 4) de suscetibilidade e a perda de solo física da RUSLE (D25).
-- **Teste de Isolamento Estrito:**
-  - Implementado teste em \`src/lib/jev/jevClient.test.ts\` que assevera que nenhum valor ou propriedade originada do JEV (seja System One remoto ou Heurística Local) alcança \`montarLinhaDeBaseRUSLE\`, \`perdaSolo\` ou a memória de cálculo da RUSLE.
-  - Confirmado que \`scoreJev\` e \`laudoJev\` permanecem estritamente blindados em \`CAMPOS_PROIBIDOS_MATRIZ_TREINO\`.
-- **Verificação do Inspetor e Protocolo Cego:**
-  - Foi verificado o componente \`src/components/inspetor/InspetorPonto.tsx\`: o escore de auditoria é ativado exclusivamente por clique manual do operador técnico.
-  - O escore do JEV jamais é transmitido aos planos de voo nem aos manifestos cegos dos intérpretes de ortomosaico (\`manifesto_interprete_cego_72poligonos.csv\`).
-  - Foi inserida nota metodológica no Inspetor e no painel de credenciais advertindo sobre a preservação do protocolo cego (D26).
+### 5. Diretriz J4 — Centralização de Coordenadas da BP3 e Separação entre Método e Parâmetro
+- **Extração das 25 Ocorrências para Configuração Central:**
+  - Todas as 25 ocorrências de coordenadas e parâmetros da BP3 identificadas no levantamento foram unificadas em \`src/config/areaInteresse.ts\` (\`AREA_INTERESSE_BP3\` e \`AREA_INTERESSE_PADRAO\`).
+  - Atualizados os 6 componentes mapeados: \`RegionRequestModal.tsx\` (14 ocorrências), \`MapViewer.tsx\` (3 ocorrências), \`PainelCampanha.tsx\` (3 ocorrências), \`MapaAmostral.tsx\` (2 ocorrências), \`CandidateSelectionModal.tsx\` (2 ocorrências) e \`CalculadoraDesenhoAmostral.tsx\` (1 ocorrência).
+- **Rotulagem Explícita de Parâmetro do Estudo:**
+  - Todos os elementos visuais associados à BP3 foram rotulados na UI como \`"nesta bacia (BP3 — parâmetro do estudo)"\`, diferenciando com clareza o que é propriedade local do que é método universal.
+- **Preservação Inviolável de \`src/config/decisoes.ts\` (P8) e Proposta Futura:**
+  - Em conformidade estrita com P8, \`src/config/decisoes.ts\` não sofreu alterações.
+  - A mistura metodológica entre método e parâmetro permanece dentro das decisões locais (ex.: D07 com declividade de 3% a 20% da BP3; D12/D16 com 18 estratos de tercis e 72 polígonos; D18 com buffer de 0,25 km²).
+  - **Proposta para o momento metodológico apropriado:** Bifurcar cada decisão em duas estruturas tipadas — \`metodo\` (invariante: estratificação tridimensional, protocolo cego, agrupamento held-out) e \`instanciaEstudo\` (parâmetros da BP3: recortes geográficos, limiares de tercil e fontes pedológicas locais), viabilizando a futura generalização preditiva sem comprometer a integridade desta dissertação.
 
 ---
 **Identificação do Agente-Executor:** Antigravity (Google DeepMind)  

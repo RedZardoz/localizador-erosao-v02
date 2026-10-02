@@ -145,4 +145,83 @@ describe("InspetorPonto — Fonte Única de Rótulo Humano e Eliminação do Def
     expect(htmlComConsolidado).toContain("2026-09-26");
     expect(htmlComConsolidado).toContain("Sim (Cego)");
   });
+
+  it("J1 (Protocolo Cego): no modo de registro, nenhum campo proibido nem estratoId é renderizado, e o botão de salvar existe", async () => {
+    const { CAMPOS_PROIBIDOS_MATRIZ_TREINO } = await import("@/lib/matriz/invariantes");
+    const ponto = criarPontoComRotuloEmbutido();
+    useSarelStore.setState({
+      pontos: [ponto],
+      pontoSelecionadoId: ponto.id,
+      rotulosConsolidados: {},
+    });
+
+    const htmlRegistro = renderToStaticMarkup(
+      React.createElement(InspetorPonto as React.ComponentType<{ modoInicial?: "inspecao" | "registro" }>, {
+        modoInicial: "registro",
+      })
+    );
+
+    // 1. O código do ponto e identificador de protocolo cego estão presentes:
+    expect(htmlRegistro).toContain(ponto.codigo);
+    expect(htmlRegistro).toContain("PROTOCOLO CEGO ATIVO (D26)");
+    expect(htmlRegistro).toContain("ALVO PRIMÁRIO (D26)");
+    expect(htmlRegistro).toContain("ALVO SECUNDÁRIO DERIVADO");
+    expect(htmlRegistro).toContain("Gravar Rótulo Pericial Humano sob Protocolo Cego");
+
+    // 2. estratoId ("S2-E2-K1") JAMAIS pode ser renderizado no modo de registro:
+    expect(htmlRegistro).not.toContain(ponto.estratoId);
+    expect(htmlRegistro).not.toContain("Estrato:");
+
+    // 3. Nenhum campo de estratificação ou score proibido pode aparecer:
+    expect(htmlRegistro).not.toContain(`S tercil ${ponto.criterioSelecao.tercilS}`);
+    expect(htmlRegistro).not.toContain(`E tercil ${ponto.criterioSelecao.tercilE}`);
+    expect(htmlRegistro).not.toContain(`K nível ${ponto.criterioSelecao.nivelK}`);
+    expect(htmlRegistro).not.toContain("scoreJev");
+    expect(htmlRegistro).not.toContain("scoreSuscetibilidade");
+    expect(htmlRegistro).not.toContain("laudoJev");
+    expect(htmlRegistro).not.toContain("phiDiag");
+
+    // 4. Nenhum dos termos de CAMPOS_PROIBIDOS_MATRIZ_TREINO específicos de modelo/estrato pode vazar:
+    const camposCriticos = [
+      "estratoId",
+      "tercilS",
+      "tercilE",
+      "nivelK",
+      "scorePrioridade",
+      "scoreSuscetibilidade",
+      "scoreJev",
+      "laudoJev",
+      "phiDiag",
+    ];
+    for (const campo of camposCriticos) {
+      expect(htmlRegistro).not.toContain(`>${campo}<`);
+      expect(htmlRegistro).not.toContain(`"${campo}"`);
+    }
+  });
+
+  it("J1 (Modo Inspeção): exibe estratificação completa mas NÃO permite gravar rótulo (botão de salvar ausente)", () => {
+    const ponto = criarPontoComRotuloEmbutido();
+    useSarelStore.setState({
+      pontos: [ponto],
+      pontoSelecionadoId: ponto.id,
+      rotulosConsolidados: {},
+    });
+
+    const htmlInspecao = renderToStaticMarkup(
+      React.createElement(InspetorPonto as React.ComponentType<{ modoInicial?: "inspecao" | "registro" }>, {
+        modoInicial: "inspecao",
+      })
+    );
+
+    // 1. Metadados de estrato e diagnóstico aparecem:
+    expect(htmlInspecao).toContain(`Estrato: ${ponto.estratoId}`);
+    expect(htmlInspecao).toContain(`S tercil ${ponto.criterioSelecao.tercilS}`);
+
+    // 2. O botão de gravar/salvar rótulo NÃO EXISTE no modo de inspeção:
+    expect(htmlInspecao).not.toContain("Gravar Rótulo Pericial Humano");
+    expect(htmlInspecao).not.toContain("Consolidar Rótulo Humano");
+
+    // 3. O aviso de gravação bloqueada está presente:
+    expect(htmlInspecao).toContain("Gravação de Rótulos Bloqueada neste Modo");
+  });
 });

@@ -19,6 +19,7 @@ import {
   CONFIGURACAO_REGISTRADA_D16,
   EntradasCalculadoraDesenho,
 } from "@/lib/fundiario/calculadoraDesenho";
+import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
 
 export const CalculadoraDesenhoAmostral: React.FC = () => {
   const [ladoMetros, setLadoMetros] = useState<number>(224);
@@ -286,7 +287,9 @@ export const CalculadoraDesenhoAmostral: React.FC = () => {
             </tr>
 
             <tr>
-              <td className="py-2.5 px-4 font-medium text-slate-200">Fração de Imóveis Elegíveis (BP3)</td>
+              <td className="py-2.5 px-4 font-medium text-slate-200">
+                Fração de Imóveis Elegíveis (nesta bacia: {AREA_INTERESSE_PADRAO.sigla} — parâmetro do estudo)
+              </td>
               <td className="py-2.5 px-4 text-center font-mono">71,8%</td>
               <td className="py-2.5 px-4 text-center font-mono font-semibold text-sky-400">
                 {(saidas.fracaoImoveisElegiveis * 100).toFixed(1)}%

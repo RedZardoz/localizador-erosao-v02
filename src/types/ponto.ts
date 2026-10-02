@@ -28,6 +28,9 @@ export interface BlocoSerie {
   maiorSequenciaSoloNu: Proveniencia<number>;
   mesModalExposicao: Proveniencia<number>;
   compostoSoloNu: Record<string, Proveniencia<number>>;
+  persistenciaTemporal?: Proveniencia<number>;
+  tendenciaSenSlope?: Proveniencia<number>;
+  amplitudeSazonal?: Proveniencia<number>;
 }
 
 export interface BlocoChuva {
@@ -171,6 +174,7 @@ export interface PontoAmostral {
 
   temporal: Partial<Record<"D" | "P", BlocoTemporal>>;  // uma janela por modelo (D04)
 
+  papelConjunto?: "treino" | "held-out" | "indisponivel"; // designação de D16 (do sorteio de polígonos)
   rotulo?: RotuloConsolidado;                 // Fase 6 — sempre de observacao
   fundiario?: ContextoFundiario;
   linhaDeBase?: LinhaDeBaseRUSLE;             // Fase 8 — nunca em matriz

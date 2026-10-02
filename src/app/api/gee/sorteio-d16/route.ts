@@ -28,6 +28,37 @@ function localizarSeloExistente(): { caminhoRelativo: string; conteudo: unknown 
   }
 }
 
+const CAMINHO_ARTEFATO_REMEDICAO = path.join(
+  process.cwd(),
+  "docs",
+  "verificacoes",
+  "remedicao_candidatos_bp3_d16_2026-09-30.json"
+);
+
+function localizarArtefatoRemedicao(): {
+  caminhoRelativo: string;
+  conteudo: {
+    statusSorteio?: string;
+    dimensoesMedidas?: {
+      S?: { estado: string; fonte?: string };
+      K?: { estado: string; fonte?: string };
+      E?: { estado: string; motivo?: string; fonte?: string };
+    };
+    [chave: string]: unknown;
+  } | null;
+} | null {
+  if (!fs.existsSync(CAMINHO_ARTEFATO_REMEDICAO)) return null;
+  try {
+    const conteudo = JSON.parse(fs.readFileSync(CAMINHO_ARTEFATO_REMEDICAO, "utf-8"));
+    const caminhoRelativo = path
+      .relative(process.cwd(), CAMINHO_ARTEFATO_REMEDICAO)
+      .replace(/\\/g, "/");
+    return { caminhoRelativo, conteudo };
+  } catch {
+    return null;
+  }
+}
+
 function obterGitCommitAtual(): string {
   try {
     return execSync("git rev-parse HEAD", { encoding: "utf-8" }).trim();
@@ -38,10 +69,13 @@ function obterGitCommitAtual(): string {
 
 export async function GET() {
   const existente = localizarSeloExistente();
+  const remedicao = localizarArtefatoRemedicao();
   return NextResponse.json({
     ok: true,
     seloExistenteCaminho: existente?.caminhoRelativo ?? null,
     selo: existente?.conteudo ?? null,
+    artefatoRemedicao: remedicao?.conteudo ?? null,
+    artefatoRemedicaoCaminho: remedicao?.caminhoRelativo ?? null,
   });
 }
 
@@ -69,6 +103,21 @@ export async function POST(req: NextRequest) {
           selo: existente.conteudo,
         },
         { status: 409 }
+      );
+    }
+
+    const remedicao = localizarArtefatoRemedicao();
+    if (remedicao?.conteudo?.dimensoesMedidas?.E?.estado === "indisponivel") {
+      return NextResponse.json(
+        {
+          ok: false,
+          condicaoFalha: "e_nao_medido",
+          motivo:
+            remedicao.conteudo.statusSorteio ??
+            "Dimensão Ê (Frequência de Solo Nu) não medida no satélite (P12). O sorteio segue compulsoriamente bloqueado.",
+          artefatoRemedicao: remedicao.conteudo,
+        },
+        { status: 422 }
       );
     }
 

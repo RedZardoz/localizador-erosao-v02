@@ -19,76 +19,79 @@
 ```text
 [1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90mC:/Users/lalfr/Docs Fora do Ar/LUIS ALFREDO/01 - MESTRADO PPGTCA 2026/02 - PESQUISA EROSÃO LAMINAR/geolocalizacao-erosao-propriedade[39m
 
- [32m✓[39m src/lib/jev/jevClient.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 302[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/verificacoes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 590[2mms[22m[39m
-       [33m[2m✓[22m[39m toda afirmação VERIFICADO em código deve apontar para arquivo existente em docs/verificacoes/ [33m 580[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/detectorSequencia.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 595[2mms[22m[39m
-       [33m[2m✓[22m[39m nenhum artefato JSON ativo em docs/verificacoes deve conter séries numéricas com |r| > 0.95 [33m 572[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/importacoes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 983[2mms[22m[39m
-       [33m[2m✓[22m[39m nenhum arquivo em src/ importa de legado/ [33m 973[2mms[22m[39m
- [32m✓[39m src/lib/gee/amostragemSoloNuLote.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 313[2mms[22m[39m
- [32m✓[39m src/lib/fundiario/calculadoraDesenho.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 358[2mms[22m[39m
-     [33m[2m✓[22m[39m deve gerar relatório textual formatado sem conter códigos opacos ou dados de intérprete (Cegamento W2) [33m 347[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/padroesProibidos.test.ts [2m([22m[2m18 tests[22m[2m)[22m[33m 1863[2mms[22m[39m
-       [33m[2m✓[22m[39m nenhum arquivo em src/lib, src/app/api, src/store ou src/config deve conter padrões proibidos [33m 614[2mms[22m[39m
-       [33m[2m✓[22m[39m assevera que nenhum artefato JSON de medição em docs/verificacoes/ contém séries numéricas correlacionadas com a ordem do arquivo [33m 673[2mms[22m[39m
- [32m✓[39m src/lib/gee/sorteioPoligonos.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 158[2mms[22m[39m
- [32m✓[39m src/lib/embrapa/embrapaSoilClient.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 84[2mms[22m[39m
- [32m✓[39m src/lib/planet/planet.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 80[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/diarioRequisicoes.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 159[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/gerarRelatorioFase.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 145[2mms[22m[39m
- [32m✓[39m src/lib/export/planilha.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 61[2mms[22m[39m
- [32m✓[39m src/lib/export/pacoteReprodutibilidade.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 245[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/credenciaisSeguras.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 57[2mms[22m[39m
- [32m✓[39m src/lib/gee/copernicusGeeClient.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 99[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/provenienciaCaminhos.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 49[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/cegamentoArtefatos.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 86[2mms[22m[39m
- [32m✓[39m src/lib/rusle/fatorR.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/verificacoes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 517[2mms[22m[39m
+       [33m[2m✓[22m[39m toda afirmação VERIFICADO em código deve apontar para arquivo existente em docs/verificacoes/ [33m 507[2mms[22m[39m
+ [32m✓[39m src/lib/gee/amostragemSoloNuLote.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 164[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/importacoes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 625[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum arquivo em src/ importa de legado/ [33m 618[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/detectorSequencia.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 453[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum artefato JSON ativo em docs/verificacoes deve conter séries numéricas com |r| > 0.95 [33m 443[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/padroesProibidos.test.ts [2m([22m[2m18 tests[22m[2m)[22m[33m 1358[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum arquivo em src/lib, src/app/api, src/store ou src/config deve conter padrões proibidos [33m 595[2mms[22m[39m
+       [33m[2m✓[22m[39m assevera que nenhum artefato JSON de medição em docs/verificacoes/ contém séries numéricas correlacionadas com a ordem do arquivo [33m 340[2mms[22m[39m
+ [32m✓[39m src/lib/jev/jevClient.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 348[2mms[22m[39m
+       [33m[2m✓[22m[39m assevera que nenhum valor originado do JEV alcança montarLinhaDeBaseRUSLE ou perdaSolo [33m 317[2mms[22m[39m
+ [32m✓[39m src/lib/gee/sorteioPoligonos.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 107[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/gerarRelatorioFase.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 222[2mms[22m[39m
+ [32m✓[39m src/lib/export/pacoteReprodutibilidade.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 101[2mms[22m[39m
+ [32m✓[39m src/lib/planet/planet.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/diarioRequisicoes.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 76[2mms[22m[39m
+ [32m✓[39m src/lib/gee/copernicusGeeClient.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 61[2mms[22m[39m
+ [32m✓[39m src/lib/embrapa/embrapaSoilClient.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 60[2mms[22m[39m
+ [32m✓[39m src/lib/export/planilha.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m src/lib/fundiario/calculadoraDesenho.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/credenciaisSeguras.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m src/components/inspetor/InspetorPonto.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/provenienciaCaminhos.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m src/lib/chuva/chuva.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/cegamentoArtefatos.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/config/tourMetodologico.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/lib/matriz/montagemTemporal.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/rusle.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 25[2mms[22m[39m
  [32m✓[39m src/lib/gee/compostoSoloNu.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 26[2mms[22m[39m
- [32m✓[39m src/lib/chuva/chuva.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 39[2mms[22m[39m
- [32m✓[39m src/components/inspetor/InspetorPonto.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 39[2mms[22m[39m
- [32m✓[39m src/lib/gee/serieTemporal.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 29[2mms[22m[39m
- [32m✓[39m src/lib/matriz/montagemTemporal.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 27[2mms[22m[39m
- [32m✓[39m src/lib/gee/auth.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 35[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/localOnly.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 17[2mms[22m[39m
- [32m✓[39m src/lib/rotulos/rotulos.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 21[2mms[22m[39m
- [32m✓[39m src/lib/rusle/fatorK.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 22[2mms[22m[39m
- [32m✓[39m src/lib/gee/persistenciaTemporal.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 31[2mms[22m[39m
- [32m✓[39m src/lib/rusle/rusle.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 27[2mms[22m[39m
- [32m✓[39m src/lib/padraoOuro/validacaoMatricial.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 17[2mms[22m[39m
- [32m✓[39m src/config/decisoes.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 21[2mms[22m[39m
- [32m✓[39m src/lib/gee/terreno.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 22[2mms[22m[39m
- [32m✓[39m src/lib/rusle/fatorLS.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 16[2mms[22m[39m
- [32m✓[39m src/config/tourMetodologico.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 58[2mms[22m[39m
- [32m✓[39m src/lib/fundiario/selecaoPontoElegivel.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/config/decisoes.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m src/lib/gee/persistenciaTemporal.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m src/lib/rotulos/ingestaoColetor.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/lib/gee/auth.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/lib/rotulos/rotulos.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/fatorK.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m src/lib/padraoOuro/validacaoMatricial.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/guardaSintetico.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/localOnly.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/lib/matriz/invariantes.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 13[2mms[22m[39m
  [32m✓[39m src/lib/gee/estratificacao.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 15[2mms[22m[39m
- [32m✓[39m src/lib/matriz/invariantes.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 14[2mms[22m[39m
- [32m✓[39m src/store/interfaceIntegration.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 17[2mms[22m[39m
- [32m✓[39m src/lib/gee/harmonicos.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 15[2mms[22m[39m
- [32m✓[39m src/lib/gee/versaoMotor.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 13[2mms[22m[39m
- [32m✓[39m src/lib/localizacao/localizacao.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 15[2mms[22m[39m
- [32m✓[39m src/lib/gee/thinning.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 14[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/sessaoEfemera.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
- [32m✓[39m src/lib/gee/blocosEspaciais.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/guardaSintetico.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
- [32m✓[39m src/store/useSarelStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 11[2mms[22m[39m
- [32m✓[39m src/lib/gee/elegibilidade.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 17[2mms[22m[39m
- [32m✓[39m src/lib/gee/estatisticasSerie.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/lib/fundiario/selecaoPontoElegivel.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/fatorR.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/fatorLS.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/lib/gee/serieTemporal.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/lib/gee/terreno.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/lib/localizacao/localizacao.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/lib/gee/elegibilidade.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/lib/gee/blocosEspaciais.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/lib/gee/versaoMotor.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/lib/gee/thinning.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/sessaoEfemera.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/lib/gee/harmonicos.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/store/useSarelStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/lib/export/dms.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/lib/gee/estatisticasSerie.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/store/interfaceIntegration.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
  [32m✓[39m src/lib/gee/aoiTiling.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
- [32m✓[39m src/lib/gee/amostragemBiofisica.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
- [32m✓[39m src/lib/export/dms.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 17[2mms[22m[39m
- [32m✓[39m src/lib/fundiario/matcher.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 13776[2mms[22m[39m
-     [33m[2m✓[22m[39m deve encontrar uma propriedade rural oficial indexada no SQLite local [33m 4454[2mms[22m[39m
-     [33m[2m✓[22m[39m deve retornar status sem-correspondencia para coordenada fora de qualquer perímetro cadastrado [33m 3158[2mms[22m[39m
-     [33m[2m✓[22m[39m deve retornar status base-nao-disponivel para UF fora da cobertura (ex: BA) [33m 3696[2mms[22m[39m
-     [33m[2m✓[22m[39m deve executar batchMatchRuralProperties em lote com integridade de status [33m 2444[2mms[22m[39m
- [32m✓[39m src/lib/drone/planoVooNControl.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 15192[2mms[22m[39m
-     [33m[2m✓[22m[39m Z1 & W3: amostrador real do Copernicus DEM GLO-30 lê os tiles oficiais com isolamento de PROJ_LIB, confere cota contra benchmark independente e recusa NoData / fora de borda (P12) [33m 15009[2mms[22m[39m
+ [32m✓[39m src/components/decisoes/PainelCriterioRefutacaoD25.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/lib/gee/amostragemBiofisica.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/config/areaInteresse.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m src/lib/fundiario/matcher.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 8924[2mms[22m[39m
+     [33m[2m✓[22m[39m deve encontrar uma propriedade rural oficial indexada no SQLite local [33m 2700[2mms[22m[39m
+     [33m[2m✓[22m[39m deve retornar status sem-correspondencia para coordenada fora de qualquer perímetro cadastrado [33m 2057[2mms[22m[39m
+     [33m[2m✓[22m[39m deve retornar status base-nao-disponivel para UF fora da cobertura (ex: BA) [33m 2005[2mms[22m[39m
+     [33m[2m✓[22m[39m deve executar batchMatchRuralProperties em lote com integridade de status [33m 2135[2mms[22m[39m
+ [32m✓[39m src/lib/drone/planoVooNControl.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 9871[2mms[22m[39m
+     [33m[2m✓[22m[39m Z1 & W3: amostrador real do Copernicus DEM GLO-30 lê os tiles oficiais com isolamento de PROJ_LIB, confere cota contra benchmark independente e recusa NoData / fora de borda (P12) [33m 9742[2mms[22m[39m
 
-[2m Test Files [22m [1m[32m54 passed[39m[22m[90m (54)[39m
-[2m      Tests [22m [1m[32m412 passed[39m[22m[90m (412)[39m
-[2m   Start at [22m 12:21:52
-[2m   Duration [22m 16.46s[2m (transform 5.69s, setup 0ms, import 11.57s, tests 35.90s, environment 12ms)[22m
+[2m Test Files [22m [1m[32m57 passed[39m[22m[90m (57)[39m
+[2m      Tests [22m [1m[32m421 passed[39m[22m[90m (421)[39m
+[2m   Start at [22m 13:59:30
+[2m   Duration [22m 10.73s[2m (transform 4.18s, setup 0ms, import 8.26s, tests 23.74s, environment 10ms)[22m
 
 
 [33mThe plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the [1mresolve.tsconfigPaths[22m option. You can remove the plugin and set [1mresolve.tsconfigPaths: true[22m in your Vite config instead.[39m
@@ -114,7 +117,7 @@
 | `docs/verificacoes/voo_ncontrol/relatorio_aceitacao_y1_y6_2026-09-29.json` | Sim | 2.231 | `c6c5ba0cd6c2b13e21532e23626297ad4717765eed6e470ee645490bbb3cf77d` |
 | `docs/verificacoes/voo_ncontrol/roteiro_jornadas_72poligonos.csv` | Sim | 16.325 | `2af484250487948becf7be9ddbfeaa47a0da4ffb83c395e151084f440902c609` |
 | `docs/verificacoes/voo_ncontrol/tabela_autorizacao_proprietarios_72poligonos.csv` | Sim | 10.112 | `40048f02026254dd1ced149cc396708aa0bd76bb4bee65c254333dab2266f805` |
-| `docs/verificacoes/voo_ncontrol/manifesto_interprete_cego_72poligonos.csv` | Sim | 8.704 | `e9962dc49061ec7bbb9616a0c8a924376c7a0304f78e60d2b09dec9ac93b78b2` |
+| `docs/verificacoes/voo_ncontrol/manifesto_interprete_cego_72poligonos.csv` | Sim | 8.704 | `2742b0b53150d023c26abcfbe1ebc832344a82e0c39f3c19f3e2a6d2178b2f14` |
 | `docs/verificacoes/voo_ncontrol/roteiro_jornadas_72poligonos.pdf` | Sim | 16.155 | `58eda8e604bc96918d9f282ad568dd555bafce654e2974f2dbc2735146aeb11a` |
 | `docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json` | Sim | 2.411 | `c456b095ab746e8fcc935a45a77331c9fd0dfa72ec2bb8fe7d6cac5e0b91dbf8` |
 | `docs/verificacoes/2026-09-30_remedicao_candidatos_bp3_d16.md` | Sim | 3.389 | `06de7d30a798a9ab7d2735222ea17a7b2985c43aebef4a40471f3c6b17d39ee3` |
@@ -129,7 +132,7 @@
 | `src/lib/gee/amostragemSoloNuLote.ts` | Sim | 22.070 | `00491abfa76f1d5139a985f207343f4ed981cc73b34fe134c6b28b69de806b9f` |
 | `src/lib/gee/amostragemSoloNuLote.test.ts` | Sim | 12.423 | `e48a2a1fb6a3edfb2246c5dae514835c7fe4df1ecbcfa780b91a8c1ce8aea6b8` |
 | `src/components/config/ApiTokensManager.tsx` | Sim | 20.012 | `e1d5b7b53b2f175fc98db1136eec24e9832c57a22c49ce1b6aa97ebd29355870` |
-| `src/components/map/MapViewer.tsx` | Sim | 22.149 | `4743293153f0f6b5bddbf8d8517f07f9492e025f8d039f3d49b2bdfa44b37ff3` |
+| `src/components/map/MapViewer.tsx` | Sim | 22.393 | `9e6797f15170d798064ad706fb6580be3fa942b30d7a0537188cb18d0332b43b` |
 | `data/dem_cache/Copernicus_DSM_COG_10_S25_00_W054_00_DEM.tif` | Sim | 41.986.866 | `bbc2fda763ca444d53b32090787b50cd9500bd6f328f54c9ef049d8f8eb9f231` |
 | `data/dem_cache/Copernicus_DSM_COG_10_S25_00_W055_00_DEM.tif` | Sim | 39.996.560 | `2076dda84be86eb264ef6115332b472b2fad2558f12b76878dc9f9342a616d16` |
 | `data/dem_cache/Copernicus_DSM_COG_10_S26_00_W054_00_DEM.tif` | Sim | 43.766.657 | `463002fe797eb327d011ed563e216de09c4827402d3ea58aa070366aa5382251` |
@@ -145,6 +148,20 @@
 | `docs/verificacoes/climatologia_chirps_bp3.json` | Sim | 4.073 | `be8d8b8a419cdfc7a189b007307228e75a79ae16ba8ec0341a0e8a3d08998c7d` |
 | `docs/verificacoes/diario_climatologia_chirps_bp3.json` | Sim | 5.569 | `251051db242037700b657bff53354bcf5a07cc0a613b206ba06085831fe5c0e1` |
 | `scripts/baixar_chirps_climatologia.py` | Sim | 8.416 | `41adeba1529915899b6719277f3dff994d29d0b8133f351ff1ff5ab1157cf3aa` |
+| `src/components/inspetor/InspetorPonto.tsx` | Sim | 38.244 | `701993f9c193df898c96c439eaa6aace5b47dfd24627bcf8d5a726776173e24e` |
+| `src/components/inspetor/InspetorPonto.test.ts` | Sim | 8.435 | `6226bbd3bb05115d5fc5db2927c4968feb9ed16cc0590558b03be30fc91d225f` |
+| `src/lib/rotulos/ingestaoColetor.ts` | Sim | 9.778 | `261ad57b29961e4ed26dab524d84b76f7fd2a0ff6d107c7fd098d26e45389dd1` |
+| `src/lib/rotulos/ingestaoColetor.test.ts` | Sim | 3.908 | `1c64b97570488504d130507e25de9d272a86efc3e053a9da6aad8d2a4e3eb867` |
+| `src/components/decisoes/PainelCriterioRefutacaoD25.tsx` | Sim | 18.741 | `408287e2467fc7411f5f1846e3ce4a2c4028af6cb774c18b66aeaa736c1165ba` |
+| `src/components/decisoes/PainelCriterioRefutacaoD25.test.ts` | Sim | 1.508 | `abed98f6eb74ff4b8b73672d59ed39d7f543fa8569508b189b30dc810db9aed5` |
+| `src/config/areaInteresse.ts` | Sim | 2.445 | `c2979f8ee6c138fc7b9883efc963a398d507891d7639a1bf4cb88536a6e7eaac` |
+| `src/config/areaInteresse.test.ts` | Sim | 642 | `ab32b6aefce47eade977b4ac06d405b3b987df561bf61b5a6c3a2d3abbdd1c7c` |
+| `src/components/campanha/PainelCampanha.tsx` | Sim | 40.232 | `f374f3f60508a7be561570c0332a5dbbb049658a0cccb0a69f39b7069dbc5e22` |
+| `src/components/campanha/PainelCampanhaModal.tsx` | Sim | 2.360 | `c50b1294e6f785ab200a09bb6be9e43cc1cc436ae75c7413ddb0687c8e855a86` |
+| `src/components/decisoes/DecisoesModal.tsx` | Sim | 6.946 | `afe70307af6222216e9954fc34ad863b6373ac2cbb25127b04e3148f34312694` |
+| `src/components/decisoes/PainelSorteioD16.tsx` | Sim | 13.862 | `ea1fb48f7614d963dc45a5efcc39b708dcfc9fb6596fb07c6844e71342fb4f07` |
+| `src/components/region/RegionRequestModal.tsx` | Sim | 40.223 | `5e933b29e82e23e036b137b265ba74feeef8758a1f7e4480d441ddde09e99a41` |
+| `src/components/sidebar/FiltersPanel.tsx` | Sim | 7.128 | `7b5dd09512a2fbb7971961a0dfb35fafbba769e2f18658dd6c9c6d76d660b56a` |
 
 ### 3. Extração Direta dos Artefatos de Voo
 
@@ -170,8 +187,8 @@ codigoOpacoInterprete,cameraName,gsdAlvoCm,aglNominalMetros,areaPoligonoHa,forma
 ```
 - **Amostra real das duas primeiras linhas:**
 ```csv
-VANT-BLIND-0090A68CA7,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
-VANT-BLIND-01B1929EDE,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
+VANT-BLIND-02520E0C32,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
+VANT-BLIND-03A521DD65,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
 ```
 
 #### 3.3 Metadados e Relatório de Aceitação JSON (`docs/verificacoes/voo_ncontrol/relatorio_aceitacao_y1_y6_2026-09-29.json`)
@@ -235,59 +252,58 @@ VANT-BLIND-01B1929EDE,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia
 
 ## Leitura e juízo
 
-### 1. Diretriz H1 — Auditoria de Fontes de R e Desativação dos Coeficientes
-- **Fontes Primárias Arquivadas no Repositório:**
-  - `docs/verificacoes/fontes/waltrick2015/waltrick_2015.pdf` (artigo autêntico, RBCS 39:256-267) com extração em `saida_extracao_waltrick_2015.txt`.
-  - `docs/verificacoes/fontes/nepar2011/nepar_boletim_01_2011.pdf` (Boletim Informativo NEPAR n. 01, 2011) com extração em `saida_extracao_nepar_2011.txt`.
-- **Conferência Textual dos Coeficientes:**
-  - Foi efetuada busca estrita pelos valores `107,52` e `46,89` (bem como `107.52` e `46.89`) no texto extraído das duas obras arquivadas.
-  - **Nenhum dos dois números aparece nos textos extraídos.** Ambas as obras citam Rufino et al. (1993) como a fonte das 8 equações lineares de erosividade do Paraná, mas nenhuma delas reproduz os coeficientes no texto. Rufino et al. (1993) é artigo impresso histórico pré-digitalização sem exemplar físico arquivado no repositório.
-- **Juízo e Ação em Código:**
-  - Em conformidade estrita com a regra bloqueante H1 e a regra P12, **os coeficientes a = 107,52 e b = 46,89 SAÍRAM do código ativo**.
-  - O Fator R retorna estritamente `{ estado: "indisponivel", causa: "insuficiente", motivo: "..." }`.
-  - A propriedade `referencia` no código foi retificada para citar unicamente as obras autenticamente arquivadas: `"Waltrick et al. (2015) / SBCS-NEPAR Bol. 01 (2011)"`.
+### 1. Diretriz J1 — Cegamento Efetivo e Separação entre Registro e Inspeção
+- **Cegamento Dinamicamente Derivado:**
+  - O campo `cego` no rótulo humano deixou de ser um literal estático `true` fixo em código e passou a ser estritamente **derivado** do modo de exibição (`modo === "registro"`).
+  - No modo de registro, a interface é blindada: nenhum estrato (`estratoId`), tercil (S, E), nível de K ou campo proibido de predição/modelo (`CAMPOS_PROIBIDOS_MATRIZ_TREINO`, como `scoreJev`, `scoreSuscetibilidade`, `laudoJev`, `phiDiag`) é renderizado ou acessível.
+- **Bifurcação Estrita de Telas:**
+  - **Modo de Registro:** mostra unicamente o código do ponto, coordenadas geográficas, imagens e formulário de observação com alvo contínuo D26. Contém o botão exclusivo para gravar/consolidar o laudo humano sob protocolo cego.
+  - **Modo de Inspeção:** exibe a estratificação completa, séries temporais, proveniências e laudos de auditoria. O botão de gravar rótulo humano **não existe** e é substituído por aviso de gravação desabilitada.
+- **Evidência por Teste Automatizado:**
+  - Testes unitários em `src/components/inspetor/InspetorPonto.test.ts` (4 testes aprovados) asseveram que `estratoId` e os termos de modelo nunca vazam no modo de registro, e que `cego` é atestado com rigor epistêmico.
 
-### 2. Diretriz H2 — Download Real do CHIRPS v2.0, Diário de Requisições e Suporte Nativo
-- **Download Real e Cache:**
-  - Foram baixados 12 arquivos mensais globais do CHIRPS v2.0 cobrindo o ano completo de 2022 (`chirps-v2.0.2022.01.tif.gz` a `chirps-v2.0.2022.12.tif.gz`), diretamente do servidor oficial UCSB Climate Hazards Center (`https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/`).
-  - Total baixado: ~166,6 MB compactados (~691 MB descompactados), armazenados em `data/chirps_cache/` (ignorado no `.gitignore`).
-- **Diário de Requisições de Rede (Guarda Estrutural F5):**
-  - Foi emitido o diário em `docs/verificacoes/diario_climatologia_chirps_bp3.json` registrando as 12 chamadas HTTP GET diretas (timestamp, endpoint UCSB, status 200, bytes recebidos e duração em ms).
-  - O diário foi submetido à validação formal via `src/lib/seguranca/diarioRequisicoes.ts:validarArtefatoComDiario` resultando em **`valido: true` e 0 inconsistências**.
-- **Resolução e Conferência Cruzada:**
-  - Suporte espacial estritamente nativo de 0,05° (~5,5 km) em EPSG:4326, sem qualquer reamostragem para 10 m (D06).
-  - A tabela histórica municipal de estações foi formalmente declarada no código como conferência cruzada (Quadro 1 de Waltrick et al., 2015) e jamais como fonte primária dos totais CHIRPS.
-  - Artefato científico de medição gerado em `docs/verificacoes/climatologia_chirps_bp3.json`.
+### 2. Diretriz J1 — Papel no Conjunto, Concordância Inter-Observador e Divergência
+- **Papel no Conjunto (`papelConjunto`):**
+  - Eliminado o literal padrão `"treino"` na gravação do rótulo humano. O papel é agora herdado da designação oficial de D16 selada no sorteio (`ponto.papelConjunto`), ou assume `"indisponivel"` quando o ponto não possuir designação formal de partição.
+- **Concordância Inter-Observador (`kappa` e `divergencia`):**
+  - Eliminada a afirmação fictícia de concordância (`kappa: null` com `divergencia: "nenhuma"`).
+  - Sem a realização de uma segunda observação independente pericial, a divergência inicial é estritamente tipada e gravada como `"indisponivel"`, e o kappa permanece `null`.
 
-### 3. Diretriz H3 — Declaração Precisa e Conteúdo Conferido por OCR no Renard et al. (1997)
-- **Separação de Estados:**
-  - A redação de `docs/verificacoes/fontes/renard1997/saida_extracao_renard_1997.txt` foi reestruturada para separar categoricamente o **acesso comprovado** (407 páginas, hash SHA-256 `cd198687...`, metadados oficiais) da limitação física da camada de texto embutida (PDF digitalizado como imagem pré-OCR).
-- **Conferência Textual por OCR Neural:**
-  - Foi executado OCR neural (RapidOCR ONNX com arquitetura DBNet + SVTR) diretamente sobre as páginas escaneadas do Capítulo 4 (pp. 105, 106, 107) e do Apêndice A (p. 325) do `ah_703.pdf`.
-  - A saída textual bruta com as pontuações de confiança por linha foi comitada em `docs/verificacoes/fontes/renard1997/saida_ocr_renard_1997.txt`.
-  - Conferência direta comprovada: Equações [4-1] ($L = (\lambda/72{,}6)^m$), [4-2] ($m = \beta/(1+\beta)$), [4-3] ($\beta = (\sin\theta/0{,}0896)/[3{,}0(\sin\theta)^{0{,}8} + 0{,}56]$), [4-4] ($S = 10{,}8\sin\theta + 0{,}03$ para $s < 9\%$), [4-5] ($S = 16{,}8\sin\theta - 0{,}50$ para $s \ge 9\%$) e a conversão métrica de 72,6 ft para 22,13 m.
-- **Registro no Código:**
-  - O módulo `src/lib/rusle/fatorLS.ts` foi atualizado para registrar explicitamente que as constantes estão em estado de "Conteúdo conferido por OCR neural na fonte primária arquivada".
+### 3. Diretriz J2 — Aposentadoria de Kobo e Fotointerpretação e Ingestão do SAREL Coletor
+- **Substituição do KoboCollect pelo SAREL Coletor (D16 item 5):**
+  - Criado o módulo `src/lib/rotulos/ingestaoColetor.ts`, processando as 28 colunas canônicas do formulário móvel Android + métricas GNSS de média estática.
+  - Validação da tolerância geodésica P03 (15 m nominal, 25 m com ressalva, rejeição acima de 25 m) e rejeição compulsória de coordenadas simuladas (`fix_simulado`, Invariante 5 / P12).
+- **Aposentadoria Formal da Fotointerpretação (D16 item 4):**
+  - Sob D16, a fotointerpretação satélite foi aposentada em favor da delineação vetorial sobre ortomosaicos centimétricos de VANT (~4 cm GSD).
+  - Todas as referências no front-end (`FiltersPanel.tsx`, `PainelCampanha.tsx`, `PainelCampanhaModal.tsx`) foram atualizadas com notas explícitas registrando a aposentadoria por D16.
+- **Preservação de Histórico e Legado:**
+  - Nenhum dado antigo foi apagado: criada a aba dedicada "Legado e Histórico" em `PainelCampanha.tsx` com visualização isolada e advertência metodológica clara.
+  - A aba de campanha foi reenquadrada para refletir os 3 conjuntos de D16: 72 polígonos de VANT (36 treino + 36 held-out), 60 a 80 pontos de campo âncora fora dos polígonos para calibração de prevalência, e confirmação prospectiva.
 
-### 4. Retenção de Perda de Solo e Invariante 1
-- **Quantos pontos passam a ter perdaSolo calculada:** **0 pontos** (ZERO).
-- **Quantos pontos seguem retidos:** **Todos os 72 pontos** da campanha de amostragem.
-- **Por qual fator:** **Fator R de erosividade da chuva** (estado: `indisponivel`, causa: `insuficiente`).
-- **Disciplina Científica:**
-  - Em conformidade estrita com o Invariante 1 e a Decisão D25, a perda de solo $A = R \cdot K \cdot LS \cdot C \cdot P$ só é gerada se todos os cinco fatores estiverem simultaneamente disponíveis com proveniências consolidadas.
-  - A indisponibilidade de R bloqueia a perda de solo sem contaminações ad-hoc, mantendo a integridade da régua de avaliação contra a qual o XGBoost será julgado.
+### 4. Diretriz J3 — Alvo Contínuo (D26), Critério de Refutação (D25) e Regime de Dados (D24)
+- **Hierarquia Rígida de Alvos (D26):**
+  - A interface exibe como **alvo primário** a fração contínua $[0, 1]$ da célula de 10 m delineada como erodida sob VANT, ajustada com objetivo Tweedie (`reg:tweedie`) para tratar inflação de zeros e comparada por correlação de Spearman ($ho$).
+  - O alvo binário derivado a 25% ($ge 25\text{ m}^2$ em célula de $100\text{ m}^2$) é exibido como **estritamente secundário** e assim rotulado na hierarquia pericial.
+- **Painel do Critério de Refutação Pré-Registrado (D25):**
+  - Implementado o componente `src/components/decisoes/PainelCriterioRefutacaoD25.tsx` integrado em `DecisoesModal.tsx`.
+  - Exibe os 3 competidores emparelhados (RUSLE, Regressão Penalizada, XGBoost), o piso de utilidade $\rho \ge 0,40$, a margem $\Delta\rho \ge 0,10$, o IC 95% por bootstrap agrupado por polígono, os 3 desfechos ternários (Corroborada | Inconclusiva | Refutada) e a regra de parcimônia.
+  - **Estado Obrigatório da Avaliação:** O painel estampa expressamente **"ESTADO: NÃO AVALIADO"**, acompanhado de alerta metodológico proibindo antecipação de resultados antes do sobrevoo e delineação do held-out de VANT (P12).
+- **Regime de Dados (D24):**
+  - Tabela dos tetos por bloco físico (Espectro-temporal: 8; Terreno: 4; Solo: 1; Chuva: 1; máx: 14 preditores).
+  - Evidencia com transparência que 3 dos 4 blocos operam abaixo do regime recomendado de 200 eventos/variável, sendo mantidos por necessidade física (Invariante 1) com mitigação por monotonicidade.
+- **Estado do Sorteio no `PainelSorteioD16.tsx`:**
+  - O painel consome o artefato real `docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json` via `/api/gee/sorteio-d16`, estampando o estado real **BLOQUEADO (Ê NÃO MEDIDO — P12)** e desabilitando o botão de sorteio.
 
-### 5. Isolamento Estrito do JEV e Heurística Local de Suscetibilidade
-- **Renomeação do Motor Local:**
-  - O motor determinístico foi renomeado de `MOTOR_LOCAL_RUSLE` para `HEURISTICA_LOCAL_SUSCETIBILIDADE` em todos os tipos (`src/types/jev.ts`), clientes (`src/lib/jev/jevClient.ts`), fallbacks (`src/lib/jev/fallbackLocal.ts`), rotas de API e componentes de UI.
-  - Esta alteração elimina qualquer risco de confusão entre o escore ordinal (0 a 4) de suscetibilidade e a perda de solo física da RUSLE (D25).
-- **Teste de Isolamento Estrito:**
-  - Implementado teste em `src/lib/jev/jevClient.test.ts` que assevera que nenhum valor ou propriedade originada do JEV (seja System One remoto ou Heurística Local) alcança `montarLinhaDeBaseRUSLE`, `perdaSolo` ou a memória de cálculo da RUSLE.
-  - Confirmado que `scoreJev` e `laudoJev` permanecem estritamente blindados em `CAMPOS_PROIBIDOS_MATRIZ_TREINO`.
-- **Verificação do Inspetor e Protocolo Cego:**
-  - Foi verificado o componente `src/components/inspetor/InspetorPonto.tsx`: o escore de auditoria é ativado exclusivamente por clique manual do operador técnico.
-  - O escore do JEV jamais é transmitido aos planos de voo nem aos manifestos cegos dos intérpretes de ortomosaico (`manifesto_interprete_cego_72poligonos.csv`).
-  - Foi inserida nota metodológica no Inspetor e no painel de credenciais advertindo sobre a preservação do protocolo cego (D26).
+### 5. Diretriz J4 — Centralização de Coordenadas da BP3 e Separação entre Método e Parâmetro
+- **Extração das 25 Ocorrências para Configuração Central:**
+  - Todas as 25 ocorrências de coordenadas e parâmetros da BP3 identificadas no levantamento foram unificadas em `src/config/areaInteresse.ts` (`AREA_INTERESSE_BP3` e `AREA_INTERESSE_PADRAO`).
+  - Atualizados os 6 componentes mapeados: `RegionRequestModal.tsx` (14 ocorrências), `MapViewer.tsx` (3 ocorrências), `PainelCampanha.tsx` (3 ocorrências), `MapaAmostral.tsx` (2 ocorrências), `CandidateSelectionModal.tsx` (2 ocorrências) e `CalculadoraDesenhoAmostral.tsx` (1 ocorrência).
+- **Rotulagem Explícita de Parâmetro do Estudo:**
+  - Todos os elementos visuais associados à BP3 foram rotulados na UI como `"nesta bacia (BP3 — parâmetro do estudo)"`, diferenciando com clareza o que é propriedade local do que é método universal.
+- **Preservação Inviolável de `src/config/decisoes.ts` (P8) e Proposta Futura:**
+  - Em conformidade estrita com P8, `src/config/decisoes.ts` não sofreu alterações.
+  - A mistura metodológica entre método e parâmetro permanece dentro das decisões locais (ex.: D07 com declividade de 3% a 20% da BP3; D12/D16 com 18 estratos de tercis e 72 polígonos; D18 com buffer de 0,25 km²).
+  - **Proposta para o momento metodológico apropriado:** Bifurcar cada decisão em duas estruturas tipadas — `metodo` (invariante: estratificação tridimensional, protocolo cego, agrupamento held-out) e `instanciaEstudo` (parâmetros da BP3: recortes geográficos, limiares de tercil e fontes pedológicas locais), viabilizando a futura generalização preditiva sem comprometer a integridade desta dissertação.
 
 ---
 **Identificação do Agente-Executor:** Antigravity (Google DeepMind)  

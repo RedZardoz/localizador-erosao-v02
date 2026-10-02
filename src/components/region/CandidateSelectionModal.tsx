@@ -17,6 +17,7 @@ import {
 import { useSarelStore } from "@/store/useSarelStore";
 import type { PontoAmostral } from "@/types/ponto";
 import { gerarPlanilhaXLSX } from "@/lib/export/planilha";
+import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
 
 export const CandidateSelectionModal: React.FC = () => {
   const {
@@ -301,7 +302,7 @@ export const CandidateSelectionModal: React.FC = () => {
           {/* Resumo da Alocação nas 3 Escalas Experimentais (PPGTCA) */}
           <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/70 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-2 text-[11px]">
             <div className="font-bold text-slate-900 dark:text-white flex items-center justify-between">
-              <span>Partição Amostral nas 3 Escalas (Bacia do Paraná 3 — PPGTCA)</span>
+              <span>Partição Amostral nas 3 Escalas (nesta bacia: {AREA_INTERESSE_PADRAO.sigla} — parâmetro do estudo)</span>
               <span className="font-mono text-emerald-700 dark:text-emerald-400">
                 Total: {tamanhoAmostra} pontos
               </span>
@@ -315,7 +316,7 @@ export const CandidateSelectionModal: React.FC = () => {
                   {qtdOrbitalRestanteBacia} pts ({100 - proporcaoInLocoCorredorPct}%)
                 </span>
                 <span className="text-[9px] text-slate-400 block">
-                  22 municípios restantes da BP3
+                  {AREA_INTERESSE_PADRAO.totalMunicipios - 6} municípios restantes nesta bacia ({AREA_INTERESSE_PADRAO.sigla})
                 </span>
               </div>
               <div className="p-2 rounded-lg bg-amber-50/70 dark:bg-amber-950/30 border border-amber-300/80 dark:border-amber-800">
