@@ -89,10 +89,21 @@ guarda de diário, e o download é autêntico.
 `tipo: "climatologia_chirps_mensal_bp3"` com `periodo: "2022 (12 meses completos)"`. **Um ano não
 é uma climatologia.** O período está declarado com honestidade, o que afasta fabricação — mas o
 rótulo afirma uma propriedade que o dado não tem, que é a família de defeito que esta pesquisa
-vem perseguindo. Pressione nisso: 2022 foi ano de La Niña no Sul do Brasil, logo mais seco que a
-média, e Toledo aparece com 1.484 mm anuais. Uma erosividade estimada sobre esse único ano seria
-enviesada para baixo de forma sistemática, e serviria de régua a D25. Hoje não propaga número
-porque R está `indisponivel`; **propagaria assim que os coeficientes aparecessem.**
+vem perseguindo.
+
+**CORRIGIDO EM 02/10, E A CORREÇÃO É CONTRA MIM.** Ao escrever isto eu supus que 2022 fora ano
+seco, por La Niña, e que a climatologia de um ano enviesaria a erosividade **para baixo**. A série
+completa foi baixada no mesmo dia — 540 meses, 1981-01 a 2025-12 — e **mediu o contrário**: 2022
+foi mais chuvoso que a média de 45 anos em cinco das seis estações, até **+34,5% em Palotina**,
++19,9% em Medianeira, +19,0% em Santa Helena. Toledo, a estação de que eu me vali, ficou a
+**−1,35%** da média, isto é, praticamente nela. **Minha hipótese foi refutada em direção e em
+magnitude.** O viés existiria e seria grande, mas **para cima**.
+
+O que sobrevive, e sai reforçado, é o argumento geral: o desvio de um ano varia de −1,35% a
++34,5% **dentro da mesma bacia**, de modo que um ano não representa nem o período nem o espaço.
+Registro a refutação porque o prompt pedia conclusão falsificável e a minha conjetura foi a coisa
+falsificada. Hoje nada disso propaga número, porque R está `indisponivel`; **propagaria assim que
+os coeficientes aparecessem.**
 
 E não é lacuna da decisão: **D13 proíbe isto em palavras.** A cláusula (b) diz "R CLIMATOLÓGICO,
 média de longo prazo sobre toda a série disponível, e NÃO erosividade de um ano", e explica a
