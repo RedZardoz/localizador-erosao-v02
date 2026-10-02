@@ -92,9 +92,15 @@ rótulo afirma uma propriedade que o dado não tem, que é a família de defeito
 vem perseguindo. Pressione nisso: 2022 foi ano de La Niña no Sul do Brasil, logo mais seco que a
 média, e Toledo aparece com 1.484 mm anuais. Uma erosividade estimada sobre esse único ano seria
 enviesada para baixo de forma sistemática, e serviria de régua a D25. Hoje não propaga número
-porque R está `indisponivel`; **propagaria assim que os coeficientes aparecessem.** Julgue também
-se D13 deveria ter fixado o período numericamente em lugar de dizer apenas "climatológico" — a
-lacuna é da decisão, não só da execução.
+porque R está `indisponivel`; **propagaria assim que os coeficientes aparecessem.**
+
+E não é lacuna da decisão: **D13 proíbe isto em palavras.** A cláusula (b) diz "R CLIMATOLÓGICO,
+média de longo prazo sobre toda a série disponível, e NÃO erosividade de um ano", e explica a
+razão — "usar R anual faria o preditor descrever um período que o rótulo não representa". O
+executor fez exatamente o que a decisão veda. **Audite, então, por que a violação não foi
+detectada:** o script passou nos testes, emitiu diário, declarou o período com honestidade e foi
+relatado como cumprimento de H2. Nenhuma guarda compara o artefato produzido contra o texto da
+decisão que o governa — e essa ausência é mais interessante que o erro em si.
 
 **O protocolo cego estava violado na interface web, e foi corrigido.** `InspetorPonto.tsx` gravava
 rótulo carimbando `cego: true` como literal numa tela que exibia o estrato e os tercis. Hoje
