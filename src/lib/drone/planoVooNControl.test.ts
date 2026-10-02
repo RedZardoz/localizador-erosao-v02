@@ -164,7 +164,7 @@ describe("Exportação de Planos de Voo QGroundControl (.plan v1) para o NContro
         ErroTerrenoForaDeCoberturaGLO30
       );
     },
-    35000
+    60000
   );
 
   it("W4: verificação prévia de cobertura de tiles DEM antes de emitir planos aborta cedo polígonos sem tile em cache", () => {

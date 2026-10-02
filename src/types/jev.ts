@@ -10,7 +10,7 @@
  * 3. Score: Escala ordinal estruturada (0 a 4)
  */
 
-export type MetodoAuditoria = "JEV_SYSTEM_ONE" | "MOTOR_LOCAL_RUSLE";
+export type MetodoAuditoria = "JEV_SYSTEM_ONE" | "HEURISTICA_LOCAL_SUSCETIBILIDADE";
 
 export type GrauSuscetibilidade = 0 | 1 | 2 | 3 | 4;
 

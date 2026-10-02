@@ -26,7 +26,7 @@ import crypto from "crypto";
 
 export interface EntradaDiarioRequisicao {
   timestampIso: string;
-  servico: "GEE" | "EMBRAPA_WFS" | "COPERNICUS" | "PLANET" | "OUTRO";
+  servico: "GEE" | "EMBRAPA_WFS" | "COPERNICUS" | "PLANET" | "CHIRPS_UCSB" | "OUTRO";
   endpoint: string;
   metodoHttp: "GET" | "POST";
   quantidadeItens: number;

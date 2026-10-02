@@ -517,15 +517,15 @@ def build_pdf(pdf_path):
         ],
         [
             Paragraph("<b>Fator R</b><br/>(Erosividade)", styles["TableCellBold"]),
-            Paragraph("Equação regional do Paraná: $EI_{30m} = 107{,}52 + 46{,}89 \\cdot (p_m^2/P_{\\text{anual}})$ sobre CHIRPS 0,05° climatológico.", styles["TableCell"]),
-            Paragraph("Rufino et al. (1993); Waltrick et al. (2015, RBCS Quadro 1)", styles["TableCell"]),
-            Paragraph("Decisão D13<br/><b>100% Integrado</b>", styles["TableCellBold"])
+            Paragraph("CHIRPS v2.0 mensal baixado diretamente da UCSB (12 meses, suporte nativo 0,05° EPSG:4326 com Diário F5). Coeficientes a = 107,52 e b = 46,89 desativados por ausência no texto das obras arquivadas; Fator R retornado estritamente como <code>indisponivel</code> (causa: <code>insuficiente</code>).", styles["TableCell"]),
+            Paragraph("Waltrick et al. (2015, RBCS 39); SBCS-NEPAR (2011); Funk et al. (2015)", styles["TableCell"]),
+            Paragraph("Decisão D13<br/><b>Auditado / Retido por Invariante 1</b>", styles["TableCellBold"])
         ],
         [
             Paragraph("<b>Fator LS</b><br/>(Topográfico)", styles["TableCellBold"]),
-            Paragraph("Algoritmo 2D Desmet & Govers (1996) com $D = 30\\text{ m}$ nativo Copernicus DEM, expoente $m$ e declividade $S$ AH 703.", styles["TableCell"]),
-            Paragraph("Desmet & Govers (1996); Renard et al. (1997, AH 703 pp. 105-107)", styles["TableCell"]),
-            Paragraph("Decisão D15<br/><b>100% Integrado</b>", styles["TableCellBold"])
+            Paragraph("Algoritmo 2D Desmet & Govers (1996) com $D = 30\\text{ m}$ nativo Copernicus DEM. Equações [4-1] a [4-5], expoente $m$, declividade $S$ e conversão métrica de 22,13 m <b>conferidos diretamente por OCR neural</b> no USDA AH 703.", styles["TableCell"]),
+            Paragraph("Desmet & Govers (1996); Renard et al. (1997, USDA AH 703 pp. 105-107, 325)", styles["TableCell"]),
+            Paragraph("Decisão D15<br/><b>100% Integrado e Conferido por OCR</b>", styles["TableCellBold"])
         ],
     ]
     t_rusle = Table(tabela_rusle, colWidths=[28*mm, 62*mm, 45*mm, 35*mm])
@@ -548,8 +548,9 @@ def build_pdf(pdf_path):
         "<b>O Invariante 1 e a Blindagem de Cálculo:</b><br/>"
         "O motor de cálculo do SAREL v2.0 proíbe estritamente a imputação de fatores faltantes. A perda de solo estimada $A$ "
         "só assume valor numérico finito quando todos os 5 fatores ($R, K, LS, C, P$) estiverem simultaneamente disponíveis com proveniência válida. "
-        "Na ausência de qualquer fator, $A$ é marcado como <code>indisponivel</code> com causa nominal (<code>insuficiente</code>, "
-        "<code>fora-do-dominio</code> ou <code>decisao-pendente</code>), garantindo que nenhum valor artificial contamine o banco.",
+        "Na ausência de qualquer fator, $A$ é marcado compulsoriamente como <code>indisponivel</code> com causa nominal (<code>insuficiente</code>, "
+        "<code>fora-do-dominio</code> ou <code>decisao-pendente</code>). Atualmente, exatamente <b>0 dos 72 pontos</b> possuem perda de solo calculada "
+        "(todos os 72 pontos retidos sob causa <code>insuficiente</code> em R), garantindo que a régua contra a qual o XGBoost será julgado permaneça inviolável.",
         styles["Body"]
     ))
 
@@ -568,7 +569,7 @@ def build_pdf(pdf_path):
         "<b>Invariante 3 (Segregação Estrita Treino / Held-Out):</b> Células de polígonos sorteados para teste jamais participam do treinamento ou ajuste de hiperparâmetros.",
         "<b>Invariante 4 (Rastreabilidade Integral de Proveniência):</b> Todo número carrega selo tipado (medido, modelado, tabelado ou indisponível com causa e motivo).",
         "<b>Invariante 5 (Proibição Absoluta de Fabricação Numérica):</b> É vedado criar números sintéticos ou simular dados empíricos sem fonte primária conferida (P12).",
-        "<b>Invariante 6 (Cegamento Duplo na Rotulagem):</b> Intérpretes anotam imagens de VANT por códigos anônimos criptográficos (ex.: VANT-BLIND-15840AA020) sem saber coordenadas ou estrato.",
+        "<b>Invariante 6 (Cegamento Duplo na Rotulagem e Isolamento JEV):</b> Intérpretes anotam ortomosaicos VANT sob códigos anônimos criptográficos sem saber coordenadas ou estrato. Motores de IA qualitativa (JEV/Heurística Local de Suscetibilidade) são isolados por teste formal e jamais atingem a RUSLE.",
         "<b>Invariante 7 (Preservação do Suporte Espacial Nativo):</b> Nenhum raster é reamostrado artificialmente para simular resolução que o sensor físico não entregou (D06)."
     ]
     for tr in travas_texto:

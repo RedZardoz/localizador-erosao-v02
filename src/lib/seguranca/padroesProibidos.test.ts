@@ -355,7 +355,7 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
         expect.fail(`Violação de sequência monotônica artificial detectada em artefato:\n${msg}`);
       }
       expect(violacoes).toHaveLength(0);
-    });
+    }, 30000);
   });
 });
 

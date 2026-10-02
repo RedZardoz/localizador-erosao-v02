@@ -9,7 +9,7 @@
  * - Se a API responder dentro de 2.000 ms: Adota a inferência do Jev e grava
  *   'JEV_SYSTEM_ONE'.
  * - Se timeout, ausência de chave ou falha HTTP: Comuta graciosamente para
- *   o motor determinístico local ('MOTOR_LOCAL_RUSLE').
+ *   a heurística determinística local ('HEURISTICA_LOCAL_SUSCETIBILIDADE').
  */
 
 import type { PontoAmostral } from "@/types/ponto";

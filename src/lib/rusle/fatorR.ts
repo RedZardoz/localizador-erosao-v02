@@ -6,27 +6,35 @@
  *
  * FUNDAMENTAÇÃO METODOLÓGICA (DECISÃO D13):
  * 1. Equação Regional do Paraná:
- *    Equação linear de correlação entre o coeficiente de chuva Rc e o índice
- *    de erosividade mensal EI30 (Rufino et al., 1993; Waltrick et al., 2011;
- *    Waltrick et al., 2015, RBCS 39:256-267):
+ *    Formulações de correlação entre o coeficiente de chuva Rc e o índice
+ *    de erosividade mensal EI30 citadas na literatura paranaense (Waltrick et al., 2015;
+ *    SBCS-NEPAR Bol. 01, 2011; ambas citando Rufino et al., 1993):
  *      Rc_m = p_m^2 / P_anual
- *      EI30_m = 107.52 + 46.89 * Rc_m  [MJ·mm·ha⁻¹·h⁻¹·mês⁻¹]
- *      R = Σ (m=1..12) EI30_m          [MJ·mm·ha⁻¹·h⁻¹·ano⁻¹]
- *    onde p_m é a precipitação média mensal do mês m (mm) e P_anual é a precipitação
- *    média anual de longo prazo (mm).
+ *      EI30_m = a + b * Rc_m
+ *      R = Σ (m=1..12) EI30_m
  *
- * 2. CHIRPS Climatológico 0.05° Nativo (UCSB CHC):
- *    Alimentado por totais pluviométricos mensais de satélite em resolução
- *    nativa de 0,05° (~5,5 km), SEM reamostragem simulada para 10 m (D06).
+ * 2. DIRETRIZ H1 (02/10/2026) — AUDITORIA ESTREITA DE FONTES PRIMÁRIAS:
+ *    Os coeficientes a = 107,52 e b = 46,89 não constam no texto extraído das obras
+ *    primárias arquivadas no repositório (Waltrick et al., 2015 e NEPAR, 2011).
+ *    Rufino et al. (1993) é obra impressa antiga não arquivada com extração primária.
+ *    Por força da regra P12 e da Diretriz H1, na ausência de comprovação documental
+ *    do par numérico em fonte primária arquivada, OS COEFICIENTES FORAM RETIRADOS e
+ *    o Fator R retorna estritamente 'indisponivel' com causa nominal 'insuficiente'.
  *
- * 3. Proveniência e Sucedâneo Declarado (D13):
- *    - Proveniência: estritamente "modelado", jamais "medido".
- *    - Limitação Central Declarada: O EI30 verdadeiro da RUSLE exige intensidade
- *      em 30 minutos (pluviógrafo). Como dados de satélite são diários/mensais,
- *      a equação regional sobre totais mensais é sucedâneo formal declarado do EI30.
+ * 3. CHIRPS Climatológico 0.05° Nativo (UCSB CHC — Diretriz H2):
+ *    Baixado diretamente dos servidores UCSB CHC (HTTP 200 direto sem credencial)
+ *    com diário de requisições emitido (docs/verificacoes/diario_climatologia_chirps_bp3.json)
+ *    e artefato de medição em docs/verificacoes/climatologia_chirps_bp3.json.
+ *    Suporte espacial nativo de 0,05° (~5,5 km), SEM reamostragem simulada para 10 m (D06).
+ *
+ * 4. Tabela de Conferência Cruzada Declarada (Diretriz H2):
+ *    A tabela histórica municipal é mantida estritamente como conferência cruzada
+ *    (Waltrick et al., 2015, Quadro 1) e JAMAIS como fonte primária dos totais CHIRPS.
  *
  * VERIFICADO 2026-10-01 — evidência: docs/verificacoes/fontes/waltrick2015/saida_extracao_waltrick_2015.txt
  * VERIFICADO 2026-10-01 — evidência: docs/verificacoes/fontes/nepar2011/saida_extracao_nepar_2011.txt
+ * VERIFICADO 2026-10-02 — evidência: docs/verificacoes/climatologia_chirps_bp3.json
+ * VERIFICADO 2026-10-02 — evidência: docs/verificacoes/diario_climatologia_chirps_bp3.json
  */
 
 import { Proveniencia } from "@/types/proveniencia";
@@ -57,15 +65,37 @@ export interface ResultadoCalculoFatorR {
   unidade: string;
 }
 
+export interface CoeficientesRegressaoR {
+  a: number;
+  b: number;
+  referencia: string;
+}
+
 /**
- * Coeficientes normativos da Equação Regional do Paraná para a Região Oeste (BP3)
- * (Rufino et al., 1993; Waltrick, 2010; Waltrick et al., 2011; Waltrick et al., 2015).
+ * Registro de estado dos coeficientes da Equação Regional do Paraná (Diretriz H1).
+ * Por ausência de fonte primária arquivada contendo o par (107.52, 46.89), os coeficientes
+ * numéricos foram desativados do cálculo ativo e o Fator R retorna 'indisponivel'.
+ * A referência cita exclusivamente as obras arquivadas no repositório.
  */
 export const COEFICIENTES_REGIONAL_PARANA_OESTE = {
+  a: null as number | null,
+  b: null as number | null,
+  estado: "indisponivel" as const,
+  causa: "insuficiente" as const,
+  motivo:
+    "Coeficientes regionais de erosividade pendentes de comprovação textual em fonte primária arquivada (Diretriz H1 - 02/10/2026).",
+  referencia: "Waltrick et al. (2015) / SBCS-NEPAR Bol. 01 (2011)",
+} as const;
+
+/**
+ * Coeficientes paramétricos para testes de calibração / análise de sensibilidade controlada.
+ * NÃO utilizados em produção sem comprovação formal em fonte primária arquivada.
+ */
+export const COEFICIENTES_TESTE_CALIBRACAO: CoeficientesRegressaoR = {
   a: 107.52,
   b: 46.89,
-  referencia: "Waltrick et al. (2015) / SBCS-NEPAR Bol. 01 (2011) / Rufino et al. (1993)",
-} as const;
+  referencia: "Waltrick et al. (2015) / SBCS-NEPAR Bol. 01 (2011) [Série histórica regional não conferida no texto primário]",
+};
 
 /**
  * Limites do domínio físico plausível de erosividade anual no Paraná (MJ·mm·ha⁻¹·h⁻¹·ano⁻¹).
@@ -74,11 +104,11 @@ export const COEFICIENTES_REGIONAL_PARANA_OESTE = {
 export const FAIXA_FISICA_R_PARANA: [number, number] = [1000, 25000];
 
 /**
- * Climatologia pluviométrica normal mensal de longo prazo (1991–2020 / CHIRPS 2.0)
- * para municípios de referência da Bacia do Paraná 3 (valores médios mensais em mm).
- * Fonte primária de referência: IAPAR/SIMEPAR / Waltrick et al. (2015, Quadro 1) / UCSB CHIRPS 0.05°.
+ * TABELA DE CONFERÊNCIA CRUZADA (Diretriz H2):
+ * Valores pluviométricos e de erosividade de referência municipal (Waltrick et al., 2015, Quadro 1).
+ * DECLARADA ESTRITAMENTE COMO CONFERÊNCIA CRUZADA E NÃO COMO FONTE PRIMÁRIA DOS TOTAIS CHIRPS.
  */
-export const CLIMATOLOGIA_CHIRPS_BP3_ESTACOES: Record<
+export const TABELA_CONFERENCIA_CRUZADA_BP3: Record<
   string,
   {
     nome: string;
@@ -93,7 +123,6 @@ export const CLIMATOLOGIA_CHIRPS_BP3_ESTACOES: Record<
     lat: -24.72,
     lon: -53.74,
     rReferenciaWaltrick: 10623,
-    // Série normal climatológica representativa (P_anual ~1820 mm)
     precipitacaoMensalMm: [
       188.5, 162.3, 142.1, 145.8, 148.2, 105.4, 98.6, 85.2, 138.4, 218.6, 172.5, 214.8,
     ],
@@ -136,15 +165,31 @@ export const CLIMATOLOGIA_CHIRPS_BP3_ESTACOES: Record<
   },
 };
 
+/** Alias mantido para compatibilidade retroativa com código existente, com papel declarado de conferência cruzada. */
+export const CLIMATOLOGIA_CHIRPS_BP3_ESTACOES = TABELA_CONFERENCIA_CRUZADA_BP3;
+
 /**
  * Calcula o Fator R de erosividade a partir dos 12 totais mensais de precipitação (mm).
- * Aplica rigorosamente a formulação regional de Rufino et al. (1993) / Waltrick et al. (2015).
  *
- * @param pMensalMm Array com 12 valores numéricos representando a precipitação em mm (Jan..Dez).
+ * Sob a Diretriz H1 (02/10/2026), se os coeficientes a e b não forem explicitamente fornecidos
+ * através do parâmetro opcional (ex: em testes de sensibilidade controlada), a função lança
+ * ErroForaDoDominio informando a indisponibilidade formal dos coeficientes por ausência de fonte arquivada.
+ *
+ * @param pMensalMm Array com 12 valores numéricos de precipitação em mm (Jan..Dez).
+ * @param coeficientesParana Coeficientes opcionais (a, b) para simulação paramétrica explícita.
  * @returns ResultadoCalculoFatorR com R anual, Rc e EI30 de cada mês.
- * @throws ErroForaDoDominio se o array não tiver 12 elementos ou contiver valores negativos/inválidos.
+ * @throws ErroForaDoDominio se coeficientes não informados ou dados inválidos.
  */
-export function calcularFatorR(pMensalMm: number[]): ResultadoCalculoFatorR {
+export function calcularFatorR(
+  pMensalMm: number[],
+  coeficientesParana?: { a: number; b: number } | null
+): ResultadoCalculoFatorR {
+  if (!coeficientesParana || typeof coeficientesParana.a !== "number" || typeof coeficientesParana.b !== "number") {
+    throw new ErroForaDoDominio(
+      "Cálculo do Fator R suspenso por força da Diretriz H1 (02/10/2026): coeficientes da equação regional do Paraná pendentes de comprovação em fonte primária arquivada. O fator R permanece indisponível."
+    );
+  }
+
   if (!Array.isArray(pMensalMm) || pMensalMm.length !== 12) {
     const qtdRecebida = Array.isArray(pMensalMm) ? String(pMensalMm.length) : "ausente";
     throw new ErroForaDoDominio(
@@ -173,7 +218,7 @@ export function calcularFatorR(pMensalMm: number[]): ResultadoCalculoFatorR {
     );
   }
 
-  const { a, b } = COEFICIENTES_REGIONAL_PARANA_OESTE;
+  const { a, b } = coeficientesParana;
   const rcMensal: number[] = [];
   const ei30Mensal: number[] = [];
 
@@ -181,7 +226,6 @@ export function calcularFatorR(pMensalMm: number[]): ResultadoCalculoFatorR {
     const p = pMensalMm[m];
     // Equação (1) Lombardi Neto (1977): Rc = p^2 / P
     const rc = (p * p) / pAnual;
-    // Equação Regional do Paraná (Rufino et al., 1993 / Waltrick et al., 2015)
     const ei30 = a + b * rc;
 
     rcMensal.push(Number(rc.toFixed(4)));
@@ -207,7 +251,7 @@ export function calcularFatorR(pMensalMm: number[]): ResultadoCalculoFatorR {
 }
 
 /**
- * Localiza a série climatológica CHIRPS mais próxima para uma coordenada dentro da Bacia do Paraná 3.
+ * Localiza a série pluviométrica de referência CHIRPS para uma coordenada dentro da BP3.
  */
 export function obterPrecipitacaoClimatologicaChirps(
   lat: number,
@@ -219,17 +263,15 @@ export function obterPrecipitacaoClimatologicaChirps(
   }
 
   let menorDist = Infinity;
-  let melhorEstacao: (typeof CLIMATOLOGIA_CHIRPS_BP3_ESTACOES)[string] | null = null;
-  let melhorChave = "";
+  let melhorEstacao: (typeof TABELA_CONFERENCIA_CRUZADA_BP3)[string] | null = null;
 
-  for (const [chave, estacao] of Object.entries(CLIMATOLOGIA_CHIRPS_BP3_ESTACOES)) {
+  for (const [, estacao] of Object.entries(TABELA_CONFERENCIA_CRUZADA_BP3)) {
     const dLat = lat - estacao.lat;
     const dLon = lon - estacao.lon;
     const dist2 = dLat * dLat + dLon * dLon;
     if (dist2 < menorDist) {
       menorDist = dist2;
       melhorEstacao = estacao;
-      melhorChave = chave;
     }
   }
 
@@ -242,12 +284,16 @@ export function obterPrecipitacaoClimatologicaChirps(
 }
 
 /**
- * Encapsula o cálculo do Fator R com proveniência auditável para a Linha de Base RUSLE (Decisão D13).
+ * Encapsula a emissão do Fator R com proveniência auditável para a Linha de Base RUSLE (Decisão D13).
  *
- * @param insumo Objeto contendo os totais mensais ou as coordenadas para lookup climatológico CHIRPS.
- * @returns Proveniencia<number> modelada ou indisponivel.
+ * Conforme Diretriz H1 (02/10/2026), na ausência de comprovação do par de coeficientes em fonte
+ * primária arquivada, o Fator R retorna compulsoriamente 'indisponivel' com causa 'insuficiente'.
+ *
+ * @param insumo Objeto contendo os totais mensais ou coordenadas para consulta.
+ * @returns Proveniencia<number> indisponivel com motivo pericial detalhado.
  */
 export function obterFatorRComProveniencia(insumo?: InsumoFatorR | null): Proveniencia<number> {
+  // 1. Verificação prévia de parâmetros físicos
   if (!insumo) {
     return {
       estado: "indisponivel",
@@ -256,64 +302,25 @@ export function obterFatorRComProveniencia(insumo?: InsumoFatorR | null): Proven
     };
   }
 
-  let pMensal: number[] | null = null;
-  let fonteDescricao = "";
-
-  if (Array.isArray(insumo.precipitacaoMensalMm) && insumo.precipitacaoMensalMm.length === 12) {
-    pMensal = insumo.precipitacaoMensalMm;
-    fonteDescricao = insumo.identificadorFonte || "Série mensal fornecida";
-  } else if (
+  // 2. Verificação de domínio espacial
+  if (
     typeof insumo.latitude === "number" &&
     typeof insumo.longitude === "number" &&
-    Number.isFinite(insumo.latitude) &&
-    Number.isFinite(insumo.longitude)
+    (insumo.latitude < -26.5 || insumo.latitude > -23.5 || insumo.longitude < -55.5 || insumo.longitude > -52.5)
   ) {
-    const clim = obterPrecipitacaoClimatologicaChirps(insumo.latitude, insumo.longitude);
-    if (!clim) {
-      return {
-        estado: "indisponivel",
-        causa: "fora-do-dominio",
-        motivo: `Coordenada (${insumo.latitude.toFixed(4)}, ${insumo.longitude.toFixed(4)}) fora do domínio climatológico da Bacia do Paraná 3.`,
-      };
-    }
-    pMensal = clim.precipitacaoMensalMm;
-    fonteDescricao = `CHIRPS v2.0 Climatológico 0.05° (Referência regional: ${clim.estacaoReferencia})`;
-  } else {
     return {
       estado: "indisponivel",
-      causa: "insuficiente",
-      motivo: "Precipitação mensal ausente e coordenadas geográficas não informadas para consulta CHIRPS.",
+      causa: "fora-do-dominio",
+      motivo: `Coordenada (${insumo.latitude.toFixed(4)}, ${insumo.longitude.toFixed(4)}) fora do domínio da Bacia do Paraná 3.`,
     };
   }
 
-  try {
-    const resultado = calcularFatorR(pMensal);
-
-    return {
-      estado: "modelado",
-      valor: resultado.rAnual,
-      modelo:
-        "Equação regional do Paraná (Rufino et al., 1993 / Waltrick et al., 2015) sobre CHIRPS climatológico v2.0 (UCSB 0.05°)",
-      insumos: [
-        "CHIRPS 2.0 mensal 0.05°",
-        `Precipitação anual: ${resultado.pAnual} mm`,
-        fonteDescricao,
-        "Sucedâneo declarado do EI30 (Decisão D13): totais mensais CHIRPS sem intensidade pluvial em 30 min",
-      ],
-      decisoes: ["D13"],
-    };
-  } catch (err: any) {
-    if (err instanceof ErroForaDoDominio) {
-      return {
-        estado: "indisponivel",
-        causa: "fora-do-dominio",
-        motivo: err.message,
-      };
-    }
-    return {
-      estado: "indisponivel",
-      causa: "nao-calculado",
-      motivo: `Falha no cálculo do Fator R: ${err.message}`,
-    };
-  }
+  // 3. DIRETRIZ H1 (BLOQUEANTE): Fator R retorna compulsoriamente 'indisponivel'
+  // até que fonte primária arquivada comprove textualmente os coeficientes da regressão regional.
+  return {
+    estado: "indisponivel",
+    causa: "insuficiente",
+    motivo:
+      "Fator R indisponível (Diretriz H1): Coeficientes da equação regional do Paraná pendentes de comprovação textual em fonte primária arquivada. Obras arquivadas (Waltrick et al., 2015; NEPAR, 2011) citam Rufino et al. (1993), mas não contêm a transcrição dos coeficientes numéricos em seu texto extraído.",
+  };
 }

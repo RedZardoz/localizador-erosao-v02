@@ -12,7 +12,7 @@
  *
  * Saída:
  * - ok: boolean
- * - laudo: LaudoAuditoriaPonto ('JEV_SYSTEM_ONE' ou 'MOTOR_LOCAL_RUSLE')
+ * - laudo: LaudoAuditoriaPonto ('JEV_SYSTEM_ONE' ou 'HEURISTICA_LOCAL_SUSCETIBILIDADE')
  */
 
 import { NextRequest, NextResponse } from "next/server";

@@ -80,7 +80,7 @@ describe("Arquitetura Dual-Engine: Jev (System One) & Fallback Local RUSLE", () 
       const ponto = criarPontoMock();
       const laudo = executarAuditoriaLocal(ponto, "Auditoria de teste local.");
 
-      expect(laudo.metodo).toBe("MOTOR_LOCAL_RUSLE");
+      expect(laudo.metodo).toBe("HEURISTICA_LOCAL_SUSCETIBILIDADE");
       expect(laudo.consistenciaFisica.valido).toBe(true);
       expect(laudo.scoreSuscetibilidade.grau).toBe(3); // >12% e solo exposto -> Alta
       expect(laudo.scoreSuscetibilidade.rotulo).toBe("Alta");
@@ -134,7 +134,7 @@ describe("Arquitetura Dual-Engine: Jev (System One) & Fallback Local RUSLE", () 
       const ponto = criarPontoMock();
       const laudo = await executarAuditoriaJev(ponto, "");
 
-      expect(laudo.metodo).toBe("MOTOR_LOCAL_RUSLE");
+      expect(laudo.metodo).toBe("HEURISTICA_LOCAL_SUSCETIBILIDADE");
       expect(laudo.detalhes.motivoFallback).toContain("Chave do Jev não configurada");
     });
 
@@ -181,8 +181,54 @@ describe("Arquitetura Dual-Engine: Jev (System One) & Fallback Local RUSLE", () 
 
       const laudo = await executarAuditoriaJev(ponto, "ts_chave_valida_teste_12345");
 
-      expect(laudo.metodo).toBe("MOTOR_LOCAL_RUSLE");
+      expect(laudo.metodo).toBe("HEURISTICA_LOCAL_SUSCETIBILIDADE");
       expect(laudo.detalhes.motivoFallback).toContain("Falha de rede");
+    });
+  });
+
+  describe("Isolamento Estrito do JEV em relação à Linha de Base RUSLE (Decisão D25)", () => {
+    it("assevera que nenhum valor originado do JEV alcança montarLinhaDeBaseRUSLE ou perdaSolo", async () => {
+      const { montarLinhaDeBaseRUSLE } = await import("@/lib/rusle/linhaDeBase");
+      const ponto = criarPontoMock();
+
+      // Executa auditoria JEV
+      const laudo = executarAuditoriaLocal(ponto, "Auditoria local");
+      expect(laudo.scoreSuscetibilidade.grau).toBe(3);
+
+      // Linha de Base RUSLE (D25) é construída EXCLUSIVAMENTE a partir dos 5 fatores físicos
+      const linhaDeBase = montarLinhaDeBaseRUSLE({
+        ndviProveniencia: ponto.espectral?.ndvi,
+        bsiProveniencia: ponto.espectral?.bsi,
+        erodibilidadeProveniencia: ponto.solo?.erodibilidadeClasse,
+      });
+
+      // 1. Memória de cálculo da RUSLE não contém referências a JEV ou heurística ordinal
+      if (linhaDeBase.memoriaCalculo) {
+        expect(linhaDeBase.memoriaCalculo).not.toContain("JEV");
+        expect(linhaDeBase.memoriaCalculo).not.toContain("laudoJev");
+        expect(linhaDeBase.memoriaCalculo).not.toContain("scoreJev");
+        expect(linhaDeBase.memoriaCalculo).not.toContain("HEURISTICA_LOCAL");
+      }
+
+      // 2. Fatores RUSLE têm proveniências estritas de modelos/sensores físicos
+      expect(linhaDeBase.fatorC.estado).toBe("modelado");
+      if (linhaDeBase.fatorC.estado === "modelado") {
+        expect(linhaDeBase.fatorC.modelo).toContain("Durigon");
+      }
+      expect(linhaDeBase.fatorP.estado).toBe("tabelado");
+      if (linhaDeBase.fatorP.estado === "tabelado") {
+        expect(linhaDeBase.fatorP.tabela).toContain("Renard");
+      }
+
+      // 3. O escore do JEV (escala ordinal 0 a 4) jamais é aceito como valor numérico de perdaSolo
+      if (linhaDeBase.perdaSolo.estado === "modelado") {
+        expect(linhaDeBase.perdaSolo.valor).not.toBe(laudo.scoreSuscetibilidade.grau);
+      }
+
+      // 4. Invariante de proibição: campos do JEV estão na lista de campos proibidos da matriz
+      const { CAMPOS_PROIBIDOS_MATRIZ_TREINO } = await import("@/lib/matriz/invariantes");
+      expect(CAMPOS_PROIBIDOS_MATRIZ_TREINO).toContain("scoreJev");
+      expect(CAMPOS_PROIBIDOS_MATRIZ_TREINO).toContain("laudoJev");
     });
   });
 });

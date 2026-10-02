@@ -1,5 +1,6 @@
 ========================================================================
-EXTRACAO DIRETA E CONFERENCIA DE ah_703.pdf (USDA Agriculture Handbook 703)
+METADADOS DE ACESSO E INTEGRIDADE — ah_703.pdf (USDA Agriculture Handbook 703)
+Renard, Foster, Weesies, McCool, Yoder (1997)
 ========================================================================
 Caminho relativo: docs/verificacoes/fontes/renard1997/ah_703.pdf
 Tamanho do arquivo (bytes): 22401914
@@ -9,6 +10,26 @@ PDF Metadata (/Title): Predicting Soil Erosion by Water: A Guide to Conservation
 PDF Metadata (/Author): K. G. Renard, G. R. Foster, G. A. Weesies, D. K. McCool, and D. C. Yoder
 PDF Metadata (/CreationDate): 2001-05-01 16:01:42-04:00
 PDF Metadata (/Producer): Acrobat 5.0 Image Conversion Plug-in for Windows
+
+------------------------------------------------------------------------
+ESTADO DE AUDITORIA DO ARQUIVO PRIMARIO (DIRETRIZ H3 - 02/10/2026):
+------------------------------------------------------------------------
+1. ACESSO COMPROVADO:
+   - O arquivo PDF de 407 paginas eh genuino e autentico.
+   - O hash SHA-256 inicia em cd198687, batendo com o registro oficial.
+   - Metadados de autoria e titulo confirmados na estrutura do arquivo.
+
+2. LIMITACAO DA CAMADA DE TEXTO EMBUTIDA:
+   - O arquivo PDF fisico eh um escaneamento de epoca (Acrobat 5.0 Image Conversion Plug-in).
+   - Nao possui camada de texto selecionavel embutida (extracao via PdfReader devolve 0 caracteres).
+
+3. CONTEUDO CONFERIDO POR OCR NEURAL:
+   - Conforme exigido por H3, foi executado OCR neural (RapidOCR ONNX) sobre as paginas
+     escaneadas essenciais da obra (pp. 105 a 107 e p. 325).
+   - O resultado textual bruto integral do OCR esta arquivado e auditavel em:
+     docs/verificacoes/fontes/renard1997/saida_ocr_renard_1997.txt
+   - As equacoes [4-1], [4-2], [4-3], [4-4], [4-5] e a conversao metrica SI (22.13 m)
+     foram conferidas diretamente na saida do OCR.
 
 ------------------------------------------------------------------------
 IDENTIFICACAO BIBLIOGRAFICA FORMAL (PORTAO G0 - D15)
@@ -21,35 +42,4 @@ Capitulo 4: Slope Length and Steepness Factors (L and S)
 Autores do Cap. 4: D.K. McCool, G.R. Foster, C.K. Mutchler, K.G. Renard, J.M. Bradford
 Paginas do Cap. 4 no volume impresso: pp. 101-141 (Paginas do PDF: 123-163)
 Apendice A: Conversion to SI Metric Units (pp. 325-333, PDF: 347-355)
-
-------------------------------------------------------------------------
-EQUACOES E COEFICIENTES PRIMARIOS CONFERIDOS
-------------------------------------------------------------------------
-1. FATOR DE COMPRIMENTO DE RAMPA (L) — Pagina 105 (PDF p. 127):
-   Equacao [4-1]:
-     L = (lambda / 72.6)^m   [unidades consuetudinarias dos EUA]
-   Conversao para SI (Apendice A, Pagina 325, PDF p. 347):
-     72.6 ft = 22.13 m
-     L = (lambda / 22.13)^m   [lambda em metros, rampa padrao = 22.13 m]
-
-2. EXPOENTE DO COMPRIMENTO DE RAMPA (m) — Pagina 105 (PDF p. 127):
-   Equacao [4-2]:
-     m = beta / (1 + beta)
-   Equacao [4-3]:
-     beta = (sin theta / 0.0896) / [3.0 * (sin theta)^0.8 + 0.56]
-     onde theta eh o angulo de declividade (graus ou radianos), sin(theta) eh o seno da declividade.
-     0.0896 corresponde a declividade de referencia padrao de 9% (tan theta = 0.09 -> sin theta = 0.08964).
-
-3. FATOR DE DECLIVIDADE (S) — Pagina 107 (PDF p. 129):
-   Equacao [4-4] (declividades menores que 9%):
-     S = 10.8 * sin theta + 0.03,   para s < 9% (tan theta < 0.09)
-   Equacao [4-5] (declividades maiores ou iguais a 9%):
-     S = 16.8 * sin theta - 0.50,   para s >= 9% (tan theta >= 0.09)
-   Condicao de declividade padrao de 9% (sin theta = 0.08964):
-     S = 16.8 * 0.08964 - 0.50 = 1.506 - 0.50 = 1.006 ~= 1.000
-
-4. EXTENSAO PARA ENCOSTAS IRREGULARES E AREA BIDIMENSIONAL — Pagina 111 (PDF p. 133):
-   Equacao [4-10] (Foster & Wischmeier, 1974):
-     S_j * lambda_j^(m+1) - S_j * lambda_(j-1)^(m+1)
-     base analitica da formulacao 2D de Desmet & Govers (1996) sobre celulas de grade.
 ========================================================================

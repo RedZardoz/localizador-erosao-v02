@@ -643,13 +643,14 @@ def criar_apresentacao_mudanca_metodologica(caminho_pptx):
                  "   • Leitura contínua do campo k_solos oficial da carta geonode:bra_erodibilidade_2024_sirgas2000.",
                  "   • Proibição estrita de k_solos = 0 (áreas urbanas/água forçam status 'fora-do-dominio', e não K=0).",
                  "",
-                 "► FATOR R (EROSIVIDADE DA CHUVA) — Decisão D13 (Rufino et al., 1993; Waltrick et al., 2015):",
-                 "   • Equação regional do Paraná: EI30_m = 107,52 + 46,89 * (p_m^2 / P_anual) sobre CHIRPS 0,05° climatológico.",
-                 "   • Sucedâneo formal declarado do EI30 contínuo de 30 minutos (limitação metodológica expressa).",
+                 "► FATOR R (EROSIVIDADE DA CHUVA) — Decisão D13 (Waltrick et al., 2015; SBCS-NEPAR 2011; Funk et al., 2015):",
+                 "   • Download real CHIRPS v2.0 mensal (12 meses, 0,05° nativo, Diário F5 validado). Tabela municipal como conferência cruzada.",
+                 "   • Coeficientes a = 107,52 e b = 46,89 desativados por ausência no texto arquivado; R retorna estritamente 'indisponivel' ('insuficiente').",
+                 "   • 0 dos 72 pontos têm perdaSolo calculada (todos os 72 retidos sob Invariante 1), blindando a régua contra a qual o XGBoost será julgado.",
                  "",
                  "► FATOR LS (TOPOGRÁFICO 2D) — Decisão D15 (Desmet & Govers, 1996; Renard et al., 1997 AH 703):",
-                 "   • Algoritmo bidimensional de área de contribuição específica sobre Copernicus DEM GLO-30 nativo de 30 m.",
-                 "   • Expoente m dependente da declividade e fator de rampa S analítico (Eqs. [4-2] a [4-5], pp. 105-107).",
+                 "   • Algoritmo 2D Desmet & Govers sobre Copernicus DEM GLO-30 nativo de 30 m.",
+                 "   • Equações [4-1] a [4-5], expoente m, declividade S e conversão métrica de 22,13 m conferidos por OCR neural (RapidOCR) no AH 703.",
                  "   • Distorção de escala linear da projeção UTM 22S medida no extremo oeste da BP3: 0,11% (< 0,5% tolerância)."
              ], C_NAVY_DARK, C_WHITE)
 
@@ -721,7 +722,7 @@ def criar_apresentacao_mudanca_metodologica(caminho_pptx):
                  "",
                  "► <b>Invariante 5 — Proibição Absoluta de Fabricação Numérica (Regra P12):</b> Tolerância zero com dados sintéticos gerados aleatoriamente sem conexão física real.",
                  "",
-                 "► <b>Invariante 6 — Protocolo Cego com Cegamento Duplo:</b> Intérpretes de VANT rotulam polígonos através de hashes anônimos (ex.: VANT-BLIND-15840AA020) sem conhecer localização ou estrato.",
+                 "► <b>Invariante 6 — Protocolo Cego com Cegamento Duplo e Isolamento JEV:</b> Intérpretes rotulam ortomosaicos VANT sob hashes anônimos. Motores de IA qualitativa (JEV/Heurística Local) são isolados por teste e jamais atingem a RUSLE.",
                  "",
                  "► <b>Invariante 7 — Preservação do Suporte Espacial Nativo (D06):</b> Proibição de reamostragem simulada para resolução que o sensor não entregou fisicamente."
              ], C_NAVY_DARK, C_WHITE)
@@ -734,7 +735,7 @@ def criar_apresentacao_mudanca_metodologica(caminho_pptx):
     # -------------------------------------------------------------------------
     s14 = prs.slides.add_slide(blank_layout)
     set_bg(s14)
-    add_header(s14, "Verificação Mecânica Contínua: 54 Suítes de Testes (409 Aprovados)")
+    add_header(s14, "Verificação Mecânica Contínua: 54 Suítes de Testes (412 Aprovados)")
     add_footer(s14, 14)
 
     add_card(s14, Inches(0.6), Inches(1.4), Inches(5.8), Inches(5.4),
@@ -745,7 +746,7 @@ def criar_apresentacao_mudanca_metodologica(caminho_pptx):
                  "",
                  "► Cobertura de Testes Automatizados (Vitest):",
                  "   • <b>54 arquivos de teste aprovados (54/54)</b>.",
-                 "   • <b>409 testes unitários e de integração aprovados (409/409)</b>.",
+                 "   • <b>412 testes unitários e de integração aprovados (412/412)</b>.",
                  "   • Duração da suíte completa: ~15 a 18 segundos.",
                  "",
                  "► Módulos Específicos da Fase 8 e 9:",
@@ -866,6 +867,10 @@ def criar_apresentacao_mudanca_metodologica(caminho_pptx):
 
     prs.save(caminho_pptx)
     print(f"Apresentação PPTX gerada com sucesso: {caminho_pptx}")
+    caminho_metodologia = os.path.join("docs", "metodologia", "Mudanca_Radical_Metodologia_SAREL_v2.pptx")
+    if os.path.abspath(caminho_pptx) != os.path.abspath(caminho_metodologia):
+        prs.save(caminho_metodologia)
+        print(f"Apresentação PPTX espelhada com sucesso: {caminho_metodologia}")
 
 
 if __name__ == "__main__":

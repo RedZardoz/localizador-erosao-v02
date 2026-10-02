@@ -27,6 +27,7 @@
  *    com causa nominal ('borda-truncada' ou 'depressao-sem-saida').
  *
  * VERIFICADO 2026-10-01 — evidência: docs/verificacoes/fontes/renard1997/saida_extracao_renard_1997.txt
+ * VERIFICADO 2026-10-02 — evidência: docs/verificacoes/fontes/renard1997/saida_ocr_renard_1997.txt
  * VERIFICADO 2026-10-01 — evidência: docs/verificacoes/fontes/desmet1996/saida_extracao_desmet_1996.txt
  * VERIFICADO 2026-10-01 — evidência: docs/verificacoes/fontes/schmidt2019/saida_extracao_schmidt_2019.txt
  */
@@ -43,7 +44,11 @@ export class ErroForaDoDominio extends Error {
 /** Resolução espacial nativa do Copernicus DEM GLO-30 em metros (D21). */
 export const TAMANHO_CELULA_GLO30_METROS = 30.0;
 
-/** Comprimento da parcela unitária padrão RUSLE em unidades SI (Renard et al., 1997, p. 325: 72.6 ft = 22.13 m). */
+/**
+ * Comprimento da parcela unitária padrão RUSLE em unidades SI.
+ * ESTADO PERICIAL: Conteúdo conferido diretamente por OCR neural (RapidOCR) na p. 325 (Apêndice A) de ah_703.pdf
+ * (72.6 ft = 22.13 m). Evidência: docs/verificacoes/fontes/renard1997/saida_ocr_renard_1997.txt.
+ */
 export const COMPRIMENTO_PARCELA_PADRAO_SI_METROS = 22.13;
 
 /** Tolerância máxima de distorção de escala linear na projeção UTM 22S fixada em D15: 0.5%. */

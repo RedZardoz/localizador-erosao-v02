@@ -131,8 +131,11 @@ export const ApiTokensManager: React.FC = () => {
               <span className="text-xs font-bold text-slate-900 dark:text-white block">
                 Planet NICFI &amp; Orders API Key
               </span>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
                 Papel Declarado: Contexto visual no Inspetor para conferência qualitativa (D05 — excluído da matriz de treino).
+              </span>
+              <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium block mt-0.5">
+                Recomendação: Deixar sem configurar para preservar o protocolo cego (D26). Uso eventual restrito a conferência posterior ao registro do rótulo.
               </span>
             </div>
           </div>

@@ -116,7 +116,7 @@ export function executarAuditoriaLocal(
   const latenciaFinal = typeof latenciaInformada === "number" ? latenciaInformada : 1;
 
   return {
-    metodo: "MOTOR_LOCAL_RUSLE",
+    metodo: "HEURISTICA_LOCAL_SUSCETIBILIDADE",
     pontoId: ponto.id,
     codigo: ponto.codigo,
     timestamp: agora,

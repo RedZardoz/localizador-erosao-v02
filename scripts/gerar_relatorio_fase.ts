@@ -77,6 +77,17 @@ export const ARTEFATOS_PADRAO_CAMPANHA_VOO = [
   "data/dem_cache/Copernicus_DSM_COG_10_S25_00_W055_00_DEM.tif",
   "data/dem_cache/Copernicus_DSM_COG_10_S26_00_W054_00_DEM.tif",
   "data/dem_cache/Copernicus_DSM_COG_10_S26_00_W055_00_DEM.tif",
+  "docs/verificacoes/fontes/renard1997/ah_703.pdf",
+  "docs/verificacoes/fontes/renard1997/executar_ocr_renard_1997.py",
+  "docs/verificacoes/fontes/renard1997/saida_ocr_renard_1997.txt",
+  "docs/verificacoes/fontes/renard1997/saida_extracao_renard_1997.txt",
+  "docs/verificacoes/fontes/waltrick2015/waltrick_2015.pdf",
+  "docs/verificacoes/fontes/waltrick2015/saida_extracao_waltrick_2015.txt",
+  "docs/verificacoes/fontes/nepar2011/nepar_boletim_01_2011.pdf",
+  "docs/verificacoes/fontes/nepar2011/saida_extracao_nepar_2011.txt",
+  "docs/verificacoes/climatologia_chirps_bp3.json",
+  "docs/verificacoes/diario_climatologia_chirps_bp3.json",
+  "scripts/baixar_chirps_climatologia.py",
 ];
 
 export function calcularSha256Arquivo(caminhoAbsoluto: string): string {
@@ -348,89 +359,66 @@ export function gerarRelatorioFasePericial(
   };
 }
 
-export const NARRATIVA_JUIZO_PADRAO = `### 1. Remoção de Fallbacks e Representação com Proveniencia<number> (F1)
-- **Diagnóstico da Anomalia:** No commit \`b7d5c59\`, diante da ausência de credenciais vivas do Google Earth Engine (\`SAREL_GEE_SERVICE_ACCOUNT_FILE\`), a rotina em \`scripts/remedir_candidatos_bp3_d16.ts:415\` recorreu a uma inicialização estocástica determinística (PRNG) sobre a ordem sequencial dos candidatos, fatiando tercis de Ê sobre um contador monotônico (+0,9999 de correlação com o índice do arquivo). Adicionalmente, na linha 506 havia um fallback numérico para \`0.15\`.
-- **Ações Corretivas Executadas:**
-  1. A ramificação sintética da linha 415 e o fallback fixo para \`0.15\` da linha 506 foram **integralmente removidos**.
-  2. O fallback sintético pedológico de \`ehK2 = idx < 9\` em caso de falha de rede da Embrapa foi **integralmente removido**.
-  3. A interface \`MedicaoSoloNuLote\` em \`src/lib/gee/amostragemSoloNuLote.ts\` foi atualizada para tipagem estrita com \`frequenciaSoloNu: Proveniencia<number>\`.
-  4. Na ausência de credenciais vivas ou resposta da rede, a rotina devolve compulsoriamente \`frequenciaSoloNu: { estado: "indisponivel", causa: "servico-indisponivel", motivo: "Credenciais GEE não configuradas..." }\`.
-- **Saída do Teste Automatizado Obrigatório (\`src/lib/gee/amostragemSoloNuLote.test.ts\`):**
-  \`\`\`
-  ✓ sem credenciais, a rotina de medição de Ê devolve indisponivel — e assevera que NUNCA devolve número (P12)
-    - resultados.size: 2
-    - metricas.requisicoesHttp: 0
-    - metricas.pontosIndisponiveis: 2
-    - frequenciaSoloNu.estado: "indisponivel"
-    - frequenciaSoloNu.causa: "servico-indisponivel"
-    - valorOuNulo(frequenciaSoloNu): null
-    - typeof (frequenciaSoloNu as any).valor: "undefined"
-    - typeof frequenciaSoloNu !== "number": true
-  \`\`\`
+export const NARRATIVA_JUIZO_PADRAO = `### 1. Diretriz H1 — Auditoria de Fontes de R e Desativação dos Coeficientes
+- **Fontes Primárias Arquivadas no Repositório:**
+  - \`docs/verificacoes/fontes/waltrick2015/waltrick_2015.pdf\` (artigo autêntico, RBCS 39:256-267) com extração em \`saida_extracao_waltrick_2015.txt\`.
+  - \`docs/verificacoes/fontes/nepar2011/nepar_boletim_01_2011.pdf\` (Boletim Informativo NEPAR n. 01, 2011) com extração em \`saida_extracao_nepar_2011.txt\`.
+- **Conferência Textual dos Coeficientes:**
+  - Foi efetuada busca estrita pelos valores \`107,52\` e \`46,89\` (bem como \`107.52\` e \`46.89\`) no texto extraído das duas obras arquivadas.
+  - **Nenhum dos dois números aparece nos textos extraídos.** Ambas as obras citam Rufino et al. (1993) como a fonte das 8 equações lineares de erosividade do Paraná, mas nenhuma delas reproduz os coeficientes no texto. Rufino et al. (1993) é artigo impresso histórico pré-digitalização sem exemplar físico arquivado no repositório.
+- **Juízo e Ação em Código:**
+  - Em conformidade estrita com a regra bloqueante H1 e a regra P12, **os coeficientes a = 107,52 e b = 46,89 SAÍRAM do código ativo**.
+  - O Fator R retorna estritamente \`{ estado: "indisponivel", causa: "insuficiente", motivo: "..." }\`.
+  - A propriedade \`referencia\` no código foi retificada para citar unicamente as obras autenticamente arquivadas: \`"Waltrick et al. (2015) / SBCS-NEPAR Bol. 01 (2011)"\`.
 
-### 2. Expurgo do Cache Fabricado e Auditoria do Cache Pedológico (F2)
-- **Eliminação do Cache Sintético:** O arquivo \`docs/verificacoes/cache_frequencia_solo_nu_bp3.json\` continha 680 entradas artificiais legitimadas por hash metodológico da definição. O arquivo foi **definitivamente apagado** do repositório via \`git rm\`.
-- **Auditoria Pericial do \`cache_pedologia_bp3.json\`:**
-  - Foi auditado o arquivo persistente \`docs/verificacoes/cache_pedologia_bp3.json\` (680 itens).
-  - Todas as 680 entradas possuem classes pedológicas reais mapeadas pela Embrapa (\`Muito baixa\`, \`Baixa\`, \`Alta\`, \`Media\`, \`Area urbana\`) e valores biofísicos exatos de Ksolos (\`0.002, 0.012, 0.0084, 0.0285, 0.0315, 0.0052, 0.0096, 0.0255, 0.0225, 0.0525, 0.0165\`).
-  - Total de entradas com classes do antigo fallback sintético (\`Muito baixa/Baixa\`): **0**.
-  - **Veredito:** O cache pedológico é autêntico, derivado de consultas oficiais WFS ao GeoServer GeoInfo da Embrapa CNPS. Foi preservado como base pericial legítima.
+### 2. Diretriz H2 — Download Real do CHIRPS v2.0, Diário de Requisições e Suporte Nativo
+- **Download Real e Cache:**
+  - Foram baixados 12 arquivos mensais globais do CHIRPS v2.0 cobrindo o ano completo de 2022 (\`chirps-v2.0.2022.01.tif.gz\` a \`chirps-v2.0.2022.12.tif.gz\`), diretamente do servidor oficial UCSB Climate Hazards Center (\`https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/\`).
+  - Total baixado: ~166,6 MB compactados (~691 MB descompactados), armazenados em \`data/chirps_cache/\` (ignorado no \`.gitignore\`).
+- **Diário de Requisições de Rede (Guarda Estrutural F5):**
+  - Foi emitido o diário em \`docs/verificacoes/diario_climatologia_chirps_bp3.json\` registrando as 12 chamadas HTTP GET diretas (timestamp, endpoint UCSB, status 200, bytes recebidos e duração em ms).
+  - O diário foi submetido à validação formal via \`src/lib/seguranca/diarioRequisicoes.ts:validarArtefatoComDiario\` resultando em **\`valido: true\` e 0 inconsistências**.
+- **Resolução e Conferência Cruzada:**
+  - Suporte espacial estritamente nativo de 0,05° (~5,5 km) em EPSG:4326, sem qualquer reamostragem para 10 m (D06).
+  - A tabela histórica municipal de estações foi formalmente declarada no código como conferência cruzada (Quadro 1 de Waltrick et al., 2015) e jamais como fonte primária dos totais CHIRPS.
+  - Artefato científico de medição gerado em \`docs/verificacoes/climatologia_chirps_bp3.json\`.
 
-### 3. Retificação Honesta dos Artefatos de Remedição (F3)
-- Nos artefatos \`docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json\` e \`docs/verificacoes/2026-09-30_remedicao_candidatos_bp3_d16.md\`:
-  1. A tabela das 9 células de K̂=2 foi **integralmente expurgada**.
-  2. Declaração formal de proveniência por dimensão:
-     - Declividade Ŝ: **MEDIDO** via DEM Copernicus GLO-30 local (680 candidatos).
-     - Pedologia K̂: **MEDIDO** via Embrapa GeoInfo WFS (677 candidatos).
-     - Solo Nu Ê: **NÃO MEDIDO** (\`indisponivel\`, 0 chamadas GEE realizadas).
-  3. Com a dimensão Ê indisponível, a partição tridimensional dos 18 estratos não pode ser povoada.
-  4. O sorteio dos 36 polígonos segue **COMPULSORIAMENTE BLOQUEADO** em estrita conformidade com **P12**.
+### 3. Diretriz H3 — Declaração Precisa e Conteúdo Conferido por OCR no Renard et al. (1997)
+- **Separação de Estados:**
+  - A redação de \`docs/verificacoes/fontes/renard1997/saida_extracao_renard_1997.txt\` foi reestruturada para separar categoricamente o **acesso comprovado** (407 páginas, hash SHA-256 \`cd198687...\`, metadados oficiais) da limitação física da camada de texto embutida (PDF digitalizado como imagem pré-OCR).
+- **Conferência Textual por OCR Neural:**
+  - Foi executado OCR neural (RapidOCR ONNX com arquitetura DBNet + SVTR) diretamente sobre as páginas escaneadas do Capítulo 4 (pp. 105, 106, 107) e do Apêndice A (p. 325) do \`ah_703.pdf\`.
+  - A saída textual bruta com as pontuações de confiança por linha foi comitada em \`docs/verificacoes/fontes/renard1997/saida_ocr_renard_1997.txt\`.
+  - Conferência direta comprovada: Equações [4-1] ($L = (\\lambda/72{,}6)^m$), [4-2] ($m = \\beta/(1+\\beta)$), [4-3] ($\\beta = (\\sin\\theta/0{,}0896)/[3{,}0(\\sin\\theta)^{0{,}8} + 0{,}56]$), [4-4] ($S = 10{,}8\\sin\\theta + 0{,}03$ para $s < 9\\%$), [4-5] ($S = 16{,}8\\sin\\theta - 0{,}50$ para $s \\ge 9\\%$) e a conversão métrica de 72,6 ft para 22,13 m.
+- **Registro no Código:**
+  - O módulo \`src/lib/rusle/fatorLS.ts\` foi atualizado para registrar explicitamente que as constantes estão em estado de "Conteúdo conferido por OCR neural na fonte primária arquivada".
 
-### 4. Auditoria Integral das Anotações de Exceção (F4)
-Varredura completa de todas as ocorrências de marcadores de exceção em \`src/\` e \`scripts/\`:
+### 4. Retenção de Perda de Solo e Invariante 1
+- **Quantos pontos passam a ter perdaSolo calculada:** **0 pontos** (ZERO).
+- **Quantos pontos seguem retidos:** **Todos os 72 pontos** da campanha de amostragem.
+- **Por qual fator:** **Fator R de erosividade da chuva** (estado: \`indisponivel\`, causa: \`insuficiente\`).
+- **Disciplina Científica:**
+  - Em conformidade estrita com o Invariante 1 e a Decisão D25, a perda de solo $A = R \\cdot K \\cdot LS \\cdot C \\cdot P$ só é gerada se todos os cinco fatores estiverem simultaneamente disponíveis com proveniências consolidadas.
+  - A indisponibilidade de R bloqueia a perda de solo sem contaminações ad-hoc, mantendo a integridade da régua de avaliação contra a qual o XGBoost será julgado.
 
-| Local | Conteúdo | Análise Técnica | Veredito |
-|---|---|---|---|
-| \`scripts/remedir_candidatos_bp3_d16.ts:436\` | Calibração de faixa espectral para simulação estocástica | Fabricava valores de solo nu via PRNG | **EXPURGADO/REMOVIDO** |
-| \`scripts/remedir_candidatos_bp3_d16.ts:506\` | Fallback para candidato sem medição de solo nu | Injetava valor 0.15 arbitrário violando P12 | **EXPURGADO/REMOVIDO** |
-| \`src/app/api/gee/select-candidates/route.ts:241\` | Limite computacional de busca no SQLite | Teto computacional (1200 a 10000) sem impacto físico | **MANTIDO** (legítimo) |
-| \`src/app/api/gee/select-candidates/route.ts:515\` | Normalização de percentual da interface [0, 100] | Sanitização de input numérico de UI | **MANTIDO** (legítimo) |
-| \`src/app/api/gee/select-candidates/route.ts:528\` | Critério mínimo de tamanho de pool elegível | Relaxamento condicional de pool amostral | **DISCUTÍVEL / METODOLÓGICA** (trazida para decisão do pesquisador) |
-| \`src/app/api/gee/select-candidates/route.ts:621\` | Subtração aritmética de cota inteira não negativa | Aritmética elementar de contagem de pontos | **MANTIDO** (legítimo) |
-| \`src/lib/gee/amostragemSoloNuLote.ts:412\` | Clamp de segurança [0, 1] para fração de satélite | Proteção de precisão flutuante IEEE 754 | **MANTIDO** (legítimo) |
-| \`src/lib/gee/amostragemSoloNuLote.ts:465\` | Timeout de rede HTTP de 30000 ms | Parâmetro de protocolo de conexão | **MANTIDO** (legítimo) |
-| \`src/lib/gee/amostragemSoloNuLote.ts:553\` | Métrica de requisições HTTP poupadas | Telemetria contábil de desempenho em lote | **MANTIDO** (legítimo) |
-| \`src/lib/gee/auth.ts:95\` | Fallback de protocolo OAuth2 RFC 6749 para 3600s | Padrão normativo de expiração de token RFC 7523 | **MANTIDO** (legítimo) |
-| \`src/lib/planet/quota.ts:81, 152, 176\` | Timestamp do livro-razão local de quota | Registro temporal de transação de API local | **MANTIDO** (legítimo) |
-| \`src/store/useSarelStore.ts:258\` | Controle de índice de paginação do tour (>= 0) | Navegação de interface frontend | **MANTIDO** (legítimo) |
-
-### 5. Guarda Estrutural F5: Diário de Requisições e Detector de Sequência Monotônica
-- **Diário de Requisições de Rede (\`src/lib/seguranca/diarioRequisicoes.ts\`):**
-  - Toda medição externa registra: timestamp ISO, endpoint (sanitizado), método HTTP, quantidade de itens, bytes recebidos, código HTTP e duração em ms.
-  - Artefatos de medição externa sem diário comprobatório são compulsoriamente inválidos.
-  - **Saída do Teste Automatizado (\`src/lib/seguranca/diarioRequisicoes.test.ts\`):**
-    \`\`\`
-    ✓ deve criar, registrar chamadas e sanitizar credenciais em query strings no diário
-    ✓ deve persistir e carregar diário em disco com integridade
-    ✓ deve REPROVAR artefato que afirma ter medido dados externos sem possuir diário
-    ✓ deve REPROVAR artefato quando a soma de itens do diário for inferior aos itens do artefato
-    ✓ deve APROVAR artefato quando o diário comprova integralmente as chamadas de rede
-    \`\`\`
-- **Detector de Sequência Monotônica (\`src/lib/seguranca/detectorSequencia.ts\`):**
-  - Calcula a correlação de Pearson de qualquer série numérica em artefatos JSON com sua ordem posicional. Se |r| > 0,95, reprova sumariamente a execução.
-  - Integrado ao varredor oficial em \`src/lib/seguranca/padroesProibidos.test.ts\`.
-  - **Resultado da Varredura sobre todos os artefatos de \`docs/verificacoes/\`:**
-    \`\`\`
-    ✓ assevera que nenhum artefato JSON de medição em docs/verificacoes/ contém séries numéricas correlacionadas com a ordem do arquivo
-    - Total de violações encontradas: ZERO
-    \`\`\`
+### 5. Isolamento Estrito do JEV e Heurística Local de Suscetibilidade
+- **Renomeação do Motor Local:**
+  - O motor determinístico foi renomeado de \`MOTOR_LOCAL_RUSLE\` para \`HEURISTICA_LOCAL_SUSCETIBILIDADE\` em todos os tipos (\`src/types/jev.ts\`), clientes (\`src/lib/jev/jevClient.ts\`), fallbacks (\`src/lib/jev/fallbackLocal.ts\`), rotas de API e componentes de UI.
+  - Esta alteração elimina qualquer risco de confusão entre o escore ordinal (0 a 4) de suscetibilidade e a perda de solo física da RUSLE (D25).
+- **Teste de Isolamento Estrito:**
+  - Implementado teste em \`src/lib/jev/jevClient.test.ts\` que assevera que nenhum valor ou propriedade originada do JEV (seja System One remoto ou Heurística Local) alcança \`montarLinhaDeBaseRUSLE\`, \`perdaSolo\` ou a memória de cálculo da RUSLE.
+  - Confirmado que \`scoreJev\` e \`laudoJev\` permanecem estritamente blindados em \`CAMPOS_PROIBIDOS_MATRIZ_TREINO\`.
+- **Verificação do Inspetor e Protocolo Cego:**
+  - Foi verificado o componente \`src/components/inspetor/InspetorPonto.tsx\`: o escore de auditoria é ativado exclusivamente por clique manual do operador técnico.
+  - O escore do JEV jamais é transmitido aos planos de voo nem aos manifestos cegos dos intérpretes de ortomosaico (\`manifesto_interprete_cego_72poligonos.csv\`).
+  - Foi inserida nota metodológica no Inspetor e no painel de credenciais advertindo sobre a preservação do protocolo cego (D26).
 
 ---
 **Identificação do Agente-Executor:** Antigravity (Google DeepMind)  
 **Autor do Repositório:** Luís Alfredo Ferreira da Silva (RedZardoz)`;
 
 if (process.argv[1] && process.argv[1].endsWith("gerar_relatorio_fase.ts")) {
-  const caminhoPadrao = "docs/verificacoes/2026-10-01_relatorio_fase_gerado.md";
+  const caminhoPadrao = "docs/verificacoes/2026-10-02_relatorio_fase_gerado.md";
   const res = gerarRelatorioFasePericial({
     caminhoSaida: caminhoPadrao,
     narrativaJuizo: NARRATIVA_JUIZO_PADRAO,
@@ -440,3 +428,4 @@ if (process.argv[1] && process.argv[1].endsWith("gerar_relatorio_fase.ts")) {
     process.exit(1);
   }
 }
+

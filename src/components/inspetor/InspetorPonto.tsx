@@ -391,7 +391,7 @@ export function InspetorPonto() {
                   <span className="text-xs">●</span>
                   {laudoAuditoria.metodo === "JEV_SYSTEM_ONE"
                     ? "Jev (TypeSafe AI / System One)"
-                    : "Motor Local Determinístico (RUSLE/Embrapa)"}
+                    : "Heurística Local de Suscetibilidade"}
                 </span>
               </div>
 

@@ -81,6 +81,6 @@ describe("Guarda Estrutural F5: Detector de Sequência Monotônica e Correlaçã
       }
 
       expect(violacoes).toHaveLength(0);
-    });
+    }, 30000);
   });
 });

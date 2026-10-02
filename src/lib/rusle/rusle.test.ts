@@ -251,20 +251,68 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
         // Fator P: Padrão (Renard et al., 1997) -> P = 1.0 tabelado
       });
 
+      // Sob a Diretriz H1 (02/10/2026), sem fonte primária arquivada contendo os coeficientes,
+      // fatorR é compulsoriamente indisponivel ('insuficiente') e perdaSolo fica retida (Invariante 1).
       expect(rusle.fatorC.estado).toBe("modelado");
       expect(rusle.fatorK.estado).toBe("tabelado");
-      expect(rusle.fatorR.estado).toBe("modelado");
+      expect(rusle.fatorR.estado).toBe("indisponivel");
+      if (rusle.fatorR.estado === "indisponivel") {
+        expect(rusle.fatorR.causa).toBe("insuficiente");
+        expect(rusle.fatorR.motivo).toContain("Diretriz H1");
+      }
       expect(rusle.fatorLS.estado).toBe("modelado");
       expect(rusle.fatorP.estado).toBe("tabelado");
 
-      expect(rusle.perdaSolo.estado).toBe("modelado");
-      if (rusle.perdaSolo.estado === "modelado") {
-        expect(rusle.perdaSolo.valor).toBeGreaterThan(0);
-        expect(rusle.perdaSolo.decisoes).toEqual(["D01", "D13", "D14", "D15"]);
+      expect(rusle.perdaSolo.estado).toBe("indisponivel");
+      if (rusle.perdaSolo.estado === "indisponivel") {
+        expect(rusle.perdaSolo.causa).toBe("insuficiente");
+        expect(rusle.perdaSolo.motivo).toContain("R (insuficiente)");
       }
-      expect(rusle.memoriaCalculo).not.toBeNull();
-      expect(rusle.memoriaCalculo).toContain("RUSLE A = R");
-      expect(rusle.memoriaCalculo).toContain("t/ha/ano");
+
+      // Quando o Fator R é fornecido com proveniência modelada comprovada (ex: calibração controlada):
+      const rusleCompleto = montarLinhaDeBaseRUSLE({
+        ndviProveniencia: {
+          estado: "medido",
+          valor: 0.2,
+          fonte: "Sentinel-2 L2A",
+          adquiridoEm: "2026-05-10T12:00:00Z",
+          consultadoEm: "2026-09-10T21:00:00Z",
+        },
+        camadaErodibilidade2024: {
+          kSolos: 0.0285,
+          erodUm: "Média",
+          codUm: "SG22NVef7",
+          ogcFid: 105112,
+        },
+        fatorRSubstituto: {
+          estado: "modelado",
+          valor: 10623,
+          modelo: "Equação regional do Paraná",
+          insumos: ["CHIRPS v2.0 Toledo", "P_anual = 1820 mm"],
+          decisoes: ["D13"],
+        },
+        insumoFatorLS: {
+          declividadeGraus: 5.143,
+          areaContribuicaoMontanteM2: 663.9,
+          latitude: -24.72,
+          longitude: -53.74,
+        },
+      });
+
+      expect(rusleCompleto.fatorC.estado).toBe("modelado");
+      expect(rusleCompleto.fatorK.estado).toBe("tabelado");
+      expect(rusleCompleto.fatorR.estado).toBe("modelado");
+      expect(rusleCompleto.fatorLS.estado).toBe("modelado");
+      expect(rusleCompleto.fatorP.estado).toBe("tabelado");
+
+      expect(rusleCompleto.perdaSolo.estado).toBe("modelado");
+      if (rusleCompleto.perdaSolo.estado === "modelado") {
+        expect(rusleCompleto.perdaSolo.valor).toBeGreaterThan(0);
+        expect(rusleCompleto.perdaSolo.decisoes).toEqual(["D01", "D13", "D14", "D15"]);
+      }
+      expect(rusleCompleto.memoriaCalculo).not.toBeNull();
+      expect(rusleCompleto.memoriaCalculo).toContain("RUSLE A = R");
+      expect(rusleCompleto.memoriaCalculo).toContain("t/ha/ano");
     });
 
     it("propaga causa decisao-pendente para perdaSolo quando um fator a carrega", () => {
