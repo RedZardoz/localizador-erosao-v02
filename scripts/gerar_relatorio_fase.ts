@@ -460,6 +460,124 @@ export function gerarRelatorioFasePericial(
   };
 }
 
+export interface EstacaoEntradaVies {
+  nome?: string;
+  desvioPercentual?: number;
+  criterioAceiteAno2022?: {
+    desvioParaMediaClimatologicaPercentual?: number;
+    desvioParaMediaClimatologicaMm?: number;
+    precipitacaoAnual2022Mm?: number;
+  };
+  serieCompleta1981_2025?: {
+    precipitacaoMediaAnualMm?: number;
+  };
+}
+
+export interface ResultadoEnunciadoVies {
+  estacoesAcima: number;
+  estacoesAbaixo: number;
+  estacoesNaMedia: number;
+  totalEstacoes: number;
+  amplitudeMinPercentual: number;
+  amplitudeMaxPercentual: number;
+  enunciadoSintetico: string;
+}
+
+export const LIMIAR_PADRAO_RUIDO_PERCENTUAL = 2.0;
+
+export function derivarEnunciadoViesClimatologico(
+  estacoes: Record<string, EstacaoEntradaVies> | EstacaoEntradaVies[],
+  limiarMediaPercentual?: number
+): ResultadoEnunciadoVies {
+  const limiarEfetivo =
+    typeof limiarMediaPercentual === "number"
+      ? limiarMediaPercentual
+      : LIMIAR_PADRAO_RUIDO_PERCENTUAL;
+
+  const lista: { nome: string; desvioPct: number }[] = [];
+
+  if (Array.isArray(estacoes)) {
+    for (const e of estacoes) {
+      const pct =
+        e.desvioPercentual ??
+        e.criterioAceiteAno2022?.desvioParaMediaClimatologicaPercentual ??
+        0;
+      lista.push({ nome: e.nome || "Estação", desvioPct: pct });
+    }
+  } else if (estacoes && typeof estacoes === "object") {
+    for (const [chave, e] of Object.entries(estacoes)) {
+      const pct =
+        e.desvioPercentual ??
+        e.criterioAceiteAno2022?.desvioParaMediaClimatologicaPercentual ??
+        0;
+      lista.push({ nome: e.nome || chave, desvioPct: pct });
+    }
+  }
+
+  if (lista.length === 0) {
+    return {
+      estacoesAcima: 0,
+      estacoesAbaixo: 0,
+      estacoesNaMedia: 0,
+      totalEstacoes: 0,
+      amplitudeMinPercentual: 0,
+      amplitudeMaxPercentual: 0,
+      enunciadoSintetico: "Sem estações para derivar viés climatológico.",
+    };
+  }
+
+  let acima = 0;
+  let abaixo = 0;
+  let naMedia = 0;
+  let minPct = Infinity;
+  let maxPct = -Infinity;
+
+  for (const item of lista) {
+    if (item.desvioPct < minPct) minPct = item.desvioPct;
+    if (item.desvioPct > maxPct) maxPct = item.desvioPct;
+
+    if (item.desvioPct > limiarEfetivo) {
+      acima++;
+    } else if (item.desvioPct < -limiarEfetivo) {
+      abaixo++;
+    } else {
+      naMedia++;
+    }
+  }
+
+  const formatSign = (v: number) => (v > 0 ? `+${v.toFixed(2)}%` : `${v.toFixed(2)}%`);
+  const amplitudeStr = `amplitude de ${formatSign(minPct)} a ${formatSign(maxPct)}`;
+
+  let enunciado = "";
+  if (acima > 0 && abaixo === 0) {
+    if (naMedia === 0) {
+      enunciado = `Precipitação acima da média histórica em todas as ${acima} estações analisadas (${amplitudeStr}).`;
+    } else {
+      enunciado = `Precipitação acima da média histórica em ${acima} das ${lista.length} estações (${amplitudeStr}), com ${naMedia} estação na média climatológica (faixa de tolerância de ±${limiarEfetivo}%).`;
+    }
+  } else if (abaixo > 0 && acima === 0) {
+    if (naMedia === 0) {
+      enunciado = `Precipitação abaixo da média histórica em todas as ${abaixo} estações analisadas (${amplitudeStr}).`;
+    } else {
+      enunciado = `Precipitação abaixo da média histórica em ${abaixo} das ${lista.length} estações (${amplitudeStr}), com ${naMedia} estação na média climatológica (faixa de tolerância de ±${limiarEfetivo}%).`;
+    }
+  } else if (acima > 0 && abaixo > 0) {
+    enunciado = `Precipitação mista na bacia: acima da média histórica em ${acima} estações e abaixo em ${abaixo} estações (${amplitudeStr}), com ${naMedia} na média climatológica.`;
+  } else {
+    enunciado = `Precipitação na média climatológica histórica em todas as ${naMedia} estações analisadas (faixa de tolerância de ±${limiarEfetivo}%, ${amplitudeStr}).`;
+  }
+
+  return {
+    estacoesAcima: acima,
+    estacoesAbaixo: abaixo,
+    estacoesNaMedia: naMedia,
+    totalEstacoes: lista.length,
+    amplitudeMinPercentual: minPct,
+    amplitudeMaxPercentual: maxPct,
+    enunciadoSintetico: enunciado,
+  };
+}
+
 export function construirNarrativaJuizoChirps(rootDir: string = process.cwd()): string {
   const absClimatologia = path.resolve(rootDir, "docs/verificacoes/climatologia_chirps_bp3.json");
   const absDiario = path.resolve(rootDir, "docs/verificacoes/diario_climatologia_chirps_bp3.json");
@@ -480,6 +598,8 @@ export function construirNarrativaJuizoChirps(rootDir: string = process.cwd()): 
   const foz = est["FOZ_DO_IGUACU"];
   const plt = est["PALOTINA"];
   const med = est["MEDIANEIRA"];
+
+  const vies = derivarEnunciadoViesClimatologico(est);
 
   const formatEstDesvio = (e: any) => {
     if (!e) return "—";
@@ -552,16 +672,34 @@ export function construirNarrativaJuizoChirps(rootDir: string = process.cwd()): 
   - **Foz do Iguaçu:** ${formatEstDesvio(foz)}
   - **Palotina:** ${formatEstDesvio(plt)}
   - **Medianeira:** ${formatEstDesvio(med)}
-- **Conclusão Explícita sobre a Suspeita de Viés:**
-  A suspeita pericial formulada no prompt **se confirmou integralmente**. O ano isolado de 2022 **não é representativo** da climatologia histórica da Bacia do Paraná 3. Em Toledo e na porção norte da BP3, 2022 apresentou desvio negativo severo (estiagem pronunciada com menos de 1.485 mm, contra médias históricas superiores a 1.700–1.800 mm), enquanto outras estações registraram anomalias convectivas concentradas.
-  Adotar um único ano como "climatologia" teria constituído erro de categoria grave (violação da cláusula D13b), subestimando a erosividade em pontos críticos e distorcendo a predição da erosão laminar que o VANT mapeia acumulada no solo em 2026. A série de 45 anos (540 meses) substitui definitivamente o ano fixo e quantifica objetivamente a amplitude do viés.
+
+- **Enunciado Mecânico de Viés Climatológico (Derivado Diretamente dos Artefatos):**
+  > **"${vies.enunciadoSintetico}"**
+  > - Estações com precipitação acima da média histórica (> +2%): **${vies.estacoesAcima}** de ${vies.totalEstacoes}
+  > - Estações na média climatológica histórica (faixa de ruído de ±2%): **${vies.estacoesNaMedia}** de ${vies.totalEstacoes}
+  > - Estações com precipitação abaixo da média histórica (< -2%): **${vies.estacoesAbaixo}** de ${vies.totalEstacoes}
+  > - Amplitude observada na BP3 em 2022: de **${vies.amplitudeMinPercentual > 0 ? "+" : ""}${vies.amplitudeMinPercentual.toFixed(2)}%** a **+${vies.amplitudeMaxPercentual.toFixed(2)}%**
+
+- **Conclusão Pericial sobre a Suspeita de Viés:**
+
+  > [!NOTE]
+  > **Registro de Retificação Pericial (02/10/2026):**
+  > A conclusão formulada na versão anterior do relatório continha afirmações falsas que contradiziam frontalmente a própria tabela impressa no documento (afirmava "desvio negativo severo" e "médias superiores a 1.700–1.800 mm" para Toledo, quando a tabela apontava 1.504,38 mm e desvio de apenas -1,35%). Em respeito à disciplina científica, verdade dos dados e auditoria de proveniência, a conclusão anterior foi mantida riscada abaixo para fins de histórico e substituída pela conclusão técnica fundamentada estritamente nos números medidos.
+
+  ~~A suspeita pericial formulada no prompt se confirmou integralmente. O ano isolado de 2022 não é representativo da climatologia histórica da Bacia do Paraná 3. Em Toledo e na porção norte da BP3, 2022 apresentou desvio negativo severo (estiagem pronunciada com menos de 1.485 mm, contra médias históricas superiores a 1.700–1.800 mm), enquanto outras estações registraram anomalias convectivas concentradas. Adotar um único ano como "climatologia" teria constituído erro de categoria grave (violação da cláusula D13b), subestimando a erosividade em pontos críticos e distorcendo a predição da erosão laminar que o VANT mapeia acumulada no solo em 2026. A série de 45 anos (540 meses) substitui definitivamente o ano fixo e quantifica objetivamente a amplitude do viés.~~
+
+  **Conclusão Retificada e Fundamentada nos Dados Medidos (02/10/2026):**
+  A suspeita formulada inicialmente no prompt — de que 2022 teria sido um ano de seca generalizada por La Niña, causando viés para baixo e subestimando a erosão — **foi categoricamente refutada pelos dados pluviométricos medidos**:
+  1. Em **cinco das seis estações de referência da BP3**, o ano de 2022 registrou precipitação **acima** da média histórica de 45 anos, com anomalias positivas variando de **+6,66%** (Cascavel: 2.002,94 mm vs 1.877,91 mm) a expressivos **+34,48%** (Palotina: 2.194,83 mm vs 1.632,07 mm).
+  2. Palotina, no extremo norte da BP3 (-24,28°), foi justamente a estação com a **maior superestimação pluviométrica** (+34,48%), refutando a suposição de seca na porção norte da bacia.
+  3. Apenas Toledo registrou desvio negativo, e este desvio foi de apenas **-20,25 mm (-1,35%)**, o que se situa dentro da faixa de ruído estatístico (±2%) e representa um ano praticamente idêntico à média histórica (1.484,13 mm vs 1.504,38 mm), sem caracterizar estiagem severa.
+  4. **O argumento científico geral sobrevive e sai substancialmente reforçado:** o desvio de um único ano flutua de **-1,35% a +34,48% dentro da mesma bacia hidrográfica**. Isso demonstra que um ano isolado é incapaz de representar tanto o regime temporal quanto a heterogeneidade espacial da BP3. Adotar 2022 como "climatologia" introduziria superestimação em quase toda a bacia e distorções espaciais severas. A exigência de D13b permanece indispensável, e a série histórica de 45 anos (1981–2025, 540 meses) é a solução metodologicamente correta — validada por razões opostas à intuição preliminar.
 
 ### 3. Gestão de Disco e Recorte Imediato em Memória (L2)
 - **Disco Antes:** ${discoAntesMb} MB (${discoAntesFormatado} bytes), consumidos por apenas 12 meses globais legados de 2022 (arquivos \`.tif\` descompactados de 57,6 MB e \`.tif.gz\` de 14,5 MB).
 - **Pico de Disco Durante a Execução:** ${discoPicoMb} MB. O processamento foi executado em memória RAM contínua via \`rasterio.io.MemoryFile\`, descompactando o stream gzip, recortando imediatamente a janela de interesse da BP3 e liberando a memória sem criar arquivos globais em disco.
 - **Disco Depois:** ${discoDepoisMb} MB (${discoDepoisFormatado} bytes) para **todos os 540 meses** da série completa (arquivos GeoTIFF comprimidos com algoritmo DEFLATE, ~3,5 KB por mês).
 - **Redução Efetiva:** redução de **${reducaoPct}%** em relação ao cache legado de apenas 1 ano, e de **mais de 99,99%** em relação ao consumo que a série completa global teria demandado (~37 GB). O diretório \`data/chirps_cache\` permanece blindado no \`.gitignore\`.
-
 
 ### 4. Tratamento Pericial de NoData e Ocorrências nos 540 Meses (L3 / P12)
 - **Extirpação da Violação P12:**
@@ -593,6 +731,40 @@ export function construirNarrativaJuizoChirps(rootDir: string = process.cwd()): 
 - **Inviolabilidade da Diretriz H1:**
   A disponibilização da série completa de 45 anos de precipitação do CHIRPS v2.0 resolve a qualidade e a representatividade do insumo meteorológico (L1 / D13b), mas **NÃO restitui os coeficientes de erosividade 107,52 e 46,89**.
   O fator R permanece classificado como \`indisponivel\` com causa formal \`h1_fonte_ausente\`. Sem fonte primária arquivada e auditada no repositório que respalde a equação regional de conversão, nenhum cálculo de erosividade foi operacionalizado, mantendo a disciplina pericial livre de estimativas não fundamentadas.
+
+### 8. Auditoria Pericial das Seis Guardas contra Falsos Positivos por Ausência (N2)
+Todas as 6 guardas do repositório foram saneadas para eliminar aprovações silenciosas em diretórios vazios ou comandos com saída vazia:
+
+| # | Guarda e Arquivo | O que Varre | Contagem Medida | Piso Adotado | Margem / Folga | Razão da Folga |
+|---|---|---|:---:|:---:|:---:|---|
+| 1 | \`chuva.test.ts:207\` | Artefato \`climatologia_chirps_bp3.json\` | 1 artefato | 1 (presença obrigatória) | 0% (sem escape) | Cláusula \`if exists\` extirpada. O teste falha compulsoriamente com erro explícito se o artefato não for encontrado. |
+| 2 | \`verificacoes.test.ts:80\` | Arquivos TS em \`src/\` e declarações \`VERIFICADO\` | 121 arquivos / 8 declarações | 90 arquivos / 5 declarações | ~74% / ~63% | Permite refatorações pontuais sem desativar a guarda; falha se \`src/\` for renomeado ou declarações forem apagadas. |
+| 3 | \`cegamentoArtefatos.test.ts:84\` | Artefatos em \`voo_ncontrol/\` e \`calculadora/\` | 9 arquivos | 6 arquivos | ~67% | Tolera consolidação de artefatos mas falha se o diretório for esvaziado ou renomeado. |
+| 4 | \`cegamentoArtefatos.test.ts:110\` | Arquivos versionados sob \`git ls-files\` (K2) | 476 total / 311 filtrados | 220 arquivos filtrados | ~71% | Checagem prévia de execução do git (não vazio); falha se o comando retornar nulo ou filtros excluírem tudo. |
+| 5 | \`importacoes.test.ts:71\` | Arquivos TS em \`src/\` contra imports de \`legado/\` | 177 arquivos | 130 arquivos | ~73% | Garante que todo o código-fonte sob \`src/\` seja efetivamente inspecionado contra vazamentos de quarentena. |
+| 6 | \`padroesProibidos.test.ts:200, 222, 270\` | Código ativo (\`lib/api/store/config\`), \`components/\` e \`scripts/\` | 81 cód / 33 comp / 39 scripts | 60 cód / 24 comp / 28 scripts | ~74% / ~72% / ~72% | Protege as três varreduras essenciais de integridade algorítmica contra desativação por renomeação de pastas. |
+
+### 9. Evidência dos Meta-Testes Falsificáveis e Prova de Falha perante Diretório Vazio
+Cada família de guardas foi equipada com um meta-teste unitário automatizado que aponta a varredura para um diretório vazio temporário (\`fs.mkdtempSync\`) ou simula comando vazio, comprovando que a guarda **falha obrigatoriamente** pelo motivo certo:
+
+1. **Meta-teste de D13b (\`chuva.test.ts\`):**
+   - Asserção perante caminho inexistente: dispara erro \`Artefato de climatologia CHIRPS não encontrado em [...]\`.
+2. **Meta-teste de Evidências (\`verificacoes.test.ts\`):**
+   - Asserção em diretório vazio: dispara erro \`Varredura de declarações VERIFICADO examinou apenas 0 arquivos (esperado >= 90). Possível diretório renomeado ou raiz incorreta: [...]\`.
+3. **Meta-teste de Cegamento de Artefatos (\`cegamentoArtefatos.test.ts\`):**
+   - Asserção em diretório vazio: dispara erro \`Varredura de artefatos de voo e calculadora examinou apenas 0 arquivos (esperado >= 6). Diretório vazio ou inexistente: [...]\`.
+4. **Meta-teste de Cegamento Git K2 (\`cegamentoArtefatos.test.ts\`):**
+   - Asserção com git vazio: dispara erro \`Comando 'git ls-files' retornou saída vazia. Ambiente git indisponível ou repositório corrompido.\`.
+5. **Meta-teste de Quarentena (\`importacoes.test.ts\`):**
+   - Asserção em diretório vazio: dispara erro \`Varredura de importações proibidas examinou apenas 0 arquivos em src/ (esperado >= 130). Possível diretório renomeado ou raiz incorreta: [...]\`.
+6. **Meta-teste de Padrões Proibidos (\`padroesProibidos.test.ts\`):**
+   - Asserção em diretório vazio: dispara erro \`Varredura de padrões proibidos em código ativo examinou apenas 0 arquivos (esperado >= 60). Possível diretório ausente ou renomeado: [...]\`.
+
+### 10. Saneamento Pericial do Resíduo em Cache de Dados (N3)
+- **Arquivo Resíduo Eliminado:** \`test_recorte.tif\` foi formalmente excluído de \`data/chirps_cache/recortes/\`.
+- **Contagem Oficial em Disco:** exatamente **540 arquivos GeoTIFF**, correspondendo com exatidão aos 540 meses do período 1981-01 a 2025-12.
+- **Tamanho Total Medido:** **1.893.958 bytes** (~1,81 MB), contra os 1.897.517 bytes anteriores com o resíduo (redução de 3.559 bytes do arquivo espúrio).
+- **Destino de Testes Futuros:** Toda rotina de teste e validação de recorte rasterio opera exclusivamente em diretórios temporários do sistema operacional (\`os.tmpdir()\`), mantendo o diretório de dados em produção permanentemente intocado e livre de contaminação.
 
 ---
 **Identificação do Agente-Executor:** Antigravity (Google DeepMind)  

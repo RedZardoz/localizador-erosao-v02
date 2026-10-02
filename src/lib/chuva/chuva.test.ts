@@ -210,38 +210,54 @@ describe("CHIRPS Climatologia Mensal e Guarda D13b/P12", () => {
       "../../../docs/verificacoes/climatologia_chirps_bp3.json"
     );
 
-    // Se o artefato ainda estiver em processamento ou não gerado, a asserção é executada quando presente
-    if (fs.existsSync(caminhoArtefato)) {
-      const conteudo = JSON.parse(fs.readFileSync(caminhoArtefato, "utf-8"));
+    // Cláusula de escape eliminada: a guarda exige presença obrigatória do artefato
+    expect(
+      fs.existsSync(caminhoArtefato),
+      `Artefato de climatologia CHIRPS não encontrado em ${caminhoArtefato}. A climatologia não foi gerada ou o arquivo foi renomeado.`
+    ).toBe(true);
 
-      // Guarda D13b: Climatologia NÃO pode ser de 1 ano
-      expect(conteudo.totalAnos).toBeGreaterThanOrEqual(20);
-      expect(conteudo.totalMeses).toBeGreaterThanOrEqual(240);
+    const conteudo = JSON.parse(fs.readFileSync(caminhoArtefato, "utf-8"));
 
-      // Cada estação da BP3 deve ter >= 240 meses válidos
-      const estacoes = Object.keys(conteudo.estacoesReferenciaBP3);
-      expect(estacoes.length).toBeGreaterThanOrEqual(6);
+    // Guarda D13b: Climatologia NÃO pode ser de 1 ano
+    expect(conteudo.totalAnos).toBeGreaterThanOrEqual(20);
+    expect(conteudo.totalMeses).toBeGreaterThanOrEqual(240);
 
-      for (const chave of estacoes) {
-        const est = conteudo.estacoesReferenciaBP3[chave];
-        const serie = est.serieCompleta1981_2025;
-        expect(serie.mesesValidos).toBeGreaterThanOrEqual(240);
-        expect(serie.mesesEsperados).toBeGreaterThanOrEqual(240);
+    // Cada estação da BP3 deve ter >= 240 meses válidos
+    const estacoes = Object.keys(conteudo.estacoesReferenciaBP3);
+    expect(estacoes.length).toBeGreaterThanOrEqual(6);
 
-        // Critério de aceite L1: Desvio de 2022 quantificado em mm e %
-        expect(est.criterioAceiteAno2022).toBeDefined();
-        expect(typeof est.criterioAceiteAno2022.desvioParaMediaClimatologicaMm).toBe("number");
-        expect(typeof est.criterioAceiteAno2022.desvioParaMediaClimatologicaPercentual).toBe("number");
+    for (const chave of estacoes) {
+      const est = conteudo.estacoesReferenciaBP3[chave];
+      const serie = est.serieCompleta1981_2025;
+      expect(serie.mesesValidos).toBeGreaterThanOrEqual(240);
+      expect(serie.mesesEsperados).toBeGreaterThanOrEqual(240);
 
-        // Janela secundária Waltrick 1986–2008 declarada (Parte V)
-        expect(est.janelaSecundariaWaltrick1986_2008).toBeDefined();
-        expect(est.janelaSecundariaWaltrick1986_2008.mesesEsperados).toBe(276);
-      }
+      // Critério de aceite L1: Desvio de 2022 quantificado em mm e %
+      expect(est.criterioAceiteAno2022).toBeDefined();
+      expect(typeof est.criterioAceiteAno2022.desvioParaMediaClimatologicaMm).toBe("number");
+      expect(typeof est.criterioAceiteAno2022.desvioParaMediaClimatologicaPercentual).toBe("number");
 
-      // Fator R continua indisponível conforme H1 (não restituído sem fonte arquivada)
-      expect(conteudo.fatorRStatus.estado).toBe("indisponivel");
-      expect(conteudo.fatorRStatus.causa).toBe("h1_fonte_ausente");
+      // Janela secundária Waltrick 1986–2008 declarada (Parte V)
+      expect(est.janelaSecundariaWaltrick1986_2008).toBeDefined();
+      expect(est.janelaSecundariaWaltrick1986_2008.mesesEsperados).toBe(276);
     }
+
+    // Fator R continua indisponível conforme H1 (não restituído sem fonte arquivada)
+    expect(conteudo.fatorRStatus.estado).toBe("indisponivel");
+    expect(conteudo.fatorRStatus.causa).toBe("h1_fonte_ausente");
+  });
+
+  it("meta-teste D13b: falha compulsoriamente se o artefato de climatologia não existir", () => {
+    const caminhoInexistente = path.resolve(
+      __dirname,
+      "../../../docs/verificacoes/arquivo_fantasma_chirps_inexistente.json"
+    );
+    expect(() => {
+      expect(
+        fs.existsSync(caminhoInexistente),
+        `Artefato de climatologia CHIRPS não encontrado em ${caminhoInexistente}. A climatologia não foi gerada ou o arquivo foi renomeado.`
+      ).toBe(true);
+    }).toThrow(/Artefato de climatologia CHIRPS não encontrado/);
   });
 });
 

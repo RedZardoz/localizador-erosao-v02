@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import fs from "fs";
 import path from "path";
+import os from "os";
 
 /**
  * Varredor de padrões proibidos (Regra 1 e 5).
@@ -94,6 +95,44 @@ export function varrerCodigo(codigo: string, nomeArquivo: string): ViolacaoPadra
   return violacoes;
 }
 
+export function listarArquivosCodigo(dir: string): string[] {
+  if (!fs.existsSync(dir)) return [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const arquivos: string[] = [];
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory() && entry.name !== "node_modules" && entry.name !== ".next") {
+      arquivos.push(...listarArquivosCodigo(fullPath));
+    } else if (
+      entry.isFile() &&
+      (fullPath.endsWith(".ts") || fullPath.endsWith(".tsx")) &&
+      !fullPath.endsWith(".test.ts") &&
+      !fullPath.endsWith(".test.tsx")
+    ) {
+      arquivos.push(fullPath);
+    }
+  }
+  return arquivos;
+}
+
+export function listarArquivosScripts(dir: string): string[] {
+  if (!fs.existsSync(dir)) return [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const arquivos: string[] = [];
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory() && entry.name !== "__pycache__" && entry.name !== ".git") {
+      arquivos.push(...listarArquivosScripts(fullPath));
+    } else if (
+      entry.isFile() &&
+      (fullPath.endsWith(".py") || fullPath.endsWith(".mjs") || fullPath.endsWith(".ts"))
+    ) {
+      arquivos.push(fullPath);
+    }
+  }
+  return arquivos;
+}
+
 describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
   describe("Meta-testes (confirma que o detector NÃO é vacuoso)", () => {
     it("detecta .unmask(0.0)", () => {
@@ -173,34 +212,38 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
       expect(varrerCodigo('const jev = "ts_0123456789abcdef0123456789abcdef";', "teste.ts").some((x) => x.padrao === "credencial-jev-ts")).toBe(true);
       expect(varrerCodigo('const h = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";', "teste.ts").some((x) => x.padrao === "credencial-bearer-jwt")).toBe(true);
     });
+
+    it("meta-teste: varredura em diretório vazio deve falhar compulsoriamente por piso mínimo", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "meta_test_padroes_vazio_"));
+      try {
+        const arquivosTmp = listarArquivosCodigo(tmpDir);
+        const PISO_MINIMO = 60;
+        expect(() => {
+          expect(
+            arquivosTmp.length,
+            `Varredura de padrões proibidos em código ativo examinou apenas ${arquivosTmp.length} arquivos (esperado >= ${PISO_MINIMO}). Possível diretório ausente ou renomeado: ${tmpDir}`
+          ).toBeGreaterThanOrEqual(PISO_MINIMO);
+        }).toThrow(/Possível diretório ausente ou renomeado/);
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
   });
 
   describe("Varredura no código científico e de estado em src/lib, src/app/api, src/store e src/config (Q2.ii)", () => {
-    function listarArquivosCodigo(dir: string): string[] {
-      if (!fs.existsSync(dir)) return [];
-      const entries = fs.readdirSync(dir, { withFileTypes: true });
-      const arquivos: string[] = [];
-      for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          arquivos.push(...listarArquivosCodigo(fullPath));
-        } else if (
-          entry.isFile() &&
-          (fullPath.endsWith(".ts") || fullPath.endsWith(".tsx")) &&
-          !fullPath.endsWith(".test.ts") &&
-          !fullPath.endsWith(".test.tsx")
-        ) {
-          arquivos.push(fullPath);
-        }
-      }
-      return arquivos;
-    }
-
     it("nenhum arquivo em src/lib, src/app/api, src/store ou src/config deve conter padrões proibidos", () => {
       const diretoriosAlvo = ["src/lib", "src/app/api", "src/store", "src/config"].map((d) =>
         path.resolve(process.cwd(), d)
       );
       const arquivos = diretoriosAlvo.flatMap((dir) => listarArquivosCodigo(dir));
+
+      // Piso mínimo de arquivos examinados (medido hoje: 81 arquivos; folga de ~74% => piso 60)
+      const PISO_MINIMO_CODIGO = 60;
+      expect(
+        arquivos.length,
+        `Varredura de padrões proibidos em código ativo examinou apenas ${arquivos.length} arquivos (esperado >= ${PISO_MINIMO_CODIGO}). Possível diretório ausente ou renomeado.`
+      ).toBeGreaterThanOrEqual(PISO_MINIMO_CODIGO);
+
       const todasViolacoes: ViolacaoPadrao[] = [];
 
       for (const arq of arquivos) {
@@ -221,6 +264,14 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
     it("nenhum componente em src/components/**/*.tsx deve conter literais de data/código entre aspas ou adquiridoEm fabricado", () => {
       const raizComponents = path.resolve(process.cwd(), "src/components");
       const arquivos = listarArquivosCodigo(raizComponents);
+
+      // Piso mínimo de componentes examinados (medido hoje: 33 arquivos; folga de ~72% => piso 24)
+      const PISO_MINIMO_COMPONENTS = 24;
+      expect(
+        arquivos.length,
+        `Varredura de padrões proibidos em src/components examinou apenas ${arquivos.length} arquivos (esperado >= ${PISO_MINIMO_COMPONENTS}). Diretório components ausente ou vazio.`
+      ).toBeGreaterThanOrEqual(PISO_MINIMO_COMPONENTS);
+
       const padroesRestritosComponentes = new Set([
         "coalescencia-com-numero-entre-aspas",
         "ou-logico-com-numero-entre-aspas",
@@ -249,27 +300,17 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
   });
 
   describe("Varredura no código científico em scripts/ (Python e Node)", () => {
-    function listarArquivosScripts(dir: string): string[] {
-      if (!fs.existsSync(dir)) return [];
-      const entries = fs.readdirSync(dir, { withFileTypes: true });
-      const arquivos: string[] = [];
-      for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory() && entry.name !== "__pycache__" && entry.name !== ".git") {
-          arquivos.push(...listarArquivosScripts(fullPath));
-        } else if (
-          entry.isFile() &&
-          (fullPath.endsWith(".py") || fullPath.endsWith(".mjs") || fullPath.endsWith(".ts"))
-        ) {
-          arquivos.push(fullPath);
-        }
-      }
-      return arquivos;
-    }
-
     it("nenhum script em scripts/ deve conter geração sintética não documentada ou padrões proibidos", () => {
       const raizScripts = path.resolve(process.cwd(), "scripts");
       const arquivos = listarArquivosScripts(raizScripts);
+
+      // Piso mínimo de scripts examinados (medido hoje: 39 arquivos; folga de ~72% => piso 28)
+      const PISO_MINIMO_SCRIPTS = 28;
+      expect(
+        arquivos.length,
+        `Varredura de scripts examinou apenas ${arquivos.length} arquivos (esperado >= ${PISO_MINIMO_SCRIPTS}). Diretório scripts ausente ou renomeado.`
+      ).toBeGreaterThanOrEqual(PISO_MINIMO_SCRIPTS);
+
       const todasViolacoes: ViolacaoPadrao[] = [];
 
       for (const arq of arquivos) {

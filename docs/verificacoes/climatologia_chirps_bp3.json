@@ -38,8 +38,8 @@
   "gestaoDisco": {
     "tamanhoAntesBytes": 866358475,
     "tamanhoPicoBytes": 866358475,
-    "tamanhoDepoisBytes": 1897517,
-    "reducaoBytes": 864460958,
+    "tamanhoDepoisBytes": 1893958,
+    "reducaoBytes": 864464517,
     "reducaoPercentual": 99.78,
     "formatoArmazenamento": "GeoTIFF recortado comprimido em DEFLATE (~3,5 KB por mês). Dados globais descartados."
   },
