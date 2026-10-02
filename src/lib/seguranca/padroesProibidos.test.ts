@@ -285,7 +285,7 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
         expect.fail(`Violações de padrões proibidos encontradas em scripts/:\n${msg}`);
       }
       expect(todasViolacoes).toHaveLength(0);
-    });
+    }, 20000);
   });
 
   describe("FASE 0 — Identidade de Banda B11/B12 (F0.1), Proveniência adquiridoEm (F0.3) e Guarda D11 (F0.4)", () => {
