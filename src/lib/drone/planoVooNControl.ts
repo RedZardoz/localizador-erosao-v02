@@ -31,6 +31,7 @@ import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
 import { CAMPOS_PROIBIDOS_MATRIZ_TREINO } from "@/lib/matriz/invariantes";
+import type { SeloSorteioD16 } from "@/lib/gee/sorteioPoligonos";
 
 /** Raio médio esférico adotado pelo QGroundControl em `QGCGeo.cc` (`CONSTANTS_RADIUS_OF_EARTH`). */
 export const QGC_EARTH_RADIUS_METERS = 6371000.0;
@@ -180,6 +181,13 @@ export class ErroTerrenoForaDeCoberturaGLO30 extends Error {
   constructor(mensagem: string) {
     super(`[ERRO_TERRENO_GLO30] ${mensagem}`);
     this.name = "ErroTerrenoForaDeCoberturaGLO30";
+  }
+}
+
+export class ErroManifestoSemSeloSorteio extends Error {
+  constructor(mensagem: string) {
+    super(`[CEGAMENTO_SELO_RECUSADO] ${mensagem}`);
+    this.name = "ErroManifestoSemSeloSorteio";
   }
 }
 
@@ -1150,6 +1158,7 @@ export function construirVerticesPoligono502Ha(
 
 export interface EntradaPoligonoCampanhaNControl {
   idPoligono: string;
+  codigoOpacoVant?: string;
   estratoId: string;
   papelConjunto: "treino" | "held-out";
   centroide: { latitude: number; longitude: number };
@@ -1263,12 +1272,16 @@ export interface PacoteExportacaoCompletoNControl {
   exportacaoPiloto: {
     jornadas: PacoteJornadaNControl[];
     tabelaAutorizacaoProprietarios: LinhaAutorizacaoProprietario[];
+    nomeArquivoRoteiroCsv?: string;
+    nomeArquivoTabelaAutorizacaoCsv?: string;
+    nomeArquivoRoteiroPdf?: string;
     roteiroCsv: string;
     tabelaAutorizacaoCsv: string;
     roteiroPdfBytes: Buffer;
   };
   exportacaoInterprete: {
     registrosCegos: RegistroExportacaoInterpreteCego[];
+    nomeArquivoManifestoCsv?: string;
     manifestoInterpreteCsv: string;
   };
   /**
@@ -1575,6 +1588,14 @@ export interface OpcoesExportarCampanhaVooNControl {
   gsdCm?: number;
   segredoSeloSorteio?: string;
   geradoEm?: string;
+  seloSorteioD16?:
+    | SeloSorteioD16
+    | {
+        tabelaCorrespondenciaOpaca?: Record<string, string>;
+        [chave: string]: any;
+      }
+    | null;
+  tabelaCorrespondenciaOpaca?: Record<string, string> | null;
 }
 
 /**
@@ -1681,6 +1702,8 @@ export function exportarCampanhaVooNControl(
     gsdCm = GSD_ALVO_CAMPANHA_CM,
     segredoSeloSorteio,
     geradoEm = new Date().toISOString(),
+    seloSorteioD16,
+    tabelaCorrespondenciaOpaca,
   } = opcoes;
 
   const amostradorObj = normalizarAmostradorTerreno(amostradorElevacaoGLO30);
@@ -1699,8 +1722,8 @@ export function exportarCampanhaVooNControl(
       motivos.push("polígonos sintéticos sem selo auditado de D16");
     }
     throw new ErroEmissaoPlanoSinteticoRecusada(
-      `Recusada a emissão de plano de voo .plan voável com ${motivos.join(" e ")}. ` +
-      "Planos voáveis exigem obrigatoriamente Copernicus DEM GLO-30 real (D21) e sorteio selado de D16. " +
+      `Recusada a emissão de qualquer artefato da campanha de voo (planos .plan, roteiro CSV/PDF, tabela de autorização e manifesto cego) com ${motivos.join(" e ")}. ` +
+      "Planos e artefatos de campanha voáveis exigem obrigatoriamente Copernicus DEM GLO-30 real (D21) e sorteio selado de D16. " +
       "Para fins exclusivos de teste ou demonstração em bancada, forneça explicitamente a opção 'permitirPlanoSinteticoDemonstracao: true'."
     );
   }
@@ -1760,11 +1783,18 @@ export function exportarCampanhaVooNControl(
       const item = grupo[pIdx];
       const ordemNaJornada = pIdx + 1;
 
-      // Z5: Código opaco do intérprete gerado com segredo do selo ou aleatório estocástico
-      const codigoOpaco = gerarCodigoOpacoInterprete(
-        item.idPoligono,
-        segredoSeloSorteio
-      );
+      // K1: O código opaco é obrigatoriamente LIDO do selo (ou tabela correspondente), NUNCA gerado na exportação.
+      const codigoOpaco =
+        seloSorteioD16?.tabelaCorrespondenciaOpaca?.[item.idPoligono] ??
+        tabelaCorrespondenciaOpaca?.[item.idPoligono] ??
+        item.codigoOpacoVant;
+
+      if (!codigoOpaco) {
+        throw new ErroManifestoSemSeloSorteio(
+          `Exportação do manifesto cego do intérprete recusada: selo de sorteio D16 ausente ou código opaco não registrado para o polígono '${item.idPoligono}'. ` +
+          "É expressamente proibido inventar códigos opacos na exportação para polígonos sem correspondência no selo (K1)."
+        );
+      }
 
       // Z6: Aspecto medido do terreno (Horn, 1981)
       const aspectoGraus = calcularAspectoMedioGLO30Graus(
@@ -2005,7 +2035,13 @@ export function exportarCampanhaVooNControl(
       ].join(",")
     )
   );
-  const roteiroCsv = [cabecalhoRoteiroCsv, ...linhasRoteiroCsv].join("\n");
+  const linhaComentarioSintetico = "# SINTETICO_NAO_VOAR - DADOS DE DEMONSTRACAO (NAO OPERAR EM CAMPO)";
+
+  const roteiroCsv = [
+    ...(!ehPlanoVoavel ? [linhaComentarioSintetico] : []),
+    cabecalhoRoteiroCsv,
+    ...linhasRoteiroCsv,
+  ].join("\n");
 
   // Gera CSV da tabela de autorização de proprietários (Y6)
   const cabecalhoAutorizacaoCsv = [
@@ -2036,6 +2072,7 @@ export function exportarCampanhaVooNControl(
     ].join(",")
   );
   const tabelaAutorizacaoCsv = [
+    ...(!ehPlanoVoavel ? [linhaComentarioSintetico] : []),
     cabecalhoAutorizacaoCsv,
     ...linhasAutorizacaoCsv,
   ].join("\n");
@@ -2065,18 +2102,27 @@ export function exportarCampanhaVooNControl(
     ].join(",")
   );
   const manifestoInterpreteCsv = [
+    ...(!ehPlanoVoavel ? [linhaComentarioSintetico] : []),
     cabecalhoInterpreteCsv,
     ...linhasInterpreteCsv,
   ].join("\n");
 
-  const linhasPdf: string[] = [
+  const linhasPdf: string[] = [];
+  if (!ehPlanoVoavel) {
+    linhasPdf.push(
+      "****************************************************************************************************",
+      "*** SINTETICO_NAO_VOAR - DADOS DE DEMONSTRACAO (NAO OPERAR EM CAMPO) ***",
+      "****************************************************************************************************"
+    );
+  }
+  linhasPdf.push(
     "SAREL v2.0 - ROTEIRO DE CAMPO E PLANOS DE VOO NCONTROL (D16 / D21 / D26)",
     `Gerado em: ${geradoEm} | Camera: Micasense Altum | GSD alvo: ${gsdCm.toFixed(1)} cm | AGL nominal: ${aglDesejadaMetros.toFixed(2)} m`,
     `Total de poligonos: ${poligonos.length} (${(poligonos.length * 5.02).toFixed(2)} ha) | Total de jornadas: ${jornadas.length}`,
-    `Status dos planos: ${ehPlanoVoavel ? "OFICIAL_VOAVEL" : "SINTETICO_NAO_VOAR (Demonstracao em bancada)"}`,
+    `Status dos planos: ${ehPlanoVoavel ? "OFICIAL_VOAVEL" : "SINTETICO_NAO_VOAR (Demonstracao em bancada - NAO OPERAR EM CAMPO)"}`,
     "AVISO DE DECOLAGEM: plannedHomePosition = sugestao_a_confirmar_em_campo (ajustar conforme acesso viario).",
-    "----------------------------------------------------------------------------------------------------",
-  ];
+    "----------------------------------------------------------------------------------------------------"
+  );
 
   for (const j of jornadas) {
     linhasPdf.push(
@@ -2094,6 +2140,7 @@ export function exportarCampanhaVooNControl(
 
   const exportacaoInterprete = {
     registrosCegos,
+    nomeArquivoManifestoCsv: `${prefixoNomeArquivo}manifesto_interprete_cego_${poligonos.length}poligonos.csv`,
     manifestoInterpreteCsv,
   };
 
@@ -2120,6 +2167,9 @@ export function exportarCampanhaVooNControl(
     exportacaoPiloto: {
       jornadas,
       tabelaAutorizacaoProprietarios,
+      nomeArquivoRoteiroCsv: `${prefixoNomeArquivo}roteiro_jornadas_${poligonos.length}poligonos.csv`,
+      nomeArquivoTabelaAutorizacaoCsv: `${prefixoNomeArquivo}tabela_autorizacao_proprietarios_${poligonos.length}poligonos.csv`,
+      nomeArquivoRoteiroPdf: `${prefixoNomeArquivo}roteiro_jornadas_${poligonos.length}poligonos.pdf`,
       roteiroCsv,
       tabelaAutorizacaoCsv,
       roteiroPdfBytes,

@@ -7,6 +7,7 @@ import {
   CandidatoSorteioD16,
   verificarPreCondicoesSorteioD16,
   sortearPoligonosDroneD16,
+  asseverarCaminhoSeloIgnoradoGit,
 } from "@/lib/gee/sorteioPoligonos";
 
 const DIRETORIO_SELOS = path.join(process.cwd(), "docs", "verificacoes", "sorteio");
@@ -183,6 +184,9 @@ export async function POST(req: NextRequest) {
       sha256ConjuntoCandidatos: sha256,
       seloExistenteCaminho: null,
     });
+
+    // Guarda de segurança física K2: recusa escrita se o diretório/caminho não estiver no .gitignore
+    asseverarCaminhoSeloIgnoradoGit(caminhoSeloAbs);
 
     fs.mkdirSync(DIRETORIO_SELOS, { recursive: true });
     fs.writeFileSync(caminhoSeloAbs, JSON.stringify(selo, null, 2), "utf-8");

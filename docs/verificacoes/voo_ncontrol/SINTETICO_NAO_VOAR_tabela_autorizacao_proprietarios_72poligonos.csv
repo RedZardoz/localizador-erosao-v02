@@ -1,3 +1,4 @@
+# SINTETICO_NAO_VOAR - DADOS DE DEMONSTRACAO (NAO OPERAR EM CAMPO)
 codigoPoligono,idJornada,ordemNaJornada,codigoCar,nomeProprietario,municipio,areaImovelHa,areaPoligonoHa,dataAutorizacao,formaAutorizacao
 D16_E_1_1_1_Q01,JORNADA_01,1,PR-4115200-1001A9B8C7D6E5F4,"Titular Sicar #1 (A consultar na matrícula/CAR)","Toledo",12.40,5.02,,
 D16_E_1_1_1_Q02,JORNADA_01,2,PR-4115200-1002A9B8C7D6E5F4,"Titular Sicar #2 (A consultar na matrícula/CAR)","Cascavel",14.70,5.02,,

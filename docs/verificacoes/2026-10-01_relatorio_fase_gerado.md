@@ -160,8 +160,8 @@ codigoOpacoInterprete,cameraName,gsdAlvoCm,aglNominalMetros,areaPoligonoHa,forma
 ```
 - **Amostra real das duas primeiras linhas:**
 ```csv
-VANT-BLIND-032D62B0BB,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
-VANT-BLIND-0C11BEF077,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
+VANT-BLIND-***[OMITIDO_CEGAMENTO]***,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
+VANT-BLIND-***[OMITIDO_CEGAMENTO]***,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
 ```
 
 #### 3.3 Metadados e Relatório de Aceitação JSON (`docs/verificacoes/voo_ncontrol/relatorio_aceitacao_y1_y6_2026-09-29.json`)

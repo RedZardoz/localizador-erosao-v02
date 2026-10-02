@@ -20,6 +20,8 @@
  *    nem versionar (`_v2`), protegendo os `pi_i` já selados.
  */
 
+import crypto from "node:crypto";
+import { execSync } from "node:child_process";
 import {
   exigirDecisao,
   DECISOES,
@@ -56,6 +58,50 @@ export class ErroPreCondicaoSorteioD16 extends Error {
   }
 }
 
+export class ErroSeloNaoIgnoradoGit extends Error {
+  constructor(caminho: string) {
+    super(
+      `[GRAVACAO_SELO_RECUSADA] O caminho '${caminho}' não está coberto pelo .gitignore. ` +
+      "Gravar o selo D16 sem cobertura estrita do .gitignore exporia a tabela reversa de cegamento " +
+      "no repositório (K2). A escrita do selo foi compulsoriamente abortada."
+    );
+    this.name = "ErroSeloNaoIgnoradoGit";
+  }
+}
+
+/**
+ * Verifica se um caminho de arquivo ou diretório está coberto pelo .gitignore do Git (K2).
+ */
+export function verificarCaminhoIgnoradoGit(caminhoArquivoOuDiretorio: string): boolean {
+  try {
+    const caminhoNormalizado = caminhoArquivoOuDiretorio.replace(/\\/g, "/");
+    execSync(`git check-ignore -q "${caminhoNormalizado}"`, {
+      stdio: "ignore",
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Assevera que o caminho de persistência do selo D16 está categoricamente ignorado pelo Git (K2).
+ * Lança ErroSeloNaoIgnoradoGit caso o caminho não esteja coberto pelo .gitignore.
+ */
+export function asseverarCaminhoSeloIgnoradoGit(caminhoArquivoOuDiretorio: string): void {
+  if (!verificarCaminhoIgnoradoGit(caminhoArquivoOuDiretorio)) {
+    throw new ErroSeloNaoIgnoradoGit(caminhoArquivoOuDiretorio);
+  }
+}
+
+/**
+ * Gera um código opaco com entropia criptográfica segura (Z5/K1).
+ */
+export function gerarCodigoOpacoSorteio(): string {
+  const bytes = crypto.randomBytes(5).toString("hex").toUpperCase();
+  return `VANT-BLIND-${bytes}`;
+}
+
 export interface CandidatoSorteioD16 extends CandidatoEstratificacao {
   classeWorldCover2020: number | null | undefined;
   classeWorldCover2021: number | null | undefined;
@@ -77,6 +123,7 @@ export interface CandidatoSorteioD16 extends CandidatoEstratificacao {
 export interface PoligonoSorteadoD16 {
   idPoligono: string;
   idCandidatoOrigem: string;
+  codigoOpacoVant: string;
   estratoId: string;
   papelConjunto: "treino" | "held-out";
   pi_i: number;
@@ -108,7 +155,7 @@ export interface PoligonoSorteadoD16 {
 }
 
 export interface SeloSorteioD16 {
-  versaoEsquema: "1.0.0" | "1.1.0";
+  versaoEsquema: "1.0.0" | "1.1.0" | "1.2.0";
   geradoEm: string;
   semente: number;
   politicaSemente: string;
@@ -128,6 +175,7 @@ export interface SeloSorteioD16 {
     { titulo: string; status: string; decididaEm?: string }
   >;
   poligonos: PoligonoSorteadoD16[];
+  tabelaCorrespondenciaOpaca: Record<string, string>;
 }
 
 export interface RelatorioPreCondicoesD16 {
@@ -396,6 +444,7 @@ export function sortearPoligonosDroneD16(
     sha256ConjuntoCandidatos: string;
     seloExistenteCaminho?: string | null;
     geradoEm?: string;
+    geradorCodigoOpaco?: (idPoligono: string) => string;
   }
 ): SeloSorteioD16 {
   const {
@@ -404,6 +453,7 @@ export function sortearPoligonosDroneD16(
     sha256ConjuntoCandidatos,
     seloExistenteCaminho = null,
     geradoEm = new Date().toISOString(),
+    geradorCodigoOpaco,
   } = opcoes;
 
   if (!Number.isFinite(semente) || !Number.isInteger(semente) || semente <= 0) {
@@ -432,6 +482,7 @@ export function sortearPoligonosDroneD16(
   const prng = criarPrng(semente);
 
   const poligonos: PoligonoSorteadoD16[] = [];
+  const tabelaCorrespondenciaOpaca: Record<string, string> = {};
   let seqPoligono = 1;
 
   for (const idEstrato of TODOS_ESTRATOS_D12) {
@@ -480,9 +531,15 @@ export function sortearPoligonosDroneD16(
       const idPoligono = `D16-${String(seqPoligono).padStart(2, "0")}-${idEstrato}`;
       seqPoligono++;
 
+      const codigoOpacoVant = geradorCodigoOpaco
+        ? geradorCodigoOpaco(idPoligono)
+        : gerarCodigoOpacoSorteio();
+      tabelaCorrespondenciaOpaca[idPoligono] = codigoOpacoVant;
+
       poligonos.push({
         idPoligono,
         idCandidatoOrigem: cand.id,
+        codigoOpacoVant,
         estratoId: idEstrato,
         papelConjunto,
         pi_i,
@@ -534,7 +591,7 @@ export function sortearPoligonosDroneD16(
   const hashIntegridade = `${(h1 >>> 0).toString(16).padStart(8, "0")}${(h2 >>> 0).toString(16).padStart(8, "0")}`;
 
   return {
-    versaoEsquema: "1.0.0",
+    versaoEsquema: "1.2.0",
     geradoEm,
     semente,
     politicaSemente: String(PARAMETROS.P07?.valor ?? "dinamica-registrada"),
@@ -577,6 +634,7 @@ export function sortearPoligonosDroneD16(
       },
     },
     poligonos,
+    tabelaCorrespondenciaOpaca,
   };
 }
 
@@ -653,6 +711,7 @@ export function sortear72PoligonosD16(
     seloExistenteCaminho?: string | null;
     gitCommit?: string;
     geradoEm?: string;
+    geradorCodigoOpaco?: (idPoligono: string) => string;
   }
 ): SeloSorteioD16 {
   const relatorio = verificarPreCondicoesSorteioD16(candidatos, {
@@ -673,6 +732,7 @@ export function sortear72PoligonosD16(
   const particao = particionarCandidatosEm18Estratos(candidatos);
   const prng = criarPrng(opcoes.semente);
   const poligonos: PoligonoSorteadoD16[] = [];
+  const tabelaCorrespondenciaOpaca: Record<string, string> = {};
 
   for (const idEstrato of TODOS_ESTRATOS_D12) {
     const listaOriginal = [...particao.estratosMap[idEstrato]].sort((a, b) =>
@@ -738,9 +798,17 @@ export function sortear72PoligonosD16(
       }
       const papel = papeis[k];
       const sufixoOrdem = String(k + 1).padStart(2, "0");
+      const idPoligono = `D16_${idEstrato}_Q${sufixoOrdem}`;
+
+      const codigoOpacoVant = opcoes.geradorCodigoOpaco
+        ? opcoes.geradorCodigoOpaco(idPoligono)
+        : gerarCodigoOpacoSorteio();
+      tabelaCorrespondenciaOpaca[idPoligono] = codigoOpacoVant;
+
       poligonos.push({
-        idPoligono: `D16_${idEstrato}_Q${sufixoOrdem}`,
+        idPoligono,
         idCandidatoOrigem: String(c.id),
+        codigoOpacoVant,
         estratoId: idEstrato,
         papelConjunto: papel,
         pi_i,
@@ -774,7 +842,7 @@ export function sortear72PoligonosD16(
   const gitCommit = opcoes.gitCommit ?? "HEAD";
 
   return {
-    versaoEsquema: "1.1.0",
+    versaoEsquema: "1.2.0",
     geradoEm,
     semente: opcoes.semente,
     politicaSemente: String(PARAMETROS.P07.valor ?? "dinamica-registrada"),
@@ -817,6 +885,7 @@ export function sortear72PoligonosD16(
       },
     },
     poligonos,
+    tabelaCorrespondenciaOpaca,
   };
 }
 

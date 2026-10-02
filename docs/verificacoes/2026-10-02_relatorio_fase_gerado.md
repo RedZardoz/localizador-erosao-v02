@@ -19,79 +19,81 @@
 ```text
 [1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90mC:/Users/lalfr/Docs Fora do Ar/LUIS ALFREDO/01 - MESTRADO PPGTCA 2026/02 - PESQUISA EROSÃO LAMINAR/geolocalizacao-erosao-propriedade[39m
 
- [32m✓[39m src/lib/seguranca/verificacoes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 517[2mms[22m[39m
-       [33m[2m✓[22m[39m toda afirmação VERIFICADO em código deve apontar para arquivo existente em docs/verificacoes/ [33m 507[2mms[22m[39m
- [32m✓[39m src/lib/gee/amostragemSoloNuLote.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 164[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/importacoes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 625[2mms[22m[39m
-       [33m[2m✓[22m[39m nenhum arquivo em src/ importa de legado/ [33m 618[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/detectorSequencia.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 453[2mms[22m[39m
-       [33m[2m✓[22m[39m nenhum artefato JSON ativo em docs/verificacoes deve conter séries numéricas com |r| > 0.95 [33m 443[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/padroesProibidos.test.ts [2m([22m[2m18 tests[22m[2m)[22m[33m 1358[2mms[22m[39m
-       [33m[2m✓[22m[39m nenhum arquivo em src/lib, src/app/api, src/store ou src/config deve conter padrões proibidos [33m 595[2mms[22m[39m
-       [33m[2m✓[22m[39m assevera que nenhum artefato JSON de medição em docs/verificacoes/ contém séries numéricas correlacionadas com a ordem do arquivo [33m 340[2mms[22m[39m
- [32m✓[39m src/lib/jev/jevClient.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 348[2mms[22m[39m
-       [33m[2m✓[22m[39m assevera que nenhum valor originado do JEV alcança montarLinhaDeBaseRUSLE ou perdaSolo [33m 317[2mms[22m[39m
- [32m✓[39m src/lib/gee/sorteioPoligonos.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 107[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/gerarRelatorioFase.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 222[2mms[22m[39m
- [32m✓[39m src/lib/export/pacoteReprodutibilidade.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 101[2mms[22m[39m
- [32m✓[39m src/lib/planet/planet.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 41[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/diarioRequisicoes.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 76[2mms[22m[39m
- [32m✓[39m src/lib/gee/copernicusGeeClient.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 61[2mms[22m[39m
- [32m✓[39m src/lib/embrapa/embrapaSoilClient.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 60[2mms[22m[39m
- [32m✓[39m src/lib/export/planilha.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 55[2mms[22m[39m
- [32m✓[39m src/lib/fundiario/calculadoraDesenho.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 41[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/credenciaisSeguras.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 46[2mms[22m[39m
- [32m✓[39m src/components/inspetor/InspetorPonto.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 45[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/provenienciaCaminhos.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 35[2mms[22m[39m
- [32m✓[39m src/lib/chuva/chuva.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 32[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/cegamentoArtefatos.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 33[2mms[22m[39m
- [32m✓[39m src/config/tourMetodologico.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 12[2mms[22m[39m
- [32m✓[39m src/lib/matriz/montagemTemporal.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 30[2mms[22m[39m
- [32m✓[39m src/lib/rusle/rusle.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/verificacoes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 740[2mms[22m[39m
+       [33m[2m✓[22m[39m toda afirmação VERIFICADO em código deve apontar para arquivo existente em docs/verificacoes/ [33m 718[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/detectorSequencia.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 724[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum artefato JSON ativo em docs/verificacoes deve conter séries numéricas com |r| > 0.95 [33m 705[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/importacoes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 952[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum arquivo em src/ importa de legado/ [33m 944[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/padroesProibidos.test.ts [2m([22m[2m18 tests[22m[2m)[22m[33m 1990[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum arquivo em src/lib, src/app/api, src/store ou src/config deve conter padrões proibidos [33m 473[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum componente em src/components/**/*.tsx deve conter literais de data/código entre aspas ou adquiridoEm fabricado [33m 324[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum script em scripts/ deve conter geração sintética não documentada ou padrões proibidos [33m 382[2mms[22m[39m
+       [33m[2m✓[22m[39m assevera que nenhum artefato JSON de medição em docs/verificacoes/ contém séries numéricas correlacionadas com a ordem do arquivo [33m 493[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/gerarRelatorioFase.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 325[2mms[22m[39m
+ [32m✓[39m src/lib/gee/sorteioPoligonos.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 142[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/cegamentoArtefatos.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 3128[2mms[22m[39m
+     [33m[2m✓[22m[39m nenhum arquivo sob controle de versão (git) deve conter simultaneamente código opaco VANT-BLIND-* e identificador de polígono D16_E_* (K2) [33m 3033[2mms[22m[39m
+ [32m✓[39m src/lib/jev/jevClient.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 233[2mms[22m[39m
+ [32m✓[39m src/lib/embrapa/embrapaSoilClient.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 136[2mms[22m[39m
+ [32m✓[39m src/lib/gee/amostragemSoloNuLote.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 361[2mms[22m[39m
+ [32m✓[39m src/lib/planet/planet.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 157[2mms[22m[39m
+ [32m✓[39m src/lib/export/pacoteReprodutibilidade.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 583[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/diarioRequisicoes.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 214[2mms[22m[39m
+ [32m✓[39m src/lib/gee/copernicusGeeClient.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 73[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/credenciaisSeguras.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 62[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/fatorR.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/lib/export/planilha.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 99[2mms[22m[39m
+ [32m✓[39m src/components/inspetor/InspetorPonto.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 65[2mms[22m[39m
+ [32m✓[39m src/lib/fundiario/calculadoraDesenho.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 63[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/provenienciaCaminhos.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 67[2mms[22m[39m
+ [32m✓[39m src/lib/gee/auth.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/lib/chuva/chuva.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+ [32m✓[39m src/lib/gee/amostragemBiofisica.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/lib/matriz/montagemTemporal.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 34[2mms[22m[39m
  [32m✓[39m src/lib/gee/compostoSoloNu.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 26[2mms[22m[39m
- [32m✓[39m src/config/decisoes.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 23[2mms[22m[39m
- [32m✓[39m src/lib/gee/persistenciaTemporal.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 45[2mms[22m[39m
- [32m✓[39m src/lib/rotulos/ingestaoColetor.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 15[2mms[22m[39m
- [32m✓[39m src/lib/gee/auth.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 21[2mms[22m[39m
- [32m✓[39m src/lib/rotulos/rotulos.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 22[2mms[22m[39m
- [32m✓[39m src/lib/rusle/fatorK.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 20[2mms[22m[39m
- [32m✓[39m src/lib/padraoOuro/validacaoMatricial.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 20[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/guardaSintetico.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/localOnly.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 22[2mms[22m[39m
- [32m✓[39m src/lib/matriz/invariantes.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 13[2mms[22m[39m
- [32m✓[39m src/lib/gee/estratificacao.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 15[2mms[22m[39m
- [32m✓[39m src/lib/fundiario/selecaoPontoElegivel.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 12[2mms[22m[39m
- [32m✓[39m src/lib/rusle/fatorR.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 16[2mms[22m[39m
- [32m✓[39m src/lib/rusle/fatorLS.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 13[2mms[22m[39m
- [32m✓[39m src/lib/gee/serieTemporal.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 12[2mms[22m[39m
- [32m✓[39m src/lib/gee/terreno.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 13[2mms[22m[39m
- [32m✓[39m src/lib/localizacao/localizacao.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 12[2mms[22m[39m
- [32m✓[39m src/lib/gee/elegibilidade.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 11[2mms[22m[39m
- [32m✓[39m src/lib/gee/blocosEspaciais.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 12[2mms[22m[39m
- [32m✓[39m src/lib/gee/versaoMotor.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 14[2mms[22m[39m
- [32m✓[39m src/lib/gee/thinning.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 10[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/sessaoEfemera.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
- [32m✓[39m src/lib/gee/harmonicos.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
- [32m✓[39m src/store/useSarelStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
- [32m✓[39m src/lib/export/dms.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
- [32m✓[39m src/lib/gee/estatisticasSerie.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
- [32m✓[39m src/store/interfaceIntegration.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
- [32m✓[39m src/lib/gee/aoiTiling.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
- [32m✓[39m src/components/decisoes/PainelCriterioRefutacaoD25.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
- [32m✓[39m src/lib/gee/amostragemBiofisica.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
- [32m✓[39m src/config/areaInteresse.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
- [32m✓[39m src/lib/fundiario/matcher.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 8924[2mms[22m[39m
-     [33m[2m✓[22m[39m deve encontrar uma propriedade rural oficial indexada no SQLite local [33m 2700[2mms[22m[39m
-     [33m[2m✓[22m[39m deve retornar status sem-correspondencia para coordenada fora de qualquer perímetro cadastrado [33m 2057[2mms[22m[39m
-     [33m[2m✓[22m[39m deve retornar status base-nao-disponivel para UF fora da cobertura (ex: BA) [33m 2005[2mms[22m[39m
-     [33m[2m✓[22m[39m deve executar batchMatchRuralProperties em lote com integridade de status [33m 2135[2mms[22m[39m
- [32m✓[39m src/lib/drone/planoVooNControl.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 9871[2mms[22m[39m
-     [33m[2m✓[22m[39m Z1 & W3: amostrador real do Copernicus DEM GLO-30 lê os tiles oficiais com isolamento de PROJ_LIB, confere cota contra benchmark independente e recusa NoData / fora de borda (P12) [33m 9742[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/rusle.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m src/lib/gee/persistenciaTemporal.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m src/lib/rotulos/ingestaoColetor.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/lib/rotulos/rotulos.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/localOnly.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m src/config/decisoes.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m src/lib/gee/estratificacao.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 129[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/fatorLS.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/lib/matriz/invariantes.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/fatorK.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m src/config/tourMetodologico.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/lib/gee/serieTemporal.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m src/lib/gee/versaoMotor.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/lib/padraoOuro/validacaoMatricial.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/lib/gee/terreno.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/lib/fundiario/selecaoPontoElegivel.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/components/decisoes/PainelCriterioRefutacaoD25.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/lib/gee/blocosEspaciais.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/sessaoEfemera.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/guardaSintetico.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/lib/localizacao/localizacao.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/lib/gee/harmonicos.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/config/areaInteresse.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/lib/gee/elegibilidade.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/lib/gee/thinning.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/store/interfaceIntegration.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/store/useSarelStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/lib/gee/aoiTiling.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/lib/export/dms.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/lib/gee/estatisticasSerie.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/lib/fundiario/matcher.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 19097[2mms[22m[39m
+     [33m[2m✓[22m[39m deve encontrar uma propriedade rural oficial indexada no SQLite local [33m 5253[2mms[22m[39m
+     [33m[2m✓[22m[39m deve retornar status sem-correspondencia para coordenada fora de qualquer perímetro cadastrado [33m 4568[2mms[22m[39m
+     [33m[2m✓[22m[39m deve retornar status base-nao-disponivel para UF fora da cobertura (ex: BA) [33m 5217[2mms[22m[39m
+     [33m[2m✓[22m[39m deve executar batchMatchRuralProperties em lote com integridade de status [33m 4033[2mms[22m[39m
+ [32m✓[39m src/lib/drone/planoVooNControl.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 22780[2mms[22m[39m
+     [33m[2m✓[22m[39m Z1 & W3: amostrador real do Copernicus DEM GLO-30 lê os tiles oficiais com isolamento de PROJ_LIB, confere cota contra benchmark independente e recusa NoData / fora de borda (P12) [33m 22515[2mms[22m[39m
 
 [2m Test Files [22m [1m[32m57 passed[39m[22m[90m (57)[39m
-[2m      Tests [22m [1m[32m421 passed[39m[22m[90m (421)[39m
-[2m   Start at [22m 13:59:30
-[2m   Duration [22m 10.73s[2m (transform 4.18s, setup 0ms, import 8.26s, tests 23.74s, environment 10ms)[22m
+[2m      Tests [22m [1m[32m423 passed[39m[22m[90m (423)[39m
+[2m   Start at [22m 16:25:03
+[2m   Duration [22m 25.04s[2m (transform 7.95s, setup 0ms, import 15.51s, tests 52.85s, environment 18ms)[22m
 
 
 [33mThe plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the [1mresolve.tsconfigPaths[22m option. You can remove the plugin and set [1mresolve.tsconfigPaths: true[22m in your Vite config instead.[39m
@@ -102,9 +104,9 @@
 
 | Caminho Relativo | Existe? | Tamanho (Bytes) | SHA-256 |
 |---|:---:|---:|---|
-| `src/lib/drone/planoVooNControl.ts` | Sim | 71.239 | `1ef9b02f3ded33a3614a115be5bc3d75d14e2c12568ddceb651b87222f3e1ccf` |
-| `src/lib/drone/planoVooNControl.test.ts` | Sim | 22.302 | `defbf5a304650b3e7bbbca706438064e6153f6441a4d02d161e8b33ae1a12459` |
-| `src/lib/seguranca/cegamentoArtefatos.test.ts` | Sim | 4.243 | `886459e136f896f6cb32d639d18072d7c4ed90145d0c0c1e6dcad142bbc8b13f` |
+| `src/lib/drone/planoVooNControl.ts` | Sim | 73.696 | `35c685f6277ef381b3f108ce3e5fa4e8459739fc1a4819a40e35f2650c42136b` |
+| `src/lib/drone/planoVooNControl.test.ts` | Sim | 27.802 | `acc496c379e1eec9b3dd64ebc2439ed58c81db319315c153704a13b8a7a48830` |
+| `src/lib/seguranca/cegamentoArtefatos.test.ts` | Sim | 6.411 | `1751f8538f1f0e60bc3d05620aab57c0f0c6d80fcedecdab14be1e773a50cfdd` |
 | `src/lib/fundiario/selecaoPontoElegivel.ts` | Sim | 6.767 | `9883d9b657b6d6fcbfa2c51d9d23e9fafa250f5dc1ead731c5035ef1c0631938` |
 | `src/lib/fundiario/selecaoPontoElegivel.test.ts` | Sim | 6.038 | `c34351b7bab327e812d20724fdf12c1c6a64b09f0682bb40cf13283347b09e50` |
 | `src/lib/fundiario/calculadoraDesenho.ts` | Sim | 17.129 | `c3df5f02e7287e03179e738bd5fd4ac034a90f73aa2e409553552d9ee5dbefb5` |
@@ -115,10 +117,12 @@
 | `docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_jornada_01_terrainfollow.plan` | Sim | 127.750 | `791e49af00d8ed06ff5a42175effe6179414d7636c28f5aabbeca96ac912f779` |
 | `docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_jornada_01_altfixa.plan` | Sim | 127.756 | `81e8536a5c1a65fe2de1b299fcdd37abc7034a436ad87fdc8bbafb47e7c875b8` |
 | `docs/verificacoes/voo_ncontrol/relatorio_aceitacao_y1_y6_2026-09-29.json` | Sim | 2.231 | `c6c5ba0cd6c2b13e21532e23626297ad4717765eed6e470ee645490bbb3cf77d` |
-| `docs/verificacoes/voo_ncontrol/roteiro_jornadas_72poligonos.csv` | Sim | 16.325 | `2af484250487948becf7be9ddbfeaa47a0da4ffb83c395e151084f440902c609` |
-| `docs/verificacoes/voo_ncontrol/tabela_autorizacao_proprietarios_72poligonos.csv` | Sim | 10.112 | `40048f02026254dd1ced149cc396708aa0bd76bb4bee65c254333dab2266f805` |
-| `docs/verificacoes/voo_ncontrol/manifesto_interprete_cego_72poligonos.csv` | Sim | 8.704 | `2742b0b53150d023c26abcfbe1ebc832344a82e0c39f3c19f3e2a6d2178b2f14` |
-| `docs/verificacoes/voo_ncontrol/roteiro_jornadas_72poligonos.pdf` | Sim | 16.155 | `58eda8e604bc96918d9f282ad568dd555bafce654e2974f2dbc2735146aeb11a` |
+| `src/lib/gee/sorteioPoligonos.ts` | Sim | 31.572 | `4006bd628c1d78dc6da6b15448e3099e145e62ec515540b32ee2514ef71d7c5f` |
+| `src/app/api/gee/sorteio-d16/route.ts` | Sim | 6.227 | `52b1799064b85b1cd108bb54e00a08974c2d702ae6dd1f0c439cd41186d591e2` |
+| `docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv` | Sim | 16.392 | `d6913fd6fa8b8c2eb92a8ed6360c7e7ba981f191ac0da80c630f7ba706dcefb6` |
+| `docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_tabela_autorizacao_proprietarios_72poligonos.csv` | Sim | 10.179 | `e1e70d931f244c8b453caeaceaf5ecc8c4fdf0b0ce3b5f8353d6b8754cecbbed` |
+| `docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_manifesto_interprete_cego_72poligonos.csv` | Sim | 8.771 | `fd61a60717eaa9081e96fb8d9cd81365364990290880010f1e08414d567fec46` |
+| `docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.pdf` | Sim | 16.465 | `f81d99f836f26f164057e6164dce0f79dc63538169370d7688b7eddc3c41d3ff` |
 | `docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json` | Sim | 2.411 | `c456b095ab746e8fcc935a45a77331c9fd0dfa72ec2bb8fe7d6cac5e0b91dbf8` |
 | `docs/verificacoes/2026-09-30_remedicao_candidatos_bp3_d16.md` | Sim | 3.389 | `06de7d30a798a9ab7d2735222ea17a7b2985c43aebef4a40471f3c6b17d39ee3` |
 | `docs/verificacoes/cache_pedologia_bp3.json` | Sim | 96.740 | `1f03c945a3b40436f24b17f33d23866e1e78f5a4ba6a0f27a04a80eb5e8f8d66` |
@@ -165,7 +169,7 @@
 
 ### 3. Extração Direta dos Artefatos de Voo
 
-#### 3.1 Roteiro do Piloto (`docs/verificacoes/voo_ncontrol/roteiro_jornadas_72poligonos.csv`)
+#### 3.1 Roteiro do Piloto (`docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv`)
 - **Total de linhas de polígonos**: 72 (esperado: 72)
 - **Cabeçalho autêntico no arquivo:**
 ```csv
@@ -179,16 +183,16 @@ JORNADA_01,2,D16_E_1_1_1_Q02,E_1_1_1,treino,"Cascavel",PR-4115200-1002A9B8C7D6E5
 - **Auditoria de Cegamento no Roteiro:**
   - ✅ **APROVADO:** Roteiro do piloto livre de códigos opacos de intérprete (W2).
 
-#### 3.2 Manifesto Cego do Intérprete (`docs/verificacoes/voo_ncontrol/manifesto_interprete_cego_72poligonos.csv`)
+#### 3.2 Manifesto Cego do Intérprete (`docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_manifesto_interprete_cego_72poligonos.csv`)
 - **Total de linhas de registros cegos**: 72 (esperado: 72)
 - **Cabeçalho autêntico no arquivo:**
 ```csv
 codigoOpacoInterprete,cameraName,gsdAlvoCm,aglNominalMetros,areaPoligonoHa,formatoEntregaOrtomosaico,protocoloDelineacao,dataColetaCampo
 ```
-- **Amostra real das duas primeiras linhas:**
+- **Amostra real das duas primeiras linhas (com código opaco mascarado para proteção pericial):**
 ```csv
-VANT-BLIND-02520E0C32,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
-VANT-BLIND-03A521DD65,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
+VANT-BLIND-***[OMITIDO_CEGAMENTO]***,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
+VANT-BLIND-***[OMITIDO_CEGAMENTO]***,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
 ```
 
 #### 3.3 Metadados e Relatório de Aceitação JSON (`docs/verificacoes/voo_ncontrol/relatorio_aceitacao_y1_y6_2026-09-29.json`)
@@ -242,68 +246,63 @@ VANT-BLIND-03A521DD65,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia
 | Câmera do Voo | `Micasense Altum` | `relatorio_aceitacao_y1_y6_2026-09-29.json` -> `metadadosCampanha.camera` |
 | GSD Alvo | `4.0 cm` | `relatorio_aceitacao_y1_y6_2026-09-29.json` -> `metadadosCampanha.gsdAlvoCm` |
 | AGL Nominal Desejada | `92.764 m` | `relatorio_aceitacao_y1_y6_2026-09-29.json` -> `metadadosCampanha.aglDesejadaMetros` |
-| Total de Polígonos | `72` | `roteiro_jornadas_72poligonos.csv` (72 registros) |
+| Total de Polígonos | `72` | `SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv` (72 registros) |
 | Total de Jornadas | `12` | `relatorio_aceitacao_y1_y6_2026-09-29.json` -> `metadadosCampanha.totalJornadas` |
 | Polígonos por Jornada | `6` | `relatorio_aceitacao_y1_y6_2026-09-29.json` -> `metadadosCampanha.maxPoligonosPorJornada` |
 | Tiles DEM Utilizados | `S25_W054, S25_W055, S26_W054, S26_W055` | `relatorio_aceitacao_y1_y6_2026-09-29.json` -> `metadadosCampanha.tilesDEMUtilizados` |
-| Relação Curva de Nível | `anguloFaixas = (aspecto + 90°) % 360` | `roteiro_jornadas_72poligonos.csv` -> colunas `aspectoMedidoGraus`, `orientacaoPoligonoGraus`, `anguloFaixasGraus` |
+| Relação Curva de Nível | `anguloFaixas = (aspecto + 90°) % 360` | `SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv` -> colunas `aspectoMedidoGraus`, `orientacaoPoligonoGraus`, `anguloFaixasGraus` |
 
 ---
 
 ## Leitura e juízo
 
-### 1. Diretriz J1 — Cegamento Efetivo e Separação entre Registro e Inspeção
-- **Cegamento Dinamicamente Derivado:**
-  - O campo `cego` no rótulo humano deixou de ser um literal estático `true` fixo em código e passou a ser estritamente **derivado** do modo de exibição (`modo === "registro"`).
-  - No modo de registro, a interface é blindada: nenhum estrato (`estratoId`), tercil (S, E), nível de K ou campo proibido de predição/modelo (`CAMPOS_PROIBIDOS_MATRIZ_TREINO`, como `scoreJev`, `scoreSuscetibilidade`, `laudoJev`, `phiDiag`) é renderizado ou acessível.
-- **Bifurcação Estrita de Telas:**
-  - **Modo de Registro:** mostra unicamente o código do ponto, coordenadas geográficas, imagens e formulário de observação com alvo contínuo D26. Contém o botão exclusivo para gravar/consolidar o laudo humano sob protocolo cego.
-  - **Modo de Inspeção:** exibe a estratificação completa, séries temporais, proveniências e laudos de auditoria. O botão de gravar rótulo humano **não existe** e é substituído por aviso de gravação desabilitada.
-- **Evidência por Teste Automatizado:**
-  - Testes unitários em `src/components/inspetor/InspetorPonto.test.ts` (4 testes aprovados) asseveram que `estratoId` e os termos de modelo nunca vazam no modo de registro, e que `cego` é atestado com rigor epistêmico.
+### 1. Diretriz K1 — Origem dos Códigos Opacos no Selo de Sorteio e Determinismo Estrito
+- **Migração do Nascimento do Código Opaco:**
+  - O código opaco `VANT-BLIND-*` deixou de ser gerado de forma estocástica e efêmera na exportação dos planos de voo. Ele passa a nascer compulsoriamente no sorteio formal (`src/lib/gee/sorteioPoligonos.ts`), com entropia criptográfica segura (`crypto.randomBytes(5)`), sendo registrado no próprio selo de auditoria (`SeloSorteioD16`) sob o campo `tabelaCorrespondenciaOpaca: Record<string, string>` e no atributo `codigoOpacoVant` de cada polígono sorteado.
+  - A versão do esquema do selo foi formalmente elevada para `"1.2.0"`.
+- **Determinismo Pericial na Exportação:**
+  - Em `src/lib/drone/planoVooNControl.ts`, a exportação passa a **ler** o código opaco exclusivamente a partir do selo fornecido (`seloSorteioD16?.tabelaCorrespondenciaOpaca` ou `tabelaCorrespondenciaOpaca` ou `item.codigoOpacoVant`).
+  - Duas exportações consecutivas a partir do mesmo selo produzem manifestos rigorosamente idênticos byte a byte, garantindo que o intérprete cego receba o mesmo identificador estável em qualquer momento do ciclo de vida da pesquisa.
+  - Evidência por teste automatizado aprovado em `src/lib/drone/planoVooNControl.test.ts` (`K1: código opaco nasce no selo de sorteio e é determinístico em sucessivas exportações sobre o mesmo selo, recusando exportação sem selo`).
 
-### 2. Diretriz J1 — Papel no Conjunto, Concordância Inter-Observador e Divergência
-- **Papel no Conjunto (`papelConjunto`):**
-  - Eliminado o literal padrão `"treino"` na gravação do rótulo humano. O papel é agora herdado da designação oficial de D16 selada no sorteio (`ponto.papelConjunto`), ou assume `"indisponivel"` quando o ponto não possuir designação formal de partição.
-- **Concordância Inter-Observador (`kappa` e `divergencia`):**
-  - Eliminada a afirmação fictícia de concordância (`kappa: null` com `divergencia: "nenhuma"`).
-  - Sem a realização de uma segunda observação independente pericial, a divergência inicial é estritamente tipada e gravada como `"indisponivel"`, e o kappa permanece `null`.
+### 2. Diretriz K1 — Comportamento da Exportação na Ausência de Selo de Sorteio
+- **Recusa Tipada e Falha Cedo (P12):**
+  - Quando a exportação de campanha for invocada sem um selo de sorteio auditado ou sem correspondência opaca registrada para qualquer polígono da lista, o sistema **recusa compulsoriamente a operação** disparando a exceção `ErroManifestoSemSeloSorteio`.
+  - Mensagem pericial: `[CEGAMENTO_SELO_RECUSADO] Exportação do manifesto cego do intérprete recusada: selo de sorteio D16 ausente ou código opaco não registrado para o polígono '...'. É expressamente proibido inventar códigos opacos na exportação para polígonos sem correspondência no selo (K1).`
+  - Nenhum plano de voo, roteiro, tabela de autorização ou manifesto é emitido pela metade. É terminantemente proibido inventar códigos opacos efêmeros na exportação.
 
-### 3. Diretriz J2 — Aposentadoria de Kobo e Fotointerpretação e Ingestão do SAREL Coletor
-- **Substituição do KoboCollect pelo SAREL Coletor (D16 item 5):**
-  - Criado o módulo `src/lib/rotulos/ingestaoColetor.ts`, processando as 28 colunas canônicas do formulário móvel Android + métricas GNSS de média estática.
-  - Validação da tolerância geodésica P03 (15 m nominal, 25 m com ressalva, rejeição acima de 25 m) e rejeição compulsória de coordenadas simuladas (`fix_simulado`, Invariante 5 / P12).
-- **Aposentadoria Formal da Fotointerpretação (D16 item 4):**
-  - Sob D16, a fotointerpretação satélite foi aposentada em favor da delineação vetorial sobre ortomosaicos centimétricos de VANT (~4 cm GSD).
-  - Todas as referências no front-end (`FiltersPanel.tsx`, `PainelCampanha.tsx`, `PainelCampanhaModal.tsx`) foram atualizadas com notas explícitas registrando a aposentadoria por D16.
-- **Preservação de Histórico e Legado:**
-  - Nenhum dado antigo foi apagado: criada a aba dedicada "Legado e Histórico" em `PainelCampanha.tsx` com visualização isolada e advertência metodológica clara.
-  - A aba de campanha foi reenquadrada para refletir os 3 conjuntos de D16: 72 polígonos de VANT (36 treino + 36 held-out), 60 a 80 pontos de campo âncora fora dos polígonos para calibração de prevalência, e confirmação prospectiva.
+### 3. Diretriz K2 — Blindagem do Selo no Git e Guarda Ativa em Código
+- **Exclusão do Selo no Controle de Versão:**
+  - O diretório `docs/verificacoes/sorteio/` foi formalmente inserido no `.gitignore`. A exclusão foi verificada e atestada com sucesso via comando `git check-ignore -v docs/verificacoes/sorteio/selo_sorteio_d16_exemplo.json`.
+  - Essa segregação garante que a chave reversa de decodificação (`D16_E_* ↔ VANT-BLIND-*`) nunca seja comitada no repositório público ou privado, preservando o cegamento absoluto do intérprete humano (Z5).
+- **Guarda Compulsória em Tempo de Execução:**
+  - Implementada a função pericial `asseverarCaminhoSeloIgnoradoGit(caminhoSeloAbsoluto)` em `src/lib/gee/sorteioPoligonos.ts`, acionada na API `src/app/api/gee/sorteio-d16/route.ts` antes de criar pastas ou gravar qualquer arquivo de selo no disco.
+  - A guarda invoca `git check-ignore` de forma síncrona. Se o caminho não estiver coberto pelo `.gitignore`, a gravação é imediatamente abortada com `ErroSeloNaoIgnoradoGit`, impedindo a criação do arquivo antes que ocorra risco de vazamento acidental.
 
-### 4. Diretriz J3 — Alvo Contínuo (D26), Critério de Refutação (D25) e Regime de Dados (D24)
-- **Hierarquia Rígida de Alvos (D26):**
-  - A interface exibe como **alvo primário** a fração contínua $[0, 1]$ da célula de 10 m delineada como erodida sob VANT, ajustada com objetivo Tweedie (`reg:tweedie`) para tratar inflação de zeros e comparada por correlação de Spearman ($ho$).
-  - O alvo binário derivado a 25% ($ge 25\text{ m}^2$ em célula de $100\text{ m}^2$) é exibido como **estritamente secundário** e assim rotulado na hierarquia pericial.
-- **Painel do Critério de Refutação Pré-Registrado (D25):**
-  - Implementado o componente `src/components/decisoes/PainelCriterioRefutacaoD25.tsx` integrado em `DecisoesModal.tsx`.
-  - Exibe os 3 competidores emparelhados (RUSLE, Regressão Penalizada, XGBoost), o piso de utilidade $\rho \ge 0,40$, a margem $\Delta\rho \ge 0,10$, o IC 95% por bootstrap agrupado por polígono, os 3 desfechos ternários (Corroborada | Inconclusiva | Refutada) e a regra de parcimônia.
-  - **Estado Obrigatório da Avaliação:** O painel estampa expressamente **"ESTADO: NÃO AVALIADO"**, acompanhado de alerta metodológico proibindo antecipação de resultados antes do sobrevoo e delineação do held-out de VANT (P12).
-- **Regime de Dados (D24):**
-  - Tabela dos tetos por bloco físico (Espectro-temporal: 8; Terreno: 4; Solo: 1; Chuva: 1; máx: 14 preditores).
-  - Evidencia com transparência que 3 dos 4 blocos operam abaixo do regime recomendado de 200 eventos/variável, sendo mantidos por necessidade física (Invariante 1) com mitigação por monotonicidade.
-- **Estado do Sorteio no `PainelSorteioD16.tsx`:**
-  - O painel consome o artefato real `docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json` via `/api/gee/sorteio-d16`, estampando o estado real **BLOQUEADO (Ê NÃO MEDIDO — P12)** e desabilitando o botão de sorteio.
+### 4. Diretriz K3 — Marca de Sintético em Todos os Artefatos Irmãos da Campanha
+- **Nomes Finais dos Artefatos de Demonstração:**
+  - Os quatro artefatos gerados a partir de polígonos sintéticos foram padronizados com o prefixo inequívoco `SINTETICO_NAO_VOAR_`:
+    1. `docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv`
+    2. `docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.pdf`
+    3. `docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_tabela_autorizacao_proprietarios_72poligonos.csv`
+    4. `docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_manifesto_interprete_cego_72poligonos.csv`
+  - A renomeação foi executada no Git via `git mv`, preservando o histórico de auditoria.
+- **Marcação no Conteúdo Interno:**
+  - **Nos arquivos CSV:** A primeira linha contém compulsoriamente o comentário pericial:
+    `# SINTETICO_NAO_VOAR - DADOS DE DEMONSTRACAO (NAO OPERAR EM CAMPO)`
+    Isso impede que uma cópia do conteúdo desprovida do nome de arquivo original seja acidentalmente utilizada em campo para contato com proprietários rurais do CAR.
+  - **No arquivo PDF:** O topo da primeira página estampa a faixa destacada:
+    `*** SINTETICO_NAO_VOAR - DADOS DE DEMONSTRACAO (NAO OPERAR EM CAMPO) ***`
+- **Generalização da Guarda Z3:**
+  - A guarda de segurança de Z3 em `exportarCampanhaVooNControl` foi expandida: se a origem for sintética e a opção explícita `permitirPlanoSinteticoDemonstracao: true` não for informada, **toda a exportação é abortada** com `ErroEmissaoPlanoSinteticoRecusada`, impedindo a geração de qualquer um dos quatro artefatos irmãos.
 
-### 5. Diretriz J4 — Centralização de Coordenadas da BP3 e Separação entre Método e Parâmetro
-- **Extração das 25 Ocorrências para Configuração Central:**
-  - Todas as 25 ocorrências de coordenadas e parâmetros da BP3 identificadas no levantamento foram unificadas em `src/config/areaInteresse.ts` (`AREA_INTERESSE_BP3` e `AREA_INTERESSE_PADRAO`).
-  - Atualizados os 6 componentes mapeados: `RegionRequestModal.tsx` (14 ocorrências), `MapViewer.tsx` (3 ocorrências), `PainelCampanha.tsx` (3 ocorrências), `MapaAmostral.tsx` (2 ocorrências), `CandidateSelectionModal.tsx` (2 ocorrências) e `CalculadoraDesenhoAmostral.tsx` (1 ocorrência).
-- **Rotulagem Explícita de Parâmetro do Estudo:**
-  - Todos os elementos visuais associados à BP3 foram rotulados na UI como `"nesta bacia (BP3 — parâmetro do estudo)"`, diferenciando com clareza o que é propriedade local do que é método universal.
-- **Preservação Inviolável de `src/config/decisoes.ts` (P8) e Proposta Futura:**
-  - Em conformidade estrita com P8, `src/config/decisoes.ts` não sofreu alterações.
-  - A mistura metodológica entre método e parâmetro permanece dentro das decisões locais (ex.: D07 com declividade de 3% a 20% da BP3; D12/D16 com 18 estratos de tercis e 72 polígonos; D18 com buffer de 0,25 km²).
-  - **Proposta para o momento metodológico apropriado:** Bifurcar cada decisão em duas estruturas tipadas — `metodo` (invariante: estratificação tridimensional, protocolo cego, agrupamento held-out) e `instanciaEstudo` (parâmetros da BP3: recortes geográficos, limiares de tercil e fontes pedológicas locais), viabilizando a futura generalização preditiva sem comprometer a integridade desta dissertação.
+### 5. Auditoria de Cegamento Estendida em Arquivos Versionados
+- **Varredura Completa com `git ls-files`:**
+  - O teste `src/lib/seguranca/cegamentoArtefatos.test.ts` foi estendido com a suíte `"Auditoria Estrita de Cegamento em Arquivos Versionados (K2)"`.
+  - O teste executa `git ls-files`, lê cada arquivo sob controle de versão e verifica a ocorrência simultânea de códigos opacos `VANT-BLIND-*` e identificadores de polígono `D16_E_*` / `D16_S*`.
+  - **Resultado da Varredura:** 100% aprovado. Nenhum arquivo versionado contém o par de correspondência.
+- **Saneamento Preventivo dos Relatórios de Fase:**
+  - As amostras do manifesto cego exibidas nos relatórios periciais de fase (`2026-09-30`, `2026-10-01` e `2026-10-02`) tiveram os códigos literais substituídos por `VANT-BLIND-***[OMITIDO_CEGAMENTO]***`, eliminando qualquer possibilidade de correspondência visual entre os artefatos de documentação e as tabelas de campo.
 
 ---
 **Identificação do Agente-Executor:** Antigravity (Google DeepMind)  

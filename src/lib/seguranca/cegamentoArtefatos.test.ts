@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import fs from "fs";
 import path from "path";
+import { execSync } from "child_process";
 
 export interface ViolacaoCegamentoArtefato {
   arquivo: string;
@@ -105,4 +106,63 @@ describe("Auditoria Pericial de Cegamento nos Artefatos Emitidos (W2 / Y5 / Z5 /
         .join("\n")}`
     ).toEqual([]);
   });
+
+  it("nenhum arquivo sob controle de versão (git) deve conter simultaneamente código opaco VANT-BLIND-* e identificador de polígono D16_E_* (K2)", () => {
+    const rawGitFiles = execSync("git ls-files", { encoding: "utf-8" });
+    const arquivosVersionados = rawGitFiles
+      .split(/\r?\n/)
+      .map((f) => f.trim())
+      .filter((f) => {
+        if (!f || !fs.existsSync(f)) return false;
+        // Binários não textuais ou arquivos grandes
+        if (
+          f.endsWith(".png") ||
+          f.endsWith(".pdf") ||
+          f.endsWith(".tif") ||
+          f.endsWith(".db") ||
+          f.endsWith(".zip") ||
+          f.endsWith(".tar") ||
+          f.endsWith(".gz")
+        ) {
+          return false;
+        }
+        // Exclui arquivos de teste e prompts documentais em docs/planejamento/ (contêm literais ilustrativos de asserção)
+        if (f.includes(".test.") || f.startsWith("docs/planejamento/")) {
+          return false;
+        }
+        const stat = fs.statSync(f);
+        if (stat.size > 1024 * 1024) {
+          return false;
+        }
+        return true;
+      });
+
+    const PADRAO_VANT_BLIND_HEX = /VANT-BLIND-[0-9A-Fa-f]{6,}/;
+    const PADRAO_ID_D16_E = /D16_E_[0-9A-Za-z_]+/;
+
+    const violacoesVersionadas: Array<{ arquivo: string; motivo: string }> = [];
+
+    for (const relPath of arquivosVersionados) {
+      const absPath = path.resolve(process.cwd(), relPath);
+      const conteudo = fs.readFileSync(absPath, "utf-8");
+
+      const temVantBlind = PADRAO_VANT_BLIND_HEX.test(conteudo);
+      const temIdPoligono = PADRAO_ID_D16_E.test(conteudo);
+
+      if (temVantBlind && temIdPoligono) {
+        violacoesVersionadas.push({
+          arquivo: relPath,
+          motivo:
+            "Arquivo versionado contém simultaneamente código VANT-BLIND-* e identificador de polígono D16_E_* (quebra do isolamento cego K2).",
+        });
+      }
+    }
+
+    expect(
+      violacoesVersionadas,
+      `Vazamento em arquivos sob controle de versão:\n${violacoesVersionadas
+        .map((x) => `  - ${x.arquivo}: ${x.motivo}`)
+        .join("\n")}`
+    ).toEqual([]);
+  }, 20000);
 });

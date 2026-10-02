@@ -55,10 +55,12 @@ export const ARTEFATOS_PADRAO_CAMPANHA_VOO = [
   "docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_jornada_01_terrainfollow.plan",
   "docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_jornada_01_altfixa.plan",
   "docs/verificacoes/voo_ncontrol/relatorio_aceitacao_y1_y6_2026-09-29.json",
-  "docs/verificacoes/voo_ncontrol/roteiro_jornadas_72poligonos.csv",
-  "docs/verificacoes/voo_ncontrol/tabela_autorizacao_proprietarios_72poligonos.csv",
-  "docs/verificacoes/voo_ncontrol/manifesto_interprete_cego_72poligonos.csv",
-  "docs/verificacoes/voo_ncontrol/roteiro_jornadas_72poligonos.pdf",
+  "src/lib/gee/sorteioPoligonos.ts",
+  "src/app/api/gee/sorteio-d16/route.ts",
+  "docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv",
+  "docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_tabela_autorizacao_proprietarios_72poligonos.csv",
+  "docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_manifesto_interprete_cego_72poligonos.csv",
+  "docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.pdf",
   "docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json",
   "docs/verificacoes/2026-09-30_remedicao_candidatos_bp3_d16.md",
   "docs/verificacoes/cache_pedologia_bp3.json",
@@ -179,9 +181,13 @@ export function renderizarAmostraCsv(
   if (lines.length === 0) {
     return { cabecalho: "", linhasAmostra: [], totalLinhas: 0 };
   }
-  const cabecalho = lines[0];
-  const linhasAmostra = lines.slice(1, 1 + limiteEfetivo);
-  return { cabecalho, linhasAmostra, totalLinhas: lines.length - 1 };
+  const nonCommentLines = lines.filter((l) => !l.startsWith("#"));
+  if (nonCommentLines.length === 0) {
+    return { cabecalho: "", linhasAmostra: [], totalLinhas: 0 };
+  }
+  const cabecalho = nonCommentLines[0];
+  const linhasAmostra = nonCommentLines.slice(1, 1 + limiteEfetivo);
+  return { cabecalho, linhasAmostra, totalLinhas: nonCommentLines.length - 1 };
 }
 
 export function gerarRelatorioFasePericial(
@@ -211,12 +217,12 @@ export function gerarRelatorioFasePericial(
 
   // 3. Renderiza amostras reais de CSV e JSON
   const amostraRoteiro = renderizarAmostraCsv(
-    "docs/verificacoes/voo_ncontrol/roteiro_jornadas_72poligonos.csv",
+    "docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv",
     2,
     rootDir
   );
   const amostraManifesto = renderizarAmostraCsv(
-    "docs/verificacoes/voo_ncontrol/manifesto_interprete_cego_72poligonos.csv",
+    "docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_manifesto_interprete_cego_72poligonos.csv",
     2,
     rootDir
   );
@@ -295,7 +301,7 @@ export function gerarRelatorioFasePericial(
 
   linhas.push("### 3. Extração Direta dos Artefatos de Voo");
   linhas.push("");
-  linhas.push("#### 3.1 Roteiro do Piloto (`docs/verificacoes/voo_ncontrol/roteiro_jornadas_72poligonos.csv`)");
+  linhas.push("#### 3.1 Roteiro do Piloto (`docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv`)");
   linhas.push(`- **Total de linhas de polígonos**: ${amostraRoteiro.totalLinhas} (esperado: 72)`);
   linhas.push("- **Cabeçalho autêntico no arquivo:**");
   linhas.push("```csv");
@@ -315,15 +321,18 @@ export function gerarRelatorioFasePericial(
   );
   linhas.push("");
 
-  linhas.push("#### 3.2 Manifesto Cego do Intérprete (`docs/verificacoes/voo_ncontrol/manifesto_interprete_cego_72poligonos.csv`)");
+  linhas.push("#### 3.2 Manifesto Cego do Intérprete (`docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_manifesto_interprete_cego_72poligonos.csv`)");
   linhas.push(`- **Total de linhas de registros cegos**: ${amostraManifesto.totalLinhas} (esperado: 72)`);
   linhas.push("- **Cabeçalho autêntico no arquivo:**");
   linhas.push("```csv");
   linhas.push(amostraManifesto.cabecalho);
   linhas.push("```");
-  linhas.push("- **Amostra real das duas primeiras linhas:**");
+  linhas.push("- **Amostra real das duas primeiras linhas (com código opaco mascarado para proteção pericial):**");
   linhas.push("```csv");
-  linhas.push(amostraManifesto.linhasAmostra.join("\n"));
+  const linhasManifestoMascaradas = amostraManifesto.linhasAmostra.map((l) =>
+    l.replace(/VANT-BLIND-[0-9A-F]{10}/g, "VANT-BLIND-***[OMITIDO_CEGAMENTO]***")
+  );
+  linhas.push(linhasManifestoMascaradas.join("\n"));
   linhas.push("```");
   linhas.push("");
 
@@ -340,11 +349,11 @@ export function gerarRelatorioFasePericial(
   linhas.push("| Câmera do Voo | `Micasense Altum` | `relatorio_aceitacao_y1_y6_2026-09-29.json` -> `metadadosCampanha.camera` |");
   linhas.push("| GSD Alvo | `4.0 cm` | `relatorio_aceitacao_y1_y6_2026-09-29.json` -> `metadadosCampanha.gsdAlvoCm` |");
   linhas.push("| AGL Nominal Desejada | `92.764 m` | `relatorio_aceitacao_y1_y6_2026-09-29.json` -> `metadadosCampanha.aglDesejadaMetros` |");
-  linhas.push("| Total de Polígonos | `72` | `roteiro_jornadas_72poligonos.csv` (72 registros) |");
+  linhas.push("| Total de Polígonos | `72` | `SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv` (72 registros) |");
   linhas.push("| Total de Jornadas | `12` | `relatorio_aceitacao_y1_y6_2026-09-29.json` -> `metadadosCampanha.totalJornadas` |");
   linhas.push("| Polígonos por Jornada | `6` | `relatorio_aceitacao_y1_y6_2026-09-29.json` -> `metadadosCampanha.maxPoligonosPorJornada` |");
   linhas.push("| Tiles DEM Utilizados | `S25_W054, S25_W055, S26_W054, S26_W055` | `relatorio_aceitacao_y1_y6_2026-09-29.json` -> `metadadosCampanha.tilesDEMUtilizados` |");
-  linhas.push("| Relação Curva de Nível | `anguloFaixas = (aspecto + 90°) % 360` | `roteiro_jornadas_72poligonos.csv` -> colunas `aspectoMedidoGraus`, `orientacaoPoligonoGraus`, `anguloFaixasGraus` |");
+  linhas.push("| Relação Curva de Nível | `anguloFaixas = (aspecto + 90°) % 360` | `SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv` -> colunas `aspectoMedidoGraus`, `orientacaoPoligonoGraus`, `anguloFaixasGraus` |");
   linhas.push("");
 
   linhas.push("---");
@@ -373,58 +382,53 @@ export function gerarRelatorioFasePericial(
   };
 }
 
-export const NARRATIVA_JUIZO_PADRAO = `### 1. Diretriz J1 — Cegamento Efetivo e Separação entre Registro e Inspeção
-- **Cegamento Dinamicamente Derivado:**
-  - O campo \`cego\` no rótulo humano deixou de ser um literal estático \`true\` fixo em código e passou a ser estritamente **derivado** do modo de exibição (\`modo === "registro"\`).
-  - No modo de registro, a interface é blindada: nenhum estrato (\`estratoId\`), tercil (S, E), nível de K ou campo proibido de predição/modelo (\`CAMPOS_PROIBIDOS_MATRIZ_TREINO\`, como \`scoreJev\`, \`scoreSuscetibilidade\`, \`laudoJev\`, \`phiDiag\`) é renderizado ou acessível.
-- **Bifurcação Estrita de Telas:**
-  - **Modo de Registro:** mostra unicamente o código do ponto, coordenadas geográficas, imagens e formulário de observação com alvo contínuo D26. Contém o botão exclusivo para gravar/consolidar o laudo humano sob protocolo cego.
-  - **Modo de Inspeção:** exibe a estratificação completa, séries temporais, proveniências e laudos de auditoria. O botão de gravar rótulo humano **não existe** e é substituído por aviso de gravação desabilitada.
-- **Evidência por Teste Automatizado:**
-  - Testes unitários em \`src/components/inspetor/InspetorPonto.test.ts\` (4 testes aprovados) asseveram que \`estratoId\` e os termos de modelo nunca vazam no modo de registro, e que \`cego\` é atestado com rigor epistêmico.
+export const NARRATIVA_JUIZO_PADRAO = `### 1. Diretriz K1 — Origem dos Códigos Opacos no Selo de Sorteio e Determinismo Estrito
+- **Migração do Nascimento do Código Opaco:**
+  - O código opaco \`VANT-BLIND-*\` deixou de ser gerado de forma estocástica e efêmera na exportação dos planos de voo. Ele passa a nascer compulsoriamente no sorteio formal (\`src/lib/gee/sorteioPoligonos.ts\`), com entropia criptográfica segura (\`crypto.randomBytes(5)\`), sendo registrado no próprio selo de auditoria (\`SeloSorteioD16\`) sob o campo \`tabelaCorrespondenciaOpaca: Record<string, string>\` e no atributo \`codigoOpacoVant\` de cada polígono sorteado.
+  - A versão do esquema do selo foi formalmente elevada para \`"1.2.0"\`.
+- **Determinismo Pericial na Exportação:**
+  - Em \`src/lib/drone/planoVooNControl.ts\`, a exportação passa a **ler** o código opaco exclusivamente a partir do selo fornecido (\`seloSorteioD16?.tabelaCorrespondenciaOpaca\` ou \`tabelaCorrespondenciaOpaca\` ou \`item.codigoOpacoVant\`).
+  - Duas exportações consecutivas a partir do mesmo selo produzem manifestos rigorosamente idênticos byte a byte, garantindo que o intérprete cego receba o mesmo identificador estável em qualquer momento do ciclo de vida da pesquisa.
+  - Evidência por teste automatizado aprovado em \`src/lib/drone/planoVooNControl.test.ts\` (\`K1: código opaco nasce no selo de sorteio e é determinístico em sucessivas exportações sobre o mesmo selo, recusando exportação sem selo\`).
 
-### 2. Diretriz J1 — Papel no Conjunto, Concordância Inter-Observador e Divergência
-- **Papel no Conjunto (\`papelConjunto\`):**
-  - Eliminado o literal padrão \`"treino"\` na gravação do rótulo humano. O papel é agora herdado da designação oficial de D16 selada no sorteio (\`ponto.papelConjunto\`), ou assume \`"indisponivel"\` quando o ponto não possuir designação formal de partição.
-- **Concordância Inter-Observador (\`kappa\` e \`divergencia\`):**
-  - Eliminada a afirmação fictícia de concordância (\`kappa: null\` com \`divergencia: "nenhuma"\`).
-  - Sem a realização de uma segunda observação independente pericial, a divergência inicial é estritamente tipada e gravada como \`"indisponivel"\`, e o kappa permanece \`null\`.
+### 2. Diretriz K1 — Comportamento da Exportação na Ausência de Selo de Sorteio
+- **Recusa Tipada e Falha Cedo (P12):**
+  - Quando a exportação de campanha for invocada sem um selo de sorteio auditado ou sem correspondência opaca registrada para qualquer polígono da lista, o sistema **recusa compulsoriamente a operação** disparando a exceção \`ErroManifestoSemSeloSorteio\`.
+  - Mensagem pericial: \`[CEGAMENTO_SELO_RECUSADO] Exportação do manifesto cego do intérprete recusada: selo de sorteio D16 ausente ou código opaco não registrado para o polígono '...'. É expressamente proibido inventar códigos opacos na exportação para polígonos sem correspondência no selo (K1).\`
+  - Nenhum plano de voo, roteiro, tabela de autorização ou manifesto é emitido pela metade. É terminantemente proibido inventar códigos opacos efêmeros na exportação.
 
-### 3. Diretriz J2 — Aposentadoria de Kobo e Fotointerpretação e Ingestão do SAREL Coletor
-- **Substituição do KoboCollect pelo SAREL Coletor (D16 item 5):**
-  - Criado o módulo \`src/lib/rotulos/ingestaoColetor.ts\`, processando as 28 colunas canônicas do formulário móvel Android + métricas GNSS de média estática.
-  - Validação da tolerância geodésica P03 (15 m nominal, 25 m com ressalva, rejeição acima de 25 m) e rejeição compulsória de coordenadas simuladas (\`fix_simulado\`, Invariante 5 / P12).
-- **Aposentadoria Formal da Fotointerpretação (D16 item 4):**
-  - Sob D16, a fotointerpretação satélite foi aposentada em favor da delineação vetorial sobre ortomosaicos centimétricos de VANT (~4 cm GSD).
-  - Todas as referências no front-end (\`FiltersPanel.tsx\`, \`PainelCampanha.tsx\`, \`PainelCampanhaModal.tsx\`) foram atualizadas com notas explícitas registrando a aposentadoria por D16.
-- **Preservação de Histórico e Legado:**
-  - Nenhum dado antigo foi apagado: criada a aba dedicada "Legado e Histórico" em \`PainelCampanha.tsx\` com visualização isolada e advertência metodológica clara.
-  - A aba de campanha foi reenquadrada para refletir os 3 conjuntos de D16: 72 polígonos de VANT (36 treino + 36 held-out), 60 a 80 pontos de campo âncora fora dos polígonos para calibração de prevalência, e confirmação prospectiva.
+### 3. Diretriz K2 — Blindagem do Selo no Git e Guarda Ativa em Código
+- **Exclusão do Selo no Controle de Versão:**
+  - O diretório \`docs/verificacoes/sorteio/\` foi formalmente inserido no \`.gitignore\`. A exclusão foi verificada e atestada com sucesso via comando \`git check-ignore -v docs/verificacoes/sorteio/selo_sorteio_d16_exemplo.json\`.
+  - Essa segregação garante que a chave reversa de decodificação (\`D16_E_* ↔ VANT-BLIND-*\`) nunca seja comitada no repositório público ou privado, preservando o cegamento absoluto do intérprete humano (Z5).
+- **Guarda Compulsória em Tempo de Execução:**
+  - Implementada a função pericial \`asseverarCaminhoSeloIgnoradoGit(caminhoSeloAbsoluto)\` em \`src/lib/gee/sorteioPoligonos.ts\`, acionada na API \`src/app/api/gee/sorteio-d16/route.ts\` antes de criar pastas ou gravar qualquer arquivo de selo no disco.
+  - A guarda invoca \`git check-ignore\` de forma síncrona. Se o caminho não estiver coberto pelo \`.gitignore\`, a gravação é imediatamente abortada com \`ErroSeloNaoIgnoradoGit\`, impedindo a criação do arquivo antes que ocorra risco de vazamento acidental.
 
-### 4. Diretriz J3 — Alvo Contínuo (D26), Critério de Refutação (D25) e Regime de Dados (D24)
-- **Hierarquia Rígida de Alvos (D26):**
-  - A interface exibe como **alvo primário** a fração contínua $[0, 1]$ da célula de 10 m delineada como erodida sob VANT, ajustada com objetivo Tweedie (\`reg:tweedie\`) para tratar inflação de zeros e comparada por correlação de Spearman ($\rho$).
-  - O alvo binário derivado a 25% ($\ge 25\\text{ m}^2$ em célula de $100\\text{ m}^2$) é exibido como **estritamente secundário** e assim rotulado na hierarquia pericial.
-- **Painel do Critério de Refutação Pré-Registrado (D25):**
-  - Implementado o componente \`src/components/decisoes/PainelCriterioRefutacaoD25.tsx\` integrado em \`DecisoesModal.tsx\`.
-  - Exibe os 3 competidores emparelhados (RUSLE, Regressão Penalizada, XGBoost), o piso de utilidade $\\rho \\ge 0,40$, a margem $\\Delta\\rho \\ge 0,10$, o IC 95% por bootstrap agrupado por polígono, os 3 desfechos ternários (Corroborada | Inconclusiva | Refutada) e a regra de parcimônia.
-  - **Estado Obrigatório da Avaliação:** O painel estampa expressamente **"ESTADO: NÃO AVALIADO"**, acompanhado de alerta metodológico proibindo antecipação de resultados antes do sobrevoo e delineação do held-out de VANT (P12).
-- **Regime de Dados (D24):**
-  - Tabela dos tetos por bloco físico (Espectro-temporal: 8; Terreno: 4; Solo: 1; Chuva: 1; máx: 14 preditores).
-  - Evidencia com transparência que 3 dos 4 blocos operam abaixo do regime recomendado de 200 eventos/variável, sendo mantidos por necessidade física (Invariante 1) com mitigação por monotonicidade.
-- **Estado do Sorteio no \`PainelSorteioD16.tsx\`:**
-  - O painel consome o artefato real \`docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json\` via \`/api/gee/sorteio-d16\`, estampando o estado real **BLOQUEADO (Ê NÃO MEDIDO — P12)** e desabilitando o botão de sorteio.
+### 4. Diretriz K3 — Marca de Sintético em Todos os Artefatos Irmãos da Campanha
+- **Nomes Finais dos Artefatos de Demonstração:**
+  - Os quatro artefatos gerados a partir de polígonos sintéticos foram padronizados com o prefixo inequívoco \`SINTETICO_NAO_VOAR_\`:
+    1. \`docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv\`
+    2. \`docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.pdf\`
+    3. \`docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_tabela_autorizacao_proprietarios_72poligonos.csv\`
+    4. \`docs/verificacoes/voo_ncontrol/SINTETICO_NAO_VOAR_manifesto_interprete_cego_72poligonos.csv\`
+  - A renomeação foi executada no Git via \`git mv\`, preservando o histórico de auditoria.
+- **Marcação no Conteúdo Interno:**
+  - **Nos arquivos CSV:** A primeira linha contém compulsoriamente o comentário pericial:
+    \`# SINTETICO_NAO_VOAR - DADOS DE DEMONSTRACAO (NAO OPERAR EM CAMPO)\`
+    Isso impede que uma cópia do conteúdo desprovida do nome de arquivo original seja acidentalmente utilizada em campo para contato com proprietários rurais do CAR.
+  - **No arquivo PDF:** O topo da primeira página estampa a faixa destacada:
+    \`*** SINTETICO_NAO_VOAR - DADOS DE DEMONSTRACAO (NAO OPERAR EM CAMPO) ***\`
+- **Generalização da Guarda Z3:**
+  - A guarda de segurança de Z3 em \`exportarCampanhaVooNControl\` foi expandida: se a origem for sintética e a opção explícita \`permitirPlanoSinteticoDemonstracao: true\` não for informada, **toda a exportação é abortada** com \`ErroEmissaoPlanoSinteticoRecusada\`, impedindo a geração de qualquer um dos quatro artefatos irmãos.
 
-### 5. Diretriz J4 — Centralização de Coordenadas da BP3 e Separação entre Método e Parâmetro
-- **Extração das 25 Ocorrências para Configuração Central:**
-  - Todas as 25 ocorrências de coordenadas e parâmetros da BP3 identificadas no levantamento foram unificadas em \`src/config/areaInteresse.ts\` (\`AREA_INTERESSE_BP3\` e \`AREA_INTERESSE_PADRAO\`).
-  - Atualizados os 6 componentes mapeados: \`RegionRequestModal.tsx\` (14 ocorrências), \`MapViewer.tsx\` (3 ocorrências), \`PainelCampanha.tsx\` (3 ocorrências), \`MapaAmostral.tsx\` (2 ocorrências), \`CandidateSelectionModal.tsx\` (2 ocorrências) e \`CalculadoraDesenhoAmostral.tsx\` (1 ocorrência).
-- **Rotulagem Explícita de Parâmetro do Estudo:**
-  - Todos os elementos visuais associados à BP3 foram rotulados na UI como \`"nesta bacia (BP3 — parâmetro do estudo)"\`, diferenciando com clareza o que é propriedade local do que é método universal.
-- **Preservação Inviolável de \`src/config/decisoes.ts\` (P8) e Proposta Futura:**
-  - Em conformidade estrita com P8, \`src/config/decisoes.ts\` não sofreu alterações.
-  - A mistura metodológica entre método e parâmetro permanece dentro das decisões locais (ex.: D07 com declividade de 3% a 20% da BP3; D12/D16 com 18 estratos de tercis e 72 polígonos; D18 com buffer de 0,25 km²).
-  - **Proposta para o momento metodológico apropriado:** Bifurcar cada decisão em duas estruturas tipadas — \`metodo\` (invariante: estratificação tridimensional, protocolo cego, agrupamento held-out) e \`instanciaEstudo\` (parâmetros da BP3: recortes geográficos, limiares de tercil e fontes pedológicas locais), viabilizando a futura generalização preditiva sem comprometer a integridade desta dissertação.
+### 5. Auditoria de Cegamento Estendida em Arquivos Versionados
+- **Varredura Completa com \`git ls-files\`:**
+  - O teste \`src/lib/seguranca/cegamentoArtefatos.test.ts\` foi estendido com a suíte \`"Auditoria Estrita de Cegamento em Arquivos Versionados (K2)"\`.
+  - O teste executa \`git ls-files\`, lê cada arquivo sob controle de versão e verifica a ocorrência simultânea de códigos opacos \`VANT-BLIND-*\` e identificadores de polígono \`D16_E_*\` / \`D16_S*\`.
+  - **Resultado da Varredura:** 100% aprovado. Nenhum arquivo versionado contém o par de correspondência.
+- **Saneamento Preventivo dos Relatórios de Fase:**
+  - As amostras do manifesto cego exibidas nos relatórios periciais de fase (\`2026-09-30\`, \`2026-10-01\` e \`2026-10-02\`) tiveram os códigos literais substituídos por \`VANT-BLIND-***[OMITIDO_CEGAMENTO]***\`, eliminando qualquer possibilidade de correspondência visual entre os artefatos de documentação e as tabelas de campo.
 
 ---
 **Identificação do Agente-Executor:** Antigravity (Google DeepMind)  

@@ -12,16 +12,19 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
 endobj
 5 0 obj
-<< /Length 6895 >>
+<< /Length 6917 >>
 stream
 BT
 /F1 8 Tf
 36 800 Td
 11 TL
+(****************************************************************************************************) '
+(*** SINTETICO_NAO_VOAR - DADOS DE DEMONSTRACAO  NAO OPERAR EM CAMPO  ***) '
+(****************************************************************************************************) '
 (SAREL v2.0 - ROTEIRO DE CAMPO E PLANOS DE VOO NCONTROL  D16 / D21 / D26 ) '
 (Gerado em: 2026-09-30T15:00:00.000Z | Camera: Micasense Altum | GSD alvo: 4.0 cm | AGL nominal: 92.76 m) '
 (Total de poligonos: 72  361.44 ha  | Total de jornadas: 12) '
-(Status dos planos: SINTETICO_NAO_VOAR  Demonstracao em bancada ) '
+(Status dos planos: SINTETICO_NAO_VOAR  Demonstracao em bancada - NAO OPERAR EM CAMPO ) '
 (AVISO DE DECOLAGEM: plannedHomePosition = sugestao_a_confirmar_em_campo  ajustar conforme acesso viario .) '
 (----------------------------------------------------------------------------------------------------) '
 ([JORNADA_01] Decolagem sugerida:  -24.75000, -53.72000  | Deslocamento: 25.83 km | Voo: 21.3-22.5 min) '
@@ -63,9 +66,6 @@ BT
 (  #4 D16_E_3_1_1_Q04  E_3_1_1/held-out  | Mun: Santa Helena | CAR: PR-4115200-1052A9B8C7D... | Asp: 124g | Pol: 124g | Faixas: 214g  curva de nivel  | Desnivel: 6.5m | T: 3.4-3.5m) '
 (  #5 D16_E_3_1_2_Q01  E_3_1_2/treino  | Mun: Medianeira | CAR: PR-4115200-1053A9B8C7D... | Asp: 216g | Pol: 216g | Faixas: 306g  curva de nivel  | Desnivel: 10.7m | T: 3.4-3.5m) '
 (  #6 D16_E_3_1_2_Q02  E_3_1_2/treino  | Mun: Sao Miguel do Iguacu | CAR: PR-4115200-1054A9B8C7D... | Asp: 220g | Pol: 220g | Faixas: 310g  curva de nivel  | Desnivel: 8.5m | T: 3.5-3.6m) '
-() '
-([JORNADA_06] Decolagem sugerida:  -24.81000, -53.99500  | Deslocamento: 25.83 km | Voo: 20.9-22.1 min) '
-(  #1 D16_E_3_2_2_Q01  E_3_2_2/treino  | Mun: Toledo | CAR: PR-4115200-1061A9B8C7D... | Asp: 237g | Pol: 237g | Faixas: 327g  curva de nivel  | Desnivel: 8.4m | T: 3.4-3.5m) '
 ET
 endstream
 endobj
@@ -73,12 +73,15 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 7 0 R >>
 endobj
 7 0 obj
-<< /Length 7307 >>
+<< /Length 7305 >>
 stream
 BT
 /F1 8 Tf
 36 800 Td
 11 TL
+() '
+([JORNADA_06] Decolagem sugerida:  -24.81000, -53.99500  | Deslocamento: 25.83 km | Voo: 20.9-22.1 min) '
+(  #1 D16_E_3_2_2_Q01  E_3_2_2/treino  | Mun: Toledo | CAR: PR-4115200-1061A9B8C7D... | Asp: 237g | Pol: 237g | Faixas: 327g  curva de nivel  | Desnivel: 8.4m | T: 3.4-3.5m) '
 (  #2 D16_E_3_2_2_Q02  E_3_2_2/treino  | Mun: Cascavel | CAR: PR-4115200-1062A9B8C7D... | Asp: 302g | Pol: 302g | Faixas: 32g  curva de nivel  | Desnivel: 5.4m | T: 3.5-3.6m) '
 (  #3 D16_E_3_2_2_Q03  E_3_2_2/held-out  | Mun: Marechal Candido Rondon | CAR: PR-4115200-1063A9B8C7D... | Asp: 10g | Pol: 10g | Faixas: 100g  curva de nivel  | Desnivel: 7.4m | T: 3.5-3.6m) '
 (  #4 D16_E_3_2_2_Q04  E_3_2_2/held-out  | Mun: Santa Helena | CAR: PR-4115200-1064A9B8C7D... | Asp: 40g | Pol: 40g | Faixas: 130g  curva de nivel  | Desnivel: 9.9m | T: 3.4-3.5m) '
@@ -124,9 +127,6 @@ BT
 (  #4 D16_E_3_2_1_Q02  E_3_2_1/treino  | Mun: Santa Helena | CAR: PR-4115200-1058A9B8C7D... | Asp: 308g | Pol: 308g | Faixas: 38g  curva de nivel  | Desnivel: 6.8m | T: 3.5-3.6m) '
 (  #5 D16_E_3_2_1_Q03  E_3_2_1/held-out  | Mun: Medianeira | CAR: PR-4115200-1059A9B8C7D... | Asp: 195g | Pol: 195g | Faixas: 285g  curva de nivel  | Desnivel: 2.0m | T: 3.0-3.1m) '
 (  #6 D16_E_3_2_1_Q04  E_3_2_1/held-out  | Mun: Sao Miguel do Iguacu | CAR: PR-4115200-1060A9B8C7D... | Asp: 147g | Pol: 147g | Faixas: 237g  curva de nivel  | Desnivel: 9.7m | T: 3.4-3.5m) '
-() '
-([JORNADA_12] Decolagem sugerida:  -25.08000, -54.01100  | Deslocamento: 25.83 km | Voo: 21.3-22.5 min) '
-(  #1 D16_E_3_3_1_Q03  E_3_3_1/held-out  | Mun: Toledo | CAR: PR-4115200-1067A9B8C7D... | Asp: 170g | Pol: 170g | Faixas: 260g  curva de nivel  | Desnivel: 7.7m | T: 3.5-3.6m) '
 ET
 endstream
 endobj
@@ -134,12 +134,15 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 9 0 R >>
 endobj
 9 0 obj
-<< /Length 958 >>
+<< /Length 1247 >>
 stream
 BT
 /F1 8 Tf
 36 800 Td
 11 TL
+() '
+([JORNADA_12] Decolagem sugerida:  -25.08000, -54.01100  | Deslocamento: 25.83 km | Voo: 21.3-22.5 min) '
+(  #1 D16_E_3_3_1_Q03  E_3_3_1/held-out  | Mun: Toledo | CAR: PR-4115200-1067A9B8C7D... | Asp: 170g | Pol: 170g | Faixas: 260g  curva de nivel  | Desnivel: 7.7m | T: 3.5-3.6m) '
 (  #2 D16_E_3_3_1_Q04  E_3_3_1/held-out  | Mun: Cascavel | CAR: PR-4115200-1068A9B8C7D... | Asp: 129g | Pol: 129g | Faixas: 219g  curva de nivel  | Desnivel: 8.7m | T: 3.4-3.5m) '
 (  #3 D16_E_3_3_2_Q01  E_3_3_2/treino  | Mun: Marechal Candido Rondon | CAR: PR-4115200-1069A9B8C7D... | Asp: 287g | Pol: 287g | Faixas: 17g  curva de nivel  | Desnivel: 8.4m | T: 3.8-4.0m) '
 (  #4 D16_E_3_3_2_Q02  E_3_3_2/treino  | Mun: Santa Helena | CAR: PR-4115200-1070A9B8C7D... | Asp: 329g | Pol: 329g | Faixas: 59g  curva de nivel  | Desnivel: 8.3m | T: 3.5-3.6m) '
@@ -157,12 +160,12 @@ xref
 0000000127 00000 n 
 0000000195 00000 n 
 0000000321 00000 n 
-0000007268 00000 n 
-0000007394 00000 n 
-0000014753 00000 n 
-0000014879 00000 n 
+0000007290 00000 n 
+0000007416 00000 n 
+0000014773 00000 n 
+0000014899 00000 n 
 trailer
 << /Size 10 /Root 1 0 R >>
 startxref
-15888
+16198
 %%EOF

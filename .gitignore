@@ -122,3 +122,9 @@ data/drone/**/nuvem_pontos/
 # Os dados ficam no disco e FORA do git. O que e probatorio e leve entra
 # versionado em docs/verificacoes/voo/ como manifesto e relatorio derivado.
 /Dados de voo/
+
+# ============================================================================
+# Selos de sorteio D16 — contêm tabela reversa de correspondência opaca (K2)
+# Jamais devem ser versionados sob pena de quebra irremediável do cegamento duplo.
+# ============================================================================
+docs/verificacoes/sorteio/

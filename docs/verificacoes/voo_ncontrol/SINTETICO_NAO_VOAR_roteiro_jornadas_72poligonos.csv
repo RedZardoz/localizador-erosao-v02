@@ -1,3 +1,4 @@
+# SINTETICO_NAO_VOAR - DADOS DE DEMONSTRACAO (NAO OPERAR EM CAMPO)
 idJornada,ordemNaJornada,idPoligono,estratoId,papelConjunto,municipio,codigoCar,centroideLat,centroideLon,areaPoligonoHa,formaPoligono,aspectoMedidoGraus,orientacaoPoligonoGraus,anguloFaixasGraus,anguloAdotadoGraus,conflitoOrientacaoImovel,desnivelMetros,aglDesejadaMetros,altitudeRelativaMinMetros,altitudeRelativaMaxMetros,distanciaDesdeAnteriorKm,comprimentoVooMetros,tempoVooEstimadoMinutosMin,tempoVooEstimadoMinutosMax,numeroTransectos,cameraShots
 JORNADA_01,1,D16_E_1_1_1_Q01,E_1_1_1,treino,"Toledo",PR-4115200-1001A9B8C7D6E5F4,-24.750000,-53.720000,5.02,retangulo_158x317m,17.55,17.55,107.55,107.55,false,3.91,92.76,90.28,94.19,0.000,2090.6,3.79,4.01,9,170
 JORNADA_01,2,D16_E_1_1_1_Q02,E_1_1_1,treino,"Cascavel",PR-4115200-1002A9B8C7D6E5F4,-24.795000,-53.728000,5.02,quadrado_224x224m,329.05,329.05,59.05,59.05,false,8.41,92.76,59.08,67.49,5.069,1906.5,3.45,3.65,7,155

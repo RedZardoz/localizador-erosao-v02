@@ -19,6 +19,7 @@ import {
   verificarCoberturaGLO30Poligonos,
   ErroEmissaoPlanoSinteticoRecusada,
   ErroTerrenoForaDeCoberturaGLO30,
+  ErroManifestoSemSeloSorteio,
 } from "./planoVooNControl";
 import { TODOS_ESTRATOS_D12 } from "@/lib/gee/estratificacao";
 import { CAMPOS_PROIBIDOS_MATRIZ_TREINO } from "@/lib/matriz/invariantes";
@@ -260,6 +261,7 @@ describe("Exportação de Planos de Voo QGroundControl (.plan v1) para o NContro
         idPoligono: "D16_S1_E1_K1_Q01",
         estratoId: "S1_E1_K1",
         papelConjunto: "treino",
+        codigoOpacoVant: "VANT-BLIND-01A2B3C4D5",
         centroide: { latitude: -25.1362, longitude: -53.8569 },
         imovelCar: {
           codigoCar: "PR-4115200-TESTE",
@@ -297,6 +299,93 @@ describe("Exportação de Planos de Voo QGroundControl (.plan v1) para o NContro
       expect(j.nomeArquivoTerrainFollow).toMatch(/^SINTETICO_NAO_VOAR_/);
       expect(j.nomeArquivoAltFixa).toMatch(/^SINTETICO_NAO_VOAR_/);
     }
+
+    // K3: Artefatos irmãos prefixados e marcados no conteúdo
+    expect(pacoteDemo.exportacaoPiloto.nomeArquivoRoteiroCsv).toMatch(/^SINTETICO_NAO_VOAR_/);
+    expect(pacoteDemo.exportacaoPiloto.nomeArquivoRoteiroPdf).toMatch(/^SINTETICO_NAO_VOAR_/);
+    expect(pacoteDemo.exportacaoPiloto.nomeArquivoTabelaAutorizacaoCsv).toMatch(/^SINTETICO_NAO_VOAR_/);
+    expect(pacoteDemo.exportacaoInterprete.nomeArquivoManifestoCsv).toMatch(/^SINTETICO_NAO_VOAR_/);
+
+    const primeiraLinhaRoteiro = pacoteDemo.exportacaoPiloto.roteiroCsv.split("\n")[0];
+    const primeiraLinhaAutorizacao = pacoteDemo.exportacaoPiloto.tabelaAutorizacaoCsv.split("\n")[0];
+    const primeiraLinhaManifesto = pacoteDemo.exportacaoInterprete.manifestoInterpreteCsv.split("\n")[0];
+    expect(primeiraLinhaRoteiro).toBe("# SINTETICO_NAO_VOAR - DADOS DE DEMONSTRACAO (NAO OPERAR EM CAMPO)");
+    expect(primeiraLinhaAutorizacao).toBe("# SINTETICO_NAO_VOAR - DADOS DE DEMONSTRACAO (NAO OPERAR EM CAMPO)");
+    expect(primeiraLinhaManifesto).toBe("# SINTETICO_NAO_VOAR - DADOS DE DEMONSTRACAO (NAO OPERAR EM CAMPO)");
+    expect(pacoteDemo.exportacaoPiloto.roteiroPdfBytes.toString("utf8")).toContain(
+      "SINTETICO_NAO_VOAR - DADOS DE DEMONSTRACAO"
+    );
+    expect(pacoteDemo.exportacaoPiloto.roteiroPdfBytes.toString("utf8")).toContain(
+      "NAO OPERAR EM CAMPO"
+    );
+  });
+
+  it("K1: código opaco nasce no selo de sorteio e é determinístico em sucessivas exportações sobre o mesmo selo, recusando exportação sem selo", () => {
+    const poligonosSemCodigo: EntradaPoligonoCampanhaNControl[] = [
+      {
+        idPoligono: "D16_S1_E1_K1_Q01",
+        estratoId: "S1_E1_K1",
+        papelConjunto: "treino",
+        centroide: { latitude: -25.1362, longitude: -53.8569 },
+        imovelCar: {
+          codigoCar: "PR-4115200-TESTE",
+          nomeProprietario: "Proprietário Teste",
+          municipio: "Toledo",
+          areaImovelHa: 25.0,
+        },
+      },
+    ];
+
+    const amostradorSintetico = criarAmostradorSinteticoParaTeste(
+      (_lat, _lon) => 500.0
+    );
+
+    // 1. Sem selo nem código opaco, recusa terminantemente com ErroManifestoSemSeloSorteio
+    expect(() =>
+      exportarCampanhaVooNControl({
+        poligonos: poligonosSemCodigo,
+        amostradorElevacaoGLO30: amostradorSintetico,
+        poligonosAuditadosD16: false,
+        permitirPlanoSinteticoDemonstracao: true,
+      })
+    ).toThrow(ErroManifestoSemSeloSorteio);
+
+    // 2. Com seloSorteioD16 contendo tabelaCorrespondenciaOpaca, duas exportações produzem saídas idênticas byte a byte
+    const seloMock = {
+      versaoEsquema: "1.2.0" as const,
+      tabelaCorrespondenciaOpaca: {
+        D16_S1_E1_K1_Q01: "VANT-BLIND-A1B2C3D4E5",
+      },
+    };
+
+    const exp1 = exportarCampanhaVooNControl({
+      poligonos: poligonosSemCodigo,
+      amostradorElevacaoGLO30: amostradorSintetico,
+      poligonosAuditadosD16: false,
+      permitirPlanoSinteticoDemonstracao: true,
+      seloSorteioD16: seloMock,
+      geradoEm: "2026-10-02T12:00:00.000Z",
+    });
+
+    const exp2 = exportarCampanhaVooNControl({
+      poligonos: poligonosSemCodigo,
+      amostradorElevacaoGLO30: amostradorSintetico,
+      poligonosAuditadosD16: false,
+      permitirPlanoSinteticoDemonstracao: true,
+      seloSorteioD16: seloMock,
+      geradoEm: "2026-10-02T12:00:00.000Z",
+    });
+
+    expect(exp1.exportacaoInterprete.registrosCegos[0].codigoOpacoInterprete).toBe(
+      "VANT-BLIND-A1B2C3D4E5"
+    );
+    expect(exp2.exportacaoInterprete.registrosCegos[0].codigoOpacoInterprete).toBe(
+      "VANT-BLIND-A1B2C3D4E5"
+    );
+    expect(exp1.exportacaoInterprete.manifestoInterpreteCsv).toBe(
+      exp2.exportacaoInterprete.manifestoInterpreteCsv
+    );
+    expect(exp1.exportacaoPiloto.roteiroCsv).toBe(exp2.exportacaoPiloto.roteiroCsv);
   });
 
   it("Z5: identificador do intérprete sob protocolo cego não é reproduzível a partir do repositório sozinho sem o segredo do sorteio", () => {
@@ -421,12 +510,57 @@ describe("Exportação de Planos de Voo QGroundControl (.plan v1) para o NContro
         380.0 + Math.sin(lat * 120.0) * 35.0 + Math.cos(lon * 120.0) * 25.0
     );
 
-    // Emite sob sinalizador explícito de demonstração
+    const dirVerificacao = path.resolve(
+      process.cwd(),
+      "docs/verificacoes/voo_ncontrol"
+    );
+
+    // K1: Monta a tabela de correspondência opaca estável dos 72 polígonos a partir dos artefatos existentes
+    const mapaOpaco72: Record<string, string> = {};
+    const caminhoRoteiroExistente = path.join(
+      dirVerificacao,
+      "SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv"
+    );
+    const caminhoManifestoExistente = path.join(
+      dirVerificacao,
+      "SINTETICO_NAO_VOAR_manifesto_interprete_cego_72poligonos.csv"
+    );
+
+    if (fs.existsSync(caminhoRoteiroExistente) && fs.existsSync(caminhoManifestoExistente)) {
+      const linhasRoteiro = fs
+        .readFileSync(caminhoRoteiroExistente, "utf8")
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter((l) => l.startsWith("JORNADA_"));
+      const idsRoteiro = linhasRoteiro.map((l) => l.split(",")[2]);
+
+      const linhasManifesto = fs
+        .readFileSync(caminhoManifestoExistente, "utf8")
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter((l) => l.startsWith("VANT-BLIND-"));
+      const codigosExistentes = linhasManifesto.map((l) => l.split(",")[0]);
+
+      for (let i = 0; i < idsRoteiro.length; i++) {
+        if (idsRoteiro[i] && codigosExistentes[i]) {
+          mapaOpaco72[idsRoteiro[i]] = codigosExistentes[i];
+        }
+      }
+    }
+
+    poligonos72.forEach((p, idx) => {
+      if (!mapaOpaco72[p.idPoligono]) {
+        mapaOpaco72[p.idPoligono] = `VANT-BLIND-${String(idx + 1).padStart(10, "0")}`;
+      }
+    });
+
+    // Emite sob sinalizador explícito de demonstração e mapeamento do selo (K1 / K3)
     const pacote = exportarCampanhaVooNControl({
       poligonos: poligonos72,
       amostradorElevacaoGLO30: amostradorSintetico,
       poligonosAuditadosD16: false,
       permitirPlanoSinteticoDemonstracao: true,
+      tabelaCorrespondenciaOpaca: mapaOpaco72,
       maxPoligonosPorJornada: 6,
       geradoEm: "2026-09-30T15:00:00.000Z",
     });
@@ -434,7 +568,7 @@ describe("Exportação de Planos de Voo QGroundControl (.plan v1) para o NContro
     expect(pacote.metadadosCampanha.totalPoligonos).toBe(72);
     expect(pacote.metadadosCampanha.totalJornadas).toBe(12);
 
-    // Z3 & Z4: Nomes dos arquivos de demonstração trazem o carimbo inequívoco SINTETICO_NAO_VOAR_
+    // Z3 & Z4 & K3: Nomes dos arquivos de demonstração trazem o carimbo inequívoco SINTETICO_NAO_VOAR_
     for (const jornada of pacote.exportacaoPiloto.jornadas) {
       expect(jornada.nomeArquivoTerrainFollow).toMatch(/^SINTETICO_NAO_VOAR_/);
       expect(jornada.nomeArquivoAltFixa).toMatch(/^SINTETICO_NAO_VOAR_/);
@@ -467,13 +601,9 @@ describe("Exportação de Planos de Voo QGroundControl (.plan v1) para o NContro
     }
 
     // Atualiza os artefatos no diretório docs/verificacoes/voo_ncontrol/
-    const dirVerificacao = path.resolve(
-      process.cwd(),
-      "docs/verificacoes/voo_ncontrol"
-    );
     fs.mkdirSync(dirVerificacao, { recursive: true });
 
-    // Salva os arquivos com o nome carimbado Z3/Z4
+    // Salva os arquivos com o nome carimbado Z3/Z4/K3
     fs.writeFileSync(
       path.join(dirVerificacao, "SINTETICO_NAO_VOAR_jornada_01_terrainfollow.plan"),
       JSON.stringify(pacote.exportacaoPiloto.jornadas[0].planTerrainFollow, null, 2),
@@ -485,22 +615,22 @@ describe("Exportação de Planos de Voo QGroundControl (.plan v1) para o NContro
       "utf8"
     );
     fs.writeFileSync(
-      path.join(dirVerificacao, "roteiro_jornadas_72poligonos.csv"),
+      path.join(dirVerificacao, "SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv"),
       pacote.exportacaoPiloto.roteiroCsv,
       "utf8"
     );
     fs.writeFileSync(
-      path.join(dirVerificacao, "tabela_autorizacao_proprietarios_72poligonos.csv"),
+      path.join(dirVerificacao, "SINTETICO_NAO_VOAR_tabela_autorizacao_proprietarios_72poligonos.csv"),
       pacote.exportacaoPiloto.tabelaAutorizacaoCsv,
       "utf8"
     );
     fs.writeFileSync(
-      path.join(dirVerificacao, "manifesto_interprete_cego_72poligonos.csv"),
+      path.join(dirVerificacao, "SINTETICO_NAO_VOAR_manifesto_interprete_cego_72poligonos.csv"),
       pacote.exportacaoInterprete.manifestoInterpreteCsv,
       "utf8"
     );
     fs.writeFileSync(
-      path.join(dirVerificacao, "roteiro_jornadas_72poligonos.pdf"),
+      path.join(dirVerificacao, "SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.pdf"),
       pacote.exportacaoPiloto.roteiroPdfBytes
     );
     fs.writeFileSync(
