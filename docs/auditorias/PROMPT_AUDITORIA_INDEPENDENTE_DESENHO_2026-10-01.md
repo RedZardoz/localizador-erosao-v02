@@ -1,7 +1,9 @@
 # Auditoria Independente do Desenho de Pesquisa — SAREL / PPGTCA 2026
 
 **Para:** Claude Opus 5.5, em sessão de nuvem, sobre o repositório clonado.
-**Data:** 01/10/2026 · **Branch:** `sarel/v2`
+**Data:** 01/10/2026, **atualizado em 02/10/2026** · **Branch:** `sarel/v2`
+**Atualização:** acrescentada a seção datada ao fim do item 1 e corrigidos os números que
+envelheceram. O corpo original de 01/10 não foi reescrito.
 **Natureza:** auditoria de **desenho e decisões**, não caça a bug de implementação.
 
 ---
@@ -50,14 +52,78 @@ série com o índice do arquivo, e com latitude e longitude. Medição de campo 
 a ordem do arquivo. Verifique também se a amplitude é fisicamente plausível — no caso do Ê, toda
 a bacia cabia entre 7,01% e 7,68% de solo nu.
 
-Existem agora duas guardas contra isso, `src/lib/seguranca/detectorSequencia.ts` e
-`src/lib/seguranca/diarioRequisicoes.ts`. **Teste se elas funcionam de fato**; não as aceite por
-existirem. O diário, em particular, ainda não foi exercitado por medição real alguma.
+Existem agora cinco guardas contra isso, listadas na seção datada acima. **Teste se elas
+funcionam de fato**; não as aceite por existirem. O diário de requisições, que em 01/10 ainda não
+tinha sido exercitado por medição alguma, foi exercitado em 02/10 pelo download real do CHIRPS —
+**é o primeiro caso em que a guarda operou sobre dado externo verdadeiro, e vale conferir se
+operou direito.**
 
 Há também um detalhe que ilustra o quanto o padrão é persistente: ao declarar o cache pedológico
 autêntico — e ele **é**, confirmei por medição independente — o relatório afirmou que as entradas
 continham os campos `ogc_fid` e `cod_um`. Elas têm quatro campos, e nenhum é esses. A conclusão
 estava certa e a evidência oferecida para ela era inventada.
+
+## O que mudou entre 01/10 e 02/10, e que você deve conhecer
+
+Esta seção é acrescentada por data. O que vier depois soma-se a ela, sem reescrever o resto.
+
+**A linha de base RUSLE não existe.** D13 e D15 foram implementadas, mas o **fator R está
+`indisponivel`**: os coeficientes `107,52` e `46,89` não foram encontrados em fonte arquivada —
+procurei no PDF do Waltrick et al. (2015), que está no repositório, e eles não estão lá — e os
+coeficientes foram desativados em lugar de mantidos sem procedência. Isso é o comportamento certo,
+e significa que **o `rho_RUSLE` de D25 ainda não pode ser calculado**. Não audite D25 supondo que
+a régua existe.
+
+**O fator LS teve suas constantes conferidas por OCR** sobre o `ah_703.pdf`, que é escaneamento
+sem camada de texto. A saída bruta do OCR está em
+`docs/verificacoes/fontes/renard1997/saida_ocr_renard_1997.txt`. É a primeira conferência real de
+coeficiente contra fonte primária nesta pesquisa — **verifique-a**.
+
+**O CHIRPS foi efetivamente baixado**: 12 arquivos mensais em `data/chirps_cache/` (não
+versionados), com diário de requisições em `docs/verificacoes/diario_climatologia_chirps_bp3.json`
+— 12 chamadas, HTTP 200, 175 MB, carimbos de tempo coerentes. Foi o primeiro exercício real da
+guarda de diário, e o download é autêntico.
+
+**Mas os 12 meses são todos de 2022, e o artefato se chama climatologia.** O título de D13 diz
+*"CHIRPS climatológico"*, e `docs/verificacoes/climatologia_chirps_bp3.json` tem
+`tipo: "climatologia_chirps_mensal_bp3"` com `periodo: "2022 (12 meses completos)"`. **Um ano não
+é uma climatologia.** O período está declarado com honestidade, o que afasta fabricação — mas o
+rótulo afirma uma propriedade que o dado não tem, que é a família de defeito que esta pesquisa
+vem perseguindo. Pressione nisso: 2022 foi ano de La Niña no Sul do Brasil, logo mais seco que a
+média, e Toledo aparece com 1.484 mm anuais. Uma erosividade estimada sobre esse único ano seria
+enviesada para baixo de forma sistemática, e serviria de régua a D25. Hoje não propaga número
+porque R está `indisponivel`; **propagaria assim que os coeficientes aparecessem.** Julgue também
+se D13 deveria ter fixado o período numericamente em lugar de dizer apenas "climatológico" — a
+lacuna é da decisão, não só da execução.
+
+**O protocolo cego estava violado na interface web, e foi corrigido.** `InspetorPonto.tsx` gravava
+rótulo carimbando `cego: true` como literal numa tela que exibia o estrato e os tercis. Hoje
+`cego` é derivado do modo, e há separação testada entre modo de registro e modo de inspeção.
+**Verifique se a separação é real**, não apenas declarada.
+
+**As guardas acumuladas são estas**, e nenhuma deve ser aceita por existir — todas em
+`src/lib/seguranca/`, salvo a última:
+
+| Guarda | Contra o que |
+|---|---|
+| `detectorSequencia.ts` | série fabricada que correlaciona com índice ou coordenada |
+| `diarioRequisicoes.ts` | medição externa afirmada sem requisição registrada |
+| `credenciaisSeguras.ts` | caminho de credencial resolvendo dentro da árvore do repositório |
+| `guardaSintetico.ts` | artefato de campanha sintético emitido sem marca |
+| `localOnly.ts` | saída de rede onde a decisão exige processamento local |
+| `sessaoEfemera.ts` | credencial persistida além da sessão |
+| `cegamentoArtefatos.test.ts` | código opaco e identificador de polígono no mesmo arquivo versionado |
+| `sorteioPoligonos.ts:88` | gravação do selo em caminho não coberto pelo `.gitignore` |
+
+**Teste todas.** A última usa `git check-ignore`; pergunte-se o que ela faz quando o comando não
+está disponível no ambiente.
+
+**Os códigos opacos do intérprete passaram a nascer no selo do sorteio**, que é ignorado pelo git
+por conter a tabela reversa do cegamento. Antes nasciam na exportação e mudavam a cada execução.
+
+**O front-end foi alinhado** à metodologia vigente: Kobo e fotointerpretação movidos para legado
+marcado, fração contínua de D26 presente, painel do critério de D25 com os três desfechos, e a
+área de interesse extraída para `src/config/areaInteresse.ts`.
 
 ---
 
@@ -98,9 +164,11 @@ Questione: o fator de deflação por autocorrelação (alcance assumido de 50 m,
 
 ## 3.2 — D25: critério de refutação
 
-Piso de ρ de Spearman ≥ 0,40, margem de 0,10 sobre o RUSLE, AUC ≥ 0,70, e **três desfechos** — corroborada, inconclusiva, refutada — com bootstrap cuja unidade de reamostragem é o polígono, logo com potência governada por 18 agrupamentos.
+Piso de ρ de Spearman ≥ 0,40, margem de 0,10 sobre o RUSLE, AUC ≥ 0,70, e **três desfechos** — corroborada, inconclusiva, refutada — com bootstrap cuja unidade de reamostragem é o polígono, logo com potência governada pelo número de agrupamentos do held-out, hoje **36**.
 
-Questione: a calibragem de 0,40 e 0,10, escolhida entre uma estrita e uma permissiva com argumento que você deve julgar; se a potência com 18 agrupamentos torna o critério praticamente infalsificável, isto é, se "inconclusiva" será o desfecho quase certo; e se a estrutura ternária é rigor ou é porta de saída.
+Questione: a calibragem de 0,40 e 0,10, escolhida entre uma estrita e uma permissiva com argumento que você deve julgar; se a potência com 36 agrupamentos torna o critério praticamente infalsificável, isto é, se "inconclusiva" será o desfecho quase certo; e se a estrutura ternária é rigor ou é porta de saída.
+
+**Contexto que o Opus 5 já corrigiu, e que você deve auditar como DECISÃO e não como aritmética:** quando D25 foi redigida o held-out tinha 18 agrupamentos, e a justificativa da estrutura ternária repousava nisso. A emenda de geometria de D16 elevou-o a 36 — de faixa claramente problemática para faixa de fronteira. A premissa **enfraqueceu sem desaparecer**, e a estrutura foi **mantida** de forma deliberada, sob o argumento de que afrouxar critério pré-registrado porque a potência melhorou é a flexibilidade analítica que o pré-registro existe para impedir. **Julgue esse argumento.** Os números já foram corrigidos no commit `4d2919c`; o que resta auditar é a escolha.
 
 ## 3.3 — D12 e D14: K̂ da carta de 2024, e não da estadual
 
@@ -120,9 +188,11 @@ Polígonos de 5,02 ha, 72 deles, quatro por estrato, em quadrado de 224 m ou ret
 
 # 4. ALVO SECUNDÁRIO: COERÊNCIA GLOBAL DO REGISTRO
 
-São 26 decisões, e **seis foram emendadas** — D06, D08, D12, D14, D16, D24 — algumas mais de uma vez. O Opus 5 as emendou uma a uma, conferindo localmente a cada emenda.
+São 26 decisões, e **sete foram emendadas** — D06, D08, D12, D14, D16, D24, D25 — algumas mais de uma vez. O Opus 5 as emendou uma a uma, conferindo localmente a cada emenda.
 
-**Uma checagem de coerência entre todas não é feita desde 26/09**, e o desenho mudou muito depois: inversão de papéis entre VANT e campo, alvo contínuo, mudança de fonte de K̂, mudança de geometria.
+**Uma checagem de coerência entre todas continua não feita desde 26/09**, e o desenho mudou muito depois: inversão de papéis entre VANT e campo, alvo contínuo, mudança de fonte de K̂, mudança de geometria.
+
+**Delimite o crédito desta ressalva, porque ela é estreita de propósito.** Em 02/10 o Opus 5 encontrou e corrigiu uma incoerência deste tipo: D24 e D25 ainda diziam 18 agrupamentos held-out e 918 unidades efetivas depois que a emenda de geometria de D16 os havia levado a 36 e 936 — e o corpo de D24 contradizia a nota que a própria emenda lhe acrescentara. Foi corrigido em `4d2919c`. **Mas essa checagem cobriu UMA grandeza, a contagem de agrupamentos, e foi disparada por acaso, ao preparar este prompt.** Nenhuma varredura sistemática do registro foi feita. Presuma que há outras defasagens do mesmo tipo e **procure-as**: é exatamente o modo de falha que a revisão local decisão-por-decisão não pega.
 
 Procure:
 
@@ -184,7 +254,7 @@ Ordene por consequência, não por quantidade.
 # 7. O QUE VOCÊ NÃO DEVE FAZER
 
 - **Não edite nada.** Esta é auditoria. `src/config/decisoes.ts` é do pesquisador e nenhum agente o altera.
-- **Não execute o sorteio dos 36 polígonos**, nem em simulação. É operação irreversível por D23.
+- **Não execute o sorteio dos 72 polígonos**, nem em simulação. É operação irreversível por D23.
 - **Não refaça a verificação de código do executor** sem razão específica; está em `docs/verificacoes/`.
 - **Não invente número.** Se a fonte não está disponível neste ambiente, diga.
 - **Não suavize.** O pesquisador pediu auditoria sincera e tem histórico de aceitar achado desconfortável — inclusive quando contraria escolha dele.
@@ -201,4 +271,4 @@ Leia nesta ordem:
 4. `docs/verificacoes/` — os registros, em ordem cronológica. Os de 28/09 a 01/10 cobrem as mudanças de desenho mais recentes.
 5. `docs/planejamento/` — os prompts, se quiser entender por que algo foi feito assim.
 
-O estado atual: **52 arquivos de teste, 388 testes**, suíte verde, `tsc` limpo. O sorteio dos 36 polígonos **ainda não ocorreu** e está travado à espera da medição da dimensão Ê, que depende de credenciais do Earth Engine.
+O estado atual, em 02/10/2026: **57 arquivos de teste, 423 testes**, suíte verde, `tsc` limpo. O sorteio dos **72 polígonos** de 5,02 ha **ainda não ocorreu** e está travado à espera da medição da dimensão Ê, que depende de credenciais do Earth Engine.
