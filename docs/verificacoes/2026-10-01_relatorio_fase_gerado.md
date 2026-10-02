@@ -19,69 +19,76 @@
 ```text
 [1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90mC:/Users/lalfr/Docs Fora do Ar/LUIS ALFREDO/01 - MESTRADO PPGTCA 2026/02 - PESQUISA EROSÃO LAMINAR/geolocalizacao-erosao-propriedade[39m
 
- [32m✓[39m src/lib/seguranca/gerarRelatorioFase.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 49[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/verificacoes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 277[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/detectorSequencia.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 253[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/importacoes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 384[2mms[22m[39m
-       [33m[2m✓[22m[39m nenhum arquivo em src/ importa de legado/ [33m 370[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/padroesProibidos.test.ts [2m([22m[2m18 tests[22m[2m)[22m[33m 855[2mms[22m[39m
- [32m✓[39m src/lib/embrapa/embrapaSoilClient.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 44[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/diarioRequisicoes.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 52[2mms[22m[39m
- [32m✓[39m src/lib/matriz/montagemTemporal.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 27[2mms[22m[39m
- [32m✓[39m src/lib/export/pacoteReprodutibilidade.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 114[2mms[22m[39m
- [32m✓[39m src/lib/gee/amostragemSoloNuLote.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 122[2mms[22m[39m
- [32m✓[39m src/lib/gee/copernicusGeeClient.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 52[2mms[22m[39m
- [32m✓[39m src/lib/gee/sorteioPoligonos.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 234[2mms[22m[39m
- [32m✓[39m src/lib/planet/planet.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 58[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/cegamentoArtefatos.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 24[2mms[22m[39m
- [32m✓[39m src/lib/chuva/chuva.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 32[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/credenciaisSeguras.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 37[2mms[22m[39m
- [32m✓[39m src/lib/fundiario/calculadoraDesenho.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 39[2mms[22m[39m
- [32m✓[39m src/lib/export/planilha.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 51[2mms[22m[39m
- [32m✓[39m src/lib/gee/auth.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 27[2mms[22m[39m
- [32m✓[39m src/lib/gee/compostoSoloNu.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 27[2mms[22m[39m
- [32m✓[39m src/lib/gee/persistenciaTemporal.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 25[2mms[22m[39m
- [32m✓[39m src/lib/rotulos/rotulos.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 21[2mms[22m[39m
- [32m✓[39m src/lib/jev/jevClient.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 16[2mms[22m[39m
- [32m✓[39m src/config/decisoes.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 15[2mms[22m[39m
- [32m✓[39m src/lib/rusle/rusle.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 19[2mms[22m[39m
- [32m✓[39m src/components/inspetor/InspetorPonto.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 54[2mms[22m[39m
- [32m✓[39m src/lib/rusle/fatorK.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 15[2mms[22m[39m
- [32m✓[39m src/lib/gee/terreno.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 19[2mms[22m[39m
- [32m✓[39m src/lib/gee/estratificacao.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 13[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/provenienciaCaminhos.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 33[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/localOnly.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 14[2mms[22m[39m
- [32m✓[39m src/lib/localizacao/localizacao.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 11[2mms[22m[39m
- [32m✓[39m src/lib/padraoOuro/validacaoMatricial.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 16[2mms[22m[39m
- [32m✓[39m src/lib/gee/serieTemporal.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 24[2mms[22m[39m
- [32m✓[39m src/lib/fundiario/selecaoPontoElegivel.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 14[2mms[22m[39m
- [32m✓[39m src/lib/matriz/invariantes.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 14[2mms[22m[39m
- [32m✓[39m src/config/tourMetodologico.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/importacoes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 446[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum arquivo em src/ importa de legado/ [33m 437[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/gerarRelatorioFase.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 214[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/detectorSequencia.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 467[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum artefato JSON ativo em docs/verificacoes deve conter séries numéricas com |r| > 0.95 [33m 455[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/padroesProibidos.test.ts [2m([22m[2m18 tests[22m[2m)[22m[33m 767[2mms[22m[39m
+       [33m[2m✓[22m[39m assevera que nenhum artefato JSON de medição em docs/verificacoes/ contém séries numéricas correlacionadas com a ordem do arquivo [33m 314[2mms[22m[39m
+ [32m✓[39m src/lib/gee/amostragemSoloNuLote.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 624[2mms[22m[39m
+     [33m[2m✓[22m[39m deve processar a resposta FeatureCollection do GEE reduceRegions [33m 412[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/verificacoes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 407[2mms[22m[39m
+       [33m[2m✓[22m[39m toda afirmação VERIFICADO em código deve apontar para arquivo existente em docs/verificacoes/ [33m 397[2mms[22m[39m
+ [32m✓[39m src/lib/gee/sorteioPoligonos.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 212[2mms[22m[39m
+ [32m✓[39m src/lib/export/pacoteReprodutibilidade.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 329[2mms[22m[39m
+ [32m✓[39m src/lib/embrapa/embrapaSoilClient.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 93[2mms[22m[39m
+ [32m✓[39m src/lib/export/planilha.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 81[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/diarioRequisicoes.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 92[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/provenienciaCaminhos.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 98[2mms[22m[39m
+ [32m✓[39m src/lib/gee/copernicusGeeClient.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/credenciaisSeguras.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m src/lib/fundiario/calculadoraDesenho.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/cegamentoArtefatos.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m src/lib/matriz/montagemTemporal.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m src/lib/planet/planet.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m src/lib/chuva/chuva.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32m✓[39m src/components/inspetor/InspetorPonto.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m src/lib/gee/auth.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/rusle.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m src/lib/rotulos/rotulos.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/lib/gee/persistenciaTemporal.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m src/lib/gee/compostoSoloNu.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/lib/padraoOuro/validacaoMatricial.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/localOnly.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/fatorK.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m src/config/decisoes.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/lib/jev/jevClient.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/lib/gee/estratificacao.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/config/tourMetodologico.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 72[2mms[22m[39m
+ [32m✓[39m src/lib/localizacao/localizacao.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/lib/gee/terreno.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/lib/gee/serieTemporal.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/fatorLS.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/lib/fundiario/selecaoPontoElegivel.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/guardaSintetico.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/lib/gee/versaoMotor.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/sessaoEfemera.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/fatorR.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/lib/matriz/invariantes.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m src/store/useSarelStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 12[2mms[22m[39m
  [32m✓[39m src/lib/gee/thinning.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 12[2mms[22m[39m
- [32m✓[39m src/lib/gee/versaoMotor.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 19[2mms[22m[39m
- [32m✓[39m src/lib/gee/elegibilidade.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 12[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/sessaoEfemera.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
- [32m✓[39m src/lib/seguranca/guardaSintetico.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
  [32m✓[39m src/lib/gee/harmonicos.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
- [32m✓[39m src/lib/gee/blocosEspaciais.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 13[2mms[22m[39m
- [32m✓[39m src/store/interfaceIntegration.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
- [32m✓[39m src/lib/gee/estatisticasSerie.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
- [32m✓[39m src/store/useSarelStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
- [32m✓[39m src/lib/gee/amostragemBiofisica.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
- [32m✓[39m src/lib/export/dms.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
- [32m✓[39m src/lib/gee/aoiTiling.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
- [32m✓[39m src/lib/fundiario/matcher.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 7730[2mms[22m[39m
-     [33m[2m✓[22m[39m deve encontrar uma propriedade rural oficial indexada no SQLite local [33m 2271[2mms[22m[39m
-     [33m[2m✓[22m[39m deve retornar status sem-correspondencia para coordenada fora de qualquer perímetro cadastrado [33m 1884[2mms[22m[39m
-     [33m[2m✓[22m[39m deve retornar status base-nao-disponivel para UF fora da cobertura (ex: BA) [33m 1860[2mms[22m[39m
-     [33m[2m✓[22m[39m deve executar batchMatchRuralProperties em lote com integridade de status [33m 1701[2mms[22m[39m
- [32m✓[39m src/lib/drone/planoVooNControl.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 8472[2mms[22m[39m
-     [33m[2m✓[22m[39m Z1 & W3: amostrador real do Copernicus DEM GLO-30 lê os tiles oficiais com isolamento de PROJ_LIB, confere cota contra benchmark independente e recusa NoData / fora de borda (P12) [33m 8347[2mms[22m[39m
+ [32m✓[39m src/lib/gee/blocosEspaciais.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/store/interfaceIntegration.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/lib/gee/elegibilidade.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/lib/gee/amostragemBiofisica.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/lib/gee/aoiTiling.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/lib/export/dms.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/lib/gee/estatisticasSerie.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/lib/fundiario/matcher.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 12187[2mms[22m[39m
+     [33m[2m✓[22m[39m atribui motivo obrigatório quando status não for encontrado e não permite área 0 [33m 614[2mms[22m[39m
+     [33m[2m✓[22m[39m deve encontrar uma propriedade rural oficial indexada no SQLite local [33m 4295[2mms[22m[39m
+     [33m[2m✓[22m[39m deve retornar status sem-correspondencia para coordenada fora de qualquer perímetro cadastrado [33m 2632[2mms[22m[39m
+     [33m[2m✓[22m[39m deve retornar status base-nao-disponivel para UF fora da cobertura (ex: BA) [33m 2820[2mms[22m[39m
+     [33m[2m✓[22m[39m deve executar batchMatchRuralProperties em lote com integridade de status [33m 1813[2mms[22m[39m
+ [32m✓[39m src/lib/drone/planoVooNControl.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 13850[2mms[22m[39m
+     [33m[2m✓[22m[39m Z1 & W3: amostrador real do Copernicus DEM GLO-30 lê os tiles oficiais com isolamento de PROJ_LIB, confere cota contra benchmark independente e recusa NoData / fora de borda (P12) [33m 13632[2mms[22m[39m
 
-[2m Test Files [22m [1m[32m52 passed[39m[22m[90m (52)[39m
-[2m      Tests [22m [1m[32m388 passed[39m[22m[90m (388)[39m
-[2m   Start at [22m 19:17:16
-[2m   Duration [22m 9.16s[2m (transform 3.80s, setup 0ms, import 7.73s, tests 19.44s, environment 13ms)[22m
+[2m Test Files [22m [1m[32m54 passed[39m[22m[90m (54)[39m
+[2m      Tests [22m [1m[32m409 passed[39m[22m[90m (409)[39m
+[2m   Start at [22m 21:50:56
+[2m   Duration [22m 15.09s[2m (transform 5.89s, setup 0ms, import 11.28s, tests 30.86s, environment 14ms)[22m
 
 
 [33mThe plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the [1mresolve.tsconfigPaths[22m option. You can remove the plugin and set [1mresolve.tsconfigPaths: true[22m in your Vite config instead.[39m
@@ -107,7 +114,7 @@
 | `docs/verificacoes/voo_ncontrol/relatorio_aceitacao_y1_y6_2026-09-29.json` | Sim | 2.231 | `c6c5ba0cd6c2b13e21532e23626297ad4717765eed6e470ee645490bbb3cf77d` |
 | `docs/verificacoes/voo_ncontrol/roteiro_jornadas_72poligonos.csv` | Sim | 16.325 | `2af484250487948becf7be9ddbfeaa47a0da4ffb83c395e151084f440902c609` |
 | `docs/verificacoes/voo_ncontrol/tabela_autorizacao_proprietarios_72poligonos.csv` | Sim | 10.112 | `40048f02026254dd1ced149cc396708aa0bd76bb4bee65c254333dab2266f805` |
-| `docs/verificacoes/voo_ncontrol/manifesto_interprete_cego_72poligonos.csv` | Sim | 8.704 | `33f7dace7a23fa38b08d1e89d35637894b7e5ce7fda78bc0a548c2c339d4d2e3` |
+| `docs/verificacoes/voo_ncontrol/manifesto_interprete_cego_72poligonos.csv` | Sim | 8.704 | `43c316251880dc1549e2e16592b517f667ae4b09406a7864c681f3ef660b6de1` |
 | `docs/verificacoes/voo_ncontrol/roteiro_jornadas_72poligonos.pdf` | Sim | 16.155 | `58eda8e604bc96918d9f282ad568dd555bafce654e2974f2dbc2735146aeb11a` |
 | `docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json` | Sim | 2.411 | `c456b095ab746e8fcc935a45a77331c9fd0dfa72ec2bb8fe7d6cac5e0b91dbf8` |
 | `docs/verificacoes/2026-09-30_remedicao_candidatos_bp3_d16.md` | Sim | 3.389 | `06de7d30a798a9ab7d2735222ea17a7b2985c43aebef4a40471f3c6b17d39ee3` |
@@ -152,8 +159,8 @@ codigoOpacoInterprete,cameraName,gsdAlvoCm,aglNominalMetros,areaPoligonoHa,forma
 ```
 - **Amostra real das duas primeiras linhas:**
 ```csv
-VANT-BLIND-01DDF8BCC0,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
-VANT-BLIND-03F33DD774,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
+VANT-BLIND-03C73E72DE,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
+VANT-BLIND-03F8FE2EE7,Micasense Altum,4.0,92.76,5.02,GeoTIFF_5Bandas_Refletancia_Calibrada,D26_FracaoAreaErodida_Cego,
 ```
 
 #### 3.3 Metadados e Relatório de Aceitação JSON (`docs/verificacoes/voo_ncontrol/relatorio_aceitacao_y1_y6_2026-09-29.json`)

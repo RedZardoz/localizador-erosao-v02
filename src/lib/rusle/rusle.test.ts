@@ -179,13 +179,10 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
   });
 
   describe("14.4 Coerência e Invariante 1", () => {
-    // D13 e D15 foram DECIDIDAS em 27/09/2026, mas o calculo de erosividade e o de
-    // acumulo de fluxo NAO foram integrados. O Invariante 1 continua retendo perdaSolo;
-    // o que muda e a CAUSA, que passa de "decisao-pendente" para "insuficiente", porque
-    // R e LS agora sao "nao-calculado". Este teste passa a asseverar o estado real, e a
-    // cobertura do caminho "decisao-pendente" e feita logo abaixo por injecao, para que
-    // o MECANISMO siga testado sem depender do ESTADO do registro de decisoes.
-    it("com D13 e D15 decididas mas nao integradas, perdaSolo é indisponivel por insuficiente", () => {
+    // D13 e D15 estao integradas. Sem insumos de R e LS fornecidos, o Invariante 1
+    // continua retendo perdaSolo com a causa "insuficiente", pois os fatores
+    // nao puderam ser calculados por falta de dados.
+    it("com D13 e D15 integradas mas sem insumos fornecidos, R, LS e perdaSolo são indisponíveis por insuficiente", () => {
       expect(REGISTRO_DECISOES.D13.estado).toBe("decidida");
       expect(REGISTRO_DECISOES.D14.estado).toBe("decidida");
       expect(REGISTRO_DECISOES.D15.estado).toBe("decidida");
@@ -206,13 +203,11 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
       expect(rusle.fatorK.estado).toBe("indisponivel");
       expect(rusle.fatorLS.estado).toBe("indisponivel");
 
-      expect(rusle.fatorR.estado).toBe("indisponivel");
       if (rusle.fatorR.estado === "indisponivel") {
-        expect(rusle.fatorR.causa).toBe("nao-calculado");
+        expect(rusle.fatorR.causa).toBe("insuficiente");
       }
-      expect(rusle.fatorLS.estado).toBe("indisponivel");
       if (rusle.fatorLS.estado === "indisponivel") {
-        expect(rusle.fatorLS.causa).toBe("nao-calculado");
+        expect(rusle.fatorLS.causa).toBe("insuficiente");
       }
 
       expect(rusle.perdaSolo.estado).toBe("indisponivel");
@@ -220,6 +215,56 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
         expect(rusle.perdaSolo.causa).toBe("insuficiente");
       }
       expect(rusle.memoriaCalculo).toBeNull();
+    });
+
+    it("calcula RUSLE de ponta a ponta com insumos reais dos 5 fatores (D01, D13, D14, D15 e Renard 1997) sem substitutos", () => {
+      const dataIso = "2026-09-10T21:00:00Z";
+      const rusle = montarLinhaDeBaseRUSLE({
+        // Fator C (D01): NDVI 0.5 -> C = (1 - 0.5) / 2 = 0.25
+        ndviProveniencia: {
+          estado: "medido",
+          valor: 0.5,
+          fonte: "Sentinel-2 L2A",
+          adquiridoEm: dataIso,
+          consultadoEm: dataIso,
+        },
+        // Fator K (D14): Camada oficial 2024 -> kSolos = 0.0285
+        camadaErodibilidade2024: {
+          kSolos: 0.0285,
+          erodUm: "Média",
+          codUm: "SG22NVef7",
+          ogcFid: 105112,
+        },
+        // Fator R (D13): Coordenadas de Toledo (BP3) -> CHIRPS climatológico regional
+        insumoFatorR: {
+          latitude: -24.72,
+          longitude: -53.74,
+          identificadorFonte: "CHIRPS v2.0 0.05° Toledo",
+        },
+        // Fator LS (D15): Rampa típica em Toledo (declividade 5.143° = 9%, área contribuição 22.13 * 30 = 663.9 m²)
+        insumoFatorLS: {
+          declividadeGraus: 5.143,
+          areaContribuicaoMontanteM2: 663.9,
+          latitude: -24.72,
+          longitude: -53.74,
+        },
+        // Fator P: Padrão (Renard et al., 1997) -> P = 1.0 tabelado
+      });
+
+      expect(rusle.fatorC.estado).toBe("modelado");
+      expect(rusle.fatorK.estado).toBe("tabelado");
+      expect(rusle.fatorR.estado).toBe("modelado");
+      expect(rusle.fatorLS.estado).toBe("modelado");
+      expect(rusle.fatorP.estado).toBe("tabelado");
+
+      expect(rusle.perdaSolo.estado).toBe("modelado");
+      if (rusle.perdaSolo.estado === "modelado") {
+        expect(rusle.perdaSolo.valor).toBeGreaterThan(0);
+        expect(rusle.perdaSolo.decisoes).toEqual(["D01", "D13", "D14", "D15"]);
+      }
+      expect(rusle.memoriaCalculo).not.toBeNull();
+      expect(rusle.memoriaCalculo).toContain("RUSLE A = R");
+      expect(rusle.memoriaCalculo).toContain("t/ha/ano");
     });
 
     it("propaga causa decisao-pendente para perdaSolo quando um fator a carrega", () => {

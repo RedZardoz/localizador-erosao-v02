@@ -1,0 +1,55 @@
+========================================================================
+EXTRACAO DIRETA E CONFERENCIA DE ah_703.pdf (USDA Agriculture Handbook 703)
+========================================================================
+Caminho relativo: docs/verificacoes/fontes/renard1997/ah_703.pdf
+Tamanho do arquivo (bytes): 22401914
+Hash SHA-256: cd19868766e04132e9d764eacd92aa09cdc1d1abe1567b677734f5940d3018a1
+Total de paginas do PDF: 407
+PDF Metadata (/Title): Predicting Soil Erosion by Water: A Guide to Conservation Planning With the Revised Universal Soil Loss Equation (RUSLE)
+PDF Metadata (/Author): K. G. Renard, G. R. Foster, G. A. Weesies, D. K. McCool, and D. C. Yoder
+PDF Metadata (/CreationDate): 2001-05-01 16:01:42-04:00
+PDF Metadata (/Producer): Acrobat 5.0 Image Conversion Plug-in for Windows
+
+------------------------------------------------------------------------
+IDENTIFICACAO BIBLIOGRAFICA FORMAL (PORTAO G0 - D15)
+------------------------------------------------------------------------
+Obra: Predicting Soil Erosion by Water: A Guide to Conservation Planning
+      With the Revised Universal Soil Loss Equation (RUSLE)
+Autores Coordenadores: K.G. Renard, G.R. Foster, G.A. Weesies, D.K. McCool, D.C. Yoder
+Publicacao: U.S. Department of Agriculture, Agriculture Handbook No. 703, 1997, 404 pp.
+Capitulo 4: Slope Length and Steepness Factors (L and S)
+Autores do Cap. 4: D.K. McCool, G.R. Foster, C.K. Mutchler, K.G. Renard, J.M. Bradford
+Paginas do Cap. 4 no volume impresso: pp. 101-141 (Paginas do PDF: 123-163)
+Apendice A: Conversion to SI Metric Units (pp. 325-333, PDF: 347-355)
+
+------------------------------------------------------------------------
+EQUACOES E COEFICIENTES PRIMARIOS CONFERIDOS
+------------------------------------------------------------------------
+1. FATOR DE COMPRIMENTO DE RAMPA (L) — Pagina 105 (PDF p. 127):
+   Equacao [4-1]:
+     L = (lambda / 72.6)^m   [unidades consuetudinarias dos EUA]
+   Conversao para SI (Apendice A, Pagina 325, PDF p. 347):
+     72.6 ft = 22.13 m
+     L = (lambda / 22.13)^m   [lambda em metros, rampa padrao = 22.13 m]
+
+2. EXPOENTE DO COMPRIMENTO DE RAMPA (m) — Pagina 105 (PDF p. 127):
+   Equacao [4-2]:
+     m = beta / (1 + beta)
+   Equacao [4-3]:
+     beta = (sin theta / 0.0896) / [3.0 * (sin theta)^0.8 + 0.56]
+     onde theta eh o angulo de declividade (graus ou radianos), sin(theta) eh o seno da declividade.
+     0.0896 corresponde a declividade de referencia padrao de 9% (tan theta = 0.09 -> sin theta = 0.08964).
+
+3. FATOR DE DECLIVIDADE (S) — Pagina 107 (PDF p. 129):
+   Equacao [4-4] (declividades menores que 9%):
+     S = 10.8 * sin theta + 0.03,   para s < 9% (tan theta < 0.09)
+   Equacao [4-5] (declividades maiores ou iguais a 9%):
+     S = 16.8 * sin theta - 0.50,   para s >= 9% (tan theta >= 0.09)
+   Condicao de declividade padrao de 9% (sin theta = 0.08964):
+     S = 16.8 * 0.08964 - 0.50 = 1.506 - 0.50 = 1.006 ~= 1.000
+
+4. EXTENSAO PARA ENCOSTAS IRREGULARES E AREA BIDIMENSIONAL — Pagina 111 (PDF p. 133):
+   Equacao [4-10] (Foster & Wischmeier, 1974):
+     S_j * lambda_j^(m+1) - S_j * lambda_(j-1)^(m+1)
+     base analitica da formulacao 2D de Desmet & Govers (1996) sobre celulas de grade.
+========================================================================

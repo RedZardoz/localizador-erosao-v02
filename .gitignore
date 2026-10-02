@@ -81,6 +81,8 @@ data/*.bak
 data/shapes/
 data/sicar_cache/
 data/sigef_cache/
+data/dem_cache/
+data/chirps_cache/
 
 # Python cache
 __pycache__/
