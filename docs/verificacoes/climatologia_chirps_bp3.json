@@ -1,10 +1,23 @@
 {
-  "versao": "1.0",
+  "versao": "2.0",
   "tipo": "climatologia_chirps_mensal_bp3",
-  "geradoEm": "2026-10-02T15:00:39.942290+00:00",
-  "periodo": "2022 (12 meses completos)",
+  "geradoEm": "2026-10-02T21:15:30.392576+00:00",
+  "periodo": "1981-01 a 2025-12 (45 anos / 540 meses completos)",
+  "limiteSuperiorDinamico": true,
+  "anoInicial": 1981,
+  "anoFinal": 2025,
+  "totalAnos": 45,
+  "totalMeses": 540,
   "fontePrimaria": "UCSB Climate Hazards Center (CHC) — CHIRPS v2.0 Global Monthly 0.05°",
   "urlBase": "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/",
+  "envelopeBp3": {
+    "fonte": "src/config/areaInteresse.ts",
+    "lonMin": -54.65,
+    "latMin": -25.65,
+    "lonMax": -53.35,
+    "latMax": -24.0,
+    "justificativaEscolha": "O envelope de src/config/areaInteresse.ts foi adotado como fonte única canônica da verdade. Ele intersecta a grade nativa de 0,05° do CHIRPS com limites inteiros de células (26 colunas x 33 linhas), englobando com precisão os 28 municípios da BP3 e todas as 6 estações pluviométricas de referência."
+  },
   "suporteEspacial": {
     "resolucaoGraus": [
       0.05000000074505806,
@@ -12,16 +25,43 @@
     ],
     "resolucaoAproximadaKm": 5.5,
     "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+    "gridWindow": {
+      "colOff": 2507,
+      "rowOff": 1480,
+      "width": 26,
+      "height": 33
+    },
     "reamostragem": "NENHUMA — preservado estritamente o suporte nativo de 0,05° conforme D06",
-    "noData": null
+    "noDataSentinelConvencao": -9999.0,
+    "noDataTratamento": "Propagação pericial como ausência (None). Médias computadas exclusivamente sobre meses válidos (P12)."
+  },
+  "gestaoDisco": {
+    "tamanhoAntesBytes": 866358475,
+    "tamanhoPicoBytes": 866358475,
+    "tamanhoDepoisBytes": 1897517,
+    "reducaoBytes": 864460958,
+    "reducaoPercentual": 99.78,
+    "formatoArmazenamento": "GeoTIFF recortado comprimido em DEFLATE (~3,5 KB por mês). Dados globais descartados."
+  },
+  "estatisticasNoDataGeral": {
+    "totalMesesAvaliados": 540,
+    "totalOcorrenciasNoData": 0,
+    "mesesComNoData": [],
+    "notaAuditoria": "Nenhum valor NoData foi substituído por 0.0 ou preenchido por interpolação arbitrária, garantindo respeito integral à proibição P12."
   },
   "diarioRequisicoes": "docs/verificacoes/diario_climatologia_chirps_bp3.json",
   "dimensoesMedidas": {
     "chuvaMensalChirps": {
       "estado": "medido",
       "fonteExterna": true,
-      "totalItens": 12
+      "totalItens": 540,
+      "anosCobertos": 45
     }
+  },
+  "fatorRStatus": {
+    "estado": "indisponivel",
+    "causa": "h1_fonte_ausente",
+    "motivo": "Fator R de erosividade segue compulsoriamente indisponível por Diretriz H1. A consolidação da série completa de precipitação CHIRPS (1981–2025) aprimora a base pluviométrica, mas não restitui os coeficientes de conversão 107,52 e 46,89 enquanto ausente a fonte primária arquivada."
   },
   "estacoesReferenciaBP3": {
     "TOLEDO": {
@@ -29,136 +69,432 @@
       "latitude": -24.72,
       "longitude": -53.74,
       "rReferenciaWaltrick": 10623,
-      "precipitacaoMensalMm": [
-        119.27,
-        77.39,
-        163.62,
-        185.78,
-        96.13,
-        114.99,
-        34.23,
-        100.54,
-        176.88,
-        263.79,
-        71.26,
-        80.25
-      ],
-      "precipitacaoAnualMm": 1484.13
+      "serieCompleta1981_2025": {
+        "mesesEsperados": 540,
+        "mesesValidos": 540,
+        "mesesNoData": 0,
+        "mesesNoDataLista": [],
+        "climatologiaMensalMediaMm": [
+          149.06,
+          144.26,
+          114.99,
+          132.29,
+          135.03,
+          105.37,
+          81.26,
+          63.93,
+          116.3,
+          185.58,
+          119.56,
+          156.75
+        ],
+        "precipitacaoMediaAnualMm": 1504.38
+      },
+      "criterioAceiteAno2022": {
+        "precipitacaoMensal2022Mm": [
+          119.27,
+          77.39,
+          163.62,
+          185.78,
+          96.13,
+          114.99,
+          34.23,
+          100.54,
+          176.88,
+          263.79,
+          71.26,
+          80.25
+        ],
+        "precipitacaoAnual2022Mm": 1484.13,
+        "desvioParaMediaClimatologicaMm": -20.25,
+        "desvioParaMediaClimatologicaPercentual": -1.35,
+        "conclusaoVies": "O ano de 2022 apresentou precipitação acumulada de 1484.13 mm, desvio de -20.25 mm (-1.35%) em relação à média climatológica de 45 anos (1504.38 mm)."
+      },
+      "janelaSecundariaWaltrick1986_2008": {
+        "descricao": "Janela secundária idêntica ao período de Waltrick et al. (2015, 1986–2008 = 23 anos / 276 meses) para conferência cruzada de insumo.",
+        "mesesEsperados": 276,
+        "mesesValidos": 276,
+        "mesesNoData": 0,
+        "climatologiaMensalMediaMm": [
+          152.82,
+          146.06,
+          112.53,
+          137.78,
+          150.09,
+          104.51,
+          77.11,
+          67.44,
+          133.59,
+          183.15,
+          127.72,
+          150.38
+        ],
+        "precipitacaoMediaAnualMm": 1543.18,
+        "diferencaParaSerieCompletaMm": 38.8,
+        "diferencaParaSerieCompletaPercentual": 2.58,
+        "rRefWaltrickDeclarado": 10623,
+        "notaComparacao": "Comparação indireta e estritamente pluviométrica (precipitação vs precipitação). Coeficientes de conversão para R inoperantes conforme Diretriz H1."
+      }
     },
     "CASCAVEL": {
       "nome": "Cascavel",
       "latitude": -24.95,
       "longitude": -53.45,
       "rReferenciaWaltrick": 11588,
-      "precipitacaoMensalMm": [
-        179.15,
-        93.6,
-        225.83,
-        205.7,
-        125.82,
-        175.37,
-        45.7,
-        171.78,
-        207.82,
-        364.67,
-        103.23,
-        104.27
-      ],
-      "precipitacaoAnualMm": 2002.94
+      "serieCompleta1981_2025": {
+        "mesesEsperados": 540,
+        "mesesValidos": 540,
+        "mesesNoData": 0,
+        "mesesNoDataLista": [],
+        "climatologiaMensalMediaMm": [
+          199.88,
+          174.45,
+          151.75,
+          151.69,
+          155.51,
+          144.78,
+          102.18,
+          93.97,
+          138.09,
+          230.98,
+          146.8,
+          187.83
+        ],
+        "precipitacaoMediaAnualMm": 1877.91
+      },
+      "criterioAceiteAno2022": {
+        "precipitacaoMensal2022Mm": [
+          179.15,
+          93.6,
+          225.83,
+          205.7,
+          125.82,
+          175.37,
+          45.7,
+          171.78,
+          207.82,
+          364.67,
+          103.23,
+          104.27
+        ],
+        "precipitacaoAnual2022Mm": 2002.94,
+        "desvioParaMediaClimatologicaMm": 125.03,
+        "desvioParaMediaClimatologicaPercentual": 6.66,
+        "conclusaoVies": "O ano de 2022 apresentou precipitação acumulada de 2002.94 mm, desvio de +125.03 mm (+6.66%) em relação à média climatológica de 45 anos (1877.91 mm)."
+      },
+      "janelaSecundariaWaltrick1986_2008": {
+        "descricao": "Janela secundária idêntica ao período de Waltrick et al. (2015, 1986–2008 = 23 anos / 276 meses) para conferência cruzada de insumo.",
+        "mesesEsperados": 276,
+        "mesesValidos": 276,
+        "mesesNoData": 0,
+        "climatologiaMensalMediaMm": [
+          194.2,
+          163.88,
+          143.2,
+          156.84,
+          179.31,
+          142.7,
+          97.77,
+          93.96,
+          153.94,
+          226.04,
+          154.9,
+          177.23
+        ],
+        "precipitacaoMediaAnualMm": 1883.97,
+        "diferencaParaSerieCompletaMm": 6.06,
+        "diferencaParaSerieCompletaPercentual": 0.32,
+        "rRefWaltrickDeclarado": 11588,
+        "notaComparacao": "Comparação indireta e estritamente pluviométrica (precipitação vs precipitação). Coeficientes de conversão para R inoperantes conforme Diretriz H1."
+      }
     },
     "SANTA_HELENA": {
       "nome": "Santa Helena",
       "latitude": -24.86,
       "longitude": -54.33,
       "rReferenciaWaltrick": 11261,
-      "precipitacaoMensalMm": [
-        115.98,
-        97.76,
-        307.92,
-        232.02,
-        177.58,
-        136.34,
-        36.82,
-        124.24,
-        237.06,
-        454.9,
-        82.06,
-        62.42
-      ],
-      "precipitacaoAnualMm": 2065.1
+      "serieCompleta1981_2025": {
+        "mesesEsperados": 540,
+        "mesesValidos": 540,
+        "mesesNoData": 0,
+        "mesesNoDataLista": [],
+        "climatologiaMensalMediaMm": [
+          164.64,
+          174.21,
+          140.69,
+          130.98,
+          145.73,
+          147.29,
+          83.9,
+          73.78,
+          124.47,
+          241.62,
+          166.4,
+          142.38
+        ],
+        "precipitacaoMediaAnualMm": 1736.09
+      },
+      "criterioAceiteAno2022": {
+        "precipitacaoMensal2022Mm": [
+          115.98,
+          97.76,
+          307.92,
+          232.02,
+          177.58,
+          136.34,
+          36.82,
+          124.24,
+          237.06,
+          454.9,
+          82.06,
+          62.42
+        ],
+        "precipitacaoAnual2022Mm": 2065.1,
+        "desvioParaMediaClimatologicaMm": 329.01,
+        "desvioParaMediaClimatologicaPercentual": 18.95,
+        "conclusaoVies": "O ano de 2022 apresentou precipitação acumulada de 2065.1 mm, desvio de +329.01 mm (+18.95%) em relação à média climatológica de 45 anos (1736.09 mm)."
+      },
+      "janelaSecundariaWaltrick1986_2008": {
+        "descricao": "Janela secundária idêntica ao período de Waltrick et al. (2015, 1986–2008 = 23 anos / 276 meses) para conferência cruzada de insumo.",
+        "mesesEsperados": 276,
+        "mesesValidos": 276,
+        "mesesNoData": 0,
+        "climatologiaMensalMediaMm": [
+          164.69,
+          164.08,
+          124.73,
+          137.28,
+          161.25,
+          135.39,
+          74.94,
+          76.42,
+          139.85,
+          229.78,
+          173.47,
+          127.2
+        ],
+        "precipitacaoMediaAnualMm": 1709.08,
+        "diferencaParaSerieCompletaMm": -27.01,
+        "diferencaParaSerieCompletaPercentual": -1.56,
+        "rRefWaltrickDeclarado": 11261,
+        "notaComparacao": "Comparação indireta e estritamente pluviométrica (precipitação vs precipitação). Coeficientes de conversão para R inoperantes conforme Diretriz H1."
+      }
     },
     "FOZ_DO_IGUACU": {
       "nome": "Foz do Iguaçu",
       "latitude": -25.54,
       "longitude": -54.58,
       "rReferenciaWaltrick": 11037,
-      "precipitacaoMensalMm": [
-        82.18,
-        72.38,
-        362.05,
-        283.51,
-        236.15,
-        86.98,
-        43.02,
-        171.43,
-        133.88,
-        336.28,
-        79.87,
-        58.1
-      ],
-      "precipitacaoAnualMm": 1945.83
+      "serieCompleta1981_2025": {
+        "mesesEsperados": 540,
+        "mesesValidos": 540,
+        "mesesNoData": 0,
+        "mesesNoDataLista": [],
+        "climatologiaMensalMediaMm": [
+          179.5,
+          149.46,
+          136.87,
+          145.76,
+          156.5,
+          129.04,
+          85.11,
+          91.38,
+          121.26,
+          207.26,
+          150.95,
+          178.53
+        ],
+        "precipitacaoMediaAnualMm": 1731.62
+      },
+      "criterioAceiteAno2022": {
+        "precipitacaoMensal2022Mm": [
+          82.18,
+          72.38,
+          362.05,
+          283.51,
+          236.15,
+          86.98,
+          43.02,
+          171.43,
+          133.88,
+          336.28,
+          79.87,
+          58.1
+        ],
+        "precipitacaoAnual2022Mm": 1945.83,
+        "desvioParaMediaClimatologicaMm": 214.21,
+        "desvioParaMediaClimatologicaPercentual": 12.37,
+        "conclusaoVies": "O ano de 2022 apresentou precipitação acumulada de 1945.83 mm, desvio de +214.21 mm (+12.37%) em relação à média climatológica de 45 anos (1731.62 mm)."
+      },
+      "janelaSecundariaWaltrick1986_2008": {
+        "descricao": "Janela secundária idêntica ao período de Waltrick et al. (2015, 1986–2008 = 23 anos / 276 meses) para conferência cruzada de insumo.",
+        "mesesEsperados": 276,
+        "mesesValidos": 276,
+        "mesesNoData": 0,
+        "climatologiaMensalMediaMm": [
+          185.09,
+          148.05,
+          121.53,
+          144.55,
+          165.45,
+          125.64,
+          72.24,
+          92.48,
+          128.8,
+          204.47,
+          142.37,
+          174.07
+        ],
+        "precipitacaoMediaAnualMm": 1704.74,
+        "diferencaParaSerieCompletaMm": -26.88,
+        "diferencaParaSerieCompletaPercentual": -1.55,
+        "rRefWaltrickDeclarado": 11037,
+        "notaComparacao": "Comparação indireta e estritamente pluviométrica (precipitação vs precipitação). Coeficientes de conversão para R inoperantes conforme Diretriz H1."
+      }
     },
     "PALOTINA": {
       "nome": "Palotina",
       "latitude": -24.28,
       "longitude": -53.84,
       "rReferenciaWaltrick": 10436,
-      "precipitacaoMensalMm": [
-        212.36,
-        95.47,
-        305.53,
-        258.49,
-        124.69,
-        171.12,
-        14.43,
-        184.58,
-        329.96,
-        351.09,
-        58.69,
-        88.42
-      ],
-      "precipitacaoAnualMm": 2194.83
+      "serieCompleta1981_2025": {
+        "mesesEsperados": 540,
+        "mesesValidos": 540,
+        "mesesNoData": 0,
+        "mesesNoDataLista": [],
+        "climatologiaMensalMediaMm": [
+          169.61,
+          164.09,
+          128.91,
+          119.73,
+          149.26,
+          120.33,
+          72.6,
+          75.74,
+          125.8,
+          199.23,
+          127.56,
+          179.21
+        ],
+        "precipitacaoMediaAnualMm": 1632.07
+      },
+      "criterioAceiteAno2022": {
+        "precipitacaoMensal2022Mm": [
+          212.36,
+          95.47,
+          305.53,
+          258.49,
+          124.69,
+          171.12,
+          14.43,
+          184.58,
+          329.96,
+          351.09,
+          58.69,
+          88.42
+        ],
+        "precipitacaoAnual2022Mm": 2194.83,
+        "desvioParaMediaClimatologicaMm": 562.76,
+        "desvioParaMediaClimatologicaPercentual": 34.48,
+        "conclusaoVies": "O ano de 2022 apresentou precipitação acumulada de 2194.83 mm, desvio de +562.76 mm (+34.48%) em relação à média climatológica de 45 anos (1632.07 mm)."
+      },
+      "janelaSecundariaWaltrick1986_2008": {
+        "descricao": "Janela secundária idêntica ao período de Waltrick et al. (2015, 1986–2008 = 23 anos / 276 meses) para conferência cruzada de insumo.",
+        "mesesEsperados": 276,
+        "mesesValidos": 276,
+        "mesesNoData": 0,
+        "climatologiaMensalMediaMm": [
+          183.9,
+          164.08,
+          108.07,
+          126.83,
+          157.33,
+          115.36,
+          66.4,
+          73.3,
+          143.8,
+          180.18,
+          139.27,
+          150.47
+        ],
+        "precipitacaoMediaAnualMm": 1608.99,
+        "diferencaParaSerieCompletaMm": -23.08,
+        "diferencaParaSerieCompletaPercentual": -1.41,
+        "rRefWaltrickDeclarado": 10436,
+        "notaComparacao": "Comparação indireta e estritamente pluviométrica (precipitação vs precipitação). Coeficientes de conversão para R inoperantes conforme Diretriz H1."
+      }
     },
     "MEDIANEIRA": {
       "nome": "Medianeira",
       "latitude": -25.29,
       "longitude": -54.09,
       "rReferenciaWaltrick": 11400,
-      "precipitacaoMensalMm": [
-        162.92,
-        129.07,
-        421.69,
-        406.28,
-        217.05,
-        94.75,
-        54.42,
-        179.19,
-        229.6,
-        463.43,
-        81.46,
-        72.2
-      ],
-      "precipitacaoAnualMm": 2512.06
-    }
-  },
-  "tabelaConferenciaCruzadaDeclarada": {
-    "descricao": "Tabela histórica Waltrick et al. (2015, Quadro 1) mantida estritamente como conferência cruzada, jamais como fonte primária dos totais CHIRPS.",
-    "estacoes": {
-      "TOLEDO": 10623,
-      "CASCAVEL": 11588,
-      "SANTA_HELENA": 11261,
-      "FOZ_DO_IGUACU": 11037,
-      "PALOTINA": 10436
+      "serieCompleta1981_2025": {
+        "mesesEsperados": 540,
+        "mesesValidos": 540,
+        "mesesNoData": 0,
+        "mesesNoDataLista": [],
+        "climatologiaMensalMediaMm": [
+          208.17,
+          205.71,
+          193.77,
+          201.69,
+          166.7,
+          133.67,
+          114.47,
+          98.25,
+          138.84,
+          262.24,
+          155.04,
+          216.09
+        ],
+        "precipitacaoMediaAnualMm": 2094.64
+      },
+      "criterioAceiteAno2022": {
+        "precipitacaoMensal2022Mm": [
+          162.92,
+          129.07,
+          421.69,
+          406.28,
+          217.05,
+          94.75,
+          54.42,
+          179.19,
+          229.6,
+          463.43,
+          81.46,
+          72.2
+        ],
+        "precipitacaoAnual2022Mm": 2512.06,
+        "desvioParaMediaClimatologicaMm": 417.42,
+        "desvioParaMediaClimatologicaPercentual": 19.93,
+        "conclusaoVies": "O ano de 2022 apresentou precipitação acumulada de 2512.06 mm, desvio de +417.42 mm (+19.93%) em relação à média climatológica de 45 anos (2094.64 mm)."
+      },
+      "janelaSecundariaWaltrick1986_2008": {
+        "descricao": "Janela secundária idêntica ao período de Waltrick et al. (2015, 1986–2008 = 23 anos / 276 meses) para conferência cruzada de insumo.",
+        "mesesEsperados": 276,
+        "mesesValidos": 276,
+        "mesesNoData": 0,
+        "climatologiaMensalMediaMm": [
+          199.06,
+          185.86,
+          166.03,
+          197.56,
+          181.68,
+          127.06,
+          101.15,
+          100.49,
+          150.81,
+          254.78,
+          150.63,
+          194.74
+        ],
+        "precipitacaoMediaAnualMm": 2009.85,
+        "diferencaParaSerieCompletaMm": -84.79,
+        "diferencaParaSerieCompletaPercentual": -4.05,
+        "rRefWaltrickDeclarado": 11400,
+        "notaComparacao": "Comparação indireta e estritamente pluviométrica (precipitação vs precipitação). Coeficientes de conversão para R inoperantes conforme Diretriz H1."
+      }
     }
   }
 }

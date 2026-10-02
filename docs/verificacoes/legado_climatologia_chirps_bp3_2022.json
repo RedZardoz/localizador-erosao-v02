@@ -1,0 +1,166 @@
+{
+  "versao": "1.0",
+  "status": "superado_por_d13_serie_completa",
+  "notaLegado": "Artefato preservado para fins de comparação com a série completa 1981-2025 e quantificação de desvio / viés (L1 / D13b).",
+  "tipo": "climatologia_chirps_mensal_bp3",
+  "geradoEm": "2026-10-02T15:00:39.942290+00:00",
+  "periodo": "2022 (12 meses completos)",
+  "fontePrimaria": "UCSB Climate Hazards Center (CHC) — CHIRPS v2.0 Global Monthly 0.05°",
+  "urlBase": "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/",
+  "suporteEspacial": {
+    "resolucaoGraus": [
+      0.05000000074505806,
+      0.05000000074505806
+    ],
+    "resolucaoAproximadaKm": 5.5,
+    "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+    "reamostragem": "NENHUMA — preservado estritamente o suporte nativo de 0,05° conforme D06",
+    "noData": null
+  },
+  "diarioRequisicoes": "docs/verificacoes/diario_climatologia_chirps_bp3.json",
+  "dimensoesMedidas": {
+    "chuvaMensalChirps": {
+      "estado": "medido",
+      "fonteExterna": true,
+      "totalItens": 12
+    }
+  },
+  "estacoesReferenciaBP3": {
+    "TOLEDO": {
+      "nome": "Toledo",
+      "latitude": -24.72,
+      "longitude": -53.74,
+      "rReferenciaWaltrick": 10623,
+      "precipitacaoMensalMm": [
+        119.27,
+        77.39,
+        163.62,
+        185.78,
+        96.13,
+        114.99,
+        34.23,
+        100.54,
+        176.88,
+        263.79,
+        71.26,
+        80.25
+      ],
+      "precipitacaoAnualMm": 1484.13
+    },
+    "CASCAVEL": {
+      "nome": "Cascavel",
+      "latitude": -24.95,
+      "longitude": -53.45,
+      "rReferenciaWaltrick": 11588,
+      "precipitacaoMensalMm": [
+        179.15,
+        93.6,
+        225.83,
+        205.7,
+        125.82,
+        175.37,
+        45.7,
+        171.78,
+        207.82,
+        364.67,
+        103.23,
+        104.27
+      ],
+      "precipitacaoAnualMm": 2002.94
+    },
+    "SANTA_HELENA": {
+      "nome": "Santa Helena",
+      "latitude": -24.86,
+      "longitude": -54.33,
+      "rReferenciaWaltrick": 11261,
+      "precipitacaoMensalMm": [
+        115.98,
+        97.76,
+        307.92,
+        232.02,
+        177.58,
+        136.34,
+        36.82,
+        124.24,
+        237.06,
+        454.9,
+        82.06,
+        62.42
+      ],
+      "precipitacaoAnualMm": 2065.1
+    },
+    "FOZ_DO_IGUACU": {
+      "nome": "Foz do Iguaçu",
+      "latitude": -25.54,
+      "longitude": -54.58,
+      "rReferenciaWaltrick": 11037,
+      "precipitacaoMensalMm": [
+        82.18,
+        72.38,
+        362.05,
+        283.51,
+        236.15,
+        86.98,
+        43.02,
+        171.43,
+        133.88,
+        336.28,
+        79.87,
+        58.1
+      ],
+      "precipitacaoAnualMm": 1945.83
+    },
+    "PALOTINA": {
+      "nome": "Palotina",
+      "latitude": -24.28,
+      "longitude": -53.84,
+      "rReferenciaWaltrick": 10436,
+      "precipitacaoMensalMm": [
+        212.36,
+        95.47,
+        305.53,
+        258.49,
+        124.69,
+        171.12,
+        14.43,
+        184.58,
+        329.96,
+        351.09,
+        58.69,
+        88.42
+      ],
+      "precipitacaoAnualMm": 2194.83
+    },
+    "MEDIANEIRA": {
+      "nome": "Medianeira",
+      "latitude": -25.29,
+      "longitude": -54.09,
+      "rReferenciaWaltrick": 11400,
+      "precipitacaoMensalMm": [
+        162.92,
+        129.07,
+        421.69,
+        406.28,
+        217.05,
+        94.75,
+        54.42,
+        179.19,
+        229.6,
+        463.43,
+        81.46,
+        72.2
+      ],
+      "precipitacaoAnualMm": 2512.06
+    }
+  },
+  "tabelaConferenciaCruzadaDeclarada": {
+    "descricao": "Tabela histórica Waltrick et al. (2015, Quadro 1) mantida estritamente como conferência cruzada, jamais como fonte primária dos totais CHIRPS.",
+    "estacoes": {
+      "TOLEDO": 10623,
+      "CASCAVEL": 11588,
+      "SANTA_HELENA": 11261,
+      "FOZ_DO_IGUACU": 11037,
+      "PALOTINA": 10436
+    }
+  }
+}
