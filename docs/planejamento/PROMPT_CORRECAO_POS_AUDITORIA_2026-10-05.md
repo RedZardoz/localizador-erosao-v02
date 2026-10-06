@@ -6,6 +6,12 @@
 
 **Nada neste arquivo foi aplicado ao código.** Os blocos descrevem a mudança **em texto**, sem código pronto.
 
+**REVISÃO DE 2026-10-06 — este arquivo não é mais a saída intacta do auditor.** Três mudanças, todas na seção 6 (decisões), nenhuma nos blocos de correção da seção 5:
+
+1. **DEC-17 acrescentada.** A Parte 1 registrou, na linha D25 do achado A29, a ausência de "bootstrap por polígono". O A29 foi roteado para DEC-3 e DEC-4, e nenhuma das duas tratava da unidade de reamostragem: a palavra "bootstrap" não aparecia neste prompt (0 ocorrências) e aparece 1 vez no relatório da Parte 2. A tabela de rastreio estava satisfeita no nível do número do achado, mas este componente do A29 não tinha destino. Tabela de rastreio e contagem do resumo atualizadas (16 → 17 decisões).
+2. **DEC-4, opção (a): condição acrescentada.** A lista de polígonos held-out precisa ser congelada e registrada com hash antes de qualquer treino. Procurado no arquivo original: "congelar", "pré-registrar" e "antes de qualquer treino" tinham 0 ocorrências. Sem a condição, a opção (a) troca uma salvaguarda mecânica por uma lista que poderia ser escolhida depois de ver resultado.
+3. **DEC-11 corrigida: havia erro de fato.** Dizia que a tag `legado-pre-sarel` não existe e oferecia criá-la. A medição do auditor vale para o clone dele; no clone de trabalho do pesquisador a tag existe (`56988f7`) e nunca foi publicada. A ação correta é publicar a existente, não criar uma nova, que apontaria para outro commit.
+
 ```
 Você é o executor das correções pós-auditoria do repositório SAREL v2. Parta do commit
 1459000a86eb64def9623b392fdad302f60d624e (ou de um descendente cujo código não tenha mudado
@@ -80,7 +86,8 @@ V = verificar antes de corrigir (seção 7); — = refutado, sem ação (seção
  A08 -> C18, DEC-13         A26 -> C09, DEC-3         A44 -> V1
  A09 -> C19                 A27 -> DEC-4              A45 -> DEC-13
  A10 -> —                   A28 -> C04, DEC-15        A46 -> DEC-14
- A11 -> C13, DEC-3          A29 -> DEC-3, DEC-4       A47 -> C30
+ A11 -> C13, DEC-3          A29 -> DEC-3, DEC-4,      A47 -> C30
+                                   DEC-17
  A12 -> C14, C22            A30 -> DEC-11             A48 -> V2
  A13 -> DEC-2               A31 -> C16                A49 -> V3
  A14 -> DEC-7               A32 -> C20                A50 -> —
@@ -89,7 +96,7 @@ V = verificar antes de corrigir (seção 7); — = refutado, sem ação (seção
  A17 -> DEC-8               A35 -> C10, DEC-16, V11   A53 -> —
  A18 -> C23                 A36 -> C22                A54 -> C12
 
-Resumo: 30 blocos de correção (C01..C30); 16 decisões (DEC-1..DEC-16); 13 verificações
+Resumo: 30 blocos de correção (C01..C30); 17 decisões (DEC-1..DEC-17); 13 verificações
 (V1..V13); 6 achados sem ação (A10, A21, A50, A51, A52, A53), mais a parte refutada de A19
 (CPF/CNPJ). V8 nasce da seção D4 da Parte 2 (parâmetros P04, P06, P08) e fica ligado a A37.
 
@@ -695,6 +702,12 @@ DEC-4 (A27, A29, A37) — papel do VANT/drone e arquivos de saída.
   sítios `held-out` a 7,5 cm; nenhum arquivo de held-out nem de chaves é gerado (`montagem.ts:5-12`).
   (a) Alinhar o código a D16 emendada: o drone alimenta treino e teste por polígono (`papelConjunto`);
       consequência: reescrever `montagem.ts`, o export e o trainer; gerar arquivo separado do held-out.
+      CONDIÇÃO OBRIGATÓRIA se (a) for escolhida: a opção (a) troca uma salvaguarda mecânica
+      ("drone nunca entra no treino", que nenhuma escolha posterior pode burlar) por uma lista.
+      Para que a troca não degrade a garantia, a lista dos polígonos held-out precisa ser
+      CONGELADA E REGISTRADA COM HASH NO REPOSITÓRIO ANTES DE QUALQUER TREINO, com data. D25 já
+      exige avaliação uma única vez; sem a lista congelada e datada, o held-out poderia ser
+      escolhido depois de ver resultado, que é risco maior do que o que a Regra 6 evitava.
   (b) Manter o drone só como held-out e emendar D16/D24/D25: consequência: o regime de dados de D24
       deixa de valer.
   (c) Manter os dois e declarar o período de transição: consequência: o app continua discordando
@@ -745,8 +758,15 @@ DEC-10 (A19) — CAR e perímetros reais no código.
   opacos (o repositório já adotou códigos opacos para o sorteio, `f0b2026`).
 
 DEC-11 (A30) — a tag `legado-pre-sarel`.
-  Fato: o README manda `git checkout legado-pre-sarel`; a tag não existe no clone nem no remoto.
-  (a) Criar a tag no commit que o pesquisador indicar (criar tag é ação de remoto; exige autorização).
+  Fato CORRIGIDO EM 2026-10-06: a medição da auditoria ("a tag não existe no clone nem no remoto")
+  vale para o clone do auditor, mas não para o clone de trabalho do pesquisador. Medido lá em
+  2026-10-06: `git rev-parse legado-pre-sarel` → `56988f7b96e5b751f11fc72fdacfbb617db45ace`;
+  `git ls-remote --tags origin` → vazio. A tag EXISTE localmente e NUNCA foi publicada; por isso
+  o clone do auditor, feito do remoto, não a tem. Não é tag perdida, é tag não publicada.
+  (a) PUBLICAR a tag existente: `git push origin legado-pre-sarel`, a partir do clone do
+      pesquisador, que é o único que a tem. NÃO criar tag nova: uma tag nova apontaria para outro
+      commit e perderia o ponto de retorno original (`56988f7`). Ação de remoto: só o pesquisador
+      executa, e só ele confirma que `56988f7` é mesmo o ponto de congelamento pretendido.
   (b) Remover a menção do README e apontar para `legado/` e para o hash de um commit.
 
 DEC-12 (A05) — destino de `docs/relatorios/modelagem/`.
@@ -780,6 +800,38 @@ DEC-16 (A35b, P09) — método da máscara de nuvem Sentinel-2 e janela da consu
   (a) SCL. (b) QA60. (c) Probabilidade de nuvem (MSK_CLDPRB). (d) Nenhuma máscara de pixel,
   declarando apenas o filtro por cena. E a janela da consulta pontual: (e) a de D05 (2016-2026), (f)
   2023 com decisão registrada. A escolha muda o número de observações válidas contra o mínimo de D11.
+
+DEC-17 (A29, componente da linha D25) — identificador de polígono e unidade do bootstrap.
+  ACRESCENTADA EM 2026-10-06, em revisão deste prompt. Motivo da inclusão: a Parte 1 registrou,
+  na linha D25 do achado A29, que não há "bootstrap por polígono". O A29 foi roteado para DEC-3 e
+  DEC-4, e nenhuma das duas trata da unidade de reamostragem; a palavra "bootstrap" não aparecia
+  neste prompt. A tabela de rastreio ficou satisfeita no nível do número do achado, mas este
+  componente do A29 não tinha destino.
+  Fato: D25 exige "bootstrap cuja unidade é o polígono". As 30 colunas do perfil `matriz-treino`
+  (`perfis.ts:135-168`) são `Ponto_ID, Bloco_Espacial` + 24 preditores + `Classe_Alvo_Binaria,
+  Rotulo_Classe, Rotulo_Modalidade`: não há identificador de polígono (medido em 2026-10-06:
+  `grep -rn -i "poligono_id\|idPoligono" src/lib/matriz/` → 0 acertos). Sem ele o bootstrap de D25
+  não tem unidade de reamostragem.
+  Leitura que gerou a ausência: a Regra 6 (`design.md:19`) diz que "coordenadas não entram na
+  matriz de treino tabular"; isso foi lido como "nenhum identificador espacial entra". Um
+  identificador OPACO de polígono não é coordenada, não é preditor e não ensina localização: é
+  chave de agrupamento, como `Bloco_Espacial`, que já está no mesmo perfil e já é espacial.
+  INDEPENDENTE DE DEC-4: na opção (b) de DEC-4 a avaliação continua sendo sobre os polígonos
+  held-out de D25 e a unidade do bootstrap continua sendo o polígono; muda só o artefato onde a
+  coluna precisa estar (matriz de treino na opção (a), artefato de avaliação na opção (b)).
+  (a) Incluir coluna opaca `Poligono_ID`, atualizar a lista de permissão do Invariante 2 e
+      excluí-la explicitamente de X no trainer, como já se faz com `Bloco_Espacial`. Condições:
+      (i) o identificador não permite reconstruir localização, nem por ordenação, nem por faixa
+      numérica, nem por correspondência com o `Codigo` do sorteio; (ii) teste de regressão que
+      falha se a coluna entrar como preditor; (iii) teste de regressão que falha se a coordenada
+      for reconstruível a partir dela. Consequência: mexe na lista de permissão do Invariante 2,
+      que é barreira de exportação.
+  (b) Não incluir: o bootstrap por polígono fica inviável e D25 precisa ser emendada, trocando a
+      unidade de reamostragem ou abrindo mão do bootstrap. Consequência: D25 é o critério de
+      refutação PRÉ-REGISTRADO; emendá-la depois de ver resultado compromete o pré-registro, então
+      esta escolha precisa ser feita ANTES de qualquer avaliação.
+  Texto completo das opções, com a redação de verbete:
+  `docs/planejamento/DECISOES_PROPOSTAS_D27_D28_2026-10-06.md` (proposta D28), na branch sarel/v2.
 
 ════════════════════════════════════════════════════════════════════════════════════════
 7. VERIFICAR ANTES DE CORRIGIR (achados NÃO VERIFICADOS)
