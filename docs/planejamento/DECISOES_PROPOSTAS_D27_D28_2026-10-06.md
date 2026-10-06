@@ -10,6 +10,14 @@ Este arquivo é rascunho de verbete. Não escrevi em `src/config/decisoes.ts` ne
 
 ## D27 — Mecanismo de segregação entre treino e teste depois da inversão de papéis da D16
 
+> **ABSORVIDA EM 2026-10-06 PELA DEC-4 do prompt de correção.** Depois de escrever este verbete, li `docs/planejamento/PROMPT_CORRECAO_POS_AUDITORIA_2026-10-05.md` (branch `claude/affectionate-galileo-8abtjo`). A DEC-4 cobre o mesmo conflito e está mais bem construída: traz três opções e cita `papelConjunto`, `sitiosReferencia.ts` e `PainelCampanha.tsx:377-404`, que mostram que a interface já segue a D16 emendada enquanto o `montagem.ts` segue a regra antiga — âncoras que eu não tinha.
+>
+> **Não abra uma D27 separada.** Duas decisões concorrentes sobre a mesma questão produziriam exatamente a divergência que o achado A11 registra. Decida pela DEC-4.
+>
+> O que este verbete acrescentou e já foi transportado para a DEC-4, opção (a), no commit `f589670`: a lista de polígonos held-out precisa ser **congelada e registrada com hash antes de qualquer treino**. As palavras "congelar", "pré-registrar" e "antes de qualquer treino" tinham zero ocorrências no prompt original.
+>
+> O texto abaixo fica como registro do raciocínio. A **D28 continua de pé** e virou a DEC-17 no mesmo commit.
+
 ### O conflito, medido
 
 | Fonte | O que diz |
@@ -61,6 +69,8 @@ Qualquer que seja a escolha, **regra, tabela e código passam a dizer a mesma co
 ---
 
 ## D28 — Identificador de polígono na matriz de treino
+
+> **MANTIDA. Virou a DEC-17 do prompt de correção em 2026-10-06 (commit `f589670`).** O prompt original não tratava desta questão: a palavra "bootstrap" tinha zero ocorrências nele, e uma só no relatório da Parte 2. A Parte 1 havia registrado a ausência na linha D25 do achado A29, mas o A29 foi roteado para DEC-3 e DEC-4, e nenhuma das duas trata da unidade de reamostragem. A tabela de rastreio ficou satisfeita no nível do número do achado, enquanto este componente se perdia dentro dele.
 
 ### O conflito, medido
 
