@@ -1,25 +1,43 @@
 {
-  "_aviso": "PROPOSTA NAO CONGELADA. Quem declara blocos, preditores e sinais de monotonicidade e o PESQUISADOR (D24, mitigacoes 2 e 3), por mecanismo fisico e ANTES de qualquer ajuste sobre dado real. O executor NAO preenche este arquivo e NAO o torna probatorio. Para o modo --probatorio o pesquisador substitui 'pre_registro' pelos tres campos abaixo e congela o arquivo (sha256 gravado em commit proprio).",
+  "_aviso": "PROPOSTA NAO CONGELADA (revisao de 06/10/2026). Quem declara blocos, preditores e sinais de monotonicidade e o PESQUISADOR (D24, mitigacoes 2 e 3), por mecanismo fisico e ANTES de qualquer ajuste sobre dado real. O executor NAO preenche 'pre_registro' e NAO torna este arquivo probatorio. Para o modo --probatorio o pesquisador preenche declarado_por, declarado_em e sha256_config_congelada e congela o arquivo em commit proprio.",
   "alvo": "Fracao_Erodida",
   "grupo": "Poligono_ID",
   "blocos": {
-    "espectro": ["Banda_B4", "Banda_B8", "Banda_B12", "BSI", "Frequencia_Solo_Nu"],
+    "espectro": [
+      "Frequencia_Solo_Nu",
+      "Composto_Solo_Nu_B12",
+      "Composto_Solo_Nu_Razao_B4_B2",
+      "Taxa_Degradacao_SWIR_Anual",
+      "NDVI_Maximo_Mediano"
+    ],
     "terreno": ["Declividade_pct", "Curvatura_Perfil", "TWI"],
     "solo": ["RUSLE_Fator_K"],
     "chuva": ["RUSLE_Fator_R"]
   },
   "monotonicidade": {
-    "Declividade_pct": 1,
     "Frequencia_Solo_Nu": 1,
+    "NDVI_Maximo_Mediano": -1,
+    "Declividade_pct": 1,
     "RUSLE_Fator_K": 1,
     "RUSLE_Fator_R": 1
   },
-  "rusle": {"R": "RUSLE_Fator_R", "K": "RUSLE_Fator_K", "LS": "RUSLE_Fator_LS", "C": "RUSLE_Fator_C", "P": "RUSLE_Fator_P"},
+  "rusle": {"A": "RUSLE_A"},
+  "coluna_marcador_d08": "Marcador_K_Ambiguo_D08",
+  "grade": {
+    "p": [1.2, 1.5, 1.8],
+    "alpha": [0.001, 0.01, 0.1, 1.0, 10.0]
+  },
   "pre_registro": null,
+  "_justificativa_resumida": {
+    "total_de_preditores": "5 + 3 + 1 + 1 = 10 (teto D24: 14). O teto de 8 do bloco espectro-temporal e um maximo, nao uma cota: com ~1.845 unidades efetivas o criterio de 200 eventos/variavel admite 9, logo 8 nao deixa folga; 5 preserva folga.",
+    "espectro": "Metricas de SERIE (ja implementadas em src/lib/gee/compostoSoloNu.ts e persistenciaTemporal.ts), nao bandas de data unica nem NDVI/BSI/B2/B4/B8/B12 simultaneamente (colinearidade: indices sao funcoes das bandas). Frequencia_Solo_Nu = tempo de exposicao (+); Composto_Solo_Nu_B12 e Razao_B4_B2 = mineralogia/materia organica e oxidos de ferro do solo exposto (Demattê et al. 2018, Rogge et al. 2018; sinal ambiguo, sem restricao); Taxa_Degradacao_SWIR_Anual = tendencia de B12 (hipotese do Planejamento v3, sinal ambiguo, sem restricao); NDVI_Maximo_Mediano = vigor de pico da cultura (-).",
+    "excluidos": "maiorSequenciaSoloNu (correlata a frequencia); mesModalExposicao (categorica, circular); regime/confianca de analisarPersistenciaTemporal (classificacao por limiares = quase-rotulo, Regra 4); bandas e indices de data unica (confundem fase da safra); Precip_Acum_*, I30_Max, N_Eventos_Erosivos, Indice_Mecanismo (periodo/evento, contrariam o R climatologico de D13(b) e hoje sao indisponiveis); LS como preditor (colinear com declividade; entra so na linha de base RUSLE).",
+    "monotonicidade": "Somente onde o sinal fisico e inequivoco (declividade, K, R, frequencia de solo nu: +; vigor de pico: -). Curvatura de perfil e TWI sem restricao (sinal depende de a erosao ser laminar ou concentrada). Sensibilidade SEM monotonicidade e calculada no mesmo avaliador.",
+    "grade_p": "O expoente de Tweedie p e escolhido SO por validacao interna agrupada, dentro da grade pre-registrada (P10)."
+  },
   "_pendencias_para_o_pesquisador": [
-    "Escolher e justificar fisicamente ate 8 preditores espectro-temporais (colinearidade: B4/B8/B12 geram NDVI e BSI).",
-    "Confirmar sinais de monotonicidade (apenas onde o mecanismo fisico e inequivoco).",
-    "Matriz atual NAO exporta RUSLE_Fator_LS, _C e _P: sem eles a linha de base RUSLE (competidor 1 de D24) e inavaliavel e D25 resulta NAO_AVALIAVEL.",
-    "tweedie_variance_power = 1,5 e proposta P10 (nao decidida)."
+    "Confirmar ou alterar a lista e os sinais acima ANTES de qualquer ajuste; depois congelar.",
+    "As colunas Composto_Solo_Nu_B12, Composto_Solo_Nu_Razao_B4_B2, Taxa_Degradacao_SWIR_Anual e NDVI_Maximo_Mediano ainda nao existem no perfil matriz-treino (bloco N02(d) do prompt do executor as acrescenta, com origem 'modelado' ou indisponivel).",
+    "A coluna RUSLE_A so existe se os 5 fatores estiverem disponiveis; hoje R e LS ficam indisponiveis no app (D13/D15 pendentes de verificacao): sem RUSLE_A o desfecho de D25 e NAO_AVALIAVEL."
   ]
 }

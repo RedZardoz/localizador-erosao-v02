@@ -42,7 +42,11 @@ EPS = 1e-9                     # tolerancia de ponto flutuante nas comparacoes >
 PISO_AUC = 0.70                # D25 (secundaria)
 MARGEM_AUC = 0.05              # D25 (secundaria)
 TETO_BLOCO = {"espectro": 8, "terreno": 4, "solo": 1, "chuva": 1}   # D24
-TWEEDIE_POWER = 1.5            # proposta (P10); nao decidida
+TWEEDIE_POWER = 1.5            # padrao quando a configuracao nao declara grade (P10, proposta)
+GRADE_PADRAO = {"p": [1.2, 1.5, 1.8],
+                "xgb": [dict(max_depth=md, learning_rate=lr, n_estimators=ne, min_child_weight=mcw)
+                        for md in (2, 3) for lr in (0.05, 0.1) for ne in (100, 300) for mcw in (5, 20)],
+                "alpha": [1e-3, 1e-2, 1e-1, 1.0, 10.0]}
 # Saidas/derivados do competidor RUSLE nunca entram como preditor (D25: o modelo nao pode receber a
 # saida do competidor). LS e K/R sao admitidos pelos blocos de D24 (terreno, solo, chuva).
 PROIBIDOS_COMO_PREDITOR = {"RUSLE_Fator_C", "RUSLE_Fator_P", "RUSLE_Perda_Solo_t_ha_ano", "RUSLE_A"}
@@ -167,7 +171,7 @@ def bootstrap_diferenca(y, pred_a, pred_b, grupos, estatistica="spearman", limia
 
 # ---------------------------------------------------------------- desfechos pre-registrados D25
 def classificar_desfecho(rho_xgb, rho_rusle, rho_pen, ic_xgb_rusle, ic_xgb_pen) -> dict:
-    """Aplica D25 sem inventar regra. Casos que D25 nao cobre retornam 'NAO_PREVISTO_EM_D25'."""
+    """Aplica D25 + emenda proposta de 06/10/2026 (lacuna da margem: INCONCLUSIVA_MARGEM)."""
     if any(v is None or (isinstance(v, float) and math.isnan(v)) for v in (rho_xgb, rho_rusle)):
         return {"desfecho": "NAO_AVALIAVEL", "motivo": "rho_xgb ou rho_rusle indisponivel",
                 "hipotese_ensemble_refutada": None}
@@ -180,8 +184,8 @@ def classificar_desfecho(rho_xgb, rho_rusle, rho_pen, ic_xgb_rusle, ic_xgb_pen) 
         else:
             desfecho, motivo = "INCONCLUSIVA", "margem atingida na estimativa, IC95% contem zero (potencia por poligonos)"
     else:
-        desfecho, motivo = "NAO_PREVISTO_EM_D25", ("piso atingido e rho_xgb >= rho_rusle, mas margem < 0,10: "
-                                                    "D25 nao define este desfecho; o pesquisador deve decidir")
+        desfecho, motivo = "INCONCLUSIVA_MARGEM", ("piso atingido e rho_xgb >= rho_rusle, mas margem < 0,10: "
+                                                    "utilidade sem vantagem demonstrada (nao refuta nem corrobora)")
     quarto = None
     if rho_pen is not None and not (isinstance(rho_pen, float) and math.isnan(rho_pen)) and ic_xgb_pen is not None:
         # D25: regressao penalizada empata ou vence o XGBoost dentro do intervalo
@@ -201,30 +205,31 @@ def rusle_a(df: pd.DataFrame, cols: dict) -> np.ndarray:
     return a.to_numpy()
 
 
-def _grid_xgb():
-    for md in (2, 3):
-        for lr in (0.05, 0.1):
-            for ne in (100, 300):
-                for mcw in (5, 20):
-                    yield dict(max_depth=md, learning_rate=lr, n_estimators=ne, min_child_weight=mcw)
+def _grades(cfg: dict) -> dict:
+    """Grade pre-registrada (cfg['grade']) ou o padrao. A escolha dentro da grade usa SO o treino."""
+    g = dict(GRADE_PADRAO)
+    g.update(cfg.get("grade") or {})
+    if not g["p"] or not all(1.0 < float(p) < 2.0 for p in g["p"]):
+        raise ErroAvaliacao("expoentes de Tweedie devem estar em (1, 2)")
+    return g
 
 
-def _xgb(params, cols, mono, seed):
+def _xgb(params, cols, mono, seed, p=TWEEDIE_POWER):
     import xgboost as xgb
     cst = "(" + ",".join(str(int(mono.get(c, 0))) for c in cols) + ")"
-    return xgb.XGBRegressor(objective="reg:tweedie", tweedie_variance_power=TWEEDIE_POWER,
+    return xgb.XGBRegressor(objective="reg:tweedie", tweedie_variance_power=float(p),
                             tree_method="hist", subsample=0.8, colsample_bytree=0.8, reg_lambda=1.0,
                             monotone_constraints=cst, random_state=seed, n_jobs=1, verbosity=0, **params)
 
 
-def _penalizado(alpha):
+def _penalizado(alpha, p=TWEEDIE_POWER):
     from sklearn.impute import SimpleImputer
     from sklearn.linear_model import TweedieRegressor
     from sklearn.pipeline import make_pipeline
     from sklearn.preprocessing import StandardScaler
     # imputacao pela mediana SOMENTE do treino da dobra, com indicador de ausencia (DEC-7)
     return make_pipeline(SimpleImputer(strategy="median", add_indicator=True), StandardScaler(),
-                         TweedieRegressor(power=TWEEDIE_POWER, link="log", alpha=alpha, max_iter=2000))
+                         TweedieRegressor(power=float(p), link="log", alpha=alpha, max_iter=2000))
 
 
 def _cv_agrupado(fabrica, X, y, g, n_splits, seed):
@@ -241,7 +246,8 @@ def _cv_agrupado(fabrica, X, y, g, n_splits, seed):
 
 
 def ajustar_competidores(treino: pd.DataFrame, cfg: dict, seed: int):
-    """Ajusta XGBoost e Tweedie penalizado SO com os poligonos de treino (selecao agrupada interna)."""
+    """Ajusta XGBoost (com e sem monotonicidade) e Tweedie penalizado SO com os poligonos de treino.
+    Hiperparametros e expoente p de Tweedie escolhidos por validacao agrupada interna (no treino)."""
     validar_teto_blocos(cfg["blocos"])
     cols = [c for b in cfg["blocos"].values() for c in b]
     X = treino[cols]
@@ -250,20 +256,27 @@ def ajustar_competidores(treino: pd.DataFrame, cfg: dict, seed: int):
     if (y < 0).any() or (y > 1).any() or np.isnan(y).any():
         raise ErroAvaliacao("Fracao_Erodida fora de [0,1] ou ausente no treino")
     mono = cfg.get("monotonicidade", {})
+    gr = _grades(cfg)
     melhor_x, melhor_s = None, -np.inf
-    for p in _grid_xgb():
-        s = _cv_agrupado(lambda p=p: _xgb(p, cols, mono, seed), X, y, g, 4, seed)
-        if s > melhor_s:
-            melhor_x, melhor_s = p, s
-    xgb_final = _xgb(melhor_x, cols, mono, seed).fit(X, y)
+    for pw in gr["p"]:
+        for par in gr["xgb"]:
+            s_ = _cv_agrupado(lambda par=par, pw=pw: _xgb(par, cols, mono, seed, pw), X, y, g, 4, seed)
+            if s_ > melhor_s:
+                melhor_x, melhor_s = (par, pw), s_
+    xgb_final = _xgb(melhor_x[0], cols, mono, seed, melhor_x[1]).fit(X, y)
+    # sensibilidade pre-registrada: mesmos hiperparametros e p, SEM restricoes de monotonicidade
+    xgb_livre = _xgb(melhor_x[0], cols, {}, seed, melhor_x[1]).fit(X, y)
     melhor_a, melhor_sa = None, -np.inf
-    for a in (1e-3, 1e-2, 1e-1, 1.0, 10.0):
-        s = _cv_agrupado(lambda a=a: _penalizado(a), X, y, g, 4, seed)
-        if s > melhor_sa:
-            melhor_a, melhor_sa = a, s
-    pen_final = _penalizado(melhor_a).fit(X, y)
-    return {"xgb": xgb_final, "pen": pen_final, "cols": cols,
-            "hiper": {"xgb": melhor_x, "pen_alpha": melhor_a, "cv_interna_rho": {"xgb": melhor_s, "pen": melhor_sa}}}
+    for pw in gr["p"]:
+        for a in gr["alpha"]:
+            s_ = _cv_agrupado(lambda a=a, pw=pw: _penalizado(a, pw), X, y, g, 4, seed)
+            if s_ > melhor_sa:
+                melhor_a, melhor_sa = (a, pw), s_
+    pen_final = _penalizado(melhor_a[0], melhor_a[1]).fit(X, y)
+    return {"xgb": xgb_final, "xgb_livre": xgb_livre, "pen": pen_final, "cols": cols,
+            "hiper": {"xgb": melhor_x[0], "xgb_p_tweedie": melhor_x[1], "pen_alpha": melhor_a[0],
+                      "pen_p_tweedie": melhor_a[1], "grade_p": gr["p"],
+                      "cv_interna_rho": {"xgb": melhor_s, "pen": melhor_sa}}}
 
 
 # ---------------------------------------------------------------- avaliacao unica no held-out
@@ -299,7 +312,7 @@ def avaliar_held_out(df: pd.DataFrame, cfg: dict, saida: str, *, dryrun_sintetic
     y_te = teste[cfg["alvo"]].to_numpy(dtype=float)
     g_te = teste[cfg["grupo"]].to_numpy()
     preds = {"xgb": mod["xgb"].predict(X_te), "pen": mod["pen"].predict(X_te),
-             "rusle": rusle_a(teste, cfg["rusle"])}
+             "rusle": rusle_a(teste, cfg["rusle"]), "xgb_livre": mod["xgb_livre"].predict(X_te)}
     # emparelhamento: mesmas celulas para os tres (descarta as sem RUSLE e REPORTA)
     ok = ~np.isnan(preds["rusle"]) & ~np.isnan(y_te)
     n_desc = int((~ok).sum())
@@ -310,7 +323,7 @@ def avaliar_held_out(df: pd.DataFrame, cfg: dict, saida: str, *, dryrun_sintetic
            "n_celulas_heldout": int(len(teste)), "celulas_descartadas_sem_rusle": n_desc,
            "hiperparametros": mod["hiper"], "criterio": {"piso_rho": PISO_RHO, "margem_rho": MARGEM_RHO,
            "piso_auc": PISO_AUC, "margem_auc": MARGEM_AUC, "limiar_binario": LIMIAR_BINARIO,
-           "tweedie_power_proposta_P10": TWEEDIE_POWER}}
+           "grade_p_tweedie_P10": _grades(cfg)["p"]}}
     if rusle_indisponivel:
         rel["desfecho"] = classificar_desfecho(float("nan"), float("nan"), float("nan"), None, None)
     else:
@@ -318,11 +331,26 @@ def avaliar_held_out(df: pd.DataFrame, cfg: dict, saida: str, *, dryrun_sintetic
         P = {k: v[ok] for k, v in preds.items()}
         rho = {k: spearman_rapido(y, v) for k, v in P.items()}
         yb = (y >= LIMIAR_BINARIO).astype(int)
-        auc = {k: auc_postos(yb, v) for k, v in P.items()}
+        auc = {k: auc_postos(yb, v) for k, v in P.items() if k != "xgb_livre"}
         b_xr = bootstrap_diferenca(y, P["xgb"], P["rusle"], g, "spearman", B=B, seed=seed)
         b_xp = bootstrap_diferenca(y, P["xgb"], P["pen"], g, "spearman", B=B, seed=seed + 1)
         b_auc = bootstrap_diferenca(y, P["xgb"], P["rusle"], g, "auc", B=B, seed=seed + 2)
-        rel.update({"rho_spearman": rho, "auc_binario_25pct": auc,
+        b_livre = bootstrap_diferenca(y, P["xgb_livre"], P["rusle"], g, "spearman", B=B, seed=seed + 3)
+        sens = {"xgb_sem_monotonicidade": {"rho": rho["xgb_livre"], "dif_rho_menos_rusle": vars(b_livre),
+                "nota": "sensibilidade pre-registrada; o desfecho principal usa o XGBoost COM monotonicidade"}}
+        col_d08 = cfg.get("coluna_marcador_d08")
+        if col_d08 and col_d08 in teste.columns:
+            m08 = teste[col_d08].to_numpy()[ok]
+            manter = np.array([(v is False) or (str(v).strip().lower() in ("false", "falso", "0", "0.0")) for v in m08])
+            if manter.sum() >= 3 and len(set(g[manter])) >= 2:
+                b08 = bootstrap_diferenca(y[manter], P["xgb"][manter], P["rusle"][manter], g[manter],
+                                          "spearman", B=B, seed=seed + 4)
+                sens["d08_sem_marcador_verdadeiro_ou_indisponivel"] = {
+                    "n_celulas": int(manter.sum()), "rho_xgb": spearman_rapido(y[manter], P["xgb"][manter]),
+                    "rho_rusle": spearman_rapido(y[manter], P["rusle"][manter]), "dif_rho_xgb_menos_rusle": vars(b08),
+                    "nota": "avaliacao PRINCIPAL inclui todas as celulas (D08); esta e sensibilidade declarada"}
+        rel["sensibilidades_pre_registradas"] = sens
+        rel.update({"rho_spearman": {k: v for k, v in rho.items() if k != "xgb_livre"}, "auc_binario_25pct": auc,
                     "prevalencia_binaria_heldout": float(yb.mean()),
                     "dif_rho_xgb_menos_rusle": vars(b_xr), "dif_rho_xgb_menos_pen": vars(b_xp),
                     "dif_auc_xgb_menos_rusle": vars(b_auc),
@@ -342,6 +370,23 @@ def avaliar_held_out(df: pd.DataFrame, cfg: dict, saida: str, *, dryrun_sintetic
     return rel
 
 
+def juntar_linha_de_base(df: pd.DataFrame, caminho_csv: str) -> pd.DataFrame:
+    """Left join por Celula_ID com o arquivo do perfil 'linha-de-base-rusle' (Celula_ID, RUSLE_A e, se houver,
+    Marcador_K_Ambiguo_D08).
+    Celula sem correspondencia fica com RUSLE_A ausente (NaN), nunca 0."""
+    if "Celula_ID" not in df.columns:
+        raise ErroAvaliacao("matriz sem Celula_ID: nao e possivel juntar a linha de base")
+    lb = carregar_csv_sarel(caminho_csv)
+    for c in ("Celula_ID", "RUSLE_A"):
+        if c not in lb.columns:
+            raise ErroAvaliacao(f"linha de base sem coluna {c}")
+    if lb["Celula_ID"].duplicated().any():
+        raise ErroAvaliacao("Celula_ID duplicado na linha de base")
+    lb["RUSLE_A"] = pd.to_numeric(lb["RUSLE_A"], errors="coerce")
+    extras = [c for c in ("Marcador_K_Ambiguo_D08",) if c in lb.columns]   # metadado D08 (nunca preditor)
+    return df.merge(lb[["Celula_ID", "RUSLE_A"] + extras], on="Celula_ID", how="left")
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Avaliacao D25 (SAREL v2)")
     ap.add_argument("--dados", required=True, help="CSV ou XLSX da matriz (obrigatorio; sem padrao)")
@@ -350,10 +395,13 @@ def main(argv=None) -> int:
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--probatorio", action="store_true")
     g.add_argument("--dryrun-sintetico", action="store_true")
+    ap.add_argument("--linha-de-base", help="CSV do perfil linha-de-base-rusle (Celula_ID, RUSLE_A)")
     ap.add_argument("--B", type=int, default=10000)
     ap.add_argument("--seed", type=int, default=20261006)
     a = ap.parse_args(argv)
     df = carregar_csv_sarel(a.dados) if a.dados.lower().endswith(".csv") else pd.read_excel(a.dados)
+    if a.linha_de_base:
+        df = juntar_linha_de_base(df, a.linha_de_base)
     with open(a.config, encoding="utf-8") as fh:
         cfg = json.load(fh)
     rel = avaliar_held_out(df, cfg, a.saida, dryrun_sintetico=a.dryrun_sintetico, B=a.B, seed=a.seed,

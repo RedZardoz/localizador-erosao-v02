@@ -1,24 +1,37 @@
 # Prompt do agente executor — SAREL v2 (2026-10-06)
 
-**Para quem é.** Um agente executor (modelo de custo menor) que aplica, em ordem e com portões verificáveis, (1) as correções da auditoria de 05/10/2026, (2) o alinhamento do código às decisões **já decididas** D16, D24, D25 e D26, e (3) os ajustes de front-end medidos em 06/10/2026.
+**Para quem é.** Um agente executor (modelo de custo menor) que aplica, em ordem e com portões verificáveis, (1) as correções da auditoria de 05/10/2026, (2) o alinhamento do código às decisões **já decididas** D16, D24, D25 e D26, (3) as **emendas aceitas pelo pesquisador em 06/10/2026** (arquivo `EMENDAS_PROPOSTAS_2026-10-06.md`), (4) a **opção (c)** para os sítios de aferição (código CAR e perímetros reais fora do git) e (5) os ajustes de front-end medidos em 06/10/2026.
 
-**Estado: NÃO EXECUTADO.** Nada aqui foi aplicado ao código. Os anexos (`ANEXOS_PROMPT_EXECUTOR_2026-10-06/`) foram testados por quem escreveu este prompt: 35 testes Python passam (saída da execução registrada no relatório de entrega) e o script de UI reprova 21 itens no estado atual (isso é o esperado: é o critério de aceite do front-end).
+**Estado: NÃO EXECUTADO.** Nada aqui foi aplicado ao código. Os anexos (`ANEXOS_PROMPT_EXECUTOR_2026-10-06/`) foram testados por quem redigiu o prompt: **38 testes Python passam** e o script de UI reprova 21 itens no estado atual (esperado: é o critério de aceite do front-end). O extrator de sítios locais foi executado uma vez e o arquivo gerado foi apagado do contêiner.
 
-## O que o pesquisador precisa fazer ANTES de entregar este arquivo ao executor
+## O que o pesquisador aceitou em 06/10/2026 (e onde está registrado)
 
-1. Ler a **seção 3 (tabela de decisões)** do prompt. Cada linha traz um **padrão proposto**. Onde a decisão já está registrada em `src/config/decisoes.ts` (D16, D24, D25, D26, D20, D03), o padrão apenas obedece ao registro. Onde **não** está (DEC-5, 6, 7, 9, 16 etc.), o padrão é uma **proposta conservadora de quem redigiu o prompt**, não decisão sua. **Se você entregar o arquivo sem editar a coluna "Padrão", está aprovando-a.** Edite o que discordar.
-2. Ler as **sete ressalvas científicas e documentais** abaixo; nenhuma foi corrigida pelo executor (só você altera decisões `decidida`).
-3. Conferir que o `HEAD` do repositório é o descendente esperado de `4834cf0` e que os anexos estão versionados (o executor confere os SHA-256).
+| Item | Resolução | Onde |
+|---|---|---|
+| R-A (18/918 × 36/936 × 922) | texto de D25/D24 corrigido para 36 agrupamentos e ≈ 920 unidades; a tela passa a ler o cálculo | `EMENDAS…` E-D25, E-D24; N04/U04 |
+| R-B (lacuna de D25) | novo desfecho **INCONCLUSIVA_MARGEM**; secundárias não condicionam; AUC sobre o escore contínuo | E-D25; anexo `avaliacao_d25_referencia.py` |
+| R-C (Mannigel 2002) | citação suspensa até conferência | E-D09/E-D10 |
+| R-D (D02 × Regra 4) | D02 = triagem de candidatos, sem papel na seleção nem no alvo | E-D02 |
+| R-E (38 × 40 páginas) | a própria ficha catalográfica arquivada diz **38 p.** (extração do Doc. 246, linha 77) | E-D14 |
+| R-F (78 %) | cifra **em verificação**; medir o erro conjunto rótulo→célula nas missões já voadas | E-D06/E-D16; manual P6 |
+| R-G (FICHA_TECNICA) | só listar (N05/F3); redação vigente é do pesquisador | N05 |
+| DEC-10 | **opção (c)** aplicada em N07 | N07 |
+| DEC-5, 6, 7, 9, 11, 12, 13 | padrões da seção 3 aprovados (DEC-5 ajustado: κ sobre o binário por célula, em piloto antes da delineação em escala) | seção 3 |
+| DEC-16 e P10 | máscara SCL {4, 5} e janela D05; expoente de Tweedie escolhido por validação interna na grade {1,2; 1,5; 1,8} | seção 3; anexo |
+| Preditores | 5 espectro-temporais + 3 de terreno + K + R = 10 (teto 14); monotonicidade só onde o sinal é inequívoco | `config_pre_registro_PROPOSTA.json` |
 
-### Ressalvas científicas que o executor NÃO resolve (só relata)
+### Leitura da bibliografia (D13 e D15) — resultado
+- **D15, Renard et al. (1997):** equações [4-1] a [4-5] **conferidas na imagem do PDF primário** (pp. 105 e 107). O expoente m é função **contínua** da declividade (não há "patamares"); a quebra de 9 % é do fator S e o domínio de 3–20 % a atravessa. **Não conferida:** a forma 2-D de Desmet e Govers (1996) (não há PDF no repositório; a extração arquivada foi feita sem o artigo). O Fator LS segue **pendente** até o pesquisador arquivar o PDF.
+- **D13, Waltrick et al. (2015):** o artigo **não traz equações próprias**; usa as oito equações regionais de **Rufino, Biscaia e Merten (1993)** (EI30 em função de Rc = p²/P) e as revalida (r ≥ 0,92). Os **coeficientes não constam** de Waltrick e Rufino (1993) **não foi obtido**: o Fator R segue **pendente**. Há uma checagem externa útil: o Quadro 1 de Waltrick traz o R anual de 114 localidades (ex.: Céu Azul 12.121; Foz do Iguaçu 11.037 MJ mm ha⁻¹ h⁻¹ ano⁻¹).
+- **Consequência:** sem R e LS conferidos, a linha de base RUSLE não é calculada e D25 resulta **NAO_AVALIAVEL**. O pesquisador precisa arquivar **Rufino et al. (1993)** e **Desmet e Govers (1996)** em `docs/verificacoes/fontes/` (`rufino1993/`, `desmet1996/`).
 
-- **R-A. D25 tem texto residual inconsistente.** O `valor` diz "18 AGRUPAMENTOS, não por 918 unidades" no meio do texto e "36 agrupamentos / 936" no começo e na justificativa. D24 diz 936 de held-out; `CalculadoraDesenhoAmostral.tsx:252` mostra 922; a fórmula do próprio D24 (área ÷ π(50/2)²) dá ≈ 920. Reconciliar é decisão sua.
-- **R-B. D25 tem uma lacuna.** Se rho_XGBoost ≥ 0,40, ≥ rho_RUSLE, mas a margem é < 0,10, nenhum dos três desfechos se aplica. O código de referência devolve `NAO_PREVISTO_EM_D25` em vez de inventar uma regra. D25 também não diz se AUC ≥ 0,70 e ΔAUC ≥ 0,05 (secundárias) condicionam o desfecho; o código só as reporta. E "RUSLE limiarizado" não altera a AUC (a AUC só depende da ordenação do escore contínuo).
-- **R-C. A citação "Mannigel et al. (2002), RBCS 26:1039-1049"** (D09, D10) **não bate** com o que a busca encontrou: Mannigel, Carvalho, Moreti & Medeiros (2002), *Acta Scientiarum* 24(5):1335-1340, sobre solos do Estado de **São Paulo**. Confira a fonte antes de citar na dissertação.
-- **R-D. D02 (limiares BSI/NDVI para "Classe 1/0") × Regra 4** (nada calculado vira rótulo). O padrão do prompt trata D02 como critério de **estrato/candidato**, não de rótulo (DEC-2a). A redação de D02 em `decisoes.ts` continua dizendo "Classe 1 / Classe 0": só você pode reescrevê-la.
-- **R-F. A cifra "~78 % de acerto de atribuição com CE90 1,47 m" (D06, D16) não se reproduz.** Com erro gaussiano isotrópico e o ponto verdadeiro uniforme na célula de 10 m, a probabilidade de cair na célula certa é 57,9 % (σ=3 m), 37,2 % (σ=5 m) e 19,6 % (σ=8 m) — **estes três batem exatamente com P03** — mas CE90 = 1,47 m equivale a σ = 1,47/2,146 = 0,685 m por eixo e dá **89,4 %**; os 78 % só aparecem se 1,47 for tomado como σ (σ = 1,46 m). Ou 78 % é uma cifra conservadora que embute erro extra (≈ 1,3 m de σ), ou há confusão entre CE90 e σ. Além disso, o modelo ignora o erro de georreferenciamento do próprio Sentinel-2 e o de delineação. O texto de D06/D16 e a UI repetem 78 %/37 %.
-- **R-G. Documentação interna contraditória.** `docs/FICHA_TECNICA_SAREL.md` §7.1–7.2 numera as 9 regras e os 7 invariantes de modo diferente da especificação (`PROMPT_RECONSTRUCAO_SAREL_2026-09-10.md`, seções "Regra 1..9" e §17) e seu "Invariante 4" ("VANT sempre held-out, proibido misturar nas dobras de treino") contradiz D16 (VANT = treino e teste por polígono). O executor só lista essas frases (N05/F2); a escolha da redação vigente é sua.
-- **R-E. Embrapa Documentos 246:** a ficha da Embrapa (infoteca) indica 38 páginas; `decisoes.ts` registra 40. Confira no PDF.
+### Ressalva nova (R-H) — Google Drive
+O instalador baixa o banco por **link compartilhado** (`embeddedfolderview` e `drive.usercontent`, em `scripts/download_gdrive_db.py`), o que só funciona se a pasta estiver acessível por link. Se os sítios (CAR e perímetros) e o `fundiario_brasil.db` (que traz titulares) estiverem nessa pasta com **"qualquer pessoa com o link"**, a exposição que a opção (c) evita no git reaparece no Drive. **Confira as permissões da pasta** (restrinja a pessoas específicas) antes de subir o arquivo local. O executor não mexe no Drive nem no instalador (`InstaladorSAREL.cs` não é alterado; o `.exe` versionado não foi verificado contra o fonte: V2).
+
+### Antes de entregar este arquivo ao executor
+1. Confira a **seção 3**: onde a "Base" diz PROPOSTA, o padrão vale como decisão sua porque você aceitou as recomendações; edite o que quiser mudar.
+2. Confirme que o `HEAD` é descendente do commit que contém estes arquivos (o executor confere os SHA-256 dos anexos).
+3. Atenção: o **histórico do git já contém** os códigos CAR e perímetros (commits anteriores). A opção (c) tira o dado da árvore atual; **não reescreve o histórico**. Se o repositório puder ficar público ou ser compartilhado, limpe o histórico (`git filter-repo`) como passo separado, sob sua decisão.
 
 ## O prompt (copie o bloco inteiro)
 
@@ -42,8 +55,12 @@ R6.  Proibido pular, desativar, quarentenar ou apagar teste para obter verde. Te
 R7.  Proibido: tocar em `legado/pre_sarel/`; apagar/mover/renomear `docs/relatorios/modelagem/`;
      editar `docs/PROVENIENCIA_ASSISTENCIA_IA.md`; consumir cota PlanetScope; criar tarefa no
      Earth Engine; rodar qualquer coisa com credencial real; executar `Instalador_SAREL.exe`;
-     fazer push, abrir PR, criar tag; editar o texto de `valor`/`justificativa`/`estado` de
-     qualquer decisão existente em `src/config/decisoes.ts`; marcar algo como "decidida".
+     fazer push, abrir PR, criar tag; reescrever o histórico do git (rebase, filter-repo, amend de
+     commit antigo); mexer em `Instalador_SAREL.exe`, `InstaladorSAREL.cs` ou no Google Drive; marcar
+     algo como "decidida". EXCEÇÃO ÚNICA em `src/config/decisoes.ts`: (i) acrescentar, ao FINAL do
+     campo indicado, os parágrafos de `EMENDAS_PROPOSTAS_2026-10-06.md` (bloco N06), sem apagar nem
+     reescrever o texto original e sem tocar em `estado`, `decididoPor`, `decididoEm`; (ii) acrescentar
+     parâmetros P10..P15 com estado "proposta" e sem `valor`.
 R8.  Dado de teste: só sintético, óbvio, com `SINTETICO_TESTE_ENCANAMENTO` no nome e no
      conteúdo, em diretório temporário FORA do repositório (ou fixture de teste nomeada).
      Nenhum número produzido com ele (AUC, rho, SHAP, contagens) é evidência científica; diga
@@ -90,7 +107,7 @@ P0.6 SHA-256 do prompt de correção e dos anexos (devem coincidir):
        b9484ae62b3ab16fe9ba5b13eea4cd26e1bbd276bbc63d86f28f8cf3c6f96de7  docs/planejamento/PROMPT_CORRECAO_POS_AUDITORIA_2026-10-05.md
      Anexos: os SHA-256 estão em `docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/SHA256SUMS.txt`;
      rode `cd docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06 && sha256sum -c SHA256SUMS.txt`.
-P0.7 Rode os testes dos anexos e cole a saída (devem dar "OK"; 35 testes no total):
+P0.7 Rode os testes dos anexos e cole a saída (devem dar "OK"; 38 testes no total):
        cd docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06
        python3 -m unittest test_avaliacao_d25_referencia test_fracao_erodida_celulas_referencia
      (a linha "error: the following arguments are required: --dados" no stderr é esperada: é o
@@ -111,9 +128,9 @@ entregue sem edição. O executor aplica a coluna "Padrão" e NÃO a reinterpret
         (blocos solo e chuva de D24); LS no bloco terreno; C, P, perda de solo e `RUSLE_A` NUNCA entram.
         A linha de base RUSLE (A=R·K·LS·C·P) é o competidor 1 e é calculada fora da matriz de
         predição. Base: REGISTRADA (D24 blocos; D25).
- DEC-2  O que D02 define      Padrão: critério de ESTRATO/CANDIDATO. Rótulo vem só de observação
-        humana. Nenhuma tela chama o resultado de limiar de "classe" ou "rótulo". Base: PROPOSTA
-        (Regra 4). Não edite D02.
+ DEC-2  O que D02 define      Padrão: critério de TRIAGEM DE CANDIDATOS. Rótulo vem só de
+        observação humana; nenhuma tela chama o resultado de limiar de "classe" ou "rótulo". D02 é
+        emendada por N06 (E-D02), sem apagar o texto original. Base: ACEITA pelo pesquisador (Regra 4; D16).
  DEC-3  Alvo/binarização      Padrão: (c) D26 primário (`Fracao_Erodida`, [0,1]); binário derivado
         `>= 0,25` para VANT; D03 governa rótulos ordinais de campo (ausente→0; incipiente,
         moderada, severa→1; aliases legados "presente","erosao","erosão","1"→1; qualquer outro
@@ -121,9 +138,12 @@ entregue sem edição. O executor aplica a coluna "Padrão" e NÃO a reinterpret
  DEC-4  Papel do VANT         Padrão: (a) alinhar o código a D16 emendada: o rótulo de VANT alimenta
         treino OU held-out conforme `papelConjunto` do polígono sorteado (2 treino + 2 held-out por
         estrato, 72 polígonos de 5,02 ha); held-out sai em ARQUIVO SEPARADO. Base: REGISTRADA.
- DEC-5  Kappa < 0,60          Padrão: (a) bloquear a exportação do perfil `matriz-treino` se existir
-        par com 2 observadores e κ < 0,60. Rótulo de observador único é aceito e marcado
-        `Rotulo_N_Observadores = 1`. Base: PROPOSTA (Planejamento v3 §3: κ<0,60 = critério não operacional).
+ DEC-5  Kappa < 0,60          Padrão: (a) bloquear a exportação dos perfis `matriz-treino` e
+        `matriz-heldout` se existir par com 2 observadores e κ < 0,60. O κ de Cohen vale para rótulo
+        CATEGÓRICO: sobre VANT aplica-se ao BINÁRIO por célula (fração ≥ 0,25) entre dois delineadores
+        em subamostra-piloto, e a correlação das frações é reportada em paralelo. O tamanho do piloto é
+        decisão do pesquisador (o executor não o fixa). Observador único é aceito e marcado
+        `Rotulo_N_Observadores = 1`. Base: ACEITA (Planejamento v3 §3: κ < 0,60 = critério não operacional).
  DEC-6  Módulos sem chamador  Padrão: (b) a linha de base RUSLE é calculada no script de avaliação
         (anexo D25), não no app. No app, R/LS/chuva ficam `indisponivel` com causa honesta
         (C11, C15). NÃO ligue chuva/Planet/harmônicos. Base: PROPOSTA (sem GEE o executor não valida).
@@ -138,7 +158,10 @@ entregue sem edição. O executor aplica a coluna "Padrão" e NÃO a reinterpret
         (ex.: Embrapa Documentos 246, 2024); aceite "AAAA" ou "AAAA-MM" quando só isso é conhecido;
         se desconhecida → proveniência `indisponivel` (causa "data-da-fonte-desconhecida"). Nunca a
         data de hoje, nunca "2024-01-01". Base: PROPOSTA.
- DEC-10 CAR/perímetros reais  Padrão: NÃO EXECUTAR. Relate "aguarda DEC-10". Base: —
+ DEC-10 CAR/perímetros reais  Padrão: **(c)** identificadores opacos no repositório; código CAR real e
+        perímetros em `data/sitios_referencia_local.json`, FORA do git, instalado só na máquina do
+        pesquisador pelo Google Drive (a identificação do proprietário serve à autorização de visita).
+        Executa-se em N07. NÃO reescrever o histórico. Base: ACEITA pelo pesquisador (06/10/2026).
  DEC-11 Tag `legado-pre-sarel` Padrão: (b) remover do README a instrução `git checkout legado-pre-sarel`
         e apontar para a pasta `legado/` e para o hash do commit onde ela foi criada (descubra com
         `git log --diff-filter=A --format=%h -1 -- legado`). NÃO crie tag. Base: PROPOSTA.
@@ -151,12 +174,18 @@ entregue sem edição. O executor aplica a coluna "Padrão" e NÃO a reinterpret
         probatório (só dry-run sintético). O pacote ZIP passa a embutir o script novo (bloco N03).
         Base: REGISTRADA (D24/D25/D26 não são cumpridos pelo legado).
  DEC-15 Colunas consumidas    Padrão: (c) teto por bloco de D24 (≤8 espectro-temporal, ≤4 terreno,
-        1 solo, 1 chuva), declarados pelo pesquisador em `config_pre_registro` (anexo PROPOSTA).
-        O executor NÃO preenche nem congela o pré-registro. Base: REGISTRADA (D24).
+        1 solo, 1 chuva), declarados pelo pesquisador em `config_pre_registro`. PROPOSTA otimizada
+        (anexo `config_pre_registro_PROPOSTA.json`): 5 espectro-temporais de SÉRIE (Frequencia_Solo_Nu,
+        Composto_Solo_Nu_B12, Composto_Solo_Nu_Razao_B4_B2, Taxa_Degradacao_SWIR_Anual,
+        NDVI_Maximo_Mediano) + Declividade_pct, Curvatura_Perfil, TWI + K + R = 10; monotonicidade só em
+        declividade, K, R, frequência de solo nu (+) e NDVI_Maximo_Mediano (−). O executor NÃO preenche
+        nem congela o pré-registro. Base: REGISTRADA (D24) + PROPOSTA ACEITA.
  DEC-16 Máscara de nuvem/janela Padrão: (a) máscara de pixel por SCL do Sentinel-2 L2A mantendo as
         classes 4 (vegetação) e 5 (não vegetado), descartando 0,1,2,3,6,7,8,9,10,11 (as classes 4, 5, 8, 9 e 10 foram confirmadas por busca no catálogo do GEE; a conferência das demais contra o catálogo é do pesquisador); janela de D05
         (2016-01-01..2026-06-30, constante única). P09 permanece "proposta" em `decisoes.ts`.
-        Sem GEE, valide só a expressão (teste de construção). Base: PROPOSTA (+ D05 REGISTRADA para a janela).
+        Sem GEE, valide só a expressão (teste de construção). Fica PENDENTE DO PESQUISADOR uma consulta
+        barata no GEE: quantas células ficam abaixo do mínimo de 6 observações válidas de D11 com esta
+        máscara; o executor lista isso no relatório como "não rodado". Base: ACEITA (+ D05 REGISTRADA para a janela).
 
 ════════════════════════════════════════════════════════════════════════════════════════
 4. ERRATA DO PROMPT DE CORREÇÃO (prevalecem sobre ele)
@@ -197,10 +226,10 @@ Cada fase termina com `npm run typecheck`, `npm run lint` e `npm run test` (cole
 com `sha256sum -c` dos 5 hashes de R10.
 
 FASE 1 — baseline confiável:  C01, N01, C02.
-FASE 2 — bloqueiam a função:   C03, C04, C05.
+FASE 2 — bloqueiam a função:   C03, C04, C05, N07 (sítios de aferição: opção c).
 FASE 3 — bloqueiam a dissertação: C06, C07, C08, C09 (parte (a) e função única de N02),
           C10 (+ DEC-16), C11, C12.
-FASE 4 — contrato de dados D16/D26 (N02) e script D25 (N03).
+FASE 4 — emendas aceitas (N06), contrato de dados D16/D26 (N02) e script D25 (N03).
 FASE 5 — interpretação:        C13, C14, C15, C16 (com E6), C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27.
 FASE 6 — front-end (N04).
 FASE 7 — cosmético e fechamento: C28, C29, C30, N05 (conferência final).
@@ -261,14 +290,22 @@ PASSO 2 (implementação):
       Reabra `ingestaoDrone.ts` e `rotulos.test.ts`/`montagem*.test.ts` e liste cada teste que
       assertava "drone sempre held-out" com o novo texto.
   (d) `perfis.ts`: `matriz-treino` ganha `Celula_ID`, `Poligono_ID`, `Papel_Conjunto`,
-      `Fracao_Erodida`, `Alvo_Binario_25`, `Rotulo_N_Observadores`, `RUSLE_Fator_LS`; NÃO ganha C, P,
-      perda, A. Novo perfil `matriz-heldout` (mesmas colunas; só linhas held-out) exportado em
+      `Fracao_Erodida`, `Alvo_Binario_25`, `Rotulo_N_Observadores`, `RUSLE_Fator_LS` e as 4 métricas de
+      SÉRIE do pré-registro proposto: `Composto_Solo_Nu_B12`, `Composto_Solo_Nu_Razao_B4_B2`,
+      `Taxa_Degradacao_SWIR_Anual`, `NDVI_Maximo_Mediano` (origem "modelado"; `indisponivel` com causa
+      quando ausentes). Elas já são calculadas por `src/lib/gee/compostoSoloNu.ts` (`compostoSoloNu`) e
+      `persistenciaTemporal.ts` (`taxaDegradacaoSwirAnual`, `ndviMaximoMediano`); a razão B4/B2 é
+      derivada do composto (ambos os termos presentes e B2 > 0; senão indisponível). Se o modelo do ponto
+      (`src/types/ponto.ts`) não guardar esses valores, ACRESCENTE campos `Proveniencia<number>` e a
+      projeção; NÃO ligue o GEE (R13). NÃO exporte `regime`/`confianca` de `analisarPersistenciaTemporal`
+      (classificação por limiares = quase-rótulo, Regra 4) nem `maiorSequenciaSoloNu` ou
+      `mesModalExposicao` como preditores. NÃO ganha C, P, perda, A. Novo perfil `matriz-heldout` (mesmas colunas; só linhas held-out) exportado em
       arquivo SEPARADO (`ExportModal` e `planilha.ts`/`csv.ts` conforme o padrão dos outros
       perfis). O perfil `matriz-treino` NUNCA contém linha held-out (teste).
   (e) DEC-5: se existir par de rótulos com 2 observadores e κ < 0,60, a exportação de
       `matriz-treino` e `matriz-heldout` é RECUSADA com mensagem que lista os pares; observador
       único é aceito e marcado. A ausência de κ não bloqueia.
-  (f) Linha de base: crie `perfil "linha-de-base-rusle"` com `Celula_ID`, R, K, LS, C, P, `RUSLE_A`
+  (f) Linha de base: crie `perfil "linha-de-base-rusle"` com `Celula_ID`, R, K, LS, C, P, `Marcador_K_Ambiguo_D08`, `RUSLE_A`
       = produto SOMENTE se os 5 fatores estiverem `medido|modelado|tabelado`; qualquer fator
       `indisponivel` → `RUSLE_A` vazio (nunca 0). Hoje R e LS saem indisponíveis (A38): o arquivo
       sai com `RUSLE_A` vazio e o relatório de exportação diz isso.
@@ -282,10 +319,12 @@ N03 — Pipeline estatístico D24/D25/D26 (DEC-14c, DEC-15c)
 PASSO 1. Crie `scripts/d25/` e copie, byte a byte, de `docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/`:
   `avaliacao_d25_referencia.py`, `fracao_erodida_celulas_referencia.py`,
   `test_avaliacao_d25_referencia.py`, `test_fracao_erodida_celulas_referencia.py`,
-  `config_pre_registro_PROPOSTA.json`. Confira os SHA-256 com `sha256sum -c`. Crie
+  `config_pre_registro_PROPOSTA.json`. O avaliador aceita `--linha-de-base <csv do perfil
+  linha-de-base-rusle>` (junta por `Celula_ID`: `RUSLE_A` e `Marcador_K_Ambiguo_D08`) e a grade
+  pré-registrada de p e de hiperparâmetros em `cfg["grade"]`. Confira os SHA-256 com `sha256sum -c`. Crie
   `scripts/d25/requirements.txt` (numpy, pandas, scipy, scikit-learn, xgboost, shapely, pyproj) e
   `scripts/d25/LEIA-ME.md` (3 parágrafos: o que é, que NÃO é evidência com dado sintético, como rodar).
-PASSO 2. `cd scripts/d25 && python3 -m unittest discover -s . -p "test_*.py"` -> OK, 35 testes (cole).
+PASSO 2. `cd scripts/d25 && python3 -m unittest discover -s . -p "test_*.py"` -> OK, 38 testes (cole).
 PASSO 3. Prova de recusa (cole as saídas, exit != 0):
     python3 scripts/d25/avaliacao_d25_referencia.py --saida /tmp/x                    # sem --dados
     python3 scripts/d25/avaliacao_d25_referencia.py --dados a --config b --saida /tmp/x   # sem modo
@@ -369,6 +408,90 @@ ACEITE N04. `node .../verificar_ui.cjs http://127.0.0.1:3000 /tmp/ui_depois.json
   estar em branco sem internet: isso não é falha. Se uma largura não puder passar, PARE e explique.
 
 ────────────────────────────────────────────────────────────────────────────────────────
+N06 — Emendas aceitas pelo pesquisador (decisões D02, D06, D09, D10, D13, D14, D15, D16, D24, D25)
+────────────────────────────────────────────────────────────────────────────────────────
+ACHADO. O pesquisador aceitou, em 06/10/2026, as emendas redigidas em
+  `docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/EMENDAS_PROPOSTAS_2026-10-06.md`. Elas corrigem
+  inconsistências numéricas, fecham a lacuna de D25 e registram o resultado da leitura bibliográfica de D13 e
+  D15. Todas são anteriores a qualquer dado.
+REPRODUZIR. `git grep -n "918 unidades\|NAO_PREVISTO\|Mannigel" -- src/config/decisoes.ts` (cole) e
+  `grep -c "EMENDA DE 06/10/2026" src/config/decisoes.ts` -> 0.
+MUDANÇA. Para cada emenda E-… do arquivo, na decisão indicada, ACRESCENTE o parágrafo EXATAMENTE como
+  escrito ao FINAL do campo `valor` (ou `referencia`, onde o arquivo diz) como novo trecho da MESMA string,
+  precedido de um espaço. Não apague nem reescreva texto original; não toque em `estado`, `decididoPor`,
+  `decididoEm`. Um commit por decisão ("EMENDA D25: ..."). Depois: (a) regere `docs/planejamento/DECISOES.md`
+  (bloco C13) e rode o teste de paridade; (b) acrescente P10 (expoente de Tweedie, grade {1,2; 1,5; 1,8}),
+  P11 (cobertura mínima da célula, 0,95) e P12..P15 (tolerâncias de DEC-7) com `estado: "proposta"`, sem `valor`.
+ACEITE. (1) ANTES de editar, gere `/tmp/decisoes_antes.json` com um script Node que importe `DECISOES` e
+  `PARAMETROS` por `node --import ./scripts/ts-loader.mjs` e grave `{id: {estado, decididoPor, decididoEm, valor,
+  referencia}}`; depois das emendas gere `/tmp/decisoes_depois.json` e rode um script Python que prove, para TODAS
+  as decisões e parâmetros pré-existentes: `estado`, `decididoPor` e `decididoEm` idênticos; `valor` e `referencia`
+  novos COMEÇAM exatamente com os antigos (prefixo); e só as 10 decisões listadas (D25, D24, D06, D16, D02, D09,
+  D10, D14, D13, D15) mudaram, cada uma com `EMENDA DE 06/10/2026` presente. (2) `grep -c "EMENDA DE 06/10/2026"
+  src/config/decisoes.ts` conta 10 parágrafos (ou 11 se D09 e D10 tiverem os dois campos). (3) P10..P15 existem com
+  `estado: "proposta"` e sem `valor`. (4) `npm run test` verde, incluindo o teste de paridade de C13.
+LIMITE. Se o texto original de uma decisão tiver mudado e o parágrafo não fizer mais sentido, PARE e relate.
+
+────────────────────────────────────────────────────────────────────────────────────────
+N07 — Sítios de aferição: código CAR e perímetros reais FORA do git (DEC-10, opção c)
+────────────────────────────────────────────────────────────────────────────────────────
+ACHADO. `src/lib/padraoOuro/sitiosReferencia.ts` embute 4 códigos CAR de 43 caracteres (linhas 101, 377, 513,
+  629) e os perímetros cadastrais de 4 imóveis rurais (Medianeira e Céu Azul); `docs/Delimitacao_Territorial_e_
+  Selecao_Amostral_MultiEscala_BP3.md:120-123` repete os códigos; `scripts/gerar_manual_pdf.py` tem o prefixo
+  "PR-41158". O pesquisador precisa da identificação do proprietário para a autorização de visita, mas SÓ na sua
+  máquina: os bancos já estão no Google Drive e o instalador os baixa para `data/` (verificado:
+  `scripts/download_gdrive_db.py:191-194` faz `extractall` do ZIP em `data/`; `gerar_zip_banco_gdrive.py` monta
+  o ZIP). Importante: o instalador escolhe UM arquivo da pasta do Drive (ZIP de nome conhecido, senão o `.db`);
+  se a pasta só tiver o `.db`, o arquivo local de sítios NÃO chega.
+REPRODUZIR. `git grep -nIE "PR-41(15804|05300)-[0-9A-F]{32}" -- . ':!*.pack'` -> 8 ocorrências (4 em
+  `sitiosReferencia.ts`, 4 em `Delimitacao_…md`); `git grep -nI "PR-41158" -- scripts docs src` (cole). Não use
+  `grep` em `.next/` (cache não versionado).
+MUDANÇA (nesta ordem; um commit por passo; NUNCA imprima ou cole um código CAR completo no relatório):
+  1. EXTRAIR para o arquivo local ANTES de esvaziar o módulo:
+       node --import ./scripts/ts-loader.mjs docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/extrair_sitios_locais.ts
+     (recusa sobrescrever; saída esperada: "[OK] 4 sítios gravados"). Confirme `data/sitios_referencia_local.json`
+     e `.sha256` e que NÃO aparecem em `git status`.
+  2. `.gitignore`: acrescente `data/sitios_referencia_local.json*` e prove com
+     `git check-ignore -v data/sitios_referencia_local.json`.
+  3. ESVAZIAR o módulo: em `sitiosReferencia.ts` remova `codigoCar`, `bbox` e `geometry` reais; cada sítio
+     fica com metadados não identificantes (`id` "sitio-ouro-0n", `nomeIdentificador`, `municipio`,
+     `baciaHidrografica`, `areaHa`, GSD, bandas, instrumento) e `identificadorOpaco: "CAR-OPACO-0n"`.
+     Atualize a interface (sem `codigoCar`). O comentário de cabeçalho deixa de afirmar vínculo a "código
+     imobiliário oficial" e diz que o dado real é local. `SITIOS_PADRAO_OURO_GEOJSON` deixa de existir no módulo.
+  4. CARREGADOR LOCAL (servidor): `src/lib/padraoOuro/sitiosLocais.ts` exporta
+     `carregarSitiosLocais(): { estado: "disponivel"|"indisponivel"; causa?: string; sitios: SitioLocal[] }`.
+     Lê `data/sitios_referencia_local.json` (caminho configurável por `process.env.SAREL_DATA_DIR`, para teste),
+     valida com zod (id, codigoCar não vazio, geometry Polygon com ≥ 4 pontos), confere o SHA-256 contra o
+     `.sha256` se existir (divergência ⇒ `indisponivel`, causa "integridade") e NUNCA lança: arquivo ausente ⇒
+     `indisponivel`, causa "dado-local-ausente". Rota `src/app/api/sitios-referencia/route.ts` (GET) devolve
+     o objeto; não faz rede.
+  5. UI: `PainelCampanha.tsx` (linhas 252, 460-486) e `MapViewer.tsx` (linhas 244-247, 514, 709) passam a usar o
+     retorno da rota. Sem dado local: a lista mostra o identificador opaco e os metadados, "Ver no Mapa" fica
+     desabilitado, a camada do mapa e a entrada da legenda não aparecem e um aviso diz "Sítios de aferição:
+     dado local ausente (instale o banco pelo Instalador/Google Drive)". Com dado local: comportamento atual.
+     O código CAR só é exibido quando o dado local está carregado. Estado vazio NÃO é erro de console.
+  6. `pacoteReprodutibilidade.ts` (importa `SITIOS_PADRAO_OURO`): o ZIP nunca contém `codigoCar` nem geometria;
+     use só o identificador opaco. Teste.
+  7. DOCUMENTAÇÃO: em `docs/Delimitacao_Territorial_…BP3.md:120-123` troque cada código por "CAR-OPACO-0n (dado em
+     `data/sitios_referencia_local.json`, fora do git)"; verifique `scripts/gerar_manual_pdf.py` e, SEM editar
+     imagens, abra `docs/images/04-Central-de-campanha.png` e relate se mostra código CAR legível.
+  8. DRIVE/INSTALADOR (sem tocar no C# nem no `.exe`): em `scripts/gerar_zip_banco_gdrive.py` inclua
+     `data/sitios_referencia_local.json` e `.sha256` no ZIP quando existirem (mesmo `arcname`, na raiz) e
+     imprima um aviso final: "suba este ZIP à pasta do Drive; confira as permissões da pasta (R-H)". README:
+     seção "Sítios de aferição (dado local)" com: o que é, por que não está no git, como chega (ZIP do Drive →
+     `data/`), que sem ele o app funciona sem os sítios, e que o arquivo identifica proprietários (LGPD).
+     Teste Python em `scripts/verificacao/` para o gerador de ZIP com diretório temporário sintético.
+  9. NÃO reescreva o histórico (R7). No relatório: "o histórico contém os códigos; limpeza é decisão do pesquisador".
+TESTES. Fixture local SINTÉTICA (`SINTETICO_TESTE_ENCANAMENTO`, códigos "CAR-SINTETICO-0n", geometria quadrada
+  fictícia) em diretório temporário via `SAREL_DATA_DIR`: (i) carregador `disponivel` com fixture, `indisponivel`
+  sem arquivo, `indisponivel`/"integridade" com hash errado, nunca lança; (ii) varredura de texto: nenhum arquivo
+  versionado de `src/`, `scripts/` ou `docs/` casa `PR-41(15804|05300)-[0-9A-F]{32}`; (iii) a rota devolve
+  `indisponivel` sem arquivo; (iv) o ZIP de reprodutibilidade não contém `codigoCar`.
+ACEITE. `git grep -nIE "PR-41(15804|05300)-[0-9A-F]{32}" -- . ':!*.pack'` -> VAZIO; `git check-ignore -v` mostra a
+  regra; `npm run build` exit 0; `verificar_ui.cjs` sem os itens de sítios, com e sem a fixture local (capturas
+  de 1440 px descritas em 1 frase). Relate: o app abre SEM o arquivo local (obrigatório) e COM ele.
+
+────────────────────────────────────────────────────────────────────────────────────────
 N05 — Conferência final (somente leitura)
 ────────────────────────────────────────────────────────────────────────────────────────
 F1. `docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/` não foi alterada (`sha256sum -c`).
@@ -396,14 +519,14 @@ Entregue em `docs/auditorias/RELATORIO_EXECUCAO_2026-10-06.md` (arquivo novo, n�
 pesquisador não autorizou). Conteúdo:
  (1) tabela bloco → executado | parcial | não executado (motivo) | commit local | saídas coladas
      de REPRODUZIR (antes) e ACEITE (depois), da mesma sessão;
- (2) o que NÃO foi feito: blocos sem decisão (DEC-10), V não rodadas, partes que exigem GEE,
+ (2) o que NÃO foi feito: V não rodadas, a consulta de contagem D11 no GEE (DEC-16), R e LS (D13/D15 pendentes: faltam Rufino 1993 e Desmet; Govers 1996 arquivados), pré-registro (do pesquisador), partes que exigem GEE,
      Planet ou dado local (`npm run test:vivo`);
  (3) o que FALHOU: comando, exit code, 30 primeiras linhas;
  (4) o que NÃO VERIFICOU e por quê;
  (5) placar final de typecheck, lint, test, build e de `verificar_ui.cjs`, contra o baseline de P0.5,
      e a confirmação dos 5 hashes de R10 e dos anexos;
  (6) lista dos testes REESCRITOS (R6) com o texto antes/depois;
- (7) as ressalvas R-A..R-G do pesquisador confirmadas ou refutadas pelo que você viu no código;
+ (7) as ressalvas R-A..R-H confirmadas ou refutadas pelo que você viu no código; e a confirmação de que N07 não deixou código CAR legível em arquivo versionado;
  (8) `git status --porcelain` e `git log --oneline 4834cf0..HEAD`.
 NÃO declare o repositório "pronto". NÃO afirme resultado científico: nenhum dado real foi usado.
 NÃO faça push.
@@ -411,6 +534,6 @@ NÃO faça push.
 
 ## Notas de quem redigiu (não fazem parte do prompt)
 
-- O prompt **não** manda o executor rodar o avaliador D25 em modo probatório, preencher o pré-registro, ligar R/LS/chuva ao app, mexer em `decisoes.ts` (além de acrescentar parâmetros `proposta`), apagar arquivos ou fazer push.
-- O que o executor **não consegue** validar sem você: GEE (máscara SCL, janela D05), `test:vivo` (dados locais), V4/V5/V7/V9/V10/V12/V13, mover/renomear PDFs (DEC-13), CAR/perímetros reais (DEC-10).
+- O prompt **não** manda o executor rodar o avaliador D25 em modo probatório, preencher o pré-registro, ligar R/LS/chuva ao app, mexer em `decisoes.ts` (além das emendas aceitas e de parâmetros `proposta`), reescrever o histórico, tocar no instalador ou no Drive, apagar arquivos ou fazer push.
+- O que o executor **não consegue** validar sem você: GEE (máscara SCL, janela D05), `test:vivo` (dados locais), V4/V5/V7/V9/V10/V12/V13, mover/renomear PDFs (DEC-13), CAR/perímetros reais: limpeza do histórico do git e permissões da pasta do Drive (R-H).
 - Custo/risco: N02 é o bloco mais invasivo (contrato de dados). O limite R12 existe para o executor parar em vez de espalhar mudanças.

@@ -28,7 +28,9 @@ def sintetico(seed=7, n_pol_estrato=4, cel=60):
     return pd.DataFrame(linhas)
 
 
-CFG = {"alvo": "Fracao_Erodida", "grupo": "Poligono_ID",
+GRADE_PEQUENA = {"p": [1.2, 1.5], "xgb": [dict(max_depth=2, learning_rate=0.1, n_estimators=100, min_child_weight=5)],
+                 "alpha": [1e-2, 1.0]}
+CFG = {"grade": GRADE_PEQUENA, "alvo": "Fracao_Erodida", "grupo": "Poligono_ID",
        "blocos": {"espectro": ["E1", "E2", "E3"], "terreno": ["T1", "T2"], "solo": ["K"], "chuva": ["Chuva"]},
        "monotonicidade": {"E1": 1, "E2": -1}, "rusle": {"R": "R", "K": "KK", "LS": "LS", "C": "C", "P": "P"}}
 
@@ -87,9 +89,9 @@ class Desfechos(unittest.TestCase):
     def test_quarto_desfecho(self):
         r = m.classificar_desfecho(0.55, 0.40, 0.54, (0.03, 0.27), (-0.04, 0.06))
         self.assertTrue(r["hipotese_ensemble_refutada"])
-    def test_lacuna_d25(self):
+    def test_lacuna_d25_vira_inconclusiva_margem(self):
         r = m.classificar_desfecho(0.45, 0.40, 0.3, (-0.1, 0.2), (0.0, 0.2))
-        self.assertEqual(r["desfecho"], "NAO_PREVISTO_EM_D25")
+        self.assertEqual(r["desfecho"], "INCONCLUSIVA_MARGEM")
     def test_nao_avaliavel(self):
         self.assertEqual(m.classificar_desfecho(float("nan"), float("nan"), 0.1, None, None)["desfecho"], "NAO_AVALIAVEL")
     def test_limites_exatos(self):
@@ -139,12 +141,26 @@ class Pipeline(unittest.TestCase):
         df = sintetico()
         with tempfile.TemporaryDirectory() as d:
             rel = m.avaliar_held_out(df, CFG, d, dryrun_sintetico=True, B=200, seed=11)
-            self.assertIn(rel["desfecho"]["desfecho"], {"CORROBORADA", "INCONCLUSIVA", "REFUTADA", "NAO_PREVISTO_EM_D25"})
+            self.assertIn(rel["desfecho"]["desfecho"], {"CORROBORADA", "INCONCLUSIVA", "INCONCLUSIVA_MARGEM", "REFUTADA"})
             self.assertEqual(rel["n_poligonos_heldout"], 36)
             self.assertTrue(os.path.exists(os.path.join(d, "DRYRUN_SINTETICO_avaliacao_d25.json")))
             self.assertIn("nenhum numero", rel["aviso"])
             with self.assertRaises(m.ErroAvaliacao):           # avaliacao unica (D25)
                 m.avaliar_held_out(df, CFG, d, dryrun_sintetico=True, B=200, seed=11)
+    def test_sensibilidades_e_p_escolhido_no_treino(self):
+        df = sintetico(); df["Marcador_D08"] = ["false" if i % 3 else "true" for i in range(len(df))]
+        cfg = json.loads(json.dumps(CFG)); cfg["coluna_marcador_d08"] = "Marcador_D08"
+        with tempfile.TemporaryDirectory() as d:
+            rel = m.avaliar_held_out(df, cfg, d, dryrun_sintetico=True, B=100, seed=5)
+        sens = rel["sensibilidades_pre_registradas"]
+        self.assertIn("xgb_sem_monotonicidade", sens); self.assertIn("d08_sem_marcador_verdadeiro_ou_indisponivel", sens)
+        self.assertIn(rel["hiperparametros"]["xgb_p_tweedie"], [1.2, 1.5])
+        self.assertNotIn("xgb_livre", rel["rho_spearman"])
+    def test_p_fora_de_1_2_recusado(self):
+        cfg = json.loads(json.dumps(CFG)); cfg["grade"] = {"p": [1.5, 2.0]}
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(m.ErroAvaliacao):
+                m.avaliar_held_out(sintetico(), cfg, d, dryrun_sintetico=True, B=50)
     def test_determinismo_ponta_a_ponta(self):
         df = sintetico()
         with tempfile.TemporaryDirectory() as d1, tempfile.TemporaryDirectory() as d2:
@@ -172,6 +188,16 @@ class Pipeline(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             with self.assertRaises(m.ErroAvaliacao):
                 m.avaliar_held_out(df, CFG, d, dryrun_sintetico=False, B=50)
+    def test_linha_de_base_por_celula_id(self):
+        df = pd.DataFrame({"Celula_ID": ["a", "b", "c"], "x": [1, 2, 3]})
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "lb.csv")
+            with open(p, "w", encoding="utf-8") as fh:
+                fh.write("# SINTETICO_TESTE_ENCANAMENTO\n\nCelula_ID,RUSLE_A,Marcador_K_Ambiguo_D08\na,0.5,false\nb,,true\n")
+            out = m.juntar_linha_de_base(df, p)
+        self.assertEqual(out.loc[0, "RUSLE_A"], 0.5)
+        self.assertTrue(out["RUSLE_A"].iloc[1:].isna().all())     # vazio e sem correspondencia: NaN, nunca 0
+        self.assertIn("Marcador_K_Ambiguo_D08", out.columns)
     def test_cli_exige_modo_e_sem_padrao_de_dados(self):
         with self.assertRaises(SystemExit):
             m.main(["--config", "x", "--saida", "y"])
