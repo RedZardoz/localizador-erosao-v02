@@ -38,6 +38,6 @@
   "_pendencias_para_o_pesquisador": [
     "Confirmar ou alterar a lista e os sinais acima ANTES de qualquer ajuste; depois congelar.",
     "As colunas Composto_Solo_Nu_B12, Composto_Solo_Nu_Razao_B4_B2, Taxa_Degradacao_SWIR_Anual e NDVI_Maximo_Mediano ainda nao existem no perfil matriz-treino (bloco N02(d) do prompt do executor as acrescenta, com origem 'modelado' ou indisponivel).",
-    "A coluna RUSLE_A so existe se os 5 fatores estiverem disponiveis; hoje R e LS ficam indisponiveis no app (D13 pendente: falta Rufino 1993; D15: equacoes conferidas em 09/10/2026, falta o fluxo de A_in): sem RUSLE_A o desfecho de D25 e NAO_AVALIAVEL."
+    "A coluna RUSLE_A so existe se os 5 fatores estiverem disponiveis; hoje R e LS ficam indisponiveis no app (D13: coeficientes da Regiao 1 lidos em Rufino 1993, fator 10 de unidade inferido a confirmar; D15: equacoes conferidas em 09/10/2026, falta o fluxo de A_in): sem RUSLE_A o desfecho de D25 e NAO_AVALIAVEL."
   ]
 }

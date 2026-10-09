@@ -1,0 +1,117 @@
+# Waltrick et al. (2015), RBCS 39:256-267, Quadro 1 (p. 261): R medio anual, MJ mm ha-1 h-1 ano-1, 114 localidades, dados pluviometricos 1986-2008.
+# Transcrito por script da extracao docs/verificacoes/fontes/waltrick2015/saida_extracao_waltrick_2015.txt; conferidos: 114 linhas, minimo 5449 (Piraquara), maximo 12581 (Ampere). Conferir amostra contra o PDF antes de uso probatorio.
+n,localidade,R_MJ_mm_ha_h_ano
+1,Adrianópolis,6368
+2,Alto Piquiri,10312
+3,Altonia,10084
+4,Ampére,12581
+5,Andirá,7544
+6,Antonina,11088
+7,Arapongas,7880
+8,Assis Chateaubriand,10982
+9,Bandeirantes,7529
+10,Barbosa Ferraz,9264
+11,Barracão,12412
+12,Bela Vista do Paraíso,8611
+13,Bituruna,8669
+14,Bocaiúva do Sul,6194
+15,Cambará,7520
+16,Campina da Lagoa,11461
+17,Campo Largo,6104
+18,Campo Mourão,10430
+19,Cândido de Abreu,7281
+20,Capanema,10984
+21,Cascavel,11588
+22,Castro,5627
+23,Cerro Azul,5959
+24,Céu Azul,12121
+25,Cianorte,9713
+26,Clevelândia,9614
+27,Corbélia,12088
+28,Coronel Vivida,10880
+29,Cruz Machado,9058
+30,Cruzeiro do Oeste,10026
+31,Curitiba,5937
+32,Dois Vizinhos,11864
+33,Entre Rios,10495
+34,Fênix,8948
+35,Fernandes Pinheiro,7024
+36,Formosa do Oeste,10286
+37,Foz do Iguaçu,11037
+38,Francisco Beltrão,11896
+39,General Carneiro,8670
+40,Goioerê,10645
+41,Grandes Rios,10014
+42,Guairá,10509
+43,Guaraniaçu,12384
+44,Guarapuava,9140
+45,Guaraqueçaba,10613
+46,Ibiporã,8531
+47,Inácio Martins,8753
+48,Irati,7442
+49,Iretama,11456
+50,Itapejara do Oeste,11463
+51,Ivaiporã,9682
+52,Ivaí,7077
+53,Jaguariaíva,6657
+54,Janiópolis,10762
+55,Joaquim Távora,6771
+56,Lapa,6578
+57,Laranjeiras do Sul,9687
+58,Londrina,7945
+59,Mallet,7068
+60,Mamborê,11492
+61,Mandirituba,5670
+62,Manoel Ribas,10761
+63,Mariluz,9663
+64,Maringá,7664
+65,Mariópolis,11651
+66,Matelândia,11531
+67,Morretes,8550
+68,Nova Cantu,12018
+69,Nova Fátima,7698
+70,Palmas,9842
+71,Palmeira,6022
+72,Palmital,12164
+73,Palotina,10436
+74,Paranacity,6563
+75,Paranaguá,9064
+76,Paranavaí,7340
+77,Pato Branco,11861
+78,Pinhão,9843
+79,Piraquara,5449
+80,Pitanga,8819
+81,Planalto,11571
+82,Ponta Grossa,6790
+83,Porecatu,8257
+84,Porto Amazonas,6739
+85,Porto Vitória,8557
+86,Prudentópolis,8586
+87,Quedas do Iguaçu,12173
+88,Realeza,10719
+89,Rio Branco do Sul,6001
+90,Rio Negro,6810
+91,Roncador,11906
+92,Salto do Lontra,11712
+93,Santa Fé,7415
+94,Santa Helena,11261
+95,Santa Izabel Ivaí,6683
+96,Santa Izabel do Oeste,11573
+97,São Jerônimo da Serra,8489
+98,São José dos Pinhais,8777
+99,São Mateus Sul,7090
+100,São Miguel do Iguaçu,10701
+101,Tapejara,9429
+102,Telêmaco Borba,7102
+103,Terra Roxa,10415
+104,Tibagi,7007
+105,Tijucas do Sul,6377
+106,Toledo,10623
+107,Tomazina,7089
+108,Tuneiras do Oeste,10126
+109,Ubiratã,10910
+110,Umuarama,10313
+111,União da Vitória,8274
+112,Verê,12408
+113,Vitorino,12023
+114,Xambrê,9364

@@ -23,8 +23,9 @@
 ### Leitura da bibliografia (D13 e D15) — resultado
 - **D15, Renard et al. (1997):** equações [4-1] a [4-5] **conferidas na imagem do PDF primário** (pp. 105 e 107). O expoente m é função **contínua** da declividade (não há "patamares"); a quebra de 9 % é do fator S e o domínio de 3–20 % a atravessa.
 - **D15, Desmet e Govers (1996) — conferido em 09/10/2026** no PDF enviado pelo pesquisador (8 páginas escaneadas; agora em `docs/verificacoes/fontes/desmet1996/desmet_govers_1996_jswc.pdf`): o fator L é a **Eq. (9)** (p. 429), com A_out = A_in + D², comprimento de contorno D·x e x = sen α + cos α (p. 428); m e S vêm da RUSLE. O código usa x com **módulos** (leitura do implementador, a declarar) e cita "Eq. 2" (errado: a Eq. 2 distribui o fluxo). O artigo mostra que o LS **depende da resolução** do MDE e sua validação é a 5 m numa bacia belga; **não há validação a 30 m**. Achado novo: `fatorLS.ts` trata A_in ausente como **0** (bloco N08).
-- **D13, Waltrick et al. (2015):** o artigo **não traz equações próprias**; usa as oito equações regionais de **Rufino, Biscaia e Merten (1993)** (EI30 em função de Rc = p²/P) e as revalida (r ≥ 0,92). Os **coeficientes não constam** de Waltrick e Rufino (1993) **não foi obtido** (a coleção da RBCS no SciELO cobre os artigos a partir de 2000; o volume 17 de 1993 está em bibliotecas, comutação ou trabalhos que reproduzem a tabela): o Fator R segue **pendente**. Checagem externa: o Quadro 1 de Waltrick traz o R anual de 114 localidades (ex.: Céu Azul 12.121; Foz do Iguaçu 11.037 MJ mm ha⁻¹ h⁻¹ ano⁻¹).
-- **Consequência:** as **equações** de LS estão conferidas; falta o **Fator R** (Rufino 1993). Sem R conferido, a linha de base RUSLE não é calculada e D25 resulta **NAO_AVALIAVEL**. Para destravar: arquivar **Rufino et al. (1993)** em `docs/verificacoes/fontes/rufino1993/`.
+- **D13, Rufino, Biscaia e Merten (1993) — lido em 09/10/2026** no PDF obtido pelo pesquisador junto à revista (6 páginas, arquivado em `docs/verificacoes/fontes/rufino1993/`). Waltrick (2015) usa as **oito equações regionais de Rufino**, regressões lineares Y = a + b·x com x = p²/P (Quadro 2, p. 443). **Bacia do Paraná 3 = Região 1: a = 18,64; b = 5,73** (Thiessen: os 918 nós de uma grade de 0,05° sobre o envelope da BP3 caem em células de estações da Região 1; Quadro 2 e Figura 2 coincidem nessa região).
+- **Problemas achados em Rufino/Waltrick:** (i) a Figura 2 e o Quadro 2 do próprio artigo **divergem em 5 de 8 regiões** (R2 a R6); (ii) a equação, com p e P em mm como o texto declara, **não reproduz a escala do R**: em 6 de 8 estações da Região 1 o R do Quadro 1 excede o limite matemático 12a + bP; (iii) com um **fator 10** sobre Σ(a + b·p²/P) aplicado à climatologia CHIRPS 1981–2025 já arquivada, a razão ao R de Waltrick é 0,93 / 1,01 / 0,995 / 0,993 / 1,016 em Toledo, Cascavel, Santa Helena, Foz do Iguaçu e Palotina (sem o fator, ≈ 0,10). O fator 10 é **inferido, não consta de fonte**; confirmar com os autores/revista. (iv) a referência "Medianeira, R = 11.400" da climatologia **não consta** do Quadro 1 de Waltrick: sem fonte (achado A57).
+- **Consequência:** as equações de LS e os coeficientes de R da Região 1 estão lidos na fonte; falta **confirmar o fator 10** e decidir sobre as regiões 2 a 8. Até lá a linha de base RUSLE só existe para a BP3 e com R marcado "unidade inferida" (bloco N09).
 
 ### Ressalva nova (R-H) — Google Drive
 O instalador baixa o banco por **link compartilhado** (`embeddedfolderview` e `drive.usercontent`, em `scripts/download_gdrive_db.py`), o que só funciona se a pasta estiver acessível por link. Se os sítios (CAR e perímetros) e o `fundiario_brasil.db` (que traz titulares) estiverem nessa pasta com **"qualquer pessoa com o link"**, a exposição que a opção (c) evita no git reaparece no Drive. **Confira as permissões da pasta** (restrinja a pessoas específicas) antes de subir o arquivo local. O executor não mexe no Drive nem no instalador (`InstaladorSAREL.cs` não é alterado; o `.exe` versionado não foi verificado contra o fonte: V2).
@@ -52,7 +53,7 @@ R4.  Você NÃO decide metodologia. As decisões estão na seção 3. Fora dela,
 R5.  Nunca escreva "corrigido", "passa" ou "limpo" sem a saída do comando, da MESMA sessão.
 R6.  Proibido pular, desativar, quarentenar ou apagar teste para obter verde. Teste que
      contradiz uma decisão registrada (ex.: "drone é sempre held-out" × D16) pode ser
-     REESCRITO só nos blocos que o autorizam (N02), com a lista antes/depois no relatório.
+     REESCRITO só nos blocos que o autorizam (N02 e, para os testes de `fatorR.test.ts`/`chuva.test.ts` que assertam R `indisponivel` por falta de coeficientes, N09), com a lista antes/depois no relatório.
 R7.  Proibido: tocar em `legado/pre_sarel/`; apagar/mover/renomear `docs/relatorios/modelagem/`;
      editar `docs/PROVENIENCIA_ASSISTENCIA_IA.md`; consumir cota PlanetScope; criar tarefa no
      Earth Engine; rodar qualquer coisa com credencial real; executar `Instalador_SAREL.exe`;
@@ -229,7 +230,7 @@ com `sha256sum -c` dos 5 hashes de R10.
 FASE 1 — baseline confiável:  C01, N01, C02.
 FASE 2 — bloqueiam a função:   C03, C04, C05, N07 (sítios de aferição: opção c).
 FASE 3 — bloqueiam a dissertação: C06, C07, C08, C09 (parte (a) e função única de N02),
-          C10 (+ DEC-16), C11, C12, N08 (LS: A_in ausente não é zero).
+          C10 (+ DEC-16), C11, C12, N08 (LS: A_in ausente não é zero), N09 (Fator R: coeficientes de Rufino).
 FASE 4 — emendas aceitas (N06), contrato de dados D16/D26 (N02) e script D25 (N03).
 FASE 5 — interpretação:        C13, C14, C15, C16 (com E6), C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27.
 FASE 6 — front-end (N04).
@@ -437,6 +438,37 @@ ACEITE. Testes novos em `fatorLS.test.ts` (valores calculados na sessão de 09/1
   Suíte `src/lib/rusle/*.test.ts` verde.
 
 ────────────────────────────────────────
+N09 — Fator R: coeficientes de Rufino (Região 1), unidade inferida e teste de reprodução (D13; A57)
+────────────────────────────────────────
+ACHADO. `src/lib/rusle/fatorR.ts` devolve R `indisponivel` (os coeficientes a = 107,52 e b = 46,89 foram retirados em
+  02/10/2026 por não terem fonte: correto). Com Rufino et al. (1993) lido, o par para a BP3 (Região 1) é a = 18,64 e
+  b = 5,73. A climatologia `docs/verificacoes/climatologia_chirps_bp3.json` traz 6 estações com `rReferenciaWaltrick`; a de
+  Medianeira (11.400) NÃO está no Quadro 1 de Waltrick (A57).
+REPRODUZIR. `grep -n "107,52\|46,89\|indisponivel" src/lib/rusle/fatorR.ts` (cole); e, em Python sem dependências:
+  para cada estação de `estacoesReferenciaBP3` (exceto Medianeira) com `p` = `climatologiaMensalMediaMm` e `P` = Σp, calcule
+  `R = 10 * sum(18.64 + 5.73 * pm*pm / P for pm in p)` e a razão a `rReferenciaWaltrick`: esperado hoje 0,93 (Toledo), 1,01
+  (Cascavel), 0,995 (Santa Helena), 0,993 (Foz do Iguaçu), 1,016 (Palotina); sem o fator 10 a razão é ≈ 0,10.
+MUDANÇA. (1) Em `fatorR.ts` acrescente a tabela `COEFICIENTES_RUFINO_1993` SOMENTE com a Região 1 (a 18,64; b 5,73; fonte
+  "Rufino et al. (1993), Quadro 2, p. 443"); as regiões 2 a 8 NÃO entram (Quadro 2 e Figura 2 divergem; retorno
+  `indisponivel`, causa "regiao-nao-implementada"). (2) Constante nomeada `FATOR_UNIDADE_RUFINO = 10` com o comentário
+  "INFERIDO empiricamente (reproduz Waltrick 2015, Quadro 1, em 5 estações, razão média 0,99); a equação impressa com p e P
+  em mm dá ≈ 1/10 do R; confirmar com autores/revista (D13)". (3) A função devolve R = FATOR_UNIDADE_RUFINO × Σ_{m=1..12}
+  (a + b · p_m² / P), P = Σp_m, exigindo 12 valores finitos e não negativos e P > 0 (senão `indisponivel`, causa
+  "insuficiente"); fora do envelope de `src/config/areaInteresse.ts` devolve `indisponivel`, causa "fora-do-dominio"
+  (a região só foi verificada para a BP3). Proveniência "modelado", `tabela` = "Rufino et al. (1993), Q2, Região 1, × 10
+  (unidade inferida)"; a marca "pendente de verificação" PERMANECE (retirá-la é decisão do pesquisador). (4) NÃO edite o JSON de climatologia: registre no
+  relatório que a referência de Medianeira não tem fonte; o teste a ignora. NÃO ligue R ao app nem à rota (DEC-6b); NÃO use
+  dado de data única.
+TESTES (valores calculados em 09/10/2026; teste de encanamento e de regressão, NÃO critério de aceitação científica): (i) razão
+  R_calculado / R_Waltrick nas 5 estações dentro de ±0,005 dos valores acima, lendo o JSON existente; (ii) o CSV
+  `ANEXOS…/waltrick2015_quadro1_R_anual.csv` tem 114 linhas, mínimo 5449 e máximo 12581 e contém Toledo = 10623, Cascavel =
+  11588, Foz do Iguaçu = 11037, Palotina = 10436 e NÃO contém Medianeira; (iii) 12 valores com P = 0 → `indisponivel`; vetor com
+  11 valores → `indisponivel`; ponto fora do envelope → `fora-do-dominio`; (iv) o antigo par 107,52/46,89 não aparece em
+  nenhum arquivo versionado de `src/` (`git grep -n "107,52\|107.52" -- src ':!*.test.ts'` -> vazio).
+ACEITE. `npm run test` (rusle e chuva) verde; os cinco números do REPRODUZIR coincidem e estão colados; relatório final cita a
+  tolerância como PENDENTE do pesquisador e o fator 10 como INFERIDO.
+
+────────────────────────────────────────
 N06 — Emendas aceitas pelo pesquisador (decisões D02, D06, D09, D10, D13, D14, D15, D16, D24, D25)
 ────────────────────────────────────────────────────────────────────────────────────────
 ACHADO. O pesquisador aceitou, em 06/10/2026, as emendas redigidas em
@@ -548,7 +580,7 @@ Entregue em `docs/auditorias/RELATORIO_EXECUCAO_2026-10-06.md` (arquivo novo, n�
 pesquisador não autorizou). Conteúdo:
  (1) tabela bloco → executado | parcial | não executado (motivo) | commit local | saídas coladas
      de REPRODUZIR (antes) e ACEITE (depois), da mesma sessão;
- (2) o que NÃO foi feito: V não rodadas, a consulta de contagem D11 no GEE (DEC-16), Fator R (D13 pendente: falta arquivar Rufino 1993), pré-registro (do pesquisador), partes que exigem GEE,
+ (2) o que NÃO foi feito: V não rodadas, a consulta de contagem D11 no GEE (DEC-16), Fator R (D13: fator 10 de unidade inferido, a confirmar com autores/revista; regiões 2 a 8 não implementadas), pré-registro (do pesquisador), partes que exigem GEE,
      Planet ou dado local (`npm run test:vivo`);
  (3) o que FALHOU: comando, exit code, 30 primeiras linhas;
  (4) o que NÃO VERIFICOU e por quê;
