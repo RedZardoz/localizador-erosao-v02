@@ -21,9 +21,10 @@
 | Preditores | 5 espectro-temporais + 3 de terreno + K + R = 10 (teto 14); monotonicidade só onde o sinal é inequívoco | `config_pre_registro_PROPOSTA.json` |
 
 ### Leitura da bibliografia (D13 e D15) — resultado
-- **D15, Renard et al. (1997):** equações [4-1] a [4-5] **conferidas na imagem do PDF primário** (pp. 105 e 107). O expoente m é função **contínua** da declividade (não há "patamares"); a quebra de 9 % é do fator S e o domínio de 3–20 % a atravessa. **Não conferida:** a forma 2-D de Desmet e Govers (1996) (não há PDF no repositório; a extração arquivada foi feita sem o artigo). O Fator LS segue **pendente** até o pesquisador arquivar o PDF.
-- **D13, Waltrick et al. (2015):** o artigo **não traz equações próprias**; usa as oito equações regionais de **Rufino, Biscaia e Merten (1993)** (EI30 em função de Rc = p²/P) e as revalida (r ≥ 0,92). Os **coeficientes não constam** de Waltrick e Rufino (1993) **não foi obtido**: o Fator R segue **pendente**. Há uma checagem externa útil: o Quadro 1 de Waltrick traz o R anual de 114 localidades (ex.: Céu Azul 12.121; Foz do Iguaçu 11.037 MJ mm ha⁻¹ h⁻¹ ano⁻¹).
-- **Consequência:** sem R e LS conferidos, a linha de base RUSLE não é calculada e D25 resulta **NAO_AVALIAVEL**. O pesquisador precisa arquivar **Rufino et al. (1993)** e **Desmet e Govers (1996)** em `docs/verificacoes/fontes/` (`rufino1993/`, `desmet1996/`).
+- **D15, Renard et al. (1997):** equações [4-1] a [4-5] **conferidas na imagem do PDF primário** (pp. 105 e 107). O expoente m é função **contínua** da declividade (não há "patamares"); a quebra de 9 % é do fator S e o domínio de 3–20 % a atravessa.
+- **D15, Desmet e Govers (1996) — conferido em 09/10/2026** no PDF enviado pelo pesquisador (8 páginas escaneadas; agora em `docs/verificacoes/fontes/desmet1996/desmet_govers_1996_jswc.pdf`): o fator L é a **Eq. (9)** (p. 429), com A_out = A_in + D², comprimento de contorno D·x e x = sen α + cos α (p. 428); m e S vêm da RUSLE. O código usa x com **módulos** (leitura do implementador, a declarar) e cita "Eq. 2" (errado: a Eq. 2 distribui o fluxo). O artigo mostra que o LS **depende da resolução** do MDE e sua validação é a 5 m numa bacia belga; **não há validação a 30 m**. Achado novo: `fatorLS.ts` trata A_in ausente como **0** (bloco N08).
+- **D13, Waltrick et al. (2015):** o artigo **não traz equações próprias**; usa as oito equações regionais de **Rufino, Biscaia e Merten (1993)** (EI30 em função de Rc = p²/P) e as revalida (r ≥ 0,92). Os **coeficientes não constam** de Waltrick e Rufino (1993) **não foi obtido** (a coleção da RBCS no SciELO cobre os artigos a partir de 2000; o volume 17 de 1993 está em bibliotecas, comutação ou trabalhos que reproduzem a tabela): o Fator R segue **pendente**. Checagem externa: o Quadro 1 de Waltrick traz o R anual de 114 localidades (ex.: Céu Azul 12.121; Foz do Iguaçu 11.037 MJ mm ha⁻¹ h⁻¹ ano⁻¹).
+- **Consequência:** as **equações** de LS estão conferidas; falta o **Fator R** (Rufino 1993). Sem R conferido, a linha de base RUSLE não é calculada e D25 resulta **NAO_AVALIAVEL**. Para destravar: arquivar **Rufino et al. (1993)** em `docs/verificacoes/fontes/rufino1993/`.
 
 ### Ressalva nova (R-H) — Google Drive
 O instalador baixa o banco por **link compartilhado** (`embeddedfolderview` e `drive.usercontent`, em `scripts/download_gdrive_db.py`), o que só funciona se a pasta estiver acessível por link. Se os sítios (CAR e perímetros) e o `fundiario_brasil.db` (que traz titulares) estiverem nessa pasta com **"qualquer pessoa com o link"**, a exposição que a opção (c) evita no git reaparece no Drive. **Confira as permissões da pasta** (restrinja a pessoas específicas) antes de subir o arquivo local. O executor não mexe no Drive nem no instalador (`InstaladorSAREL.cs` não é alterado; o `.exe` versionado não foi verificado contra o fonte: V2).
@@ -228,7 +229,7 @@ com `sha256sum -c` dos 5 hashes de R10.
 FASE 1 — baseline confiável:  C01, N01, C02.
 FASE 2 — bloqueiam a função:   C03, C04, C05, N07 (sítios de aferição: opção c).
 FASE 3 — bloqueiam a dissertação: C06, C07, C08, C09 (parte (a) e função única de N02),
-          C10 (+ DEC-16), C11, C12.
+          C10 (+ DEC-16), C11, C12, N08 (LS: A_in ausente não é zero).
 FASE 4 — emendas aceitas (N06), contrato de dados D16/D26 (N02) e script D25 (N03).
 FASE 5 — interpretação:        C13, C14, C15, C16 (com E6), C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27.
 FASE 6 — front-end (N04).
@@ -402,12 +403,40 @@ U10 Estados vazios e erros: nenhum painel mostra número ou métrica sem origem;
     ausência com causa. Procure `?? 0`, `|| 0`, `.toFixed(` aplicado a valor possivelmente nulo
     em `src/components` (`grep -rnE "\?\? 0|\|\| 0" src/components`) e relate cada ocorrência
     (corrija só as da lista de C06/C07).
+U11 `src/config/tourMetodologico.ts:118-130` exibe o LS como "Moore & Burch" `(A_s/22,13)^0,4 · (sen θ/0,0896)^1,3`, que NÃO é a fórmula de D15; o texto do Tour deve mostrar o LS de D15 (bloco N08, item 4).
 ACEITE N04. `node .../verificar_ui.cjs http://127.0.0.1:3000 /tmp/ui_depois.json` -> "UI OK" e exit 0
   (cole o texto e o JSON de medidas). Capturas de tela em 1440 e 390 px de cada modal, salvas em
   `/tmp/ui_shots/` (fora do repo), e descreva em 1 frase o que vê em cada uma. O mapa base pode
   estar em branco sem internet: isso não é falha. Se uma largura não puder passar, PARE e explique.
 
 ────────────────────────────────────────────────────────────────────────────────────────
+N08 — Fator LS: área de contribuição ausente não é zero; citações e texto do Tour (A56)
+────────────────────────────────────────
+ACHADO. (1) `src/lib/rusle/fatorLS.ts` (`calcularFatorLS`) converte `areaContribuicaoMontanteM2` ausente ou não
+  numérica em `0.0` (A_in = 0, célula de divisor de águas), com o comentário "permitido:" (isenção por texto livre, A06):
+  sem acumulação de fluxo o L sai como o de uma crista e o LS sai SUBESTIMADO, com selo de valor calculado (Regras 1 e 5).
+  (2) O cabeçalho cita "Desmet & Govers (1996, Eq. 2)" para o fator L; no artigo é a Eq. (9) (Eqs. 6-8 são passos; a Eq. 2
+  distribui o fluxo). (3) O cabeçalho diz "VERIFICADO 2026-10-01 — evidência: …/desmet1996/saida_extracao_desmet_1996.txt":
+  aquela extração foi feita sem o artigo; o PDF só foi arquivado em 09/10/2026. (4) `src/config/tourMetodologico.ts:118-130`
+  mostra ao usuário o LS de Moore & Burch, não o de D15.
+REPRODUZIR. Sonda R-TS: `calcularFatorLS({ declividadeGraus: 8 })` SEM `areaContribuicaoMontanteM2` -> devolve LS finito
+  (hoje); `git grep -n "Eq. 2" -- src/lib/rusle/fatorLS.ts`; `grep -n "permitido:" src/lib/rusle/fatorLS.ts`;
+  `sed -n 118,130p src/config/tourMetodologico.ts` (cole tudo).
+MUDANÇA. (a) `areaContribuicaoMontanteM2` passa a ser OBRIGATÓRIA e finita: `undefined`/`null`/NaN → `ErroForaDoDominio`
+  (ou `indisponivel` com causa "insuficiente", conforme o padrão do chamador em `linhaDeBase.ts`); `0` EXPLÍCITO continua
+  válido (divisor de águas). Remova o comentário "permitido:" e ajuste os chamadores e testes. (b) Troque "Eq. 2" por
+  "Eqs. 6 a 9 (p. 429); x na p. 428" e, onde o texto define x, acrescente "x = |sen α| + |cos α| (leitura do implementador;
+  o artigo imprime sen α + cos α, p. 428)". (c) Troque a linha VERIFICADO por "VERIFICADO 2026-10-09 — evidência:
+  docs/verificacoes/fontes/desmet1996/desmet_govers_1996_jswc.pdf (pp. 428-429)". (d) No Tour mostre o LS de D15 (L pela
+  Eq. 9, m pela Eq. [4-2]/[4-3] e S pelas [4-4]/[4-5] de Renard) em vez de Moore & Burch. NÃO altere m, S, β nem 22,13.
+ACEITE. Testes novos em `fatorLS.test.ts` (valores calculados na sessão de 09/10/2026; teste de encanamento, não evidência):
+  m(9 %) = 0,5012; S(tan θ = 0,09) = 1,0059; S(tan θ = 0,0899) = 0,9970; m(12 %) = 0,5457 e S(12 %) = 1,5016;
+  L com A_in = 0, D = 30 m, x = 1 e m(9 %): 1,1647 (com m = 0,5: 1,1643); L com A_in = 900 m², D = 30, x = 1, m(9 %):
+  2,1324; A_in ausente → erro/indisponível; `grep -n "permitido:" src/lib/rusle/fatorLS.ts` -> vazio;
+  `git grep -n "Moore & Burch" -- src/config/tourMetodologico.ts` -> vazio (ou texto explicitamente "ilustração").
+  Suíte `src/lib/rusle/*.test.ts` verde.
+
+────────────────────────────────────────
 N06 — Emendas aceitas pelo pesquisador (decisões D02, D06, D09, D10, D13, D14, D15, D16, D24, D25)
 ────────────────────────────────────────────────────────────────────────────────────────
 ACHADO. O pesquisador aceitou, em 06/10/2026, as emendas redigidas em
@@ -519,7 +548,7 @@ Entregue em `docs/auditorias/RELATORIO_EXECUCAO_2026-10-06.md` (arquivo novo, n�
 pesquisador não autorizou). Conteúdo:
  (1) tabela bloco → executado | parcial | não executado (motivo) | commit local | saídas coladas
      de REPRODUZIR (antes) e ACEITE (depois), da mesma sessão;
- (2) o que NÃO foi feito: V não rodadas, a consulta de contagem D11 no GEE (DEC-16), R e LS (D13/D15 pendentes: faltam Rufino 1993 e Desmet; Govers 1996 arquivados), pré-registro (do pesquisador), partes que exigem GEE,
+ (2) o que NÃO foi feito: V não rodadas, a consulta de contagem D11 no GEE (DEC-16), Fator R (D13 pendente: falta arquivar Rufino 1993), pré-registro (do pesquisador), partes que exigem GEE,
      Planet ou dado local (`npm run test:vivo`);
  (3) o que FALHOU: comando, exit code, 30 primeiras linhas;
  (4) o que NÃO VERIFICOU e por quê;
