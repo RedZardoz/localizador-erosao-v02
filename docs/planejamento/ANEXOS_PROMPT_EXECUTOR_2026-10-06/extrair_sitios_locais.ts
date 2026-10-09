@@ -1,7 +1,7 @@
 /**
  * Extrai os 4 sítios de aferição (código CAR real + perímetro) do módulo versionado para um arquivo LOCAL
  * (opção c, DEC-10): data/sitios_referencia_local.json — fora do git, instalado só na máquina do pesquisador
- * (Google Drive -> pasta data/). Rode ANTES de o módulo ser esvaziado (bloco N06 do prompt do executor):
+ * (Google Drive -> pasta data/). Rode ANTES de o módulo ser esvaziado (bloco N07 do prompt do executor):
  *
  *   node --import ./scripts/ts-loader.mjs docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/extrair_sitios_locais.ts
  *

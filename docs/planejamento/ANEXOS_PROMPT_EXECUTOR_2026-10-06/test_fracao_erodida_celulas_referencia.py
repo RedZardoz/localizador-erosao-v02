@@ -58,6 +58,19 @@ class Celulas(unittest.TestCase):
         voo = fc(retangulo(OX + 1000, OY + 1000, OX + 1020, OY + 1020))
         df, _ = f.calcular_celulas(voo, {"type": "FeatureCollection", "features": []}, GRADE)
         self.assertTrue((df["Fracao_Erodida"] == 0.0).all() and len(df) == 4)
+    def test_pixel_id_opaco_estavel_e_compartilhado_entre_poligonos_vizinhos(self):
+        a = retangulo(OX + 1000, OY + 1000, OX + 1020, OY + 1020)
+        b = retangulo(OX + 1020, OY + 1000, OX + 1040, OY + 1020)
+        voo = {"type": "FeatureCollection", "features": [
+            {"type": "Feature", "properties": {"Poligono_ID": "OPACO_A"}, "geometry": a},
+            {"type": "Feature", "properties": {"Poligono_ID": "OPACO_B"}, "geometry": retangulo(OX + 1010, OY + 1000, OX + 1030, OY + 1020)}]}
+        df, _ = f.calcular_celulas(voo, {"type": "FeatureCollection", "features": []}, GRADE)
+        self.assertTrue((df["Pixel_ID"].str.len() == 12).all())
+        self.assertFalse(df["Celula_ID"].str.contains(r"_\d+_\d+$").any())      # nao expoe indices da grade
+        comum = set(df[df.Poligono_ID == "OPACO_A"].Pixel_ID) & set(df[df.Poligono_ID == "OPACO_B"].Pixel_ID)
+        self.assertEqual(len(comum), 2)           # o pixel de borda aparece nos dois poligonos, com o MESMO Pixel_ID
+        self.assertEqual(f.pixel_id_opaco(CRS, 3, 4), f.pixel_id_opaco(CRS, 3, 4))
+        self.assertNotEqual(f.pixel_id_opaco(CRS, 3, 4), f.pixel_id_opaco(CRS, 4, 3))
     def test_grade_sem_padrao(self):
         with self.assertRaises(f.ErroGrade):
             f.calcular_celulas(fc(), fc(), {"crs": CRS})

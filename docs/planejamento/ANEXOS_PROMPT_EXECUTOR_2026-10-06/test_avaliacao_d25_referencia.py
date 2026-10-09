@@ -203,5 +203,89 @@ class Pipeline(unittest.TestCase):
             m.main(["--config", "x", "--saida", "y"])
 
 
+class RevisaoDe09Out2026(unittest.TestCase):
+    """Defeitos achados na revisao global de 09/10/2026. Dado SINTETICO_TESTE_ENCANAMENTO."""
+    def test_alvo_e_chaves_nao_viram_preditor(self):
+        for ruim in ("Fracao_Erodida", "Alvo_Binario_25", "Poligono_ID", "Papel_Conjunto", "Estrato_ID",
+                     "Celula_ID", "Lat", "Lon", "Marcador_K_Ambiguo_D08", "Rotulo_N_Observadores"):
+            with self.assertRaises(m.ErroAvaliacao, msg=ruim):
+                m.validar_teto_blocos({"terreno": [ruim]})
+    def test_monotonicidade_com_chave_inexistente_recusada(self):
+        blocos = CFG["blocos"]
+        m.validar_monotonicidade(blocos, {"E1": 1, "E2": -1})
+        with self.assertRaises(m.ErroAvaliacao):
+            m.validar_monotonicidade(blocos, {"E1_TYPO": 1})
+        with self.assertRaises(m.ErroAvaliacao):
+            m.validar_monotonicidade(blocos, {"E1": 2})
+    def test_hash_do_pre_registro_confere(self):
+        h = m.hash_config(CFG)
+        self.assertEqual(len(h), 64)
+        cfg = json.loads(json.dumps(CFG)); cfg["pre_registro"] = {"declarado_por": "x", "declarado_em": "y",
+                                                                    "sha256_config_congelada": h}
+        self.assertEqual(m.hash_config(cfg), h)               # a chave pre_registro nao entra no hash
+        ruim = json.loads(json.dumps(cfg)); ruim["pre_registro"]["sha256_config_congelada"] = "nao-e-hash"
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(m.ErroAvaliacao):
+                m.avaliar_held_out(sintetico(), ruim, d, dryrun_sintetico=False, B=50)
+        mudou = json.loads(json.dumps(cfg)); mudou["monotonicidade"] = {"E1": -1}      # mudou apos congelar
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(m.ErroAvaliacao):
+                m.avaliar_held_out(sintetico(), mudou, d, dryrun_sintetico=False, B=50)
+    def test_falha_apos_a_trava_consome_a_tentativa(self):
+        df = sintetico()
+        with tempfile.TemporaryDirectory() as d:
+            real = m.bootstrap_diferenca
+            m.bootstrap_diferenca = lambda *a, **k: (_ for _ in ()).throw(m.ErroAvaliacao("falha injetada"))
+            try:
+                with self.assertRaises(m.ErroAvaliacao):
+                    m.avaliar_held_out(df, CFG, d, dryrun_sintetico=True, B=50)
+            finally:
+                m.bootstrap_diferenca = real
+            trava = os.path.join(d, "DRYRUN_SINTETICO_avaliacao_heldout.TRAVA.json")
+            self.assertTrue(os.path.exists(trava))
+            with open(trava, encoding="utf-8") as fh:
+                self.assertEqual(json.load(fh)["estado"], "falhou")
+            with self.assertRaises(m.ErroAvaliacao):          # nova tentativa e recusada
+                m.avaliar_held_out(df, CFG, d, dryrun_sintetico=True, B=50)
+    def test_trava_ao_lado_dos_dados_nao_depende_de_saida(self):
+        df = sintetico()
+        with tempfile.TemporaryDirectory() as d, tempfile.TemporaryDirectory() as s1, tempfile.TemporaryDirectory() as s2:
+            csv = os.path.join(d, "SINTETICO_TESTE_ENCANAMENTO.csv"); df.to_csv(csv, index=False)
+            m.avaliar_held_out(df, CFG, s1, dryrun_sintetico=True, B=50, seed=2, caminho_dados=csv)
+            with self.assertRaises(m.ErroAvaliacao):          # outro --saida, mesmos dados: recusado
+                m.avaliar_held_out(df, CFG, s2, dryrun_sintetico=True, B=50, seed=2, caminho_dados=csv)
+    def test_preditor_todo_ausente_ou_constante_recusado(self):
+        for alvo, valor in (("E1", np.nan), ("E1", 3.0)):
+            df = sintetico(); df.loc[df["Papel_Conjunto"] == "treino", alvo] = valor
+            with tempfile.TemporaryDirectory() as d:
+                with self.assertRaises(m.ErroAvaliacao):
+                    m.avaliar_held_out(df, CFG, d, dryrun_sintetico=True, B=50)
+    def test_relatorio_traz_n_validos_por_preditor(self):
+        with tempfile.TemporaryDirectory() as d:
+            rel = m.avaliar_held_out(sintetico(), CFG, d, dryrun_sintetico=True, B=50, seed=4)
+        self.assertEqual(set(rel["preditores_n_validos"]), {"E1", "E2", "E3", "T1", "T2", "K", "Chuva"})
+        self.assertIn("sha256_config", rel)
+    def test_pixel_em_treino_e_heldout_recusado(self):
+        df = sintetico(); df["Grade_X"] = np.arange(len(df), dtype=float); df["Grade_Y"] = 0.0
+        a = df.index[df["Papel_Conjunto"] == "treino"][0]; b = df.index[df["Papel_Conjunto"] == "held-out"][0]
+        df.loc[b, ["Grade_X", "Grade_Y"]] = df.loc[a, ["Grade_X", "Grade_Y"]].to_numpy()
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(m.ErroAvaliacao):
+                m.avaliar_held_out(df, CFG, d, dryrun_sintetico=True, B=50)
+    def test_pixel_id_opaco_em_treino_e_heldout_recusado(self):
+        df = sintetico(); df["Pixel_ID"] = [f"px{i:06d}" for i in range(len(df))]
+        a = df.index[df["Papel_Conjunto"] == "treino"][0]; b = df.index[df["Papel_Conjunto"] == "held-out"][0]
+        df.loc[b, "Pixel_ID"] = df.loc[a, "Pixel_ID"]
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(m.ErroAvaliacao):
+                m.avaliar_held_out(df, CFG, d, dryrun_sintetico=True, B=50)
+    def test_celulas_nao_incluidas_sao_descartadas(self):
+        df = sintetico(); df["Incluida"] = True
+        df.loc[df.index[::7], "Incluida"] = False
+        esperado = int(df["Incluida"].sum())
+        self.assertEqual(len(m._so_incluidas(df)), esperado)
+        self.assertEqual(len(m._so_incluidas(sintetico())), len(sintetico()))   # sem a coluna: nada muda
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

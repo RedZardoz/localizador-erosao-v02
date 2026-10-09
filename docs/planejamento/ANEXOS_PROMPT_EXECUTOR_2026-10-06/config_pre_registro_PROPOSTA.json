@@ -10,9 +10,17 @@
       "Taxa_Degradacao_SWIR_Anual",
       "NDVI_Maximo_Mediano"
     ],
-    "terreno": ["Declividade_pct", "Curvatura_Perfil", "TWI"],
-    "solo": ["RUSLE_Fator_K"],
-    "chuva": ["RUSLE_Fator_R"]
+    "terreno": [
+      "Declividade_pct",
+      "Curvatura_Perfil",
+      "TWI"
+    ],
+    "solo": [
+      "RUSLE_Fator_K"
+    ],
+    "chuva": [
+      "RUSLE_Fator_R"
+    ]
   },
   "monotonicidade": {
     "Frequencia_Solo_Nu": 1,
@@ -21,15 +29,27 @@
     "RUSLE_Fator_K": 1,
     "RUSLE_Fator_R": 1
   },
-  "rusle": {"A": "RUSLE_A"},
+  "rusle": {
+    "A": "RUSLE_A"
+  },
   "coluna_marcador_d08": "Marcador_K_Ambiguo_D08",
   "grade": {
-    "p": [1.2, 1.5, 1.8],
-    "alpha": [0.001, 0.01, 0.1, 1.0, 10.0]
+    "p": [
+      1.2,
+      1.5,
+      1.8
+    ],
+    "alpha": [
+      0.001,
+      0.01,
+      0.1,
+      1.0,
+      10.0
+    ]
   },
   "pre_registro": null,
   "_justificativa_resumida": {
-    "total_de_preditores": "5 + 3 + 1 + 1 = 10 (teto D24: 14). O teto de 8 do bloco espectro-temporal e um maximo, nao uma cota: com ~1.845 unidades efetivas o criterio de 200 eventos/variavel admite 9, logo 8 nao deixa folga; 5 preserva folga.",
+    "total_de_preditores": "5 + 3 + 1 + 1 = 10 (teto D24: 14). O teto de 8 do bloco espectro-temporal e um maximo, nao uma cota: REVISAO DE 09/10/2026: o argumento original usava o n efetivo TOTAL (~1.841 = 72 poligonos); so os 36 poligonos de treino ajustam o modelo, ou seja ~920 unidades efetivas, e 'evento' e a celula com fracao positiva (depende da prevalencia). O teto 8 fica sem sustentacao numerica ate o pesquisador refazer o argumento (n efetivo de treino x prevalencia esperada) antes de congelar; 5 espectro-temporais preserva a maior folga.",
     "espectro": "Metricas de SERIE (ja implementadas em src/lib/gee/compostoSoloNu.ts e persistenciaTemporal.ts), nao bandas de data unica nem NDVI/BSI/B2/B4/B8/B12 simultaneamente (colinearidade: indices sao funcoes das bandas). Frequencia_Solo_Nu = tempo de exposicao (+); Composto_Solo_Nu_B12 e Razao_B4_B2 = mineralogia/materia organica e oxidos de ferro do solo exposto (Demattê et al. 2018, Rogge et al. 2018; sinal ambiguo, sem restricao); Taxa_Degradacao_SWIR_Anual = tendencia de B12 (hipotese do Planejamento v3, sinal ambiguo, sem restricao); NDVI_Maximo_Mediano = vigor de pico da cultura (-).",
     "excluidos": "maiorSequenciaSoloNu (correlata a frequencia); mesModalExposicao (categorica, circular); regime/confianca de analisarPersistenciaTemporal (classificacao por limiares = quase-rotulo, Regra 4); bandas e indices de data unica (confundem fase da safra); Precip_Acum_*, I30_Max, N_Eventos_Erosivos, Indice_Mecanismo (periodo/evento, contrariam o R climatologico de D13(b) e hoje sao indisponiveis); LS como preditor (colinear com declividade; entra so na linha de base RUSLE).",
     "monotonicidade": "Somente onde o sinal fisico e inequivoco (declividade, K, R, frequencia de solo nu: +; vigor de pico: -). Curvatura de perfil e TWI sem restricao (sinal depende de a erosao ser laminar ou concentrada). Sensibilidade SEM monotonicidade e calculada no mesmo avaliador.",
@@ -38,6 +58,9 @@
   "_pendencias_para_o_pesquisador": [
     "Confirmar ou alterar a lista e os sinais acima ANTES de qualquer ajuste; depois congelar.",
     "As colunas Composto_Solo_Nu_B12, Composto_Solo_Nu_Razao_B4_B2, Taxa_Degradacao_SWIR_Anual e NDVI_Maximo_Mediano ainda nao existem no perfil matriz-treino (bloco N02(d) do prompt do executor as acrescenta, com origem 'modelado' ou indisponivel).",
-    "A coluna RUSLE_A so existe se os 5 fatores estiverem disponiveis; hoje R e LS ficam indisponiveis no app (D13: coeficientes da Regiao 1 lidos em Rufino 1993, fator 10 de unidade inferido a confirmar; D15: equacoes conferidas em 09/10/2026, falta o fluxo de A_in): sem RUSLE_A o desfecho de D25 e NAO_AVALIAVEL."
+    "A coluna RUSLE_A so existe se os 5 fatores estiverem disponiveis; hoje R e LS ficam indisponiveis no app (D13: coeficientes da Regiao 1 lidos em Rufino 1993, fator de unidade 9,81 reproduzido em pluviometros do IAT; origem fisica a confirmar; D15: equacoes conferidas em 09/10/2026, falta o fluxo de A_in): sem RUSLE_A o desfecho de D25 e NAO_AVALIAVEL (estado tecnico do avaliador de referencia; NAO esta pre-registrado em D25: o pesquisador decide se o declara).",
+    "Curvatura_Perfil e TWI saem SEMPRE indisponiveis no app hoje (select-candidates/route.ts retorna 'indisponivel'; calcularTwi em terreno.ts nao tem chamador): com eles o bloco de terreno efetivo tem 1 preditor, nao 3. Decida: implementar o calculo (fluxo/A_in, D15) ou retirar as duas colunas do pre-registro. O avaliador agora recusa coluna 100% ausente.",
+    "NDVI_Maximo_Mediano e, no codigo (persistenciaTemporal.ts), o PERCENTIL 90 de toda a serie de NDVI, nao a mediana dos maximos por safra. Renomear para NDVI_P90_Serie (o bloco N10 do prompt renomeia a coluna exportada) ou definir o estimador por safra; a justificativa fisica 'vigor de pico da cultura' vale para este ultimo.",
+    "O hash que o pesquisador declara em pre_registro.sha256_config_congelada e calculado por hash_config(cfg) no avaliador (JSON canonico da configuracao SEM a chave pre_registro)."
   ]
 }

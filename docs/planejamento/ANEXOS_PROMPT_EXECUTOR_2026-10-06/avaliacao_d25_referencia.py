@@ -50,6 +50,12 @@ GRADE_PADRAO = {"p": [1.2, 1.5, 1.8],
 # Saidas/derivados do competidor RUSLE nunca entram como preditor (D25: o modelo nao pode receber a
 # saida do competidor). LS e K/R sao admitidos pelos blocos de D24 (terreno, solo, chuva).
 PROIBIDOS_COMO_PREDITOR = {"RUSLE_Fator_C", "RUSLE_Fator_P", "RUSLE_Perda_Solo_t_ha_ano", "RUSLE_A"}
+# Alvo, chaves, geometria e metadados nunca entram como preditor (revisao de 09/10/2026: o teto numerico
+# por bloco nao pegava um erro de digitacao que levasse o alvo ou um identificador ao modelo).
+PROIBIDOS_ALVO_E_CHAVES = {"Fracao_Erodida", "Alvo_Binario_25", "Classe_Alvo_Binaria", "Poligono_ID",
+                           "Papel_Conjunto", "Estrato_ID", "Celula_ID", "Lat", "Lon", "Grade_X", "Grade_Y",
+                           "Cobertura_Celula", "Incluida", "Area_Delineada_m2", "Marcador_K_Ambiguo_D08", "Pixel_ID"}
+PREFIXOS_PROIBIDOS = ("Rotulo_",)
 COLUNAS_OBRIGATORIAS = ("Fracao_Erodida", "Poligono_ID", "Papel_Conjunto")
 
 
@@ -122,8 +128,71 @@ def validar_teto_blocos(blocos: dict) -> None:
     usados = {c for cols in blocos.values() for c in cols}
     if usados & PROIBIDOS_COMO_PREDITOR:
         raise ErroAvaliacao(f"preditor proibido (saida do competidor RUSLE): {sorted(usados & PROIBIDOS_COMO_PREDITOR)}")
+    vazados = sorted(c for c in usados if c in PROIBIDOS_ALVO_E_CHAVES or c.startswith(PREFIXOS_PROIBIDOS))
+    if vazados:
+        raise ErroAvaliacao(f"preditor proibido (alvo, chave, geometria ou rotulo): {vazados}")
     if sum(len(c) for c in blocos.values()) > 14:
         raise ErroAvaliacao("total de preditores > 14 (D24)")
+
+
+def validar_monotonicidade(blocos: dict, mono: dict) -> None:
+    """Toda chave de monotonicidade deve ser um preditor declarado e o sinal deve ser -1, 0 ou 1.
+    (Uma chave com erro de digitacao desligaria a restricao pre-registrada em silencio.)"""
+    cols = {c for b in blocos.values() for c in b}
+    desconhecidas = sorted(set(mono) - cols)
+    if desconhecidas:
+        raise ErroAvaliacao(f"monotonicidade referencia coluna que nao e preditor declarado: {desconhecidas}")
+    invalidos = {k: v for k, v in mono.items() if v not in (-1, 0, 1)}
+    if invalidos:
+        raise ErroAvaliacao(f"sinal de monotonicidade fora de {{-1,0,1}}: {invalidos}")
+
+
+def hash_config(cfg: dict) -> str:
+    """SHA-256 da configuracao SEM a chave 'pre_registro', em JSON canonico (chaves ordenadas, UTF-8, sem
+    espacos). E o valor que o pesquisador declara em pre_registro.sha256_config_congelada."""
+    corpo = {k: v for k, v in cfg.items() if k != "pre_registro"}
+    texto = json.dumps(corpo, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(texto.encode("utf-8")).hexdigest()
+
+
+def auditar_preditores(treino: pd.DataFrame, teste: pd.DataFrame, cols: list) -> dict:
+    """Recusa preditor ausente do CSV, 100 % ausente ou constante no treino; devolve n_validos por coluna."""
+    faltam = [c for c in cols if c not in treino.columns]
+    if faltam:
+        raise ErroAvaliacao(f"preditor declarado ausente da matriz: {faltam}")
+    rel = {}
+    for c in cols:
+        v = pd.to_numeric(treino[c], errors="coerce")
+        if v.notna().sum() == 0:
+            raise ErroAvaliacao(f"preditor {c} esta 100 % ausente no treino")
+        if v.dropna().nunique() < 2:
+            raise ErroAvaliacao(f"preditor {c} e constante no treino")
+        vt = pd.to_numeric(teste[c], errors="coerce")
+        rel[c] = {"n_validos_treino": int(v.notna().sum()), "n_treino": int(len(v)),
+                  "n_validos_heldout": int(vt.notna().sum()), "n_heldout": int(len(vt))}
+    return rel
+
+
+def _so_incluidas(df: pd.DataFrame) -> pd.DataFrame:
+    """Se a matriz traz 'Incluida' (cobertura minima da celula no voo, P11), usa so as incluidas."""
+    if "Incluida" not in df.columns:
+        return df
+    inc = df["Incluida"].map(lambda v: v is True or str(v).strip().lower() in ("true", "1", "1.0", "verdadeiro"))
+    return df[inc].reset_index(drop=True)
+
+
+def _checar_pixels_disjuntos(treino: pd.DataFrame, teste: pd.DataFrame) -> None:
+    """O mesmo pixel de 10 m nao pode estar em treino e held-out (poligonos vizinhos compartilham pixels
+    de borda). Usa a coluna opaca Pixel_ID; na falta dela, Grade_X/Grade_Y (so no CSV intermediario local)."""
+    if "Pixel_ID" in treino.columns:
+        k = lambda d: set(d["Pixel_ID"].astype(str))
+    elif {"Grade_X", "Grade_Y"} <= set(treino.columns):
+        k = lambda d: set(zip(d["Grade_X"].round(3), d["Grade_Y"].round(3)))
+    else:
+        return
+    comum = k(treino) & k(teste)
+    if comum:
+        raise ErroAvaliacao(f"{len(comum)} pixel(is) de 10 m em treino e held-out (vazamento espacial)")
 
 
 # ---------------------------------------------------------------- bootstrap por poligono
@@ -280,23 +349,41 @@ def ajustar_competidores(treino: pd.DataFrame, cfg: dict, seed: int):
 
 
 # ---------------------------------------------------------------- avaliacao unica no held-out
+def _gravar_json(caminho: str, obj: dict) -> None:
+    with open(caminho, "w", encoding="utf-8") as fh:
+        json.dump(obj, fh, ensure_ascii=False, indent=2, default=float)
+
+
 def avaliar_held_out(df: pd.DataFrame, cfg: dict, saida: str, *, dryrun_sintetico: bool,
-                     B: int = 10000, seed: int = 20261006, origem_dados: str = "") -> dict:
+                     B: int = 10000, seed: int = 20261006, origem_dados: str = "",
+                     caminho_dados: str = "") -> dict:
+    """Avaliacao unica do held-out (D25). A TRAVA e gravada ANTES do ajuste e da leitura dos rotulos do
+    held-out; falha depois dela conta como tentativa consumida. Com caminho_dados, uma segunda trava fica
+    ao lado do arquivo de dados (nao depende de --saida)."""
     for c in COLUNAS_OBRIGATORIAS:
         if c not in df.columns:
             raise ErroAvaliacao(f"coluna obrigatoria ausente: {c}")
+    h_cfg = hash_config(cfg)
     if not dryrun_sintetico:
         pr = cfg.get("pre_registro") or {}
         if not (pr.get("declarado_por") and pr.get("declarado_em") and pr.get("sha256_config_congelada")):
             raise ErroAvaliacao("modo probatorio exige cfg['pre_registro'] com declarado_por, declarado_em e "
                                 "sha256_config_congelada (D24 mitigacoes 2 e 3: blocos e monotonicidade "
                                 "declarados ANTES do ajuste, pelo pesquisador)")
+        if str(pr["sha256_config_congelada"]).strip().lower() != h_cfg:
+            raise ErroAvaliacao("sha256_config_congelada nao confere com o hash da configuracao "
+                                f"(esperado {h_cfg}): a configuracao mudou depois do congelamento")
     prefixo = "DRYRUN_SINTETICO_" if dryrun_sintetico else ""
     os.makedirs(saida, exist_ok=True)
     trava = os.path.join(saida, f"{prefixo}avaliacao_heldout.TRAVA.json")
-    if os.path.exists(trava):
-        raise ErroAvaliacao("o held-out ja foi avaliado (D25: uma unica avaliacao). Apague a trava "
-                            "somente por decisao escrita do pesquisador: " + trava)
+    travas = [trava] + ([os.path.join(os.path.dirname(os.path.abspath(caminho_dados)),
+                                      f"{prefixo}{os.path.basename(caminho_dados)}.TRAVA_D25.json")]
+                        if caminho_dados else [])
+    for t in travas:
+        if os.path.exists(t):
+            raise ErroAvaliacao("o held-out ja foi avaliado ou a tentativa foi consumida (D25: uma unica "
+                                "avaliacao). Apague a trava somente por decisao escrita do pesquisador: " + t)
+    df = _so_incluidas(df)
     papeis = set(df["Papel_Conjunto"].unique())
     if not papeis <= {"treino", "held-out"}:
         raise ErroAvaliacao(f"Papel_Conjunto invalido: {sorted(papeis)}")
@@ -306,7 +393,30 @@ def avaliar_held_out(df: pd.DataFrame, cfg: dict, saida: str, *, dryrun_sintetic
         raise ErroAvaliacao("poligono presente em treino e held-out (vazamento)")
     if teste["Poligono_ID"].nunique() < 2 or treino["Poligono_ID"].nunique() < 4:
         raise ErroAvaliacao("poligonos insuficientes")
+    _checar_pixels_disjuntos(treino, teste)
+    validar_teto_blocos(cfg["blocos"])
+    validar_monotonicidade(cfg["blocos"], cfg.get("monotonicidade", {}))
+    cols = [c for b in cfg["blocos"].values() for c in b]
+    auditoria = auditar_preditores(treino, teste, cols)
+    trava_dados = {"estado": "iniciada", "criado_em": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                   "origem_dados": origem_dados, "sha256_config": h_cfg, "dryrun_sintetico": dryrun_sintetico}
+    for t in travas:
+        _gravar_json(t, trava_dados)
+    try:
+        rel = _ajustar_e_pontuar(df, treino, teste, cfg, saida, prefixo, dryrun_sintetico, B, seed,
+                                 origem_dados, auditoria, h_cfg)
+    except Exception as e:                      # tentativa consumida: a trava permanece e registra a falha
+        for t in travas:
+            _gravar_json(t, dict(trava_dados, estado="falhou", erro=f"{type(e).__name__}: {e}"))
+        raise
+    for t in travas:
+        _gravar_json(t, dict(trava_dados, estado="concluida", relatorio=f"{prefixo}avaliacao_d25.json",
+                             sha256_relatorio=sha256_arquivo(os.path.join(saida, f"{prefixo}avaliacao_d25.json"))))
+    return rel
 
+
+def _ajustar_e_pontuar(df, treino, teste, cfg, saida, prefixo, dryrun_sintetico, B, seed, origem_dados,
+                       auditoria, h_cfg) -> dict:
     mod = ajustar_competidores(treino, cfg, seed)
     X_te = teste[mod["cols"]]
     y_te = teste[cfg["alvo"]].to_numpy(dtype=float)
@@ -321,6 +431,7 @@ def avaliar_held_out(df: pd.DataFrame, cfg: dict, saida: str, *, dryrun_sintetic
            "n_poligonos_treino": int(treino["Poligono_ID"].nunique()),
            "n_poligonos_heldout": int(teste["Poligono_ID"].nunique()),
            "n_celulas_heldout": int(len(teste)), "celulas_descartadas_sem_rusle": n_desc,
+           "sha256_config": h_cfg, "preditores_n_validos": auditoria,
            "hiperparametros": mod["hiper"], "criterio": {"piso_rho": PISO_RHO, "margem_rho": MARGEM_RHO,
            "piso_auc": PISO_AUC, "margem_auc": MARGEM_AUC, "limiar_binario": LIMIAR_BINARIO,
            "grade_p_tweedie_P10": _grades(cfg)["p"]}}
@@ -363,10 +474,6 @@ def avaliar_held_out(df: pd.DataFrame, cfg: dict, saida: str, *, dryrun_sintetic
     caminho = os.path.join(saida, f"{prefixo}avaliacao_d25.json")
     with open(caminho, "w", encoding="utf-8") as fh:
         json.dump(rel, fh, ensure_ascii=False, indent=2, default=float)
-    with open(trava, "w", encoding="utf-8") as fh:
-        json.dump({"criado_em": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                   "relatorio": os.path.basename(caminho),
-                   "sha256_relatorio": sha256_arquivo(caminho)}, fh, indent=2)
     return rel
 
 
@@ -405,7 +512,7 @@ def main(argv=None) -> int:
     with open(a.config, encoding="utf-8") as fh:
         cfg = json.load(fh)
     rel = avaliar_held_out(df, cfg, a.saida, dryrun_sintetico=a.dryrun_sintetico, B=a.B, seed=a.seed,
-                           origem_dados=f"{a.dados} sha256={sha256_arquivo(a.dados)}")
+                           origem_dados=f"{a.dados} sha256={sha256_arquivo(a.dados)}", caminho_dados=a.dados)
     print(json.dumps(rel["desfecho"], ensure_ascii=False))
     return 0
 

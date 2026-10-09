@@ -15,11 +15,12 @@ const MODAIS = [
   ["Exportar", /^Exportar|Exportar dados/i],
 ];
 const PROIBIDOS = [
-  [/10 invariantes/i, "U06: numero de invariantes defasado"],
-  [/Erosão Laminar \(Classe 1\)/, "C20: limiar espectral exibido como classe"],
-  [/Padrão-Ouro 10-50/i, "U05: legenda defasada (D16 = 72 poligonos de 5,02 ha)"],
+  [/10 invariantes/i, "U08: numero de invariantes defasado"],
+  [/Erosão Laminar \(Classe 1\)/, "U06/C20: limiar espectral exibido como classe"],
+  [/Sítios Padrão-Ouro/i, "U04: rotulo defasado (sao missoes de afericao instrumental; D16 = 72 poligonos de 5,02 ha)"],
+  [/10 a 50 ha/i, "U04: area defasada nas legendas"],
   [/Aguardando Decisão D13/, "C15: D13 esta decidida"],
-  [/Calcular Métricas Matriciais/, "C19: metricas de demonstracao sem selo"],
+  [/Calcular Métricas Matriciais/, "U07/C19: metricas de demonstracao sem selo"],
   [/Perito SAREL Coletor/, "C25: observador padrao do sistema"],
 ];
 (async () => {

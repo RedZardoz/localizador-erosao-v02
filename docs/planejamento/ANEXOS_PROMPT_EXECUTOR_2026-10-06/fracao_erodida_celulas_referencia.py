@@ -11,7 +11,7 @@ Entrada
                = grade NATIVA do produto Sentinel-2 L2A do tile (D06). NUNCA assumir EPSG:31982:
                leia o CRS e o transform da banda B4 do tile no GEE (image.projection()) e registre.
 Saida
-  CSV com Poligono_ID, Celula_ID, X/Y da grade, Lon/Lat, Cobertura_Celula, Fracao_Erodida,
+  CSV com Poligono_ID, Celula_ID (opaco), Pixel_ID (opaco), X/Y da grade, Lon/Lat, Cobertura_Celula, Fracao_Erodida,
   Area_Delineada_m2, Incluida; e um JSON de conferencia (conservacao de area, area fora do voo).
 
 Nada aqui e evidencia cientifica: o dado de entrada e que determina o resultado.
@@ -19,6 +19,7 @@ Nada aqui e evidencia cientifica: o dado de entrada e que determina o resultado.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import sys
@@ -34,6 +35,14 @@ COBERTURA_MIN = 0.95   # PROPOSTA (P11), nao decidida: fracao minima da celula d
 
 class ErroGrade(Exception):
     pass
+
+
+def pixel_id_opaco(crs: str, i: int, j: int) -> str:
+    """Codigo estavel e opaco do pixel de 10 m (hash dos indices da grade nativa). Nao revela posicao nem ordem;
+    e a chave que impede o MESMO pixel de ficar em treino e held-out (poligonos vizinhos dividem pixels de borda).
+    Grade_X/Grade_Y ficam so neste CSV intermediario (para a amostragem das covariaveis no GEE) e NUNCA vao a
+    uma exportacao do app (Regra 6)."""
+    return hashlib.sha256(f"{crs}|{i}|{j}".encode("utf-8")).hexdigest()[:12]
 
 
 def _validar_grade(g: dict) -> dict:
@@ -95,7 +104,8 @@ def calcular_celulas(voo_fc: dict, delin_fc: dict, grade: dict, cobertura_min: f
                 else:
                     soma_excl += a_del
                 lon, lat = para_wgs(*cel.centroid.coords[0])
-                linhas.append(dict(Poligono_ID=pid, Celula_ID=f"{pid}_{i}_{j}", Grade_X=cel.centroid.x,
+                pix = pixel_id_opaco(crs, i, j)
+                linhas.append(dict(Poligono_ID=pid, Celula_ID=f"{pid}_{pix}", Pixel_ID=pix, Grade_X=cel.centroid.x,
                                    Grade_Y=cel.centroid.y, Lon=lon, Lat=lat, Cobertura_Celula=round(cob, 6),
                                    Fracao_Erodida=min(1.0, max(0.0, frac)), Area_Delineada_m2=a_del, Incluida=bool(incl)))
         conf.append(dict(Poligono_ID=pid, area_delineada_total_m2=a_total, area_delineada_dentro_voo_m2=a_dentro,
