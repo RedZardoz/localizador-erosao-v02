@@ -24,8 +24,8 @@
 - **D15, Renard et al. (1997):** equações [4-1] a [4-5] **conferidas na imagem do PDF primário** (pp. 105 e 107). O expoente m é função **contínua** da declividade (não há "patamares"); a quebra de 9 % é do fator S e o domínio de 3–20 % a atravessa.
 - **D15, Desmet e Govers (1996) — conferido em 09/10/2026** no PDF enviado pelo pesquisador (8 páginas escaneadas; agora em `docs/verificacoes/fontes/desmet1996/desmet_govers_1996_jswc.pdf`): o fator L é a **Eq. (9)** (p. 429), com A_out = A_in + D², comprimento de contorno D·x e x = sen α + cos α (p. 428); m e S vêm da RUSLE. O código usa x com **módulos** (leitura do implementador, a declarar) e cita "Eq. 2" (errado: a Eq. 2 distribui o fluxo). O artigo mostra que o LS **depende da resolução** do MDE e sua validação é a 5 m numa bacia belga; **não há validação a 30 m**. Achado novo: `fatorLS.ts` trata A_in ausente como **0** (bloco N08).
 - **D13, Rufino, Biscaia e Merten (1993) — lido em 09/10/2026** no PDF obtido pelo pesquisador junto à revista (6 páginas, arquivado em `docs/verificacoes/fontes/rufino1993/`). Waltrick (2015) usa as **oito equações regionais de Rufino**, regressões lineares Y = a + b·x com x = p²/P (Quadro 2, p. 443). **Bacia do Paraná 3 = Região 1: a = 18,64; b = 5,73** (Thiessen: os 918 nós de uma grade de 0,05° sobre o envelope da BP3 caem em células de estações da Região 1; Quadro 2 e Figura 2 coincidem nessa região).
-- **Problemas achados em Rufino/Waltrick:** (i) a Figura 2 e o Quadro 2 do próprio artigo **divergem em 5 de 8 regiões** (R2 a R6); (ii) a equação, com p e P em mm como o texto declara, **não reproduz a escala do R**: em 6 de 8 estações da Região 1 o R do Quadro 1 excede o limite matemático 12a + bP; (iii) com um **fator 10** sobre Σ(a + b·p²/P) aplicado à climatologia CHIRPS 1981–2025 já arquivada, a razão ao R de Waltrick é 0,93 / 1,01 / 0,995 / 0,993 / 1,016 em Toledo, Cascavel, Santa Helena, Foz do Iguaçu e Palotina (sem o fator, ≈ 0,10). O fator 10 é **inferido, não consta de fonte**; confirmar com os autores/revista. (iv) a referência "Medianeira, R = 11.400" da climatologia **não consta** do Quadro 1 de Waltrick: sem fonte (achado A57).
-- **Consequência:** as equações de LS e os coeficientes de R da Região 1 estão lidos na fonte; falta **confirmar o fator 10** e decidir sobre as regiões 2 a 8. Até lá a linha de base RUSLE só existe para a BP3 e com R marcado "unidade inferida" (bloco N09).
+- **Problemas achados em Rufino/Waltrick:** (i) a Figura 2 e o Quadro 2 do próprio artigo **divergem em 5 de 8 regiões** (R2 a R6); (ii) a equação impressa (p e P em mm) **não reproduz a escala do R**: falta um fator de unidade; (iii) **RESOLVIDO em 09/10/2026 com pluviômetros do IAT (SIH/AGUASPARANÁ), 1986–2008**: o fator é **9,81** (e não 10), aplicado a R = 9,81 × Σ₁₂(a + b·p̄²/P̄), com p̄ e P̄ **médias da série** (não ano a ano). Em 12 de 31 estações cujo nome coincide com o município do Quadro 1 de Waltrick, o R calculado cai a **−0,03% … −0,25%** do publicado (razão publicado/Σ = 9,810 em 9 delas); nas demais a diferença (até +30%) vem de Waltrick ter usado outra estação do mesmo município. A origem física do 9,81 (g, conversão kgf·m → J) é **hipótese**: não consta de fonte lida. Script e dados: `scripts/pluviometria/r_rufino_vs_waltrick.py`, `docs/verificacoes/r_rufino_pluviometro_vs_waltrick.csv`. Com a climatologia CHIRPS 1981–2025 a razão ao R de Waltrick é 0,912 / 0,990 / 0,976 / 0,974 / 0,997 (Toledo, Cascavel, Santa Helena, Foz do Iguaçu, Palotina): CHIRPS subestima P em Toledo (1.504 contra 1.696–1.821 mm nos pluviômetros). (iv) a referência "Medianeira, R = 11.400" da climatologia **não consta** do Quadro 1 de Waltrick: sem fonte (achado A57); com 9,81 a CHIRPS dá 1,113 vezes esse número.
+- **Consequência:** as equações de LS e os coeficientes e a unidade de R da Região 1 estão lidos na fonte ou reproduzidos nos dados; a decisão sobre as regiões 2 a 8 fica fora do escopo declarado (**BP3 por praticidade metodológica, não por limitação da fonte**). A tolerância do R por CHIRPS é **proposta** em ±10% (observado: −8,8% a −0,3% em 5 estações); só o pesquisador a fixa. Marca "unidade reproduzida, origem física não confirmada" (bloco N09).
 
 ### Ressalva nova (R-H) — Google Drive
 O instalador baixa o banco por **link compartilhado** (`embeddedfolderview` e `drive.usercontent`, em `scripts/download_gdrive_db.py`), o que só funciona se a pasta estiver acessível por link. Se os sítios (CAR e perímetros) e o `fundiario_brasil.db` (que traz titulares) estiverem nessa pasta com **"qualquer pessoa com o link"**, a exposição que a opção (c) evita no git reaparece no Drive. **Confira as permissões da pasta** (restrinja a pessoas específicas) antes de subir o arquivo local. O executor não mexe no Drive nem no instalador (`InstaladorSAREL.cs` não é alterado; o `.exe` versionado não foi verificado contra o fonte: V2).
@@ -438,35 +438,40 @@ ACEITE. Testes novos em `fatorLS.test.ts` (valores calculados na sessão de 09/1
   Suíte `src/lib/rusle/*.test.ts` verde.
 
 ────────────────────────────────────────
-N09 — Fator R: coeficientes de Rufino (Região 1), unidade inferida e teste de reprodução (D13; A57)
+N09 — Fator R: coeficientes de Rufino (Região 1), fator 9,81 e teste de reprodução (D13; A57)
 ────────────────────────────────────────
 ACHADO. `src/lib/rusle/fatorR.ts` devolve R `indisponivel` (os coeficientes a = 107,52 e b = 46,89 foram retirados em
   02/10/2026 por não terem fonte: correto). Com Rufino et al. (1993) lido, o par para a BP3 (Região 1) é a = 18,64 e
   b = 5,73. A climatologia `docs/verificacoes/climatologia_chirps_bp3.json` traz 6 estações com `rReferenciaWaltrick`; a de
   Medianeira (11.400) NÃO está no Quadro 1 de Waltrick (A57).
-REPRODUZIR. `grep -n "107,52\|46,89\|indisponivel" src/lib/rusle/fatorR.ts` (cole); e, em Python sem dependências:
-  para cada estação de `estacoesReferenciaBP3` (exceto Medianeira) com `p` = `climatologiaMensalMediaMm` e `P` = Σp, calcule
-  `R = 10 * sum(18.64 + 5.73 * pm*pm / P for pm in p)` e a razão a `rReferenciaWaltrick`: esperado hoje 0,93 (Toledo), 1,01
-  (Cascavel), 0,995 (Santa Helena), 0,993 (Foz do Iguaçu), 1,016 (Palotina); sem o fator 10 a razão é ≈ 0,10.
+REPRODUZIR. `grep -n "107,52\|46,89\|indisponivel" src/lib/rusle/fatorR.ts` (cole). Depois, em Python sem dependências, para cada
+  estação de `estacoesReferenciaBP3` (exceto Medianeira), com `p` = `serieCompleta1981_2025.climatologiaMensalMediaMm` e `P` = Σp:
+  `R = 9.81 * sum(18.64 + 5.73 * pm*pm / P for pm in p)`; razão a `rReferenciaWaltrick` esperada: 0,912 (Toledo), 0,990 (Cascavel),
+  0,976 (Santa Helena), 0,974 (Foz do Iguaçu), 0,997 (Palotina). E rode `python3 scripts/pluviometria/ler_iat.py` seguido de
+  `python3 scripts/pluviometria/r_rufino_vs_waltrick.py` (cole as 3 últimas linhas: mediana 9,8100; "12" estações com |dif| < 0,1%).
 MUDANÇA. (1) Em `fatorR.ts` acrescente a tabela `COEFICIENTES_RUFINO_1993` SOMENTE com a Região 1 (a 18,64; b 5,73; fonte
   "Rufino et al. (1993), Quadro 2, p. 443"); as regiões 2 a 8 NÃO entram (Quadro 2 e Figura 2 divergem; retorno
-  `indisponivel`, causa "regiao-nao-implementada"). (2) Constante nomeada `FATOR_UNIDADE_RUFINO = 10` com o comentário
-  "INFERIDO empiricamente (reproduz Waltrick 2015, Quadro 1, em 5 estações, razão média 0,99); a equação impressa com p e P
-  em mm dá ≈ 1/10 do R; confirmar com autores/revista (D13)". (3) A função devolve R = FATOR_UNIDADE_RUFINO × Σ_{m=1..12}
-  (a + b · p_m² / P), P = Σp_m, exigindo 12 valores finitos e não negativos e P > 0 (senão `indisponivel`, causa
-  "insuficiente"); fora do envelope de `src/config/areaInteresse.ts` devolve `indisponivel`, causa "fora-do-dominio"
-  (a região só foi verificada para a BP3). Proveniência "modelado", `tabela` = "Rufino et al. (1993), Q2, Região 1, × 10
-  (unidade inferida)"; a marca "pendente de verificação" PERMANECE (retirá-la é decisão do pesquisador). (4) NÃO edite o JSON de climatologia: registre no
-  relatório que a referência de Medianeira não tem fonte; o teste a ignora. NÃO ligue R ao app nem à rota (DEC-6b); NÃO use
-  dado de data única.
-TESTES (valores calculados em 09/10/2026; teste de encanamento e de regressão, NÃO critério de aceitação científica): (i) razão
-  R_calculado / R_Waltrick nas 5 estações dentro de ±0,005 dos valores acima, lendo o JSON existente; (ii) o CSV
+  `indisponivel`, causa "regiao-nao-implementada"). (2) Constante nomeada `FATOR_UNIDADE_RUFINO = 9.81` com o comentário
+  "REPRODUZIDO nos dados (pluviômetros IAT 1986-2008 reproduzem Waltrick 2015, Quadro 1, a <0,3% em 12 estações); origem física
+  (g, kgf.m -> J) é hipótese, não consta de fonte lida; a equação impressa com p e P em mm dá ≈ 1/9,81 do R (D13)". (3) A função
+  devolve R = FATOR_UNIDADE_RUFINO × Σ_{m=1..12} (a + b · p_m² / P), P = Σp_m, onde p_m são as MÉDIAS MENSAIS DA SÉRIE (climatologia),
+  exigindo 12 valores finitos e não negativos e P > 0 (senão `indisponivel`, causa "insuficiente"); fora do envelope de
+  `src/config/areaInteresse.ts` devolve `indisponivel`, causa "fora-do-dominio" (a região só foi verificada para a BP3, e o escopo
+  BP3 é escolha de praticidade declarada). Proveniência "modelado", `tabela` = "Rufino et al. (1993), Q2, Região 1, x 9,81
+  (unidade reproduzida em pluviômetros IAT)"; a marca "pendente de verificação" PERMANECE (retirá-la é decisão do pesquisador).
+  (4) NÃO edite o JSON de climatologia: registre no relatório que a referência de Medianeira não tem fonte; o teste a ignora. NÃO
+  ligue R ao app nem à rota (DEC-6b); NÃO use dado de data única. (5) NÃO calcule Rc ano a ano: Waltrick usa médias da série.
+TESTES (valores calculados em 09/10/2026; teste de encanamento e de regressão, NÃO critério de aceitação científica): (i) com a
+  climatologia CHIRPS existente, razão R_calculado / R_Waltrick nas 5 estações dentro de ±0,005 dos valores acima; (ii) com
+  `docs/verificacoes/pluviometria_iat_mensal.csv` (médias 1986-2008 de anos completos), R das estações 2453003 (Palotina, exp.),
+  2453023 (Cascavel-OCEPAR), 2454006 (Terra Roxa), 2554002 (Salto Cataratas), 2554006 (São Miguel do Iguaçu), 2553010 (Santa Izabel
+  d'Oeste) dentro de ±0,5% de 10436, 11588, 10415, 11037, 10701, 11573 (Waltrick, Quadro 1); (iii) o CSV
   `ANEXOS…/waltrick2015_quadro1_R_anual.csv` tem 114 linhas, mínimo 5449 e máximo 12581 e contém Toledo = 10623, Cascavel =
-  11588, Foz do Iguaçu = 11037, Palotina = 10436 e NÃO contém Medianeira; (iii) 12 valores com P = 0 → `indisponivel`; vetor com
-  11 valores → `indisponivel`; ponto fora do envelope → `fora-do-dominio`; (iv) o antigo par 107,52/46,89 não aparece em
+  11588, Foz do Iguaçu = 11037, Palotina = 10436 e NÃO contém Medianeira; (iv) 12 valores com P = 0 → `indisponivel`; vetor com
+  11 valores → `indisponivel`; ponto fora do envelope → `fora-do-dominio`; (v) o antigo par 107,52/46,89 não aparece em
   nenhum arquivo versionado de `src/` (`git grep -n "107,52\|107.52" -- src ':!*.test.ts'` -> vazio).
 ACEITE. `npm run test` (rusle e chuva) verde; os cinco números do REPRODUZIR coincidem e estão colados; relatório final cita a
-  tolerância como PENDENTE do pesquisador e o fator 10 como INFERIDO.
+  tolerância como PENDENTE do pesquisador e o fator 9,81 como REPRODUZIDO (origem física não confirmada).
 
 ────────────────────────────────────────
 N06 — Emendas aceitas pelo pesquisador (decisões D02, D06, D09, D10, D13, D14, D15, D16, D24, D25)
@@ -580,7 +585,7 @@ Entregue em `docs/auditorias/RELATORIO_EXECUCAO_2026-10-06.md` (arquivo novo, n�
 pesquisador não autorizou). Conteúdo:
  (1) tabela bloco → executado | parcial | não executado (motivo) | commit local | saídas coladas
      de REPRODUZIR (antes) e ACEITE (depois), da mesma sessão;
- (2) o que NÃO foi feito: V não rodadas, a consulta de contagem D11 no GEE (DEC-16), Fator R (D13: fator 10 de unidade inferido, a confirmar com autores/revista; regiões 2 a 8 não implementadas), pré-registro (do pesquisador), partes que exigem GEE,
+ (2) o que NÃO foi feito: V não rodadas, a consulta de contagem D11 no GEE (DEC-16), Fator R (D13: fator 9,81 reproduzido em pluviômetros, origem física a confirmar com a revista; regiões 2 a 8 fora do escopo BP3), pré-registro (do pesquisador), partes que exigem GEE,
      Planet ou dado local (`npm run test:vivo`);
  (3) o que FALHOU: comando, exit code, 30 primeiras linhas;
  (4) o que NÃO VERIFICOU e por quê;
