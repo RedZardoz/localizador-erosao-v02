@@ -13,6 +13,7 @@
 | **Revisão global** por 4 revisores independentes (estatística, fatores e dados, front-end e segurança, coerência documental): 62 achados relatados; os que o redator confirmou por conta própria e os que não estão cobertos viraram os blocos **N10 a N17** e ajustes em N02, N03, N04, N06, N07, N08 e N09 | `docs/planejamento/REVISAO_GLOBAL_2026-10-09.md` |
 | **Anexos corrigidos** (49 testes): hash do pré-registro verificado, trava gravada ANTES do ajuste, alvo/chaves proibidos como preditor, chave de monotonicidade validada, coluna 100% ausente recusada, `Incluida` filtrada, `Pixel_ID` opaco disjunto entre treino e held-out | N03 |
 | **Ordem de fases corrigida** (duas dependências estavam invertidas) e **IDs de parâmetros novos P20..P24** (os P12..P15 da v2 colidiam com a "proibição P12" já citada em `decisoes.ts` e nos painéis) | seção 5; DEC-7 |
+| **Correções de 14/10/2026 após o primeiro teste do executor na máquina do pesquisador (Windows):** baseline de `npm run test` com e sem `data/` (435 passam com `data/`; 6 falham sem); verificador de SHA-256 portátil que normaliza CRLF (o `sha256sum` não existe no PowerShell e `core.autocrlf` muda os bytes); `python` no lugar de `python3`; regra R15 (saída literal, sem "..."); E12 (C02 com `data/` presente); N10 sem a recomendação errada sobre `node:crypto` | P0.4 a P0.6; R10; R15; E12; N10 |
 | **Portão P0.1 corrigido** (o comando da v2 falhava hoje: `core.quotepath` e `scripts/pluviometria/`) | P0.1 |
 | **19 decisões do pesquisador (DP-1..DP-19)** que o executor NÃO toma; a lista está na seção 3-B | seção 3-B |
 
@@ -85,7 +86,8 @@ R9.  Um commit LOCAL por bloco, mensagem iniciando pelo ID ("C03 (A24): ..."). B
      trabalho: `sarel/executor-2026-10-09`, criada a partir do HEAD verificado. Antes de cada
      commit: `npm run typecheck` e os testes do bloco; antes do último: a suíte inteira.
 R10. Estes SHA-256 devem permanecer idênticos ao fim de TODOS os blocos (confira com
-     `sha256sum -c`; arquivo de conferência em /tmp, fora do repositório):
+     `node docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/verificar_sha256.mjs docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/R10_E_PROMPT_CORRECAO.sha256`
+     (verificador portátil, ver P0.6; o manifesto traz os 5 hashes abaixo e o do prompt de correção):
        bb557dada06e630d6ea2e4d3ceae9fb030682dcf857bf4a4073f76c415c718f5  docs/relatorios/modelagem/curva_roc_loco.png
        20a713c60bf2fe7ff1dee6dbd91542b1dd707cd1b2214ea32853ef4e9d01ae63  docs/relatorios/modelagem/matriz_confusao_loco.png
        755bbd4e173340f29d117eef5c55ac446af2bde89f47b5018ffd83bbf101caa3  docs/relatorios/modelagem/relatorio_modelagem_xgboost_loco.json
@@ -98,6 +100,10 @@ R12. Limite de estrago: se um bloco exigir alterar mais de 6 testes existentes a
 R13. Honestidade de saída: relate o que NÃO rodou (GEE, Planet, dados locais ausentes) e por quê.
 R14. Se um comando travar por mais de 10 minutos, interrompa, registre e siga para o próximo bloco
      independente.
+R15. Saída LITERAL: cole a saída EXATA dos comandos. Proibido resumir com "...", parafrasear avisos de lint ou
+     reescrever mensagens de commit. Saída longa: as 30 primeiras e as 10 últimas linhas, mais o total de linhas.
+     (Em 14/10/2026 um relatório de teste trouxe mensagens de commit e de lint que não correspondiam às reais:
+     o pesquisador confere por amostragem as saídas coladas.)
 
 ════════════════════════════════════════════════════════════════════════════════════════
 2. PRÉ-VOO (Fase 0) — nada é editado antes de todos os itens passarem
@@ -109,7 +115,10 @@ P0.1 `git rev-parse HEAD` e `git log --oneline -3`. O HEAD deve ser 4834cf0 ou d
      saem entre aspas e não casariam com `^docs/`). Se não for vazio, PARE.
 P0.2 `git status --porcelain` -> vazio, exceto (opcionalmente) a pasta de anexos e este prompt.
 P0.3 `git checkout -b sarel/executor-2026-10-09`.
-P0.4 Ferramentas: `node -v` (>=18.17), `npm -v`, `python3 --version`. Instale dependências JS
+P0.4 Ambiente. Use o Git Bash no Windows (ou Linux/macOS). Onde o prompt diz `python3`, no Windows use `python`. NÃO use
+     `sha256sum` (não existe no PowerShell): use o verificador de P0.6. Não altere `core.autocrlf` nem converta fim de linha
+     de nenhum arquivo; relate `git config core.autocrlf`.
+     Ferramentas: `node -v` (>=18.17), `npm -v`, `python3 --version`. Instale dependências JS
      com `npm ci` (não `npm install`). Python (somente para os anexos e testes): numpy, pandas,
      scipy, scikit-learn, xgboost, shapely, pyproj; xlrd só para `scripts/pluviometria/ler_iat.py` (testado com numpy 2.4.6, pandas 3.0.6,
      scipy 1.17.1, scikit-learn 1.9.1, xgboost 3.2.0, shapely 2.1.2, pyproj 3.7.2). Se faltar uma,
@@ -117,17 +126,24 @@ P0.4 Ferramentas: `node -v` (>=18.17), `npm -v`, `python3 --version`. Instale de
 P0.5 Baseline (cole as saídas; devem coincidir com o esperado):
        npm run typecheck -> exit 0
        npm run lint      -> exit 0, 2 warnings (MapViewer.tsx:476, PointPopup.tsx:64)
-       npm run test      -> exit 1; "Test Files 3 failed | 54 passed (57)"; "Tests 6 failed | 429 passed (435)"
+       npm run test      -> DEPENDE DE `data/` (gitignored): rode `ls data` e relate. Sem `data/` populado (clone limpo):
+                            exit 1; "Test Files 3 failed | 54 passed (57)"; "Tests 6 failed | 429 passed (435)".
+                            COM `data/` populado (máquina do pesquisador: `fundiario_brasil.db`, tiles do DEM, sítios):
+                            exit 0; "Test Files 57 passed (57)"; "Tests 435 passed (435)" (medido em 14/10/2026).
+                            Ambos são baselines válidos; qualquer outro número → S1.
        npm run build     -> exit 1; 2 UnhandledSchemeError (node:child_process, node:crypto)
        curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3000/ (com `npm run dev`) -> 500
-     Se qualquer número diferir, PARE e relate o novo valor (o repositório mudou).
-P0.6 SHA-256 do prompt de correção e dos anexos (devem coincidir):
-       b9484ae62b3ab16fe9ba5b13eea4cd26e1bbd276bbc63d86f28f8cf3c6f96de7  docs/planejamento/PROMPT_CORRECAO_POS_AUDITORIA_2026-10-05.md
-     Anexos: os SHA-256 estão em `docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/SHA256SUMS.txt`;
-     rode `cd docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06 && sha256sum -c SHA256SUMS.txt`.
+     Se qualquer número diferir de TODOS os baselines acima, PARE e relate o novo valor (o repositório mudou).
+P0.6 SHA-256 do prompt de correção, dos 5 arquivos de R10 e dos anexos, com o verificador PORTÁTIL (normaliza CRLF → LF nos
+     arquivos de texto; binários como estão; funciona no Windows sem `sha256sum`). Na raiz do repositório:
+       node docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/verificar_sha256.mjs docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/R10_E_PROMPT_CORRECAO.sha256
+       node docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/verificar_sha256.mjs docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/SHA256SUMS.txt --base docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06
+     Esperado: "6/6 OK" e "12/12 OK" (exit 0). O hash BRUTO de um arquivo de texto no Windows com `core.autocrlf=true` difere do
+     manifesto: isso NÃO é falha; só vale o resultado do verificador. (O prompt de correção normalizado: b9484ae6…f96de7; bruto com
+     CRLF: 21522f24…bddd.)
 P0.7 Rode os testes dos anexos e cole a saída (devem dar "OK"; 49 testes no total):
        cd docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06
-       python3 -m unittest test_avaliacao_d25_referencia test_fracao_erodida_celulas_referencia
+       python3 -m unittest test_avaliacao_d25_referencia test_fracao_erodida_celulas_referencia      # Windows: python -m unittest ...
      (a linha "error: the following arguments are required: --dados" no stderr é esperada: é o
      teste que prova que o CLI não tem dado padrão.) Apague `__pycache__` depois.
 P0.8 Leia INTEGRALMENTE `docs/planejamento/PROMPT_CORRECAO_POS_AUDITORIA_2026-10-05.md`
@@ -289,13 +305,17 @@ E8. C13: o `.md` é espelho; o teste de paridade compara id e estado de D01..D26
     acrescentar P20..P24 (DEC-7 e N09) e P10/P11 (anexos), regere o `.md` antes do teste.
 E9. C09: use o vocabulário canônico para o rótulo ORDINAL e a função única de N02 para o binário; por isso C09 roda DEPOIS de N02 (Fase 4).
 E10. C30 é executado DEPOIS de N13 (kappa indefinido vira `null`: exceção à regra "não mudar números de saída").
+E12. C02 e `data/` local: o REPRODUZIR de C02 ("6 falhas") só reproduz num clone SEM `data/`. Se `data/` está populado, NÃO
+    pare: mova `data/` para FORA do repositório (`mv data ../sarel_data_bkp`; é só renomear, não copie nem apague), rode
+    `npm run test` (esperado: 3 arquivos / 6 testes falhando), faça a mudança de C02, rode os testes de novo SEM `data/` (devem
+    passar herméticos) e RESTAURE (`mv ../sarel_data_bkp data`; confirme com `ls data`). Nunca deixe `data/` fora do lugar entre blocos.
 E11. C19 e U07, C20 e U06, C22/C03 e U08 tocam as mesmas linhas: em F5 o bloco C faz a mudança; em F6 o bloco U só VERIFICA e registra "feito em Cxx" (não edite duas vezes).
 
 ════════════════════════════════════════════════════════════════════════════════════════
 5. FASES E ORDEM
 ════════════════════════════════════════════════════════════════════════════════════════
 Cada fase termina com `npm run typecheck`, `npm run lint` e `npm run test` (cole as saídas) e
-com `sha256sum -c` dos 5 hashes de R10.
+com o verificador de P0.6 (manifesto `R10_E_PROMPT_CORRECAO.sha256`).
 
 FASE 1 — baseline confiável:  C01, N01, C02.
 FASE 2 — bloqueiam a função:   C03, N14 (depois de C03), N13, C04, C05, N07 (sítios de aferição: opção c), N10 (sorteio D16: 72 × 5,02 ha).
@@ -397,7 +417,7 @@ PASSO 1. Crie `scripts/d25/` e copie, byte a byte, de `docs/planejamento/ANEXOS_
   `test_avaliacao_d25_referencia.py`, `test_fracao_erodida_celulas_referencia.py`,
   `config_pre_registro_PROPOSTA.json`. O avaliador aceita `--linha-de-base <csv do perfil
   linha-de-base-rusle>` (junta por `Celula_ID`: `RUSLE_A` e `Marcador_K_Ambiguo_D08`) e a grade
-  pré-registrada de p e de hiperparâmetros em `cfg["grade"]`. Confira os SHA-256 com `sha256sum -c`. Crie
+  pré-registrada de p e de hiperparâmetros em `cfg["grade"]`. Confira os SHA-256 com o verificador de P0.6 (`SHA256SUMS.txt`, `--base` na pasta dos anexos). Crie
   `scripts/d25/requirements.txt` (numpy, pandas, scipy, scikit-learn, xgboost, shapely, pyproj) e
   `scripts/d25/LEIA-ME.md` (3 parágrafos: o que é, que NÃO é evidência com dado sintético, como rodar).
 PASSO 2. `cd scripts/d25 && python3 -m unittest discover -s . -p "test_*.py"` -> OK, 49 testes (cole).
@@ -691,9 +711,12 @@ PASSO 1 (testes primeiro, devem FALHAR; em `sorteioPoligonos.test.ts`): (i) `sor
   = 72, `totalTreino` = 36, `totalHeldOut` = 36.
 PASSO 2 (implementação). (a) Em `sortear72PoligonosD16` torne `gitCommit` e `sha256ConjuntoCandidatos`
   OBRIGATÓRIOS (como na versão antiga), copie as duas guardas (semente; sintético) e calcule
-  `hashIntegridade` com a MESMA rotina de hash de conteúdo que a versão antiga usa (`:~580-600`; é
-  JavaScript puro, não importe `node:crypto` aqui: o build já quebra por esse motivo, ver P0.5), sobre o selo
-  inteiro menos o próprio campo. (b) Troque `localeCompare` por comparação de unidades de código
+  `hashIntegridade` com a MESMA rotina de hash de conteúdo que a versão antiga usa (`:~575-595`: dois acumuladores
+  de 32 bits, 64 bits no total, JavaScript puro; NÃO é criptográfica, relate isso), sobre a lista canônica de polígonos com
+  pi_i e w_i, como a antiga. Este bloco roda DEPOIS de C01: o módulo já importa `node:crypto` e `node:child_process`
+  (`sorteioPoligonos.ts:23-24`), que é o que quebra o build e que C01 separa em código de servidor; siga a estrutura que C01
+  deixar (não reintroduza import de `node:*` em código que o navegador carrega). O SHA-256 do conjunto de candidatos vem do
+  chamador (CLI e rota já o calculam com `crypto`). (b) Troque `localeCompare` por comparação de unidades de código
   (`a < b ? -1 : a > b ? 1 : 0`) nos dois lugares. (c) `scripts/sortear_poligonos_d16.ts` e
   `src/app/api/gee/sorteio-d16/route.ts` passam a chamar `sortear72PoligonosD16`; textos da CLI e da rota
   ("36 polígonos de 10 ha = 360 ha, 18 treino + 18 held-out") → "72 polígonos de 5,02 ha (~361 ha), 36 treino
@@ -888,7 +911,7 @@ ACEITE. Testes novos verdes; relatório lista o que NÃO foi tocado e por quê.
 ────────────────────────────────────────────────────────────────────────────────────────
 N05 — Conferência final (somente leitura)
 ────────────────────────────────────────────────────────────────────────────────────────
-F1. `docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/` não foi alterada (`sha256sum -c`).
+F1. `docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/` não foi alterada (verificador de P0.6, `SHA256SUMS.txt`).
 F2. Há no repositório uma apresentação e um manual de procedimentos entregues pelo pesquisador
     (`docs/Apresentacao_Pesquisa_SAREL_2026-10-06.pptx`, `docs/Manual_Procedimentos_SAREL_2026-10-06.pdf`),
     se existirem. NÃO os edite. Extraia deles (pdftotext / python-pptx) cada AFIRMAÇÃO NUMÉRICA
@@ -905,7 +928,7 @@ F6. `git diff --stat 4834cf0..HEAD` e `git status --porcelain`.
 ════════════════════════════════════════════════════════════════════════════════════════
 6. CONDIÇÕES DE PARADA (pare e relate, sem improvisar)
 ════════════════════════════════════════════════════════════════════════════════════════
- S1  Baseline diferente do esperado (P0.5).      S2  Âncora não encontrada ou texto diferente.
+ S1  Baseline diferente de TODOS os esperados (P0.5).      S2  Âncora não encontrada ou texto diferente.
  S3  Teste de anexo falha no seu ambiente.       S4  Mais de 6 testes extras a reescrever (R12).
  S5  Bloco exige credencial, rede ou dado local.  S6  Dúvida sobre origem de um valor (data, área,
      fonte): não invente, declare `indisponivel` ou pare.   S7  Decisão fora da seção 3.
