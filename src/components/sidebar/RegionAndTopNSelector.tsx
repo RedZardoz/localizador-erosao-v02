@@ -15,7 +15,11 @@ export const RegionAndTopNSelector: React.FC = () => {
   return (
     <div className="space-y-3">
       {/* Bloco de Região & AOI Ativa */}
-      <div className="p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+      <div
+        data-metodologia="aoi-selector"
+        className="p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2"
+        title="Gerenciamento da AOI (Botão direito: Ver fundamentação geodésica)"
+      >
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
             <Globe className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -55,7 +59,11 @@ export const RegionAndTopNSelector: React.FC = () => {
       </div>
 
       {/* Seletor de Quantidade Top-N */}
-      <div className="p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+      <div
+        data-metodologia="thinning-espacial"
+        className="p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2"
+        title="Controle de amostragem e limite (Botão direito: Ver thinning espacial)"
+      >
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
             <Sliders className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />

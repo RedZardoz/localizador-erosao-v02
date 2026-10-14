@@ -44,6 +44,9 @@ export interface PixelValidacao {
   predicaoSatelite: 0 | 1;
   fracaoErosaoDronePct?: number; // 0.0% a 100.0% dentro do pixel de 100 m²
   probabilidadeSatelite?: number; // 0.0 a 1.0 gerada pelo XGBoost
+  ndviDrone?: number; // Média centimétrica do NDVI medido pelo sensor multiespectral Spectral 2
+  ndreDrone?: number; // Média centimétrica do NDRE (RedEdge 717nm) medido pelo Spectral 2
+  ndviSatelite?: number; // NDVI orbital Sentinel-2 (10m)
   compartimento?: "topo_estavel" | "encosta_escoamento" | "baixada_deposicao";
 }
 
@@ -77,6 +80,7 @@ export interface MetricasValidacaoMatricial {
   especificidade: number;
   f1Score: number;
   iouErosao: number; // Jaccard Index
+  correlacaoRadiometricaPearson?: number | null; // Confronto radiométrico direto r(NDVI_sat, NDVI_drone)
   porCompartimento: Partial<Record<"topo_estavel" | "encosta_escoamento" | "baixada_deposicao", MetricasCompartimento>>;
   papelConjunto: "held-out";
 }
@@ -155,6 +159,34 @@ export function calcularKappaCohen(tp: number, fp: number, fn: number, tn: numbe
 }
 
 /**
+ * Coeficiente de Correlação de Pearson (r) para confronto radiométrico direto
+ * entre o NDVI orbital (Sentinel-2 10m) e o NDVI médio centimétrico do VANT Spectral 2.
+ */
+export function calcularCorrelacaoPearson(x: number[], y: number[]): number | null {
+  if (!x || !y || x.length !== y.length || x.length < 3) return null;
+
+  const n = x.length;
+  const mediaX = x.reduce((a, b) => a + b, 0) / n;
+  const mediaY = y.reduce((a, b) => a + b, 0) / n;
+
+  let num = 0;
+  let denX = 0;
+  let denY = 0;
+
+  for (let i = 0; i < n; i++) {
+    const dx = x[i] - mediaX;
+    const dy = y[i] - mediaY;
+    num += dx * dy;
+    denX += dx * dx;
+    denY += dy * dy;
+  }
+
+  const den = Math.sqrt(denX * denY);
+  if (den === 0) return 0;
+  return Number((num / den).toFixed(4));
+}
+
+/**
  * Executa o protocolo completo de validação matricial de alta resolução.
  */
 export function executarValidacaoMatricial(
@@ -221,6 +253,18 @@ export function executarValidacaoMatricial(
     }
   }
 
+  // Confronto radiométrico direto (Pearson r entre NDVI do satélite e do Spectral 2)
+  const paresNdvi = pixels.filter(
+    (p) => typeof p.ndviSatelite === "number" && !isNaN(p.ndviSatelite) &&
+           typeof p.ndviDrone === "number" && !isNaN(p.ndviDrone)
+  );
+  const correlacaoRadiometricaPearson = paresNdvi.length >= 3
+    ? calcularCorrelacaoPearson(
+        paresNdvi.map((p) => p.ndviSatelite as number),
+        paresNdvi.map((p) => p.ndviDrone as number)
+      )
+    : null;
+
   return {
     totalPixelsAvaliados: total,
     gsdDroneCm: gsdCm,
@@ -235,6 +279,7 @@ export function executarValidacaoMatricial(
     especificidade,
     f1Score,
     iouErosao,
+    correlacaoRadiometricaPearson,
     porCompartimento,
     papelConjunto: "held-out",
   };

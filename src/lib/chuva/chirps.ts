@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * Ingestão e Processamento de Chuva Diária — CHIRPS (PPGTCA 2026)
  * ============================================================================
@@ -77,3 +77,80 @@ export function criarProvenienciaChirps(
     detalhe,
   };
 }
+
+export const CHIRPS_NODATA_SENTINEL = -9999.0;
+export const CHIRPS_LIMIAR_NODATA = -9000.0;
+
+export interface RegistroMesChirps {
+  ano: number;
+  mes: number; // 1 a 12
+  precipitacaoMm: number | null;
+}
+
+export interface ClimatologiaEstacaoProcessada {
+  mesesEsperados: number;
+  mesesValidos: number;
+  mesesNoData: number;
+  listaMesesNoData: string[];
+  climatologiaMensalMediaMm: (number | null)[];
+  precipitacaoMediaAnualMm: number | null;
+}
+
+/**
+ * Processa uma série histórica mensal do CHIRPS com tratamento estrito de NoData (P12).
+ * Ausência de dado (sentinela <= -9000, null ou NaN) propaga compulsoriamente como ausência e JAMAIS como 0.0 mm.
+ * Médias mensais Jan..Dez são calculadas exclusivamente sobre os meses válidos observados.
+ */
+export function processarClimatologiaMensalChirps(
+  registros: RegistroMesChirps[]
+): ClimatologiaEstacaoProcessada {
+  const listaMesesNoData: string[] = [];
+  const validosPorMes: number[][] = Array.from({ length: 12 }, () => []);
+
+  let mesesValidos = 0;
+  let mesesNoData = 0;
+
+  for (const reg of registros) {
+    if (
+      reg.precipitacaoMm === null ||
+      Number.isNaN(reg.precipitacaoMm) ||
+      reg.precipitacaoMm <= CHIRPS_LIMIAR_NODATA
+    ) {
+      mesesNoData++;
+      listaMesesNoData.push(`${reg.ano}-${String(reg.mes).padStart(2, "0")}`);
+    } else {
+      mesesValidos++;
+      const idxMes = reg.mes - 1;
+      if (idxMes >= 0 && idxMes < 12) {
+        validosPorMes[idxMes].push(reg.precipitacaoMm);
+      }
+    }
+  }
+
+
+  const climatologiaMensalMediaMm = validosPorMes.map((vals) => {
+    if (vals.length === 0) return null;
+    const soma = vals.reduce((acc, v) => acc + v, 0);
+    return Number((soma / vals.length).toFixed(2));
+  });
+
+  const temMesIncompleto = climatologiaMensalMediaMm.some((m) => m === null);
+  const precipitacaoMediaAnualMm = temMesIncompleto
+    ? null
+    : Number(
+        (climatologiaMensalMediaMm as number[])
+          .reduce((acc, v) => acc + v, 0)
+          .toFixed(2)
+      );
+
+
+  return {
+    mesesEsperados: registros.length,
+    mesesValidos,
+    mesesNoData,
+    listaMesesNoData,
+    climatologiaMensalMediaMm,
+    precipitacaoMediaAnualMm,
+  };
+}
+

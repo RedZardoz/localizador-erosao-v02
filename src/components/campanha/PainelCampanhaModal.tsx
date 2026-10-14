@@ -19,10 +19,10 @@ export const PainelCampanhaModal: React.FC = () => {
             <ClipboardList className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                Central de Campanha, Ingestão de Rótulos &amp; Concordância Kappa
+                Central de Campanha, SAREL Coletor &amp; Desenho Amostral (D16)
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Planilhas KoboToolbox, voos de Drone, fotointerpretação e validação inter-avaliadores
+                SAREL Coletor (Fase B), 72 Polígonos de VANT e Âncora de Prevalência [Kobo e Fotointerpretação aposentados por D16]
               </p>
             </div>
           </div>

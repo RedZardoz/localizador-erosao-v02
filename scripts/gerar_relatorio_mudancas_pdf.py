@@ -577,7 +577,7 @@ def gerar_relatorio_mudancas_pdf(output_path="Relatorio_Mudancas_Metodologicas_S
         ("Slide 10: Protocolo de Rotulagem", "As 4 Fases (A: orbital cego, B: campo Kobo, C: auditoria Kappa com IC 95% ≥ 0,61, D: drone mantido compulsoriamente como teste)."),
         ("Slide 11: Modelagem Preditiva", "XGBoost espacial Leave-One-Catchment-Out (LOCO), explicabilidade física por SHAP e métricas realistas (AUC 0,82-0,91)."),
         ("Slide 12: Invariantes de Dados", "Os 7 portões automatizados de segurança, incluindo o Invariante 7 atualizado com suporte a fatores tabelados."),
-        ("Slide 13: Limitações Metodológicas", "Transparência: resolução de 30m do DEM, persistência de nuvens no Sul, viés de consentimento fundiário e descasamento temporal."),
+        ("Slide 13: Limitações & Compensações", "Transparência e mitigações: MDE 30m compensado por PlanetScope (3m) e drones (<5cm); nuvens atenuadas por revisita diária e radar; dupla cegueira e pares de eventos."),
         ("Slide 14: Conclusão & Referências", "Síntese da maturidade instrumental e citações canônicas (Renard, Durigon, Zhu & Woodcock, Landis & Koch, Roberts, Tobler, Lundberg).")
     ]
 

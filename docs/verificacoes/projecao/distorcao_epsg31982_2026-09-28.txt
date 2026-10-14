@@ -1,0 +1,41 @@
+id        geod_m     proj_m     dif_%   relat_%  erro_pp veredito
+S01     1005.684   1006.924   +0.1232   +0.1233  -0.0001 ok
+S02     1107.798   1109.168   +0.1237   +0.1233  +0.0004 ok
+S03     1340.480   1342.132   +0.1233   +0.1233  -0.0000 ok
+S04     1340.153   1341.780   +0.1214   +0.1206  +0.0008 ok
+S05     1495.574   1497.369   +0.1201   +0.1186  +0.0015 ok
+S06     1496.841   1498.514   +0.1118   +0.1045  +0.0073 DIVERGE
+S07     1497.376   1498.982   +0.1072   +0.0969  +0.0103 DIVERGE
+S08     1498.289   1499.855   +0.1045   +0.0921  +0.0124 DIVERGE
+S09     1499.535   1501.068   +0.1022   +0.0880  +0.0142 DIVERGE
+S10     1500.375   1501.856   +0.0987   +0.0821  +0.0166 DIVERGE
+S11     1501.348   1502.835   +0.0991   +0.0823  +0.0168 DIVERGE
+S12     1502.571   1504.036   +0.0975   +0.0794  +0.0181 DIVERGE
+S13     1503.729   1505.161   +0.0953   +0.0755  +0.0198 DIVERGE
+S14     1503.211   1504.173   +0.0640   +0.0288  +0.0352 DIVERGE
+S15     1500.781   1501.571   +0.0526   +0.0123  +0.0403 DIVERGE
+S16     1500.221   1501.039   +0.0546   +0.0155  +0.0391 DIVERGE
+S17     1497.934   1498.857   +0.0616   +0.0266  +0.0350 DIVERGE
+S18     1498.983   1499.516   +0.0356   -0.0356  +0.0712 DIVERGE
+S19     1498.313   1499.001   +0.0459   +0.0026  +0.0433 DIVERGE
+S20     1496.683   1497.820   +0.0760   +0.0486  +0.0274 DIVERGE
+
+Distorcao relativa maxima recomputada: +0.1237% em S02
+Tolerancia de D15: 0,5%  ->  CONFIRMA EPSG:31982
+
+Segmentos divergentes do relatorio: 15 de 20
+  S06: recomputado +0.1118%, relatado +0.1045% (erro +0.0073 pp)
+  S07: recomputado +0.1072%, relatado +0.0969% (erro +0.0103 pp)
+  S08: recomputado +0.1045%, relatado +0.0921% (erro +0.0124 pp)
+  S09: recomputado +0.1022%, relatado +0.0880% (erro +0.0142 pp)
+  S10: recomputado +0.0987%, relatado +0.0821% (erro +0.0166 pp)
+  S11: recomputado +0.0991%, relatado +0.0823% (erro +0.0168 pp)
+  S12: recomputado +0.0975%, relatado +0.0794% (erro +0.0181 pp)
+  S13: recomputado +0.0953%, relatado +0.0755% (erro +0.0198 pp)
+  S14: recomputado +0.0640%, relatado +0.0288% (erro +0.0352 pp)
+  S15: recomputado +0.0526%, relatado +0.0123% (erro +0.0403 pp)
+  S16: recomputado +0.0546%, relatado +0.0155% (erro +0.0391 pp)
+  S17: recomputado +0.0616%, relatado +0.0266% (erro +0.0350 pp)
+  S18: recomputado +0.0356%, relatado -0.0356% (erro +0.0712 pp)
+  S19: recomputado +0.0459%, relatado +0.0026% (erro +0.0433 pp)
+  S20: recomputado +0.0760%, relatado +0.0486% (erro +0.0274 pp)

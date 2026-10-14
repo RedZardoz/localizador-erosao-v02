@@ -124,7 +124,7 @@ def criar_diagramas_telas(pasta_figuras: str) -> dict[str, str]:
     # Macrobacias esboçadas
     ax.text(40, 68, "Bacia do Paranapanema", color='#475569', fontsize=7.5, style='italic')
     ax.text(68, 62, "Bacia do Tibagi", color='#475569', fontsize=7.5, style='italic')
-    ax.text(45, 45, "Bacia do Rio Ivaí", color='#475569', fontsize=7.5, style='italic')
+    ax.text(45, 45, "Macrobacia Ivai (IAT)", color='#475569', fontsize=7.5, style='italic')
     ax.text(36, 28, "Bacia do Piquiri / PR 3", color='#475569', fontsize=7.5, style='italic')
     ax.text(62, 22, "Bacia do Rio Iguaçu", color='#475569', fontsize=7.5, style='italic')
 
@@ -843,7 +843,34 @@ def construir_manual_pdf(caminho_saida: str, caminhos_figuras: dict[str, str] = 
     elementos.append(Paragraph("CAPÍTULO 3: GUIA PASSO A PASSO DE INSTALAÇÃO & INICIALIZAÇÃO", estilo_h1))
     elementos.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#0F172A'), spaceBefore=2, spaceAfter=8))
 
-    elementos.append(Paragraph("<b>Passo 1: Clonagem do Repositório e Instalação do Node.js</b>", estilo_h2))
+    elementos.append(Paragraph("<b>Modalidade A (Recomendada para Usuários sem GitHub): Instalador Executável Autônomo (Instalador_SAREL.exe)</b>", estilo_h2))
+    elementos.append(Paragraph(
+        "Para computadores de avaliadores, peritos e técnicos que não utilizam Git ou GitHub, o sistema é distribuído em arquivo executável único "
+        "(<code>Instalador_SAREL.exe</code>, ~2,0 MB), que já traz todo o código do SAREL embutido:",
+        estilo_corpo
+    ))
+
+    cmd_p0 = (
+        "1. Execute o arquivo unico 'Instalador_SAREL.exe' (duplo clique no Windows 10/11).\n"
+        "2. Clique em '1. Instalar Sistema e Criar Atalhos': o sistema e extraido automaticamente em C:\\SAREL,\n"
+        "   configura Node.js/Python e cria os atalhos na Area de Trabalho e Menu Iniciar.\n"
+        "3. Na Etapa 2 (Google Drive), clique em '2. Baixar Banco Automaticamente do Google Drive para a pasta data\\'\n"
+        "   ou clique em 'Abrir Google Drive' para acessar o diretorio oficial:\n"
+        f"   {LINK_GOOGLE_DRIVE_OFICIAL}\n"
+        "   (contendo Dados INCRA, Dados SICAR, Dados SIGEF, Dados SNCR e fundiario_brasil.db)."
+    )
+    tabela_cmd_p0 = Table([[Paragraph(cmd_p0.replace('\n', '<br/>'), estilo_codigo)]], colWidths=[515])
+    tabela_cmd_p0.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#ECFDF5')),
+        ('BOX', (0, 0), (-1, -1), 0.8, colors.HexColor('#10B981')),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    elementos.append(tabela_cmd_p0)
+    elementos.append(Spacer(1, 3 * mm))
+
+    elementos.append(Paragraph("<b>Modalidade B (Ambiente de Desenvolvimento via Git): Clonagem do Repositório e Node.js</b>", estilo_h2))
     elementos.append(Paragraph("No terminal de comando (PowerShell no Windows ou Bash no Linux), clone o repositório e instale os pacotes npm:", estilo_corpo))
 
     cmd_p1 = (

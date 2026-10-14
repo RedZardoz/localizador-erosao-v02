@@ -19,11 +19,12 @@ describe("sessaoEfemera", () => {
 
   it("deve permitir atualizar tokens na sessão ativa", () => {
     const id = criarSessao({ gee: fakeCreds });
-    const atualizou = atualizarSessao(id, { planetApiKey: "planet-12345" });
+    const atualizou = atualizarSessao(id, { planetApiKey: "planet-12345", jevApiKey: "ts_test_key" });
     expect(atualizou).toBe(true);
 
     const sessao = obterSessao(id);
     expect(sessao?.planetApiKey).toBe("planet-12345");
+    expect(sessao?.jevApiKey).toBe("ts_test_key");
     expect(sessao?.gee?.project_id).toBe("test-proj");
   });
 

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { DECISOES, PARAMETROS, exigirDecisao, ErroDecisaoPendente } from "./decisoes";
+import type { Decisao } from "./decisoes";
 
 describe("Registro de Decisões — Mecanismo e Integridade", () => {
   it("D01 (Fator C) deve estar decidida e retornar a fórmula sem erros", () => {
@@ -12,7 +13,9 @@ describe("Registro de Decisões — Mecanismo e Integridade", () => {
   });
 
   it("Decisões formalizadas na metodologia devem estar decididas e retornar valor válido", () => {
-    const decididas = ["D01", "D02", "D03", "D04", "D06", "D10", "D11"];
+    // Todas as decisoes de DECISOES estao decididas desde 27/09/2026; a lista e
+    // derivada para que o teste acompanhe o registro sem numero magico.
+    const decididas = Object.keys(DECISOES);
     for (const id of decididas) {
       const d = DECISOES[id];
       expect(d.estado).toBe("decidida");
@@ -24,8 +27,39 @@ describe("Registro de Decisões — Mecanismo e Integridade", () => {
   });
 
   it("Decisões pendentes devem lançar ErroDecisaoPendente ao serem exigidas", () => {
-    const pendentes = Object.values(DECISOES).filter((d) => d.estado === "pendente");
-    expect(pendentes.length).toBe(Object.values(DECISOES).length - 7);
+    const todas = Object.values(DECISOES);
+    const pendentes = todas.filter((d) => d.estado === "pendente");
+    const decididas = todas.filter((d) => d.estado === "decidida");
+
+    // A partição de DECISOES é binária: toda decisão está "decidida" ou "pendente".
+    // Asseverar a partição, e não uma contagem literal, evita que o registro de uma
+    // nova decisão quebre o teste sem que nenhuma invariante tenha sido violada.
+    expect(pendentes.length + decididas.length).toBe(todas.length);
+    // A guarda antivacuidade NAO pode depender de haver decisao pendente no projeto:
+    // em 27/09/2026 todas as decisoes de DECISOES passaram a "decidida", e uma guarda
+    // sobre pendentes.length se tornaria insatisfazivel justamente quando o registro
+    // esta completo. O detector e exercitado sobre decisoes sinteticas, de modo que o
+    // teste do MECANISMO fica independente do ESTADO do registro.
+    const sinteticaPendente: Decisao<string> = {
+      id: "DXX",
+      titulo: "Decisao sintetica pendente",
+      estado: "pendente",
+    };
+    expect(() => exigirDecisao(sinteticaPendente)).toThrow(ErroDecisaoPendente);
+
+    // Caso limite que importa tanto quanto o anterior: "decidida" com valor ausente
+    // tambem deve lancar, para que nenhum consumidor receba undefined como se fosse valor.
+    const sinteticaSemValor: Decisao<string> = {
+      id: "DYY",
+      titulo: "Decisao sintetica decidida sem valor",
+      estado: "decidida",
+    };
+    expect(() => exigirDecisao(sinteticaSemValor)).toThrow(ErroDecisaoPendente);
+    try {
+      exigirDecisao(sinteticaSemValor);
+    } catch (err) {
+      expect((err as ErroDecisaoPendente).decisaoId).toBe("DYY");
+    }
 
     for (const d of pendentes) {
       expect(d.estado).toBe("pendente");

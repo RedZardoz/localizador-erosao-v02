@@ -65,7 +65,13 @@ export function calcularFatorC(ndvi: number, bsi?: number): number {
     }
   }
   const bsiNum = bsi !== undefined ? bsi : 0;
-  return ((1 - ndvi) / 2) * (1 + bsiNum);
+  const c = ((1 - ndvi) / 2) * (1 + bsiNum);
+  if (!Number.isFinite(c) || c < 0 || c > 1) {
+    throw new ErroForaDoDominio(
+      `Fator C calculado (${c.toFixed(4)}) fora do domínio físico [0, 1] da RUSLE (Renard et al., 1997) para os insumos NDVI=${ndvi} e BSI=${bsiNum}.`
+    );
+  }
+  return c;
 }
 
 /**

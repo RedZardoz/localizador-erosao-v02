@@ -1,0 +1,148 @@
+========================================================================
+CONFERENCIA TEXTUAL POR OCR NEURAL — ah_703.pdf (USDA Agriculture Handbook 703)
+Renard, Foster, Weesies, McCool, Yoder (1997)
+========================================================================
+Caminho relativo: docs/verificacoes/fontes/renard1997/ah_703.pdf
+Tamanho do arquivo (bytes): 22401914
+Hash SHA-256: cd19868766e04132e9d764eacd92aa09cdc1d1abe1567b677734f5940d3018a1
+Total de paginas do PDF: 407
+PDF Metadata (/Title): Predicting Soil Erosion by Water: A Guide to Conservation Planning With the Revised Universal Soil Loss Equation (RUSLE)
+PDF Metadata (/Author): K. G. Renard, G. R. Foster, G. A. Weesies, D. K. McCool, and D. C. Yoder
+Motor de OCR: RapidOCR ONNX (deteccao DBNet + reconhecimento SVTR)
+Estado pericial: CONTEUDO CONFERIDO POR OCR NEURAL
+
+------------------------------------------------------------------------
+PAGINA IMPRESSA 105 (PDF PAGINA 127) — Capitulo 4 — Slope Length Factor (L), expoentes m e beta, Equacoes [4-1], [4-2], [4-3]
+Tempo de inferencia OCR: [5.871026515960693, 0.06793880462646484, 8.968286991119385] s
+------------------------------------------------------------------------
+[0.94] Slope Length and Steepness Factors (LS)
+[0.91] SLOPE LENGTH FACTOR (L)
+[0.91] Plot data used to derive the slope length factor (L) have shown that average
+[0.92] erosion for the slope length ^ (in ft) varies as
+[0.82] L = (2/72.6)m
+[0.74] [4-1]
+[0.95] where 72.6 = the RUSLE unit plot length in ft and m  a variable slope-length
+[0.93] exponent (Wischmeier and Smith 1978). The slope length ^ is the horizontal
+[0.92] projection, not distance parallel to the soil surface.
+[0.94] The slope-length exponent m is related to the ratio β of rill erosion (caused by
+[0.92] flow) to interrill erosion (principally caused by raindrop impact) by the
+[0.92] following equation (Foster et al. 1977):
+[0.76] m = β/(1 + β)
+[0.83] [4-2]
+[0.92] Values for the ratio β of rill to interrill erosion for conditions when the soil is
+[0.91] moderately susceptible to both rill and interrill erosion were computed from
+[0.90] (McCool et al. 1989)
+[0.89] β = (sin 0/0.0896) / [3.0(sin 0)0.8 + 0.56
+[0.78] [4-3]
+[0.93] where  -- slope angle. Given a value for β, a value for the slope-length
+[0.93] exponent m is calculated from equation [4-2].
+[0.94] The middle column in table 4-5, calculated from equations [4-3] and [4-2], gives
+[0.93] values for m that are typical of agricultural fields in seedbed condition. When
+[0.94] runoff, soil, cover, and management conditions indicate that the soil is highly
+[0.94] susceptible to rill erosion, the exponent m should be increased as shown in the
+[0.93] right column of table 4-5. This condition is most likely to occur on steep,
+[0.93] freshly prepared construction slopes. These values for m were determined by
+[0.94] doubling the β values from equation [4-3] before applying equation [4-2].
+[0.72] 105
+
+------------------------------------------------------------------------
+PAGINA IMPRESSA 106 (PDF PAGINA 128) — Capitulo 4 — Tabela 4-1 / relacao rill/interrill e variacao de beta
+Tempo de inferencia OCR: [9.040981531143188, 0.06356525421142578, 8.039707899093628] s
+------------------------------------------------------------------------
+[0.88] Chapter 4.
+[0.94] Conversely, when the conditions favor less rill erosion than interrill erosion, m
+[0.93] should be decreased as shown in the left column of table 4-5. Values for m and
+[0.94] LS for rangelands are usually taken from tables for the low ratio of rill to
+[0.90] interrill erosion; those values were computed by halving the β values from
+[0.92] equation [4-3] before applying equation [4-2]. Values in table 4-5 are based on
+[0.94] an analysis by McCool et al. (1989).
+[0.95] When deposition occurs in furrows between ridges and in depressions, soil loss
+[0.91] is independent of slope length; therefore the slope-length exponent is zero.
+[0.92] Chapter 6 on the RUSLE P factor describes how to apply RUSLE to these
+[0.87] conditions.
+[0.92] The slope-length exponent for the erosion of thawing, cultivated soils by surface
+[0.92] flow (common in the Northwestern Wheat and Range Region described in ch. 2)
+[0.92] differs from the values given in table 4-5. For the erosion of thawing soil by
+[0.93] surface flow alone (McCool et al. 1989, 1993), a constant value of 0.5 should be
+[0.94] used for the slope length exponent m, and LS values from table 4-4 should be
+[0.90] used. When runoff on thawing soils is accompanied by rainfall sufficient to
+[0.95] cause significant interrill erosion, values from table 4-5 for the low ratio of rill to
+[0.91] interrill erosion should be used for the slope-length exponent m, and LS values
+[0.90] from table 4-1 should be used.
+[0.67] 106
+
+------------------------------------------------------------------------
+PAGINA IMPRESSA 107 (PDF PAGINA 129) — Capitulo 4 — Slope Steepness Factor (S), Equacoes [4-4] e [4-5] (< 9% e >= 9%)
+Tempo de inferencia OCR: [4.405482769012451, 0.05129384994506836, 9.043868780136108] s
+------------------------------------------------------------------------
+[0.93] Slope Length and Steepness Factors (LS)
+[0.91] SLOPE STEEPNESS FACTOR (S)
+[0.95] Soil loss increases more rapidly with slope steepness than it does with slope
+[0.92] length. The slope steepness factor (S) is evaluated from (McCool et al. 1987)
+[0.85] S = 10.8 sin 0 + 0.03
+[0.76] %6 > s
+[0.83] [4-4]
+[0.87] S = 16.8 sin 0 - 0.50
+[0.76] s ≥ 9%
+[0.81] [4-5]
+[0.95] Equation [4-5] is based on the assumption that runoff is not a function of slope
+[0.92] steepness, which is strongly supported by experimental data for steepness
+[0.90] greater than about 9%. The extent of the effect of slope on runoff is highly
+[0.92] variable on cultivated soils. Runoff is assumed to be unaffected by slope
+[0.94] steepness on rangelands not recently treated with mechanical practices such as
+[0.92] ripping. The effect of slope on runoff and erosion as a result of mechanical
+[0.93] disturbance is considered in the support practices factor (P) (ch. 6).
+[0.91] McIsaac et al. (1987a) examined soil-loss data from several experiments on
+[0.90] disturbed lands at slopes of up to 84%. They recommended an equation of a
+[0.93] form similar to that of equations [4-4] and [4-5]. Their coefficient of sin  was a
+[0.93] range that encompassed equations [4-4] and [4-5]. Thus these eguations should
+[0.92] also be valid for disturbed-land applications.
+[0.93] Equations [4-4] and [4-5] are not applicable to slopes shorter than 15 ft. For
+[0.93] those slopes, the following equation should be used to evaluate S (McCool et al.
+[0.85] 1987):
+[0.80] [4-6]
+[0.92] This equation applies to conditions where water drains freely from the end of the
+[0.85] slope.
+[0.75] 107
+
+------------------------------------------------------------------------
+PAGINA IMPRESSA 325 (PDF PAGINA 347) — Apendice A — Conversion to SI Metric Units (72.6 ft = 22.13 m)
+Tempo de inferencia OCR: [9.471731901168823, 0.05115199089050293, 8.55426836013794] s
+------------------------------------------------------------------------
+[0.88] Conversion to Sl Metric System
+[0.89] APPENDIX A. CONVERSION TO SI METRIC SYSTEM
+[0.93] SI metric equivalents are not included in the procedures and tables presented
+[0.92] in this handbook because direct conversion of each English unit is awkward in
+[0.94] many instances and undesirable for a procedure used in the United States.
+[0.91] Converting the RUSLE as a whole may be more appropriate. SI metric units
+[0.94] can then be selected so that each of the interdependent factors will have a
+[0.93] metric counterpart whose values will be expressed in numbers that are easy to
+[0.94] visualize and to combine in computations.
+[0.94] A convenient unit for measuring cropland soil losses is metric tons per hectare
+[0.92] megajoule: millimeter per hectare h: yr and expressing intensities in
+[0.94] millimeters per hour. Factor K will then be in metric tons· hectare- hour per
+[0.91] hectare: megajoule: millimeter or metric tons per hectare per unit EI. If
+[0.93] 22.1 meters is taken as the basic slope length and 9 percent is retained as the
+[0.95] basic slope gradient, the LS factor will not be affected. Using these units is
+[0.94] recommended and is assumed in the following paragraphs.
+[0.94] The RUSLE factors will normally be derived directly in the English units by
+[0.92] procedures outlined in Foster et al. (1981). However, the conversion factors
+[0.93] in table A-2 will facilitate comparisons of the metric factor values with the
+[0.92] English values published in this handbook. Details of the conversions are
+[0.92] shown in Foster et al. (1981).
+[0.67] 325
+
+========================================================================
+SINTESE DE CONFERENCIA DAS CONSTANTES E EQUACOES RUSLE:
+========================================================================
+1. Fator L (p. 105, Eq. [4-1]): L = (lambda / 72.6)^m
+   SI (p. 325): 72.6 ft -> 22.13 m  ==>  L = (lambda / 22.13)^m
+2. Expoente m (p. 105, Eq. [4-2] e [4-3]):
+   m = beta / (1 + beta)
+   beta = (sin(theta) / 0.0896) / [3.0 * (sin(theta))^0.8 + 0.56]
+   Constantes: 0.0896 (seno de 9% declividade padrao); 3.0; 0.8; 0.56
+3. Fator S (p. 107, Eq. [4-4] e [4-5]):
+   s < 9%:  S = 10.8 * sin(theta) + 0.03
+   s >= 9%: S = 16.8 * sin(theta) - 0.50
+   Normalizacao: para sin(theta) = 0.08964 (9%), S = 16.8*0.08964 - 0.50 = 1.006 ~= 1.0
+========================================================================

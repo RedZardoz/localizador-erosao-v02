@@ -1,0 +1,858 @@
+========================================================================
+EXTRACAO DIRETA E CONFERENCIA DE nepar_boletim_01_2011.pdf (SBCS-NEPAR)
+========================================================================
+Caminho relativo: docs/verificacoes/fontes/nepar2011/nepar_boletim_01_2011.pdf
+Tamanho do arquivo (bytes): 2099806
+Hash SHA-256: c7391c1a9007d4d08eda1238a36347e8b89b437c7d8a078457ce939eeb2a3e20
+Total de paginas do PDF: 21
+PDF Metadata (/Title): None
+PDF Metadata (/Author): None
+PDF Metadata (/CreationDate): 2011-07-13 11:42:05-03:00
+PDF Metadata (/Producer): Adobe PDF Library 9.0
+
+--- [PDF PAGINA 1 / 21] ---
+
+
+--- [PDF PAGINA 2 / 21] ---
+BOLETIM TÉCNICO NO 01                                                  ISSN: 2236-2916
+JULHO/2011
+EROSIVIDADE DE CHUVAS NO ESTADO DO 
+PARANÁ: ATUALIZAÇÃO E INFLUÊNCIA DOS 
+EVENTOS “EL NIÑO” E “LA NIÑA”
+Paulo Cesar Waltrick
+Marco Aurélio de Mello Machado
+Dalziza de Oliveira
+Alice Marlene Grimm
+Jeferson Dieckow
+Sociedade Brasileira de Ciência do Solo
+Núcleo Estadual do Paraná
+Curitiba
+2011
+
+--- [PDF PAGINA 3 / 21] ---
+3
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+Editor
+Sociedade Brasileira de Ciência do Solo – Núcleo Estadual do Paraná
+Revisão
+Gonçalo Signorelli de Farias
+Design Gráfico
+Sílvio Lovato (silvio@lovatodesign.com.br)
+Tiragem: 500 exemplares
+Impressão: Reproset Indústria Gráfica Ltda – Curitiba/PR
+Todos os direitos reservados.
+É permitida a reprodução parcial, desde que citada a fonte.
+É proibida a reprodução total desta obra.
+Erosividade de chuvas no Estado do Paraná: Atualização e 
+influência dos eventos “El Niño” e “La Niña”/ Paulo Cesar 
+Waltrick... [et al.]. – Curitiba: DSEA, 2011. 20 p. il. – (SBCS-NEP . 
+Boletim técnico, 01).
+ISSN 2236-2916
+1. Potencial erosivo 2. Pluviometria. 3. ENOS. I. Waltrick, Paulo 
+Cesar. II. Machado, Marco Aurélio de Mello. III. Oliveira, 
+Dalziza. IV . Grimm, Alice Marlene. V . Dieckow, Jeferson. VI. 
+Sociedade Brasileira de Ciência do Solo - NEP . VII. Título.
+Impresso no Brasil / Printed in Brazil
+2011
+AUTORES
+Paulo Cesar Waltrick
+Bel. em Física, M. Sc. em Ciência do Solo
+Professor de Física
+SEED - Curitiba – PR
+pcwaltrick@seed.pr.gov.br
+Marco Aurélio de Mello Machado
+Eng. Agrônomo, M. Sc. em Meteorologia Agrícola
+Professor da Universidade Federal do Paraná
+UFPR - Curitiba – PR
+marcomello@ufpr.br  
+Dalziza de Oliveira
+Eng. Agrônomo, Ph.D. em Agronomia
+Pesquisadora do Instituto Agronômico do Paraná
+IAPAR - Londrina – PR
+dalziza@iapar.br
+Alice Marlene Grimm
+Bel. em Física, Dra. em Meteorologia
+Professora da Universidade Federal do Paraná
+UFPR - Curitiba – PR
+grimm@fisica.ufpr.br  
+Jeferson Dieckow
+Eng. Agrônomo, Dr. em Ciência do Solo
+Professor da Universidade Federal do Paraná
+UFPR - Curitiba – PR
+jefersondieckow@ufpr.br
+
+--- [PDF PAGINA 4 / 21] ---
+4
+ 5
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+SUMÁRIO
+RESUMO ________________________________________________5
+1.1 INTRODUÇÃO – CAPÍTULO 1 ___________________________6
+1.2 MATERIAL E MÉTODOS ________________________________8
+1.2.1 DETERMINAÇÃO DA EROSIVIDADE ____________________9
+POR PLUVIOMETRIA
+1.2.2 ANÁLISE GEOESTATÍSTICA ________________________9
+1.3 RESULTADOS E DISCUSSÃO ____________________________10
+1.4 CONCLUSÕES _______________________________________18
+1.5 REFERÊNCIAS _______________________________________19
+2.1 INTRODUÇÃO – CAPÍTULO 2 __________________________23
+2.2 MATERIAL E MÉTODOS _______________________________25
+2.3 RESULTADOS E DISCUSSÃO ____________________________26
+2.4 CONCLUSÕES _______________________________________33
+2.5 REFERÊNCIAS _______________________________________35
+RESUMO
+A erosão hídrica é uma das principais causas de perdas de solo 
+na maioria das regiões do planeta. Nas regiões tropicais e subtropicais 
+estas perdas são maiores, devido a elevada erosividade das chuvas, 
+principalmente durante eventos climáticos como o El Niño e La Niña. 
+O objetivo deste trabalho foi estimar a erosividade das chuvas para o 
+estado do Paraná e avaliar a influência dos eventos climáticos El Niño e 
+La Niña. A erosividade das chuvas foi estimada utilizando-se o método 
+pluviométrico. A influência dos fenômenos El Niño e La Niña, foi 
+determinada, separando-os em períodos: Geral, Neutro, El Niño e La 
+Niña. À partir dos dados de precipitação média mensal (p) e anual (P) de 
+cada localidade, foi calculado o coeficiente de chuva (Rc), que, aplicado 
+como variável independente na correspondente equação linear regional, 
+resultou na erosividade estimada para cada localidade, as quais reunidas 
+e processadas, utilizando técnicas de interpolação geoestatísticas, 
+deram origem aos mapas isoerodentes, que indicaram um aumento na 
+erosividade média anual de 500 a 1000 MJmmha -1h-1ano-1, dependendo 
+da região. As chuvas mais erosivas do Estado ocorreram nas regiões 
+litorânea, oeste e sudoeste, contudo em períodos diferentes: na região 
+litorânea em janeiro e no oeste e sudoeste em outubro. A influência dos 
+eventos El Niño e La Niña foi mais expressiva no mês de novembro. 
+Nesse mês, e dependendo da região do Estado, a erosividade das chuvas 
+aumentou 40 a 100%, no caso de El Niño, e diminuiu 10 a 50%, no caso de 
+La Niña, sendo a região sudoeste a mais afetada pela elevada erosividade 
+em períodos de El Niño e pela baixa precipitação em períodos de La Niña.  
+Termos de indexação: potencial erosivo, pluviometria, ENOS
+
+--- [PDF PAGINA 5 / 21] ---
+6
+ 7
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+CAPÍTULO 1
+ATUALIZAÇÃO DA EROSIVIDADE DAS 
+CHUVAS PARA O ESTADO DO PARANÁ 
+(1986 – 2008)
+1.1 INTRODUÇÃO
+Erosividade é a capacidade potencial das chuvas em causar 
+erosão do solo, e se constitui em grande problema nas áreas de utilização 
+agrícola dos solos (Mazurana et al., 2009). Embora seja apenas um dos 
+fatores que influenciam a erosão hídrica, a erosividade destaca-se por ser 
+aquele que dá início ao processo, pois a energia cinética do impacto da 
+gota de chuva desagrega as partículas e causa uma pequena compactação 
+que diminui a infiltração de água e favorece a formação do escoamento 
+superficial, que se transforma em enxurrada nos canais naturais ou em 
+canais induzidos; esta concentração da enxurrada além de transportar 
+as partículas desagregadas também causa erosão pela ação da força de 
+cisalhamento e do movimento turbulento (Cogo & Bertol, 1998). Este 
+processo é intensificado pela declividade do terreno à medida que a 
+enxurrada adquire energia potencial e pelas características intrínsecas 
+do solo (erodibilidade).
+ As partículas de solo desagregadas e transportadas acabam 
+depositadas nas partes mais baixas e planas do terreno ou nos leitos 
+dos rios, assoreando os mesmos e favorecendo as inundações. 
+Em áreas agrícolas que não adotam técnicas de manejo e práticas 
+conservacionistas adequadas, além das partículas de solo a erosão 
+hídrica também transporta os fertilizantes e defensivos, acarretando 
+prejuízos econômicos e ambientais.
+O conhecimento e a quantificação dos fatores que influenciam a 
+erosão hídrica são fundamentais para o planejamento de uso e manejo do 
+solo em bases conservacionistas em uma região (Carvalho et al., 2005). 
+A Equação Universal de Perdas de Solo (USLE) ou sua versão revisada 
+(RUSLE), são modelos empíricos que estimam as perdas médias anuais 
+de solo de determinado local, permitindo orientar o planejamento 
+conservacionista com base na seleção de combinações de uso do solo, 
+manejo da vegetação e práticas capazes de manter essas perdas em 
+níveis toleráveis (Wischmeier & Smith, 1978).
+A USLE proposta por Wischmeier & Smith, é dada por: A = 
+R.K.L.S.C.P . Esta equação engloba um conjunto de fatores naturais 
+e antrópicos. Os fatores naturais são descritos pela erosividade da 
+chuva (R), erodibilidade do solo (K), o comprimento da encosta (L) e 
+a declividade da encosta (S). Os fatores antrópicos são descritos pelo 
+uso e manejo do solo (C) e práticas conservacionistas (P), sendo (A) 
+a variável dependente que expressa a taxa anual de perdas de solo 
+(Mello et al., 2006).
+A erosividade das chuvas, uma das variáveis da RUSLE, indica 
+o potencial da chuva em causar erosão. Este fator é estimado à partir 
+do produto da energia cinética da chuva por sua intensidade máxima 
+em 30 minutos, sendo expressa como EI 30 (Wischmeier & Smith 1978). 
+Esta metodologia exige a leitura de pluviogramas diários para um 
+período mínimo de 22 anos, tornando-a trabalhosa. Além disso, muitas 
+localidades brasileiras ou não possuem dados pluviográficos ou estes são 
+bastante escassos. Para superar este obstáculo, muitos pesquisadores 
+têm utilizado equações de correlação que permitem estimar a erosividade 
+de uma região utilizando dados pluviométricos, mais simples de serem 
+obtidos e que possuem séries históricas longas na grande maioria das 
+localidades brasileiras (Rufino et al., 1993; Moreti et al., 2003; Carvalho 
+et al., 2005; Gonçalves et al., 2006; Peñalva Bazzano et al., 2007; Cassol 
+et al., 2008; Mazurana et al., 2009).
+
+--- [PDF PAGINA 6 / 21] ---
+8
+ 9
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+A ampla utilização do sistema de plantio direto e os resíduos 
+das culturas deixados como cobertura, possibilitou aos produtores 
+paranaenses reduzir o uso de técnicas como o terraceamento, que 
+diminui a enxurrada e aumenta a infiltração de água no solo. No entanto, 
+a ocorrência de chuvas intensas e erosivas nos últimos anos expôs 
+novamente a agricultura paranaense a perdas de solo incompatíveis com 
+a produção sustentável (Caviglione et al., 2010).
+O Estado do Paraná teve sua última estimativa de erosividade 
+realizada pelos Engenheiros Agrônomos e pesquisadores do Instituto 
+Agronômico do Paraná (IAPAR), Ronaldo L. Rufino, Rui C. M. Biscaia e 
+Gustavo H. Merten em 1993. Os valores estimados foram determinados 
+através de dados pluviométricos e pluviográficos coletados no período 
+entre 1972 e 1989. Possíveis mudanças na precipitação nas últimas 
+duas décadas podem ter alterado o potencial erosivo das chuvas e sua 
+distribuição nas diferentes regiões do Estado.
+O objetivo deste trabalho foi atualizar a erosividade anual e gerar 
+mapas isoerodentes mensais que possibilitem identificar a distribuição 
+espacial da erosividade ao longo do ano para o Estado do Paraná, 
+utilizando-se para isto dados pluviométricos de 1986 a 2008.
+1.2 MATERIAL E MÉTODOS
+O trabalho foi realizado para todo o Estado do Paraná, entre 
+22°29’30” e 26°43’00” de latitudes Sul e 48°05’37” e 54°37’08” de 
+longitudes Oeste, o qual encontra-se em uma região de transição entre 
+o clima tropical na porção norte do Estado e o subtropical característico 
+da Região Sul do país. Segundo a classificação de Köppen, o clima do 
+Paraná é divido em Af (tropical) sempre úmido, sem estação seca e isento 
+de geadas, na planície litorânea; Cfa (subtropical) com verões quentes, 
+geadas pouco frequentes e chuvas no verão nas Regiões Norte, Oeste 
+e parte do Sudoeste; Cfb (temperado) com verões frescos, sem estação 
+seca definida, entre o primeiro, segundo e parte do terceiro planaltos 
+(ITCF , 1987).
+1.2.1 Determinação da erosividade por pluviometria
+Esta pesquisa utilizou o método pluviométrico para estimar a 
+erosividade das chuvas. Este método depende apenas de séries históricas 
+de pluviometria, mais fáceis de serem obtidas. Foram analisadas 
+séries pluviométricas de 114 localidades que possuíam dados mensais 
+completos no período de 01/01/1986 a 31/12/2008.
+A erosividade foi estimada através das oito equações lineares 
+propostas por Rufino et al. (1993), de acordo com a região em que 
+está localizada a estação e convertidas para o Sistema Internacional de 
+Unidades. A variável dependente (Y) resultou na erosividade mensal, 
+e a soma das erosividades mensais, ao longo de 12 meses, resultou na 
+erosividade anual. A média das erosividades anuais de 1986 a 2008, 
+resultou na erosividade média anual, representada pelo fator R da RUSLE 
+para cada uma das 114 localidades. A variável independente (X), foi 
+determinada através da equação (1) adaptada por Lombardi Neto (1977):
+                                   Rc = p2/P                                                     (1)
+em que Rc é o coeficiente de relação da chuva, p é a precipitação média 
+mensal (mm) e P é a precipitação média anual (mm). 
+1.2.2 Análise geoestatística
+Os mapas isoerodentes foram gerados com técnicas de 
+interpolação geoestatísticas que caracterizam melhor eficácia por 
+considerar a existência de uma forte dependência espacial (Mello et al., 
+2007). O método utilizado foi o da máxima verossimilhança e os valores
+
+--- [PDF PAGINA 7 / 21] ---
+10
+ 11
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+de erosividade interpolados por krigagem ordinária.
+Todas as análises descritivas, geoestatísticas e produção de 
+mapas do presente estudo, foram realizadas utilizando o programa 
+estatístico R (Development Core Team, 2010) e o pacote geoR (Ribeiro 
+Junior & Diggle, 2001).
+1.3 RESULTADOS E DISCUSSÃO
+No quadro 1.1 são apresentadas as erosividades médias anuais 
+para 114 localidades do estado do Paraná, estimadas com dados 
+pluviométricos, no período de 1986 a 2008.. Dentro desta ampla rede 
+de estações analisadas, a cidade de Ampére, no sudoeste do Estado foi a 
+que apresentou a máxima erosividade média anual (12.581 MJmmha-1h-
+1ano-1) e Piraquara, na região metropolitana de Curitiba, a que apresentou 
+a mínima erosividade média anual (5.449 MJmmha -1h-1ano-1), (Quadro 
+1.1). Isto demonstra a grande variação da erosividade dentre as 
+diferentes regiões do Estado, o que pode implicar na adoção de práticas 
+conservacionistas e de uso e manejo do solo também diferenciadas. 
+Esta variação também é percebida ao longo do ano quando se analisa as 
+erosividades mensais. Na média de todas as localidades, a erosividade é 
+mais acentuada, em ordem decrescente, nos meses de janeiro, outubro, 
+fevereiro e dezembro, e tem seu potencial erosivo reduzido nos meses de 
+julho e agosto (Figura 1.1).
+Este resultado serve apenas de referência devendo cada 
+localidade ser analisada individualmente, mas de forma geral, como é 
+de se esperar, as chuvas são mais erosivas nos meses de verão e menos 
+erosivas nos meses de inverno. Contudo, observou-se um resultado 
+importante para o mês de outubro, segundo mais erosivo, com resultado 
+próximo ao do mês de janeiro, estimado como o mais erosivo. Este 
+resultado é preocupante em termos de erosão do solo e potencial de 
+perdas de água por escoamento superficial, pois no Paraná outubro é o 
+mês que se segue à colheita das culturas de inverno e precede o plantio 
+de culturas de verão, levando a uma condição em que o solo se encontra 
+desprotegido quanto ao potencial erosivo das chuvas.
+Os mapas isoerodentes permitem identificar a distribuição 
+espacial da erosividade. Assim, a região sudoeste, no terceiro planalto 
+paranaense, é a que apresenta os índices mais expressivos de erosividade, 
+ultrapassando, em algumas localidades, 12.000 MJmmha -1h-1ano-1, 
+seguida pelas regiões litorânea e oeste (Figura 1.2). Estes valores são 
+superiores às elevadas erosividades encontradas por Peñalva Bazzano 
+et al. (2007), para Quaraí, RS, que alcançaram 9.292 MJmmha-1h-1ano-1; 
+por Cassol et al. (2008), para São Borja, RS, de 9.751 MJmmha-1h-1ano-1, 
+e por Mazurana et al.(2009), para Santa Rosa, RS, de 11.217 MJmmha -
+1h-1ano-1. Nas regiões centro-norte e noroeste a erosividade estimada 
+foi menor, variando de 6.000 a 8.000 MJmmha -1h-1ano-1 (Figura 1.2), 
+próximo às encontradas no Estado de São Paulo por Roque et al. (2001), 
+para Piraju, SP , de 7.074 MJmmha-1h-1ano-1 e Colodro et al. (2002), para 
+Teodoro Sampaio, SP , de 7.172 MJmmha-1h-1ano-1.
+
+--- [PDF PAGINA 8 / 21] ---
+12
+ 13
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+Quadro 1.1 - Erosividade média anual (R) em MJmmha-1h-1ano-1 para 114 localidades 
+do Estado do Paraná, estimadas com dados pluviométricos no período 1986 - 2008
+Nº Localidade  R Nº Localidade  R Nº Localidade  R
+1 Adrianópolis 6368 39 General Carneiro 8670 77 Pato Branco 11861
+2 Alto Piquiri 10312 40 Goioerê 10645 78 Pinhão 9843
+3 Altonia 10084 41 Grandes Rios 10014 79 Piraquara 5449
+4 Ampére 12581 42 Guairá 10509 80 Pitanga 8819
+5 Andirá 7544 43 Guaraniaçu 12384 81 Planalto 11571
+6 Antonina 11088 44 Guarapuava 9140 82 Ponta Grossa 6790
+7 Arapongas 7880 45 Guaraqueçaba 10613 83 Porecatu 8257
+8 Assis Chateaubriand 10982 46 Ibiporã 8531 84 Porto Amazonas 6739
+9 Bandeirantes 7529 47 Inácio Martins 8753 85 Porto Vitória 8557
+10 Barbosa Ferraz 9264 48 Irati 7442 86 Prudentópolis 8586
+11 Barracão 12412 49 Iretama 11456 87 Quedas do Iguaçu 12173
+12 Bela Vista do Paraíso 8611 50 Itapejara do Oeste 11463 88 Realeza 10719
+13 Bituruna 8669 51 Ivaiporã 9682 89 Rio Branco do Sul 6001
+14 Bocaiúva do Sul 6194 52 Ivaí 7077 90 Rio Negro 6810
+15 Cambará 7520 53 Jaguariaíva 6657 91 Roncador 11906
+16 Campina da Lagoa 11461 54 Janiópolis 10762 92 Salto do Lontra 11712
+17 Campo Largo 6104 55 JoaquimTávora 6771 93 Santa Fé 7415
+18 Campo Mourão 10430 56 Lapa 6578 94 Santa Helena 11261
+19 Cândido de Abreu 7281 57 Laranjeiras do Sul 9687 95 Santa Izabel Ivaí 6683
+20 Capanema 10984 58 Londrina 7945 96 Santa Izabel do Oeste 11573
+21 Cascavel 11588 59 Mallet 7068 97 São Jerônimo da Serra 8489
+22 Castro 5627 60 Mamborê 11492 98 São José dos Pinhais 8777
+23 Cerro Azul 5959 61 Mandirituba 5670 99 São Mateus Sul 7090
+24 Céu Azul 12121 62 Manoel Ribas 10761 100 São Miguel do Iguaçu 10701
+25 Cianorte 9713 63 Mariluz 9663 101 Tapejara 9429
+26 Clevelândia 9614 64 Maringá 7664 102 Telêmaco Borba 7102
+27 Corbélia 12088 65 Mariópolis 11651 103 Terra Roxa 10415
+28 Coronel Vivida 10880 66 Matelândia 11531 104 Tibagi 7007
+29 Cruz Machado 9058 67 Morretes 8550 105 Tijucas do Sul 6377
+30 Cruzeiro do Oeste 10026 68 Nova Cantu 12018 106 Toledo 10623
+31 Curitiba 5937 69 Nova Fátima 7698 107 Tomazina 7089
+32 Dois Vizinhos 11864 70 Palmas 9842 108 Tuneiras do Oeste 10126
+33 Entre Rios 10495 71 Palmeira 6022 109 Ubiratã 10910
+34 Fênix 8948 72 Palmital 12164 110 Umuarama 10313
+35 Fernandes Pinheiro 7024 73 Palotina 10436 111 União da Vitória 8274
+36 Formosa do Oeste 10286 74 Paranacity 6563 112 Verê 12408
+37 Foz do Iguaçu 11037 75 Paranaguá 9064 113 Vitorino 12023
+38 Francisco Beltrão 11896 76 Paranavaí 7340 114 Xambrê 9364
+Na comparação dos mapas isoerodentes desta pesquisa com a de 
+Rufino et al. (1993), é possível perceber uma tendência de aumento da 
+erosividade nos últimos 23 anos, de aproximadamente 500 MJmmha -
+1h-1ano-1 na região do primeiro planalto e de 1000 MJmmha -1h-1ano-1 
+nas regiões do segundo e terceiro planaltos. No sudoeste onde ocorrem 
+a chuvas potencialmente mais erosivas do Estado, os resultados foram 
+praticamente os mesmos nas duas pesquisas. O aumento da erosividade 
+pode ser justificado pelo aumento da precipitação média anual que 
+tem ocorrido na região. Pesquisas têm mostrado uma tendência de 
+aumento nas precipitações na região Sul do Brasil nas últimas décadas. 
+Estas alterações podem estar ocorrendo devido às mudanças climáticas 
+e as mudanças no uso da terra, como desmatamentos para utilização 
+agropecuária (Groissman et al., 2005; Alexander et al., 2006; Marengo 
+& Valverde 2007).
+Figura 1.1 - Distribuição média mensal da erosividade considerando as 114 localidades do 
+Paraná, no período de 1986 a 2008.
+
+--- [PDF PAGINA 9 / 21] ---
+14
+ 15
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+Figura 1.2 - Mapa de linhas isoerodentes médias anuais do Estado do Paraná, período 1986 
+a 2008, em MJmmha-1h-1ano-1
+As diferentes erosividades médias estimadas para as regiões 
+do Estado do Paraná, sugerem quanto ao fator R da RUSLE, que nas 
+regiões sudoeste, oeste e litoral, as chuvas têm um potencial erosivo 
+consideravelmente maior que nas outras regiões do Estado. 
+As Figuras 1.3 e 1.4 apresentam as evoluções mensais (janeiro a 
+junho e julho a dezembro, respectivamente) e as distribuições espaciais 
+da erosividade média no Paraná, confirmando os meses de janeiro e 
+outubro como os potencialmente mais erosivos, principalmente no 
+litoral e no sudoeste respectivamente. Figura 1.3 - Estimativa da erosividade média mensal das chuvas para o Estado do Paraná, 
+para os meses  de  janeiro,  fevereiro,  março,  abril,  maio  e  junho,  valores  médios  mensais  
+em MJmmha-1h-1mês-1.
+
+--- [PDF PAGINA 10 / 21] ---
+16
+ 17
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+A partir de análises mensais percebe-se que, à medida que se 
+avança para os meses de inverno, a erosividade vai diminuindo em 
+todas as regiões, principalmente no litoral, que tem sua erosividade 
+reduzida de 2.600 MJmmha -1h-1mês-1 em janeiro, para cerca de 100 
+MJmmha-1h-1mês-1 em agosto. Já para a região sudoeste, a erosividade 
+média mensal diminui de 1.200 MJmmha -1h-1mês-1 em janeiro para, 
+aproximadamente, 400 MJmmha -1h-1mês-1 em agosto. A partir de 
+setembro a erosividade começa aumentar em todas as regiões, chegando 
+em dezembro a 1.200 MJmmha -1h-1mês-1, nas regiões litorânea, oeste e 
+norte. Porém, as regiões oeste e sudeste têm um pico nas erosividades no 
+mês de outubro alcançando, nesta última, a 2.100 MJ mmha -1h-1mês-1. 
+Hickmann et al. (2008) e Cassol et al. (2008), também encontraram 
+picos extremos de erosividade no mês de outubro nas localidades de 
+Uruguaiana, e São Borja, RS. Esse pico de erosividade ocorre devido à 
+intensa precipitação neste período, que está associada aos Complexos 
+Convectivos de Mesoescala (CCM), frequentes nas estações de transição. 
+O CCM é um sistema com espessa cobertura de nuvens frias, com 
+forma aproximadamente circular, diâmetro na ordem de centenas de 
+quilômetros e que duram no mínimo seis horas. O CCM torna-se mais 
+intenso com a mudança sazonal do jato subtropical de altos níveis que 
+no mês de outubro normalmente encontra-se próximo dessa região do 
+Paraná, intensificado com a interação do vento de baixos níveis, úmido e 
+quente, vindo do norte (Grimm, 2009).
+Quando se analisa a erosividade média anual das chuvas (Figura 
+1.2), constata-se que o litoral e a região sudoeste apresentaram valores 
+semelhantes e elevados de erosividade. Contudo, a análise da distribuição 
+mensal da erosividade ao longo do ano (Figuras 1.3 e 1.4), mostra que 
+estes valores extremos ocorrem em períodos diferentes, no litoral, no 
+mês de janeiro e no sudoeste, em outubro.
+Figura 1.4 - Estimativa da erosividade média mensal das chuvas para o Estado do Paraná, 
+para os meses de julho, agosto, setembro, outubro, novembro e dezembro, valores médios 
+mensais em MJmmha-1h-1mês-1.
+
+--- [PDF PAGINA 11 / 21] ---
+18
+ 19
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+Normalmente os mapas isoerodentes apresentam apenas os 
+resultados relacionados com a média anual da erosividade. Porém, 
+mapas com os resultados médios mensais também são importantes, 
+principalmente para identificar os períodos em que as chuvas são mais 
+erosivas em cada região.
+1.4 CONCLUSÕES
+1. Houve um aumento na erosividade média anual das chuvas no 
+Paraná praticamente em todas as regiões do Estado, exceto no litoral. 
+Estas mudanças podem ter ocorrido devido às mudanças climáticas e as 
+mudanças no uso da terra.
+2. As chuvas potencialmente mais erosivas ocorrem no litoral e nas 
+regiões oeste e sudoeste, estas duas últimas são intensamente utilizadas 
+para a agricultura, portanto o uso de técnicas adequadas de manejo e 
+práticas conservacionistas é imprescindível para a conservação do solo 
+e dos corpos d’água.
+ 3. Os mapas isoerodentes mensais possibilitaram identificar que os 
+valores mais elevados de erosividade no Estado ocorrem em períodos 
+diferentes de acordo com a região. No litoral as chuvas mais erosivas 
+ocorrem em janeiro e fevereiro, nas regiões oeste e sudoeste em maio e 
+outubro. A elevada erosividade no mês de outubro é preocupante, pois 
+coincide com o período em que o solo encontra-se mais exposto. 
+1.5 REFERÊNCIAS
+ALEXANDER, L. V .; ZHANG, X.; PETERSON, T. C.; CAESAR, J.; 
+GLEASON, B.; KLEIN TANK, A.; HAYLOCK, M.; COLLINS, D.; 
+TREWIN, B.; RAHIMZADEH, F .; TAGIPOUR, A.; AMBENJE, P .; 
+RUPA KUMAR, K.; REVADEKAR, J.; GRIFFITHS, G.; VINCENT, 
+L.; STEPHENSON, D.; BURN, J.; AGUILAR, E.; BRUNET, M.; 
+TAYLOR, M.; NEW, M.; ZHAI, P .; RUSTICUCCI, M.; VAZQUEZ-
+AGUIRRE, J. L. Global observed changes in daily climate extremes 
+of temperature and precipitation. J. Geophysical Res. v.111, 
+D05109, DOI:10.1029/2005JD006290, 2006.
+CARVALHO, D. F .; MONTEBELLER, C.A.; FRANCO, E. M.; VALCARCEL, 
+R. & BERTOL, I. Padrões de precipitação e índices de erosividade 
+para as chuvas de Seropédica e Nova Friburgo, RJ. R. Bras. Eng. 
+Agríc. Ambiental, 9:7-14, 2005.
+CASSOL, E. A.; ELTZ, F . L. F .; MARTINS, D.; LEMOS, A. M.; LIMA, V . 
+S. & BUENO, A. C. Erosividade, padrões hidrológicos, período de 
+retorno e probabilidade de ocorrência das chuvas em São Borja, 
+RS. R. Bras. Ci. Solo, 32:1239-1251, 2008.
+CAVIGLIONE, J.H.; FIDALSKI, J.; ARAÚJO, A. G.; CESARE BARBOSA, 
+G. M.; LLANILLO, R. F .; SOUTO, A. R. Espaçamento entre Terraços 
+em Plantio Direto. IAPAR, Boletim Técnico Nº 71, 64p, 2010.
+COGO, N. P . & BERTOL, I. O Papel de Práticas Mecânicas e Não-
+Mecânicas no Controle da Erosão Hídrica do Solo: Conceitos e 
+Princípios. In: Nueremberg, N. J. ed. Conceitos e Fundamentos do 
+Sistema Plantio Direto. Lages: NRS/SBCS. p.53-75, 1998.
+
+--- [PDF PAGINA 12 / 21] ---
+20
+ 21
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+COLODRO, G.; CARVALHO, M. P .; ROQUE, C. G. & PRADO, R. M. 
+Erosividade da chuva: Distribuição e correlação com a precipitação 
+pluviométrica de Teodoro Sampaio (SP). R. Bras. Ci. Solo, 26:809-
+818, 2002.
+GONCALVES, F . A.; SILVA, D. D.; PRUSKI, F . F .; CARVALHO, D. F . & 
+CRUZ, E. S. Índices e espacialização da erosividade das chuvas 
+para o Estado do Rio de Janeiro. R. Bras. Eng. Agríc. Ambiental, 
+10:269-276, 2006.
+GRIMM, A. M. Clima na Região Sul. In: CAVALCANTI, I. F. A.; 
+FERREIRA, N. J.; JUSTI DA SILVA, M. G. A.; SILVA DIAS, M. 
+A. F. ed. Tempo e Clima no Brasil.1ed. São Paulo, Oficina de 
+Textos, 2009 p.259-275.
+GROISMAN, P . Y., R. W. KNIGHT, D. R. EASTERLING, T. R. KARL, G. C. 
+HEGERL, V . N. RAZUVAEV . Trends in intense precipitation in the 
+climate record, J. Climate, 18:1326-1350, 2005.
+HICKMANN, C.; ELTZ, F . L. F .; CASSOL, E. A.; COGO, C. M. Erosividade 
+das chuvas em Uruguaiana, RS, determinada pelo índice EI30, 
+com base no período de 1963 a 1991. R. Bras. Ci. Solo, 32:825-
+831, 2008.
+INSTITUTO DE TERRAS, CARTOGRAFIA E FLORESTA. Atlas do Estado 
+do Paraná. 1987, 73p.
+LOMBARDI NETO, F . Rainfall erosivity - its distribution and relationship 
+with soil loss at Campinas, Brazil. West Lafayette, Purdue 
+University, 1977. 53p. (Tese de Mestrado)
+MARENGO, J. A. & VALVERDE, M. C. Caracterização do clima no Século 
+XX e Cenário de Mudanças de clima para o Brasil no Século XXI 
+usando os modelos de IPCC AR4. Multiciência (UNICAMP), 8:5-
+28, 2007.
+MAZURANA, J.; CASSOL, E. A.; SANTOS, L. C.; ELTZ, F . L. F .; BUENO, 
+A. C. Erosividade, padrões hidrológicos e período de retorno das 
+chuvas erosivas de Santa Rosa (RS). R. Bras. Eng. Agríc. Ambiental, 
+13:975-983,  2009.
+MELLO, G.; BUENO, C. R. P .; PEREIRA, G. T. Variabilidade espacial de 
+perdas de solo, do potencial natural e risco de erosão em áreas 
+intensamente cultivadas. R. Bras. Eng. Agríc. Ambiental,  Campina 
+Grande,  10:315-322, 2006.
+MELLO, C. R.; SÁ, M. C. A.; CURI, N.; MELLO J. M.; VIOLA, M. R.; 
+SILVA, A. M. Erosividade mensal e anual da chuva no Estado de 
+Minas Gerais. Pesq. Agropec. Bras., 42:537-545, 2007.
+MORETI, D.; CARVALHO, M. P .; MANNIGEL, A. R.; MEDEIROS, L. R. 
+Importantes características de chuva para a conservação do solo 
+e da água no município de São Manuel (SP). R. Bras. Ci. Solo, 
+27:713-725, 2003.
+PEÑALVA BAZZANO, M. G.; ELTZ, F . L. F .; CASSOL, E. A. Erosividade, 
+coeficiente de chuva, padrões e período de retorno das chuvas de 
+Quaraí, RS. R. Bras. Ci. Solo, 31:1205-1217, 2007.
+RIBEIRO JUNIOR, P . J . & DIGGLE, P . J . GeoR: A A package for geostatistical 
+analysis. R-News, 1:609-3631, 2001. Disponível em: <http://cran.r-
+project.org/doc/Rnews>. Acesso em 20 de out. de 2009.
+
+--- [PDF PAGINA 13 / 21] ---
+22
+ 23
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+ROQUE, C. G.; CARVALHO M. P .; PRADO R. M. Fator erosividade da 
+chuva de Piraju (SP): Distribuição, probabilidade de ocorrência, 
+período de retorno e correlação com o coeficiente de chuva. R. 
+Bras. Ci. Solo, 25:147-156, 2001.
+RUFINO, R.L.; BISCAIA, R. C. M. & MERTEN, G. H. Determinação 
+do potencial erosivo da chuva do Estado do Paraná através da 
+pluviometria: terceira aproximação. R. Bras. Eng. Agríc. Ambiental, 
+17:439-444, 1993.
+WISCHMEIER, W.H. & SMITH, D. D. Predicting rainfall erosion losses: a 
+guide to conservation planning. Washington: USDA, 58p. 1978.
+CAPÍTULO 2
+A INFLUÊNCIA DOS FENÔMENOS 
+CLIMÁTICOS EL NIÑO E LA NIÑA NA 
+ESTIMATIVA DA EROSIVIDADE DAS 
+CHUVAS PARA O ESTADO DO PARANÁ
+2.1 INTRODUÇÃO
+El Niño Oscilação Sul (ENOS), é um fenômeno que ocorre no 
+Oceano Pacífico e refere-se à combinação de dois mecanismos, um 
+oceânico e outro atmosférico. O El Niño (EN), representa o componente 
+oceânico do fenômeno, e a Oscilação Sul (OS), a contrapartida 
+atmosférica. O fenômeno ENOS faz parte da variação irregular em torno 
+das condições normais do oceano e da atmosfera na região do Pacífico 
+Tropical (Aceituno, 1988). 
+Em condições de EN ocorre um aumento anômalo na temperatura 
+da superfície do mar (TSM), na região central-leste do Pacífico Tropical, 
+causando a ascensão de ar, e a diminuição da pressão atmosférica.
+Em condições de LN, ocorre uma redução anômala na TSM na 
+região central-leste do Pacífico Tropical, concentrando as águas quentes 
+em uma região mais a oeste, causando alterações como a ascensão de ar 
+e a diminuição da pressão atmosférica.
+A Oscilação Sul é a variação da diferença entre a pressão 
+atmosférica no Pacífico central-leste e o Pacífico oeste. Quando aumenta 
+em uma região, diminui na outra. O inglês Gilbert Walker caracterizou 
+este fenômeno como uma gangorra barométrica. Quando o resultado 
+da diferença é negativo, o evento que está ocorrendo é um EN. Em 
+contrapartida, se o resultado for positivo, é um LN.
+Tanto EN como o LN causam anomalias climáticas em várias 
+partes do mundo, inclusive no Brasil, onde o primeiro causa precipitações
+
+--- [PDF PAGINA 14 / 21] ---
+24
+ 25
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+abundantes na Região Sul e secas nas Regiões Norte e Nordeste; já o 
+segundo causa impactos contrários praticamente nas mesmas regiões, 
+ocorrendo estiagens no Sul e precipitação pluvial acima da média 
+no Norte e Nordeste (Aceituno, 1988). Nas outras regiões do país, as 
+alterações no clima, como chuvas, secas e variações nas temperaturas 
+médias são moderadas, podendo, contudo, ser fortes em determinados 
+meses do ciclo ENOS (Grimm, 2003; 2004).
+Grimm & Tedeschi (2009) encontraram alterações significativas 
+na frequência de eventos extremos de precipitação em anos de EN e LN, 
+para várias regiões da América do Sul, inclusive na região Sul do Brasil. 
+Além disso, a quantidade de precipitação durante eventos extremos é 
+também significativamente alterada em determinadas regiões e, na 
+maioria das vezes, ocorre na estação chuvosa, o que torna o impacto 
+mais forte, pois pode chover muito acima do esperado ou muito abaixo 
+do esperado de acordo com o fenômeno climático.
+O Estado do Paraná tem seu regime hídrico alterado 
+principalmente em eventos considerados fortes (Ropelewski & Halpert 
+1987; Grimm et al., 1998). Estes eventos extremos podem intensificar 
+o processo de erosão hídrica e causar grandes prejuízos econômicos, 
+sociais e ambientais. A causa fundamental da erosão hídrica é a ação da 
+gota da chuva sobre o solo, combinada com a enxurrada e a resistência 
+do solo a esta ação. Ao efeito da chuva, dá-se o nome de erosividade e à 
+resistência do solo a este processo de erodibilidade.
+ Estas alterações, conseqüentemente, acabam influenciando na 
+estimativa da erosividade das chuvas, de acordo com a região do Estado. 
+Daí a importância de se considerar estes fenômenos na estimativa do 
+potencial erosivo da chuva. Santos (2008) e Paula (2009), encontraram 
+influência significativa na estimativa da erosividade das chuvas, quando 
+separaram anos de EN, LN e neutros.
+Dessa forma, o objetivo do presente trabalho foi estimar a erosividade 
+das chuvas para o estado do Paraná em períodos de EN, LN e neutros.
+2.2 MATERIAL E MÉTODOS
+ A localização e a caracterização da área de estudo já foram 
+apresentadas no capítulo 1, assim como os métodos pluviométricos, 
+equações lineares e análise geoestatística utilizadas para estimar a 
+erosividade das chuvas.
+ Com o objetivo de selecionar um número maior de eventos 
+de EN e LN, o período considerado foi de 01/01/1979 a 31/01/2008. 
+Foram utilizadas séries históricas de dados pluviométricos das 
+mesmas 114 estações definidas no capítulo 1, porém estendendo o 
+período de 1979 a 2008.
+Para avaliar a influência dos eventos climáticos EN e LN, o 
+período de estudo foi divido em: Geral (estimativa da erosividade média 
+mensal das chuvas considerando todo o período de estudo), Neutro 
+(estimativa da erosividade média mensal das chuvas para o período de 
+estudo, excluídos os meses que coincidiam com eventos de EN e LN), 
+El Niño (estimativa da erosividade média mensal das chuvas apenas 
+para os meses que coincidiam com eventos de EN) e La Niña (estimativa 
+da erosividade média mensal das chuvas apenas para os meses que 
+coincidiam com os eventos de LN).
+ Os períodos de EN e LN foram estabelecidos utilizando-se os 
+critérios que definem o Índice Oceânico do Niño (ION), de acordo com 
+NOAA (2009), para a região do Niño 3.4. Segundo estes critérios, quando 
+a média móvel da TSM por três meses for 0,5ºC maior que a média por 
+um período mínimo de cinco meses, está caracterizado um EN. Quando 
+a média móvel da TSM por três meses for 0,5ºC menor que a média por 
+um período mínimo de cinco meses, está caracterizado um LN.
+Foram gerados mapas isoerodentes para o mês que apresentou 
+a maior alteração positiva na erosividade em períodos de EN e para 
+a maior alteração negativa em períodos de LN.  Além destes mapas 
+com a erosividade média mensal, também foram gerados mapas com
+
+--- [PDF PAGINA 15 / 21] ---
+26
+ 27
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+as anomalias das erosividades das chuvas para este mês, em termos 
+percentuais acima ou abaixo do valor médio estimado para o período de 
+1979 a 2008. 
+Todas as análises descritivas, geoestatísticas e produção de 
+mapas do presente estudo, foram realizadas utilizando o programa 
+estatístico R (Development Core Team, 2010) e o pacote geoR (Ribeiro 
+Junior & Diggle, 2001).
+2.3 RESULTADOS E DISCUSSÃO
+Nos gráficos tipo box das Figuras 2.1 e 2.2, é possível observar 
+a evolução mensal da erosividade média das chuvas ao longo do ano 
+comparando os diferentes períodos com os percentis de localidades 
+afetadas e a respectiva erosividade média. As extremidades inferiores 
+e superiores das caixas representam o 1º quartil (25%) e o 3º quartil 
+(75%), respectivamente. 
+A linha cheia horizontal no interior da caixa representa a 
+mediana (50%). As barras nas extremidades representam o menor e 
+o maior valor dentro do limite para não serem considerados pontos 
+externos, ou seja, que estiverem no intervalo entre Q3 + 1,5L e Q1 
+– 1,5L. Onde Q3 é o 3º quartil, Q1 o 1º quartil e L a diferença entre 
+Q3 e Q1. Os pontos abaixo ou acima das barras são pontos externos 
+(outliers), também chamados de atípicos.
+ 
+Figura 2.1 - Gráficos tipo box com os percentis de localidades e a respectiva erosividade para 
+os períodos: Geral, Neutro, El Niño e La Niña, para os meses de janeiro, fevereiro, março, abril, 
+maio e junho.
+
+--- [PDF PAGINA 16 / 21] ---
+28
+ 29
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+O gráfico do mês de janeiro (Figura 2.1), indica que neste mês 
+não se tem impacto muito significativo de ENOS na erosividade das 
+chuvas no Paraná, pois os valores não variam significativamente entre 
+os diferentes períodos. No mês de fevereiro tem-se um comportamento 
+diferente entre os períodos, com destaque para o período Neutro, que 
+ficou significativamente abaixo dos outros períodos, ficando 50% das 
+localidades com erosividade média mensal entre 600 e 800 MJ mm ha -1 
+h-1 mês -1, indicando que a erosividade não varia muito para a maioria 
+das localidades neste mês em anos neutros. Já o LN apresentou um 
+resultado inesperado, ficando a maioria das localidades com erosividade 
+média maior que em períodos de EN. Segundo Grimm (2004), chuvas 
+acima da média no mês de fevereiro na região sul em anos de LN, podem 
+ocorrer devido ao resfriamento anômalo da superfície na região sudeste. 
+Para os meses de abril, maio e junho os períodos de EN se destacam 
+principalmente quando comparados com os períodos Neutros. Nestes 
+períodos os valores médios da erosividade foram significativamente 
+maiores demonstrando mais uma vez a influência do EN na erosividade 
+das chuvas no Estado. Fontana & Berlato (1997) e Paula (2009), também 
+encontraram chuvas mais intensas nos meses de abril, maio e junho em 
+períodos de EN, anomalia chamada pelos autores de “repique” do EN.
+No mês de julho, destaca-se a baixa erosividade média 
+mensal em períodos de LN. Neste mês é normal a baixa erosividade, 
+como pode ser percebido nos gráficos dos períodos Geral, Neutro 
+e EN. Mas os resultados apresentados mostram que em períodos 
+de LN esta erosividade é ainda menor. Neste caso o problema não 
+está relacionado com a erosividade, mas com os totais precipitados. 
+Precipitação abaixo da média pode trazer prejuízos para as culturas 
+de inverno em períodos de LN.
+Figura 2.2 - Gráficos tipo box com os percentis de localidades e a respectiva erosividade para os 
+períodos: Geral, Neutro, El Niño e La Niña, para os meses de julho, agosto, setembro, outubro, 
+novembro e dezembro.
+
+--- [PDF PAGINA 17 / 21] ---
+30
+ 31
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+Na avaliação dos meses de agosto, setembro e outubro, os 
+eventos EN e LN não causaram grandes alterações na erosividade das 
+chuvas nas localidades estudadas. Por outro lado, o mês de novembro é 
+o que apresenta as maiores alterações quando se compara os períodos de 
+EN e LN com o período Neutro. Neste mês, em períodos de EN, cerca de 
+75% das localidades apresentam erosividade média mensal acima de 850 
+MJ mm ha -1 h-1 mês-1, valor elevado para um período de apenas trinta 
+dias, enquanto que em períodos Neutros, aproximadamente 100% das 
+localidades  apresentaram  erosividade média mensal abaixo de 850 
+MJ mm ha -1 h-1 mês-1. Estes resultados elevados de erosividade no mês 
+de novembro no estado do Paraná são coerentes com os encontrados 
+por Grimm (2003), para a precipitação em anos de EN. Em relação ao 
+LN os resultados também são significativos, porém relacionados com 
+a redução na erosividade indicando precipitação abaixo da média para 
+o mês. Grimm (2004), também encontrou a redução mais significativa 
+nas precipitações em anos de LN no mês de novembro. Estes resultados, 
+além de indicar uma forte influência dos eventos climáticos EN e LN, na 
+maioria das localidades do estado, também devem ser considerados nos 
+projetos de manejo e de práticas conservacionistas, principalmente por 
+coincidir com o período de plantio e germinação da safra de verão. 
+O mês de dezembro apresenta resultados semelhantes aos 
+encontrados no mês de janeiro, sem variações significativas na 
+erosividade média mensal nos diferentes períodos.Nos mapas da Figura 
+2.3 é possível identificar as regiões do Estado que são mais afetadas 
+pelos eventos de EN e LN durante o mês de novembro. Os mapas para 
+o período Geral (a) e para o período Neutro (b) apresentam grande 
+semelhança na distribuição das isolinhas. Contudo, no mapa do período 
+Geral elas indicam uma erosividade média mensal cerca de 200 MJ mm 
+ha-1 h-1 mês-1 maior do que aquela dos períodos Neutros. Esta diferença 
+se deve pelo fato de que na estimativa do período Neutro, os períodos 
+de EN e LN foram retirados. Embora o primeiro aumente a erosividade 
+das chuvas e o segundo diminua, isto não foi suficiente para que um 
+anule o outro na média histórica, já que o número de eventos de EN 
+para o período estudado foi maior que os de LN. Conseqüentemente, os 
+eventos de EN causaram maiores alterações na erosividade das chuvas 
+do que os eventos de LN no Estado do Paraná.
+Figura 2.3 - Mapas isoerodentes para o mês de novembro em MJ mm ha -1 h-1 mês-1 para os 
+períodos: Geral, Neutro, El Niño e La Niña, estimados com dados de 1979 a 2008.
+
+--- [PDF PAGINA 18 / 21] ---
+32
+ 33
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+A Figura 2.2 apresenta também os mapas isoerodentes para os 
+períodos de EN (c) e de LN (d). Percebe-se que nos anos de EN, o mês de 
+novembro apresenta chuvas mais erosivas, principalmente nas regiões 
+oeste e sudoeste do Estado. Nessas regiões do Estado do Paraná, as 
+chuvas já são naturalmente mais erosivas; o que acontece em períodos 
+de EN é um aumento anômalo na erosividade. O mapa do mês de 
+novembro de LN (d) mostra a redução da erosividade no Estado durante 
+estes eventos, não sendo um problema com relação à erosão hídrica, mas 
+indica também uma redução na pluviometria que pode causar prejuízos 
+para a safra de verão.
+Os mapas da figura 2.3, gerados com os dados percentuais 
+de anomalias, ajudam na identificação das áreas em que ocorrem as 
+maiores alterações como aumento de erosividade em períodos de EN (a) 
+e diminuição da erosividade em períodos de LN (b), em comparação com 
+a erosividade média, neste estudo identificada como a erosividade do 
+período Geral. Os mapas das anomalias estão em termos de percentagem 
+(%) acima (a) e abaixo (b) da erosividade média Geral. Isto significa que 
+as regiões oeste e sudoeste além de estarem sujeitas às chuvas mais 
+erosivas que ocorrem no estado em períodos de EN, também sofrem 
+com as maiores anomalias, que nestas regiões chegam a ser duas vezes 
+mais erosivas que em períodos normais. 
+ Percebe-se que as maiores anomalias em períodos de LN (figura 
+2.4a), ocorrem em pequenas áreas nas regiões norte e sudeste, porém 
+mais uma vez em uma extensa área da região sudeste, onde a erosividade 
+chega ser 50% menor que em períodos normais.
+Figura 2.4 - Anomalias (%) média mensal durante eventos de El Niño e La Niña para o mês 
+de novembro estimados com dados de 1979 a 2008.
+2.4 CONCLUSÕES
+1. A erosividade das chuvas no estado do Paraná sofreu alteração 
+significativa em todas as regiões em períodos de EN e LN, demonstrando 
+a influência destes eventos na estimativa do potencial erosivo das chuvas 
+no estado.
+2. Em períodos de EM, a erosividade das chuvas chega ser de 40 
+a 100% maior do que em períodos “normais”, dependendo da região. Já 
+em períodos de LN ocorre uma redução de 10 a 50% na erosividade das 
+chuvas.
+3. Os meses de abril, maio, junho e novembro, são os mais 
+afetados pelo aumento na erosividade das chuvas em períodos de EN. 
+Em períodos de LN, os meses de julho, outubro e novembro são os mais 
+afetados pela redução na erosividade das chuvas. 
+4. O mês de novembro é o mais crítico, tanto em períodos de EN 
+como em períodos de LN. O primeiro, pela elevada erosividade das chuvas 
+que coincidem com o período de plantio da safra de verão, momento em
+
+--- [PDF PAGINA 19 / 21] ---
+34
+ 35
+EROSIVIDADE DE CHUVAS NO ESTADO DO PARANÁ: 
+ATUALIZAÇÃO E INFLUÊNCIA DOS EVENTOS “EL NIÑO” E “LA NIÑA”
+que o solo está mais exposto devido ao avançado grau de decomposição 
+dos resíduos das culturas de inverno. O segundo, pela baixa erosividade 
+causada pela redução nas chuvas justamente no período de plantio e 
+germinação.
+5. As regiões oeste e sudoeste são as mais afetadas pelo aumento 
+na erosividade das chuvas em períodos de EN, assim como pela redução 
+em períodos de LN.
+2.5 REFERÊNCIAS
+ACEITUNO, P . On the functioning of the Southern Oscillation in the 
+South American sector. Part I: Surface climate. Mon. Wea. Rev., 
+116:505-524, 1988.
+FONTANA, D.C.; BERLATO, M.A. Influência do El Niño Oscilação Sul 
+sobre a precipitação do Estado do Rio Grande do Sul. Rev. Bras. 
+Agrometeorologia, 5:127-132, 1997.
+GRIMM, A. M. & TEDESCHI, R. G. ENSO and Extreme Rainfall Events 
+in South America. J. Climate, 22:1589-1609, 2009.
+GRIMM, A. M. How do La Niña events disturb the summer monsoon 
+system in Brazil? Climate Dyn., 22:123-138, 2004.
+GRIMM, A.M. The El Niño impact on summer monsoon in Brazil: 
+Regional processes versus remote influences. J. Climate, 16:263-
+280, 2003.
+GRIMM, A. M.; FERRAZ, S. E. T.; GOMES, J. Precipitation anomalies 
+in southern Brazil associated with El Niño and La Niña events. 
+Journal of Climate, v.11, p. 2863-2880, 1998.
+NOAA. ENSO: Cold and warm episodes by season. Disponível em: 
+<http://www.cpc.noaa.gov/products>. Acesso em 12 Jul. 2009.
+PAULA, G. M. O Fenômeno El Niño Oscilação Sul e a Erosividade das 
+Chuvas em Santa Maria-RS, Universidade Federal de Santa Maria, 
+2009. 53p. (Dissertação de mestrado)
+
+--- [PDF PAGINA 20 / 21] ---
+36
+RIBEIRO JUNIOR, P . J. & DIGGLE, P . J. GeoR: A A package for 
+geostatistical analysis. R-News, 1:609-3631, 2001. Disponível em: 
+<http://cran.r-project.org/doc/Rnews>. Acesso em 20 Out. 2009.
+ROPELEWSKI, C.F . & HALPERT, M.S. Global and regional scale 
+precipitation patterns associated with the El Niño Southern 
+Oscillation. Mon. Wea. Rev., 115:1606- 626, 1987.
+RUFINO, R.L.; BISCAIA, R. C. M. & MERTEN, G. H. Determinação 
+do potencial erosivo da chuva do estado do Paraná através da 
+pluviometria: terceira aproximação. R. Bras. Eng. Agríc. Ambiental, 
+17:439-444, 1993.
+SANTOS C. N. El Niño e La Niña e a Erosividade das chuvas no Estado do 
+Rio Grande do Sul. Universidade Federal de Pelotas, 138p. 2008. 
+(Tese de doutorado)
+
+--- [PDF PAGINA 21 / 21] ---
+

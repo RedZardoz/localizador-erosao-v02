@@ -18,3 +18,18 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   min-height: 100vh;
 }
+
+/* Suprime o badge flutuante de erros do Next.js na frente da tela (centralizado em Governança & Sistema) */
+nextjs-portal,
+[data-nextjs-toast],
+[data-nextjs-toast-wrapper],
+[data-nextjs-dialog-overlay],
+#__next-build-watcher {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}

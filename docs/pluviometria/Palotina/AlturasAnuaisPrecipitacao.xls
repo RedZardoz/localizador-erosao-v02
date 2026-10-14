@@ -1,0 +1,748 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html>
+<head>
+	<title>SIH - Sistema de Informações Hidrológicas</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link href="css/base.css" rel="stylesheet" type="text/css" />
+	<link href="css/default.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="js/generic/data.js"></script>
+	<script type="text/javascript" src="js/generic/hora.js"></script>
+	<script type="text/javascript" src="js/generic/prototype.js"></script>
+	<script type="text/javascript" src="js/generic/util.js"></script>
+	<script type="text/javascript" src="js/generic/calendar.js"></script>
+	<script type="text/javascript" src="js/generic/calendarpopup.js?20130321"></script>
+	<script type="text/javascript" src="js/generic/mensagem.js"></script>
+	<script type="text/javascript" src="js/generic/cnpj.js"></script>
+	<script type="text/javascript" src="js/generic/cpf.js"></script>
+	<script type="text/javascript" src="js/validacao/verificador.js"></script>
+	<script type="text/javascript" src="js/validacao/verificadorMascaras.js"></script>
+	
+	
+</head>
+
+<body>
+		<div id="cabecalho">
+		<table cellpadding="0" cellspacing="0" width="100%">
+			<tbody>
+				<tr>
+					<td align="left" width="160">
+						<a href="/login/inicial.html">
+							<img src="http://www.pr.gov.br/logos/logo_gov_144x58cinza.gif" border="0" width="144" height="58">
+						</a>
+					</td>
+					<td align="left">
+						<img id="imagem_titulo" src="/sih-web/images/titulo_500x50.png" >
+					</td>
+					<td>&nbsp;</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	
+
+
+
+	
+
+
+	
+
+
+
+
+
+<div id="barra_acao_top">
+	<div id="barra_localizacao">
+		
+	</div>
+</div>
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="mensagens">
+<!-- Avisos -->
+
+ 
+ 
+  
+    
+    
+  
+  
+ 
+ <div id="msg">
+  <table align="center">
+   <tr>
+    <td><img src="/sih-web/images/icon_msg_erro.png"></td>
+    <td class="msg_erro">Não foi possível efetuar a operação.</td>
+   </tr>
+   </table>
+   
+  </div>
+
+
+<!-- Erros -->
+
+
+<!-- Sucesso -->
+
+
+<!-- Struts Validator -->
+
+
+<!-- Mensagens em Alert -->
+
+</div>
+
+<!-- Mensagens do Verificador.js -->
+<div id="__msgVerificador"></div>
+<div id="msgs_servidor"></div>
+<div id="__divTopoDirMsgFlutua" class="flutua"></div>
+	<div id="msg_ajax"></div>
+	
+
+
+
+
+<script type="text/javascript">
+	function gerarRelatorio(){
+		var form = document.gerarRelatorioAlturasMensaisPrecipitacaoForm;
+		
+		form.action = "gerarRelatorioAlturasAnuaisPrecipitacao.do?action=gerarRelatorio";
+		limparMensagem();
+		if (validarForm()){
+			form.submit();
+		}
+	}
+
+	function validarForm(){
+		if(!verificarAno()){
+			exibirMensagemAviso("Ano inválido.");
+			return false;
+		}
+
+		if(verificarMunicipio() && verificarEstacao()){
+			exibirMensagemAviso("Escolha um município ou coloque um código válido para a estação.")
+			return false;
+		}
+		return true;
+	}
+
+	function carregarNomeEstacao(codEstacao) {
+		var form = document.gerarRelatorioAlturasMensaisPrecipitacaoForm;
+
+		//if(form.codEstacao.value != "") {
+			submitAjax("gerarRelatorioAlturasAnuaisPrecipitacao.do?action=carregarNomeEstacaoAjax&codEstacao="
+						+ codEstacao, document.forms[0], "divNomeEstacao", true, false);
+		//}
+
+		desabilitarMunicipio();
+		
+
+	}
+
+	function desabilitarMunicipio() {
+		var form = document.gerarRelatorioAlturasMensaisPrecipitacaoForm;
+		if(!verificarMunicipio() && verificarEstacao()) {
+			form.codMunicipio.disabled = true;
+			form.codMunicipio.select = 0;
+		}  else {
+			form.codMunicipio.disabled = false;
+		}
+	}
+
+	function desabilitarEstacao() {
+		var form = document.gerarRelatorioAlturasMensaisPrecipitacaoForm;
+		if(!verificarEstacao() && verificarMunicipio()) {
+			form.codEstacao.disabled = true;
+			form.codEstacao.value = "";
+		}  else {
+			form.codEstacao.disabled = false;
+		}
+	}
+
+	function voltar() {
+		window.location = "loginUsuario.do?action=carregarInterfaceInicial";
+	}
+	
+	function limpar() {
+		window.location = "gerarRelatorioAlturasAnuaisPrecipitacao.do?action=iniciar";
+	} 
+
+	function verificarEstacao() {
+		return document.forms[0].codMunicipio.value == "";
+	}
+
+	function verificarMunicipio() {
+		return (document.forms[0].codEstacao.value == "") && (document.forms[0].nomeEstacao.value == "");
+	}
+
+	function verificarAno(){
+		var form = document.gerarRelatorioAlturasMensaisPrecipitacaoForm;
+
+		if(form.anoInicial.value == "" || form.anoInicial.value > form.anoAtual.value || 
+				form.anoFinal.value == "" || form.anoFinal.value > form.anoAtual.value){
+			return false; 
+		}
+		return true;
+	}
+
+</script>
+
+
+
+<div id="conteudo">
+	<div align="center">
+		<h1>Alturas de Precipitação - Resumo Anual</h1>
+
+		<form name="gerarRelatorioAlturasMensaisPrecipitacaoForm" method="post" action="/sih-web/gerarRelatorioAlturasAnuaisPrecipitacao.do?action=iniciarProcesso">
+			<input type="hidden" name="anoAtual" value="2026">
+			<input type="hidden" name="nomeEstacao" value="">
+			
+			<div id="conteudo_corpo">
+				<table class="form_tabela">
+				
+					<tr>
+						<td class="form_label">* Município:</td>
+						<td>
+							<select name="codMunicipio" onchange="desabilitarEstacao()"><option value="">Selecione</option>
+								<option value="520">Abatiá</option>
+<option value="111">Adrianópolis</option>
+<option value="121">Agudos do Sul</option>
+<option value="102">Almirante Tamandaré</option>
+<option value="428">Altamira do Paraná</option>
+<option value="853">Alto Paraíso</option>
+<option value="722">Alto Paraná</option>
+<option value="819">Alto Piquiri</option>
+<option value="836">Altônia</option>
+<option value="613">Alvorada do Sul</option>
+<option value="731">Amaporã</option>
+<option value="331">Ampére</option>
+<option value="448">Anahy</option>
+<option value="516">Andirá</option>
+<option value="654">Ângulo</option>
+<option value="116">Antonina</option>
+<option value="128">Antonio Olinto</option>
+<option value="636">Apucarana</option>
+<option value="628">Arapongas</option>
+<option value="206">Arapoti</option>
+<option value="661">Arapuã</option>
+<option value="802">Araruna</option>
+<option value="107">Araucária</option>
+<option value="660">Ariranha do Ivaí</option>
+<option value="607">Assaí</option>
+<option value="413">Assis Chateaubriand</option>
+<option value="630">Astorga</option>
+<option value="715">Atalaia</option>
+<option value="133">Balsa Nova</option>
+<option value="518">Bandeirantes</option>
+<option value="807">Barbosa Ferraz</option>
+<option value="514">Barra do Jacaré</option>
+<option value="326">Barracão</option>
+<option value="347">Bela Vista do Caroba</option>
+<option value="612">Bela Vista do Paraíso</option>
+<option value="306">Bituruna</option>
+<option value="814">Boa Esperança</option>
+<option value="339">Boa Esperança do Iguaçu</option>
+<option value="468">Boa Ventura de São Roque</option>
+<option value="431">Boa Vista da Aparecida</option>
+<option value="112">Bocaiúva do Sul</option>
+<option value="348">Bom Jesus do Sul</option>
+<option value="644">Bom Sucesso</option>
+<option value="340">Bom Sucesso do Sul</option>
+<option value="641">Borrazópolis</option>
+<option value="432">Braganey</option>
+<option value="847">Brasilândia do Sul</option>
+<option value="621">Cafeara</option>
+<option value="433">Cafelândia</option>
+<option value="848">Cafezal do Sul</option>
+<option value="637">Califórnia</option>
+<option value="515">Cambará</option>
+<option value="611">Cambé</option>
+<option value="642">Cambira</option>
+<option value="811">Campina da Lagoa</option>
+<option value="469">Campina do Simão</option>
+<option value="113">Campina Grande  do Sul</option>
+<option value="441">Campo Bonito</option>
+<option value="125">Campo do Tenente</option>
+<option value="108">Campo Largo</option>
+<option value="140">Campo Magro</option>
+<option value="801">Campo Mourão</option>
+<option value="211">Cândido de Abreu</option>
+<option value="449">Candói</option>
+<option value="429">Cantagalo</option>
+<option value="335">Capanema</option>
+<option value="411">Capitão Leônidas Marques</option>
+<option value="223">Carambeí</option>
+<option value="503">Carlópolis</option>
+<option value="410">Cascavel</option>
+<option value="202">Castro</option>
+<option value="408">Catanduvas</option>
+<option value="618">Centenário do Sul</option>
+<option value="110">Cerro Azul</option>
+<option value="423">Céu Azul</option>
+<option value="312">Chopinzinho</option>
+<option value="833">Cianorte</option>
+<option value="825">Cidade Gaúcha</option>
+<option value="311">Clevelândia</option>
+<option value="103">Colombo</option>
+<option value="623">Colorado</option>
+<option value="530">Congonhinhas</option>
+<option value="523">Conselheiro Mairinck</option>
+<option value="124">Contenda</option>
+<option value="409">Corbélia</option>
+<option value="534">Cornélio Procópio</option>
+<option value="349">Coronel Domingos Soares</option>
+<option value="313">Coronel Vivida</option>
+<option value="845">Corumbataí do Sul</option>
+<option value="305">Cruz Machado</option>
+<option value="341">Cruzeiro do Iguaçu</option>
+<option value="826">Cruzeiro do Oeste</option>
+<option value="717">Cruzeiro do Sul</option>
+<option value="662">Cruzmaltina</option>
+<option value="101">Curitiba</option>
+<option value="528">Curiúva</option>
+<option value="735">Diamante do Norte</option>
+<option value="450">Diamante do Sul</option>
+<option value="443">Diamante d&#39;Oeste</option>
+<option value="323">Dois Vizinhos</option>
+<option value="842">Douradina</option>
+<option value="707">Doutor Camargo</option>
+<option value="139">Doutor Ulysses</option>
+<option value="328">Enéas Marques</option>
+<option value="804">Engenheiro Beltrão</option>
+<option value="451">Entre Rios do Oeste</option>
+<option value="854">Esperança Nova</option>
+<option value="470">Espigão Alto do Iguaçu</option>
+<option value="849">Farol</option>
+<option value="640">Faxinal</option>
+<option value="135">Fazenda Rio Grande</option>
+<option value="806">Fênix</option>
+<option value="224">Fernandes Pinheiro</option>
+<option value="539">Figueira</option>
+<option value="342">Flor da Serra do Sul</option>
+<option value="713">Floraí</option>
+<option value="705">Floresta</option>
+<option value="615">Florestópolis</option>
+<option value="634">Flórida</option>
+<option value="412">Formosa do Oeste</option>
+<option value="422">Foz do Iguaçu</option>
+<option value="471">Foz do Jordão</option>
+<option value="841">Francisco Alves</option>
+<option value="321">Francisco Beltrão</option>
+<option value="308">General Carneiro</option>
+<option value="653">Godoy Moreira</option>
+<option value="816">Goioerê</option>
+<option value="472">Goioxim</option>
+<option value="220">Grandes Rios</option>
+<option value="416">Guaíra</option>
+<option value="733">Guairaçá</option>
+<option value="225">Guamiranga</option>
+<option value="512">Guapirama</option>
+<option value="827">Guaporema</option>
+<option value="619">Guaraci</option>
+<option value="407">Guaraniaçú</option>
+<option value="401">Guarapuava</option>
+<option value="115">Guaraqueçaba</option>
+<option value="119">Guaratuba</option>
+<option value="343">Honório Serpa</option>
+<option value="526">Ibaiti</option>
+<option value="445">Ibema</option>
+<option value="605">Ibiporã</option>
+<option value="823">Icaraíma</option>
+<option value="632">Iguaraçu</option>
+<option value="452">Iguatu</option>
+<option value="226">Imbaú</option>
+<option value="215">Imbituva</option>
+<option value="402">Inácio Martins</option>
+<option value="719">Inajá</option>
+<option value="838">Indianópolis</option>
+<option value="213">Ipiranga</option>
+<option value="820">Iporã</option>
+<option value="453">Iracema do Oeste</option>
+<option value="217">Irati</option>
+<option value="808">Iretama</option>
+<option value="626">Itaguajé</option>
+<option value="454">Itaipulândia</option>
+<option value="517">Itambaracá</option>
+<option value="704">Itambé</option>
+<option value="315">Itapejara d&#39;Oeste</option>
+<option value="136">Itaperuçu</option>
+<option value="736">Itaúna do Sul</option>
+<option value="212">Ivaí</option>
+<option value="650">Ivaiporã</option>
+<option value="850">Ivaté</option>
+<option value="706">Ivatuba</option>
+<option value="524">Jaboti</option>
+<option value="501">Jacarezinho</option>
+<option value="617">Jaguapitã</option>
+<option value="204">Jaguariaíva</option>
+<option value="643">Jandaia do Sul</option>
+<option value="815">Janiópolis</option>
+<option value="525">Japira</option>
+<option value="831">Japurá</option>
+<option value="649">Jardim Alegre</option>
+<option value="721">Jardim Olinda</option>
+<option value="606">Jataizinho</option>
+<option value="434">Jesuítas</option>
+<option value="511">Joaquim Távora</option>
+<option value="522">Jundiaí do Sul</option>
+<option value="844">Juranda</option>
+<option value="834">Jussara</option>
+<option value="647">Kaloré</option>
+<option value="127">Lapa</option>
+<option value="455">Laranjal</option>
+<option value="406">Laranjeiras do Sul</option>
+<option value="537">Leópolis</option>
+<option value="656">Lidianópolis</option>
+<option value="444">Lindoeste</option>
+<option value="738">Loanda</option>
+<option value="635">Lobato</option>
+<option value="601">Londrina</option>
+<option value="846">Luiziana</option>
+<option value="652">Lunardelli</option>
+<option value="622">Lupionópolis</option>
+<option value="304">Mallet</option>
+<option value="813">Mamborê</option>
+<option value="710">Mandaguaçu</option>
+<option value="702">Mandaguari</option>
+<option value="106">Mandirituba</option>
+<option value="350">Manfrinópolis</option>
+<option value="310">Mangueirinha</option>
+<option value="651">Manoel Ribas</option>
+<option value="417">Marechal Cândido Rondon</option>
+<option value="824">Maria Helena</option>
+<option value="703">Marialva</option>
+<option value="639">Marilândia do Sul</option>
+<option value="744">Marilena</option>
+<option value="818">Mariluz</option>
+<option value="701">Maringá</option>
+<option value="317">Mariópolis</option>
+<option value="456">Maripá</option>
+<option value="320">Marmeleiro</option>
+<option value="473">Marquinho</option>
+<option value="646">Marumbi</option>
+<option value="419">Matelândia</option>
+<option value="134">Matinhos</option>
+<option value="457">Mato Rico</option>
+<option value="657">Mauá da Serra</option>
+<option value="420">Medianeira</option>
+<option value="458">Mercedes</option>
+<option value="729">Mirador</option>
+<option value="614">Miraselva</option>
+<option value="435">Missal</option>
+<option value="817">Moreira Sales</option>
+<option value="117">Morretes</option>
+<option value="631">Munhoz de Mello</option>
+<option value="620">Nossa Senhora das Graças</option>
+<option value="728">Nova Aliança do Ivaí</option>
+<option value="533">Nova América da Colina</option>
+<option value="424">Nova Aurora</option>
+<option value="810">Nova Cantu</option>
+<option value="714">Nova Esperança</option>
+<option value="344">Nova Esperança do Sudoeste</option>
+<option value="532">Nova Fátima</option>
+<option value="459">Nova Laranjeiras</option>
+<option value="737">Nova Londrina</option>
+<option value="840">Nova Olímpia</option>
+<option value="336">Nova Prata do Iguaçu</option>
+<option value="658">Nova Santa Bárbara</option>
+<option value="427">Nova Santa Rosa</option>
+<option value="442">Nova Tebas</option>
+<option value="655">Novo Itacolomi</option>
+<option value="209">Ortigueira</option>
+<option value="709">Ourizona</option>
+<option value="447">Ouro Verde do Oeste</option>
+<option value="708">Paiçandu</option>
+<option value="309">Palmas</option>
+<option value="131">Palmeira</option>
+<option value="405">Palmital</option>
+<option value="414" selected="selected">Palotina</option>
+<option value="727">Paraíso do Norte</option>
+<option value="718">Paranacity</option>
+<option value="118">Paranaguá</option>
+<option value="720">Paranapoema</option>
+<option value="730">Paranavaí</option>
+<option value="460">Pato Bragado</option>
+<option value="316">Pato Branco</option>
+<option value="302">Paula Freitas</option>
+<option value="303">Paulo Frontin</option>
+<option value="803">Peabiru</option>
+<option value="855">Perobal</option>
+<option value="837">Pérola</option>
+<option value="333">Pérola d&#39;Oeste</option>
+<option value="122">Piên</option>
+<option value="137">Pinhais</option>
+<option value="345">Pinhal de São Bento</option>
+<option value="527">Pinhalão</option>
+<option value="403">Pinhão</option>
+<option value="203">Piraí do Sul</option>
+<option value="104">Piraquara</option>
+<option value="404">Pitanga</option>
+<option value="659">Pitangueiras</option>
+<option value="732">Planaltina do Paraná</option>
+<option value="334">Planalto</option>
+<option value="201">Ponta Grossa</option>
+<option value="141">Pontal do Paraná</option>
+<option value="616">Porecatu</option>
+<option value="132">Porto Amazonas</option>
+<option value="474">Porto Barreiro</option>
+<option value="743">Porto Rico</option>
+<option value="307">Porto Vitória</option>
+<option value="663">Prado Ferreira</option>
+<option value="337">Pranchita</option>
+<option value="711">Presidente Castelo Branco</option>
+<option value="602">Primeiro de Maio</option>
+<option value="214">Prudentópolis</option>
+<option value="856">Quarto Centenário</option>
+<option value="510">Quatiguá</option>
+<option value="114">Quatro Barras</option>
+<option value="461">Quatro Pontes</option>
+<option value="425">Quedas do Iguaçu</option>
+<option value="741">Querência do Norte</option>
+<option value="805">Quinta do Sol</option>
+<option value="123">Quitandinha</option>
+<option value="462">Ramilândia</option>
+<option value="604">Rancho Alegre</option>
+<option value="851">Rancho Alegre d&#39;Oeste</option>
+<option value="332">Realeza</option>
+<option value="218">Rebouças</option>
+<option value="319">Renascença</option>
+<option value="210">Reserva</option>
+<option value="475">Reserva do Iguaçu</option>
+<option value="502">Ribeirão Claro</option>
+<option value="521">Ribeirão do Pinhal</option>
+<option value="219">Rio Azul</option>
+<option value="638">Rio Bom</option>
+<option value="463">Rio Bonito do Iguaçu</option>
+<option value="227">Rio Branco do Ivaí</option>
+<option value="109">Rio Branco do Sul</option>
+<option value="126">Rio Negro</option>
+<option value="627">Rolândia</option>
+<option value="809">Roncador</option>
+<option value="828">Rondon</option>
+<option value="221">Rosário do Ivaí</option>
+<option value="629">Sabáudia</option>
+<option value="325">Salgado Filho</option>
+<option value="504">Salto do Itararé</option>
+<option value="329">Salto do Lontra</option>
+<option value="519">Santa Amélia</option>
+<option value="609">Santa Cecília do Pavão</option>
+<option value="740">Santa Cruz de Monte Castelo</option>
+<option value="633">Santa Fé</option>
+<option value="426">Santa Helena</option>
+<option value="625">Santa Inês</option>
+<option value="739">Santa Isabel do Ivaí</option>
+<option value="330">Santa Izabel do Oeste</option>
+<option value="464">Santa Lúcia</option>
+<option value="465">Santa Maria do Oeste</option>
+<option value="536">Santa Mariana</option>
+<option value="746">Santa Mônica</option>
+<option value="446">Santa Tereza do Oeste</option>
+<option value="436">Santa Terezinha de Itaipu</option>
+<option value="505">Santana do Itararé</option>
+<option value="513">Santo Antonio da Platina</option>
+<option value="724">Santo Antonio do Caiuá</option>
+<option value="531">Santo Antonio do Paraíso</option>
+<option value="327">Santo Antonio do Sudoeste</option>
+<option value="624">Santo Inácio</option>
+<option value="725">São Carlos do Ivaí</option>
+<option value="610">São Jerônimo da Serra</option>
+<option value="314">São João</option>
+<option value="723">São João do Caiuá</option>
+<option value="648">São João do Ivaí</option>
+<option value="130">São João do Triunfo</option>
+<option value="712">São Jorge do Ivaí</option>
+<option value="843">São Jorge do Patrocínio</option>
+<option value="324">São Jorge d&#39;Oeste</option>
+<option value="506">São José da Boa Vista</option>
+<option value="440">São José das Palmeiras</option>
+<option value="105">São José dos Pinhais</option>
+<option value="852">São Manoel do Paraná</option>
+<option value="129">São Mateus do Sul</option>
+<option value="421">São Miguel do Iguaçu</option>
+<option value="466">São Pedro do Iguaçu</option>
+<option value="645">São Pedro do Ivaí</option>
+<option value="742">São Pedro do Paraná</option>
+<option value="608">São Sebastião da Amoreira</option>
+<option value="832">São Tomé</option>
+<option value="529">Sapopema</option>
+<option value="745">Sarandi</option>
+<option value="346">Saudade do Iguaçu</option>
+<option value="205">Sengés</option>
+<option value="476">Serranópolis do Iguaçu</option>
+<option value="538">Sertaneja</option>
+<option value="603">Sertanópolis</option>
+<option value="508">Siqueira Campos</option>
+<option value="338">Sulina</option>
+<option value="664">Tamarana</option>
+<option value="726">Tamboara</option>
+<option value="829">Tapejara</option>
+<option value="839">Tapira</option>
+<option value="216">Teixeira Soares</option>
+<option value="208">Telêmaco Borba</option>
+<option value="835">Terra Boa</option>
+<option value="734">Terra Rica</option>
+<option value="415">Terra Roxa</option>
+<option value="207">Tibagi</option>
+<option value="120">Tijucas do Sul</option>
+<option value="418">Toledo</option>
+<option value="509">Tomazina</option>
+<option value="437">Três Barras do Paraná</option>
+<option value="138">Tunas do Paraná</option>
+<option value="830">Tuneiras do Oeste</option>
+<option value="438">Tupãssi</option>
+<option value="430">Turvo</option>
+<option value="812">Ubiratã</option>
+<option value="822">Umuarama</option>
+<option value="301">União da Vitória</option>
+<option value="716">Uniflor</option>
+<option value="535">Uraí</option>
+<option value="222">Ventania</option>
+<option value="439">Vera Cruz do Oeste</option>
+<option value="322">Verê</option>
+<option value="467">Virmond</option>
+<option value="318">Vitorino</option>
+<option value="507">Wenceslau Braz</option>
+<option value="821">Xambrê</option></select>
+						</td>
+					<tr>
+						<td class="form_label">* Código da Estação:</td>
+						<td>
+							<div style="float: left;">
+									<input type="text" name="codEstacao" maxlength="8" size="13" value="" onkeyup="DigitaNumero(document.getElementById('codEstacao'))" onblur="javascript:carregarNomeEstacao(this.value)" id="codEstacao">
+							</div>
+							<div id="divNomeEstacao" style="float: left; margin-left: 10px;">
+								
+
+
+
+
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td class="form_label">* Ano Inicial:</td>
+						<td>
+							<input type="text" name="anoInicial" maxlength="4" size="6" value="1986" onkeypress="DigitaNumero(document.getElementById('anoInicial'));" id="anoInicial">
+						</td>
+					</tr>
+					<tr>
+						<td class="form_label">* Ano Final:</td>
+						<td>
+							<input type="text" name="anoFinal" maxlength="4" size="6" value="2025" onkeypress="DigitaNumero(document.getElementById('anoFinal'));" id="anoFinal">
+						</td>
+					</tr>
+					<tr>
+						<td class="form_label">Opções:</td>
+						<td>
+							<input type="checkbox" name="leituraCadastrada" value="true" checked="checked">Exibir somente estações com leituras cadastradas <br/>
+							<input type="checkbox" name="naoExtinta" value="false" checked="checked">Exibir somente estações que não estejam extintas
+						</td>
+					</tr>
+					<tr>
+						<td class="form_label">* Formato:</td>
+						<td>
+							
+							 
+ 
+
+							<input type="radio" name="formato" value="PDF" id="PDF"><label for="PDF">Arquivo PDF</label>
+							<input type="radio" name="formato" value="XLS" checked="checked" id="XLS"><label for="XLS">Arquivo XLS (planilha)</label>
+							
+						</td>
+					</tr>
+				</table>
+			</div>
+			<hr />
+			<div align="center">
+				<input type="button" class="form_botao" value="Gerar Relatório"	onclick="gerarRelatorio()" />
+				<input type="button" class="form_botao" value="Voltar" onclick="voltar()">
+				<input type="button" class="form_botao" value="Limpar" onclick="limpar()">
+			</div>
+			<div class="contador" >
+				Acessos: 
+			</div>
+		</form>
+	</div>
+</div>
+
+<script>
+var form = document.gerarRelatorioAlturasMensaisPrecipitacaoForm;
+desabilitarMunicipio();
+desabilitarEstacao();
+form.leituraCadastrada.checked = true;
+form.naoExtinta.checked = false;
+</script>
+
+
+	<div id="rodape_interno">
+		<table border="0" width="100%">
+	<tr>
+		<td width="700px" class="text_rodape">
+			Versão v1_0_245 08/11/2024 16:00<br />
+			Melhor visualizado pelos navegadores Mozilla Firefox 3.0+ ou<br />
+			Internet Explorer 7.0+, com resolução de tela 1024x768.<br />
+			Central de Atendimento Celepar - 3200-5000
+		</td>
+		<td>&nbsp;</td>
+		<td>
+			<a href="http://www.celepar.pr.gov.br/" target="_blank">
+				<img id="logo_celepar" src="http://www.pr.gov.br/logos/footer_celepar_cinza_medio2.png" width="51px" height="46px" border="0" />
+			</a>
+		</td>
+	</tr>
+</table>
+	</div>
+	<script type="text/javascript">
+		function abrirJanela(url) {
+			var screenX = (window.screen.width - 800) / 2;
+			var screenY = (window.screen.height - 600) / 2;
+			window.open(url, "default", "width=800, height=600, top=" + screenY + ", left=" + screenX + ", status=yes, scrollbars=yes");
+		}
+	</script>
+</body>
+</html>

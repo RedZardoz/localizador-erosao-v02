@@ -162,6 +162,20 @@ export function calcularKappaCohen(
   };
 }
 
+export const CLASSES_ROTULO_VALIDAS = new Set([
+  "erosao",
+  "erosão",
+  "presente",
+  "incipiente",
+  "moderada",
+  "severa",
+  "1",
+  "controle",
+  "ausente",
+  "spd",
+  "0",
+]);
+
 /**
  * Validação estrita de rótulo (Regras 1, 2 e 4).
  */
@@ -177,6 +191,13 @@ export function validarRotulo(rotulo: Rotulo): { valido: boolean; motivo?: strin
   }
   if (!rotulo.classe || rotulo.classe.trim().length === 0) {
     return { valido: false, motivo: "Classe de rótulo vazia ou não informada." };
+  }
+  const classeNormalizada = rotulo.classe.trim().toLowerCase();
+  if (!CLASSES_ROTULO_VALIDAS.has(classeNormalizada)) {
+    return {
+      valido: false,
+      motivo: `Classe de rótulo '${rotulo.classe}' inválida ou sentinela não preenchida (Regra 4).`,
+    };
   }
   return { valido: true };
 }

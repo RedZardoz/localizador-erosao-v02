@@ -82,6 +82,7 @@ export interface CredenciaisState {
   cartoApiKey: string;
   planetApiKey: string;
   embrapaToken: string;
+  jevApiKey: string;
 }
 
 export interface SystemLogEntry {

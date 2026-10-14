@@ -12,12 +12,13 @@
  *   nome do avaliador, data/hora da inspeção e protocolo cego.
  *
  * POR QUÊ ESTE PROCEDIMENTO É EXIGIDO NA METODOLOGIA (SEÇÃO 3.3 & REGRA 4):
- * 1. Tolerância Geodésica de Campo (Parâmetro P03 - Raio de 150 m):
- *    No campo real, obstáculos físicos (cercas, curvas de nível, carreadores com lama
- *    ou culturas altas) frequentemente impedem o operador de pisar exatamente no centróide
- *    do pixel de 10 m. O cálculo geodésico de Haversine audita a distância real: se o
- *    operador esteve a até 150 m da feição, o registro é aceito com registro do desvio;
- *    se a distância exceder o limite, o registro é rejeitado para impedir falsas atribuições.
+ * 1. Tolerância Geodésica de Campo (Parâmetro P03 — 15 m nominal, tolerância até 25 m):
+ *    Na escala do pixel de 10 m do Sentinel-2 (área de 100 m²), o raio de casamento
+ *    geodésico P03 é fixado em 15 metros nominais (1,5 pixel) para preservar a integridade
+ *    da feição observada in-situ. Admite-se tolerância de até 25 m sob emissão de aviso
+ *    formal de qualidade quando obstáculos físicos (cercas, terraços ou carreadores)
+ *    impedirem o posicionamento exato. Desvios superiores a 25 m são rejeitados para
+ *    impedir a atribuição a pixels ou talhões adjacentes (Congalton & Green, 2019).
  * 2. Inviolabilidade do Rótulo Humano (Regra 4 do SAREL):
  *    A classe de campo ("erosao" vs "controle") constitui a verdade terrestre primária.
  *    O sistema jamais pode alterar, imputar ou recalcular esse rótulo por heurísticas.
@@ -78,17 +79,26 @@ export interface CoordenadaEsperada {
   longitude: number;
 }
 
+export const TOLERANCIA_GEODESICA_P03_NOMINAL_METROS = 15;
+export const TOLERANCIA_GEODESICA_P03_MAXIMA_METROS = 25;
+
 /**
  * Ingere lote de submissões KoboToolbox validando raio de casamento P03.
+ * Tolerância P03 readequada: 15 m nominal (1,5 pixel Sentinel-2) com tolerância ampliada
+ * até 25 m sob aviso de qualidade; acima de 25 m o ponto é rejeitado (desvioAceitavel = false).
  */
 export function ingestarSubmissoesKobo(
   registros: Record<string, unknown>[],
   coordenadasEsperadas: Record<string, CoordenadaEsperada>,
-  raioToleranciaMetros: number // P03 (ex.: 150m)
+  raioToleranciaMetros: number = TOLERANCIA_GEODESICA_P03_NOMINAL_METROS,
+  raioToleranciaMaximoMetros: number = TOLERANCIA_GEODESICA_P03_MAXIMA_METROS
 ): ResultadoIngestaoKobo {
   const aceitos: ItemKoboProcessado[] = [];
   const rejeitados: RegistroRejeitadoKobo[] = [];
   const avisosQualidade: string[] = [];
+
+  const limiarNominal = raioToleranciaMetros;
+  const limiarMaximo = Math.max(raioToleranciaMaximoMetros, limiarNominal);
 
   for (const reg of registros) {
     const codigo = String(reg.codigoPonto || reg.codigo || reg.ponto_id || "").trim();
@@ -98,9 +108,16 @@ export function ingestarSubmissoesKobo(
     }
 
     const classe = String(reg.classe || reg.classe_erosao || "").trim();
+    if (!classe) {
+      rejeitados.push({
+        registro: reg,
+        motivo: `Ponto '${codigo}' sem classe de campo preenchida (linha de template não inspecionada in-situ — Regra 4).`,
+      });
+      continue;
+    }
     const observador = String(reg.observador || reg.entrevistador || "").trim();
     const observadoEm = String(reg.observadoEm || reg.data_observacao || "").trim();
-    const cego = reg.cego === false ? false : true;
+    const cego = reg.cego === false || String(reg.cego).trim().toLowerCase() === "false" ? false : true;
 
     const rotulo: Rotulo = {
       classe,
@@ -108,7 +125,7 @@ export function ingestarSubmissoesKobo(
       observador,
       observadoEm,
       cego,
-      confianca: reg.confianca as "alta" | "media" | "baixa" | undefined,
+      confianca: reg.confianca ? (String(reg.confianca).trim() as "alta" | "media" | "baixa") : undefined,
       observacoes: reg.observacoes ? String(reg.observacoes) : undefined,
     };
 
@@ -134,13 +151,19 @@ export function ingestarSubmissoesKobo(
     if (!isNaN(latGps) && !isNaN(lngGps) && coordenadasEsperadas[codigo]) {
       const esp = coordenadasEsperadas[codigo];
       distanciaMetros = calcularDistanciaHaversineMetros(latGps, lngGps, esp.latitude, esp.longitude);
-      if (distanciaMetros > raioToleranciaMetros) {
+      if (distanciaMetros > limiarMaximo) {
         desvioAceitavel = false;
         avisosQualidade.push(
-          `AVISO: Ponto ${codigo} coletado a ${distanciaMetros.toFixed(1)} m da coordenada planejada (tolerância P03: ${raioToleranciaMetros} m).`
+          `AVISO BLOQUEANTE: Ponto ${codigo} coletado a ${distanciaMetros.toFixed(1)} m da coordenada planejada (excede tolerância máxima P03 de ${limiarMaximo} m; nominal: ${limiarNominal} m).`
+        );
+      } else if (distanciaMetros > limiarNominal) {
+        desvioAceitavel = true;
+        avisosQualidade.push(
+          `AVISO DE QUALIDADE: Ponto ${codigo} coletado a ${distanciaMetros.toFixed(1)} m da coordenada planejada (tolerância nominal P03: ${limiarNominal} m; aceito sob tolerância ampliada de até ${limiarMaximo} m).`
         );
       }
     }
+
 
     aceitos.push({
       pontoCodigo: codigo,

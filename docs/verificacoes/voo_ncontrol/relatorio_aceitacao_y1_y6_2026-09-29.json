@@ -1,0 +1,40 @@
+{
+  "geradoEm": "2026-09-30T15:00:00.000Z",
+  "correcoesPericiaisZ1aZ6": {
+    "Z1_amostradorRealGLO30": "Implementado via criarAmostradorCopernicusGLO30Real e testado contra aeroporto SBTD (555,89 m vs 562 m ROTAER)",
+    "Z2_fixturesSinteticosRenomeados": "amostradorSinteticoParaTeste com proveniencia: 'sintetico'",
+    "Z3_guardaCodigoPlanoSintetico": "ErroEmissaoPlanoSinteticoRecusada por padrão; prefixo SINTETICO_NAO_VOAR_ sob flag de demonstração",
+    "Z4_artefatosComitadosRenomeados": "SINTETICO_NAO_VOAR_jornada_01_terrainfollow.plan e SINTETICO_NAO_VOAR_jornada_01_altfixa.plan mantidos com LEIA-ME_NAO_VOAR.md",
+    "Z5_cegamentoNaoDerivavel": "gerarCodigoOpacoInterprete sem chave padrão literal no código, estocástico sem segredo externo",
+    "Z6_faixasCurvaDeNivel": "anguloFaixasGraus = (aspectoMedidoGraus + 90°) % 360, com eixo maior do polígono mantido no sentido do declive"
+  },
+  "metadadosCampanha": {
+    "versaoExportador": "1.0.0",
+    "geradoEm": "2026-09-30T15:00:00.000Z",
+    "totalPoligonos": 72,
+    "areaUnitariaHa": 5.02,
+    "areaTotalHa": 361.44,
+    "totalJornadas": 12,
+    "maxPoligonosPorJornada": 6,
+    "camera": "Micasense Altum",
+    "gsdAlvoCm": 4,
+    "aglDesejadaMetros": 92.764,
+    "velocidadeCruzeiroPlanMs": 15,
+    "velocidadeEfetivaMedidaMs": [
+      8.7,
+      9.2
+    ],
+    "ressalvasTerrenoGLO30": [
+      "1. Modelo Digital de Superfície (DSM), não de terreno nu (DTM): onde houver mata ciliar, quebra-vento ou reflorestamento, a cota do GLO-30 reflete o topo do dossel e não o solo.",
+      "2. Resolução espacial de 30 m (suavização intra-célula): ravinas estreitas, terraços agrícolas ou quebras abruptas de vertente menores que 30 m são suavizados pela grade.",
+      "3. Obstáculos pontuais ausentes: torres de transmissão, postes, fios, silos e árvores isoladas crescidas após a aquisição radar não constam no modelo; a conferência visual do horizonte de voo e a segurança contra colisão permanecem responsabilidade indelegável do piloto em campo."
+    ],
+    "ehPlanoSinteticoDemonstracao": true,
+    "tilesDEMUtilizados": [
+      "S25_00_W054_00",
+      "S25_00_W055_00",
+      "S26_00_W054_00",
+      "S26_00_W055_00"
+    ]
+  }
+}

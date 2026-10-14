@@ -36,7 +36,11 @@ export const PointCardList: React.FC = () => {
   };
 
   return (
-    <div className="space-y-2">
+    <div
+      data-metodologia="dossie-auditoria"
+      className="space-y-2"
+      title="Amostras e Dossiê de Auditoria (Botão direito: Ver cálculo da RUSLE)"
+    >
       <div className="flex items-center justify-between">
         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           Lista de Amostras ({pontosVisiveis.length})

@@ -1,0 +1,43 @@
+id           geod         proj     dif_%   relat_%    err_pp v
+S01     1005.2415    1006.4503   +0.1203   +0.1222   -0.0019 ok
+S02      997.0354     998.2653   +0.1234   +0.1237   -0.0003 ok
+S03     1270.1157    1271.4425   +0.1045   +0.1115   -0.0070 DIVERGE
+S04     1006.6389    1007.5538   +0.0909   +0.1021   -0.0112 DIVERGE
+S05     1107.7722    1108.6582   +0.0800   +0.0941   -0.0141 DIVERGE
+S06     1293.0895    1294.3369   +0.0965   +0.1060   -0.0095 DIVERGE
+S07     1008.7561    1009.6859   +0.0922   +0.1033   -0.0111 DIVERGE
+S08     1344.1550    1345.4945   +0.0997   +0.1088   -0.0091 DIVERGE
+S09     1011.9141    1012.8511   +0.0926   +0.1041   -0.0115 DIVERGE
+S10     1107.6730    1108.6907   +0.0919   +0.1034   -0.0115 DIVERGE
+S11     1275.7800    1276.7771   +0.0782   +0.0938   -0.0156 DIVERGE
+S12     1012.9537    1013.6861   +0.0723   +0.0894   -0.0171 DIVERGE
+S13     1013.9243    1014.8019   +0.0866   +0.1000   -0.0134 DIVERGE
+S14     1278.7489    1279.9638   +0.0950   +0.1065   -0.0115 DIVERGE
+S15     1016.2162    1017.0498   +0.0820   +0.0972   -0.0152 DIVERGE
+S16     1277.4773    1278.2734   +0.0623   +0.0821   -0.0198 DIVERGE
+S17     1011.8252    1012.3793   +0.0548   +0.0760   -0.0212 DIVERGE
+S18     1273.2418    1273.6598   +0.0328   +0.0356   -0.0028 DIVERGE
+S19     1008.2965    1008.9169   +0.0615   +0.0814   -0.0199 DIVERGE
+S20     1271.3943    1272.3115   +0.0721   +0.0893   -0.0172 DIVERGE
+
+Maximo recomputado: +0.1234% em S02   (relatorio: +0.1237% em S02)
+Todos positivos: True
+Divergentes: 18 de 20
+  S03: dif recomputada +0.1045% vs relatada +0.1115% (err -0.0070 pp); geod 1270.116 vs 1269.620
+  S04: dif recomputada +0.0909% vs relatada +0.1021% (err -0.0112 pp); geod 1006.639 vs 1006.647
+  S05: dif recomputada +0.0800% vs relatada +0.0941% (err -0.0141 pp); geod 1107.772 vs 1107.752
+  S06: dif recomputada +0.0965% vs relatada +0.1060% (err -0.0095 pp); geod 1293.090 vs 1301.298
+  S07: dif recomputada +0.0922% vs relatada +0.1033% (err -0.0111 pp); geod 1008.756 vs 1008.628
+  S08: dif recomputada +0.0997% vs relatada +0.1088% (err -0.0091 pp); geod 1344.155 vs 1343.658
+  S09: dif recomputada +0.0926% vs relatada +0.1041% (err -0.0115 pp); geod 1011.914 vs 1011.580
+  S10: dif recomputada +0.0919% vs relatada +0.1034% (err -0.0115 pp); geod 1107.673 vs 1107.656
+  S11: dif recomputada +0.0782% vs relatada +0.0938% (err -0.0156 pp); geod 1275.780 vs 1275.469
+  S12: dif recomputada +0.0723% vs relatada +0.0894% (err -0.0171 pp); geod 1012.954 vs 1012.549
+  S13: dif recomputada +0.0866% vs relatada +0.1000% (err -0.0134 pp); geod 1013.924 vs 1013.456
+  S14: dif recomputada +0.0950% vs relatada +0.1065% (err -0.0115 pp); geod 1278.749 vs 1281.095
+  S15: dif recomputada +0.0820% vs relatada +0.0972% (err -0.0152 pp); geod 1016.216 vs 1015.596
+  S16: dif recomputada +0.0623% vs relatada +0.0821% (err -0.0198 pp); geod 1277.477 vs 1279.653
+  S17: dif recomputada +0.0548% vs relatada +0.0760% (err -0.0212 pp); geod 1011.825 vs 1011.497
+  S18: dif recomputada +0.0328% vs relatada +0.0356% (err -0.0028 pp); geod 1273.242 vs 1274.206
+  S19: dif recomputada +0.0615% vs relatada +0.0814% (err -0.0199 pp); geod 1008.296 vs 1008.198
+  S20: dif recomputada +0.0721% vs relatada +0.0893% (err -0.0172 pp); geod 1271.394 vs 1272.275

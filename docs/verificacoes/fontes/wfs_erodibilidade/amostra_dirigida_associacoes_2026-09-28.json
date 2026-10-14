@@ -1,0 +1,1352 @@
+{
+ "gerado_em_utc": "2026-09-29T00:45:30Z",
+ "endpoint": "https://geoinfo.dados.embrapa.br/geoserver/ows",
+ "desenho": {
+  "alvo": "unidades pedologicas em associacao na Bacia do Parana 3",
+  "bbox_bp3": "-25.65,-54.65,-24.00,-53.35",
+  "total_poligonos_associacao_na_bacia": 193,
+  "unidades_de_associacao_existentes": {
+   "LVdf11": 2,
+   "LVef2": 37,
+   "NVdf4": 4,
+   "NVef4": 34,
+   "PVe3": 16,
+   "RRd7": 1,
+   "RRe12": 90,
+   "RRe9": 9
+  },
+  "n_por_unidade_alvo": 5,
+  "atribuicao": "ponto-em-poligono WFS 1.1.0, POINT(lat lon), ponto interior por shapely.representative_point()"
+ },
+ "agregado": {
+  "pontos_consultados": 32,
+  "pontos_usaveis_associacao": 32,
+  "match_estrito_n": 2,
+  "match_dominante_n": 10,
+  "k_ambiguo_oficial_n": 4,
+  "com_mais_de_1_componente_24": 16,
+  "match_estrito_pct": 6.2,
+  "match_dominante_pct": 31.2,
+  "k_ambiguo_oficial_pct": 12.5
+ },
+ "por_unidade": {
+  "PVe3": {
+   "n": 5,
+   "estrito": 0,
+   "dominante": 1,
+   "ambiguo": 0
+  },
+  "LVdf11": {
+   "n": 2,
+   "estrito": 0,
+   "dominante": 0,
+   "ambiguo": 0
+  },
+  "NVdf4": {
+   "n": 4,
+   "estrito": 0,
+   "dominante": 2,
+   "ambiguo": 0
+  },
+  "NVef4": {
+   "n": 5,
+   "estrito": 0,
+   "dominante": 3,
+   "ambiguo": 0
+  },
+  "LVef2": {
+   "n": 5,
+   "estrito": 2,
+   "dominante": 2,
+   "ambiguo": 0
+  },
+  "RRe9": {
+   "n": 5,
+   "estrito": 0,
+   "dominante": 1,
+   "ambiguo": 3
+  },
+  "RRe12": {
+   "n": 5,
+   "estrito": 0,
+   "dominante": 1,
+   "ambiguo": 1
+  },
+  "RRd7": {
+   "n": 1,
+   "estrito": 0,
+   "dominante": 0,
+   "ambiguo": 0
+  }
+ },
+ "resultados": [
+  {
+   "ogc_fid": "1039",
+   "sbcs": "PVe3",
+   "ordens_pr_declaradas": [
+    "ARGISSOLO",
+    "GLEISSOLO",
+    "GLEISSOLO"
+   ],
+   "lat": -24.158379,
+   "lon": -54.338683,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.1039",
+   "sbcs_pip": "PVe3",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "ARGISSOLO",
+    "GLEISSOLO",
+    "GLEISSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.101964",
+   "cod_um2": "SG21Co",
+   "erod_um": "Corpo d'água",
+   "k_solos": 0,
+   "ordens_24": [],
+   "erods_24": [
+    "Corpo d'água"
+   ],
+   "niveis_24": [
+    null
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "2513",
+   "sbcs": "LVdf11",
+   "ordens_pr_declaradas": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "lat": -24.682979,
+   "lon": -53.44484,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.2513",
+   "sbcs_pip": "LVdf11",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.104775",
+   "cod_um2": "SG22NVef2",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa"
+   ],
+   "niveis_24": [
+    1
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "2520",
+   "sbcs": "LVdf11",
+   "ordens_pr_declaradas": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "lat": -24.677522,
+   "lon": -53.469307,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.2520",
+   "sbcs_pip": "LVdf11",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.104775",
+   "cod_um2": "SG22NVef2",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa"
+   ],
+   "niveis_24": [
+    1
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "2595",
+   "sbcs": "PVe3",
+   "ordens_pr_declaradas": [
+    "ARGISSOLO",
+    "GLEISSOLO",
+    "GLEISSOLO"
+   ],
+   "lat": -24.688037,
+   "lon": -54.316695,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.2595",
+   "sbcs_pip": "PVe3",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "ARGISSOLO",
+    "GLEISSOLO",
+    "GLEISSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.102154",
+   "cod_um2": "SG21NVef1",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa"
+   ],
+   "niveis_24": [
+    1
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "2957",
+   "sbcs": "PVe3",
+   "ordens_pr_declaradas": [
+    "ARGISSOLO",
+    "GLEISSOLO",
+    "GLEISSOLO"
+   ],
+   "lat": -24.9396,
+   "lon": -54.415109,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.2957",
+   "sbcs_pip": "PVe3",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "ARGISSOLO",
+    "GLEISSOLO",
+    "GLEISSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.102101",
+   "cod_um2": "SG21LVef1",
+   "erod_um": "Muito baixa",
+   "k_solos": 0.002,
+   "ordens_24": [
+    "LATOSSOLO"
+   ],
+   "erods_24": [
+    "Muito baixa"
+   ],
+   "niveis_24": [
+    1
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3085",
+   "sbcs": "NVdf4",
+   "ordens_pr_declaradas": [
+    "NITOSSOLO",
+    "LATOSSOLO"
+   ],
+   "lat": -25.050668,
+   "lon": -53.490246,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3085",
+   "sbcs_pip": "NVdf4",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NITOSSOLO",
+    "LATOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.104463",
+   "cod_um2": "SG22LVdf5",
+   "erod_um": "Muito baixa",
+   "k_solos": 0.0084,
+   "ordens_24": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Muito baixa",
+    "Baixa"
+   ],
+   "niveis_24": [
+    1,
+    1
+   ],
+   "n_componentes_24": 2,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3136",
+   "sbcs": "NVdf4",
+   "ordens_pr_declaradas": [
+    "NITOSSOLO",
+    "LATOSSOLO"
+   ],
+   "lat": -25.08411,
+   "lon": -53.429504,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3136",
+   "sbcs_pip": "NVdf4",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NITOSSOLO",
+    "LATOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.104846",
+   "cod_um2": "SG22NVef3",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO",
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa",
+    "Baixa"
+   ],
+   "niveis_24": [
+    1,
+    1
+   ],
+   "n_componentes_24": 2,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": true,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3173",
+   "sbcs": "NVdf4",
+   "ordens_pr_declaradas": [
+    "NITOSSOLO",
+    "LATOSSOLO"
+   ],
+   "lat": -25.091434,
+   "lon": -53.375497,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3173",
+   "sbcs_pip": "NVdf4",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NITOSSOLO",
+    "LATOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.104846",
+   "cod_um2": "SG22NVef3",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO",
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa",
+    "Baixa"
+   ],
+   "niveis_24": [
+    1,
+    1
+   ],
+   "n_componentes_24": 2,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": true,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3227",
+   "sbcs": "NVef4",
+   "ordens_pr_declaradas": [
+    "NITOSSOLO",
+    "GLEISSOLO"
+   ],
+   "lat": -25.087068,
+   "lon": -54.337843,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3227",
+   "sbcs_pip": "NVef4",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NITOSSOLO",
+    "GLEISSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.102154",
+   "cod_um2": "SG21NVef1",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa"
+   ],
+   "niveis_24": [
+    1
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": true,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3273",
+   "sbcs": "NVdf4",
+   "ordens_pr_declaradas": [
+    "NITOSSOLO",
+    "LATOSSOLO"
+   ],
+   "lat": -25.140908,
+   "lon": -53.494546,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3273",
+   "sbcs_pip": "NVdf4",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NITOSSOLO",
+    "LATOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.104463",
+   "cod_um2": "SG22LVdf5",
+   "erod_um": "Muito baixa",
+   "k_solos": 0.0084,
+   "ordens_24": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Muito baixa",
+    "Baixa"
+   ],
+   "niveis_24": [
+    1,
+    1
+   ],
+   "n_componentes_24": 2,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3436",
+   "sbcs": "LVef2",
+   "ordens_pr_declaradas": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "lat": -25.350488,
+   "lon": -53.494638,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3436",
+   "sbcs_pip": "LVef2",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.104577",
+   "cod_um2": "SG22LVef4",
+   "erod_um": "Muito baixa",
+   "k_solos": 0.0084,
+   "ordens_24": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Muito baixa",
+    "Baixa"
+   ],
+   "niveis_24": [
+    1,
+    1
+   ],
+   "n_componentes_24": 2,
+   "k_ambiguo_oficial": false,
+   "match_estrito": true,
+   "match_dominante": true,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3550",
+   "sbcs": "LVef2",
+   "ordens_pr_declaradas": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "lat": -25.270398,
+   "lon": -53.572835,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3550",
+   "sbcs_pip": "LVef2",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.104583",
+   "cod_um2": "SG22LVef4",
+   "erod_um": "Muito baixa",
+   "k_solos": 0.0084,
+   "ordens_24": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Muito baixa",
+    "Baixa"
+   ],
+   "niveis_24": [
+    1,
+    1
+   ],
+   "n_componentes_24": 2,
+   "k_ambiguo_oficial": false,
+   "match_estrito": true,
+   "match_dominante": true,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3781",
+   "sbcs": "LVef2",
+   "ordens_pr_declaradas": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "lat": -25.321836,
+   "lon": -54.457262,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3781",
+   "sbcs_pip": "LVef2",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.102167",
+   "cod_um2": "SG21NVef1",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa"
+   ],
+   "niveis_24": [
+    1
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3875",
+   "sbcs": "LVef2",
+   "ordens_pr_declaradas": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "lat": -25.39738,
+   "lon": -54.437474,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3875",
+   "sbcs_pip": "LVef2",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.102167",
+   "cod_um2": "SG21NVef1",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa"
+   ],
+   "niveis_24": [
+    1
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3933",
+   "sbcs": "LVef2",
+   "ordens_pr_declaradas": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "lat": -25.388778,
+   "lon": -54.356256,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3933",
+   "sbcs_pip": "LVef2",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "LATOSSOLO",
+    "NITOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.102167",
+   "cod_um2": "SG21NVef1",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa"
+   ],
+   "niveis_24": [
+    1
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3980",
+   "sbcs": "NVef4",
+   "ordens_pr_declaradas": [
+    "NITOSSOLO",
+    "GLEISSOLO"
+   ],
+   "lat": -25.487971,
+   "lon": -54.097393,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3980",
+   "sbcs_pip": "NVef4",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NITOSSOLO",
+    "GLEISSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.102007",
+   "cod_um2": "SG21LVdf1",
+   "erod_um": "Muito baixa",
+   "k_solos": 0.002,
+   "ordens_24": [
+    "LATOSSOLO"
+   ],
+   "erods_24": [
+    "Muito baixa"
+   ],
+   "niveis_24": [
+    1
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3995",
+   "sbcs": "PVe3",
+   "ordens_pr_declaradas": [
+    "ARGISSOLO",
+    "GLEISSOLO",
+    "GLEISSOLO"
+   ],
+   "lat": -25.477675,
+   "lon": -54.601838,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3995",
+   "sbcs_pip": "PVe3",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "ARGISSOLO",
+    "GLEISSOLO",
+    "GLEISSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.102203",
+   "cod_um2": "SG21PVe3",
+   "erod_um": "Média",
+   "k_solos": 0.0165,
+   "ordens_24": [
+    "ARGISSOLO",
+    "GLEISSOLO",
+    "GLEISSOLO",
+    "GLEISSOLO"
+   ],
+   "erods_24": [
+    "Média",
+    "Baixa",
+    "Média",
+    "Baixa"
+   ],
+   "niveis_24": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "n_componentes_24": 4,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": true,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "4003",
+   "sbcs": "NVef4",
+   "ordens_pr_declaradas": [
+    "NITOSSOLO",
+    "GLEISSOLO"
+   ],
+   "lat": -25.417436,
+   "lon": -54.579932,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.4003",
+   "sbcs_pip": "NVef4",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NITOSSOLO",
+    "GLEISSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.102158",
+   "cod_um2": "SG21NVef1",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa"
+   ],
+   "niveis_24": [
+    1
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": true,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "4006",
+   "sbcs": "NVef4",
+   "ordens_pr_declaradas": [
+    "NITOSSOLO",
+    "GLEISSOLO"
+   ],
+   "lat": -25.413699,
+   "lon": -54.520077,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.4006",
+   "sbcs_pip": "NVef4",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NITOSSOLO",
+    "GLEISSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.102167",
+   "cod_um2": "SG21NVef1",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa"
+   ],
+   "niveis_24": [
+    1
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": true,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "4108",
+   "sbcs": "NVef4",
+   "ordens_pr_declaradas": [
+    "NITOSSOLO",
+    "GLEISSOLO"
+   ],
+   "lat": -25.44804,
+   "lon": -54.549142,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.4108",
+   "sbcs_pip": "NVef4",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NITOSSOLO",
+    "GLEISSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.102008",
+   "cod_um2": "SG21LVdf1",
+   "erod_um": "Muito baixa",
+   "k_solos": 0.002,
+   "ordens_24": [
+    "LATOSSOLO"
+   ],
+   "erods_24": [
+    "Muito baixa"
+   ],
+   "niveis_24": [
+    1
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "2436",
+   "sbcs": "RRe9",
+   "ordens_pr_declaradas": [
+    "NEOSSOLO",
+    "NITOSSOLO",
+    "CHERNOSSOLO"
+   ],
+   "lat": -25.125631,
+   "lon": -52.403366,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.2436",
+   "sbcs_pip": "RRe9",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NEOSSOLO",
+    "NITOSSOLO",
+    "CHERNOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.105536",
+   "cod_um2": "SG22RLm2",
+   "erod_um": "Alta",
+   "k_solos": 0.0315,
+   "ordens_24": [
+    "NEOSSOLO",
+    "CHERNOSSOLO"
+   ],
+   "erods_24": [
+    "Alta",
+    "Média"
+   ],
+   "niveis_24": [
+    2,
+    1
+   ],
+   "n_componentes_24": 2,
+   "k_ambiguo_oficial": true,
+   "match_estrito": false,
+   "match_dominante": true,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "2638",
+   "sbcs": "RRe12",
+   "ordens_pr_declaradas": [
+    "NEOSSOLO",
+    "CHERNOSSOLO",
+    "NITOSSOLO"
+   ],
+   "lat": -24.981377,
+   "lon": -54.103558,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.2638",
+   "sbcs_pip": "RRe12",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NEOSSOLO",
+    "CHERNOSSOLO",
+    "NITOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.102211",
+   "cod_um2": "SG21RLm4",
+   "erod_um": "Alta",
+   "k_solos": 0.0315,
+   "ordens_24": [
+    "NEOSSOLO",
+    "CHERNOSSOLO"
+   ],
+   "erods_24": [
+    "Alta",
+    "Média"
+   ],
+   "niveis_24": [
+    2,
+    1
+   ],
+   "n_componentes_24": 2,
+   "k_ambiguo_oficial": true,
+   "match_estrito": false,
+   "match_dominante": true,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "2679",
+   "sbcs": "PVe3",
+   "ordens_pr_declaradas": [
+    "ARGISSOLO",
+    "GLEISSOLO",
+    "GLEISSOLO"
+   ],
+   "lat": -24.742706,
+   "lon": -54.324175,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.2679",
+   "sbcs_pip": "PVe3",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "ARGISSOLO",
+    "GLEISSOLO",
+    "GLEISSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.102154",
+   "cod_um2": "SG21NVef1",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa"
+   ],
+   "niveis_24": [
+    1
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3043",
+   "sbcs": "RRe9",
+   "ordens_pr_declaradas": [
+    "NEOSSOLO",
+    "NITOSSOLO",
+    "CHERNOSSOLO"
+   ],
+   "lat": -25.052379,
+   "lon": -53.391869,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3043",
+   "sbcs_pip": "RRe9",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NEOSSOLO",
+    "NITOSSOLO",
+    "CHERNOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.104846",
+   "cod_um2": "SG22NVef3",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO",
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa",
+    "Baixa"
+   ],
+   "niveis_24": [
+    1,
+    1
+   ],
+   "n_componentes_24": 2,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3342",
+   "sbcs": "RRe12",
+   "ordens_pr_declaradas": [
+    "NEOSSOLO",
+    "CHERNOSSOLO",
+    "NITOSSOLO"
+   ],
+   "lat": -25.159604,
+   "lon": -53.853818,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3342",
+   "sbcs_pip": "RRe12",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NEOSSOLO",
+    "CHERNOSSOLO",
+    "NITOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.102725",
+   "cod_um2": "SG22Ár",
+   "erod_um": "Área urbana",
+   "k_solos": 0,
+   "ordens_24": [],
+   "erods_24": [
+    "Área urbana"
+   ],
+   "niveis_24": [
+    null
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3411",
+   "sbcs": "RRd7",
+   "ordens_pr_declaradas": [
+    "NEOSSOLO",
+    "CAMBISSOLO"
+   ],
+   "lat": -25.285019,
+   "lon": -53.881995,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3411",
+   "sbcs_pip": "RRd7",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NEOSSOLO",
+    "CAMBISSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.104846",
+   "cod_um2": "SG22NVef3",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO",
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa",
+    "Baixa"
+   ],
+   "niveis_24": [
+    1,
+    1
+   ],
+   "n_componentes_24": 2,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "3620",
+   "sbcs": "RRe12",
+   "ordens_pr_declaradas": [
+    "NEOSSOLO",
+    "CHERNOSSOLO",
+    "NITOSSOLO"
+   ],
+   "lat": -25.284044,
+   "lon": -53.621356,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.3620",
+   "sbcs_pip": "RRe12",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NEOSSOLO",
+    "CHERNOSSOLO",
+    "NITOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.104846",
+   "cod_um2": "SG22NVef3",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO",
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa",
+    "Baixa"
+   ],
+   "niveis_24": [
+    1,
+    1
+   ],
+   "n_componentes_24": 2,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "4176",
+   "sbcs": "RRe12",
+   "ordens_pr_declaradas": [
+    "NEOSSOLO",
+    "CHERNOSSOLO",
+    "NITOSSOLO"
+   ],
+   "lat": -25.523019,
+   "lon": -53.51321,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.4176",
+   "sbcs_pip": "RRe12",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NEOSSOLO",
+    "CHERNOSSOLO",
+    "NITOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.104846",
+   "cod_um2": "SG22NVef3",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO",
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa",
+    "Baixa"
+   ],
+   "niveis_24": [
+    1,
+    1
+   ],
+   "n_componentes_24": 2,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "4284",
+   "sbcs": "RRe12",
+   "ordens_pr_declaradas": [
+    "NEOSSOLO",
+    "CHERNOSSOLO",
+    "NITOSSOLO"
+   ],
+   "lat": -25.525137,
+   "lon": -54.5537,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.4284",
+   "sbcs_pip": "RRe12",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NEOSSOLO",
+    "CHERNOSSOLO",
+    "NITOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.101908",
+   "cod_um2": "SG21Ár",
+   "erod_um": "Área urbana",
+   "k_solos": 0,
+   "ordens_24": [],
+   "erods_24": [
+    "Área urbana"
+   ],
+   "niveis_24": [
+    null
+   ],
+   "n_componentes_24": 1,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "4460",
+   "sbcs": "RRe9",
+   "ordens_pr_declaradas": [
+    "NEOSSOLO",
+    "NITOSSOLO",
+    "CHERNOSSOLO"
+   ],
+   "lat": -25.986441,
+   "lon": -53.164155,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.4460",
+   "sbcs_pip": "RRe9",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NEOSSOLO",
+    "NITOSSOLO",
+    "CHERNOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.103784",
+   "cod_um2": "SG22CXvef",
+   "erod_um": "Alta",
+   "k_solos": 0.033,
+   "ordens_24": [
+    "CAMBISSOLO",
+    "CAMBISSOLO",
+    "NEOSSOLO"
+   ],
+   "erods_24": [
+    "Alta",
+    "Média",
+    "Alta"
+   ],
+   "niveis_24": [
+    2,
+    1,
+    2
+   ],
+   "n_componentes_24": 3,
+   "k_ambiguo_oficial": true,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "4526",
+   "sbcs": "RRe9",
+   "ordens_pr_declaradas": [
+    "NEOSSOLO",
+    "NITOSSOLO",
+    "CHERNOSSOLO"
+   ],
+   "lat": -25.701075,
+   "lon": -53.421132,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.4526",
+   "sbcs_pip": "RRe9",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NEOSSOLO",
+    "NITOSSOLO",
+    "CHERNOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.103784",
+   "cod_um2": "SG22CXvef",
+   "erod_um": "Alta",
+   "k_solos": 0.033,
+   "ordens_24": [
+    "CAMBISSOLO",
+    "CAMBISSOLO",
+    "NEOSSOLO"
+   ],
+   "erods_24": [
+    "Alta",
+    "Média",
+    "Alta"
+   ],
+   "niveis_24": [
+    2,
+    1,
+    2
+   ],
+   "n_componentes_24": 3,
+   "k_ambiguo_oficial": true,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  },
+  {
+   "ogc_fid": "5398",
+   "sbcs": "RRe9",
+   "ordens_pr_declaradas": [
+    "NEOSSOLO",
+    "NITOSSOLO",
+    "CHERNOSSOLO"
+   ],
+   "lat": -25.184275,
+   "lon": -53.437664,
+   "n_pr": 1,
+   "n_24": 1,
+   "id_pr": "parana_solos_20201105.5398",
+   "sbcs_pip": "RRe9",
+   "tipo_pip": "associacao",
+   "ordens_pr": [
+    "NEOSSOLO",
+    "NITOSSOLO",
+    "CHERNOSSOLO"
+   ],
+   "id_24": "bra_erodibilidade_2024_sirgas2000.104846",
+   "cod_um2": "SG22NVef3",
+   "erod_um": "Baixa",
+   "k_solos": 0.012,
+   "ordens_24": [
+    "NITOSSOLO",
+    "NITOSSOLO"
+   ],
+   "erods_24": [
+    "Baixa",
+    "Baixa"
+   ],
+   "niveis_24": [
+    1,
+    1
+   ],
+   "n_componentes_24": 2,
+   "k_ambiguo_oficial": false,
+   "match_estrito": false,
+   "match_dominante": false,
+   "tipo_eh_associacao_pip": true
+  }
+ ]
+}

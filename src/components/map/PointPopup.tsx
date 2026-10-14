@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   X,
   MapPin,
@@ -13,6 +13,7 @@ import {
   ExternalLink,
   ShieldCheck,
   Building,
+  RefreshCw,
 } from "lucide-react";
 import type { PontoAmostral } from "@/types/ponto";
 import { formatToDMS } from "@/lib/export/dms";
@@ -25,7 +26,42 @@ interface PointPopupProps {
 }
 
 export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
-  const { setPontoAuditoria, setModalAtiva } = useSarelStore();
+  const { setPontoAuditoria, setModalAtiva, atualizarPontoIndividual } = useSarelStore();
+  const [consultandoFontesReais, setConsultandoFontesReais] = useState(false);
+
+  useEffect(() => {
+    const precisaTerreno = point.terreno.elevacao.estado === "indisponivel";
+    const precisaSolo = point.solo.ordem.estado === "indisponivel";
+    const precisaEspectral = !point.espectral?.ndvi || point.espectral.ndvi.estado === "indisponivel";
+    const precisaFundiario = !point.fundiario?.codigoCar;
+
+    if (!precisaTerreno && !precisaSolo && !precisaEspectral && !precisaFundiario) {
+      return;
+    }
+
+    let cancelado = false;
+    setConsultandoFontesReais(true);
+
+    fetch("/api/gee/inspect-point", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(point),
+    })
+      .then((res) => res.json())
+      .then((dados) => {
+        if (!cancelado && dados?.ok && dados?.ponto) {
+          atualizarPontoIndividual(dados.ponto);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelado) setConsultandoFontesReais(false);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, [point.id]);
 
   const dmsLat = formatToDMS(point.latitude, true);
   const dmsLon = formatToDMS(point.longitude, false);
@@ -75,17 +111,23 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
   };
 
   return (
-    <div className="absolute top-16 right-4 z-20 w-96 max-w-[calc(100vw-2rem)] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-4 space-y-3 text-slate-800 dark:text-slate-200 animate-in fade-in slide-in-from-right-4">
+    <div className="light-popup absolute top-16 right-4 z-20 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-2xl border-2 border-slate-300 ring-2 ring-black/20 shadow-2xl p-4 space-y-3 text-slate-900 animate-in fade-in slide-in-from-right-4">
       {/* Header do Popup */}
-      <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+      <div className="flex items-start justify-between border-b border-slate-200 pb-2">
         <div>
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-mono">
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300 font-mono">
               {point.codigo}
             </span>
             <span className="text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
               Estrato: {point.estratoId}
             </span>
+            {consultandoFontesReais && (
+              <span className="text-[9px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded flex items-center gap-1">
+                <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                Consultando GEE / Embrapa...
+              </span>
+            )}
           </div>
           <h3 className="text-sm font-bold text-slate-900 dark:text-white mt-1">
             {municipioNome} — {baciaNome}
@@ -310,8 +352,10 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
 
         {/* Botão de Dossiê Científico e Script GEE */}
         <button
+          data-metodologia="dossie-auditoria"
           onClick={abrirDossieAuditoria}
           className="w-full h-9 px-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer"
+          title="Abrir Dossiê Forense do Ponto (Botão direito: Ver Equação Universal de Perda de Solo)"
         >
           <Printer className="w-3.5 h-3.5" />
           <span>Imprimir Dossiê &amp; Script GEE</span>

@@ -1,0 +1,614 @@
+{
+  "total_processado": 100,
+  "diretamente_relacionadas": [
+    {
+      "filename": "Análise espaço_temporal da degradação usando aprendizado de máquina e técnicas geoespaciais..pdf",
+      "orig_rel_path": "Análise espaço_temporal da degradação usando aprendizado de máquina e técnicas geoespaciais..pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Análise espaço_temporal da degradação usando aprendizado de máquina e técnicas geoespaciais..pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Avaliação da degradação do solo utilizando computação flexível baseada em SIG e algoritmos avançados de aprendizado de máquina.pdf",
+      "orig_rel_path": "Avaliação da degradação do solo utilizando computação flexível baseada em SIG e algoritmos avançados de aprendizado de máquina.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Avaliação da degradação do solo utilizando computação flexível baseada em SIG e algoritmos avançados de aprendizado de máquina.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Deteccao-de-feicoes-erosivas-em-bacias-hidrograficas-2025.pdf",
+      "orig_rel_path": "Deteccao-de-feicoes-erosivas-em-bacias-hidrograficas-2025.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Deteccao-de-feicoes-erosivas-em-bacias-hidrograficas-2025.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "galoa-proceedings-sbsr-2025-aplicacoes-de-aprendizado-de-maquina-para-modelagem-e-mapeamento.pdf",
+      "orig_rel_path": "galoa-proceedings-sbsr-2025-aplicacoes-de-aprendizado-de-maquina-para-modelagem-e-mapeamento.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\galoa-proceedings-sbsr-2025-aplicacoes-de-aprendizado-de-maquina-para-modelagem-e-mapeamento.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Integração de dados geoespaciais de alta precisão e abordagens de aprendizado de máquina.pdf",
+      "orig_rel_path": "Integração de dados geoespaciais de alta precisão e abordagens de aprendizado de máquina.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Integração de dados geoespaciais de alta precisão e abordagens de aprendizado de máquina.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Mapeamento da suscetibilidade à erosão regressiva.pdf",
+      "orig_rel_path": "Mapeamento da suscetibilidade à erosão regressiva.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Mapeamento da suscetibilidade à erosão regressiva.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "PREVISÃO DE CLASSES DE EROSÃO LAMINAR USANDO.pdf",
+      "orig_rel_path": "PREVISÃO DE CLASSES DE EROSÃO LAMINAR USANDO.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\PREVISÃO DE CLASSES DE EROSÃO LAMINAR USANDO.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "agronomy-16-00294-v2.pdf",
+      "orig_rel_path": "10_09_26\\agronomy-16-00294-v2.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\agronomy-16-00294-v2.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Comparative-evaluation-of.pdf",
+      "orig_rel_path": "10_09_26\\Comparative-evaluation-of.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Comparative-evaluation-of.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Enhancing predictive modeling of interrill and rill erosion susceptibility.pdf",
+      "orig_rel_path": "10_09_26\\Enhancing predictive modeling of interrill and rill erosion susceptibility.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Enhancing predictive modeling of interrill and rill erosion susceptibility.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "SILVA_2025MODELAGEM_PREDITIVA_NA_SUSCETIBILIDADE_.pdf",
+      "orig_rel_path": "10_09_26\\SILVA_2025MODELAGEM_PREDITIVA_NA_SUSCETIBILIDADE_.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\SILVA_2025MODELAGEM_PREDITIVA_NA_SUSCETIBILIDADE_.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "sustainability-15-01939-v2.pdf",
+      "orig_rel_path": "10_09_26\\sustainability-15-01939-v2.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\sustainability-15-01939-v2.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "water-18-02255.pdf",
+      "orig_rel_path": "10_09_26\\water-18-02255.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\water-18-02255.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "jh0260072.pdf",
+      "orig_rel_path": "Artigos selecionados\\jh0260072.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\jh0260072.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "land-13-01665-v2.pdf",
+      "orig_rel_path": "Artigos selecionados\\land-13-01665-v2.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\land-13-01665-v2.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "land-14-00163-v3.pdf",
+      "orig_rel_path": "Artigos selecionados\\land-14-00163-v3.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\land-14-00163-v3.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "10452-29467-1-PB.pdf",
+      "orig_rel_path": "XGBoost\\Artigos01\\10452-29467-1-PB.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\10452-29467-1-PB.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "jwc2025603.pdf",
+      "orig_rel_path": "XGBoost\\Artigos01\\jwc2025603.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\jwc2025603.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms.pdf",
+      "orig_rel_path": "XGBoost\\Artigos01\\Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Comparison of machine learning models for gully erosion susceptibility mapping.pdf",
+      "orig_rel_path": "XGBoost\\Artigos02\\Comparison of machine learning models for gully erosion susceptibility mapping.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Comparison of machine learning models for gully erosion susceptibility mapping.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Integrated machine learning and geospatial analysis enhanced gully erosion susceptibility modeling in the Erer watershed in East - Semantic Scholar.pdf",
+      "orig_rel_path": "XGBoost\\Artigos02\\Integrated machine learning and geospatial analysis enhanced gully erosion susceptibility modeling in the Erer watershed in East - Semantic Scholar.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Integrated machine learning and geospatial analysis enhanced gully erosion susceptibility modeling in the Erer watershed in East - Semantic Scholar.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Machine Learning Models for the Spatial Prediction of Gully Erosion Susceptibility in the Piraí Drainage Basin Paraíba Do Sul Middle Valley Southeast Brazil.pdf",
+      "orig_rel_path": "XGBoost\\Artigos02\\Machine Learning Models for the Spatial Prediction of Gully Erosion Susceptibility in the Piraí Drainage Basin Paraíba Do Sul Middle Valley Southeast Brazil.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Machine Learning Models for the Spatial Prediction of Gully Erosion Susceptibility in the Piraí Drainage Basin Paraíba Do Sul Middle Valley Southeast Brazil.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Mapping Soil Erosion Classes using Remote Sensing Data and Ensemble Models.pdf",
+      "orig_rel_path": "XGBoost\\Artigos02\\Mapping Soil Erosion Classes using Remote Sensing Data and Ensemble Models.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Mapping Soil Erosion Classes using Remote Sensing Data and Ensemble Models.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms - OPUS at UTS.pdf",
+      "orig_rel_path": "XGBoost\\Artigos02\\Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms - OPUS at UTS.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms - OPUS at UTS.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Soil erosion analysis based on machine learning method - Bulletin of Electrical Engineering and Informatics.pdf",
+      "orig_rel_path": "XGBoost\\Artigos02\\Soil erosion analysis based on machine learning method - Bulletin of Electrical Engineering and Informatics.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Soil erosion analysis based on machine learning method - Bulletin of Electrical Engineering and Informatics.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "The_Spatiotemporal_Evolution_Driving_Mechanisms_an.pdf",
+      "orig_rel_path": "XGBoost\\Artigos02\\The_Spatiotemporal_Evolution_Driving_Mechanisms_an.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\The_Spatiotemporal_Evolution_Driving_Mechanisms_an.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Tree-based machine learning algorithms for soil erosion vulnerability prediction in Saddang Watershed-south Sulawesi-Indonesia _ Journal of Water and Clima Fixed.pdf",
+      "orig_rel_path": "XGBoost\\Artigos02\\Tree-based machine learning algorithms for soil erosion vulnerability prediction in Saddang Watershed-south Sulawesi-Indonesia _ Journal of Water and Clima Fixed.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Tree-based machine learning algorithms for soil erosion vulnerability prediction in Saddang Watershed-south Sulawesi-Indonesia _ Journal of Water and Clima Fixed.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "Utilizing Machine Learning Algorithms for the Development of Gully Erosion Susceptibility Maps - Semantic Scholar.pdf",
+      "orig_rel_path": "XGBoost\\Artigos02\\Utilizing Machine Learning Algorithms for the Development of Gully Erosion Susceptibility Maps - Semantic Scholar.pdf",
+      "new_rel_path": "Pesquisas diretamente relacionadas\\Utilizing Machine Learning Algorithms for the Development of Gully Erosion Susceptibility Maps - Semantic Scholar.pdf",
+      "justification": "Pesquisa diretamente focada na predição, localização, modelagem ou mapeamento de erosão do solo (laminar, entressulcos, ravinas ou perda de solo) através de algoritmos de Aprendizado de Máquina (com destaque para XGBoost, Gradient Boosting, Random Forest e modelos baseados em árvores) integrados a Sensoriamento Remoto e SIG."
+    },
+    {
+      "filename": "CNPS-DOC-246-2024.pdf",
+      "rel_path": "CNPS-DOC-246-2024.pdf",
+      "origem_previa": "docs/03 - Bibliografia - Artigos/CNPS-DOC-246-2024.pdf",
+      "categoria": "Pesquisas diretamente relacionadas",
+      "num_paginas": 40,
+      "justificativa": "Documento oficial definitivo da Embrapa Solos (Doc. 246/2024). Na Tabela 5 (páginas 13 a 15) estabelece a tabela oficial de conversão de classes qualitativas de erodibilidade para valores numéricos do Fator K da USLE (baseada em Mannigel et al., 2002 e IBGE, 2018). Fundamental para a seleção e ponderação pedológica amostral do SAREL.",
+      "algoritmo_metodologia": "Pedologia / Erodibilidade / Fator K da USLE / Mannigel et al. (2002)"
+    },
+    {
+      "filename": "Vrieling_2006_Satellite_remote_sensing_water_erosion_review.pdf",
+      "rel_path": "Vrieling_2006_Satellite_remote_sensing_water_erosion_review.pdf",
+      "origem_previa": "Download da base Catena (Elsevier / Wageningen University)",
+      "categoria": "Pesquisas diretamente relacionadas",
+      "num_paginas": 17,
+      "justificativa": "Artigo seminal clássico de Anton Vrieling (Catena 2006) que fundamenta a detectabilidade de erosão laminar por sensoriamento remoto óptico orbital. Formaliza que satélites com resolução de 10m (como Sentinel-2) captam proxies espectrais indiretos (perda de matéria orgânica, redução de biomassa, exposição de horizontes subsuperficiais e encrostamento), enquanto a visualização direta de microrrelevo laminar exige VANTs com resolução centimétrica.",
+      "algoritmo_metodologia": "Sensoriamento Remoto Orbital / Proxies Espectrais / Limitações de Resolução Espacial"
+    },
+    {
+      "filename": "Safanelli_Dematte_2021_Fine_scale_soil_mapping_EO_data_GEOS3.pdf",
+      "rel_path": "Safanelli_Dematte_2021_Fine_scale_soil_mapping_EO_data_GEOS3.pdf",
+      "origem_previa": "Download da Revista Brasileira de Ciência do Solo (RBCS / GeoCiS ESALQ-USP)",
+      "categoria": "Pesquisas diretamente relacionadas",
+      "num_paginas": 20,
+      "justificativa": "Publicação do grupo de Geotecnologias em Ciência do Solo (GeoCiS / ESALQ-USP) liderado pelo Prof. Demattê. Descreve em detalhes a implementação operacional do algoritmo Geospatial Soil Sensing System (GEOS3) e fundamenta tecnicamente a identificação de solo exposto e o limiar espectral de NDVI <= 0,25 para discriminação precisa entre solo nu e palhada no Sistema Plantio Direto.",
+      "algoritmo_metodologia": "GEOS3 / Mineração Espectral / Google Earth Engine / Limiar NDVI Solo Nu"
+    },
+    {
+      "filename": "Kaufman_2012_EmbrapaSoja_Fundamentacao_Guarda_Temporal_Data_Leakage.pdf",
+      "rel_path": "Kaufman_2012_EmbrapaSoja_Fundamentacao_Guarda_Temporal_Data_Leakage.pdf",
+      "origem_previa": "Compilação formal metodológica (ACM TKDD 2012 & Embrapa Soja)",
+      "categoria": "Pesquisas diretamente relacionadas",
+      "num_paginas": 1,
+      "justificativa": "Documenta a fundamentação metodológica da janela de guarda temporal de 2 anos adotada no SAREL. Integra a teoria de prevenção de vazamento de dados em Machine Learning (learn-predict separation de Kaufman et al., 2012 no ACM TKDD) com a realidade agronômica subtropical paranaense (rotação bienal de culturas: soja no verão, milho safrinha e trigo/aveia no inverno, conforme boletins da Embrapa Soja).",
+      "algoritmo_metodologia": "Machine Learning / Data Leakage / Particionamento Temporal / Rotação Bienal"
+    },
+    {
+      "filename": "Roberts_2017_Cross_validation_strategies_spatial_temporal_structure.pdf",
+      "rel_path": "Roberts_2017_Cross_validation_strategies_spatial_temporal_structure.pdf",
+      "origem_previa": "Download da base Ecography (CORE repository)",
+      "categoria": "Pesquisas diretamente relacionadas",
+      "num_paginas": 56,
+      "justificativa": "Artigo seminal de David R. Roberts et al. (Ecography 2017) sobre estratégias de validação cruzada para dados com estrutura espacial e temporal. Fundamenta tecnicamente por que o particionamento aleatório k-fold padrão falha em dados geoespaciais e valida a necessidade de Spatial Cross-Validation (Block CV e thinning com buffer de 1 km) para neutralizar a autocorrelação espacial.",
+      "algoritmo_metodologia": "Spatial Cross-Validation / Block CV / Autocorrelação Espacial / Métricas Não Viesadas"
+    },
+    {
+      "filename": "Karydas_Panagos_2018_The_G2_erosion_model_month_time_step_assessments.pdf",
+      "rel_path": "Karydas_Panagos_2018_The_G2_erosion_model_month_time_step_assessments.pdf",
+      "origem_previa": "Europe PMC / Environmental Research 161 (2018) 115-124 (PMC5773245)",
+      "categoria": "Pesquisas diretamente relacionadas",
+      "num_paginas": 12,
+      "justificativa": "Artigo de Christos Karydas e Panos Panagos que apresenta formalmente o modelo dinâmico de erosão G2. Fornece a base física e matemática para a feature de interação do SAREL (erosividade da chuva torrencial multiplicada pela vulnerabilidade de cobertura vegetal / solo exposto: R_t * (1 - C_t)), permitindo que o XGBoost aprenda a dinâmica física real do splash laminar.",
+      "algoritmo_metodologia": "Modelo Dinâmico G2 / Interação Chuva-Cobertura / Sensoriamento Remoto / JRC"
+    }
+  ],
+  "relacionadas": [
+    {
+      "filename": "A study utilizing USLE and RUSLE.pdf",
+      "orig_rel_path": "A study utilizing USLE and RUSLE.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\A study utilizing USLE and RUSLE.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Aplicação de Aprendizado Profundo e Análise Geoespacial.pdf",
+      "orig_rel_path": "Aplicação de Aprendizado Profundo e Análise Geoespacial.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Aplicação de Aprendizado Profundo e Análise Geoespacial.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Aplicação de Redes Neurais Convolucionais para Prever a Erosão do Solo.pdf",
+      "orig_rel_path": "Aplicação de Redes Neurais Convolucionais para Prever a Erosão do Solo.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Aplicação de Redes Neurais Convolucionais para Prever a Erosão do Solo.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Applied and Environmental Soil Science - 2021 - García - Geospatial Analysis of Soil Ero.pdf",
+      "orig_rel_path": "Applied and Environmental Soil Science - 2021 - García - Geospatial Analysis of Soil Ero.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Applied and Environmental Soil Science - 2021 - García - Geospatial Analysis of Soil Ero.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "ASSESSING OF SOIL EROSION RISK.pdf",
+      "orig_rel_path": "ASSESSING OF SOIL EROSION RISK.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\ASSESSING OF SOIL EROSION RISK.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Comprehensive Review on Surface Soil.pdf",
+      "orig_rel_path": "Comprehensive Review on Surface Soil.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Comprehensive Review on Surface Soil.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Detecting_Analyzing_and_Predicting_Land_UseLand_Co.pdf",
+      "orig_rel_path": "Detecting_Analyzing_and_Predicting_Land_UseLand_Co.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Detecting_Analyzing_and_Predicting_Land_UseLand_Co.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Elaboracao_das_Cartas_de_Suscetibilidade.pdf",
+      "orig_rel_path": "Elaboracao_das_Cartas_de_Suscetibilidade.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Elaboracao_das_Cartas_de_Suscetibilidade.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Estrutura modular com IA funde imagens Sentinel para detecção robusta de deslizamentos de terra.pdf",
+      "orig_rel_path": "Estrutura modular com IA funde imagens Sentinel para detecção robusta de deslizamentos de terra.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Estrutura modular com IA funde imagens Sentinel para detecção robusta de deslizamentos de terra.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Estudo_Da_Erosao_Laminar_Em_Municipio_PR.pdf",
+      "orig_rel_path": "Estudo_Da_Erosao_Laminar_Em_Municipio_PR.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Estudo_Da_Erosao_Laminar_Em_Municipio_PR.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Identificacao_De_Areas_Criticas_De_Erosao Laminar.pdf",
+      "orig_rel_path": "Identificacao_De_Areas_Criticas_De_Erosao Laminar.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Identificacao_De_Areas_Criticas_De_Erosao Laminar.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Integrated image processing and machine learning framework.pdf",
+      "orig_rel_path": "Integrated image processing and machine learning framework.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Integrated image processing and machine learning framework.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Integrating_Remote_Sensing_GIS_and_AI_Technologies.pdf",
+      "orig_rel_path": "Integrating_Remote_Sensing_GIS_and_AI_Technologies.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Integrating_Remote_Sensing_GIS_and_AI_Technologies.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Mapeamento_da_vulnerabilidade_geoambient.pdf",
+      "orig_rel_path": "Mapeamento_da_vulnerabilidade_geoambient.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Mapeamento_da_vulnerabilidade_geoambient.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Mapeamento_do_potencial_de_erosao_lamina.pdf",
+      "orig_rel_path": "Mapeamento_do_potencial_de_erosao_lamina.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Mapeamento_do_potencial_de_erosao_lamina.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Mapeamento_Por_Tecnicas_De_Geoprocessame.pdf",
+      "orig_rel_path": "Mapeamento_Por_Tecnicas_De_Geoprocessame.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Mapeamento_Por_Tecnicas_De_Geoprocessame.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Pesquisa sobre a previsão da degradação irregular do solo.pdf",
+      "orig_rel_path": "Pesquisa sobre a previsão da degradação irregular do solo.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Pesquisa sobre a previsão da degradação irregular do solo.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Potencial_a_erosao_laminar_utilizando_Si.pdf",
+      "orig_rel_path": "Potencial_a_erosao_laminar_utilizando_Si.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Potencial_a_erosao_laminar_utilizando_Si.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Predicao_Da_Perda_De_Solo_Por_Erosao_Lam.pdf",
+      "orig_rel_path": "Predicao_Da_Perda_De_Solo_Por_Erosao_Lam.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Predicao_Da_Perda_De_Solo_Por_Erosao_Lam.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Real-time_soil_erosion_detection_using_satellite_i.pdf",
+      "orig_rel_path": "Real-time_soil_erosion_detection_using_satellite_i.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Real-time_soil_erosion_detection_using_satellite_i.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Research on Soil Erosion Based on Remote Sensing Technology.pdf",
+      "orig_rel_path": "Research on Soil Erosion Based on Remote Sensing Technology.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Research on Soil Erosion Based on Remote Sensing Technology.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "salomao_fs_me_bauru.pdf",
+      "orig_rel_path": "salomao_fs_me_bauru.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\salomao_fs_me_bauru.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Spatiotemporal modeling of soil loss and sediment yield due to land use and land cover.pdf",
+      "orig_rel_path": "Spatiotemporal modeling of soil loss and sediment yield due to land use and land cover.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Spatiotemporal modeling of soil loss and sediment yield due to land use and land cover.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "USE+OF+REMOTE+SENSING+IN+EROSION+ANALYSIS+IN+THE+GENERAL+SAMPAIO+DAM+WATERSHED+-+CE.pdf",
+      "orig_rel_path": "USE+OF+REMOTE+SENSING+IN+EROSION+ANALYSIS+IN+THE+GENERAL+SAMPAIO+DAM+WATERSHED+-+CE.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\USE+OF+REMOTE+SENSING+IN+EROSION+ANALYSIS+IN+THE+GENERAL+SAMPAIO+DAM+WATERSHED+-+CE.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Uso_de_Tecnicas_de_Geoprocessamento.pdf",
+      "orig_rel_path": "Uso_de_Tecnicas_de_Geoprocessamento.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Uso_de_Tecnicas_de_Geoprocessamento.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Geoprocessamento Aplicado na Caracterizacao de Bacias Hidrograficas Visando a sua Sustentbilidade.pdf",
+      "orig_rel_path": "Livros\\Geoprocessamento Aplicado na Caracterizacao de Bacias Hidrograficas Visando a sua Sustentbilidade.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Geoprocessamento Aplicado na Caracterizacao de Bacias Hidrograficas Visando a sua Sustentbilidade.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Geoprocessamento-Aplicada-no-Planejamento-de-Bacias-Hidrograficas-1.pdf",
+      "orig_rel_path": "Livros\\Geoprocessamento-Aplicada-no-Planejamento-de-Bacias-Hidrograficas-1.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Geoprocessamento-Aplicada-no-Planejamento-de-Bacias-Hidrograficas-1.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "13104+-+Avaliação+da+Susceptibilidade+à+Erosão+Laminar+no+Alto+Banabuiú+(CE).pdf",
+      "orig_rel_path": "Localização\\13104+-+Avaliação+da+Susceptibilidade+à+Erosão+Laminar+no+Alto+Banabuiú+(CE).pdf",
+      "new_rel_path": "Pesquisas relacionadas\\13104+-+Avaliação+da+Susceptibilidade+à+Erosão+Laminar+no+Alto+Banabuiú+(CE).pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "13659-45240-1-SM.pdf",
+      "orig_rel_path": "Localização\\13659-45240-1-SM.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\13659-45240-1-SM.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "232.pdf",
+      "orig_rel_path": "Localização\\232.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\232.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "35cbe_149-154.pdf",
+      "orig_rel_path": "Localização\\35cbe_149-154.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\35cbe_149-154.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "59130+Texto+do+artigo-263494-2-15-20210615.pdf",
+      "orig_rel_path": "Localização\\59130+Texto+do+artigo-263494-2-15-20210615.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\59130+Texto+do+artigo-263494-2-15-20210615.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "63077+POTENCIAL+À+EROSÃO+LAMINAR+NA+BACIA+HIDROGRÁFICA+DO+RIBEIRÃO+DOURADINHO,+NO+TRIÂNGULO+MINEIRO_.pdf",
+      "orig_rel_path": "Localização\\63077+POTENCIAL+À+EROSÃO+LAMINAR+NA+BACIA+HIDROGRÁFICA+DO+RIBEIRÃO+DOURADINHO,+NO+TRIÂNGULO+MINEIRO_.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\63077+POTENCIAL+À+EROSÃO+LAMINAR+NA+BACIA+HIDROGRÁFICA+DO+RIBEIRÃO+DOURADINHO,+NO+TRIÂNGULO+MINEIRO_.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "admin,+05-24-final.pdf",
+      "orig_rel_path": "Localização\\admin,+05-24-final.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\admin,+05-24-final.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "admin,+Art.+5+-+Análise+da+Suscetibilidade+-+RBG+11+Nº+2.pdf",
+      "orig_rel_path": "Localização\\admin,+Art.+5+-+Análise+da+Suscetibilidade+-+RBG+11+Nº+2.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\admin,+Art.+5+-+Análise+da+Suscetibilidade+-+RBG+11+Nº+2.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "admin,+RBG_Ano_7_n_2_2006_73_85.pdf",
+      "orig_rel_path": "Localização\\admin,+RBG_Ano_7_n_2_2006_73_85.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\admin,+RBG_Ano_7_n_2_2006_73_85.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Carvalho_EstimativaDePerdaDeSoloPoErosaoLaminarEmLucena_2019.pdf",
+      "orig_rel_path": "Localização\\Carvalho_EstimativaDePerdaDeSoloPoErosaoLaminarEmLucena_2019.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Carvalho_EstimativaDePerdaDeSoloPoErosaoLaminarEmLucena_2019.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "CerriCarlosEduardoPellegrino.pdf",
+      "orig_rel_path": "Localização\\CerriCarlosEduardoPellegrino.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\CerriCarlosEduardoPellegrino.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "contgeo,+27-V_SGFNE_LISBOA_ET_AL_EIXO_05.pdf",
+      "orig_rel_path": "Localização\\contgeo,+27-V_SGFNE_LISBOA_ET_AL_EIXO_05.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\contgeo,+27-V_SGFNE_LISBOA_ET_AL_EIXO_05.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "dissertacao_elaine_final (2)_compressed.pdf",
+      "orig_rel_path": "Localização\\dissertacao_elaine_final (2)_compressed.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\dissertacao_elaine_final (2)_compressed.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "fabiobreunig,+20_Espacialização+da+perda+de+solos.pdf",
+      "orig_rel_path": "Localização\\fabiobreunig,+20_Espacialização+da+perda+de+solos.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\fabiobreunig,+20_Espacialização+da+perda+de+solos.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "geografar,+12106-39730-1-CE.pdf",
+      "orig_rel_path": "Localização\\geografar,+12106-39730-1-CE.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\geografar,+12106-39730-1-CE.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "LUZIANE-SANTOS-RIBEIRO.pdf",
+      "orig_rel_path": "Localização\\LUZIANE-SANTOS-RIBEIRO.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\LUZIANE-SANTOS-RIBEIRO.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "p103.pdf",
+      "orig_rel_path": "Localização\\p103.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\p103.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "ppggeografia_danielsantanalanza_dissertacaomestrado.pdf",
+      "orig_rel_path": "Localização\\ppggeografia_danielsantanalanza_dissertacaomestrado.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\ppggeografia_danielsantanalanza_dissertacaomestrado.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "PREMIO-MAPBIOMAS_VulnerabilidadeErosao_FINAL-Margareth-Simoes.pdf",
+      "orig_rel_path": "Localização\\PREMIO-MAPBIOMAS_VulnerabilidadeErosao_FINAL-Margareth-Simoes.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\PREMIO-MAPBIOMAS_VulnerabilidadeErosao_FINAL-Margareth-Simoes.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "SUSCETIBILIDADE_RISCO_EROSAO_LAMINAR.pdf",
+      "orig_rel_path": "Localização\\SUSCETIBILIDADE_RISCO_EROSAO_LAMINAR.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\SUSCETIBILIDADE_RISCO_EROSAO_LAMINAR.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "trabalho1_87.pdf",
+      "orig_rel_path": "Localização\\trabalho1_87.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\trabalho1_87.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "transferir.pdf",
+      "orig_rel_path": "Localização\\transferir.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\transferir.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "zeluiz,+02_Estimativa.pdf",
+      "orig_rel_path": "Localização\\zeluiz,+02_Estimativa.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\zeluiz,+02_Estimativa.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Relatorio_Tecnico_Suscetibilidade.pdf",
+      "orig_rel_path": "Localização\\Mapa Sucetibilidade 2020\\Relatorio_Tecnico_Suscetibilidade.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Relatorio_Tecnico_Suscetibilidade.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "remotesensing-13-00155-v3.pdf",
+      "orig_rel_path": "XGBoost\\Artigos01\\remotesensing-13-00155-v3.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\remotesensing-13-00155-v3.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    },
+    {
+      "filename": "Modeling and Assessment of Land Degradation Vulnerability in Arid Ecosystem of Rajasthan Using Analytical Hierarchy Process and - Semantic Scholar.pdf",
+      "orig_rel_path": "XGBoost\\Artigos02\\Modeling and Assessment of Land Degradation Vulnerability in Arid Ecosystem of Rajasthan Using Analytical Hierarchy Process and - Semantic Scholar.pdf",
+      "new_rel_path": "Pesquisas relacionadas\\Modeling and Assessment of Land Degradation Vulnerability in Arid Ecosystem of Rajasthan Using Analytical Hierarchy Process and - Semantic Scholar.pdf",
+      "justification": "Pesquisa correlata ao SAREL: aborda diagnóstico e mapeamento empírico de erosão laminar no Paraná/Brasil (RUSLE/USLE, fatores biofísicos), técnicas de sensoriamento remoto (Sentinel, índices de vegetação/solo) ou aplicações correlatas de IA/Deep Learning na degradação de solos."
+    }
+  ],
+  "restantes": [
+    {
+      "filename": "Analise de algoritmos de segmentação de Imagens.pdf",
+      "rel_path": "Analise de algoritmos de segmentação de Imagens.pdf",
+      "justification": "Arquivo não correlato ao escopo de erosão do solo (LLMs, sinistro agrícola, queimadas, registros de busca, slides ou cópia duplicada)."
+    },
+    {
+      "filename": "BigEarthNet txt Dataset and Benchmark for Earth.pdf",
+      "rel_path": "BigEarthNet txt Dataset and Benchmark for Earth.pdf",
+      "justification": "Arquivo não correlato ao escopo de erosão do solo (LLMs, sinistro agrícola, queimadas, registros de busca, slides ou cópia duplicada)."
+    },
+    {
+      "filename": "Combinando Inteligencia Artificial e imagens de satelite.pdf",
+      "rel_path": "Combinando Inteligencia Artificial e imagens de satelite.pdf",
+      "justification": "Arquivo não correlato ao escopo de erosão do solo (LLMs, sinistro agrícola, queimadas, registros de busca, slides ou cópia duplicada)."
+    },
+    {
+      "filename": "Pesquisa Leap - Capes.pdf",
+      "rel_path": "Pesquisa Leap - Capes.pdf",
+      "justification": "Arquivo não correlato ao escopo de erosão do solo (LLMs, sinistro agrícola, queimadas, registros de busca, slides ou cópia duplicada)."
+    },
+    {
+      "filename": "Process-Aware AI for Rainfall–Runoff Modeling.pdf",
+      "rel_path": "Process-Aware AI for Rainfall–Runoff Modeling.pdf",
+      "justification": "Arquivo não correlato ao escopo de erosão do solo (LLMs, sinistro agrícola, queimadas, registros de busca, slides ou cópia duplicada)."
+    },
+    {
+      "filename": "SoilDegradationBook.pdf",
+      "rel_path": "SoilDegradationBook.pdf",
+      "justification": "Arquivo não correlato ao escopo de erosão do solo (LLMs, sinistro agrícola, queimadas, registros de busca, slides ou cópia duplicada)."
+    },
+    {
+      "filename": "ThinkGeo - Benchmark para agentes LLM em tarefas de sensoriamento remoto com ferramentas estruturadas.pdf",
+      "rel_path": "ThinkGeo - Benchmark para agentes LLM em tarefas de sensoriamento remoto com ferramentas estruturadas.pdf",
+      "justification": "Arquivo não correlato ao escopo de erosão do solo (LLMs, sinistro agrícola, queimadas, registros de busca, slides ou cópia duplicada)."
+    },
+    {
+      "filename": "Universidade Agrícola de Nanjing lança seu primeiro modelo de linguagem agrícola de código aberto _SiNong.pdf",
+      "rel_path": "Universidade Agrícola de Nanjing lança seu primeiro modelo de linguagem agrícola de código aberto _SiNong.pdf",
+      "justification": "Arquivo não correlato ao escopo de erosão do solo (LLMs, sinistro agrícola, queimadas, registros de busca, slides ou cópia duplicada)."
+    },
+    {
+      "filename": "admin,+05-24-final (1).pdf",
+      "rel_path": "Localização\\admin,+05-24-final (1).pdf",
+      "justification": "Arquivo não correlato ao escopo de erosão do solo (LLMs, sinistro agrícola, queimadas, registros de busca, slides ou cópia duplicada)."
+    },
+    {
+      "filename": "Gemini Projeto Detecção e Predição de Erosão Laminar.pdf",
+      "rel_path": "Textos\\Gemini Projeto Detecção e Predição de Erosão Laminar.pdf",
+      "justification": "Arquivo não correlato ao escopo de erosão do solo (LLMs, sinistro agrícola, queimadas, registros de busca, slides ou cópia duplicada)."
+    },
+    {
+      "filename": "XGBoost fusão.pdf",
+      "rel_path": "XGBoost\\XGBoost fusão.pdf",
+      "justification": "Arquivo não correlato ao escopo de erosão do solo (LLMs, sinistro agrícola, queimadas, registros de busca, slides ou cópia duplicada)."
+    },
+    {
+      "filename": "Comparisons of diverse machine learning approaches for wildfire ....pdf",
+      "rel_path": "XGBoost\\Artigos02\\Comparisons of diverse machine learning approaches for wildfire ....pdf",
+      "justification": "Arquivo não correlato ao escopo de erosão do solo (LLMs, sinistro agrícola, queimadas, registros de busca, slides ou cópia duplicada)."
+    },
+    {
+      "filename": "Machine learning-based predictions of soil burn severity using spectral and LiDAR remote sensing data - Digital CSIC.pdf",
+      "rel_path": "XGBoost\\Artigos02\\Machine learning-based predictions of soil burn severity using spectral and LiDAR remote sensing data - Digital CSIC.pdf",
+      "justification": "Arquivo não correlato ao escopo de erosão do solo (LLMs, sinistro agrícola, queimadas, registros de busca, slides ou cópia duplicada)."
+    }
+  ]
+}

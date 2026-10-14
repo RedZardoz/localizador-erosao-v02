@@ -14,7 +14,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:vivo": "vitest run --include 'src/**/*.vivo.test.ts'"
+    "test:vivo": "vitest run --include 'src/**/*.vivo.test.ts'",
+    "sortear:d16": "node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts"
   },
   "dependencies": {
     "@google/earthengine": "^1.7.41",

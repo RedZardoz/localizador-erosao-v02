@@ -134,13 +134,17 @@ export function montarMatrizTreino(
 
     const janelaTemporal = ponto.temporal?.[opcoes.modeloJanela];
 
-    // Determinação do alvo supervisionado binário (1: Erosão, 0: Controle)
-    const rotuloNorm = rotulo.classe.toLowerCase();
+    // Determinação do alvo supervisionado binário exclusivamente a partir do rótulo humano (Regra 4 / Invariante 1:
+    // NUNCA usar ponto.classeAmostral calculado por NDVI/BSI para definir o alvo y do treino)
+    const rotuloNorm = rotulo.classe.trim().toLowerCase();
     const ehErosao =
       rotuloNorm.includes("erosao") ||
       rotuloNorm.includes("erosão") ||
-      rotuloNorm === "1" ||
-      ponto.classeAmostral === "erosao";
+      rotuloNorm === "presente" ||
+      rotuloNorm === "incipiente" ||
+      rotuloNorm === "moderada" ||
+      rotuloNorm === "severa" ||
+      rotuloNorm === "1";
     const classeAlvoBinaria: 0 | 1 = ehErosao ? 1 : 0;
 
     const linha: LinhaMatrizTreino = {

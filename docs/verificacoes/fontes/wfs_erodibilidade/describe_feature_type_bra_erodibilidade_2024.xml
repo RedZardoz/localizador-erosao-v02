@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:geonode="https://geoinfo.dados.embrapa.br" xmlns:gml="http://www.opengis.net/gml" elementFormDefault="qualified" targetNamespace="https://geoinfo.dados.embrapa.br">
+  <xsd:import namespace="http://www.opengis.net/gml" schemaLocation="https://geoinfo.dados.embrapa.br/geoserver/schemas/gml/3.1.1/base/gml.xsd"/>
+  <xsd:complexType name="bra_erodibilidade_2024_sirgas2000Type">
+    <xsd:complexContent>
+      <xsd:extension base="gml:AbstractFeatureType">
+        <xsd:sequence>
+          <xsd:element maxOccurs="1" minOccurs="1" name="ogc_fid" nillable="false" type="xsd:int"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="cd_fcim" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="nom_unidad" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="cod_um" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="cod_um2" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="legenda" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="legenda_c1" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="legenda_c2" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="legenda_c3" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="legenda_c4" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="erod_c1" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="erod_c2" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="erod_c3" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="erod_c4" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="erod_um" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="fator_k_um" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="area_ha" nillable="true" type="xsd:int"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="area_km2" nillable="true" type="xsd:double"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="k_solos" nillable="true" type="xsd:double"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="geometry" nillable="true" type="gml:MultiPolygonPropertyType"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="bra_erodibilidade_2024_sirgas2000" substitutionGroup="gml:_Feature" type="geonode:bra_erodibilidade_2024_sirgas2000Type"/>
+</xsd:schema>

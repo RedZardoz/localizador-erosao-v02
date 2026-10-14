@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import {
@@ -17,6 +17,7 @@ import {
 import { useSarelStore } from "@/store/useSarelStore";
 import type { PontoAmostral } from "@/types/ponto";
 import { gerarPlanilhaXLSX } from "@/lib/export/planilha";
+import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
 
 export const CandidateSelectionModal: React.FC = () => {
   const {
@@ -33,6 +34,7 @@ export const CandidateSelectionModal: React.FC = () => {
   } = useSarelStore();
 
   const [tamanhoAmostra, setTamanhoAmostra] = useState<number>(50);
+  const [proporcaoInLocoCorredorPct, setProporcaoInLocoCorredorPct] = useState<number>(20);
   const [raioThinningKm, setRaioThinningKm] = useState<number>(5.0);
   const [frequenciaSoloNuMin, setFrequenciaSoloNuMin] = useState<number>(0.15);
   const [declividadeMin, setDeclividadeMin] = useState<number>(3.0);
@@ -45,6 +47,8 @@ export const CandidateSelectionModal: React.FC = () => {
 
   const geeAtivo = credenciais.geeSessionActive;
   const areasAtivas = areas.filter((a) => a.ativa);
+  const qtdInLocoCorredor = Math.round((tamanhoAmostra * proporcaoInLocoCorredorPct) / 100);
+  const qtdOrbitalRestanteBacia = Math.max(0, tamanhoAmostra - qtdInLocoCorredor);
 
   const executarEleicaoAmostral = async () => {
     if (!geeAtivo) return;
@@ -67,6 +71,7 @@ export const CandidateSelectionModal: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tamanhoAmostra,
+          proporcaoInLocoCorredorPct,
           raioThinningKm,
           frequenciaSoloNuMin,
           declividadeMin,
@@ -272,6 +277,70 @@ export const CandidateSelectionModal: React.FC = () => {
                 onChange={(e) => setDeclividadeMax(Number(e.target.value))}
                 className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
               />
+            </div>
+
+            <div className="space-y-1 col-span-2 sm:col-span-1">
+              <label className="font-semibold text-amber-700 dark:text-amber-300">
+                Subamostra In-Loco (Corredor Foz–Céu Azul %)
+              </label>
+              <input
+                type="number"
+                step="5"
+                min="0"
+                max="100"
+                value={proporcaoInLocoCorredorPct}
+                onChange={(e) =>
+                  setProporcaoInLocoCorredorPct(
+                    Math.min(100, Math.max(0, Number(e.target.value)))
+                  )
+                }
+                className="w-full px-3 py-2 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700 rounded-xl font-mono text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+              />
+            </div>
+          </div>
+
+          {/* Resumo da Alocação nas 3 Escalas Experimentais (PPGTCA) */}
+          <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/70 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-2 text-[11px]">
+            <div className="font-bold text-slate-900 dark:text-white flex items-center justify-between">
+              <span>Partição Amostral nas 3 Escalas (nesta bacia: {AREA_INTERESSE_PADRAO.sigla} — parâmetro do estudo)</span>
+              <span className="font-mono text-emerald-700 dark:text-emerald-400">
+                Total: {tamanhoAmostra} pontos
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <span className="text-[10px] text-slate-500 block">
+                  1. Fase A — Bacia Toda (Orbital)
+                </span>
+                <span className="font-bold text-slate-900 dark:text-white font-mono">
+                  {qtdOrbitalRestanteBacia} pts ({100 - proporcaoInLocoCorredorPct}%)
+                </span>
+                <span className="text-[9px] text-slate-400 block">
+                  {AREA_INTERESSE_PADRAO.totalMunicipios - 6} municípios restantes nesta bacia ({AREA_INTERESSE_PADRAO.sigla})
+                </span>
+              </div>
+              <div className="p-2 rounded-lg bg-amber-50/70 dark:bg-amber-950/30 border border-amber-300/80 dark:border-amber-800">
+                <span className="text-[10px] text-amber-800 dark:text-amber-300 font-semibold block">
+                  2. Fase B — Verificação In-Loco
+                </span>
+                <span className="font-bold text-amber-900 dark:text-amber-200 font-mono">
+                  {qtdInLocoCorredor} pts ({proporcaoInLocoCorredorPct}%)
+                </span>
+                <span className="text-[9px] text-amber-700 dark:text-amber-400 block">
+                  Corredor Foz do Iguaçu – Céu Azul
+                </span>
+              </div>
+              <div className="p-2 rounded-lg bg-cyan-50/70 dark:bg-cyan-950/30 border border-cyan-300/80 dark:border-cyan-800">
+                <span className="text-[10px] text-cyan-800 dark:text-cyan-300 font-semibold block">
+                  3. Fase D — VANT / Drone (Held-Out)
+                </span>
+                <span className="font-bold text-cyan-900 dark:text-cyan-200 font-mono">
+                  4 Sítios (~198,5 ha)
+                </span>
+                <span className="text-[9px] text-cyan-700 dark:text-cyan-400 block">
+                  Medianeira &amp; Céu Azul (GSD 7,5 cm)
+                </span>
+              </div>
             </div>
           </div>
 

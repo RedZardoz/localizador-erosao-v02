@@ -3,6 +3,7 @@ import {
   converterFracaoDroneParaBinario,
   calcularMatrizConfusao,
   calcularKappaCohen,
+  calcularCorrelacaoPearson,
   executarValidacaoMatricial,
   assegurarSegregacaoHeldOut,
   PixelValidacao,
@@ -139,6 +140,41 @@ describe("Validação Matricial Padrão-Ouro (VANT/Drone vs Satélite)", () => {
       expect(() =>
         executarValidacaoMatricial([], { gsdDroneCm: 7.5, gradeSateliteM: 10.0 })
       ).toThrow("O conjunto de pixels de validação não pode estar vazio");
+    });
+
+    it("calcula correlação radiométrica de Pearson entre NDVI orbital e NDVI do VANT Spectral 2", () => {
+      const pixels: PixelValidacao[] = [
+        { idPixel: "p1", latitude: -25.29, longitude: -54.02, referenciaDrone: 1, predicaoSatelite: 1, ndviSatelite: 0.18, ndviDrone: 0.16 },
+        { idPixel: "p2", latitude: -25.29, longitude: -54.02, referenciaDrone: 1, predicaoSatelite: 1, ndviSatelite: 0.22, ndviDrone: 0.20 },
+        { idPixel: "p3", latitude: -25.29, longitude: -54.02, referenciaDrone: 0, predicaoSatelite: 0, ndviSatelite: 0.72, ndviDrone: 0.69 },
+        { idPixel: "p4", latitude: -25.29, longitude: -54.02, referenciaDrone: 0, predicaoSatelite: 0, ndviSatelite: 0.81, ndviDrone: 0.79 },
+      ];
+
+      const resultado = executarValidacaoMatricial(pixels, {
+        gsdDroneCm: 5.0,
+        gradeSateliteM: 10.0,
+      });
+
+      expect(resultado.correlacaoRadiometricaPearson).toBeDefined();
+      expect(resultado.correlacaoRadiometricaPearson).toBeGreaterThan(0.95);
+    });
+  });
+
+  describe("calcularCorrelacaoPearson", () => {
+    it("retorna 1.0 para correlação linear positiva perfeita", () => {
+      const x = [0.1, 0.2, 0.3, 0.4, 0.5];
+      const y = [0.15, 0.25, 0.35, 0.45, 0.55];
+      expect(calcularCorrelacaoPearson(x, y)).toBe(1.0);
+    });
+
+    it("retorna -1.0 para correlação linear negativa perfeita", () => {
+      const x = [1, 2, 3, 4, 5];
+      const y = [5, 4, 3, 2, 1];
+      expect(calcularCorrelacaoPearson(x, y)).toBe(-1.0);
+    });
+
+    it("retorna null quando há menos de 3 pares", () => {
+      expect(calcularCorrelacaoPearson([1, 2], [1, 2])).toBeNull();
     });
   });
 

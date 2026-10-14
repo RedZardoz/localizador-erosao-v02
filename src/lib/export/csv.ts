@@ -1,5 +1,6 @@
 import type { PontoAmostral } from "@/types/ponto";
-import { extrairLinhasAbaDados, BLOCO_FUNDAMENTACAO_LGPD } from "./planilha";
+import type { RotuloConsolidado } from "@/types/rotulo";
+import { extrairLinhasPorPerfil, BLOCO_FUNDAMENTACAO_LGPD } from "./planilha";
 import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
 import { assegurarInvariantesArtefato, ArtefatoProjetado } from "@/lib/matriz/invariantes";
 import type { PerfilExportacao } from "@/lib/matriz/perfis";
@@ -14,14 +15,18 @@ function escaparCsv(val: unknown): string {
 }
 
 /**
- * Gera arquivo CSV científico estruturado com cabeçalho de metadados, bloco LGPD e tabela com colunas duplas.
+ * Gera arquivo CSV científico estruturado com cabeçalho de metadados, bloco LGPD e tabela projetada pelo perfil.
  */
-export function gerarCsvCientifico(pontos: PontoAmostral[], perfil: PerfilExportacao = "planilha"): string {
+export function gerarCsvCientifico(
+  pontos: PontoAmostral[],
+  perfil: PerfilExportacao = "planilha",
+  rotulosConsolidados?: Record<string, RotuloConsolidado>
+): string {
   // 1. Guarda antissintético
   assegurarApenasPontosReais(pontos, "geração de arquivo CSV");
 
-  // 2. Extração de dados
-  const linhas = extrairLinhasAbaDados(pontos);
+  // 2. Extração de dados projetados estritamente pelo perfil
+  const linhas = extrairLinhasPorPerfil(pontos, perfil, rotulosConsolidados);
   const cabecalho = linhas.length > 0 ? Object.keys(linhas[0]) : [];
 
   // 3. Validação dos invariantes
@@ -38,7 +43,7 @@ export function gerarCsvCientifico(pontos: PontoAmostral[], perfil: PerfilExport
   // Cabeçalho de metadados
   linhasCsv.push(`# SAREL — Sistema de Amostragem e Rotulagem para Erosão Laminar`);
   linhasCsv.push(`# Emissão: ${new Date().toISOString()}`);
-  linhasCsv.push(`# Total de registros: ${pontos.length}`);
+  linhasCsv.push(`# Total de registros recebidos: ${pontos.length} | Emitidos no perfil: ${linhas.length}`);
   linhasCsv.push(`# Perfil: ${perfil}`);
   for (const l of BLOCO_FUNDAMENTACAO_LGPD.split("\n")) {
     linhasCsv.push(`# ${l}`);
