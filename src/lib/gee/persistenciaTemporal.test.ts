@@ -106,4 +106,35 @@ describe("Discrimina??o de Persist?ncia Temporal (Pousio vs Degrada??o Cr?nica)"
     expect(diag.regime).toBe("inconclusivo");
     expect(diag.confianca).toBe("baixa");
   });
+
+  it("deve retornar null em frequenciaExposicao, ndviMaximoMediano e taxaDegradacaoSwirAnual quando ha menos de 6 observacoes validas (N11 / A5)", () => {
+    const cincoCenas: ObservacaoCena[] = [
+      criarCena("2024-01-01", 2024.00, 0.50),
+      criarCena("2024-02-01", 2024.08, 0.50),
+      criarCena("2024-03-01", 2024.16, 0.50),
+      criarCena("2024-04-01", 2024.25, 0.50),
+      criarCena("2024-05-01", 2024.33, 0.50),
+    ];
+
+    const diag = analisarPersistenciaTemporal(cincoCenas, OPCOES_PADRAO);
+    expect(diag.regime).toBe("inconclusivo");
+    expect(diag.confianca).toBe("baixa");
+    expect(diag.frequenciaExposicao).toBeNull();
+    expect(diag.ndviMaximoMediano).toBeNull();
+    expect(diag.taxaDegradacaoSwirAnual).toBeNull();
+  });
+
+  it("deve retornar null em taxaDegradacaoSwirAnual quando o denominador da regressao for zero (den <= 1e-6) (N11 / A5)", () => {
+    const cenasTempoConstante: ObservacaoCena[] = [
+      criarCena("2024-01-01", 2024.00, 0.50, 0.20),
+      criarCena("2024-01-01", 2024.00, 0.50, 0.20),
+      criarCena("2024-01-01", 2024.00, 0.50, 0.20),
+      criarCena("2024-01-01", 2024.00, 0.50, 0.20),
+      criarCena("2024-01-01", 2024.00, 0.50, 0.20),
+      criarCena("2024-01-01", 2024.00, 0.50, 0.20),
+    ];
+
+    const diag = analisarPersistenciaTemporal(cenasTempoConstante, OPCOES_PADRAO);
+    expect(diag.taxaDegradacaoSwirAnual).toBeNull();
+  });
 });

@@ -36,7 +36,7 @@ export interface PreditoresTemporaisPonto {
   ndvi_p50: number | null;
   ndvi_p90: number | null;
   bsi_p50: number | null;
-  frequenciaSoloNu: number;
+  frequenciaSoloNu: number | null;
   // Harmônicos e tendências
   tendenciaSwirB12: number | null;
   amplitudeAnualNdvi: number | null;
@@ -132,7 +132,7 @@ export function montarPreditoresTemporais(
       ndvi_p50: null,
       ndvi_p90: null,
       bsi_p50: null,
-      frequenciaSoloNu: 0,
+      frequenciaSoloNu: null,
       tendenciaSwirB12: null,
       amplitudeAnualNdvi: null,
       lag_ndvi_t0: null,

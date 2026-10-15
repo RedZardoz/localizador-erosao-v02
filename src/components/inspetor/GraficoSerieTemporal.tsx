@@ -450,10 +450,25 @@ export function GraficoSerieTemporal({
           </div>
           <p className="text-slate-600">{diagnosticoPersistencia.motivoCientifico}</p>
           <div className="flex flex-wrap gap-4 pt-1 text-[11px] text-slate-500 font-mono">
-            <span>Freq. Solo Nu (Ê): {(diagnosticoPersistencia.frequenciaExposicao * 100).toFixed(1)}%</span>
+            <span>
+              Freq. Solo Nu (Ê):{" "}
+              {diagnosticoPersistencia.frequenciaExposicao !== null
+                ? `${(diagnosticoPersistencia.frequenciaExposicao * 100).toFixed(1)}%`
+                : "— (insuficiente)"}
+            </span>
             <span>Máx. Seq. Nu: {diagnosticoPersistencia.maxSequenciaExposicaoDias} dias</span>
-            <span>Vigor Máx (NDVI): {diagnosticoPersistencia.ndviMaximoMediano.toFixed(2)}</span>
-            <span>Tendência SWIR: {(diagnosticoPersistencia.taxaDegradacaoSwirAnual * 100).toFixed(2)}%/ano</span>
+            <span>
+              Vigor Máx (NDVI):{" "}
+              {diagnosticoPersistencia.ndviMaximoMediano !== null
+                ? diagnosticoPersistencia.ndviMaximoMediano.toFixed(2)
+                : "— (insuficiente)"}
+            </span>
+            <span>
+              Tendência SWIR:{" "}
+              {diagnosticoPersistencia.taxaDegradacaoSwirAnual !== null
+                ? `${(diagnosticoPersistencia.taxaDegradacaoSwirAnual * 100).toFixed(2)}%/ano`
+                : "— (insuficiente)"}
+            </span>
           </div>
         </div>
       )}

@@ -35,11 +35,11 @@ export type RegimeFenologico =
 export interface DiagnosticoPersistencia {
   regime: RegimeFenologico;
   confianca: "alta" | "media" | "baixa";
-  frequenciaExposicao: number;          // Fracao de cenas validas com solo nu (0.0 a 1.0)
+  frequenciaExposicao: number | null;          // Fracao de cenas validas com solo nu (0.0 a 1.0) ou null se < 6
   maxSequenciaExposicaoDias: number;    // Duracao maxima continua de solo exposto em dias
   recuperouDossel: boolean;             // Teve recuperacao com NDVI > 0.65 apos exposicao
-  ndviMaximoMediano: number;            // Vigor vegetativo de pico historico mediano
-  taxaDegradacaoSwirAnual: number;      // Tendencia de aumento no SWIR (B12) em % ao ano
+  ndviMaximoMediano: number | null;     // Vigor vegetativo de pico historico (P90 de NDVI da serie)
+  taxaDegradacaoSwirAnual: number | null; // Inclinacao da reflectancia B12 [0..1] por ano
   nObservacoesValidas: number;
   motivoCientifico: string;
 }
@@ -95,11 +95,11 @@ export function analisarPersistenciaTemporal(
     return {
       regime: "inconclusivo",
       confianca: "baixa",
-      frequenciaExposicao: 0,
+      frequenciaExposicao: null,
       maxSequenciaExposicaoDias: 0,
       recuperouDossel: false,
-      ndviMaximoMediano: 0,
-      taxaDegradacaoSwirAnual: 0,
+      ndviMaximoMediano: null,
+      taxaDegradacaoSwirAnual: null,
       nObservacoesValidas: nValidas,
       motivoCientifico: `Serie com apenas ${nValidas} observacoes validas (minimo de 6 exigido para discriminacao temporal).`,
     };
@@ -163,7 +163,7 @@ export function analisarPersistenciaTemporal(
   const ndviMaximo = Number(ndvisOrdenados[idxP90].toFixed(3));
 
   // 5. Tendencia Linear do SWIR (B12) ao longo do tempo (declive beta1 da regressao)
-  let taxaDegradacaoSwirAnual = 0;
+  let taxaDegradacaoSwirAnual: number | null = null;
   const pontosComB12 = serieProcessada.filter((p) => p.b12 !== null && Number.isFinite(p.b12));
 
   if (pontosComB12.length >= 6) {
@@ -217,10 +217,13 @@ export function analisarPersistenciaTemporal(
   if (
     frequenciaExposicao >= limiarFreqDegradacao ||
     (frequenciaExposicao > 0.15 && ndviMaximo < 0.55) ||
-    taxaDegradacaoSwirAnual > 0.015
+    (taxaDegradacaoSwirAnual !== null && taxaDegradacaoSwirAnual > 0.015)
   ) {
     const confianca: "alta" | "media" =
-      frequenciaExposicao >= 0.35 || taxaDegradacaoSwirAnual > 0.02 ? "alta" : "media";
+      frequenciaExposicao >= 0.35 ||
+      (taxaDegradacaoSwirAnual !== null && taxaDegradacaoSwirAnual > 0.02)
+        ? "alta"
+        : "media";
 
     return {
       regime: "degradacao_persistente",
