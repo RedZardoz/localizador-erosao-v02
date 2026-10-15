@@ -334,15 +334,15 @@ def balancear_com_pontos_controle(
             if lat is None or lon is None:
                 continue
 
-            # permitido: geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
+            # permitido: EXC-DRYRUN-SINTETICO-XGBOOST geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
             bsi_spd = float(np.random.uniform(-0.25, -0.02))
-            # permitido: geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
+            # permitido: EXC-DRYRUN-SINTETICO-XGBOOST geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
             ndvi_spd = float(np.random.uniform(0.68, 0.88))
-            # permitido: geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
+            # permitido: EXC-DRYRUN-SINTETICO-XGBOOST geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
             decliv = float(np.random.uniform(3.0, 14.0))
-            # permitido: geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
+            # permitido: EXC-DRYRUN-SINTETICO-XGBOOST geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
             elev = float(np.random.uniform(350, 750))
-            # permitido: geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
+            # permitido: EXC-DRYRUN-SINTETICO-XGBOOST geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
             perda_solo_spd = float(np.random.uniform(0.5, 4.5))
 
             registros_controle.append({

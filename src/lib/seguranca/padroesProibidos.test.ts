@@ -20,6 +20,174 @@ export interface ViolacaoPadrao {
   trecho: string;
 }
 
+export interface ExcecaoAutorizada {
+  id: string;
+  arquivo: string;
+  trecho: string;
+  justificativa: string;
+  autorizadoPor: string;
+  padrao?: string;
+}
+
+export const LISTA_EXCECOES_AUTORIZADAS: ExcecaoAutorizada[] = [
+  // Scripts - Geração sintética controlada para benchmark de pipeline
+  {
+    id: "EXC-DRYRUN-SINTETICO-XGBOOST",
+    arquivo: "scripts/treinar_xgboost_loco.py",
+    trecho: "bsi_spd = float(np.random.uniform",
+    justificativa: "Geração explícita de benchmark sintético de pipeline no modo dry-run com flag declarada",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-DRYRUN-SINTETICO-XGBOOST",
+    arquivo: "scripts/treinar_xgboost_loco.py",
+    trecho: "ndvi_spd = float(np.random.uniform",
+    justificativa: "Geração explícita de benchmark sintético de pipeline no modo dry-run com flag declarada",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-DRYRUN-SINTETICO-XGBOOST",
+    arquivo: "scripts/treinar_xgboost_loco.py",
+    trecho: "decliv = float(np.random.uniform",
+    justificativa: "Geração explícita de benchmark sintético de pipeline no modo dry-run com flag declarada",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-DRYRUN-SINTETICO-XGBOOST",
+    arquivo: "scripts/treinar_xgboost_loco.py",
+    trecho: "elev = float(np.random.uniform",
+    justificativa: "Geração explícita de benchmark sintético de pipeline no modo dry-run com flag declarada",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-DRYRUN-SINTETICO-XGBOOST",
+    arquivo: "scripts/treinar_xgboost_loco.py",
+    trecho: "perda_solo_spd = float(np.random.uniform",
+    justificativa: "Geração explícita de benchmark sintético de pipeline no modo dry-run com flag declarada",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+
+  // Componentes de UI - Coalescência com número permitida exclusivamente para controles visuais/câmera
+  {
+    id: "EXC-UI-MAPVIEWER-ZOOM",
+    arquivo: "src/components/map/MapViewer.tsx",
+    trecho: "zoom: zoom ?? 14",
+    justificativa: "Fallback de nível de zoom padrão da câmera do Mapbox na interface do usuário",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+    padrao: "coalescencia-com-numero",
+  },
+  {
+    id: "EXC-UI-MAPVIEWER-PITCH",
+    arquivo: "src/components/map/MapViewer.tsx",
+    trecho: "pitch: pitch ?? 50",
+    justificativa: "Fallback de inclinação de perspectiva (pitch) da câmera 3D na interface do usuário",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+    padrao: "coalescencia-com-numero",
+  },
+  {
+    id: "EXC-UI-MAPVIEWER-BEARING",
+    arquivo: "src/components/map/MapViewer.tsx",
+    trecho: "bearing: bearing ?? 0",
+    justificativa: "Fallback de rotação azimutal (bearing) da câmera do mapa na interface do usuário",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+    padrao: "coalescencia-com-numero",
+  },
+  {
+    id: "EXC-UI-FILTERSPANEL-DECLIVIDADE",
+    arquivo: "src/components/sidebar/FiltersPanel.tsx",
+    trecho: "value={filtros.declividadeMin ?? 0}",
+    justificativa: "Piso numérico inicial do controle deslizante (slider) de filtro de declividade mínima na UI",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+    padrao: "coalescencia-com-numero",
+  },
+
+  // Código Ativo - Exceções auditadas com comentário explícito
+  {
+    id: "EXC-API-SELECT-CANDIDATES-LIMITE",
+    arquivo: "src/app/api/gee/select-candidates/route.ts",
+    trecho: "limite computacional de busca inicial de centroides no indice SQLite",
+    justificativa: "Limite computacional de busca inicial de centroides no índice SQLite",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-API-SELECT-CANDIDATES-NORMALIZACAO",
+    arquivo: "src/app/api/gee/select-candidates/route.ts",
+    trecho: "normalizacao de percentual de alocacao de subamostra da interface [0, 100]",
+    justificativa: "Normalização de percentual de alocação de subamostra da interface [0, 100]",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-API-SELECT-CANDIDATES-POOL",
+    arquivo: "src/app/api/gee/select-candidates/route.ts",
+    trecho: "criterio minimo de tamanho de pool elegivel para selecao de candidatos",
+    justificativa: "Critério mínimo de tamanho de pool elegível para seleção de candidatos",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-API-SELECT-CANDIDATES-COTA",
+    arquivo: "src/app/api/gee/select-candidates/route.ts",
+    trecho: "subtracao aritmetica de cota amostral inteira nao negativa entre subconjuntos",
+    justificativa: "Subtração aritmética de cota amostral inteira não negativa entre subconjuntos",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-LIB-AMOSTRAGEM-CLAMP-SOLO-NU",
+    arquivo: "src/lib/gee/amostragemSoloNuLote.ts",
+    trecho: "clamp de seguranca numerica para fracao normalizada de satelite no intervalo 0 a 1",
+    justificativa: "Clamp de segurança numérica para fração normalizada de satélite no intervalo 0 a 1",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-LIB-AMOSTRAGEM-TIMEOUT-REDE",
+    arquivo: "src/lib/gee/amostragemSoloNuLote.ts",
+    trecho: "timeout de rede de requisicao http em milissegundos para conexao gee",
+    justificativa: "Timeout de rede de requisição HTTP em milissegundos para conexão GEE",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-LIB-AMOSTRAGEM-REQUISICOES-EVITADAS",
+    arquivo: "src/lib/gee/amostragemSoloNuLote.ts",
+    trecho: "metrica contavel de requisicoes http poupadas no processamento em lote",
+    justificativa: "Métrica contável de requisições HTTP poupadas no processamento em lote",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-LIB-AUTH-SEGUNDOS-VALIDADE",
+    arquivo: "src/lib/gee/auth.ts",
+    trecho: "fallback de protocolo oauth2 rfc6749 para token expiravel",
+    justificativa: "Fallback de protocolo OAuth2 RFC6749 para token expirável",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-LIB-PLANET-QUOTA-TIMESTAMP",
+    arquivo: "src/lib/planet/quota.ts",
+    trecho: "auditoria de timestamp do livro-razao local",
+    justificativa: "Auditoria de timestamp do livro-razao local",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-LIB-RUSLE-FATOR-LS-DIVISOR",
+    arquivo: "src/lib/rusle/fatorLS.ts",
+    trecho: "divisor de aguas no topo da vertente sem area de montante afluente (A_in = 0)",
+    justificativa: "Divisor de águas no topo da vertente sem área de montante afluente (A_in = 0)",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-STORE-PAGINACAO-TOUR",
+    arquivo: "src/store/useSarelStore.ts",
+    trecho: "controle de indice de paginacao de interface do tour metodologico (>= 0)",
+    justificativa: "Controle de índice de paginação de interface do tour metodológico (>= 0)",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-TESTE-UNMASK-JRC",
+    arquivo: "teste.ts",
+    trecho: "const water = jrc.unmask(0);",
+    justificativa: "Camada de exclusão booleana JRC sem dado no teste unitário",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+];
+
 const REGEX_PADROES = [
   { id: "unmask-numerico", regex: /\.unmask\s*\(\s*\d+(\.\d+)?\s*\)/ },
   { id: "ou-logico-com-numero", regex: /\|\|\s*\d+(\.\d+)?\b/ },
@@ -32,7 +200,7 @@ const REGEX_PADROES = [
   { id: "adquiridoEm-com-literal-data", regex: /adquiridoEm\s*:\s*["'`]\d{4}-\d{2}-\d{2}/ },
   {
     id: "sintese-aleatoria-atributos-fisicos",
-    regex: /(bsi|ndvi|decliv|slope|elev|perda|fator)[a-z_0-9]*\s*=\s*(float\()?((np\.)?random\.(uniform|normal|random|choice)|random\.(uniform|random|choice))/i,
+    regex: /(=\s*|:\s*)(float\()?(np\.)?random\.[a-zA-Z0-9_]+/,
   },
   { id: "credencial-begin-private-key", regex: /-----BEGIN\s+((RSA|EC|DSA|OPENSSH)\s+)?PRIVATE\s+KEY-----/i },
   { id: "credencial-literal-private-key", regex: /"private_key"\s*:\s*["'][A-Za-z0-9+/=\s-]{20,}/ },
@@ -43,8 +211,45 @@ const REGEX_PADROES = [
   { id: "credencial-bearer-jwt", regex: /Bearer\s+eyJ[0-9a-zA-Z_-]{20,}\b/ },
 ];
 
-export function varrerLinha(linha: string, numeroLinha: number, arquivo: string): ViolacaoPadrao[] {
-  // Exceção permitida somente com comentário explícito (TS // permitido: ou Python # permitido:)
+export function isLinhaIsentaPorListaFechada(
+  arquivo: string,
+  linha: string,
+  motivoComentario: string | null,
+  padraoId: string
+): boolean {
+  const arqNorm = arquivo.replace(/\\/g, "/");
+
+  for (const exc of LISTA_EXCECOES_AUTORIZADAS) {
+    const excArqNorm = exc.arquivo.replace(/\\/g, "/");
+    const arquivoBate = arqNorm.endsWith(excArqNorm) || excArqNorm.endsWith(arqNorm);
+    if (!arquivoBate) continue;
+
+    if (motivoComentario !== null) {
+      const bateComentario =
+        motivoComentario.includes(exc.id) || (exc.trecho && motivoComentario.includes(exc.trecho));
+      if (bateComentario) {
+        return true;
+      }
+    } else {
+      const trechoBate = linha.includes(exc.trecho) || exc.trecho.includes(linha.trim());
+      if (trechoBate) {
+        if (exc.padrao && exc.padrao !== padraoId) continue;
+        if (arqNorm.includes("src/components/")) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+export function varrerLinha(
+  linha: string,
+  numeroLinha: number,
+  arquivo: string,
+  motivoExterno?: string | null
+): ViolacaoPadrao[] {
   const marcadorTs = "// permitido:";
   const marcadorPy = "# permitido:";
   const idxTs = linha.indexOf(marcadorTs);
@@ -52,22 +257,24 @@ export function varrerLinha(linha: string, numeroLinha: number, arquivo: string)
   const idxMarcador = idxTs !== -1 ? idxTs : idxPy;
   const tamMarcador = idxTs !== -1 ? marcadorTs.length : marcadorPy.length;
 
+  let motivo: string | null = null;
   if (idxMarcador !== -1 && idxMarcador + tamMarcador < linha.length) {
-    const motivo = linha.slice(idxMarcador + tamMarcador).trim();
-    if (motivo.length >= 20) {
-      return [];
-    }
+    motivo = linha.slice(idxMarcador + tamMarcador).trim();
+  } else if (motivoExterno) {
+    motivo = motivoExterno;
   }
 
   const violacoes: ViolacaoPadrao[] = [];
   for (const { id, regex } of REGEX_PADROES) {
     if (regex.test(linha)) {
-      violacoes.push({
-        arquivo,
-        linha: numeroLinha,
-        padrao: id,
-        trecho: linha.trim(),
-      });
+      if (!isLinhaIsentaPorListaFechada(arquivo, linha, motivo, id)) {
+        violacoes.push({
+          arquivo,
+          linha: numeroLinha,
+          padrao: id,
+          trecho: linha.trim(),
+        });
+      }
     }
   }
   return violacoes;
@@ -77,20 +284,17 @@ export function varrerCodigo(codigo: string, nomeArquivo: string): ViolacaoPadra
   const linhas = codigo.split("\n");
   const violacoes: ViolacaoPadrao[] = [];
   linhas.forEach((linha, idx) => {
-    // Verifica se a linha anterior continha autorização explícita com justificativa >= 20 caracteres
     const linhaAnterior = idx > 0 ? linhas[idx - 1] : "";
     const idxAntTs = linhaAnterior.indexOf("// permitido:");
     const idxAntPy = linhaAnterior.indexOf("# permitido:");
     const idxAnt = idxAntTs !== -1 ? idxAntTs : idxAntPy;
     const tamAnt = idxAntTs !== -1 ? 14 : 13;
+    let motivoAnt: string | null = null;
     if (idxAnt !== -1 && idxAnt + tamAnt < linhaAnterior.length) {
-      const motivo = linhaAnterior.slice(idxAnt + tamAnt).trim();
-      if (motivo.length >= 20) {
-        return;
-      }
+      motivoAnt = linhaAnterior.slice(idxAnt + tamAnt).trim();
     }
 
-    violacoes.push(...varrerLinha(linha, idx + 1, nomeArquivo));
+    violacoes.push(...varrerLinha(linha, idx + 1, nomeArquivo, motivoAnt));
   });
   return violacoes;
 }
@@ -179,28 +383,46 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
       expect(v.some((x) => x.padrao === "adquiridoEm-com-new-date")).toBe(true);
     });
 
-    it("permite exceção com justificativa válida (>= 20 caracteres)", () => {
-      const code = `const water = jrc.unmask(0); // permitido: camada de exclusao booleana jrc sem dado`;
+    it("permite exceção com justificativa válida registrada na lista fechada", () => {
+      const code = `const water = jrc.unmask(0); // permitido: EXC-TESTE-UNMASK-JRC`;
       const v = varrerCodigo(code, "teste.ts");
       expect(v.length).toBe(0);
     });
 
-    it("rejeita exceção sem justificativa suficiente (< 20 caracteres)", () => {
+    it("rejeita exceção sem justificativa suficiente (< 20 caracteres) ou sem registro na lista fechada", () => {
       const code = `const water = jrc.unmask(0); // permitido: curto`;
       const v = varrerCodigo(code, "teste.ts");
       expect(v.length).toBeGreaterThan(0);
     });
 
-    it("detecta síntese aleatória de atributos físicos em Python sem comentário permitido", () => {
+    it("detecta síntese aleatória de atributos físicos em Python sem comentário permitido (Caso A)", () => {
       const code = `decliv = float(np.random.uniform(3.0, 14.0))`;
       const v = varrerCodigo(code, "teste.py");
       expect(v.some((x) => x.padrao === "sintese-aleatoria-atributos-fisicos")).toBe(true);
     });
 
-    it("permite síntese em Python quando acompanhada de justificativa >= 20 chars com # permitido:", () => {
-      const code = `decliv = float(np.random.uniform(3.0, 14.0)) # permitido: geracao explicita de benchmark de pipeline quando solicitado via flag dry-run`;
-      const v = varrerCodigo(code, "teste.py");
-      expect(v.length).toBe(0);
+    it("detecta síntese aleatória com atribuição em qualquer nome em scripts (Caso B)", () => {
+      const code = `amostra = np.random.uniform(0.0, 1.0)`;
+      const v = varrerCodigo(code, "scripts/exemplo.py");
+      expect(v.some((x) => x.padrao === "sintese-aleatoria-atributos-fisicos")).toBe(true);
+    });
+
+    it("detecta síntese aleatória em literais de dicionário em scripts (Caso C)", () => {
+      const code = `dados = {"declividade": np.random.normal(0, 1)}`;
+      const v = varrerCodigo(code, "scripts/exemplo.py");
+      expect(v.some((x) => x.padrao === "sintese-aleatoria-atributos-fisicos")).toBe(true);
+    });
+
+    it("rejeita isenção por texto livre longo sem registro na lista fechada (Caso D)", () => {
+      const code = `decliv = float(np.random.uniform(3.0, 14.0)) # permitido: este e um comentario longo sem id na lista fechada`;
+      const v = varrerCodigo(code, "scripts/treinar_xgboost_loco.py");
+      expect(v.length).toBeGreaterThan(0);
+    });
+
+    it("detecta coalescencia com numero em componente .tsx sem autorizacao na lista fechada", () => {
+      const code = `const valor = props.declividade ?? 0;`;
+      const v = varrerCodigo(code, "src/components/exemplo/NovoComponente.tsx");
+      expect(v.some((x) => x.padrao === "coalescencia-com-numero")).toBe(true);
     });
 
     it("detecta literais com formato de credenciais secretas no código (Regra C1)", () => {
@@ -273,6 +495,7 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
       ).toBeGreaterThanOrEqual(PISO_MINIMO_COMPONENTS);
 
       const padroesRestritosComponentes = new Set([
+        "coalescencia-com-numero",
         "coalescencia-com-numero-entre-aspas",
         "ou-logico-com-numero-entre-aspas",
         "adquiridoEm-com-new-date",
