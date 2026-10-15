@@ -74,6 +74,16 @@ export const SIGLAS_UFS_BRASIL = [
   "rs", "ro", "rr", "sc", "sp", "se", "to",
 ] as const;
 
+/**
+ * Casa `termo` em `texto` apenas como palavra/expressão ISOLADA: os vizinhos do trecho não podem ser letra nem dígito
+ * (o sublinhado, a barra e o hífen contam como separadores). Evita que "rede" case dentro de "credenciada" ou "dem" dentro
+ * de "ordem", o que bloquearia exportações legítimas. `texto` e `termo` devem vir em minúsculas.
+ */
+export function contemTermoIsolado(texto: string, termo: string): boolean {
+  const escapado = termo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(?<![\\p{L}\\p{N}])${escapado}(?![\\p{L}\\p{N}])`, "u").test(texto);
+}
+
 export const MOTIVOS_FALHA_OU_NAO_CONSULTADO_FUNDIARIO = [
   "erro",
   "falha",
@@ -395,7 +405,7 @@ export function validarInvariantesArtefato(artefato: ArtefatoProjetado): Resulta
           const val = String(linha[col] ?? "").trim();
           const valLower = val.toLowerCase();
           if (valLower.length > 0 && !valLower.startsWith("indisponível") && !valLower.startsWith("indisponivel")) {
-            const mencionaTermoSatelite = termosSatelite.some((t) => valLower.includes(t));
+            const mencionaTermoSatelite = termosSatelite.some((t) => contemTermoIsolado(valLower, t));
             const ehColunaSatelite = colunasSateliteConhecidas.includes(col);
             if (mencionaTermoSatelite || ehColunaSatelite) {
               temDadoSatelite = true;
@@ -483,7 +493,7 @@ export function validarInvariantesArtefato(artefato: ArtefatoProjetado): Resulta
         if (status === "sem-correspondencia") {
           const motivo = String(linhas[i]["Motivo_Acesso"] ?? "").trim().toLowerCase();
           const motivoApontaFalha = MOTIVOS_FALHA_OU_NAO_CONSULTADO_FUNDIARIO.some(
-            (m) => motivo.includes(m)
+            (m) => contemTermoIsolado(motivo, m)
           );
           if (!motivo || motivoApontaFalha) {
             violacoes.push({

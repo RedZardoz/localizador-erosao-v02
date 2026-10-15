@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validarInvariantesArtefato, assegurarInvariantesArtefato, ArtefatoProjetado } from "./invariantes";
+import { validarInvariantesArtefato, assegurarInvariantesArtefato, ArtefatoProjetado, contemTermoIsolado } from "./invariantes";
 
 describe("Invariantes de Exportação — Validações e Meta-Testes", () => {
   describe("Invariante 7: Detector de Constante Disfarçada", () => {
@@ -284,6 +284,46 @@ describe("Invariantes de Exportação — Validações e Meta-Testes", () => {
       };
       const res = validarInvariantesArtefato(artefato);
       expect(res.violacoes.some((v) => v.invariante === 5)).toBe(false);
+    });
+  });
+
+  describe("Casamento de termos por palavra isolada (revisão de 15/10/2026)", () => {
+    it("contemTermoIsolado: 'rede' não casa dentro de 'credenciada' nem 'dem' dentro de 'ordem'", () => {
+      expect(contemTermoIsolado("autorização de acesso credenciada", "rede")).toBe(false);
+      expect(contemTermoIsolado("ordem de serviço", "dem")).toBe(false);
+      expect(contemTermoIsolado("erro de rede", "rede")).toBe(true);
+      expect(contemTermoIsolado("erro_de_rede", "erro")).toBe(true);       // sublinhado separa
+      expect(contemTermoIsolado("copernicus/dem/glo30 (esa)", "dem")).toBe(true); // barra separa
+      expect(contemTermoIsolado("servico-indisponivel", "servico-indisponivel")).toBe(true);
+    });
+
+    it("Invariante 5: motivo legítimo com 'credenciada' NÃO é tratado como falha de consulta", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "campo-cego",
+        cabecalho: ["Codigo", "Status_Fundiario", "Motivo_Acesso"],
+        linhas: [{ Codigo: "PR-001", Status_Fundiario: "sem-correspondencia", Motivo_Acesso: "Consulta realizada por equipe credenciada; imóvel não localizado na base" }],
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.violacoes.some((v) => v.invariante === 5)).toBe(false);
+    });
+
+    it("Invariante 5: 'falha de rede' continua reprovando", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "campo-cego",
+        cabecalho: ["Codigo", "Status_Fundiario", "Motivo_Acesso"],
+        linhas: [{ Codigo: "PR-001", Status_Fundiario: "sem-correspondencia", Motivo_Acesso: "falha de rede na consulta" }],
+      };
+      expect(validarInvariantesArtefato(artefato).violacoes.some((v) => v.invariante === 5)).toBe(true);
+    });
+
+    it("Invariante 4: origem 'Ordem de serviço' não é dado de satélite; 'Copernicus DEM' é", () => {
+      const base = (origem: string): ArtefatoProjetado => ({
+        perfil: "planilha",
+        cabecalho: ["Codigo", "Observacao_Origem", "Rastreio_Cenas", "Rastreio_Versao_Motor"],
+        linhas: [{ Codigo: "PR-001", Observacao_Origem: origem, Rastreio_Cenas: "", Rastreio_Versao_Motor: "" }],
+      });
+      expect(validarInvariantesArtefato(base("Ordem de serviço 123")).violacoes.some((v) => v.invariante === 4)).toBe(false);
+      expect(validarInvariantesArtefato(base("Copernicus DEM GLO-30")).violacoes.some((v) => v.invariante === 4)).toBe(true);
     });
   });
 
