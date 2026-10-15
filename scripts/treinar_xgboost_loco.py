@@ -165,7 +165,7 @@ def identificar_bacia_real(lat: float, lon: float) -> str | None:
     return None
 
 
-def carregar_dados_reais(caminho_arquivo: str) -> pd.DataFrame:
+def carregar_dados_reais(caminho_arquivo: str, exigir_alvo: bool = True) -> pd.DataFrame:
     """
     Carrega dados tabulares a partir de arquivo Excel, CSV ou JSON.
 
@@ -185,11 +185,17 @@ def carregar_dados_reais(caminho_arquivo: str) -> pd.DataFrame:
     if ext in ['.xlsx', '.xls']:
         df = pd.read_excel(caminho_arquivo)
     elif ext == '.csv':
-        df = pd.read_csv(caminho_arquivo)
+        df = pd.read_csv(caminho_arquivo, comment='#', encoding='utf-8-sig')
     elif ext == '.json':
         df = pd.read_json(caminho_arquivo)
     else:
         raise ValueError(f"Formato de arquivo não suportado: {ext}")
+
+    if exigir_alvo and 'Classe_Alvo_Binaria' not in df.columns:
+        raise ValueError(
+            f"Coluna do alvo 'Classe_Alvo_Binaria' ausente no arquivo '{os.path.basename(caminho_arquivo)}'. "
+            "A matriz de treino deve conter a coluna de rotulagem humana consolidada."
+        )
 
     print(f"[CARGA] {len(df)} registros reais carregados de '{os.path.basename(caminho_arquivo)}'.")
     return df
@@ -268,7 +274,7 @@ def balancear_com_pontos_controle(
     # 1. Caso haja arquivo externo de controles empíricos reais
     if caminho_controles and os.path.exists(caminho_controles):
         print(f"[BALANCEAMENTO] Carregando controles reais de '{os.path.basename(caminho_controles)}'...")
-        df_ctrl = carregar_dados_reais(caminho_controles)
+        df_ctrl = carregar_dados_reais(caminho_controles, exigir_alvo=False)
         df_ctrl['Classe_Alvo_Binaria'] = 0
         print(
             f"  [PROCEDÊNCIA DE PLANILHA] {len(df_ctrl)} registros receberam Classe_Alvo_Binaria=0 "
