@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import fs from "fs";
+import path from "path";
 import {
   CandidatoSorteioD16,
   ErroPreCondicaoSorteioD16,
@@ -361,6 +363,13 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
         expect(p.pi_i * p.w_i).toBeCloseTo(1.0, 7);
       }
     }
+  });
+
+  it("C01 / A01: assevera que PainelSorteioD16 não importa módulos com node:* nem sorteioPoligonos diretamente", () => {
+    const painelPath = path.resolve(__dirname, "../../components/decisoes/PainelSorteioD16.tsx");
+    const conteudo = fs.readFileSync(painelPath, "utf-8");
+    expect(conteudo).not.toMatch(/from\s+["']@\/lib\/gee\/sorteioPoligonos["']/);
+    expect(conteudo).not.toMatch(/node:(crypto|child_process|fs)/);
   });
 });
 

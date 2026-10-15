@@ -7,7 +7,7 @@ import {
   CandidatoSorteioD16,
   SeloSorteioD16,
   verificarPreCondicoesSorteioD16,
-} from "@/lib/gee/sorteioPoligonos";
+} from "@/lib/gee/sorteioPoligonosTipos";
 import { valorOuNulo } from "@/types/proveniencia";
 import { CalculadoraDesenhoAmostral } from "./CalculadoraDesenhoAmostral";
 

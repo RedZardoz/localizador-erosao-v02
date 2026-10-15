@@ -31,7 +31,7 @@ import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
 import { CAMPOS_PROIBIDOS_MATRIZ_TREINO } from "@/lib/matriz/invariantes";
-import type { SeloSorteioD16 } from "@/lib/gee/sorteioPoligonos";
+import type { SeloSorteioD16 } from "@/lib/gee/sorteioPoligonosTipos";
 
 /** Raio médio esférico adotado pelo QGroundControl em `QGCGeo.cc` (`CONSTANTS_RADIUS_OF_EARTH`). */
 export const QGC_EARTH_RADIUS_METERS = 6371000.0;
