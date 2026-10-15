@@ -6,7 +6,7 @@ import { execSync } from "node:child_process";
 import {
   CandidatoSorteioD16,
   verificarPreCondicoesSorteioD16,
-  sortearPoligonosDroneD16,
+  sortear72PoligonosD16,
   asseverarCaminhoSeloIgnoradoGit,
 } from "@/lib/gee/sorteioPoligonos";
 
@@ -178,7 +178,7 @@ export async function POST(req: NextRequest) {
       .relative(process.cwd(), caminhoSeloAbs)
       .replace(/\\/g, "/");
 
-    const selo = sortearPoligonosDroneD16(candidatos, {
+    const selo = sortear72PoligonosD16(candidatos, {
       semente,
       gitCommit,
       sha256ConjuntoCandidatos: sha256,

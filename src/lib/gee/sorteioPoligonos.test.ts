@@ -157,7 +157,11 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
     for (const qtd of [2, 3]) {
       const pool = gerarPoolCandidatosElegiveis(qtd);
       expect(() => {
-        sortear72PoligonosD16(pool, { semente: 42 });
+        sortear72PoligonosD16(pool, {
+          semente: 42,
+          gitCommit: "commit-teste",
+          sha256ConjuntoCandidatos: "sha256-teste",
+        });
       }).toThrow();
     }
   });
@@ -338,6 +342,7 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
     const selo72 = sortear72PoligonosD16(pool, {
       semente: 20260929,
       gitCommit: "f5be525",
+      sha256ConjuntoCandidatos: "sha256-conjunto-teste",
       geradoEm: "2026-09-29T19:20:00.000Z",
     });
 
@@ -372,4 +377,117 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
     expect(conteudo).not.toMatch(/node:(crypto|child_process|fs)/);
   });
 });
+
+describe("N10 — Contrato de Sorteio 72 Polígonos D16 (REVISAO_GLOBAL B1)", () => {
+  it("(i) sortear72PoligonosD16 com semente 0, negativa, fracionária ou NaN deve lançar erro", () => {
+    const pool = gerarPoolCandidatosElegiveis(5);
+    const opcoesBase = {
+      gitCommit: "abc1234",
+      sha256ConjuntoCandidatos: "sha256-valido",
+    };
+    for (const sem of [0, -1, 1.5, NaN]) {
+      expect(() =>
+        sortear72PoligonosD16(pool, { ...opcoesBase, semente: sem } as any)
+      ).toThrow(/Semente de sorteio inválida/);
+    }
+  });
+
+  it("(ii) com candidato DRY-CAND-…, isSynthetic: true ou origemSintetica: true deve lançar erro (mesma mensagem da versão antiga)", () => {
+    const pool1 = gerarPoolCandidatosElegiveis(5);
+    pool1[0].id = "DRY-CAND-0001";
+    expect(() =>
+      sortear72PoligonosD16(pool1, { semente: 20260928, gitCommit: "c1", sha256ConjuntoCandidatos: "sha1" } as any)
+    ).toThrow(
+      "Recusa de sorteio D23 (T4.3): o selo de sorteio jamais pode ser gerado a partir de candidatos sintéticos/fabricados (DRY-CAND- / isSynthetic)."
+    );
+
+    const pool2 = gerarPoolCandidatosElegiveis(5);
+    pool2[0].isSynthetic = true;
+    expect(() =>
+      sortear72PoligonosD16(pool2, { semente: 20260928, gitCommit: "c1", sha256ConjuntoCandidatos: "sha1" } as any)
+    ).toThrow(
+      "Recusa de sorteio D23 (T4.3): o selo de sorteio jamais pode ser gerado a partir de candidatos sintéticos/fabricados (DRY-CAND- / isSynthetic)."
+    );
+
+    const pool3 = gerarPoolCandidatosElegiveis(5);
+    pool3[0].origemSintetica = true;
+    expect(() =>
+      sortear72PoligonosD16(pool3, { semente: 20260928, gitCommit: "c1", sha256ConjuntoCandidatos: "sha1" } as any)
+    ).toThrow(
+      "Recusa de sorteio D23 (T4.3): o selo de sorteio jamais pode ser gerado a partir de candidatos sintéticos/fabricados (DRY-CAND- / isSynthetic)."
+    );
+  });
+
+  it("(iii) sem gitCommit ou sem sha256ConjuntoCandidatos nas opções deve lançar erro (nada de HEAD nem constante)", () => {
+    const pool = gerarPoolCandidatosElegiveis(5);
+    expect(() =>
+      sortear72PoligonosD16(pool, { semente: 20260928, sha256ConjuntoCandidatos: "sha1" } as any)
+    ).toThrow(/gitCommit/);
+
+    expect(() =>
+      sortear72PoligonosD16(pool, { semente: 20260928, gitCommit: "c1" } as any)
+    ).toThrow(/sha256ConjuntoCandidatos/);
+  });
+
+  it("(iv) o selo devolvido tem sha256ConjuntoCandidatos igual ao informado e hashIntegridade DIFERENTE para sementes diferentes e para conjuntos de polígonos diferentes (hash do conteúdo, não da semente)", () => {
+    const pool1 = gerarPoolCandidatosElegiveis(5);
+    const seloA = sortear72PoligonosD16(pool1, {
+      semente: 20260928,
+      gitCommit: "commit1",
+      sha256ConjuntoCandidatos: "sha-especifico-1",
+    } as any);
+    expect(seloA.sha256ConjuntoCandidatos).toBe("sha-especifico-1");
+
+    const seloB = sortear72PoligonosD16(pool1, {
+      semente: 20260929,
+      gitCommit: "commit1",
+      sha256ConjuntoCandidatos: "sha-especifico-1",
+    } as any);
+    expect(seloA.hashIntegridade).not.toBe(seloB.hashIntegridade);
+
+    const pool2 = gerarPoolCandidatosElegiveis(6);
+    const seloC = sortear72PoligonosD16(pool2, {
+      semente: 20260928,
+      gitCommit: "commit1",
+      sha256ConjuntoCandidatos: "sha-especifico-2",
+    } as any);
+    expect(seloA.hashIntegridade).not.toBe(seloC.hashIntegridade);
+  });
+
+  it("(v) a ordem de chegada dos candidatos não altera o resultado (embaralhe o vetor de entrada e compare os IDs sorteados)", () => {
+    const pool1 = gerarPoolCandidatosElegiveis(5);
+    const pool2 = [...pool1].reverse();
+
+    const selo1 = sortear72PoligonosD16(pool1, {
+      semente: 20260928,
+      gitCommit: "commit1",
+      sha256ConjuntoCandidatos: "sha-teste",
+    } as any);
+
+    const selo2 = sortear72PoligonosD16(pool2, {
+      semente: 20260928,
+      gitCommit: "commit1",
+      sha256ConjuntoCandidatos: "sha-teste",
+    } as any);
+
+    const ids1 = selo1.poligonos.map((p) => p.idCandidatoOrigem);
+    const ids2 = selo2.poligonos.map((p) => p.idCandidatoOrigem);
+    expect(ids1).toEqual(ids2);
+  });
+
+  it("(vi) totalPoligonosSorteados = 72, totalTreino = 36, totalHeldOut = 36", () => {
+    const pool = gerarPoolCandidatosElegiveis(5);
+    const selo = sortear72PoligonosD16(pool, {
+      semente: 20260928,
+      gitCommit: "c1",
+      sha256ConjuntoCandidatos: "sha1",
+    } as any);
+    expect(selo.totalPoligonosSorteados).toBe(72);
+    expect(selo.totalTreino).toBe(36);
+    expect(selo.totalHeldOut).toBe(36);
+    expect(selo.poligonos.filter((p) => p.papelConjunto === "treino")).toHaveLength(36);
+    expect(selo.poligonos.filter((p) => p.papelConjunto === "held-out")).toHaveLength(36);
+  });
+});
+
 

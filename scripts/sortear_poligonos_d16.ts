@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * CLI de Sorteio dos 36 Polígonos de Drone (10 ha) — FASE A1 (Decisões D16 e D23)
+ * CLI de Sorteio dos 72 Polígonos de 5,02 ha (~361 ha) — FASE A1 (Decisões D16 e D23)
  * Executável via: `npm run sortear:d16 -- --dry-run`
  * ============================================================================
  *
@@ -21,7 +21,7 @@ import { execSync } from "node:child_process";
 import {
   CandidatoSorteioD16,
   verificarPreCondicoesSorteioD16,
-  sortearPoligonosDroneD16,
+  sortear72PoligonosD16,
 } from "@/lib/gee/sorteioPoligonos";
 import { TODOS_ESTRATOS_D12 } from "@/lib/gee/estratificacao";
 
@@ -61,7 +61,7 @@ function gerarConjuntoInspecaoDryRun(): CandidatoSorteioD16[] {
   for (let sIdx = 0; sIdx < sTercis.length; sIdx++) {
     for (let eIdx = 0; eIdx < eTercis.length; eIdx++) {
       for (const k of kNiveis) {
-        const nNoEstrato = 4 + ((sIdx + eIdx + k) % 3); // 4, 5 ou 6 candidatos por estrato
+        const nNoEstrato = 6; // 6 candidatos por estrato (total 108) para garantir >= 4 por estrato conforme emenda D16 (72 polígonos)
         for (let i = 0; i < nNoEstrato; i++) {
           pool.push({
             id: `DRYRUN-BP3-${String(seq).padStart(4, "0")}`,
@@ -97,7 +97,7 @@ function executarCli(): void {
   const seloExistente = localizarSeloExistente();
 
   console.log("========================================================================");
-  console.log("SAREL — COMANDO DE SORTEIO DOS 36 POLÍGONOS DE 10 ha (FASE A1 — D16/D23)");
+  console.log("SAREL — COMANDO DE SORTEIO DOS 72 POLÍGONOS DE 5,02 ha (~361 ha) (FASE A1 — D16/D23)");
   console.log("========================================================================");
 
   if (seloExistente) {
@@ -160,7 +160,7 @@ function executarCli(): void {
 
   if (origemSintetica) {
     console.log(
-      "\n[AVISO — DADOS SINTÉTICOS DE EXERCÍCIO ESTRUTURAL] Os limiares empíricos e as contagens abaixo NÃO descrevem a Bacia do Paraná 3; são 90 candidatos fabricados exclusivamente para exercitar a estrutura das 7 pré-condições no modo --dry-run."
+      "\n[AVISO — DADOS SINTÉTICOS DE EXERCÍCIO ESTRUTURAL] Os limiares empíricos e as contagens abaixo NÃO descrevem a Bacia do Paraná 3; são 108 candidatos fabricados exclusivamente para exercitar a estrutura das 7 pré-condições no modo --dry-run."
     );
   }
 
@@ -171,8 +171,8 @@ function executarCli(): void {
 
   for (const idEstrato of TODOS_ESTRATOS_D12) {
     const n = relatorio.contagemCandidatosPorEstrato[idEstrato];
-    const piPreview = n >= 2 ? (2 / n).toFixed(4) : "INVIÁVEL (<2)";
-    console.log(`${prefixoNum}  - ${idEstrato}: ${String(n).padStart(3, " ")} candidatos | pi_i previsto = 2/${n} (${piPreview})`);
+    const piPreview = n >= 4 ? (4 / n).toFixed(4) : "INVIÁVEL (<4)";
+    console.log(`${prefixoNum}  - ${idEstrato}: ${String(n).padStart(3, " ")} candidatos | pi_i previsto = 4/${n} (${piPreview})`);
   }
 
   if (origemSintetica) {
@@ -194,7 +194,7 @@ function executarCli(): void {
       "\n[DRY-RUN CONCLUÍDO] Nenhum sorteio foi executado e nenhum selo foi gravado em docs/verificacoes/sorteio/."
     );
     console.log(
-      "Para executar o sorteio real irreversível (36 polígonos de 10 ha = 360 ha, 18 treino + 18 held-out), invoque com --confirmar --candidatos <caminho.json>."
+      "Para executar o sorteio real irreversível (72 polígonos de 5,02 ha (~361 ha), 36 treino + 36 held-out), invoque com --confirmar --candidatos <caminho.json>."
     );
     process.exit(0);
   }
@@ -212,7 +212,7 @@ function executarCli(): void {
     process.exit(1);
   }
 
-  const selo = sortearPoligonosDroneD16(candidatos, {
+  const selo = sortear72PoligonosD16(candidatos, {
     semente: sementeArg,
     gitCommit,
     sha256ConjuntoCandidatos: sha256,

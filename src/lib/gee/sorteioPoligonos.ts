@@ -99,6 +99,8 @@ export function gerarCodigoOpacoSorteio(): string {
 
 
 /**
+ * @deprecated Desenho antigo (36 polígonos de 10 ha). O desenho vigente de D16 emendada é de 72 polígonos de 5,02 ha (usar `sortear72PoligonosD16`).
+ * Mantido para compatibilidade e testes existentes.
  * Executa o sorteio determinístico dos 36 polígonos de 10 ha (2 por estrato sobre os 18 estratos de D12),
  * designando aleatoriamente 1 para treino e 1 para held-out em cada estrato com a semente registrada,
  * e registrando a probabilidade de inclusão exata `pi_i = 2 / N_h` (D23).
@@ -155,7 +157,9 @@ export function sortearPoligonosDroneD16(
   for (const idEstrato of TODOS_ESTRATOS_D12) {
     // Ordena inicialmente por ID apenas para garantir independência da ordem de chegada na rede,
     // e em seguida aplica embaralhamento Fisher-Yates completo com a semente registrada
-    const poolEstrato = [...estratosMap[idEstrato]].sort((a, b) => a.id.localeCompare(b.id));
+    const poolEstrato = [...estratosMap[idEstrato]].sort((a, b) =>
+      String(a.id) < String(b.id) ? -1 : String(a.id) > String(b.id) ? 1 : 0
+    );
     const nCandidatosEstrato = poolEstrato.length;
 
     // Defesa em profundidade: guarda de sanidade no próprio sorteio
@@ -375,14 +379,52 @@ export function sortear72PoligonosD16(
   candidatos: CandidatoSorteioD16[],
   opcoes: {
     semente: number;
+    gitCommit: string;
+    sha256ConjuntoCandidatos: string;
     seloExistenteCaminho?: string | null;
-    gitCommit?: string;
     geradoEm?: string;
     geradorCodigoOpaco?: (idPoligono: string) => string;
   }
 ): SeloSorteioD16 {
+  const {
+    semente,
+    gitCommit,
+    sha256ConjuntoCandidatos,
+    seloExistenteCaminho = null,
+    geradoEm = new Date().toISOString(),
+    geradorCodigoOpaco,
+  } = opcoes;
+
+  if (!Number.isFinite(semente) || !Number.isInteger(semente) || semente <= 0) {
+    throw new Error(`Semente de sorteio inválida (${semente}). Deve ser inteiro positivo registrado (P07).`);
+  }
+
+  const possuiCandidatoSintetico = candidatos.some(
+    (c) =>
+      String(c.id).startsWith("DRY-CAND-") ||
+      c.isSynthetic === true ||
+      c.origemSintetica === true
+  );
+  if (possuiCandidatoSintetico) {
+    throw new Error(
+      "Recusa de sorteio D23 (T4.3): o selo de sorteio jamais pode ser gerado a partir de candidatos sintéticos/fabricados (DRY-CAND- / isSynthetic)."
+    );
+  }
+
+  if (!gitCommit || typeof gitCommit !== "string" || gitCommit.trim() === "") {
+    throw new Error("Opção 'gitCommit' é obrigatória no sorteio D16.");
+  }
+
+  if (
+    !sha256ConjuntoCandidatos ||
+    typeof sha256ConjuntoCandidatos !== "string" ||
+    sha256ConjuntoCandidatos.trim() === ""
+  ) {
+    throw new Error("Opção 'sha256ConjuntoCandidatos' é obrigatória no sorteio D16.");
+  }
+
   const relatorio = verificarPreCondicoesSorteioD16(candidatos, {
-    seloExistenteCaminho: opcoes.seloExistenteCaminho ?? null,
+    seloExistenteCaminho,
     lancarErro: true,
   });
 
@@ -397,13 +439,13 @@ export function sortear72PoligonosD16(
   }
 
   const particao = particionarCandidatosEm18Estratos(candidatos);
-  const prng = criarPrng(opcoes.semente);
+  const prng = criarPrng(semente);
   const poligonos: PoligonoSorteadoD16[] = [];
   const tabelaCorrespondenciaOpaca: Record<string, string> = {};
 
   for (const idEstrato of TODOS_ESTRATOS_D12) {
     const listaOriginal = [...particao.estratosMap[idEstrato]].sort((a, b) =>
-      String(a.id).localeCompare(String(b.id))
+      String(a.id) < String(b.id) ? -1 : String(a.id) > String(b.id) ? 1 : 0
     );
     const nH = listaOriginal.length;
 
@@ -467,8 +509,8 @@ export function sortear72PoligonosD16(
       const sufixoOrdem = String(k + 1).padStart(2, "0");
       const idPoligono = `D16_${idEstrato}_Q${sufixoOrdem}`;
 
-      const codigoOpacoVant = opcoes.geradorCodigoOpaco
-        ? opcoes.geradorCodigoOpaco(idPoligono)
+      const codigoOpacoVant = geradorCodigoOpaco
+        ? geradorCodigoOpaco(idPoligono)
         : gerarCodigoOpacoSorteio();
       tabelaCorrespondenciaOpaca[idPoligono] = codigoOpacoVant;
 
@@ -505,17 +547,33 @@ export function sortear72PoligonosD16(
     }
   }
 
-  const geradoEm = opcoes.geradoEm ?? new Date().toISOString();
-  const gitCommit = opcoes.gitCommit ?? "HEAD";
+  // Hash determinístico estável sobre a lista ordenada de polígonos sorteados com seus pi_i e w_i
+  // (rotina de 64 bits em JS puro com dois acumuladores de 32 bits; NÃO é criptográfica)
+  const stringCanonica = poligonos
+    .map(
+      (p) =>
+        `${p.idPoligono}|${p.idCandidatoOrigem}|${p.estratoId}|${p.papelConjunto}|${p.pi_i.toFixed(8)}|${p.w_i.toFixed(8)}`
+    )
+    .join(";");
+  let h1 = 0xdeadbeef ^ semente;
+  let h2 = 0x41c6ce57 ^ semente;
+  for (let i = 0; i < stringCanonica.length; i++) {
+    const ch = stringCanonica.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  const hashIntegridade = `${(h1 >>> 0).toString(16).padStart(8, "0")}${(h2 >>> 0).toString(16).padStart(8, "0")}`;
 
   return {
     versaoEsquema: "1.2.0",
     geradoEm,
-    semente: opcoes.semente,
-    politicaSemente: String(PARAMETROS.P07.valor ?? "dinamica-registrada"),
+    semente,
+    politicaSemente: String(PARAMETROS.P07?.valor ?? "dinamica-registrada"),
     gitCommit,
-    sha256ConjuntoCandidatos: "sha256-72-poligonos-502ha",
-    hashIntegridade: `sha256-selo-72-${opcoes.semente}`,
+    sha256ConjuntoCandidatos,
+    hashIntegridade,
     totalCandidatosEntrada: candidatos.length,
     totalPoligonosSorteados: 72,
     totalTreino: 36,
