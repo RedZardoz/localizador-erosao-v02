@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import fs from "fs";
+import os from "os";
 import path from "path";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 
 export interface CaminhoExtraidoProveniencia {
   linha: number;
@@ -68,7 +69,8 @@ export function extrairCaminhosRepositorioProveniencia(
 export function ehCaminhoIgnoradoGit(caminhoRelativo: string): boolean {
   try {
     const caminhoNormalizado = caminhoRelativo.replace(/\\/g, "/");
-    execSync(`git check-ignore -q "${caminhoNormalizado}"`, { stdio: "ignore" });
+    // execFileSync com vetor de argumentos: o caminho vem de texto de documento e nunca passa por um shell.
+    execFileSync("git", ["check-ignore", "-q", "--", caminhoNormalizado], { stdio: "ignore" });
     return true;
   } catch {
     return false;
@@ -130,6 +132,15 @@ describe("Verificação automatizada de caminhos em docs/PROVENIENCIA_ASSISTENCI
       "src/lib/exportacao/pacoteReprodutibilidade.ts",
       "src/lib/bacias.ts",
     ]);
+  });
+
+  it("ehCaminhoIgnoradoGit: caminho com metacaracteres de shell não executa comando e conta como não ignorado", () => {
+    const marcador = path.join(os.tmpdir(), `sarel-injecao-${process.pid}-${Date.now()}`);
+    const malicioso = `x"; touch ${marcador.replace(/\\/g, "/")}; echo "`;
+    expect(ehCaminhoIgnoradoGit(malicioso)).toBe(false);
+    expect(fs.existsSync(marcador)).toBe(false);
+    expect(ehCaminhoIgnoradoGit("data/dem_cache/qualquer.tif")).toBe(true); // caminho de .gitignore (data/dem_cache/)
+    expect(ehCaminhoIgnoradoGit("src/config/decisoes.ts")).toBe(false);
   });
 
   it("todos os caminhos de repositório citados em docs/PROVENIENCIA_ASSISTENCIA_IA.md devem existir no disco", () => {
