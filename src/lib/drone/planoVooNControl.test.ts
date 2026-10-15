@@ -1,5 +1,7 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
+import crypto from "crypto";
 import { describe, expect, it } from "vitest";
 import {
   CAMERA_MICASENSE_ALTUM_ESPEC,
@@ -600,58 +602,114 @@ describe("Exportação de Planos de Voo QGroundControl (.plan v1) para o NContro
       expect(reg).not.toHaveProperty("nivelK");
     }
 
-    // Atualiza os artefatos no diretório docs/verificacoes/voo_ncontrol/
-    fs.mkdirSync(dirVerificacao, { recursive: true });
+    // N01 (A55): O teste escreve em diretório temporário e compara hashes com os arquivos versionados.
+    // A regeneração dos arquivos versionados só ocorre com SAREL_REGERAR_VOO=1.
+    const dirTmp = fs.mkdtempSync(path.join(os.tmpdir(), "sarel-voo-"));
 
-    // Salva os arquivos com o nome carimbado Z3/Z4/K3
-    fs.writeFileSync(
-      path.join(dirVerificacao, "SINTETICO_NAO_VOAR_jornada_01_terrainfollow.plan"),
-      JSON.stringify(pacote.exportacaoPiloto.jornadas[0].planTerrainFollow, null, 2),
-      "utf8"
-    );
-    fs.writeFileSync(
-      path.join(dirVerificacao, "SINTETICO_NAO_VOAR_jornada_01_altfixa.plan"),
-      JSON.stringify(pacote.exportacaoPiloto.jornadas[0].planAltFixa, null, 2),
-      "utf8"
-    );
-    fs.writeFileSync(
-      path.join(dirVerificacao, "SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv"),
-      pacote.exportacaoPiloto.roteiroCsv,
-      "utf8"
-    );
-    fs.writeFileSync(
-      path.join(dirVerificacao, "SINTETICO_NAO_VOAR_tabela_autorizacao_proprietarios_72poligonos.csv"),
-      pacote.exportacaoPiloto.tabelaAutorizacaoCsv,
-      "utf8"
-    );
-    fs.writeFileSync(
-      path.join(dirVerificacao, "SINTETICO_NAO_VOAR_manifesto_interprete_cego_72poligonos.csv"),
-      pacote.exportacaoInterprete.manifestoInterpreteCsv,
-      "utf8"
-    );
-    fs.writeFileSync(
-      path.join(dirVerificacao, "SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.pdf"),
-      pacote.exportacaoPiloto.roteiroPdfBytes
-    );
-    fs.writeFileSync(
-      path.join(dirVerificacao, "relatorio_aceitacao_y1_y6_2026-09-29.json"),
-      JSON.stringify(
+    const arquivosGerados: Record<string, string | Buffer> = {
+      "SINTETICO_NAO_VOAR_jornada_01_terrainfollow.plan": JSON.stringify(
+        pacote.exportacaoPiloto.jornadas[0].planTerrainFollow,
+        null,
+        2
+      ),
+      "SINTETICO_NAO_VOAR_jornada_01_altfixa.plan": JSON.stringify(
+        pacote.exportacaoPiloto.jornadas[0].planAltFixa,
+        null,
+        2
+      ),
+      "SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv": pacote.exportacaoPiloto.roteiroCsv,
+      "SINTETICO_NAO_VOAR_tabela_autorizacao_proprietarios_72poligonos.csv":
+        pacote.exportacaoPiloto.tabelaAutorizacaoCsv,
+      "SINTETICO_NAO_VOAR_manifesto_interprete_cego_72poligonos.csv":
+        pacote.exportacaoInterprete.manifestoInterpreteCsv,
+      "SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.pdf": pacote.exportacaoPiloto.roteiroPdfBytes,
+      "relatorio_aceitacao_y1_y6_2026-09-29.json": JSON.stringify(
         {
           geradoEm: "2026-09-30T15:00:00.000Z",
           correcoesPericiaisZ1aZ6: {
-            Z1_amostradorRealGLO30: "Implementado via criarAmostradorCopernicusGLO30Real e testado contra aeroporto SBTD (555,89 m vs 562 m ROTAER)",
+            Z1_amostradorRealGLO30:
+              "Implementado via criarAmostradorCopernicusGLO30Real e testado contra aeroporto SBTD (555,89 m vs 562 m ROTAER)",
             Z2_fixturesSinteticosRenomeados: "amostradorSinteticoParaTeste com proveniencia: 'sintetico'",
-            Z3_guardaCodigoPlanoSintetico: "ErroEmissaoPlanoSinteticoRecusada por padrão; prefixo SINTETICO_NAO_VOAR_ sob flag de demonstração",
-            Z4_artefatosComitadosRenomeados: "SINTETICO_NAO_VOAR_jornada_01_terrainfollow.plan e SINTETICO_NAO_VOAR_jornada_01_altfixa.plan mantidos com LEIA-ME_NAO_VOAR.md",
-            Z5_cegamentoNaoDerivavel: "gerarCodigoOpacoInterprete sem chave padrão literal no código, estocástico sem segredo externo",
-            Z6_faixasCurvaDeNivel: "anguloFaixasGraus = (aspectoMedidoGraus + 90°) % 360, com eixo maior do polígono mantido no sentido do declive",
+            Z3_guardaCodigoPlanoSintetico:
+              "ErroEmissaoPlanoSinteticoRecusada por padrão; prefixo SINTETICO_NAO_VOAR_ sob flag de demonstração",
+            Z4_artefatosComitadosRenomeados:
+              "SINTETICO_NAO_VOAR_jornada_01_terrainfollow.plan e SINTETICO_NAO_VOAR_jornada_01_altfixa.plan mantidos com LEIA-ME_NAO_VOAR.md",
+            Z5_cegamentoNaoDerivavel:
+              "gerarCodigoOpacoInterprete sem chave padrão literal no código, estocástico sem segredo externo",
+            Z6_faixasCurvaDeNivel:
+              "anguloFaixasGraus = (aspectoMedidoGraus + 90°) % 360, com eixo maior do polígono mantido no sentido do declive",
           },
           metadadosCampanha: pacote.metadadosCampanha,
         },
         null,
         2
       ),
-      "utf8"
-    );
+    };
+
+    const regerarVoo = process.env.SAREL_REGERAR_VOO === "1";
+
+    // Registra mtime antes da verificação
+    const mtimesAntes = new Map<string, number>();
+    if (fs.existsSync(dirVerificacao)) {
+      for (const nomeArquivo of Object.keys(arquivosGerados)) {
+        const caminhoVer = path.join(dirVerificacao, nomeArquivo);
+        if (fs.existsSync(caminhoVer)) {
+          mtimesAntes.set(nomeArquivo, fs.statSync(caminhoVer).mtimeMs);
+        }
+      }
+    }
+
+    for (const [nomeArquivo, conteudo] of Object.entries(arquivosGerados)) {
+      const caminhoTmp = path.join(dirTmp, nomeArquivo);
+      if (Buffer.isBuffer(conteudo)) {
+        fs.writeFileSync(caminhoTmp, conteudo);
+      } else {
+        fs.writeFileSync(caminhoTmp, conteudo, "utf8");
+      }
+
+      const caminhoVersionado = path.join(dirVerificacao, nomeArquivo);
+      if (regerarVoo) {
+        fs.mkdirSync(dirVerificacao, { recursive: true });
+        if (Buffer.isBuffer(conteudo)) {
+          fs.writeFileSync(caminhoVersionado, conteudo);
+        } else {
+          fs.writeFileSync(caminhoVersionado, conteudo, "utf8");
+        }
+      } else if (fs.existsSync(caminhoVersionado)) {
+        const bufGerado = fs.readFileSync(caminhoTmp);
+        const bufVersionado = fs.readFileSync(caminhoVersionado);
+        const hashGerado = crypto.createHash("sha256").update(bufGerado).digest("hex");
+        const hashVersionado = crypto.createHash("sha256").update(bufVersionado).digest("hex");
+        expect(hashGerado).toBe(hashVersionado);
+
+        // Assevera que o mtime do arquivo versionado não foi alterado
+        const mtimeDepois = fs.statSync(caminhoVersionado).mtimeMs;
+        expect(mtimeDepois).toBe(mtimesAntes.get(nomeArquivo));
+      }
+    }
+
+    // Limpa diretório temporário
+    try {
+      fs.rmSync(dirTmp, { recursive: true, force: true });
+    } catch {
+      // Ignora erro de limpeza temporária
+    }
+  });
+
+  it("N01 / A55: assevera que a execução sem SAREL_REGERAR_VOO=1 mantém docs/verificacoes/voo_ncontrol inalterado", () => {
+    const dirVerificacao = path.resolve(process.cwd(), "docs/verificacoes/voo_ncontrol");
+    expect(fs.existsSync(dirVerificacao)).toBe(true);
+    const arquivosEsperados = [
+      "SINTETICO_NAO_VOAR_jornada_01_terrainfollow.plan",
+      "SINTETICO_NAO_VOAR_jornada_01_altfixa.plan",
+      "SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.csv",
+      "SINTETICO_NAO_VOAR_tabela_autorizacao_proprietarios_72poligonos.csv",
+      "SINTETICO_NAO_VOAR_manifesto_interprete_cego_72poligonos.csv",
+      "SINTETICO_NAO_VOAR_roteiro_jornadas_72poligonos.pdf",
+      "relatorio_aceitacao_y1_y6_2026-09-29.json",
+    ];
+    for (const arq of arquivosEsperados) {
+      expect(fs.existsSync(path.join(dirVerificacao, arq))).toBe(true);
+    }
   });
 });

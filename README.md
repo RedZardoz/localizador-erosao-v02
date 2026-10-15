@@ -78,6 +78,10 @@ O projeto adota verificação contínua automatizada:
 # 1. Suíte de testes unitários e de integração (Vitest)
 npm run test
 
+# Para regenerar artefatos de voo em docs/verificacoes/voo_ncontrol/:
+# (por padrão os testes apenas comparam os hashes sem sobrescrever arquivos existentes)
+# SAREL_REGERAR_VOO=1 npm run test
+
 # 2. Verificação estrita de tipagem TypeScript
 npm run typecheck
 
