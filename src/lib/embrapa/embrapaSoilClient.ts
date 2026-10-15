@@ -45,6 +45,12 @@ export const LAYER_ERODIBILIDADE_BR = "geonode:brasil_erodibilidade_solo";
 /** Camada de erodibilidade por componente da unidade de mapeamento (Documentos 246 / IBGE 1:250.000, 2024). */
 export const LAYER_ERODIBILIDADE_2024 = "geonode:bra_erodibilidade_2024_sirgas2000";
 
+/** Data da fonte da camada estadual parana_solos_20201105 (DEC-9). */
+export const DATA_FONTE_PARANA_SOLOS_20201105 = "2020-11-05";
+
+/** Data da fonte da camada de erodibilidade Embrapa Documentos 246 (2024) (DEC-9). */
+export const DATA_FONTE_ERODIBILIDADE_2024 = "2024";
+
 /**
  * Quantidade máxima de feições solicitadas no GetFeatureInfo combinado das 3 camadas.
  * Elevado de 5 para 10 para garantir que as 3 camadas (parana_solos_20201105,
@@ -1165,7 +1171,8 @@ export async function diagnosticarFronteiraPedologicaBbox(
     return {
       pontoEmFronteiraPedologica: medido(
         emFronteira,
-        `WMS 1.1.1 GetFeatureInfo bbox ~110m (n_pr=${feicoesSoloPrBbox.length}, n_2024=${feicoesErod2024Bbox.length})`
+        `WMS 1.1.1 GetFeatureInfo bbox ~110m (n_pr=${feicoesSoloPrBbox.length}, n_2024=${feicoesErod2024Bbox.length})`,
+        DATA_FONTE_PARANA_SOLOS_20201105
       ),
       totalFeicoesSoloBbox: feicoesSoloPrBbox.length,
       totalFeicoesErod2024Bbox: feicoesErod2024Bbox.length,
@@ -1273,7 +1280,8 @@ export async function queryEmbrapaSoil(
     resultado.provenienciaAtribuicao = indisponivel("insuficiente", msgFronteiraExata);
     resultado.pontoEmFronteiraPedologica = medido(
       true,
-      `WFS 1.1.0 GetFeature INTERSECTS (>1 feição na mesma camada: n_pr=${feicoesSoloPr.length}, n_2024=${feicoesErod2024.length}, n_br=${feicoesErodBr.length})`
+      `WFS 1.1.0 GetFeature INTERSECTS (>1 feição na mesma camada: n_pr=${feicoesSoloPr.length}, n_2024=${feicoesErod2024.length}, n_br=${feicoesErodBr.length})`,
+      DATA_FONTE_PARANA_SOLOS_20201105
     );
     cache.set(key, resultado);
     return resultado;
@@ -1396,7 +1404,8 @@ export async function queryEmbrapaSoil(
   } else {
     resultado.provenienciaAtribuicao = medido(
       resultado.solo.sbcs,
-      `WFS 1.1.0 GetFeature INTERSECTS(geometry, POINT(${lat} ${lng})) -> ${resultado.feicaoSoloEscolhidaId}`
+      `WFS 1.1.0 GetFeature INTERSECTS(geometry, POINT(${lat} ${lng})) -> ${resultado.feicaoSoloEscolhidaId}`,
+      DATA_FONTE_PARANA_SOLOS_20201105
     );
   }
 

@@ -30,7 +30,7 @@ export function ehMedido(p?: Proveniencia<unknown> | null): boolean {
 export function medido<T>(
   valor: T,
   fonte: string,
-  adquiridoEm: string = "2024-01-01",
+  adquiridoEm: string,
   consultadoEm: string = new Date().toISOString(),
   detalhe?: string
 ): Proveniencia<T> {

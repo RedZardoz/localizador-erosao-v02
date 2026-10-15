@@ -29,6 +29,9 @@ export const ASSET_SENTINEL2_SR = "COPERNICUS/S2_SR_HARMONIZED";
 export const LIMIAR_NDVI_SOLO_NU_D10 = 0.25;
 export const TAMANHO_BLOCO_PADRAO = 100;
 
+/** Intervalo da janela de composição (D05), NÃO é data de aquisição; revisar em N17/C10. */
+export const INTERVALO_COMPOSICAO_D05 = "2016-2026";
+
 export interface PontoAmostragemSoloNu {
   id: string;
   latitude: number;
@@ -426,7 +429,7 @@ export function processarRespostaGeeReduceRegions(
       freqNuProv = medido(
         clamped,
         "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
-        "2016-2026",
+        INTERVALO_COMPOSICAO_D05,
         new Date().toISOString(),
         `reduceRegions first(solo_nu_mean), nObservacoes=${nObservacoes}`
       );
