@@ -161,43 +161,59 @@ export function derivarCamposNaoMedidos(ponto: PontoAmostral): string[] {
   const campos: string[] = [];
 
   function testar(nome: string, p?: Proveniencia<unknown> | null) {
-    if (p && !ehMedido(p)) {
+    if (!p || !ehMedido(p)) {
       campos.push(nome);
     }
   }
 
   // Localização
-  testar("municipio", ponto.localizacao?.municipio);
-  testar("codigoIbge", ponto.localizacao?.codigoIbge);
-  testar("bacia", ponto.localizacao?.bacia);
+  if (!ponto.localizacao) {
+    campos.push("localizacao");
+  } else {
+    testar("municipio", ponto.localizacao.municipio);
+    testar("codigoIbge", ponto.localizacao.codigoIbge);
+    testar("bacia", ponto.localizacao.bacia);
+  }
 
   // Terreno
-  testar("elevacao", ponto.terreno?.elevacao);
-  testar("declividadePct", ponto.terreno?.declividadePct);
-  testar("declividadeGraus", ponto.terreno?.declividadeGraus);
-  testar("curvaturaPerfil", ponto.terreno?.curvaturaPerfil);
-  testar("curvaturaPlana", ponto.terreno?.curvaturaPlana);
-  testar("acumuloFluxo", ponto.terreno?.acumuloFluxo);
-  testar("twi", ponto.terreno?.twi);
+  if (!ponto.terreno) {
+    campos.push("terreno");
+  } else {
+    testar("elevacao", ponto.terreno.elevacao);
+    testar("declividadePct", ponto.terreno.declividadePct);
+    testar("declividadeGraus", ponto.terreno.declividadeGraus);
+    testar("curvaturaPerfil", ponto.terreno.curvaturaPerfil);
+    testar("curvaturaPlana", ponto.terreno.curvaturaPlana);
+    testar("acumuloFluxo", ponto.terreno.acumuloFluxo);
+    testar("twi", ponto.terreno.twi);
+  }
 
   // Solo
-  testar("ordemSolo", ponto.solo?.ordem);
-  testar("subOrdemSolo", ponto.solo?.subOrdem);
-  testar("grandeGrupoSolo", ponto.solo?.grandeGrupo);
-  testar("tipoUnidadeSolo", ponto.solo?.tipoUnidade);
-  testar("erodibilidadeClasse", ponto.solo?.erodibilidadeClasse);
+  if (!ponto.solo) {
+    campos.push("solo");
+  } else {
+    testar("ordemSolo", ponto.solo.ordem);
+    testar("subOrdemSolo", ponto.solo.subOrdem);
+    testar("grandeGrupoSolo", ponto.solo.grandeGrupo);
+    testar("tipoUnidadeSolo", ponto.solo.tipoUnidade);
+    testar("erodibilidadeClasse", ponto.solo.erodibilidadeClasse);
+  }
 
   // Temporal (D ou P)
-  for (const janela of Object.values(ponto.temporal ?? {})) {
-    if (janela) {
-      testar("frequenciaSoloNu", janela.serie?.frequenciaSoloNu);
-      testar("maiorSequenciaSoloNu", janela.serie?.maiorSequenciaSoloNu);
-      testar("mesModalExposicao", janela.serie?.mesModalExposicao);
-      testar("precipAcum30d", janela.chuva?.precipAcum30d);
-      testar("precipAcum90d", janela.chuva?.precipAcum90d);
-      testar("i30Max", janela.chuva?.i30Max);
-      testar("nEventosErosivos", janela.chuva?.nEventosErosivos);
-      testar("indiceMecanismo", janela.chuva?.indiceMecanismo);
+  if (!ponto.temporal || Object.keys(ponto.temporal).length === 0) {
+    campos.push("temporal");
+  } else {
+    for (const janela of Object.values(ponto.temporal)) {
+      if (janela) {
+        testar("frequenciaSoloNu", janela.serie?.frequenciaSoloNu);
+        testar("maiorSequenciaSoloNu", janela.serie?.maiorSequenciaSoloNu);
+        testar("mesModalExposicao", janela.serie?.mesModalExposicao);
+        testar("precipAcum30d", janela.chuva?.precipAcum30d);
+        testar("precipAcum90d", janela.chuva?.precipAcum90d);
+        testar("i30Max", janela.chuva?.i30Max);
+        testar("nEventosErosivos", janela.chuva?.nEventosErosivos);
+        testar("indiceMecanismo", janela.chuva?.indiceMecanismo);
+      }
     }
   }
 

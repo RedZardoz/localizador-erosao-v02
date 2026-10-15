@@ -190,7 +190,7 @@ print('Amostra ${p.codigo}:', {
               <div>
                 <span className="text-[10px] text-slate-400 block font-sans">Imóvel Rural (CAR)</span>
                 <span className="font-bold text-slate-900 dark:text-white truncate block">
-                  {p.fundiario?.codigoCar || "Sem correspondência"}
+                  {p.fundiario?.codigoCar || "não consultado"}
                 </span>
                 <span className="text-[10px] text-slate-500 font-sans">
                   {p.fundiario?.titularMascarado || "—"}

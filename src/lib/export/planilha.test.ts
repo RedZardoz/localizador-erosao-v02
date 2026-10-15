@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { gerarPlanilhaXLSX } from "./planilha";
+import { gerarPlanilhaXLSX, extrairLinhasPorPerfil, extrairLinhasAbaDados, extrairMetadadosProcedencia } from "./planilha";
 import { gerarCsvCientifico } from "./csv";
 import type { PontoAmostral } from "@/types/ponto";
 import { ErroPontoSinteticoDetectado } from "@/lib/seguranca/guardaSintetico";
@@ -193,5 +193,37 @@ describe("Exportação XLSX e CSV — Validações e Guardas", () => {
     expect(res.linhas).toHaveLength(1);
     expect(res.linhas[0].classeAlvoBinaria).toBe(0);
     expect(res.linhas[0].rotuloClasse).toBe("controle");
+  });
+
+  describe("N14: Contrato de Exportações e Invariantes", () => {
+    it("ponto sem fundiario em campo-cego diz 'nao-consultado', nunca 'sem-correspondencia'", () => {
+      const p = mockPonto(1);
+      delete (p as any).fundiario;
+      const linhas = extrairLinhasPorPerfil([p], "campo-cego");
+      expect(linhas[0].Status_Fundiario).toBe("nao-consultado");
+      expect(linhas[0].Status_Fundiario).not.toBe("sem-correspondencia");
+    });
+
+    it("ponto sem terreno lista 'terreno' ou 'ausente: terreno' em Campos_Estimados", () => {
+      const p = mockPonto(1);
+      delete (p as any).terreno;
+      const linhas = extrairLinhasAbaDados([p]);
+      expect(String(linhas[0].Campos_Estimados).toLowerCase()).toMatch(/terreno/);
+    });
+
+    it("perfil geojson-pontos não contém estrato nem car_codigo", () => {
+      const p = mockPonto(1, { estratoId: "E1", fundiario: { codigoCar: "PR-12345" } as any });
+      const linhas = extrairLinhasPorPerfil([p], "geojson-pontos" as any);
+      expect(linhas[0]).not.toHaveProperty("estrato");
+      expect(linhas[0]).not.toHaveProperty("car_codigo");
+      expect(linhas[0]).not.toHaveProperty("CAR_Codigo");
+    });
+
+    it("planilha sem opcoes.janelaTemporal usa '2016-01-01 a 2026-06-30'", () => {
+      const p = mockPonto(1);
+      const rows = extrairMetadadosProcedencia([p], {});
+      const linhaJanela = rows.find((r: any) => Array.isArray(r) && r[0] === "Janela Temporal");
+      expect(linhaJanela?.[1]).toBe("2016-01-01 a 2026-06-30");
+    });
   });
 });

@@ -18,7 +18,8 @@ import {
   Lock,
 } from "lucide-react";
 import { useSarelStore, usePontosVisiveis } from "@/store/useSarelStore";
-import { gerarPlanilhaXLSX } from "@/lib/export/planilha";
+import { gerarPlanilhaXLSX, extrairLinhasPorPerfil } from "@/lib/export/planilha";
+import { assegurarInvariantesArtefato } from "@/lib/matriz/invariantes";
 import { gerarCsvCientifico } from "@/lib/export/csv";
 import { gerarPacoteReprodutibilidadeZip } from "@/lib/export/pacoteReprodutibilidade";
 import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
@@ -118,21 +119,20 @@ export const ExportModal: React.FC = () => {
     setExportando("geojson");
     try {
       assegurarApenasPontosReais(pontosVisiveis, "exportação GeoJSON");
+      const linhasGeojson = extrairLinhasPorPerfil(pontosVisiveis, "geojson-pontos");
+      if (linhasGeojson.length > 0) {
+        assegurarInvariantesArtefato({
+          perfil: "geojson-pontos",
+          cabecalho: Object.keys(linhasGeojson[0]),
+          linhas: linhasGeojson,
+        });
+      }
       const features: GeoJSON.Feature[] = [
         ...pontosVisiveis.map(
-          (p): GeoJSON.Feature => ({
+          (p, idx): GeoJSON.Feature => ({
             type: "Feature",
             id: p.id,
-            properties: {
-              codigo: p.codigo,
-              estrato: p.estratoId,
-              municipio: valorOuNulo(p.localizacao.municipio),
-              bacia: valorOuNulo(p.localizacao.bacia),
-              altitude_dem: valorOuNulo(p.terreno.elevacao),
-              declividade_pct: valorOuNulo(p.terreno.declividadePct),
-              solo_embrapa: valorOuNulo(p.solo.ordem),
-              car_codigo: p.fundiario?.codigoCar || null,
-            },
+            properties: { ...linhasGeojson[idx] },
             geometry: {
               type: "Point",
               coordinates: [p.longitude, p.latitude],

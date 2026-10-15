@@ -3,7 +3,8 @@ export type PerfilExportacao =
   | "interpretacao-cega"
   | "campo-cego"
   | "voo-cego"
-  | "matriz-treino";
+  | "matriz-treino"
+  | "geojson-pontos";
 
 export const PERFIS_EXPORTACAO: Record<PerfilExportacao, { descricao: string; colunasPermitidas: string[] }> = {
   planilha: {
@@ -165,6 +166,18 @@ export const PERFIS_EXPORTACAO: Record<PerfilExportacao, { descricao: string; co
       "Classe_Alvo_Binaria",
       "Rotulo_Classe",
       "Rotulo_Modalidade",
+    ],
+  },
+  "geojson-pontos": {
+    descricao: "Camada GeoJSON de pontos amostrais com atributos biofísicos permitidos",
+    colunasPermitidas: [
+      "id",
+      "codigo",
+      "municipio",
+      "bacia",
+      "altitude_dem",
+      "declividade_pct",
+      "solo_embrapa",
     ],
   },
 };

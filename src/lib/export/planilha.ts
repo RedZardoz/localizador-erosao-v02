@@ -8,6 +8,7 @@ import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
 import { formatToDMS } from "./dms";
 import { generateXlsxBuffer, XlsxSheet, XlsxRowValue } from "./xlsxWriter";
 import type { PerfilExportacao } from "@/lib/matriz/perfis";
+import { JANELA_TEMPORAL_D05 } from "@/lib/gee/amostragemSoloNuLote";
 
 export const BLOCO_FUNDAMENTACAO_LGPD =
 `TRATAMENTO DE DADOS PESSOAIS FUNDIÁRIOS — CONFORMIDADE LGPD (Lei nº 13.709/2018)
@@ -134,7 +135,7 @@ export function extrairLinhasAbaDados(pontos: PontoAmostral[]): Record<string, u
       RUSLE_Perda_Solo_t_ha_ano_Origem: formatarDescricaoOrigem(p.linhaDeBase?.perdaSolo),
       RUSLE_Memoria_Calculo: p.linhaDeBase?.memoriaCalculo ?? "não calculado",
 
-      Campos_Estimados: camposNaoMedidos.length > 0 ? camposNaoMedidos.join(", ") : "Nenhum (100% medido)",
+      Campos_Estimados: camposNaoMedidos.length > 0 ? camposNaoMedidos.join(", ") : "100% medido",
       Rastreio_Versao_Motor: p.rastreio?.versaoMotor ?? "não informado",
       Rastreio_Cenas: p.rastreio?.cenas ? p.rastreio.cenas.join("; ") : "não informado",
       Rastreio_Calculado_Em: p.rastreio?.calculadoEm ?? "não informado",
@@ -176,7 +177,7 @@ export function extrairLinhasPorPerfil(
       Latitude_DMS: formatToDMS(p.latitude, true),
       Longitude_DMS: formatToDMS(p.longitude, false),
       Municipio: valorOuNulo(p.localizacao?.municipio) ?? "não determinado",
-      Status_Fundiario: p.fundiario?.status ?? "sem-correspondencia",
+      Status_Fundiario: p.fundiario?.status ?? "nao-consultado",
       Motivo_Acesso: p.fundiario?.motivo ?? "Inspeção presencial de campanha PPGTCA",
       Codigo_CAR: p.fundiario?.codigoCar ?? "",
       Titular_Mascarado: p.fundiario?.titularMascarado ?? "",
@@ -190,6 +191,18 @@ export function extrairLinhasPorPerfil(
       Latitude: Number(p.latitude.toFixed(6)),
       Longitude: Number(p.longitude.toFixed(6)),
       Area_Voo_Poligono: p.fundiario?.areaImovelHa ? `${p.fundiario.areaImovelHa} ha` : "Buffer 250 m",
+    }));
+  }
+
+  if (perfil === "geojson-pontos") {
+    return pontos.map((p) => ({
+      id: p.id,
+      codigo: p.codigo,
+      municipio: valorOuNulo(p.localizacao?.municipio) ?? "não determinado",
+      bacia: valorOuNulo(p.localizacao?.bacia) ?? "não determinado",
+      altitude_dem: valorOuNulo(p.terreno?.elevacao) ?? "",
+      declividade_pct: valorOuNulo(p.terreno?.declividadePct) ?? "",
+      solo_embrapa: valorOuNulo(p.solo?.ordem) ?? "não determinado",
     }));
   }
 
@@ -277,22 +290,7 @@ export async function gerarPlanilhaXLSX(pontos: PontoAmostral[], opcoes: OpcoesE
   };
 
   // Aba 2 — Procedência e Conformidade
-  const rowsProc: XlsxRowValue[][] = [
-    [{ value: "METADADO", bold: true }, { value: "VALOR / DESCRIÇÃO", bold: true }],
-    ["Data e Hora de Emissão", new Date().toISOString()],
-    ["Total de Pontos Amostrais", pontos.length],
-    ["Perfil de Exportação", opcoes.perfil ?? "planilha"],
-    ["Filtros Ativos", opcoes.filtrosAtivos ? opcoes.filtrosAtivos.join("; ") : "Nenhum filtro restritivo"],
-    ["Janela Temporal", opcoes.janelaTemporal ? `${opcoes.janelaTemporal.inicio} a ${opcoes.janelaTemporal.fim}` : "2019 a 2025"],
-    ["", ""],
-    [{ value: "BASES DISPONÍVEIS NESTA INSTALAÇÃO", bold: true }, { value: "DETALHAMENTO TÉCNICO", bold: true }],
-    ["1. Relevo e Terreno", "COPERNICUS/DEM/GLO30 (Projeção métrica EPSG:31982)"],
-    ["2. Pedologia", "Embrapa GeoInfo (parana_solos_20201105)"],
-    ["3. Sensoriamento Óptico", "Copernicus Sentinel-2 L2A (BOA)"],
-    ["4. Pluviometria e Clima", "CHIRPS Diário e GPM IMERG"],
-    ["", ""],
-    [{ value: "FUNDAMENTAÇÃO LGPD", bold: true }, BLOCO_FUNDAMENTACAO_LGPD],
-  ];
+  const rowsProc: XlsxRowValue[][] = extrairMetadadosProcedencia(pontos, opcoes);
 
   const sheet2: XlsxSheet = {
     name: "Procedência e Conformidade",
@@ -346,4 +344,30 @@ export async function gerarPlanilhaXLSX(pontos: PontoAmostral[], opcoes: OpcoesE
   };
 
   return generateXlsxBuffer([sheet1, sheet2, sheet3]);
+}
+
+export function extrairMetadadosProcedencia(
+  pontos: PontoAmostral[],
+  opcoes: OpcoesExportacao = {}
+): XlsxRowValue[][] {
+  const janelaTexto = opcoes.janelaTemporal
+    ? `${opcoes.janelaTemporal.inicio} a ${opcoes.janelaTemporal.fim}`
+    : `${JANELA_TEMPORAL_D05.inicio} a ${JANELA_TEMPORAL_D05.fim}`;
+
+  return [
+    [{ value: "METADADO", bold: true }, { value: "VALOR / DESCRIÇÃO", bold: true }],
+    ["Data e Hora de Emissão", new Date().toISOString()],
+    ["Total de Pontos Amostrais", pontos.length],
+    ["Perfil de Exportação", opcoes.perfil ?? "planilha"],
+    ["Filtros Ativos", opcoes.filtrosAtivos ? opcoes.filtrosAtivos.join("; ") : "Nenhum filtro restritivo"],
+    ["Janela Temporal", janelaTexto],
+    ["", ""],
+    [{ value: "BASES DISPONÍVEIS NESTA INSTALAÇÃO", bold: true }, { value: "DETALHAMENTO TÉCNICO", bold: true }],
+    ["1. Relevo e Terreno", "COPERNICUS/DEM/GLO30 (Projeção métrica EPSG:31982)"],
+    ["2. Pedologia", "Embrapa GeoInfo (parana_solos_20201105)"],
+    ["3. Sensoriamento Óptico", "Copernicus Sentinel-2 L2A (BOA)"],
+    ["4. Pluviometria e Clima", "indisponível (DEC-6)"],
+    ["", ""],
+    [{ value: "FUNDAMENTAÇÃO LGPD", bold: true }, BLOCO_FUNDAMENTACAO_LGPD],
+  ];
 }

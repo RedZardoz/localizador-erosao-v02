@@ -36,7 +36,7 @@ O sistema opera sob as **9 Regras Invioláveis da Lei Fundamental** (`docs/plane
 5. **Ingestão e Matriz de Treino (`src/lib/rotulos/`, `src/lib/matriz/`):**
    - Concordância entre intérpretes via Kappa de Cohen com alerta bloqueante para $\kappa < 0{,}60$.
    - Segregação mandatória de voos de drone como conjunto de teste independente (*held-out*).
-   - Invariantes 1 a 7 verificados em tempo de execução antes de qualquer exportação de arquivo.
+   - Invariantes verificados em tempo de execução antes de qualquer exportação (Invariantes 1, 2, 3, 5, 6 e 7: coerência RUSLE, lista de permissão, campos estimados, negativa fundiária, literais proibidos e variância física).
 
 ---
 

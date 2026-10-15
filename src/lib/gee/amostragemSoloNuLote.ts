@@ -35,6 +35,11 @@ export interface PontoAmostragemSoloNu {
   longitude: number;
 }
 
+export const JANELA_TEMPORAL_D05 = {
+  inicio: "2016-01-01",
+  fim: "2026-06-30",
+} as const;
+
 export interface MedicaoSoloNuLote {
   id: string;
   latitude: number;
@@ -353,8 +358,8 @@ export function construirExpressaoGeeSoloNuLote(
                           functionInvocationValue: {
                             functionName: "DateRange",
                             arguments: {
-                              start: { constantValue: "2016-01-01" },
-                              end: { constantValue: "2026-06-30" },
+                              start: { constantValue: JANELA_TEMPORAL_D05.inicio },
+                              end: { constantValue: JANELA_TEMPORAL_D05.fim },
                             },
                           },
                         },

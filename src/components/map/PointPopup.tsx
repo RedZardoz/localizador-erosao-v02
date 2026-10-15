@@ -89,7 +89,7 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
   // Base Fundiária
   const car = point.fundiario?.codigoCar;
   const titular = point.fundiario?.titularMascarado || "Não informado";
-  const statusFundiario = point.fundiario?.status || "sem-correspondencia";
+  const statusFundiario = point.fundiario?.status || "nao-consultado";
 
   // RUSLE
   const rusle = point.linhaDeBase;
@@ -262,7 +262,7 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
                 : "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-400"
             }`}
           >
-            {statusFundiario === "encontrado" ? "Imóvel CAR ✓" : "Sem Correspondência"}
+            {statusFundiario === "encontrado" ? "Imóvel CAR ✓" : "não consultado"}
           </span>
         </div>
 
