@@ -35,10 +35,8 @@ export interface PontoAmostragemSoloNu {
   longitude: number;
 }
 
-export const JANELA_TEMPORAL_D05 = {
-  inicio: "2016-01-01",
-  fim: "2026-06-30",
-} as const;
+import { JANELA_TEMPORAL_D05 } from "@/lib/matriz/perfis";
+export { JANELA_TEMPORAL_D05 };
 
 export interface MedicaoSoloNuLote {
   id: string;

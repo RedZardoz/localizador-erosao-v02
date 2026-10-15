@@ -117,10 +117,10 @@ Para superar essa limitação, as áreas de voo de VANT/Drone na Fase D foram pr
 
 | Identificador no SAREL | Município (Corredor BP3) | Registro Oficial no Cadastro Ambiental Rural (SICAR) | Área Contínua do Voo (ha) | Altitude Média (m) | Compartimento Geomorfológico | Total de Pixels Sentinel-2 ($10\times 10\text{ m}$) Equivalentes |
 | :--- | :--- | :--- | :---: | :---: | :--- | :---: |
-| **Sítio Alfa** (`sitio-ouro-01`) | **Medianeira** | `PR-4115804-63E945FC816944DA84D2DB2C9C3AF6F3` | **$49,94\text{ ha}$** | $395\text{ m}$ | Planalto Intermediário (Suave-Ondulado) | $4.994\text{ pixels}$ |
-| **Sítio Beta** (`sitio-ouro-02`) | **Medianeira** | `PR-4115804-4ACF9DE20F19462B89232E3E54565B6E` | **$49,54\text{ ha}$** | $410\text{ m}$ | Planalto Intermediário (Transição Pedológica) | $4.954\text{ pixels}$ |
-| **Sítio Gama** (`sitio-ouro-03`) | **Céu Azul** | `PR-4105300-DD634A8A94FB403B8C5492F9BF22EF5B` | **$49,54\text{ ha}$** | $580\text{ m}$ | Rebordo do 3º Planalto (Ondulado a Forte) | $4.954\text{ pixels}$ |
-| **Sítio Delta** (`sitio-ouro-04`) | **Céu Azul** | `PR-4105300-DED72F1D0CA84A9AA5413B121592E6C0` | **$49,54\text{ ha}$** | $575\text{ m}$ | Rebordo do 3º Planalto (Alta Energia Cinética) | $4.954\text{ pixels}$ |
+| **Sítio Alfa** (`sitio-ouro-01`) | **Medianeira** | CAR-OPACO-01 (dado em `data/sitios_referencia_local.json`, fora do git) | **$49,94\text{ ha}$** | $395\text{ m}$ | Planalto Intermediário (Suave-Ondulado) | $4.994\text{ pixels}$ |
+| **Sítio Beta** (`sitio-ouro-02`) | **Medianeira** | CAR-OPACO-02 (dado em `data/sitios_referencia_local.json`, fora do git) | **$49,54\text{ ha}$** | $410\text{ m}$ | Planalto Intermediário (Transição Pedológica) | $4.954\text{ pixels}$ |
+| **Sítio Gama** (`sitio-ouro-03`) | **Céu Azul** | CAR-OPACO-03 (dado em `data/sitios_referencia_local.json`, fora do git) | **$49,54\text{ ha}$** | $580\text{ m}$ | Rebordo do 3º Planalto (Ondulado a Forte) | $4.954\text{ pixels}$ |
+| **Sítio Delta** (`sitio-ouro-04`) | **Céu Azul** | CAR-OPACO-04 (dado em `data/sitios_referencia_local.json`, fora do git) | **$49,54\text{ ha}$** | $575\text{ m}$ | Rebordo do 3º Planalto (Alta Energia Cinética) | $4.954\text{ pixels}$ |
 | **TOTAL FASE D** | **Medianeira & Céu Azul** | **4 Imóveis Rurais Auditados (Held-Out)** | **$198,56\text{ ha}$** | **$395\text{–}580\text{ m}$** | **Gradiente Completo da Bacia BP3** | **$19.856\text{ pixels}$** |
 
 ---

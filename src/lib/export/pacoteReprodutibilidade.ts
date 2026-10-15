@@ -21,7 +21,6 @@ import type { RotuloConsolidado } from "@/types/rotulo";
 import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
 import { montarMatrizTreino } from "@/lib/matriz/montagem";
 import { assegurarSegregacaoTreino } from "@/lib/rotulos/ingestaoDrone";
-import { SITIOS_PADRAO_OURO } from "@/lib/padraoOuro/sitiosReferencia";
 import { calcularCorrelacaoPearson } from "@/lib/padraoOuro/validacaoMatricial";
 import { formatToDMS } from "./dms";
 import { valorOuNulo } from "@/types/proveniencia";

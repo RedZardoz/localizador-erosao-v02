@@ -58,6 +58,13 @@ Para instalar o sistema em máquinas de pesquisadores, avaliadores ou técnicos 
    - `Gerar_Pacote_Portatil.bat`: Gera a distribuição `dist\SAREL_Instalador_Portatil` com runtimes `runtime\node` e `runtime\python` embutidos e recompila o `Instalador_SAREL.exe`.
    - `Gerar_Zip_Banco_GoogleDrive.bat`: Compacta o banco SQLite consolidado (`data\fundiario_brasil.db`, com 4,4 milhões de registros SICAR/SIGEF/SNCR para PR, SC e SP) junto às geometrias `.shp/.shx/.prj` de `data\sicar_cache\` em `dist\Banco_Consolidado_SAREL_GoogleDrive.zip`.
 
+### Sítios de Aferição (Dado Local)
+
+- **O que é:** O arquivo `data/sitios_referencia_local.json` (e seu hash de integridade `data/sitios_referencia_local.json.sha256`) armazena os códigos cadastrais e as geometrias vetoriais reais dos 4 sítios contínuos de aferição com drone (10 a 50 ha) em Céu Azul e Medianeira (Bacia Paraná 3).
+- **Por que não está no Git:** Os códigos CAR e perímetros cadastrais identificam proprietários e imóveis rurais privados reais, sujeitos à proteção de dados pessoais pela LGPD (Lei nº 13.709/2018). Por decisão metodológica do projeto (DEC-10, Opção C), esses dados confidenciais permanecem estritamente fora do controle de versão Git.
+- **Como chega:** É empacotado de forma restrita no arquivo ZIP do Google Drive (`Banco_Consolidado_SAREL_GoogleDrive.zip`) e extraído automaticamente na pasta `data/` pelo Instalador ou manualmente por pesquisadores autorizados.
+- **Operação sem o arquivo local:** O sistema funciona perfeitamente sem o arquivo local: os sítios de referência são apresentados na interface com identificadores opacos (`CAR-OPACO-0n`), metadados técnicos preservados e aviso informativo no painel, omitindo a projeção vetorial no mapa sem falhas ou erros de execução.
+
 ---
 
 ### Opção 2: Instalação via Git / Ambiente de Desenvolvimento

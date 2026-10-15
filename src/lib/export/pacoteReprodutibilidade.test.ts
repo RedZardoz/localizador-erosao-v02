@@ -250,6 +250,15 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
     expect(zip.file("04_datasheet_metadados_dicionario.json")).not.toBeNull();
     expect(zip.file("05_script_auditoria_reproduzivel.py")).not.toBeNull();
     expect(zip.file("06_manifesto_integridade_sha256.txt")).not.toBeNull();
+
+    // N07: ZIP de reprodutibilidade nunca deve conter código CAR completo de 43 caracteres
+    const carRegex = /[A-Z]{2}-[0-9]{7}-[0-9A-F]{32}/;
+    for (const [, arquivo] of Object.entries(zip.files)) {
+      if (!arquivo.dir) {
+        const texto = await arquivo.async("text");
+        expect(carRegex.test(texto)).toBe(false);
+      }
+    }
   });
 
   it("não deve fabricar fatores RUSLE nem solo quando linhaDeBase e solo forem indisponíveis e deve emitir censo de proveniência (Regra 1 e Regra 3)", () => {

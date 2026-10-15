@@ -83,6 +83,7 @@ data/sicar_cache/
 data/sigef_cache/
 data/dem_cache/
 data/chirps_cache/
+data/sitios_referencia_local.json*
 
 # Python cache
 __pycache__/

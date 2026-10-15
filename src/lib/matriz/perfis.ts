@@ -6,6 +6,11 @@ export type PerfilExportacao =
   | "matriz-treino"
   | "geojson-pontos";
 
+export const JANELA_TEMPORAL_D05 = {
+  inicio: "2016-01-01",
+  fim: "2026-06-30",
+} as const;
+
 export const PERFIS_EXPORTACAO: Record<PerfilExportacao, { descricao: string; colunasPermitidas: string[] }> = {
   planilha: {
     descricao: "Planilha para o pesquisador e dissertação",

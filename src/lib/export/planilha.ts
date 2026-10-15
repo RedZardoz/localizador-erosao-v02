@@ -7,8 +7,7 @@ import { assegurarSegregacaoTreino } from "@/lib/rotulos/ingestaoDrone";
 import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
 import { formatToDMS } from "./dms";
 import { generateXlsxBuffer, XlsxSheet, XlsxRowValue } from "./xlsxWriter";
-import type { PerfilExportacao } from "@/lib/matriz/perfis";
-import { JANELA_TEMPORAL_D05 } from "@/lib/gee/amostragemSoloNuLote";
+import { JANELA_TEMPORAL_D05, type PerfilExportacao } from "@/lib/matriz/perfis";
 import { validarMascaraTitularSncr, mascararDocumentoPessoal } from "@/lib/fundiario/protecao";
 
 export const BLOCO_FUNDAMENTACAO_LGPD =

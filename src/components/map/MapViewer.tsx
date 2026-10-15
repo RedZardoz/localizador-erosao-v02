@@ -9,12 +9,56 @@ import { DrawingToolbar } from "@/components/polygon/DrawingToolbar";
 import { PointPopup } from "./PointPopup";
 import { PARANA_BASINS_GEOJSON, PARANA3_28_MUNICIPIOS_GEOJSON } from "@/lib/localizacao/bacias";
 import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
-import { SITIOS_PADRAO_OURO_GEOJSON } from "@/lib/padraoOuro/sitiosReferencia";
 
 export const MapViewer: React.FC = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [temSitiosLocais, setTemSitiosLocais] = useState(false);
+  const [sitiosLocaisGeoJson, setSitiosLocaisGeoJson] = useState<GeoJSON.FeatureCollection>({
+    type: "FeatureCollection",
+    features: [],
+  });
+
+  useEffect(() => {
+    fetch("/api/sitios-referencia")
+      .then((res) => {
+        if (!res.ok) return { estado: "indisponivel", sitios: [] };
+        return res.json();
+      })
+      .then((data) => {
+        if (
+          data &&
+          data.estado === "disponivel" &&
+          Array.isArray(data.sitios) &&
+          data.sitios.length > 0
+        ) {
+          const fc: GeoJSON.FeatureCollection = {
+            type: "FeatureCollection",
+            features: data.sitios.map((s: any) => ({
+              type: "Feature",
+              id: s.id,
+              bbox: s.bbox,
+              properties: {
+                id: s.id,
+                nomeIdentificador: s.nomeIdentificador,
+                municipio: s.municipio,
+              },
+              geometry: s.geometry,
+            })),
+          };
+          setSitiosLocaisGeoJson(fc);
+          setTemSitiosLocais(true);
+        } else {
+          setTemSitiosLocais(false);
+          setSitiosLocaisGeoJson({ type: "FeatureCollection", features: [] });
+        }
+      })
+      .catch(() => {
+        setTemSitiosLocais(false);
+        setSitiosLocaisGeoJson({ type: "FeatureCollection", features: [] });
+      });
+  }, []);
 
   const {
     mapState,
@@ -244,7 +288,7 @@ export const MapViewer: React.FC = () => {
       // 1.1 Sítios de Referência Padrão-Ouro (Céu Azul e Medianeira — 10 a 50 ha)
       map.addSource("sitios-padrao-ouro-source", {
         type: "geojson",
-        data: SITIOS_PADRAO_OURO_GEOJSON,
+        data: sitiosLocaisGeoJson,
       });
 
       map.addLayer({
@@ -252,7 +296,10 @@ export const MapViewer: React.FC = () => {
         type: "fill",
         source: "sitios-padrao-ouro-source",
         layout: {
-          visibility: mapState.mostrarSitiosPadraoOuro !== false ? "visible" : "none",
+          visibility:
+            temSitiosLocais && mapState.mostrarSitiosPadraoOuro !== false
+              ? "visible"
+              : "none",
         },
         paint: {
           "fill-color": "#06B6D4",
@@ -265,7 +312,10 @@ export const MapViewer: React.FC = () => {
         type: "line",
         source: "sitios-padrao-ouro-source",
         layout: {
-          visibility: mapState.mostrarSitiosPadraoOuro !== false ? "visible" : "none",
+          visibility:
+            temSitiosLocais && mapState.mostrarSitiosPadraoOuro !== false
+              ? "visible"
+              : "none",
         },
         paint: {
           "line-color": "#0891B2",
@@ -511,11 +561,20 @@ export const MapViewer: React.FC = () => {
     }
   }, [mapState.mostrarBacias, mapLoaded]);
 
-  // Visibilidade de Camadas (Sítios Padrão-Ouro — Céu Azul e Medianeira)
+  // Atualização de Dados e Visibilidade (Sítios Padrão-Ouro — Céu Azul e Medianeira)
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
-    const vis = mapState.mostrarSitiosPadraoOuro !== false ? "visible" : "none";
+    const source = map.getSource("sitios-padrao-ouro-source") as
+      | maplibregl.GeoJSONSource
+      | undefined;
+    if (source) {
+      source.setData(sitiosLocaisGeoJson);
+    }
+    const vis =
+      temSitiosLocais && mapState.mostrarSitiosPadraoOuro !== false
+        ? "visible"
+        : "none";
 
     if (map.getLayer("sitios-padrao-ouro-fill")) {
       map.setLayoutProperty("sitios-padrao-ouro-fill", "visibility", vis);
@@ -523,7 +582,7 @@ export const MapViewer: React.FC = () => {
     if (map.getLayer("sitios-padrao-ouro-line")) {
       map.setLayoutProperty("sitios-padrao-ouro-line", "visibility", vis);
     }
-  }, [mapState.mostrarSitiosPadraoOuro, mapLoaded]);
+  }, [sitiosLocaisGeoJson, temSitiosLocais, mapState.mostrarSitiosPadraoOuro, mapLoaded]);
 
   // Atualização de Áreas e Polígonos de Amostragem Persistentes
   useEffect(() => {
@@ -703,13 +762,15 @@ export const MapViewer: React.FC = () => {
             <span className="text-[9px] text-slate-400 font-mono">Transição / Sem dados</span>
           </div>
         </div>
-        <div className="flex items-center gap-2 pt-1.5 border-t border-slate-200/60 dark:border-slate-800">
-          <span className="w-3.5 h-2 rounded bg-cyan-500/30 border border-cyan-500 shrink-0" />
-          <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-cyan-700 dark:text-cyan-400 text-[11px]">Sítios Padrão-Ouro</span>
-            <span className="text-[9px] text-slate-400 font-mono">10-50 ha (VANT/Drone)</span>
+        {temSitiosLocais && (
+          <div className="flex items-center gap-2 pt-1.5 border-t border-slate-200/60 dark:border-slate-800">
+            <span className="w-3.5 h-2 rounded bg-cyan-500/30 border border-cyan-500 shrink-0" />
+            <div className="flex items-center gap-1.5">
+              <span className="font-semibold text-cyan-700 dark:text-cyan-400 text-[11px]">Sítios Padrão-Ouro</span>
+              <span className="text-[9px] text-slate-400 font-mono">10-50 ha (VANT/Drone)</span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Pop-up Flutuante de Inspeção quando um Ponto está Selecionado */}

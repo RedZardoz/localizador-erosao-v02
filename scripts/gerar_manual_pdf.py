@@ -231,10 +231,10 @@ def criar_diagramas_telas(pasta_figuras: str) -> dict[str, str]:
 
     # 4 Cartões dos Sítios de Referência
     sitios_info = [
-        ("SÍTIO 01: Céu Azul (Norte)", "Área: 28.4 ha  |  CAR: PR-4105309-...\nSolo: Latossolo Vermelho Distroférrico\nStatus: Mapeado com Drone (5 cm)\nPadrão: Held-Out Test Set Estrito", '#0284C7'),
-        ("SÍTIO 02: Céu Azul (Sul)", "Área: 34.1 ha  |  CAR: PR-4105309-...\nSolo: Nitossolo Vermelho Eutrófico\nStatus: Mapeado com Drone (5 cm)\nPadrão: Calibração Espectral Cruzada", '#0D9488'),
-        ("SÍTIO 03: Medianeira (Leste)", "Área: 18.7 ha  |  CAR: PR-4115803-...\nSolo: Latossolo Vermelho Eutroférrico\nStatus: Voo Agendado / Acesso Regular\nPadrão: Held-Out Test Set Estrito", '#7C3AED'),
-        ("SÍTIO 04: Medianeira (Oeste)", "Área: 42.0 ha  |  CAR: PR-4115803-...\nSolo: Neossolo Regolítico\nStatus: Sítio Contingência Habilitado\nPadrão: Matriz de Validação 10m", '#C026D3'),
+        ("SÍTIO 01: Céu Azul (Norte)", "Área: ver dado local  |  identificador opaco\nSolo: Latossolo Vermelho Distroférrico\nStatus: Mapeado com Drone (5 cm)\nPadrão: Held-Out Test Set Estrito", '#0284C7'),
+        ("SÍTIO 02: Céu Azul (Sul)", "Área: ver dado local  |  identificador opaco\nSolo: Nitossolo Vermelho Eutrófico\nStatus: Mapeado com Drone (5 cm)\nPadrão: Calibração Espectral Cruzada", '#0D9488'),
+        ("SÍTIO 03: Medianeira (Leste)", "Área: ver dado local  |  identificador opaco\nSolo: Latossolo Vermelho Eutroférrico\nStatus: Voo Agendado / Acesso Regular\nPadrão: Held-Out Test Set Estrito", '#7C3AED'),
+        ("SÍTIO 04: Medianeira (Oeste)", "Área: ver dado local  |  identificador opaco\nSolo: Neossolo Regolítico\nStatus: Sítio Contingência Habilitado\nPadrão: Matriz de Validação 10m", '#C026D3'),
     ]
 
     for idx, (titulo, desc, cor_borda) in enumerate(sitios_info):

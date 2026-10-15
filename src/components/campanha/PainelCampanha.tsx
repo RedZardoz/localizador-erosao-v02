@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSarelStore } from "@/store/useSarelStore";
 import { PERFIS_EXPORTACAO, PerfilExportacao } from "@/lib/matriz/perfis";
 import { SITIOS_PADRAO_OURO } from "@/lib/padraoOuro/sitiosReferencia";
@@ -54,6 +54,34 @@ export function PainelCampanha() {
   const [abaInterna, setAbaInterna] = useState<"vant-d16" | "coletor" | "exportacao" | "legado">("vant-d16");
   const [sitioSelecionadoId, setSitioSelecionadoId] = useState<string>("sitio-ouro-01");
   const [metricasSimuladas, setMetricasSimuladas] = useState<MetricasValidacaoMatricial | null>(null);
+
+  // DEC-10 (Opção C): Dados locais de sítios de aferição
+  const [sitiosLocaisInfo, setSitiosLocaisInfo] = useState<{
+    estado: "disponivel" | "indisponivel";
+    causa?: string;
+    sitios: Array<{
+      id: string;
+      codigoCar: string;
+      bbox?: [number, number, number, number];
+      geometry?: unknown;
+    }>;
+  }>({ estado: "indisponivel", causa: "carregando", sitios: [] });
+
+  useEffect(() => {
+    fetch("/api/sitios-referencia")
+      .then((res) => {
+        if (!res.ok) return { estado: "indisponivel", causa: "dado-local-ausente", sitios: [] };
+        return res.json();
+      })
+      .then((data) => {
+        if (data && (data.estado === "disponivel" || data.estado === "indisponivel")) {
+          setSitiosLocaisInfo(data);
+        }
+      })
+      .catch(() => {
+        setSitiosLocaisInfo({ estado: "indisponivel", causa: "dado-local-ausente", sitios: [] });
+      });
+  }, []);
 
   // Ingestão SAREL Coletor (D16)
   const [resultadoColetor, setResultadoColetor] = useState<ResultadoIngestaoColetor | null>(null);
@@ -456,11 +484,21 @@ export function PainelCampanha() {
               Missões históricas de aferição fotogramétrica que calibraram o GSD (~3,8 cm), a produtividade e o CE90 (1,47 m).
             </p>
 
+            {sitiosLocaisInfo.estado !== "disponivel" && (
+              <div className="mb-3 p-2.5 rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                <span>Sítios de aferição: dado local ausente (instale o banco pelo Instalador/Google Drive)</span>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {SITIOS_PADRAO_OURO.map((sitio) => {
                 const isSelected = sitio.id === sitioSelecionadoId;
-                const centerLat = (sitio.bbox[1] + sitio.bbox[3]) / 2;
-                const centerLng = (sitio.bbox[0] + sitio.bbox[2]) / 2;
+                const local = sitiosLocaisInfo.sitios.find((l) => l.id === sitio.id);
+                const hasLocalData = sitiosLocaisInfo.estado === "disponivel" && !!local;
+                const bbox = local?.bbox;
+                const centerLat = bbox ? (bbox[1] + bbox[3]) / 2 : 0;
+                const centerLng = bbox ? (bbox[0] + bbox[2]) / 2 : 0;
 
                 return (
                   <div
@@ -476,24 +514,34 @@ export function PainelCampanha() {
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-xs text-slate-900 dark:text-white">
-                            {sitio.properties.nomeIdentificador}
+                            {sitio.nomeIdentificador}
                           </span>
                           <span className="bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 text-[10px] font-bold px-2 py-0.5 rounded-md font-mono">
-                            {sitio.properties.municipio}
+                            {sitio.municipio}
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-500 font-mono mt-1">
-                          CAR: {sitio.properties.codigoCar.substring(0, 24)}...
+                          {hasLocalData && local?.codigoCar
+                            ? `CAR: ${local.codigoCar.substring(0, 24)}...`
+                            : `ID: ${sitio.identificadorOpaco}`}
                         </p>
                       </div>
 
                       <button
+                        type="button"
+                        disabled={!hasLocalData || !bbox}
                         onClick={(e) => {
                           e.stopPropagation();
-                          voarParaSitio(centerLat, centerLng);
+                          if (hasLocalData && bbox) {
+                            voarParaSitio(centerLat, centerLng);
+                          }
                         }}
-                        className="px-2.5 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-sm cursor-pointer"
-                        title="Localizar no Mapa 3D"
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-sm transition-colors ${
+                          hasLocalData && bbox
+                            ? "bg-cyan-600 hover:bg-cyan-700 text-white cursor-pointer"
+                            : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none"
+                        }`}
+                        title={hasLocalData && bbox ? "Localizar no Mapa 3D" : "Dado local indisponível para localização"}
                       >
                         <MapPin className="w-3 h-3" />
                         Ver no Mapa
@@ -504,19 +552,19 @@ export function PainelCampanha() {
                       <div>
                         <span className="text-slate-400 block text-[10px]">Área de Voo:</span>
                         <span className="font-bold text-slate-800 dark:text-slate-200">
-                          {sitio.properties.areaHa} ha
+                          {sitio.areaHa} ha
                         </span>
                       </div>
                       <div>
                         <span className="text-slate-400 block text-[10px]">Células S2 (10m):</span>
                         <span className="font-bold text-slate-800 dark:text-slate-200">
-                          {sitio.properties.totalPixels10mEstimados} px
+                          {sitio.totalPixels10mEstimados} px
                         </span>
                       </div>
                       <div>
                         <span className="text-slate-400 block text-[10px]">GSD Medido:</span>
                         <span className="font-bold text-cyan-700 dark:text-cyan-400 font-mono">
-                          {sitio.properties.resolucaoVantGsdCm} cm
+                          {sitio.resolucaoVantGsdCm} cm
                         </span>
                       </div>
                     </div>
@@ -532,7 +580,7 @@ export function PainelCampanha() {
               <div>
                 <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Crosshair className="w-4 h-4 text-cyan-600" />
-                  Simulação de Delineação Matricial sobre {sitioAtual.properties.nomeIdentificador}
+                  Simulação de Delineação Matricial sobre {sitioAtual.nomeIdentificador}
                 </h4>
                 <p className="text-[11px] text-slate-500 mt-0.5">
                   Confronto de resolução: 62.500 subpixels de VANT (~4 cm) por célula de 10 m do Sentinel-2.
