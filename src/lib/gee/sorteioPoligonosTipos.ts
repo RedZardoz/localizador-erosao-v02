@@ -36,7 +36,10 @@ export class ErroPreCondicaoSorteioD16 extends Error {
   }
 }
 
-export interface CandidatoSorteioD16 extends CandidatoEstratificacao {
+export interface CandidatoSorteioD16
+  extends Omit<CandidatoEstratificacao, "declividadePct" | "frequenciaSoloNu"> {
+  declividadePct: number | null;
+  frequenciaSoloNu: number | null;
   classeWorldCover2020: number | null | undefined;
   classeWorldCover2021: number | null | undefined;
   kAmbiguoAssociacao: true | false | "indisponivel" | undefined;
@@ -118,6 +121,7 @@ export interface RelatorioPreCondicoesD16 {
   motivoFalha: string | null;
   seloExistenteCaminho: string | null;
   totalCandidatos: number;
+  candidatosExcluidosMedidaAusente: number;
   limiaresS: { t1: number; t2: number };
   limiaresE: { t1: number; t2: number };
   contagemCandidatosPorEstrato: Record<string, number>;
@@ -189,9 +193,18 @@ export function verificarPreCondicoesSorteioD16(
 ): RelatorioPreCondicoesD16 {
   const { seloExistenteCaminho = null, lancarErro = true } = opcoes;
 
+  const candidatosValidos = candidatos.filter(
+    (c): c is CandidatoSorteioD16 & { declividadePct: number; frequenciaSoloNu: number } =>
+      typeof c.declividadePct === "number" &&
+      Number.isFinite(c.declividadePct) &&
+      typeof c.frequenciaSoloNu === "number" &&
+      Number.isFinite(c.frequenciaSoloNu)
+  );
+  const candidatosExcluidosMedidaAusente = candidatos.length - candidatosValidos.length;
+
   const particao =
-    candidatos.length > 0
-      ? particionarCandidatosEm18Estratos(candidatos)
+    candidatosValidos.length > 0
+      ? particionarCandidatosEm18Estratos(candidatosValidos)
       : {
           limiaresS: { t1: 0, t2: 0 },
           limiaresE: { t1: 0, t2: 0 },
@@ -220,7 +233,8 @@ export function verificarPreCondicoesSorteioD16(
       condicaoFalha,
       motivoFalha,
       seloExistenteCaminho,
-      totalCandidatos: candidatos.length,
+      totalCandidatos: candidatosValidos.length,
+      candidatosExcluidosMedidaAusente,
       limiaresS: particao.limiaresS,
       limiaresE: particao.limiaresE,
       contagemCandidatosPorEstrato,
@@ -235,17 +249,10 @@ export function verificarPreCondicoesSorteioD16(
       exigirDecisao(DECISOES[idDecisao]);
     } catch (err) {
       if (lancarErro) throw err;
-      return {
-        aprovado: false,
-        condicaoFalha: "decisoes_fechadas",
-        motivoFalha: err instanceof Error ? err.message : String(err),
-        seloExistenteCaminho,
-        totalCandidatos: candidatos.length,
-        limiaresS: particao.limiaresS,
-        limiaresE: particao.limiaresE,
-        contagemCandidatosPorEstrato,
-        estratosDeficientes,
-      };
+      return falhar(
+        "decisoes_fechadas",
+        err instanceof Error ? err.message : String(err)
+      );
     }
   }
 
@@ -280,7 +287,7 @@ export function verificarPreCondicoesSorteioD16(
   }
 
   // Pré-condição 7 (Guarda anticircularidade de D16): nenhum insumo do rastreio espectral de D02
-  for (const cand of candidatos) {
+  for (const cand of candidatosValidos) {
     for (const chave of Object.keys(cand)) {
       if (CAMPOS_RASTREIO_PROIBIDOS_SORTEIO.has(chave) && cand[chave] !== undefined) {
         return falhar(
@@ -292,7 +299,7 @@ export function verificarPreCondicoesSorteioD16(
   }
 
   // Pré-condição 3: todo candidato traz as duas épocas do WorldCover, e ambas em [30, 40]
-  for (const cand of candidatos) {
+  for (const cand of candidatosValidos) {
     const wc2020 = cand.classeWorldCover2020;
     const wc2021 = cand.classeWorldCover2021;
     if (
@@ -311,7 +318,7 @@ export function verificarPreCondicoesSorteioD16(
   }
 
   // Pré-condição 4: todo candidato traz kAmbiguoAssociacao nos três estados de D08 emendada (true, false ou "indisponivel"), nunca undefined
-  for (const cand of candidatos) {
+  for (const cand of candidatosValidos) {
     const valKAmbiguo = cand.kAmbiguoAssociacao;
     const ehEstadoValidoD08 =
       valKAmbiguo === true ||
@@ -343,7 +350,8 @@ export function verificarPreCondicoesSorteioD16(
     condicaoFalha: null,
     motivoFalha: null,
     seloExistenteCaminho: null,
-    totalCandidatos: candidatos.length,
+    totalCandidatos: candidatosValidos.length,
+    candidatosExcluidosMedidaAusente,
     limiaresS: particao.limiaresS,
     limiaresE: particao.limiaresE,
     contagemCandidatosPorEstrato,

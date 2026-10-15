@@ -147,7 +147,14 @@ export function sortearPoligonosDroneD16(
     lancarErro: true,
   });
 
-  const { limiaresS, limiaresE, estratosMap } = particionarCandidatosEm18Estratos(candidatos);
+  const candidatosValidos = candidatos.filter(
+    (c): c is CandidatoSorteioD16 & { declividadePct: number; frequenciaSoloNu: number } =>
+      typeof c.declividadePct === "number" &&
+      Number.isFinite(c.declividadePct) &&
+      typeof c.frequenciaSoloNu === "number" &&
+      Number.isFinite(c.frequenciaSoloNu)
+  );
+  const { limiaresS, limiaresE, estratosMap } = particionarCandidatosEm18Estratos(candidatosValidos);
   const prng = criarPrng(semente);
 
   const poligonos: PoligonoSorteadoD16[] = [];
@@ -222,8 +229,8 @@ export function sortearPoligonosDroneD16(
         },
         areaHectares: 10,
         geometria: construirPoligono10Ha(cand.latitude, cand.longitude),
-        declividadePct: cand.declividadePct,
-        frequenciaSoloNu: cand.frequenciaSoloNu,
+        declividadePct: cand.declividadePct as number,
+        frequenciaSoloNu: cand.frequenciaSoloNu as number,
         nivelK: cand.nivelK,
         kAmbiguoAssociacao: cand.kAmbiguoAssociacao as true | false | "indisponivel",
         ...(cand.kAmbiguoAssociacaoProveniencia
@@ -438,7 +445,14 @@ export function sortear72PoligonosD16(
     }
   }
 
-  const particao = particionarCandidatosEm18Estratos(candidatos);
+  const candidatosValidos = candidatos.filter(
+    (c): c is CandidatoSorteioD16 & { declividadePct: number; frequenciaSoloNu: number } =>
+      typeof c.declividadePct === "number" &&
+      Number.isFinite(c.declividadePct) &&
+      typeof c.frequenciaSoloNu === "number" &&
+      Number.isFinite(c.frequenciaSoloNu)
+  );
+  const particao = particionarCandidatosEm18Estratos(candidatosValidos);
   const prng = criarPrng(semente);
   const poligonos: PoligonoSorteadoD16[] = [];
   const tabelaCorrespondenciaOpaca: Record<string, string> = {};
@@ -529,8 +543,8 @@ export function sortear72PoligonosD16(
         },
         areaHectares: 5.02,
         geometria: construirPoligono502Ha(c.latitude, c.longitude),
-        declividadePct: c.declividadePct,
-        frequenciaSoloNu: c.frequenciaSoloNu,
+        declividadePct: c.declividadePct as number,
+        frequenciaSoloNu: c.frequenciaSoloNu as number,
         nivelK: c.nivelK,
         kAmbiguoAssociacao: c.kAmbiguoAssociacao as true | false | "indisponivel",
         kAmbiguoAssociacaoProveniencia: c.kAmbiguoAssociacaoProveniencia,

@@ -490,4 +490,22 @@ describe("N10 — Contrato de Sorteio 72 Polígonos D16 (REVISAO_GLOBAL B1)", ()
   });
 });
 
+describe("C07 (A15) — Candidatos com medidas ausentes no sorteio D16", () => {
+  it("nenhum candidato com medida ausente vira 0, a contagem de excluídos é reportada e PainelSorteioD16.tsx não contém ?? 0", () => {
+    const painelSrc = fs.readFileSync(
+      path.resolve(process.cwd(), "src/components/decisoes/PainelSorteioD16.tsx"),
+      "utf-8"
+    );
+    expect(painelSrc).not.toMatch(/\?\?\s*0/);
+
+    const pool = gerarPoolCandidatosElegiveis(5);
+    (pool[0] as any).declividadePct = null;
+    (pool[1] as any).frequenciaSoloNu = null;
+
+    const relatorio = verificarPreCondicoesSorteioD16(pool as any, { lancarErro: false });
+    expect(relatorio.candidatosExcluidosMedidaAusente).toBe(2);
+    expect(relatorio.totalCandidatos).toBe(pool.length - 2);
+  });
+});
+
 

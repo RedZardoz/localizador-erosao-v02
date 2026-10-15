@@ -58,14 +58,20 @@ export const PainelSorteioD16: React.FC = () => {
     };
   }, []);
 
-  const candidatosMapeados = useMemo<CandidatoSorteioD16[]>(() => {
-    return pontos.map((p) => {
-      const decliv = valorOuNulo(p.terreno?.declividadePct) ?? 0;
-      const freqNu = valorOuNulo(p.temporal?.D?.serie?.frequenciaSoloNu) ?? 0;
+  const { candidatosMapeados, candidatosExcluidosMedidaAusente } = useMemo(() => {
+    const validos: CandidatoSorteioD16[] = [];
+    let excluidos = 0;
+    for (const p of pontos) {
+      const decliv = valorOuNulo(p.terreno?.declividadePct);
+      const freqNu = valorOuNulo(p.temporal?.D?.serie?.frequenciaSoloNu);
+      if (decliv === null || freqNu === null) {
+        excluidos++;
+        continue;
+      }
       const wc2020 = valorOuNulo(p.classeWorldCover2020);
       const wc2021 = valorOuNulo(p.classeWorldCover2021);
       const kAmbiguo = p.solo?.kAmbiguoAssociacao ?? p.kAmbiguoAssociacao;
-      return {
+      validos.push({
         id: p.id,
         latitude: p.latitude,
         longitude: p.longitude,
@@ -77,8 +83,9 @@ export const PainelSorteioD16: React.FC = () => {
         kAmbiguoAssociacao: kAmbiguo,
         unidadeDeterminanteK2024:
           p.criterioSelecao.unidadeDeterminanteK2024 ?? p.solo?.unidadeDeterminanteK2024 ?? null,
-      };
-    });
+      });
+    }
+    return { candidatosMapeados: validos, candidatosExcluidosMedidaAusente: excluidos };
   }, [pontos]);
 
   const relatorioPre = useMemo(() => {
@@ -227,6 +234,10 @@ export const PainelSorteioD16: React.FC = () => {
             <b>18 estratos</b> de D12, totalizando <b>361 ha</b>: 36 para treino e 36 reservados em held-out para avaliação única de D25).
             Esta ação é <b>irreversível</b> (D23 proíbe descartar <code>pi_i</code> registrado).
           </p>
+
+          <div className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
+            <span>{candidatosExcluidosMedidaAusente} candidatos excluídos por medida ausente</span>
+          </div>
 
           {bloqueioENaoMedido && (
             <div className="p-3 rounded-lg border border-rose-300 bg-rose-50 dark:bg-rose-950/40 dark:border-rose-800 text-rose-950 dark:text-rose-200 flex items-start gap-2.5">
