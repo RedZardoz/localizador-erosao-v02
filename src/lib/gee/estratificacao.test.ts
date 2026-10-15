@@ -12,11 +12,46 @@ describe("Limiares de Quantis e Tercis", () => {
     const vals = [10, 20, 30, 40, 50, 60, 70, 80, 90];
     const lim = calcularLimiaresTercis(vals);
     expect(lim.t1).toBe(30);
-    expect(lim.t2).toBe(70);
+    expect(lim.t2).toBe(60);
 
     expect(classificarTercil(20, lim)).toBe(1);
     expect(classificarTercil(50, lim)).toBe(2);
     expect(classificarTercil(85, lim)).toBe(3);
+  });
+
+  it("conforme N12: detecta empates em T1, ignora NaN e lanca erro para valor nao finito", () => {
+    // 1. [0,0,0,0,1,2] -> nEmpatesEmT1 >= 2
+    const resEmpates = calcularLimiaresTercis([0, 0, 0, 0, 1, 2]);
+    expect(resEmpates.nEmpatesEmT1).toBeGreaterThanOrEqual(2);
+    expect(resEmpates.nValidos).toBe(6);
+    expect(resEmpates.nNaoFinitos).toBe(0);
+
+    // 2. [NaN, 1, 2, 3] ignora o NaN
+    const resNan = calcularLimiaresTercis([NaN, 1, 2, 3]);
+    expect(resNan.nValidos).toBe(3);
+    expect(resNan.nNaoFinitos).toBe(1);
+    expect(resNan.t1).toBe(1);
+    expect(resNan.t2).toBe(2);
+
+    // 3. classificarTercil(NaN) lanca erro
+    expect(() => classificarTercil(NaN, { t1: 1, t2: 2 })).toThrow();
+    expect(() => classificarTercil(Infinity, { t1: 1, t2: 2 })).toThrow();
+
+    // 4. n = 30.000 distintos -> contagens 10.000 +- 2 por tercil
+    const n30k = Array.from({ length: 30000 }, (_, i) => i + 1);
+    const lim30k = calcularLimiaresTercis(n30k);
+    let c1 = 0;
+    let c2 = 0;
+    let c3 = 0;
+    for (const v of n30k) {
+      const t = classificarTercil(v, lim30k);
+      if (t === 1) c1++;
+      else if (t === 2) c2++;
+      else c3++;
+    }
+    expect(Math.abs(c1 - 10000)).toBeLessThanOrEqual(2);
+    expect(Math.abs(c2 - 10000)).toBeLessThanOrEqual(2);
+    expect(Math.abs(c3 - 10000)).toBeLessThanOrEqual(2);
   });
 });
 

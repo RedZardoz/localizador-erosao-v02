@@ -72,25 +72,59 @@ export function criarPrng(semente: number): () => number {
   };
 }
 
+export interface ResultadoLimiaresTercis {
+  t1: number;
+  t2: number;
+  nValidos: number;
+  nNaoFinitos: number;
+  nEmpatesEmT1: number;
+  nEmpatesEmT2: number;
+}
+
 /**
- * Calcula os percentis empíricos de 33.33% e 66.67% para divisão em 3 terços.
+ * Calcula os tercis empíricos para divisão em 3 terços, tratando empates e valores não-finitos (N12 / M9).
  */
-export function calcularLimiaresTercis(valores: number[]): { t1: number; t2: number } {
-  if (valores.length === 0) return { t1: 0, t2: 0 };
-  const ordenados = [...valores].sort((a, b) => a - b);
-  const n = ordenados.length;
-  const idx1 = Math.floor(n * 0.3333);
-  const idx2 = Math.floor(n * 0.6667);
+export function calcularLimiaresTercis(valores: number[]): ResultadoLimiaresTercis {
+  const nNaoFinitos = valores.filter((v) => typeof v !== "number" || !Number.isFinite(v) || Number.isNaN(v)).length;
+  const finitos = valores.filter((v) => typeof v === "number" && Number.isFinite(v) && !Number.isNaN(v));
+  const nValidos = finitos.length;
+  if (nValidos === 0) {
+    return {
+      t1: 0,
+      t2: 0,
+      nValidos: 0,
+      nNaoFinitos,
+      nEmpatesEmT1: 0,
+      nEmpatesEmT2: 0,
+    };
+  }
+  const ordenados = [...finitos].sort((a, b) => a - b);
+  const c1 = Math.ceil(nValidos / 3) - 1;
+  const idx1 = c1 < 0 ? 0 : c1;
+  const c2 = Math.ceil((2 * nValidos) / 3) - 1;
+  const idx2 = c2 < 0 ? 0 : c2;
+  const t1 = ordenados[idx1];
+  const t2 = ordenados[idx2];
+  const nEmpatesEmT1 = ordenados.filter((x) => x === t1).length;
+  const nEmpatesEmT2 = ordenados.filter((x) => x === t2).length;
   return {
-    t1: ordenados[idx1],
-    t2: ordenados[idx2],
+    t1,
+    t2,
+    nValidos,
+    nNaoFinitos,
+    nEmpatesEmT1,
+    nEmpatesEmT2,
   };
 }
 
 /**
  * Atribui o tercil (1, 2 ou 3) com base nos limiares empíricos da AOI.
+ * Lança erro se o valor não for um número finito (N12).
  */
 export function classificarTercil(valor: number, limiares: { t1: number; t2: number }): 1 | 2 | 3 {
+  if (typeof valor !== "number" || !Number.isFinite(valor) || Number.isNaN(valor)) {
+    throw new Error(`Valor não finito fornecido a classificarTercil: ${valor}`);
+  }
   if (valor <= limiares.t1) return 1;
   if (valor <= limiares.t2) return 2;
   return 3;
