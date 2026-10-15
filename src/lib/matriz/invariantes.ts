@@ -27,6 +27,69 @@ export const LISTA_NEGRA_LITERAIS_GEOGRAFICOS = [
   "parana",
 ];
 
+export const NOMES_UFS_BRASIL = [
+  "acre",
+  "alagoas",
+  "amapá",
+  "amapa",
+  "amazonas",
+  "bahia",
+  "ceará",
+  "ceara",
+  "distrito federal",
+  "espírito santo",
+  "espirito santo",
+  "goiás",
+  "goias",
+  "maranhão",
+  "maranhao",
+  "mato grosso",
+  "mato grosso do sul",
+  "minas gerais",
+  "pará",
+  "para",
+  "paraíba",
+  "paraiba",
+  "paraná",
+  "parana",
+  "pernambuco",
+  "piauí",
+  "piaui",
+  "rio de janeiro",
+  "rio grande do norte",
+  "rio grande do sul",
+  "rondônia",
+  "rondonia",
+  "roraima",
+  "santa catarina",
+  "são paulo",
+  "sao paulo",
+  "sergipe",
+  "tocantins",
+] as const;
+
+export const SIGLAS_UFS_BRASIL = [
+  "ac", "al", "ap", "am", "ba", "ce", "df", "es", "go", "ma",
+  "mt", "ms", "mg", "pa", "pb", "pr", "pe", "pi", "rj", "rn",
+  "rs", "ro", "rr", "sc", "sp", "se", "to",
+] as const;
+
+export const MOTIVOS_FALHA_OU_NAO_CONSULTADO_FUNDIARIO = [
+  "erro",
+  "falha",
+  "servico indisponivel",
+  "serviço indisponível",
+  "servico-indisponivel",
+  "rede",
+  "timeout",
+  "indisponivel",
+  "indisponível",
+  "nao consultado",
+  "não consultado",
+  "nao-consultado",
+  "desconhecido",
+] as const;
+
 export const CAMPOS_PROIBIDOS_MATRIZ_TREINO = [
   "phiDiag",
   "quantilPhi",
@@ -229,6 +292,127 @@ export function validarInvariantesArtefato(artefato: ArtefatoProjetado): Resulta
   }
 
   // ==========================================================================
+  // INVARIANTE 3: Coerência de Campos_Estimados
+  // Valida que Campos_Estimados reflete as colunas *_Origem do artefato que não são "medido".
+  // ==========================================================================
+  if (cabecalho.includes("Campos_Estimados")) {
+    const colunasOrigem = cabecalho.filter((c) => c.endsWith("_Origem"));
+    for (let i = 0; i < n; i++) {
+      const linha = linhas[i];
+      const camposEstimadosStr = String(linha["Campos_Estimados"] ?? "").trim();
+      const colunasNaoMedidas: string[] = [];
+
+      for (const col of colunasOrigem) {
+        const valOrigem = String(linha[col] ?? "").trim();
+        const isMedido = valOrigem.toLowerCase().startsWith("medido");
+        if (!isMedido) {
+          const nomeCampo = col.slice(0, -"_Origem".length);
+          colunasNaoMedidas.push(nomeCampo);
+        }
+      }
+
+      if (colunasNaoMedidas.length > 0) {
+        const diz100Medido =
+          camposEstimadosStr === "" ||
+          camposEstimadosStr.toLowerCase().includes("100% medido") ||
+          camposEstimadosStr.toLowerCase() === "nenhum";
+
+        if (diz100Medido) {
+          violacoes.push({
+            invariante: 3,
+            nome: "Campos Estimados Inconsistente",
+            mensagem: `Linha ${i + 1}: existem colunas com origem não medida (${colunasNaoMedidas.join(", ")}), mas 'Campos_Estimados' declara '${camposEstimadosStr || "(vazio)"}'.`,
+            detalhes: { linha: i + 1, colunasNaoMedidas, camposEstimados: camposEstimadosStr },
+          });
+        }
+      } else if (colunasOrigem.length > 0) {
+        if (
+          camposEstimadosStr !== "" &&
+          !camposEstimadosStr.toLowerCase().includes("100% medido") &&
+          camposEstimadosStr.toLowerCase() !== "nenhum"
+        ) {
+          violacoes.push({
+            invariante: 3,
+            nome: "Campos Estimados Inconsistente",
+            mensagem: `Linha ${i + 1}: todas as colunas de origem presentes são medidas, mas 'Campos_Estimados' aponta campos estimados ('${camposEstimadosStr}').`,
+            detalhes: { linha: i + 1, camposEstimados: camposEstimadosStr },
+          });
+        }
+      }
+    }
+  }
+
+  // ==========================================================================
+  // INVARIANTE 4: Rastreabilidade de Satélite
+  // Linhas com produto derivado de satélite devem conter Rastreio_Cenas,
+  // Rastreio_Calculado_Em e Rastreio_Versao_Motor preenchidos.
+  // ==========================================================================
+  if (cabecalho.includes("Rastreio_Cenas") || cabecalho.includes("Rastreio_Versao_Motor")) {
+    const colunasSateliteConhecidas = [
+      "Elevacao_m_Origem",
+      "Declividade_pct_Origem",
+      "Declividade_graus_Origem",
+      "Curvatura_Perfil_Origem",
+      "Curvatura_Plana_Origem",
+      "Acumulo_Fluxo_Origem",
+      "TWI_Origem",
+      "Frequencia_Solo_Nu_Origem",
+      "Precip_Acum_30d_mm_Origem",
+      "Precip_Acum_90d_mm_Origem",
+      "I30_Max_mm_h_Origem",
+      "N_Eventos_Erosivos_Origem",
+      "Indice_Mecanismo_Origem",
+      "Referencia_Cena_Tile",
+    ];
+    const termosSatelite = [
+      "copernicus", "dem", "glo30", "glo-30", "sentinel", "s2", "chirps", "imerg",
+      "planet", "landsat", "satélite", "satellite"
+    ];
+
+    for (let i = 0; i < n; i++) {
+      const linha = linhas[i];
+      let temDadoSatelite = false;
+      let colunaDetectada = "";
+
+      for (const col of cabecalho) {
+        if (col.endsWith("_Origem") || col === "Referencia_Cena_Tile") {
+          const val = String(linha[col] ?? "").trim();
+          const valLower = val.toLowerCase();
+          if (valLower.length > 0 && !valLower.startsWith("indisponível") && !valLower.startsWith("indisponivel")) {
+            const mencionaTermoSatelite = termosSatelite.some((t) => valLower.includes(t));
+            const ehColunaSatelite = colunasSateliteConhecidas.includes(col);
+            if (mencionaTermoSatelite || ehColunaSatelite) {
+              temDadoSatelite = true;
+              colunaDetectada = col;
+              break;
+            }
+          }
+        }
+      }
+
+      if (temDadoSatelite) {
+        const cenas = String(linha["Rastreio_Cenas"] ?? "").trim();
+        const versaoMotor = String(linha["Rastreio_Versao_Motor"] ?? "").trim();
+        const calculadoEm = String(linha["Rastreio_Calculado_Em"] ?? "").trim();
+
+        const cenasVazia = !cenas || cenas.toLowerCase() === "não informado" || cenas.toLowerCase() === "nao informado";
+        const versaoVazia = !versaoMotor || versaoMotor.toLowerCase() === "não informado" || versaoMotor.toLowerCase() === "nao informado";
+        const checarCalculadoEm = cabecalho.includes("Rastreio_Calculado_Em");
+        const calcVazio = checarCalculadoEm && (!calculadoEm || calculadoEm.toLowerCase() === "não informado" || calculadoEm.toLowerCase() === "nao informado");
+
+        if (cenasVazia || versaoVazia || calcVazio) {
+          violacoes.push({
+            invariante: 4,
+            nome: "Rastreabilidade de Satélite Ausente",
+            mensagem: `Linha ${i + 1}: dados derivados de satélite presentes ('${colunaDetectada}'), mas informações de rastreio (Rastreio_Cenas, Rastreio_Versao_Motor, Rastreio_Calculado_Em) não estão devidamente preenchidas.`,
+            detalhes: { linha: i + 1, coluna: colunaDetectada, cenas, versaoMotor, calculadoEm },
+          });
+        }
+      }
+    }
+  }
+
+  // ==========================================================================
   // INVARIANTE 6: Lista Negra de Literais Geográficos
   // Nenhuma coluna geográfica contém "Custom", "Bacia Local", ou nome de UF como município
   // ==========================================================================
@@ -239,12 +423,28 @@ export function validarInvariantesArtefato(artefato: ArtefatoProjetado): Resulta
         const val = linhas[i][col];
         if (typeof val === "string" && val.trim().length > 0) {
           const valMin = val.trim().toLowerCase();
+          let violou = false;
           for (const proibido of LISTA_NEGRA_LITERAIS_GEOGRAFICOS) {
             if (valMin === proibido || (proibido.includes("bacia") && valMin.includes(proibido))) {
               violacoes.push({
                 invariante: 6,
                 nome: "Literal Geográfico Proibido",
                 mensagem: `Linha ${i + 1}: coluna '${col}' contém literal de programa proibido ('${val}').`,
+                detalhes: { linha: i + 1, coluna: col, valor: val },
+              });
+              violou = true;
+              break;
+            }
+          }
+          if (!violou && col === "Municipio") {
+            if (
+              (NOMES_UFS_BRASIL as readonly string[]).includes(valMin) ||
+              (SIGLAS_UFS_BRASIL as readonly string[]).includes(valMin)
+            ) {
+              violacoes.push({
+                invariante: 6,
+                nome: "Literal Geográfico Proibido",
+                mensagem: `Linha ${i + 1}: coluna '${col}' contém nome ou sigla de UF ('${val}') em vez de município.`,
                 detalhes: { linha: i + 1, coluna: col, valor: val },
               });
             }
@@ -256,22 +456,27 @@ export function validarInvariantesArtefato(artefato: ArtefatoProjetado): Resulta
 
   // ==========================================================================
   // INVARIANTE 5: Afirmação Negativa Fundiária
-  // "Sem correspondência" só aparece após consulta bem-sucedida sem match
+  // "Sem correspondência" só aparece após consulta bem-sucedida sem match.
+  // Aplica-se a CAR_Status e a Status_Fundiario.
   // ==========================================================================
-  if (cabecalho.includes("CAR_Status")) {
-    for (let i = 0; i < n; i++) {
-      const status = linhas[i]["CAR_Status"];
-      if (status === "sem-correspondencia") {
-        const docMascarado = linhas[i]["Documento_Mascarado"];
-        const motivo = linhas[i]["Motivo_Acesso"];
-        // Se status afirma sem correspondência mas houve erro ou não foi consultado
-        if (motivo && String(motivo).toLowerCase().includes("erro")) {
-          violacoes.push({
-            invariante: 5,
-            nome: "Afirmação Negativa Fundiária Falaciosa",
-            mensagem: `Linha ${i + 1}: declarada 'sem-correspondencia' porém o motivo aponta falha de consulta ('${motivo}').`,
-            detalhes: { linha: i + 1 },
-          });
+  const colunasStatusFundiario = ["CAR_Status", "Status_Fundiario"];
+  for (const colStatus of colunasStatusFundiario) {
+    if (cabecalho.includes(colStatus)) {
+      for (let i = 0; i < n; i++) {
+        const status = String(linhas[i][colStatus] ?? "").trim().toLowerCase();
+        if (status === "sem-correspondencia") {
+          const motivo = String(linhas[i]["Motivo_Acesso"] ?? "").trim().toLowerCase();
+          const motivoApontaFalha = MOTIVOS_FALHA_OU_NAO_CONSULTADO_FUNDIARIO.some(
+            (m) => motivo.includes(m)
+          );
+          if (!motivo || motivoApontaFalha) {
+            violacoes.push({
+              invariante: 5,
+              nome: "Afirmação Negativa Fundiária Falaciosa",
+              mensagem: `Linha ${i + 1}: declarada '${colStatus} = sem-correspondencia' porém o motivo aponta falha de consulta ou ausência de consulta ('${linhas[i]["Motivo_Acesso"] ?? ""}').`,
+              detalhes: { linha: i + 1, coluna: colStatus, motivo: linhas[i]["Motivo_Acesso"] },
+            });
+          }
         }
       }
     }

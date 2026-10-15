@@ -22,7 +22,7 @@ export const PainelMatrizModal: React.FC = () => {
                 Central da Matriz de Treino (Supervisionado) &amp; Invariantes
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Montagem de features multi-sensores, verificação dos 10 invariantes matemáticos e perfis
+                Montagem de features multi-sensores, verificação dos 7 invariantes matemáticos e perfis
               </p>
             </div>
           </div>

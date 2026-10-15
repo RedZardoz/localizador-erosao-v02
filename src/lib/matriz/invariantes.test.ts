@@ -155,4 +155,209 @@ describe("Invariantes de Exportação — Validações e Meta-Testes", () => {
       expect(res.violacoes.some((v) => v.invariante === 7)).toBe(false);
     });
   });
+
+  describe("Invariante 1: Coerência RUSLE", () => {
+    it("recusa perda de solo preenchida sem os 5 fatores e memória válida", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "planilha",
+        cabecalho: ["Codigo", "RUSLE_Perda_Solo_t_ha_ano", "RUSLE_Fator_R"],
+        linhas: [{ Codigo: "PR-001", RUSLE_Perda_Solo_t_ha_ano: 15.0, RUSLE_Fator_R: 10000 }],
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.valido).toBe(false);
+      expect(res.violacoes.some((v) => v.invariante === 1)).toBe(true);
+    });
+
+    it("aprova quando perda, os 5 fatores e a memória estão presentes e válidos", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "planilha",
+        cabecalho: [
+          "Codigo",
+          "RUSLE_Perda_Solo_t_ha_ano",
+          "RUSLE_Fator_R",
+          "RUSLE_Fator_K",
+          "RUSLE_Fator_LS",
+          "RUSLE_Fator_C",
+          "RUSLE_Fator_P",
+          "RUSLE_Memoria_Calculo",
+        ],
+        linhas: [
+          {
+            Codigo: "PR-001",
+            RUSLE_Perda_Solo_t_ha_ano: 12.5,
+            RUSLE_Fator_R: 10000,
+            RUSLE_Fator_K: 0.02,
+            RUSLE_Fator_LS: 1.5,
+            RUSLE_Fator_C: 0.05,
+            RUSLE_Fator_P: 1.0,
+            RUSLE_Memoria_Calculo: "A = 10000 * 0.02 * 1.5 * 0.05 * 1.0 = 15.0",
+          },
+        ],
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.violacoes.some((v) => v.invariante === 1)).toBe(false);
+    });
+  });
+
+  describe("Invariante 3: Coerência de Campos_Estimados", () => {
+    it("recusa quando há coluna não medida mas Campos_Estimados está vazio ou diz 100% medido", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "planilha",
+        cabecalho: ["Codigo", "Campos_Estimados", "Elevacao_m", "Elevacao_m_Origem"],
+        linhas: [{ Codigo: "PR-001", Campos_Estimados: "", Elevacao_m: 100, Elevacao_m_Origem: "modelado" }],
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.valido).toBe(false);
+      expect(res.violacoes.some((v) => v.invariante === 3)).toBe(true);
+    });
+
+    it("aprova quando Campos_Estimados reflete as colunas estimadas", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "planilha",
+        cabecalho: ["Codigo", "Campos_Estimados", "Elevacao_m", "Elevacao_m_Origem"],
+        linhas: [{ Codigo: "PR-001", Campos_Estimados: "Elevacao_m", Elevacao_m: 100, Elevacao_m_Origem: "modelado" }],
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.violacoes.some((v) => v.invariante === 3)).toBe(false);
+    });
+  });
+
+  describe("Invariante 4: Rastreabilidade de Satélite", () => {
+    it("recusa quando há coluna de satélite mas campos de rastreio estão vazios", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "planilha",
+        cabecalho: ["Codigo", "Elevacao_m_Origem", "Rastreio_Cenas", "Rastreio_Versao_Motor"],
+        linhas: [{ Codigo: "PR-001", Elevacao_m_Origem: "medido", Rastreio_Cenas: "", Rastreio_Versao_Motor: "" }],
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.valido).toBe(false);
+      expect(res.violacoes.some((v) => v.invariante === 4)).toBe(true);
+    });
+
+    it("aprova quando campos de rastreio estão preenchidos", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "planilha",
+        cabecalho: ["Codigo", "Elevacao_m_Origem", "Rastreio_Cenas", "Rastreio_Versao_Motor", "Rastreio_Calculado_Em"],
+        linhas: [
+          {
+            Codigo: "PR-001",
+            Elevacao_m_Origem: "medido",
+            Rastreio_Cenas: "S2B_MSIL2A_TEST",
+            Rastreio_Versao_Motor: "1.0",
+            Rastreio_Calculado_Em: "2026-09-10",
+          },
+        ],
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.violacoes.some((v) => v.invariante === 4)).toBe(false);
+    });
+  });
+
+  describe("Invariante 5: Afirmação Negativa Fundiária", () => {
+    it("recusa sem-correspondencia com motivo apontando falha ou serviço indisponível", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "planilha",
+        cabecalho: ["Codigo", "CAR_Status", "Motivo_Acesso"],
+        linhas: [{ Codigo: "PR-001", CAR_Status: "sem-correspondencia", Motivo_Acesso: "servico indisponivel" }],
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.valido).toBe(false);
+      expect(res.violacoes.some((v) => v.invariante === 5)).toBe(true);
+    });
+
+    it("recusa Status_Fundiario sem-correspondencia com erro de rede no perfil campo-cego", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "campo-cego",
+        cabecalho: ["Codigo", "Status_Fundiario", "Motivo_Acesso"],
+        linhas: [{ Codigo: "PR-001", Status_Fundiario: "sem-correspondencia", Motivo_Acesso: "erro de rede" }],
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.valido).toBe(false);
+      expect(res.violacoes.some((v) => v.invariante === 5)).toBe(true);
+    });
+
+    it("aprova sem-correspondencia após consulta válida sem match", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "campo-cego",
+        cabecalho: ["Codigo", "Status_Fundiario", "Motivo_Acesso"],
+        linhas: [{ Codigo: "PR-001", Status_Fundiario: "sem-correspondencia", Motivo_Acesso: "imovel_nao_localizado" }],
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.violacoes.some((v) => v.invariante === 5)).toBe(false);
+    });
+  });
+
+  describe("Invariante 6: Lista Negra e Siglas de UF", () => {
+    it("recusa sigla de UF (PR) na coluna de Municipio", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "planilha",
+        cabecalho: ["Codigo", "Municipio", "Bacia_Hidrografica"],
+        linhas: [{ Codigo: "PR-001", Municipio: "PR", Bacia_Hidrografica: "Paraná 3" }],
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.valido).toBe(false);
+      expect(res.violacoes.some((v) => v.invariante === 6)).toBe(true);
+    });
+
+    it("aprova município real com bacia válida", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "planilha",
+        cabecalho: ["Codigo", "Municipio", "Bacia_Hidrografica"],
+        linhas: [{ Codigo: "PR-001", Municipio: "Medianeira", Bacia_Hidrografica: "Paraná 3" }],
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.violacoes.some((v) => v.invariante === 6)).toBe(false);
+    });
+  });
+
+  describe("Meta-Teste: Todos os 7 Invariantes Existem e Operam", () => {
+    it("garante que existem validadores ativos para os invariantes 1 a 7", () => {
+      const invariantesEsperados = [1, 2, 3, 4, 5, 6, 7];
+      const artefatosTeste: Record<number, ArtefatoProjetado> = {
+        1: {
+          perfil: "planilha",
+          cabecalho: ["Codigo", "RUSLE_Perda_Solo_t_ha_ano"],
+          linhas: [{ Codigo: "X", RUSLE_Perda_Solo_t_ha_ano: 10 }],
+        },
+        2: {
+          perfil: "matriz-treino",
+          cabecalho: ["Ponto_ID", "coluna_invalida_nao_permitida"],
+          linhas: [{ Ponto_ID: "X", coluna_invalida_nao_permitida: 1 }],
+        },
+        3: {
+          perfil: "planilha",
+          cabecalho: ["Codigo", "Campos_Estimados", "Elevacao_m_Origem"],
+          linhas: [{ Codigo: "X", Campos_Estimados: "", Elevacao_m_Origem: "modelado" }],
+        },
+        4: {
+          perfil: "planilha",
+          cabecalho: ["Codigo", "Elevacao_m_Origem", "Rastreio_Cenas", "Rastreio_Versao_Motor"],
+          linhas: [{ Codigo: "X", Elevacao_m_Origem: "medido", Rastreio_Cenas: "", Rastreio_Versao_Motor: "" }],
+        },
+        5: {
+          perfil: "campo-cego",
+          cabecalho: ["Codigo", "Status_Fundiario", "Motivo_Acesso"],
+          linhas: [{ Codigo: "X", Status_Fundiario: "sem-correspondencia", Motivo_Acesso: "servico indisponivel" }],
+        },
+        6: {
+          perfil: "planilha",
+          cabecalho: ["Codigo", "Municipio"],
+          linhas: [{ Codigo: "X", Municipio: "Custom" }],
+        },
+        7: {
+          perfil: "planilha",
+          cabecalho: ["Codigo", "Declividade_pct"],
+          linhas: Array.from({ length: 25 }, () => ({ Codigo: "X", Declividade_pct: 10 })),
+        },
+      };
+
+      for (const invNum of invariantesEsperados) {
+        const artefato = artefatosTeste[invNum];
+        expect(artefato, `Artefato para teste do invariante ${invNum} deve estar definido`).toBeDefined();
+        const res = validarInvariantesArtefato(artefato);
+        const encontrou = res.violacoes.some((v) => v.invariante === invNum);
+        expect(encontrou, `Invariante ${invNum} deve disparar violação quando acionado`).toBe(true);
+      }
+    });
+  });
 });
