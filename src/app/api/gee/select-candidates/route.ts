@@ -8,7 +8,7 @@
  * - Conecta-se à infraestrutura de computação distribuída do Google Earth Engine (GEE)
  *   utilizando credenciais corporativas (Service Account OAuth2).
  * - Processa coleções orbitais Sentinel-2 MSI L2A (BOA Harmonized) para a janela 2016-2026,
- *   aplicando filtragem de nuvens e sombras pela máscara SCL (Scene Classification Layer).
+ *   aplicando filtragem de nuvens e sombras pela máscara SCL (Scene Classification Layer, classes 4 e 5 — DEC-16).
  * - Extrai a assinatura espectral de superfície (B2, B4, B8, B11, B12), calculando NDVI e BSI.
  * - Integra com a malha fundiária real do SICAR/CAR e executa o Thinning Geodésico Haversine
  *   para descorrelacionar as amostras no espaço geográfico.

@@ -126,4 +126,46 @@ describe("Cliente GEE Sentinel-2 e Concordância Multitemporal ESA WorldCover (D
     expect(res!.classeWorldCover2021).toBe(30);
     expect(res!.ehFlorestaOuInelegivel).toBe(false);
   });
+
+  it("deve construir a expressão com a janela única de D05 e máscara de pixel SCL classes 4 e 5 (DEC-16 / C10)", () => {
+    const expr = construirExpressaoGeeSentinel2WorldCover(-24.713, -53.743) as {
+      result: string;
+      values: Record<string, any>;
+    };
+
+    // 1. Janela temporal D05 (2016-01-01 a 2026-06-30)
+    const filtroData =
+      expr.values["3"].functionInvocationValue.arguments.collection.functionInvocationValue.arguments
+        .collection.functionInvocationValue.arguments.filter.functionInvocationValue;
+    expect(filtroData.functionName).toBe("Filter.dateRangeContains");
+    const dateRange = filtroData.arguments.leftValue.functionInvocationValue.arguments;
+    expect(dateRange.start.constantValue).toBe("2016-01-01");
+    expect(dateRange.end.constantValue).toBe("2026-06-30");
+
+    // 2. Máscara SCL mantendo classes 4 e 5 via Image.updateMask no nó 5
+    const no5 = expr.values["5"].functionInvocationValue;
+    expect(no5.functionName).toBe("Image.updateMask");
+    expect(no5.arguments.image.functionInvocationValue.functionName).toBe("Image.select");
+    expect(no5.arguments.image.functionInvocationValue.arguments.bandSelectors.constantValue).toEqual([
+      "B2",
+      "B4",
+      "B8",
+      "B11",
+      "B12",
+    ]);
+
+    const maskOr = no5.arguments.mask.functionInvocationValue;
+    expect(maskOr.functionName).toBe("Image.or");
+    expect(maskOr.arguments.image1.functionInvocationValue.functionName).toBe("Image.eq");
+    expect(
+      maskOr.arguments.image1.functionInvocationValue.arguments.image2.functionInvocationValue.arguments.value
+        .constantValue
+    ).toBe(4);
+    expect(maskOr.arguments.image2.functionInvocationValue.functionName).toBe("Image.eq");
+    expect(
+      maskOr.arguments.image2.functionInvocationValue.arguments.image2.functionInvocationValue.arguments.value
+        .constantValue
+    ).toBe(5);
+  });
 });
+

@@ -342,5 +342,44 @@ describe("Amostragem de Solo Nu em Lote via GEE REST e Cache Determinístico (C3
     expect(diario.chamadas[0].codigoHttp).toBe(200);
     expect(diario.chamadas[0].quantidadeItens).toBe(1);
   });
+
+  it("deve construir a expressão de lote com janela D05 e máscara SCL classes 4 e 5 (DEC-16 / C10)", () => {
+    const pontos: PontoAmostragemSoloNu[] = [
+      { id: "cand-1", latitude: -24.71, longitude: -53.74 },
+    ];
+
+    const expr = construirExpressaoGeeSoloNuLote(pontos) as {
+      result: string;
+      values: Record<string, any>;
+    };
+
+    // 1. Janela temporal D05
+    const filtroData =
+      expr.values["colecao_filtrada_s2"].functionInvocationValue.arguments.collection.functionInvocationValue.arguments
+        .filter.functionInvocationValue;
+    expect(filtroData.functionName).toBe("Filter.dateRangeContains");
+    const dateRange = filtroData.arguments.leftValue.functionInvocationValue.arguments;
+    expect(dateRange.start.constantValue).toBe("2016-01-01");
+    expect(dateRange.end.constantValue).toBe("2026-06-30");
+
+    // 2. Máscara SCL no cálculo de solo nu binário
+    const noSoloNu = expr.values["calcula_solo_nu_binario"].functionInvocationValue;
+    expect(noSoloNu.functionName).toBe("Image.updateMask");
+    expect(noSoloNu.arguments.image.functionInvocationValue.functionName).toBe("Image.rename");
+
+    const maskOr = noSoloNu.arguments.mask.functionInvocationValue;
+    expect(maskOr.functionName).toBe("Image.or");
+    expect(maskOr.arguments.image1.functionInvocationValue.functionName).toBe("Image.eq");
+    expect(
+      maskOr.arguments.image1.functionInvocationValue.arguments.image2.functionInvocationValue.arguments.value
+        .constantValue
+    ).toBe(4);
+    expect(maskOr.arguments.image2.functionInvocationValue.functionName).toBe("Image.eq");
+    expect(
+      maskOr.arguments.image2.functionInvocationValue.arguments.image2.functionInvocationValue.arguments.value
+        .constantValue
+    ).toBe(5);
+  });
 });
+
 

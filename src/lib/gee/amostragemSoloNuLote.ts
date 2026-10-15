@@ -309,31 +309,89 @@ export function construirExpressaoGeeSoloNuLote(
       },
       calcula_solo_nu_binario: {
         functionInvocationValue: {
-          functionName: "Image.rename",
+          functionName: "Image.updateMask",
           arguments: {
-            input: {
+            image: {
               functionInvocationValue: {
-                functionName: "Image.lt",
+                functionName: "Image.rename",
+                arguments: {
+                  input: {
+                    functionInvocationValue: {
+                      functionName: "Image.lt",
+                      arguments: {
+                        image1: {
+                          functionInvocationValue: {
+                            functionName: "Image.normalizedDifference",
+                            arguments: {
+                              input: { argumentReference: "img" },
+                              bandNames: { constantValue: ["B8", "B4"] },
+                            },
+                          },
+                        },
+                        image2: {
+                          functionInvocationValue: {
+                            functionName: "Image.constant",
+                            arguments: { value: { constantValue: LIMIAR_NDVI_SOLO_NU_D10 } },
+                          },
+                        },
+                      },
+                    },
+                  },
+                  names: { constantValue: ["solo_nu"] },
+                },
+              },
+            },
+            mask: {
+              functionInvocationValue: {
+                functionName: "Image.or",
                 arguments: {
                   image1: {
                     functionInvocationValue: {
-                      functionName: "Image.normalizedDifference",
+                      functionName: "Image.eq",
                       arguments: {
-                        input: { argumentReference: "img" },
-                        bandNames: { constantValue: ["B8", "B4"] },
+                        image1: {
+                          functionInvocationValue: {
+                            functionName: "Image.select",
+                            arguments: {
+                              input: { argumentReference: "img" },
+                              bandSelectors: { constantValue: ["SCL"] },
+                            },
+                          },
+                        },
+                        image2: {
+                          functionInvocationValue: {
+                            functionName: "Image.constant",
+                            arguments: { value: { constantValue: 4 } },
+                          },
+                        },
                       },
                     },
                   },
                   image2: {
                     functionInvocationValue: {
-                      functionName: "Image.constant",
-                      arguments: { value: { constantValue: LIMIAR_NDVI_SOLO_NU_D10 } },
+                      functionName: "Image.eq",
+                      arguments: {
+                        image1: {
+                          functionInvocationValue: {
+                            functionName: "Image.select",
+                            arguments: {
+                              input: { argumentReference: "img" },
+                              bandSelectors: { constantValue: ["SCL"] },
+                            },
+                          },
+                        },
+                        image2: {
+                          functionInvocationValue: {
+                            functionName: "Image.constant",
+                            arguments: { value: { constantValue: 5 } },
+                          },
+                        },
+                      },
                     },
                   },
                 },
               },
             },
-            names: { constantValue: ["solo_nu"] },
           },
         },
       },

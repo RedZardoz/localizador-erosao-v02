@@ -22,6 +22,7 @@ import { extrairDataAquisicaoSentinel2 } from "./metadadosColecoes";
 import fs from "fs";
 import path from "path";
 import { medirTerrenoCopernicusGLO30RealEmLote } from "@/lib/drone/planoVooNControl";
+import { JANELA_TEMPORAL_D05 } from "@/lib/matriz/perfis";
 
 export let ultimoErroGee: string | null = null;
 
@@ -307,10 +308,68 @@ export function construirExpressaoGeeSentinel2WorldCover(
       },
       "5": {
         functionInvocationValue: {
-          functionName: "Image.select",
+          functionName: "Image.updateMask",
           arguments: {
-            input: { argumentReference: "img" },
-            bandSelectors: { constantValue: ["B2", "B4", "B8", "B11", "B12"] },
+            image: {
+              functionInvocationValue: {
+                functionName: "Image.select",
+                arguments: {
+                  input: { argumentReference: "img" },
+                  bandSelectors: { constantValue: ["B2", "B4", "B8", "B11", "B12"] },
+                },
+              },
+            },
+            mask: {
+              functionInvocationValue: {
+                functionName: "Image.or",
+                arguments: {
+                  image1: {
+                    functionInvocationValue: {
+                      functionName: "Image.eq",
+                      arguments: {
+                        image1: {
+                          functionInvocationValue: {
+                            functionName: "Image.select",
+                            arguments: {
+                              input: { argumentReference: "img" },
+                              bandSelectors: { constantValue: ["SCL"] },
+                            },
+                          },
+                        },
+                        image2: {
+                          functionInvocationValue: {
+                            functionName: "Image.constant",
+                            arguments: { value: { constantValue: 4 } },
+                          },
+                        },
+                      },
+                    },
+                  },
+                  image2: {
+                    functionInvocationValue: {
+                      functionName: "Image.eq",
+                      arguments: {
+                        image1: {
+                          functionInvocationValue: {
+                            functionName: "Image.select",
+                            arguments: {
+                              input: { argumentReference: "img" },
+                              bandSelectors: { constantValue: ["SCL"] },
+                            },
+                          },
+                        },
+                        image2: {
+                          functionInvocationValue: {
+                            functionName: "Image.constant",
+                            arguments: { value: { constantValue: 5 } },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -342,8 +401,8 @@ export function construirExpressaoGeeSentinel2WorldCover(
                                 functionInvocationValue: {
                                   functionName: "DateRange",
                                   arguments: {
-                                    start: { constantValue: "2023-01-01" },
-                                    end: { constantValue: "2023-12-31" },
+                                    start: { constantValue: JANELA_TEMPORAL_D05.inicio },
+                                    end: { constantValue: JANELA_TEMPORAL_D05.fim },
                                   },
                                 },
                               },
