@@ -89,7 +89,7 @@ export function montarLinhaDeBaseRUSLE(params: ParametrosLinhaDeBaseRUSLE = {}):
           estado: "indisponivel",
           causa: "insuficiente",
           motivo:
-            "Fator R requer totais pluviométricos mensais ou coordenadas geográficas para consulta climatológica CHIRPS (Decisão D13).",
+            "Insumo de R não é fornecido pela rota (requer totais pluviométricos mensais ou coordenadas geográficas para consulta climatológica CHIRPS — Decisão D13).",
         });
 
   // 4. Fator K (Decisão D14 emendada - k_solos de geonode:bra_erodibilidade_2024_sirgas2000, com fallback por faixa de classe)
@@ -118,7 +118,7 @@ export function montarLinhaDeBaseRUSLE(params: ParametrosLinhaDeBaseRUSLE = {}):
           estado: "indisponivel",
           causa: "insuficiente",
           motivo:
-            "Fator LS requer declividade e área de contribuição a montante do Copernicus DEM GLO-30 nativo (Decisão D15).",
+            "Insumo de LS não é fornecido pela rota (requer declividade e área de contribuição a montante do Copernicus DEM GLO-30 nativo — Decisão D15).",
         });
 
   // Verificação do Invariante 1:

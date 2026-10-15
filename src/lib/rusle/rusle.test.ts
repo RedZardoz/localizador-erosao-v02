@@ -389,6 +389,24 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
       expect(rusle.memoriaCalculo).toContain("RUSLE A = R (6800) * K (0.02) * LS (1.405) * C (0.25) * P (1) = 47.7700 t/ha/ano");
     });
 
+    it("com D13/D15 decididas e sem insumos passados pela rota, causa de indisponivel é 'insuficiente' e declara que o insumo não é fornecido pela rota (C11 / A38)", () => {
+      const rusle = montarLinhaDeBaseRUSLE({});
+
+      expect(rusle.fatorR.estado).toBe("indisponivel");
+      if (rusle.fatorR.estado === "indisponivel") {
+        expect(rusle.fatorR.causa).not.toBe("decisao-pendente");
+        expect(rusle.fatorR.causa).toBe("insuficiente");
+        expect(rusle.fatorR.motivo).toContain("não é fornecido pela rota");
+      }
+
+      expect(rusle.fatorLS.estado).toBe("indisponivel");
+      if (rusle.fatorLS.estado === "indisponivel") {
+        expect(rusle.fatorLS.causa).not.toBe("decisao-pendente");
+        expect(rusle.fatorLS.causa).toBe("insuficiente");
+        expect(rusle.fatorLS.motivo).toContain("não é fornecido pela rota");
+      }
+    });
+
     it("Invariante 1 valida artefato com linhas RUSLE consistentes e recusa violações", () => {
       // Caso 1: Artefato válido com RUSLE calculada (5 fatores + perda + memória)
       const artefatoValido: ArtefatoProjetado = {

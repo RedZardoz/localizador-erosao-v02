@@ -1203,7 +1203,7 @@ export async function POST(request: NextRequest) {
               },
             },
           },
-          // Linha de Base RUSLE estrita: Invariante 1 e Decisões D01 (C), D13 (R pendente), D14 emendada (k_solos da camada 2024 + fallback), D15 (LS pendente)
+          // Linha de Base RUSLE estrita: Invariante 1 e Decisões D01 (C), D13 (insumo de R não é fornecido pela rota), D14 emendada (k_solos da camada 2024 + fallback), D15 (insumo de LS não é fornecido pela rota)
           linhaDeBase: montarLinhaDeBaseRUSLE({
             ndviProveniencia,
             bsiProveniencia,
