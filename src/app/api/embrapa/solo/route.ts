@@ -1,5 +1,6 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { queryEmbrapaSoil } from "@/lib/embrapa/embrapaSoilClient";
+import { exigirRequisicaoLocalConfiavel } from "@/lib/seguranca/localOnly";
 
 /**
  * Rota pública para consulta pedológica e de erodibilidade da Embrapa GeoInfo.
@@ -40,6 +41,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const bloqueio = exigirRequisicaoLocalConfiavel(request);
+  if (bloqueio) return bloqueio;
+
   try {
     const body = await request.json();
     const lat = typeof body.latitude === "number" ? body.latitude : parseFloat(body.lat);

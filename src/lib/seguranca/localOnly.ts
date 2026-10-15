@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const ALLOWED_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1", "0.0.0.0"]);
 
@@ -26,3 +26,47 @@ export function isLocalRequest(req: NextRequest): boolean {
   return ALLOWED_HOSTS.has(hostname);
 }
 
+/**
+ * Mitigação de CSRF / SSRF e escrita não confiável (N16 / M5):
+ * Exige:
+ * 1. isLocalRequest(req)
+ * 2. Origin ausente OU Origin com hostname local permitido
+ * 3. Para métodos de escrita (POST, PUT, PATCH, DELETE), Content-Type deve conter application/json
+ */
+export function ehRequisicaoLocalConfiavel(req: NextRequest): boolean {
+  if (!isLocalRequest(req)) {
+    return false;
+  }
+
+  const origin = req.headers.get("origin");
+  if (origin) {
+    try {
+      const url = new URL(origin);
+      if (!ALLOWED_HOSTS.has(url.hostname.toLowerCase())) {
+        return false;
+      }
+    } catch {
+      return false;
+    }
+  }
+
+  const metodo = req.method.toUpperCase();
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(metodo)) {
+    const contentType = req.headers.get("content-type") ?? "";
+    if (!contentType.toLowerCase().includes("application/json")) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function exigirRequisicaoLocalConfiavel(req: NextRequest): NextResponse | null {
+  if (!ehRequisicaoLocalConfiavel(req)) {
+    return NextResponse.json(
+      { erro: "Acesso restrito: requisição deve ser originada localmente com formato confiável." },
+      { status: 403 }
+    );
+  }
+  return null;
+}

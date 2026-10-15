@@ -45,7 +45,7 @@ describe("getGoogleAccessToken", () => {
     expect(payload.scope).toContain("earthengine");
   });
 
-  it("propaga a mensagem de erro real do Google quando a troca de token falha", async () => {
+  it("nao repete error_description ao cliente quando a troca de token falha", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -57,7 +57,28 @@ describe("getGoogleAccessToken", () => {
 
     await expect(
       getGoogleAccessToken({ client_email: "x@y.iam.gserviceaccount.com", private_key: privateKey }, EARTH_ENGINE_SCOPES)
-    ).rejects.toThrow(/account not found/);
+    ).rejects.toThrow(/Google recusou a autenticação da Service Account/);
+    await expect(
+      getGoogleAccessToken({ client_email: "x@y.iam.gserviceaccount.com", private_key: privateKey }, EARTH_ENGINE_SCOPES)
+    ).rejects.not.toThrow(/account not found/);
+  });
+
+  it("recusa token_uri externo sem chamar fetch (N16 / mitigacao de SSRF)", async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+
+    await expect(
+      getGoogleAccessToken(
+        {
+          client_email: "x@y.iam.gserviceaccount.com",
+          private_key: privateKey,
+          token_uri: "http://127.0.0.1:9/x",
+        },
+        EARTH_ENGINE_SCOPES
+      )
+    ).rejects.toThrow(/token_uri não autorizado/);
+
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it("normaliza chaves privadas com '\\n' literais (formato comum de .env)", async () => {

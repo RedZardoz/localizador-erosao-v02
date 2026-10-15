@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGoogleAccessToken, EARTH_ENGINE_SCOPES } from "@/lib/gee/auth";
+import { exigirRequisicaoLocalConfiavel } from "@/lib/seguranca/localOnly";
 import {
   criarSessao,
   atualizarSessao,
@@ -8,6 +9,9 @@ import {
 } from "@/lib/seguranca/sessaoEfemera";
 
 export async function POST(request: NextRequest) {
+  const bloqueio = exigirRequisicaoLocalConfiavel(request);
+  if (bloqueio) return bloqueio;
+
   try {
     const json = (await request.json()) as CredenciaisServiceAccount;
 

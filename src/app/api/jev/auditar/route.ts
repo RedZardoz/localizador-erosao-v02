@@ -20,11 +20,15 @@ import { cookies } from "next/headers";
 import { executarAuditoriaJev } from "@/lib/jev/jevClient";
 import { executarAuditoriaLocal } from "@/lib/jev/fallbackLocal";
 import { obterSessao, SAREL_SESSION_COOKIE } from "@/lib/seguranca/sessaoEfemera";
+import { exigirRequisicaoLocalConfiavel } from "@/lib/seguranca/localOnly";
 import type { PontoAmostral } from "@/types/ponto";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
+  const bloqueio = exigirRequisicaoLocalConfiavel(request);
+  if (bloqueio) return bloqueio;
+
   try {
     const body = await request.json().catch(() => ({}));
     const ponto = body.ponto as PontoAmostral | undefined;

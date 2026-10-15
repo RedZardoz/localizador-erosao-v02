@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { execSync } from "node:child_process";
+import { exigirRequisicaoLocalConfiavel } from "@/lib/seguranca/localOnly";
 import {
   CandidatoSorteioD16,
   verificarPreCondicoesSorteioD16,
@@ -81,6 +82,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const bloqueio = exigirRequisicaoLocalConfiavel(req);
+  if (bloqueio) return bloqueio;
+
   try {
     const body = await req.json();
     const candidatos: CandidatoSorteioD16[] = Array.isArray(body?.candidatos)

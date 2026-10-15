@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { obterSessao, SAREL_SESSION_COOKIE } from "@/lib/seguranca/sessaoEfemera";
 import { getGoogleAccessToken, EARTH_ENGINE_SCOPES } from "@/lib/gee/auth";
+import { exigirRequisicaoLocalConfiavel } from "@/lib/seguranca/localOnly";
 import {
   medirTerrenoCopernicusEmLote,
   medirSentinel2PontoGeeRest,
@@ -33,6 +34,9 @@ export const dynamic = "force-dynamic";
  * permanece declarada com `{ estado: "indisponivel", causa: ... }`.
  */
 export async function POST(request: NextRequest) {
+  const bloqueio = exigirRequisicaoLocalConfiavel(request);
+  if (bloqueio) return bloqueio;
+
   try {
     const point = (await request.json()) as PontoAmostral;
     if (

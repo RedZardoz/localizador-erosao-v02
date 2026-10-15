@@ -54,13 +54,18 @@ export async function getGoogleAccessToken(
   credentials: Pick<CredenciaisServiceAccount, "client_email" | "private_key" | "token_uri">,
   scopes: string[]
 ): Promise<GoogleAccessToken> {
+  // N16 / Mitigação SSRF: aceita token_uri apenas se for estritamente o endpoint oficial do Google
+  if (credentials.token_uri && credentials.token_uri !== GOOGLE_TOKEN_URI) {
+    throw new Error(`token_uri não autorizado: apenas ${GOOGLE_TOKEN_URI} é permitido.`);
+  }
+
   const nowSec = Math.floor(Date.now() / 1000);
 
   const header = { alg: "RS256", typ: "JWT" };
   const payload = {
     iss: credentials.client_email,
     scope: scopes.join(" "),
-    aud: credentials.token_uri || GOOGLE_TOKEN_URI,
+    aud: GOOGLE_TOKEN_URI,
     iat: nowSec,
     exp: nowSec + 3600,
   };
@@ -78,7 +83,7 @@ export async function getGoogleAccessToken(
     assertion,
   });
 
-  const res = await fetch(credentials.token_uri || GOOGLE_TOKEN_URI, {
+  const res = await fetch(GOOGLE_TOKEN_URI, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
@@ -88,8 +93,10 @@ export async function getGoogleAccessToken(
   const data = await res.json().catch(() => null);
 
   if (!res.ok || !data?.access_token) {
-    const googleError = data?.error_description || data?.error || `HTTP ${res.status}`;
-    throw new Error(`Google recusou a autenticação da Service Account: ${googleError}`);
+    if (data?.error_description || data?.error) {
+      console.error("[AUTH] Erro retornado pelo Google OAuth:", data?.error, data?.error_description);
+    }
+    throw new Error(`Google recusou a autenticação da Service Account (HTTP ${res.status}).`);
   }
 
   const segundosValidade = typeof data.expires_in === "number" ? data.expires_in : 3600; // permitido: fallback de protocolo oauth2 rfc6749 para token expiravel

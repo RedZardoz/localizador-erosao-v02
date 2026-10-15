@@ -37,6 +37,7 @@ import path from "path";
 import fs from "fs";
 import { obterSessao, SAREL_SESSION_COOKIE } from "@/lib/seguranca/sessaoEfemera";
 import { getGoogleAccessToken, EARTH_ENGINE_SCOPES } from "@/lib/gee/auth";
+import { exigirRequisicaoLocalConfiavel } from "@/lib/seguranca/localOnly";
 import { validarOpcoesElegibilidade } from "@/lib/gee/elegibilidade";
 import {
   executarAmostragemEstratificada,
@@ -162,6 +163,9 @@ function buscarImoveisReaisPython(
 }
 
 export async function POST(request: NextRequest) {
+  const bloqueio = exigirRequisicaoLocalConfiavel(request);
+  if (bloqueio) return bloqueio;
+
   try {
     const sessionId = request.cookies.get(SAREL_SESSION_COOKIE)?.value;
     const sessao = obterSessao(sessionId);
