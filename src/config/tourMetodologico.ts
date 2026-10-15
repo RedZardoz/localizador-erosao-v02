@@ -372,13 +372,16 @@ export function obterFatorKPorClasseSolo(classe: string): number {
       linguagem: "typescript",
       rotulo: "Cálculo do Coeficiente Kappa de Cohen",
       codigo: `// Avaliação da concordância entre Fotointerpretação e Visita de Campo
-export function calcularKappaCohen(tp: number, fp: number, fn: number, tn: number): number {
+export function calcularKappaCohen(tp: number, fp: number, fn: number, tn: number): number | null {
   const n = tp + fp + fn + tn;
-  if (n === 0) return 0;
+  if (n === 0) return null;
   const pObservado = (tp + tn) / n;
   const pEsperado = (((tp + fp) * (tp + fn)) + ((fn + tn) * (fp + tn))) / (n * n);
-  if (pEsperado >= 1) return 1;
-  return Number(((pObservado - pEsperado) / (1 - pEsperado)).toFixed(4));
+  if (pEsperado >= 1) return null;
+  const kappa = (pObservado - pEsperado) / (1 - pEsperado);
+  if (kappa > 1) return 1;
+  if (kappa < -1) return -1;
+  return Number(kappa.toFixed(4));
 }`,
       explicacao:
         "Fórmula clássica de Cohen (1960), eliminando vieses otimistas de concordância aparente.",

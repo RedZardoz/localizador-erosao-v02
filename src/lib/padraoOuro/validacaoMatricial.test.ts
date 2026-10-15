@@ -55,8 +55,13 @@ describe("Validação Matricial Padrão-Ouro (VANT/Drone vs Satélite)", () => {
       expect(kappa).toBe(-1.0);
     });
 
-    it("retorna 0 para matriz vazia", () => {
-      expect(calcularKappaCohen(0, 0, 0, 0)).toBe(0);
+    it("retorna null para matriz sem variância ou vazia", () => {
+      expect(calcularKappaCohen(0, 0, 0, 10)).toBeNull();
+      expect(calcularKappaCohen(0, 0, 0, 0)).toBeNull();
+    });
+
+    it("mantém valor numérico para matriz com variância (5, 1, 1, 5)", () => {
+      expect(calcularKappaCohen(5, 1, 1, 5)).toBe(0.6667);
     });
   });
 
@@ -123,8 +128,8 @@ describe("Validação Matricial Padrão-Ouro (VANT/Drone vs Satélite)", () => {
       // F1-Score: 2 * 0.8333 * 0.8333 / (0.8333 + 0.8333) = 0.8333
       expect(resultado.f1Score).toBe(0.8333);
       expect(resultado.intervaloConfianca95).toBeDefined();
-      expect(resultado.intervaloConfianca95![0]).toBeLessThanOrEqual(resultado.kappaCohen);
-      expect(resultado.intervaloConfianca95![1]).toBeGreaterThanOrEqual(resultado.kappaCohen);
+      expect(resultado.intervaloConfianca95![0]).toBeLessThanOrEqual(resultado.kappaCohen!);
+      expect(resultado.intervaloConfianca95![1]).toBeGreaterThanOrEqual(resultado.kappaCohen!);
 
       // Razão de sub-pixel: (10m / 0.075m)^2 = (133.33)^2 ≈ 17.778
       expect(resultado.razaoEscalaSubpixel).toBe(17778);
@@ -134,6 +139,19 @@ describe("Validação Matricial Padrão-Ouro (VANT/Drone vs Satélite)", () => {
       expect(resultado.porCompartimento.encosta_escoamento?.totalPixels).toBe(6);
       expect(resultado.porCompartimento.topo_estavel?.totalPixels).toBe(1);
       expect(resultado.porCompartimento.baixada_deposicao?.totalPixels).toBe(3);
+    });
+
+    it("produz kappaCohen e intervaloConfianca95 como null para amostra sem variância", () => {
+      const pixelsSemVar: PixelValidacao[] = [
+        { idPixel: "p1", latitude: -25.29, longitude: -54.02, referenciaDrone: 0, predicaoSatelite: 0 },
+        { idPixel: "p2", latitude: -25.29, longitude: -54.02, referenciaDrone: 0, predicaoSatelite: 0 },
+      ];
+      const resultado = executarValidacaoMatricial(pixelsSemVar, {
+        gsdDroneCm: 7.5,
+        gradeSateliteM: 10.0,
+      });
+      expect(resultado.kappaCohen).toBeNull();
+      expect(resultado.intervaloConfianca95).toBeNull();
     });
 
     it("rejeita conjunto vazio com exceção clara", () => {

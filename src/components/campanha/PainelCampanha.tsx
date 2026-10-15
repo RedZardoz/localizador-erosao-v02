@@ -560,7 +560,7 @@ export function PainelCampanha() {
                   <div className="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
                     <span className="text-[10px] text-slate-500 block">Kappa (κ)</span>
                     <span className="text-base font-bold text-cyan-600 dark:text-cyan-400 font-mono">
-                      {metricasSimuladas.kappaCohen.toFixed(3)}
+                      {metricasSimuladas.kappaCohen !== null ? metricasSimuladas.kappaCohen.toFixed(3) : "—"}
                     </span>
                   </div>
                   <div className="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-center">

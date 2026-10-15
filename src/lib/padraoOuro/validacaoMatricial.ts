@@ -61,7 +61,7 @@ export interface MatrizConfusaoPixel {
 export interface MetricasCompartimento {
   totalPixels: number;
   acuracia: number;
-  kappa: number;
+  kappa: number | null;
   sensibilidade: number;
   precisao: number;
 }
@@ -73,8 +73,8 @@ export interface MetricasValidacaoMatricial {
   razaoEscalaSubpixel: number; // (10m / GSD)² -> ex.: (10 / 0.075)² ≈ 17.777 sub-pixels de drone por pixel de satélite
   matrizConfusao: MatrizConfusaoPixel;
   acuraciaGlobal: number; // OA
-  kappaCohen: number; // κ
-  intervaloConfianca95?: [number, number]; // IC 95% do Kappa (Cohen, 1960; Fleiss, 1969)
+  kappaCohen: number | null; // κ
+  intervaloConfianca95?: [number, number] | null; // IC 95% do Kappa (Cohen, 1960; Fleiss, 1969)
   precisao: number;
   sensibilidade: number; // Recall
   especificidade: number;
@@ -139,9 +139,9 @@ export function calcularMatrizConfusao(pixels: PixelValidacao[]): MatrizConfusao
 /**
  * Calcula o Coeficiente Kappa de Cohen (κ) para avaliação inter-sensores.
  */
-export function calcularKappaCohen(tp: number, fp: number, fn: number, tn: number): number {
+export function calcularKappaCohen(tp: number, fp: number, fn: number, tn: number): number | null {
   const n = tp + fp + fn + tn;
-  if (n === 0) return 0;
+  if (n === 0) return null;
 
   // Concordância observada
   const p0 = (tp + tn) / n;
@@ -151,7 +151,7 @@ export function calcularKappaCohen(tp: number, fp: number, fn: number, tn: numbe
   const pNao = ((tn + fn) * (tn + fp)) / (n * n);
   const pe = pSim + pNao;
 
-  if (pe >= 1) return 1;
+  if (pe >= 1) return null;
   const kappa = (p0 - pe) / (1 - pe);
   if (kappa > 1) return 1;
   if (kappa < -1) return -1;
@@ -218,17 +218,20 @@ export function executarValidacaoMatricial(
     tp + fp + fn > 0 ? Number((tp / (tp + fp + fn)).toFixed(4)) : 0;
 
   const kappa = calcularKappaCohen(tp, fp, fn, tn);
-  const p0 = (tp + tn) / total;
-  const pSim = ((tp + fp) * (tp + fn)) / (total * total);
-  const pNao = ((tn + fn) * (tn + fp)) / (total * total);
-  const pe = pSim + pNao;
-  const varBruta = pe < 1 ? (p0 * (1 - p0)) / (total * Math.pow(1 - pe, 2)) : 0;
-  const seKappa = varBruta > 0 ? Math.sqrt(varBruta) : 0;
-  let ciInf = Number((kappa - 1.96 * seKappa).toFixed(4));
-  if (ciInf < -1) ciInf = -1;
-  let ciSup = Number((kappa + 1.96 * seKappa).toFixed(4));
-  if (ciSup > 1) ciSup = 1;
-  const intervaloConfianca95: [number, number] = [ciInf, ciSup];
+  let intervaloConfianca95: [number, number] | null = null;
+  if (kappa !== null && total > 0) {
+    const p0 = (tp + tn) / total;
+    const pSim = ((tp + fp) * (tp + fn)) / (total * total);
+    const pNao = ((tn + fn) * (tn + fp)) / (total * total);
+    const pe = pSim + pNao;
+    const varBruta = pe < 1 ? (p0 * (1 - p0)) / (total * Math.pow(1 - pe, 2)) : 0;
+    const seKappa = varBruta > 0 ? Math.sqrt(varBruta) : 0;
+    let ciInf = Number((kappa - 1.96 * seKappa).toFixed(4));
+    if (ciInf < -1) ciInf = -1;
+    let ciSup = Number((kappa + 1.96 * seKappa).toFixed(4));
+    if (ciSup > 1) ciSup = 1;
+    intervaloConfianca95 = [ciInf, ciSup];
+  }
 
   // Quebra por compartimento topo-sequencial
   const porCompartimento: MetricasValidacaoMatricial["porCompartimento"] = {};
