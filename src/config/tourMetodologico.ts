@@ -119,17 +119,22 @@ function calcularAreaGeodesica(coords: [number, number][]): number {
     comoFunciona:
       "O visualizador WebGL consome malhas de elevação em tempo real (Terrain-RGB rasterizado), renderizando curvas de nível e sombreamento analítico (hillshade) para inspeção geomorfológica.",
     calculo: {
-      nome: "Declividade Local e Fator Topográfico LS de Moore & Burch",
-      formulaTex: "LS = \\left( \\frac{A_s}{22{,}13} \\right)^{0{,}4} \\cdot \\left( \\frac{\\sin \\theta}{0{,}0896} \\right)^{1{,}3}",
+      nome: "Fator Topográfico LS 2D (Decisão D15: Desmet & Govers 1996 e Renard et al. 1997)",
+      formulaTex:
+        "LS = L_{i,j} \\cdot S, \\quad L_{i,j} = \\frac{(A_{in} + D^2)^{m+1} - A_{in}^{m+1}}{D^{m+2} \\cdot x^m \\cdot (22{,}13)^m}",
       formulaDescritiva:
-        "LS = (Área de Contribuição Específica / 22.13)^0.4 * (sen(Declividade) / 0.0896)^1.3",
+        "LS = L * S; L = [(A_in + D^2)^(m+1) - A_in^(m+1)] / [D^(m+2) * x^m * 22.13^m]; S = 10.8*sen(θ)+0.03 (<9%) ou 16.8*sen(θ)-0.50 (>=9%)",
       variaveis: [
-        { simbolo: "LS", significado: "Fator combinado de comprimento e declividade da encosta", unidade: "Adimensional" },
-        { simbolo: "A_s", significado: "Área de contribuição específica a montante do pixel", unidade: "m" },
-        { simbolo: "\\theta", significado: "Ângulo de declividade topográfica em radianos", unidade: "rad" },
+        { simbolo: "LS", significado: "Fator topográfico combinado de comprimento e declividade (D15)", unidade: "Adimensional" },
+        { simbolo: "L_{i,j}", significado: "Fator de comprimento de rampa 2D (Desmet & Govers 1996, Eq. 9)", unidade: "Adimensional" },
+        { simbolo: "S", significado: "Fator de declividade (Renard et al. 1997 AH 703, Eqs. [4-4]/[4-5])", unidade: "Adimensional" },
+        { simbolo: "A_{in}", significado: "Área de contribuição a montante na entrada da célula", unidade: "m²" },
+        { simbolo: "D", significado: "Tamanho da célula de grade Copernicus DEM GLO-30 (30 m)", unidade: "m" },
+        { simbolo: "m", significado: "Expoente de fluxo dependente da declividade (Eqs. [4-2]/[4-3])", unidade: "Adimensional" },
+        { simbolo: "x", significado: "Fator de contorno dependente do aspecto (|sen α| + |cos α|)", unidade: "Adimensional" },
       ],
       interpretacao:
-        "O relevo potencializa a energia cinética do deflúvio superficial; rampas mais longas e íngremes multiplicam exponencialmente o arrasto mecânico de partículas de solo.",
+        "O algoritmo 2D de Desmet & Govers modela a convergência e divergência de fluxo topográfico sem reamostragem simulada (D06/D21); nota: requer área de contribuição acumulada para cálculo do valor numérico.",
     },
     script: {
       linguagem: "typescript",
@@ -143,7 +148,7 @@ function calcularDeclividade(dz_dx: number, dz_dy: number): number {
       explicacao:
         "Diferenciação numérica por vizinhança de 8 células (Horn, 1981) aplicada à matriz altimétrica do MDE.",
     },
-    referencia: "Moore & Burch (1986); Desmet & Govers (1996); Copernicus DEM GLO-30 (ESA, 2021).",
+    referencia: "Desmet & Govers (1996); Renard et al. (1997, AH 703); Copernicus DEM GLO-30 (ESA, 2021).",
     decisaoId: "D07",
     acaoAtalho: {
       rotulo: "Alternar Relevo 3D",

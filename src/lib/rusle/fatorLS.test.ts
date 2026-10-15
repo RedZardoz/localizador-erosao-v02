@@ -80,8 +80,68 @@ describe("Decisão D15 — Fator LS da Linha de Base RUSLE", () => {
 
     it("recusa entradas negativas ou inválidas com ErroForaDoDominio", () => {
       expect(() => calcularFatorLDesmetGovers(-10, 30.0, 0.5)).toThrow(ErroForaDoDominio);
-      expect(() => calcularFatorLS({ declividadeGraus: -5 })).toThrow(ErroForaDoDominio);
-      expect(() => calcularFatorLS({ declividadeGraus: 75 })).toThrow(ErroForaDoDominio);
+      expect(() => calcularFatorLS({ declividadeGraus: -5, areaContribuicaoMontanteM2: 0 })).toThrow(
+        ErroForaDoDominio
+      );
+      expect(() => calcularFatorLS({ declividadeGraus: 75, areaContribuicaoMontanteM2: 0 })).toThrow(
+        ErroForaDoDominio
+      );
+    });
+
+    it("conforme ACEITE N08: valida valores exatos de m, S e L para 9% e 12%", () => {
+      // m(9 %) = 0,5012
+      const theta9 = Math.atan(0.09);
+      const m9 = calcularExpoenteM(theta9);
+      expect(m9).toBeCloseTo(0.5012, 4);
+
+      // S(tan θ = 0,09) = 1,0059
+      const s09 = calcularFatorS(theta9);
+      expect(s09).toBeCloseTo(1.0059, 4);
+
+      // S(tan θ = 0,0899) = 0,9970
+      const theta0899 = Math.atan(0.0899);
+      const s0899 = calcularFatorS(theta0899);
+      expect(s0899).toBeCloseTo(0.9970, 4);
+
+      // m(12 %) = 0,5457 e S(12 %) = 1,5016
+      const theta12 = Math.atan(0.12);
+      const m12 = calcularExpoenteM(theta12);
+      expect(m12).toBeCloseTo(0.5457, 4);
+      const s12 = calcularFatorS(theta12);
+      expect(s12).toBeCloseTo(1.5016, 3);
+
+      // L com A_in = 0, D = 30 m, x = 1 e m(9 %): 1,1647 (com m = 0,5: 1,1643)
+      const l0_m9 = calcularFatorLDesmetGovers(0, 30.0, m9, null);
+      expect(l0_m9).toBeCloseTo(1.1647, 4);
+      const l0_m05 = calcularFatorLDesmetGovers(0, 30.0, 0.5, null);
+      expect(l0_m05).toBeCloseTo(1.1643, 4);
+
+      // L com A_in = 900 m², D = 30, x = 1, m(9 %): 2,1324
+      const l900_m9 = calcularFatorLDesmetGovers(900, 30.0, m9, null);
+      expect(l900_m9).toBeCloseTo(2.1324, 4);
+    });
+
+    it("A_in ausente (undefined, null ou NaN) lanca ErroForaDoDominio ou devolve indisponivel(insuficiente) (N08 / A56)", () => {
+      // calcularFatorLS lança ErroForaDoDominio
+      expect(() => calcularFatorLS({ declividadeGraus: 8 })).toThrow(ErroForaDoDominio);
+      expect(() => calcularFatorLS({ declividadeGraus: 8, areaContribuicaoMontanteM2: null })).toThrow(
+        ErroForaDoDominio
+      );
+      expect(() => calcularFatorLS({ declividadeGraus: 8, areaContribuicaoMontanteM2: NaN })).toThrow(
+        ErroForaDoDominio
+      );
+
+      // obterFatorLSComProveniencia devolve indisponivel("insuficiente")
+      const provSemArea = obterFatorLSComProveniencia({ declividadeGraus: 8 });
+      expect(provSemArea.estado).toBe("indisponivel");
+      if (provSemArea.estado === "indisponivel") {
+        expect(provSemArea.causa).toBe("insuficiente");
+        expect(provSemArea.motivo).toContain("área de contribuição a montante");
+      }
+
+      // A_in = 0 explícito continua válido (divisor de águas no topo da vertente)
+      const provZero = obterFatorLSComProveniencia({ declividadeGraus: 8, areaContribuicaoMontanteM2: 0 });
+      expect(provZero.estado).toBe("modelado");
     });
   });
 

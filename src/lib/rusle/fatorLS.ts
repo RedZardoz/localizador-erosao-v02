@@ -17,9 +17,10 @@
  *    S = 10.8 * sin θ + 0.03,  para s < 9% (tan θ < 0.09)  (Eq. [4-4])
  *    S = 16.8 * sin θ - 0.50,  para s >= 9% (tan θ >= 0.09) (Eq. [4-5])
  *
- * 4. Fator de Comprimento de Rampa 2D L_{i,j} (Desmet & Govers, 1996, Eq. 2):
+ * 4. Fator de Comprimento de Rampa 2D L_{i,j} (Desmet & Govers, 1996, Eqs. 6 a 9 (p. 429); x na p. 428):
  *    L_{i,j} = [(A_{in} + D^2)^(m+1) - A_{in}^(m+1)] / [D^(m+2) * x^m * (22.13)^m]
- *    onde D = 30 m, A_{in} é a área a montante (m²), e 22.13 m é a rampa padrão SI (p. 325).
+ *    onde D = 30 m, A_{in} é a área a montante (m²), x = |sen α| + |cos α| (leitura do implementador;
+ *    o artigo imprime sen α + cos α, p. 428), e 22.13 m é a rampa padrão SI (p. 325).
  *    Fator topográfico total: LS = L * S.
  *
  * 5. Borda Truncada e Depressões (P12):
@@ -28,7 +29,7 @@
  *
  * VERIFICADO 2026-10-01 — evidência: docs/verificacoes/fontes/renard1997/saida_extracao_renard_1997.txt
  * VERIFICADO 2026-10-02 — evidência: docs/verificacoes/fontes/renard1997/saida_ocr_renard_1997.txt
- * VERIFICADO 2026-10-01 — evidência: docs/verificacoes/fontes/desmet1996/saida_extracao_desmet_1996.txt
+ * VERIFICADO 2026-10-09 — evidência: docs/verificacoes/fontes/desmet1996/desmet_govers_1996_jswc.pdf (pp. 428-429)
  * VERIFICADO 2026-10-01 — evidência: docs/verificacoes/fontes/schmidt2019/saida_extracao_schmidt_2019.txt
  */
 
@@ -135,7 +136,7 @@ export function calcularFatorS(thetaRad: number): number {
 }
 
 /**
- * Calcula o fator de comprimento de rampa 2D L_{i,j} conforme Desmet & Govers (1996, Eq. 2):
+ * Calcula o fator de comprimento de rampa 2D L_{i,j} conforme Desmet & Govers (1996, Eqs. 6 a 9 (p. 429); x na p. 428):
  *   L_{i,j} = [(A_{in} + D^2)^(m+1) - A_{in}^(m+1)] / [D^(m+2) * x^m * (22.13)^m]
  *
  * @param aIn Área de contribuição a montante na entrada da célula [m²] (A_{in} >= 0).
@@ -156,7 +157,7 @@ export function calcularFatorLDesmetGovers(
     throw new ErroForaDoDominio(`Tamanho de célula inválido: ${d} m.`);
   }
 
-  // Fator de largura de contorno dependente do aspecto: x = |sin(alpha)| + |cos(alpha)|
+  // Fator de largura de contorno dependente do aspecto: x = |sen α| + |cos α| (leitura do implementador; o artigo imprime sen α + cos α, p. 428)
   // Varia entre 1.0 (fluxo cardinal nos eixos da grade) e sqrt(2) ~ 1.414 (fluxo diagonal a 45°)
   let x = 1.0;
   if (aspectoRad !== undefined && aspectoRad !== null && Number.isFinite(aspectoRad)) {
@@ -225,14 +226,14 @@ export function calcularFatorLS(insumo: InsumoFatorLS): ResultadoCalculoFatorLS 
   const thetaRad = (declivGraus * Math.PI) / 180.0;
   const declivPct = Math.tan(thetaRad) * 100.0;
 
-  // permitido: divisor de aguas no topo da vertente sem area de montante afluente (A_in = 0)
-  const aIn =
-    typeof insumo.areaContribuicaoMontanteM2 === "number" &&
-    Number.isFinite(insumo.areaContribuicaoMontanteM2)
-      ? insumo.areaContribuicaoMontanteM2
-      : 0.0;
-  if (aIn < 0 || !Number.isFinite(aIn)) {
-    throw new ErroForaDoDominio(`Área de contribuição a montante inválida: ${aIn} m².`);
+  const aIn = insumo.areaContribuicaoMontanteM2;
+  if (aIn === undefined || aIn === null || !Number.isFinite(aIn) || Number.isNaN(aIn)) {
+    throw new ErroForaDoDominio(
+      `Área de contribuição a montante não fornecida ou inválida (${aIn}). Obrigatória conforme Decisão D15 (0.0 explícito é válido para divisor de águas).`
+    );
+  }
+  if (aIn < 0) {
+    throw new ErroForaDoDominio(`Área de contribuição a montante negativa: ${aIn} m².`);
   }
 
   let aspectoRad: number | null = null;
@@ -307,6 +308,19 @@ export function obterFatorLSComProveniencia(insumo?: InsumoFatorLS | null): Prov
       causa: "fora-do-dominio",
       motivo:
         "Célula localizada em depressão topográfica sem saída superficial (pit); cálculo hidrológico retido sem preenchimento artificial.",
+    };
+  }
+
+  if (
+    insumo.areaContribuicaoMontanteM2 === undefined ||
+    insumo.areaContribuicaoMontanteM2 === null ||
+    !Number.isFinite(insumo.areaContribuicaoMontanteM2)
+  ) {
+    return {
+      estado: "indisponivel",
+      causa: "insuficiente",
+      motivo:
+        "Fator LS requer área de contribuição a montante finita e explícita (Decisão D15).",
     };
   }
 
