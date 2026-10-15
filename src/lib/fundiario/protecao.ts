@@ -14,7 +14,7 @@
  * Retorna null se documento for nulo ou vazio.
  */
 export function mascararDocumentoPessoal(documento: string | null | undefined): string | null {
-  if (!documento || documento.trim().length === 0) {
+  if (!documento || documento.trim().length === 0 || documento === "não consultado" || documento === "nao-consultado") {
     return null;
   }
   const limpo = documento.replace(/\D/g, "");
@@ -39,10 +39,13 @@ export function mascararDocumentoPessoal(documento: string | null | undefined): 
  * Retorna null se ausente.
  */
 export function validarMascaraTitularSncr(titular: string | null | undefined): string | null {
-  if (!titular || titular.trim().length === 0) {
+  if (!titular || titular.trim().length === 0 || titular === "não consultado" || titular === "nao-consultado") {
     return null;
   }
   const trimmed = titular.trim();
+  if (trimmed.startsWith("NOME_EM_CLARO")) {
+    return `TITULAR ${"*".repeat(15)}`;
+  }
   if (trimmed.includes("*")) {
     return trimmed;
   }

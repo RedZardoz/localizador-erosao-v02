@@ -9,6 +9,7 @@ import { formatToDMS } from "./dms";
 import { generateXlsxBuffer, XlsxSheet, XlsxRowValue } from "./xlsxWriter";
 import type { PerfilExportacao } from "@/lib/matriz/perfis";
 import { JANELA_TEMPORAL_D05 } from "@/lib/gee/amostragemSoloNuLote";
+import { validarMascaraTitularSncr, mascararDocumentoPessoal } from "@/lib/fundiario/protecao";
 
 export const BLOCO_FUNDAMENTACAO_LGPD =
 `TRATAMENTO DE DADOS PESSOAIS FUNDIÁRIOS — CONFORMIDADE LGPD (Lei nº 13.709/2018)
@@ -117,8 +118,12 @@ export function extrairLinhasAbaDados(pontos: PontoAmostral[]): Record<string, u
 
       CAR_Codigo: p.fundiario?.codigoCar ?? "não consultado",
       CAR_Status: p.fundiario?.status ?? "não consultado",
-      Titular_Mascarado: p.fundiario?.titularMascarado ?? "não consultado",
-      Documento_Mascarado: p.fundiario?.documentoMascarado ?? "não consultado",
+      Titular_Mascarado: p.fundiario?.titularMascarado
+        ? validarMascaraTitularSncr(p.fundiario.titularMascarado) ?? "não consultado"
+        : "não consultado",
+      Documento_Mascarado: p.fundiario?.documentoMascarado
+        ? mascararDocumentoPessoal(p.fundiario.documentoMascarado) ?? "não consultado"
+        : "não consultado",
       Area_Imovel_ha: p.fundiario?.areaImovelHa ?? "",
 
       RUSLE_Fator_R: valorOuNulo(p.linhaDeBase?.fatorR) ?? "",
@@ -180,18 +185,30 @@ export function extrairLinhasPorPerfil(
       Status_Fundiario: p.fundiario?.status ?? "nao-consultado",
       Motivo_Acesso: p.fundiario?.motivo ?? "Inspeção presencial de campanha PPGTCA",
       Codigo_CAR: p.fundiario?.codigoCar ?? "",
-      Titular_Mascarado: p.fundiario?.titularMascarado ?? "",
+      Titular_Mascarado: p.fundiario?.titularMascarado
+        ? validarMascaraTitularSncr(p.fundiario.titularMascarado) ?? ""
+        : "",
       Rota_Acesso: `${p.latitude.toFixed(6)},${p.longitude.toFixed(6)}`,
     }));
   }
 
   if (perfil === "voo-cego") {
-    return pontos.map((p) => ({
-      Codigo: p.codigo,
-      Latitude: Number(p.latitude.toFixed(6)),
-      Longitude: Number(p.longitude.toFixed(6)),
-      Area_Voo_Poligono: p.fundiario?.areaImovelHa ? `${p.fundiario.areaImovelHa} ha` : "Buffer 250 m",
-    }));
+    return pontos.map((p) => {
+      let areaVoo = "";
+      if (typeof (p as any).areaVooHa === "number" && !isNaN((p as any).areaVooHa)) {
+        areaVoo = `${(p as any).areaVooHa} ha`;
+      } else if (typeof (p as any).areaVooPoligonoHa === "number" && !isNaN((p as any).areaVooPoligonoHa)) {
+        areaVoo = `${(p as any).areaVooPoligonoHa} ha`;
+      } else if (typeof (p as any).poligonoVoo?.areaHectares === "number" && !isNaN((p as any).poligonoVoo.areaHectares)) {
+        areaVoo = `${(p as any).poligonoVoo.areaHectares} ha`;
+      }
+      return {
+        Codigo: p.codigo,
+        Latitude: Number(p.latitude.toFixed(6)),
+        Longitude: Number(p.longitude.toFixed(6)),
+        Area_Voo_Poligono: areaVoo,
+      };
+    });
   }
 
   if (perfil === "geojson-pontos") {

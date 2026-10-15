@@ -226,4 +226,87 @@ describe("Exportação XLSX e CSV — Validações e Guardas", () => {
       expect(linhaJanela?.[1]).toBe("2016-01-01 a 2026-06-30");
     });
   });
+
+  describe("C05 (A20): Proteção LGPD e desvinculação fundiária em voo-cego", () => {
+    it("entrada em claro nunca sai em claro em nenhum perfil", () => {
+      const p = mockPonto(1, {
+        fundiario: {
+          status: "encontrado",
+          motivo: null,
+          consultadoEm: "2026-01-01",
+          criterioAssociacao: null,
+          codigoCar: "PR-4100000-0000",
+          titularMascarado: "NOME_EM_CLARO SINTETICO_TESTE_ENCANAMENTO",
+          documentoMascarado: "123.456.789-00",
+          registroIncra: null,
+          areaImovelHa: 12.5,
+          bases: { uf: "PR" },
+        } as any,
+      });
+
+      for (const perfil of ["planilha", "campo-cego", "voo-cego", "interpretacao-cega", "matriz-treino"] as const) {
+        const linhas = extrairLinhasPorPerfil([p], perfil, {
+          [p.codigo]: {
+            final: { classe: "ausente", modalidade: "campo", observador: "Obs1", observadoEm: "2026-01-01", cego: true },
+            origens: [],
+            kappa: null,
+            divergencia: "nenhuma",
+            papelConjunto: "treino",
+          },
+        });
+        const str = JSON.stringify(linhas);
+        expect(str).not.toContain("NOME_EM_CLARO");
+        expect(str).not.toContain("123.456.789-00");
+      }
+    });
+
+    it("entrada já mascarada sai idêntica byte a byte", () => {
+      const titularOficial = "ADAO ********************";
+      const docOficial = "***.456.789-**";
+      const p = mockPonto(1, {
+        fundiario: {
+          status: "encontrado",
+          motivo: null,
+          consultadoEm: "2026-01-01",
+          criterioAssociacao: null,
+          codigoCar: "PR-4100000-0000",
+          titularMascarado: titularOficial,
+          documentoMascarado: docOficial,
+          registroIncra: null,
+          areaImovelHa: 12.5,
+          bases: { uf: "PR" },
+        } as any,
+      });
+
+      const linhasPlanilha = extrairLinhasPorPerfil([p], "planilha");
+      expect(linhasPlanilha[0].Titular_Mascarado).toBe(titularOficial);
+      expect(linhasPlanilha[0].Documento_Mascarado).toBe(docOficial);
+
+      const linhasCampoCego = extrairLinhasPorPerfil([p], "campo-cego");
+      expect(linhasCampoCego[0].Titular_Mascarado).toBe(titularOficial);
+    });
+
+    it("voo-cego não contém coluna derivada de fundiario", () => {
+      const p = mockPonto(1, {
+        fundiario: {
+          status: "encontrado",
+          motivo: null,
+          consultadoEm: "2026-01-01",
+          criterioAssociacao: null,
+          codigoCar: "PR-4100000-0000",
+          titularMascarado: "ADAO ********************",
+          documentoMascarado: "***.456.789-**",
+          registroIncra: null,
+          areaImovelHa: 12.5,
+          bases: { uf: "PR" },
+        } as any,
+      });
+
+      const linhas = extrairLinhasPorPerfil([p], "voo-cego");
+      const str = JSON.stringify(linhas);
+      expect(str).not.toContain("12.5");
+      expect(str).not.toContain("Buffer 250 m");
+      expect(linhas[0].Area_Voo_Poligono).toBe("");
+    });
+  });
 });
