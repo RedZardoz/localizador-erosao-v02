@@ -14,7 +14,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:vivo": "vitest run --include 'src/**/*.vivo.test.ts'",
+    "test:vivo": "vitest run --config vitest.vivo.config.mts",
     "sortear:d16": "node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts"
   },
   "dependencies": {

@@ -75,8 +75,12 @@ pip install -r requirements.txt
 #### Disciplina dos "Três Verdes"
 O projeto adota verificação contínua automatizada:
 ```bash
-# 1. Suíte de testes unitários e de integração (Vitest)
+# 1. Suíte de testes unitários e de integração hermética (Vitest)
 npm run test
+
+# 1.1 Testes vivos com dependência de dados locais (SQLite fundiário e Copernicus DEM GLO-30)
+# Exige data/fundiario_brasil.db e tiles em data/dem_cache/:
+npm run test:vivo
 
 # Para regenerar artefatos de voo em docs/verificacoes/voo_ncontrol/:
 # (por padrão os testes apenas comparam os hashes sem sobrescrever arquivos existentes)

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import fs from "fs";
 import path from "path";
+import { execSync } from "child_process";
 
 export interface CaminhoExtraidoProveniencia {
   linha: number;
@@ -64,19 +65,38 @@ export function extrairCaminhosRepositorioProveniencia(
   return extraidos;
 }
 
+export function ehCaminhoIgnoradoGit(caminhoRelativo: string): boolean {
+  try {
+    const caminhoNormalizado = caminhoRelativo.replace(/\\/g, "/");
+    execSync(`git check-ignore -q "${caminhoNormalizado}"`, { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Verifica se cada caminho extraído existe exatamente em `path.resolve(rootDir, caminhoNormalizado)`,
  * sem busca heurística por subpastas (exigindo caminhos relativos completos desde a raiz do repositório).
+ * Caminhos cobertos pelo .gitignore (dado local legítimo) são ignorados se `ignorarCaminhosGitIgnore === true`.
  */
 export function verificarExistenciaCaminhosProveniencia(
   caminhos: CaminhoExtraidoProveniencia[],
-  rootDir: string
+  rootDir: string,
+  opcoes: {
+    ignorarCaminhosGitIgnore?: boolean;
+    onIgnoradoGit?: (item: CaminhoExtraidoProveniencia) => void;
+  } = {}
 ): Array<{ item: CaminhoExtraidoProveniencia; motivo: string }> {
   const falhas: Array<{ item: CaminhoExtraidoProveniencia; motivo: string }> = [];
 
   for (const item of caminhos) {
     const absDireto = path.resolve(rootDir, item.caminhoNormalizado);
     if (!fs.existsSync(absDireto)) {
+      if (opcoes.ignorarCaminhosGitIgnore && ehCaminhoIgnoradoGit(item.caminhoNormalizado)) {
+        opcoes.onIgnoradoGit?.(item);
+        continue;
+      }
       falhas.push({
         item,
         motivo: `Caminho inexistente a partir da raiz do repositório: '${item.caminhoNormalizado}' (linha ${item.linha})`,
@@ -120,7 +140,19 @@ describe("Verificação automatizada de caminhos em docs/PROVENIENCIA_ASSISTENCI
     const extraidos = extrairCaminhosRepositorioProveniencia(conteudo);
     expect(extraidos.length).toBeGreaterThan(0);
 
-    const falhas = verificarExistenciaCaminhosProveniencia(extraidos, rootDir);
+    const caminhosIgnorados: string[] = [];
+    const falhas = verificarExistenciaCaminhosProveniencia(extraidos, rootDir, {
+      ignorarCaminhosGitIgnore: true,
+      onIgnoradoGit: (item) => caminhosIgnorados.push(item.caminhoNormalizado),
+    });
+
+    if (caminhosIgnorados.length > 0) {
+      console.log(
+        `[C02] Caminhos citados em docs/PROVENIENCIA_ASSISTENCIA_IA.md ignorados pelo .gitignore (dado local legítimo fora do git): ${caminhosIgnorados.length}`,
+        caminhosIgnorados
+      );
+    }
+
     if (falhas.length > 0) {
       const msg = falhas.map((f) => `  - ${f.motivo}`).join("\n");
       expect.fail(
