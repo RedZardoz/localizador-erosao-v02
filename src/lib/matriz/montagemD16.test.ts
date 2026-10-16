@@ -11,6 +11,7 @@ function criarPontoBase(id: string, codigo: string): PontoAmostral {
     latitude: -24.5,
     longitude: -53.5,
     origemSintetica: false,
+    poligonoId: `POL_TESTE_${id}`,
     blocoEspacial: "BLOCO_A",
     estratoId: "E01",
     criterioSelecao: {
@@ -172,5 +173,104 @@ describe("N02 — Contrato de Dados D16/D26 (montagemD16.test.ts)", () => {
     expect(() => {
       assegurarSegregacaoTreino("drone", "POLIGONO_01", new Set(["POLIGONO_01"]));
     }).toThrow(/segregação|held-out/i);
+  });
+
+  describe("DEFEITO 1 (N02-fix1) — Rótulo de drone sem poligonoId e veda POLIGONO_INDEFINIDO", () => {
+    it("(i) rótulo drone sem poligonoId vai para exclusoes com motivo canônico e não para linhas nem heldOutDrone", () => {
+      // Dado SINTETICO_TESTE_ENCANAMENTO
+      const p = criarPontoBase("p-sintetico-1", "SINTETICO_TESTE_ENCANAMENTO_01");
+      delete (p as any).poligonoId;
+      const rotulos: Record<string, RotuloConsolidado> = {
+        "SINTETICO_TESTE_ENCANAMENTO_01": {
+          final: {
+            classe: "erosao",
+            modalidade: "drone",
+            observador: "Obs1",
+            observadoEm: "2026-02-01",
+            cego: true,
+          },
+          origens: [],
+          kappa: 0.85,
+          divergencia: "nenhuma",
+          papelConjunto: "treino",
+        },
+      };
+
+      const res = montarMatrizTreino([p], rotulos);
+      expect(res.linhas).toHaveLength(0);
+      expect(res.heldOutDrone).toHaveLength(0);
+      expect(res.exclusoes).toHaveLength(1);
+      expect(res.exclusoes[0].motivo).toBe(
+        "Rótulo de drone sem poligonoId (código opaco do sorteio D16)"
+      );
+    });
+
+    it("(ii) rótulo drone com poligonoId opaco 'OPACO-A' mantém 'OPACO-A'", () => {
+      // Dado SINTETICO_TESTE_ENCANAMENTO
+      const p = {
+        ...criarPontoBase("p-sintetico-2", "SINTETICO_TESTE_ENCANAMENTO_02"),
+        poligonoId: "OPACO-A",
+      };
+      const rotulos: Record<string, RotuloConsolidado> = {
+        "SINTETICO_TESTE_ENCANAMENTO_02": {
+          final: {
+            classe: "erosao",
+            modalidade: "drone",
+            observador: "Obs1",
+            observadoEm: "2026-02-01",
+            cego: true,
+          },
+          origens: [],
+          kappa: 0.85,
+          divergencia: "nenhuma",
+          papelConjunto: "treino",
+        },
+      };
+
+      const res = montarMatrizTreino([p], rotulos);
+      expect(res.linhas).toHaveLength(1);
+      expect(res.linhas[0].poligonoId).toBe("OPACO-A");
+    });
+
+    it("(iii) assegurarSegregacaoTreino lança violação com poligonoId vazio e com POLIGONO_INDEFINIDO", () => {
+      // Dado SINTETICO_TESTE_ENCANAMENTO
+      expect(() => {
+        assegurarSegregacaoTreino(
+          [{ pontoId: "p1", codigo: "SINTETICO_TESTE_ENCANAMENTO_P1", poligonoId: "" } as any],
+          []
+        );
+      }).toThrow(/poligonoId ausente/i);
+
+      expect(() => {
+        assegurarSegregacaoTreino(
+          [{ pontoId: "p2", codigo: "SINTETICO_TESTE_ENCANAMENTO_P2", poligonoId: "   " } as any],
+          []
+        );
+      }).toThrow(/poligonoId ausente/i);
+
+      expect(() => {
+        assegurarSegregacaoTreino(
+          [{ pontoId: "p3", codigo: "SINTETICO_TESTE_ENCANAMENTO_P3", poligonoId: "POLIGONO_INDEFINIDO" } as any],
+          []
+        );
+      }).toThrow(/poligonoId ausente/i);
+
+      expect(() => {
+        assegurarSegregacaoTreino(
+          [],
+          [{ pontoId: "p4", codigo: "SINTETICO_TESTE_ENCANAMENTO_P4", poligonoId: "POLIGONO_INDEFINIDO" } as any]
+        );
+      }).toThrow(/poligonoId ausente/i);
+    });
+
+    it("(iv) assegurarSegregacaoTreino lança com o mesmo id de polígono nos dois conjuntos (treino e held-out)", () => {
+      // Dado SINTETICO_TESTE_ENCANAMENTO
+      expect(() => {
+        assegurarSegregacaoTreino(
+          [{ pontoId: "p1", codigo: "SINTETICO_TESTE_ENCANAMENTO_T1", poligonoId: "POL_COMPARTILHADO" } as any],
+          [{ pontoId: "p2", codigo: "SINTETICO_TESTE_ENCANAMENTO_H1", poligonoId: "POL_COMPARTILHADO" } as any]
+        );
+      }).toThrow(/VIOLAÇÃO DE SEGREGAÇÃO \(D16\): O polígono 'POL_COMPARTILHADO' está presente simultaneamente nos conjuntos de treino e held-out/);
+    });
   });
 });

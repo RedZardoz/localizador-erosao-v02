@@ -31,6 +31,7 @@ function criarPontoTeste(id: string, lat: number, lng: number, classe: string): 
     latitude: lat,
     longitude: lng,
     origemSintetica: false,
+    poligonoId: `POL_TESTE_${num}`,
     blocoEspacial: "bloco_oeste",
     estratoId: `E${num}`,
     criterioSelecao: {

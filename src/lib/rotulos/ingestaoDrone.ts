@@ -119,25 +119,36 @@ export function ingestarValidacaoDrone(
  * Mantém suporte a chamadas de guarda por modalidade/parâmetros de polígono.
  */
 export function assegurarSegregacaoTreino(
-  param1: string | Array<{ poligonoId?: string | null }>,
-  param2?: string | Array<{ poligonoId?: string | null }>,
+  param1: string | Array<{ poligonoId?: string | null; pontoId?: string; codigo?: string }>,
+  param2?: string | Array<{ poligonoId?: string | null; pontoId?: string; codigo?: string }>,
   param3?: Set<string> | string[]
 ): void {
   // Chamada estrutural: assegurarSegregacaoTreino(linhasTreino, linhasHeldOut)
   if (Array.isArray(param1) && Array.isArray(param2)) {
-    const poligonosHeldOut = new Set(
-      param2
-        .map((l) => l.poligonoId)
-        .filter((id): id is string => Boolean(id && id !== "POLIGONO_INDEFINIDO"))
-    );
-    for (const linha of param1) {
-      if (
-        linha.poligonoId &&
-        linha.poligonoId !== "POLIGONO_INDEFINIDO" &&
-        poligonosHeldOut.has(linha.poligonoId)
-      ) {
+    const obterRef = (l: any) => l.codigo || l.pontoId || l.id || "desconhecido";
+
+    const poligonosHeldOut = new Set<string>();
+    for (const linha of param2) {
+      const pid = linha.poligonoId;
+      if (!pid || typeof pid !== "string" || pid.trim() === "" || pid === "POLIGONO_INDEFINIDO") {
         throw new Error(
-          `VIOLAÇÃO DE SEGREGAÇÃO (D16): O polígono '${linha.poligonoId}' está presente simultaneamente nos conjuntos de treino e held-out.`
+          `VIOLAÇÃO DE SEGREGAÇÃO (D16): Linha held-out '${obterRef(linha)}' com poligonoId ausente.`
+        );
+      }
+      poligonosHeldOut.add(pid.trim());
+    }
+
+    for (const linha of param1) {
+      const pid = linha.poligonoId;
+      if (!pid || typeof pid !== "string" || pid.trim() === "" || pid === "POLIGONO_INDEFINIDO") {
+        throw new Error(
+          `VIOLAÇÃO DE SEGREGAÇÃO (D16): Linha de treino '${obterRef(linha)}' com poligonoId ausente.`
+        );
+      }
+      const idLimpo = pid.trim();
+      if (poligonosHeldOut.has(idLimpo)) {
+        throw new Error(
+          `VIOLAÇÃO DE SEGREGAÇÃO (D16): O polígono '${idLimpo}' está presente simultaneamente nos conjuntos de treino e held-out.`
         );
       }
     }
@@ -146,6 +157,9 @@ export function assegurarSegregacaoTreino(
 
   // Chamada explícita de verificação: assegurarSegregacaoTreino(modalidade, poligonoId, poligonosHeldOut)
   if (typeof param1 === "string" && typeof param2 === "string") {
+    if (!param2 || param2.trim() === "" || param2 === "POLIGONO_INDEFINIDO") {
+      throw new Error("VIOLAÇÃO DE SEGREGAÇÃO (D16): poligonoId ausente.");
+    }
     const heldOutSet = param3 instanceof Set ? param3 : new Set(param3 ?? []);
     if (heldOutSet.has(param2)) {
       throw new Error(

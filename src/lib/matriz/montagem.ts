@@ -159,20 +159,40 @@ export function montarMatrizTreino(
       continue;
     }
 
-    // Modalidade "drone" exige papelConjunto definido pelo sorteio D16
-    if (rotulo.modalidade === "drone") {
-      if (
-        rotuloCons.papelConjunto === "indisponivel" ||
-        !rotuloCons.papelConjunto ||
-        (rotuloCons.papelConjunto !== "treino" && rotuloCons.papelConjunto !== "held-out")
-      ) {
-        exclusoes.push({
-          codigo: ponto.codigo,
-          motivo: "Rótulo de drone com papelConjunto 'indisponivel' ou ausente no sorteio D16.",
-        });
-        continue;
-      }
+    if (rotulo.modalidade !== "drone") {
+      exclusoes.push({
+        codigo: ponto.codigo,
+        motivo: "modalidade não prevista no treino D26",
+      });
+      continue;
     }
+
+    // Modalidade "drone" exige papelConjunto definido pelo sorteio D16
+    if (
+      rotuloCons.papelConjunto !== "treino" &&
+      rotuloCons.papelConjunto !== "held-out"
+    ) {
+      exclusoes.push({
+        codigo: ponto.codigo,
+        motivo: "Rótulo de drone com papelConjunto 'indisponivel' ou ausente no sorteio D16.",
+      });
+      continue;
+    }
+
+    const poligonoIdCandidato = ponto.poligonoId ?? (rotuloCons as any).poligonoId;
+    if (
+      !poligonoIdCandidato ||
+      typeof poligonoIdCandidato !== "string" ||
+      poligonoIdCandidato.trim() === ""
+    ) {
+      exclusoes.push({
+        codigo: ponto.codigo,
+        motivo: "Rótulo de drone sem poligonoId (código opaco do sorteio D16)",
+      });
+      continue;
+    }
+    const poligonoId = poligonoIdCandidato.trim();
+    const papelConjunto: "treino" | "held-out" = rotuloCons.papelConjunto;
 
     // Binarização única e canônica (N02a e C09)
     let fracaoErodida: number | null = null;
@@ -209,12 +229,7 @@ export function montarMatrizTreino(
     const janelaTemporal = ponto.temporal?.[modeloJanela];
 
     const celulaId = ponto.celulaId ?? ponto.codigo ?? ponto.id;
-    const poligonoId = ponto.poligonoId ?? (rotuloCons as any).poligonoId ?? (ponto.codigo ? `POL_${ponto.codigo}` : "POLIGONO_INDEFINIDO");
     const estratoId = ponto.estratoId ?? "ESTRATO_INDEFINIDO";
-    const papelConjunto: "treino" | "held-out" =
-      rotuloCons.papelConjunto === "treino" || rotuloCons.papelConjunto === "held-out"
-        ? rotuloCons.papelConjunto
-        : "treino";
 
     const rotuloNObservadores =
       rotuloCons.origens && rotuloCons.origens.length > 0

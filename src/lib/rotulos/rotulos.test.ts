@@ -294,6 +294,7 @@ describe("Rotulagem, Concordância e Matriz de Treino (Fase 6 — SAREL)", () =>
       latitude: lat,
       longitude: lng,
       origemSintetica: false,
+      poligonoId: `POL_TESTE_${id}`,
       blocoEspacial: "BLOCO_R01_C01",
       estratoId: "ESTRATO_S1_E1_K1",
       criterioSelecao: {

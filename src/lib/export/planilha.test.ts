@@ -13,6 +13,7 @@ function mockPonto(id: number, parciais?: Partial<PontoAmostral>): PontoAmostral
     latitude: -25.0 - id * 0.01,
     longitude: -53.0 - id * 0.01,
     origemSintetica: false,
+    poligonoId: `POL_TESTE_${id}`,
     blocoEspacial: `BLOCO_${id % 3}`,
     estratoId: `E${(id % 18) + 1}`,
     criterioSelecao: {
