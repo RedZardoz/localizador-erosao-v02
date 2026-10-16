@@ -3,17 +3,14 @@
  * Montagem da Matriz de Treino — SAREL (PPGTCA 2026)
  * ============================================================================
  *
- * ESPECIFICAÇÃO MANDATÓRIA (PLANO V3, §12.4):
- * - Projeção estrita pelo perfil "matriz-treino" (§7.8) e conformidade com Invariante 2.
- * - Exclusões invioláveis em tempo de execução:
- *   1. phiDiag, quantilPhi, phi (critérios internos de ordenação amostral).
- *   2. estratoId (critério de estratificação).
- *   3. Fatores da RUSLE (R, K, LS, C, P) e perdaSolo.
- *   4. Coordenadas geográficas (isoladas no arquivo de chaves para evitar vazamento espacial).
- *   5. Dados fundiários/cadastrais (LGPD).
- *   6. Modalidade 'drone' (estritamente 'held-out', segregada em arquivo próprio).
- *   7. Divergências de rotulagem pendentes (final: null).
- * - Ausente = célula vazia / null (XGBoost trata nativamente ausência por direção de split).
+ * ESPECIFICAÇÃO MANDATÓRIA (D16 / D26 / DEC-3c, DEC-4a, DEC-1, DEC-5):
+ * - Rótulo de VANT contínuo por célula de 10 m, treino e held-out por polígono.
+ * - Modalidade 'drone': vai para 'linhas' (treino) se papelConjunto === 'treino',
+ *   vai para 'heldOutDrone' se papelConjunto === 'held-out',
+ *   ou exclusão registrada se 'indisponivel'.
+ * - Modalidade 'campo' (D03): NUNCA vai ao treino do modelo D26 (apenas âncora prospectiva).
+ * - Binarização única e canônica via src/lib/rotulos/binarizacao.ts (D26 e D03).
+ * - Segregação espacial obrigatória entre treino e held-out por poligonoId.
  */
 
 import { PontoAmostral } from "@/types/ponto";
@@ -22,9 +19,19 @@ import { valorOuNulo } from "@/types/proveniencia";
 import { assegurarSegregacaoTreino } from "@/lib/rotulos/ingestaoDrone";
 import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
 import { CAMPOS_PROIBIDOS_MATRIZ_TREINO } from "./invariantes";
+import { binarizarFracao, binarizarOrdinal } from "@/lib/rotulos/binarizacao";
+import { validarRotulo } from "@/lib/rotulos/concordancia";
 
 export interface LinhaMatrizTreino {
   pontoId: string;
+  celulaId: string;
+  poligonoId: string;
+  papelConjunto: "treino" | "held-out";
+  estratoId: string;
+  fracaoErodida: number | null;
+  alvoBinario25: 0 | 1 | null;
+  rotuloNObservadores: number | null;
+
   blocoEspacial: string;
 
   // Terreno
@@ -58,9 +65,16 @@ export interface LinhaMatrizTreino {
   ndvi: number | null;
   bsi: number | null;
 
+  // Métricas de Série do Pré-Registro Proposto (N02d)
+  compostoSoloNuB12: number | null;
+  compostoSoloNuRazaoB4B2: number | null;
+  taxaDegradacaoSwirAnual: number | null;
+  ndviP90Serie: number | null;
+
   // Preditores Físicos da RUSLE (Física Informada / Data Fusion)
   fatorK: number | null;
   fatorR: number | null;
+  fatorLS: number | null;
 
   // Alvo Supervisionado
   classeAlvoBinaria: 0 | 1;
@@ -87,16 +101,18 @@ export interface ResultadoMontagemMatriz {
 }
 
 export interface OpcoesMontagemMatriz {
-  modeloJanela: "D" | "P"; // Janela Modelo D (detecção) vs Modelo P (predição com guarda temporal D04)
+  modeloJanela?: "D" | "P"; // Janela Modelo D (detecção) vs Modelo P (predição com guarda temporal D04)
 }
 
 export function montarMatrizTreino(
   pontos: PontoAmostral[],
   rotulosConsolidados: Record<string, RotuloConsolidado>,
-  opcoes: OpcoesMontagemMatriz
+  opcoes: OpcoesMontagemMatriz = {}
 ): ResultadoMontagemMatriz {
   // 1. Guarda antissintético universal
   assegurarApenasPontosReais(pontos);
+
+  const modeloJanela = opcoes.modeloJanela ?? "D";
 
   const linhas: LinhaMatrizTreino[] = [];
   const chaves: ChaveCoordenadasPonto[] = [];
@@ -107,7 +123,7 @@ export function montarMatrizTreino(
   const distribuicaoBlocos: Record<string, number> = {};
 
   for (const ponto of pontos) {
-    const rotuloCons = rotulosConsolidados[ponto.codigo];
+    const rotuloCons = rotulosConsolidados[ponto.codigo] ?? (ponto.rotulo as RotuloConsolidado | undefined);
 
     if (!rotuloCons) {
       exclusoes.push({ codigo: ponto.codigo, motivo: "Ponto sem rotulagem." });
@@ -124,6 +140,64 @@ export function montarMatrizTreino(
 
     const rotulo = rotuloCons.final;
 
+    // Validação estrita do rótulo
+    const validacaoRotulo = validarRotulo(rotulo);
+    if (!validacaoRotulo.valido) {
+      exclusoes.push({
+        codigo: ponto.codigo,
+        motivo: validacaoRotulo.motivo || "Rótulo com atributos inválidos.",
+      });
+      continue;
+    }
+
+    // Modalidade "campo" NUNCA vai ao treino do modelo D26 (D16: campo é âncora/confirmação)
+    if (rotulo.modalidade === "campo") {
+      exclusoes.push({
+        codigo: ponto.codigo,
+        motivo: "Modalidade 'campo' não integra o treino do modelo D26 (D16 / D03).",
+      });
+      continue;
+    }
+
+    // Modalidade "drone" exige papelConjunto definido pelo sorteio D16
+    if (rotulo.modalidade === "drone") {
+      if (
+        rotuloCons.papelConjunto === "indisponivel" ||
+        !rotuloCons.papelConjunto ||
+        (rotuloCons.papelConjunto !== "treino" && rotuloCons.papelConjunto !== "held-out")
+      ) {
+        exclusoes.push({
+          codigo: ponto.codigo,
+          motivo: "Rótulo de drone com papelConjunto 'indisponivel' ou ausente no sorteio D16.",
+        });
+        continue;
+      }
+    }
+
+    // Binarização única e canônica (N02a e C09)
+    let fracaoErodida: number | null = null;
+    let alvoBinario25: 0 | 1 | null = null;
+    let classeAlvoBinaria: 0 | 1 = 0;
+
+    if (typeof rotulo.fracaoErodida === "number" && !isNaN(rotulo.fracaoErodida)) {
+      try {
+        fracaoErodida = rotulo.fracaoErodida;
+        alvoBinario25 = binarizarFracao(fracaoErodida);
+        classeAlvoBinaria = alvoBinario25;
+      } catch (err: any) {
+        exclusoes.push({ codigo: ponto.codigo, motivo: err.message });
+        continue;
+      }
+    } else {
+      try {
+        classeAlvoBinaria = binarizarOrdinal(rotulo.classe);
+        alvoBinario25 = classeAlvoBinaria;
+      } catch (err: any) {
+        exclusoes.push({ codigo: ponto.codigo, motivo: err.message });
+        continue;
+      }
+    }
+
     // Isolar chaves de coordenadas fora da matriz de features
     chaves.push({
       pontoId: ponto.id,
@@ -132,23 +206,62 @@ export function montarMatrizTreino(
       longitude: ponto.longitude,
     });
 
-    const janelaTemporal = ponto.temporal?.[opcoes.modeloJanela];
+    const janelaTemporal = ponto.temporal?.[modeloJanela];
 
-    // Determinação do alvo supervisionado binário exclusivamente a partir do rótulo humano (Regra 4 / Invariante 1:
-    // NUNCA usar ponto.classeAmostral calculado por NDVI/BSI para definir o alvo y do treino)
-    const rotuloNorm = rotulo.classe.trim().toLowerCase();
-    const ehErosao =
-      rotuloNorm.includes("erosao") ||
-      rotuloNorm.includes("erosão") ||
-      rotuloNorm === "presente" ||
-      rotuloNorm === "incipiente" ||
-      rotuloNorm === "moderada" ||
-      rotuloNorm === "severa" ||
-      rotuloNorm === "1";
-    const classeAlvoBinaria: 0 | 1 = ehErosao ? 1 : 0;
+    const celulaId = ponto.celulaId ?? ponto.codigo ?? ponto.id;
+    const poligonoId = ponto.poligonoId ?? (rotuloCons as any).poligonoId ?? (ponto.codigo ? `POL_${ponto.codigo}` : "POLIGONO_INDEFINIDO");
+    const estratoId = ponto.estratoId ?? "ESTRATO_INDEFINIDO";
+    const papelConjunto: "treino" | "held-out" =
+      rotuloCons.papelConjunto === "treino" || rotuloCons.papelConjunto === "held-out"
+        ? rotuloCons.papelConjunto
+        : "treino";
+
+    const rotuloNObservadores =
+      rotuloCons.origens && rotuloCons.origens.length > 0
+        ? rotuloCons.origens.length
+        : rotuloCons.final
+        ? 1
+        : null;
+
+    // Métricas de Composto de Solo Nu e Série Temporal (N02d)
+    const compB12 =
+      janelaTemporal?.serie?.compostoSoloNuB12 !== undefined
+        ? valorOuNulo(janelaTemporal.serie.compostoSoloNuB12)
+        : janelaTemporal?.serie?.compostoSoloNu?.["B12"] !== undefined
+        ? valorOuNulo(janelaTemporal.serie.compostoSoloNu["B12"])
+        : valorOuNulo(ponto.espectral?.b12);
+
+    const compB4 =
+      janelaTemporal?.serie?.compostoSoloNu?.["B4"] !== undefined
+        ? valorOuNulo(janelaTemporal.serie.compostoSoloNu["B4"])
+        : valorOuNulo(ponto.espectral?.b4);
+
+    const compB2 =
+      janelaTemporal?.serie?.compostoSoloNu?.["B2"] !== undefined
+        ? valorOuNulo(janelaTemporal.serie.compostoSoloNu["B2"])
+        : valorOuNulo(ponto.espectral?.b2);
+
+    let compRazaoB4B2: number | null = null;
+    if (janelaTemporal?.serie?.compostoSoloNuRazaoB4B2 !== undefined) {
+      compRazaoB4B2 = valorOuNulo(janelaTemporal.serie.compostoSoloNuRazaoB4B2);
+    } else if (typeof compB4 === "number" && typeof compB2 === "number" && compB2 > 0) {
+      compRazaoB4B2 = Number((compB4 / compB2).toFixed(4));
+    }
+
+    const taxaDegradacaoSwirAnual = valorOuNulo(janelaTemporal?.serie?.taxaDegradacaoSwirAnual);
+    const ndviP90Serie = valorOuNulo(janelaTemporal?.serie?.ndviP90Serie);
+    const fatorLS = valorOuNulo(ponto.linhaDeBase?.fatorLS);
 
     const linha: LinhaMatrizTreino = {
       pontoId: ponto.id,
+      celulaId,
+      poligonoId,
+      papelConjunto,
+      estratoId,
+      fracaoErodida,
+      alvoBinario25,
+      rotuloNObservadores,
+
       blocoEspacial: ponto.blocoEspacial ?? "BLOCO_INDEFINIDO",
 
       // Terreno
@@ -182,9 +295,16 @@ export function montarMatrizTreino(
       ndvi: valorOuNulo(ponto.espectral?.ndvi),
       bsi: valorOuNulo(ponto.espectral?.bsi),
 
+      // Métricas de Série do Pré-Registro Proposto (N02d)
+      compostoSoloNuB12: compB12,
+      compostoSoloNuRazaoB4B2: compRazaoB4B2,
+      taxaDegradacaoSwirAnual,
+      ndviP90Serie,
+
       // Preditores Físicos da RUSLE (Física Informada / Data Fusion)
       fatorK: valorOuNulo(ponto.linhaDeBase?.fatorK),
       fatorR: valorOuNulo(ponto.linhaDeBase?.fatorR),
+      fatorLS,
 
       // Rótulo e Alvo
       classeAlvoBinaria,
@@ -192,14 +312,11 @@ export function montarMatrizTreino(
       rotuloModalidade: rotulo.modalidade,
     };
 
-    // Segregação estrita de Drone (held-out)
-    if (rotulo.modalidade === "drone") {
+    // Segregação D16: rótulo de drone vai para heldOutDrone se papelConjunto === "held-out"
+    if (rotulo.modalidade === "drone" && papelConjunto === "held-out") {
       heldOutDrone.push(linha);
       continue;
     }
-
-    // Garante que não é drone
-    assegurarSegregacaoTreino(rotulo.modalidade);
 
     linhas.push(linha);
     const contagemClasse = distribuicaoClasses[rotulo.classe];
@@ -209,6 +326,9 @@ export function montarMatrizTreino(
     const contagemBloco = distribuicaoBlocos[idBloco];
     distribuicaoBlocos[idBloco] = typeof contagemBloco === "number" ? contagemBloco + 1 : 1;
   }
+
+  // Pós-condição de segregação espacial entre treino e held-out por poligonoId (D16 / Regra 4)
+  assegurarSegregacaoTreino(linhas, heldOutDrone);
 
   // Verificação de segurança: checar se algum campo proibido vazou
   for (const l of linhas) {

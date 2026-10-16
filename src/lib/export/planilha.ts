@@ -222,53 +222,130 @@ export function extrairLinhasPorPerfil(
     }));
   }
 
-  // perfil === "matriz-treino": Delega integralmente a montarMatrizTreino (Regra 4, Regra 6 e Postura 2/9)
-  if (!rotulosConsolidados || (pontos.length > 0 && Object.keys(rotulosConsolidados).length === 0)) {
-    throw new Error(
-      "[ABORTO — REGRA 4 / POSTURA 9] O perfil 'matriz-treino' exige o mapa autoritativo 'rotulosConsolidados' não vazio. " +
-      "Exportar a matriz de treinamento sem rótulos humanos consolidados produziria degradação silenciosa."
-    );
+  if (perfil === "linha-de-base-rusle") {
+    return pontos.map((p) => {
+      const celulaId = p.celulaId ?? p.codigo ?? p.id;
+      const rProv = p.linhaDeBase?.fatorR;
+      const kProv = p.linhaDeBase?.fatorK;
+      const lsProv = p.linhaDeBase?.fatorLS;
+      const cProv = p.linhaDeBase?.fatorC;
+      const pProv = p.linhaDeBase?.fatorP;
+
+      const rVal = valorOuNulo(rProv);
+      const kVal = valorOuNulo(kProv);
+      const lsVal = valorOuNulo(lsProv);
+      const cVal = valorOuNulo(cProv);
+      const pVal = valorOuNulo(pProv);
+
+      const rValido = rProv && (rProv.estado === "medido" || rProv.estado === "modelado" || rProv.estado === "tabelado") && rVal !== null;
+      const kValido = kProv && (kProv.estado === "medido" || kProv.estado === "modelado" || kProv.estado === "tabelado") && kVal !== null;
+      const lsValido = lsProv && (lsProv.estado === "medido" || lsProv.estado === "modelado" || lsProv.estado === "tabelado") && lsVal !== null;
+      const cValido = cProv && (cProv.estado === "medido" || cProv.estado === "modelado" || cProv.estado === "tabelado") && cVal !== null;
+      const pValido = pProv && (pProv.estado === "medido" || pProv.estado === "modelado" || pProv.estado === "tabelado") && pVal !== null;
+
+      let rusleA: number | "" = "";
+      if (rValido && kValido && lsValido && cValido && pValido) {
+        rusleA = Number((rVal! * kVal! * lsVal! * cVal! * pVal!).toFixed(4));
+      }
+
+      const marcadorK = p.solo?.kAmbiguoAssociacao ?? p.kAmbiguoAssociacao ?? "";
+
+      return {
+        Celula_ID: celulaId,
+        RUSLE_Fator_R: rVal ?? "",
+        RUSLE_Fator_K: kVal ?? "",
+        RUSLE_Fator_LS: lsVal ?? "",
+        RUSLE_Fator_C: cVal ?? "",
+        RUSLE_Fator_P: pVal ?? "",
+        Marcador_K_Ambiguo_D08: marcadorK,
+        RUSLE_A: rusleA,
+      };
+    });
   }
 
-  const resultadoMatriz = montarMatrizTreino(pontos, rotulosConsolidados, { modeloJanela: "D" });
+  // perfil === "matriz-treino" ou "matriz-heldout": Delega integralmente a montarMatrizTreino
+  if (perfil === "matriz-treino" || perfil === "matriz-heldout") {
+    if (!rotulosConsolidados || (pontos.length > 0 && Object.keys(rotulosConsolidados).length === 0)) {
+      throw new Error(
+        `[ABORTO — REGRA 4 / POSTURA 9] O perfil '${perfil}' exige o mapa autoritativo 'rotulosConsolidados' não vazio. ` +
+        "Exportar a matriz sem rótulos humanos consolidados produziria degradação silenciosa."
+      );
+    }
 
-  // Pós-condição de segregação held-out (Decisão D16 e Regra 4):
-  for (const linhaTreino of resultadoMatriz.linhas) {
-    assegurarSegregacaoTreino(linhaTreino.rotuloModalidade);
+    // DEC-5 (N02e): se existir par de rótulos com 2 observadores e κ < 0,60, a exportação é RECUSADA
+    const paresComBaixoKappa: string[] = [];
+    for (const [codigo, rCons] of Object.entries(rotulosConsolidados)) {
+      if (rCons.origens && rCons.origens.length >= 2) {
+        if (typeof rCons.kappa === "number" && !isNaN(rCons.kappa) && rCons.kappa < 0.6) {
+          paresComBaixoKappa.push(`${codigo} (kappa=${rCons.kappa.toFixed(3)})`);
+        }
+      }
+    }
+    if (paresComBaixoKappa.length > 0) {
+      throw new Error(
+        `[DEC-5] Exportação de '${perfil}' recusada: concordância interobservador insatisfatória (kappa < 0.60) nos seguintes pares: ${paresComBaixoKappa.join(", ")}`
+      );
+    }
+
+    const resultadoMatriz = montarMatrizTreino(pontos, rotulosConsolidados, { modeloJanela: "D" });
+
+    const linhasFonte = perfil === "matriz-treino" ? resultadoMatriz.linhas : resultadoMatriz.heldOutDrone;
+
+    // Pós-condição: matriz-treino NUNCA contém linha held-out
+    if (perfil === "matriz-treino") {
+      for (const l of linhasFonte) {
+        if (l.papelConjunto === "held-out") {
+          throw new Error("VIOLAÇÃO DE CONTRATO (D16): Linha held-out detectada na exportação de 'matriz-treino'.");
+        }
+      }
+    }
+
+    return linhasFonte.map((l) => ({
+      Celula_ID: l.celulaId,
+      Poligono_ID: l.poligonoId,
+      Papel_Conjunto: l.papelConjunto,
+      Fracao_Erodida: l.fracaoErodida !== null ? l.fracaoErodida : "",
+      Alvo_Binario_25: l.alvoBinario25 !== null ? l.alvoBinario25 : "",
+      Rotulo_N_Observadores: l.rotuloNObservadores !== null ? l.rotuloNObservadores : "",
+      Ponto_ID: l.pontoId,
+      Bloco_Espacial: l.blocoEspacial ?? "BLOCO_INDEFINIDO",
+      Elevacao_m: l.elevacao !== null ? l.elevacao : "",
+      Declividade_pct: l.declividadePct !== null ? l.declividadePct : "",
+      Declividade_graus: l.declividadeGraus !== null ? l.declividadeGraus : "",
+      Curvatura_Perfil: l.curvaturaPerfil !== null ? l.curvaturaPerfil : "",
+      Curvatura_Plana: l.curvaturaPlana !== null ? l.curvaturaPlana : "",
+      Acumulo_Fluxo: l.acumuloFluxo !== null ? l.acumuloFluxo : "",
+      TWI: l.twi !== null ? l.twi : "",
+      Ordem_Solo: l.ordemSolo ?? "",
+      Subordem_Solo: l.subOrdemSolo ?? "",
+      Grande_Grupo_Solo: l.grandeGrupoSolo ?? "",
+      Erodibilidade_Classe: l.erodibilidadeClasse ?? "",
+      Frequencia_Solo_Nu: l.frequenciaSoloNu !== null ? l.frequenciaSoloNu : "",
+      Banda_B2: l.bandaB2 !== null ? l.bandaB2 : "",
+      Banda_B4: l.bandaB4 !== null ? l.bandaB4 : "",
+      Banda_B8: l.bandaB8 !== null ? l.bandaB8 : "",
+      Banda_B12: l.bandaB12 !== null ? l.bandaB12 : "",
+      NDVI: l.ndvi !== null ? l.ndvi : "",
+      BSI: l.bsi !== null ? l.bsi : "",
+      Composto_Solo_Nu_B12: l.compostoSoloNuB12 !== null ? l.compostoSoloNuB12 : "",
+      Composto_Solo_Nu_Razao_B4_B2: l.compostoSoloNuRazaoB4B2 !== null ? l.compostoSoloNuRazaoB4B2 : "",
+      Taxa_Degradacao_SWIR_Anual: l.taxaDegradacaoSwirAnual !== null ? l.taxaDegradacaoSwirAnual : "",
+      NDVI_P90_Serie: l.ndviP90Serie !== null ? l.ndviP90Serie : "",
+      RUSLE_Fator_K: l.fatorK !== null ? l.fatorK : "",
+      RUSLE_Fator_R: l.fatorR !== null ? l.fatorR : "",
+      RUSLE_Fator_LS: l.fatorLS !== null ? l.fatorLS : "",
+      Precip_Acum_30d_mm: l.precipAcum30d !== null ? l.precipAcum30d : "",
+      Precip_Acum_90d_mm: l.precipAcum90d !== null ? l.precipAcum90d : "",
+      I30_Max_mm_h: l.i30Max !== null ? l.i30Max : "",
+      N_Eventos_Erosivos: l.nEventosErosivos !== null ? l.nEventosErosivos : "",
+      Indice_Mecanismo: l.indiceMecanismo !== null ? l.indiceMecanismo : "",
+      Classe_Alvo_Binaria: l.classeAlvoBinaria,
+      Rotulo_Classe: l.rotuloClasse,
+      Rotulo_Modalidade: l.rotuloModalidade,
+    }));
   }
 
-  return resultadoMatriz.linhas.map((l) => ({
-    Ponto_ID: l.pontoId,
-    Bloco_Espacial: l.blocoEspacial ?? "BLOCO_INDEFINIDO",
-    Elevacao_m: l.elevacao ?? "",
-    Declividade_pct: l.declividadePct ?? "",
-    Declividade_graus: l.declividadeGraus ?? "",
-    Curvatura_Perfil: l.curvaturaPerfil ?? "",
-    Curvatura_Plana: l.curvaturaPlana ?? "",
-    Acumulo_Fluxo: l.acumuloFluxo ?? "",
-    TWI: l.twi ?? "",
-    Ordem_Solo: l.ordemSolo ?? "",
-    Subordem_Solo: l.subOrdemSolo ?? "",
-    Grande_Grupo_Solo: l.grandeGrupoSolo ?? "",
-    Erodibilidade_Classe: l.erodibilidadeClasse ?? "",
-    Frequencia_Solo_Nu: l.frequenciaSoloNu ?? "",
-    Banda_B2: l.bandaB2 ?? "",
-    Banda_B4: l.bandaB4 ?? "",
-    Banda_B8: l.bandaB8 ?? "",
-    Banda_B12: l.bandaB12 ?? "",
-    NDVI: l.ndvi ?? "",
-    BSI: l.bsi ?? "",
-    RUSLE_Fator_K: l.fatorK ?? "",
-    RUSLE_Fator_R: l.fatorR ?? "",
-    Precip_Acum_30d_mm: l.precipAcum30d ?? "",
-    Precip_Acum_90d_mm: l.precipAcum90d ?? "",
-    I30_Max_mm_h: l.i30Max ?? "",
-    N_Eventos_Erosivos: l.nEventosErosivos ?? "",
-    Indice_Mecanismo: l.indiceMecanismo ?? "",
-    Classe_Alvo_Binaria: l.classeAlvoBinaria,
-    Rotulo_Classe: l.rotuloClasse,
-    Rotulo_Modalidade: l.rotuloModalidade,
-  }));
+  return [];
 }
 
 /**

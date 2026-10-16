@@ -103,7 +103,7 @@ function criarPontoTeste(id: string, lat: number, lng: number, classe: string): 
     rotulo: {
       final: {
         classe,
-        modalidade: "campo",
+        modalidade: "drone",
         observador: "Especialista A",
         observadoEm: "2026-03-10",
         confianca: "alta",
@@ -323,7 +323,7 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
     const linhasDados = linhas.filter((l) => l.trim().length > 0 && !l.startsWith("#") && !l.startsWith("Ponto_ID,"));
 
     expect(linhasDados).toHaveLength(1);
-    expect(linhasDados[0].endsWith(",severa,campo,1")).toBe(true);
+    expect(linhasDados[0].endsWith(",severa,drone,1")).toBe(true);
     expect(csv).toContain("# Classe_Alvo_Binaria: 1/1 derivadas de observacao humana | erosao=1 | controle=0");
   });
 

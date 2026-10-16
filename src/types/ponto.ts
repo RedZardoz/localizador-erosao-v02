@@ -28,6 +28,10 @@ export interface BlocoSerie {
   maiorSequenciaSoloNu: Proveniencia<number>;
   mesModalExposicao: Proveniencia<number>;
   compostoSoloNu: Record<string, Proveniencia<number>>;
+  compostoSoloNuB12?: Proveniencia<number>;
+  compostoSoloNuRazaoB4B2?: Proveniencia<number>;
+  taxaDegradacaoSwirAnual?: Proveniencia<number>;
+  ndviP90Serie?: Proveniencia<number>;
   persistenciaTemporal?: Proveniencia<number>;
   tendenciaSenSlope?: Proveniencia<number>;
   amplitudeSazonal?: Proveniencia<number>;
@@ -67,6 +71,8 @@ export interface PontoAmostral {
   longitude: number;
   origemSintetica: boolean;                   // obrigatorio
   blocoEspacial: string | null;               // null ate o variograma (plano secao 3.7)
+  celulaId?: string;                          // identificador opaco da celula 10m (D16/D26)
+  poligonoId?: string;                        // identificador opaco do poligono do sorteio D16
   classeAmostral?: ClasseAmostral;            // Classe biofísica amostral (Erosão / Controle / Indefinido)
   espectral?: {
     ndvi?: Proveniencia<number>;

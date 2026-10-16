@@ -358,7 +358,7 @@ describe("Rotulagem, Concordância e Matriz de Treino (Fase 6 — SAREL)", () =>
       const p1 = criarPonto("p1", "PR-01", -25.0, -53.0);
       const rotulosConsolidados: Record<string, RotuloConsolidado> = {
         "PR-01": {
-          final: { classe: "severa", modalidade: "campo", observador: "Agente1", observadoEm: "2026-06-01", cego: true },
+          final: { classe: "severa", modalidade: "drone", observador: "Agente1", observadoEm: "2026-06-01", cego: true },
           origens: [],
           kappa: null,
           divergencia: "nenhuma",
@@ -376,7 +376,7 @@ describe("Rotulagem, Concordância e Matriz de Treino (Fase 6 — SAREL)", () =>
       expect("latitude" in linha).toBe(false);
       expect("longitude" in linha).toBe(false);
       expect("phiDiag" in linha).toBe(false);
-      expect("estratoId" in linha).toBe(false);
+      expect(linha.estratoId).toBeDefined();
       expect(linha.blocoEspacial).toBe("BLOCO_R01_C01");
       expect(linha.declividadePct).toBe(8.5);
       expect(linha.frequenciaSoloNu).toBe(0.15);

@@ -9,6 +9,7 @@ import { formatToDMS } from "@/lib/export/dms";
 import { REGISTRO_DECISOES } from "@/config/decisoes";
 import type { LaudoAuditoriaPonto } from "@/types/jev";
 import type { Rotulo } from "@/types/rotulo";
+import { binarizarFracao } from "@/lib/rotulos/binarizacao";
 
 export interface InspetorPontoProps {
   modoInicial?: "inspecao" | "registro";
@@ -61,8 +62,9 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
       "indisponivel";
     const kappaDerivado = null;
 
-    // D26: Alvo binário derivado a 25% (>= 0.25)
-    const alvoBinarioDerivado: 0 | 1 = fracaoErodidaInput >= 0.25 ? 1 : 0;
+    // D26: Alvo binário derivado a partir do valor armazenado (toFixed(3))
+    const fracaoArmazenada = Number(fracaoErodidaInput.toFixed(3));
+    const alvoBinarioDerivado: 0 | 1 = binarizarFracao(fracaoArmazenada);
 
     const novoRotulo: Rotulo = {
       classe: classeRotuloInput,
@@ -71,7 +73,7 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
       observadoEm: hoje,
       cego: cegoDerivado,
       confianca: confiancaInput,
-      fracaoErodida: Number(fracaoErodidaInput.toFixed(3)),
+      fracaoErodida: fracaoArmazenada,
       alvoBinarioDerivado,
       observacoes: observacoesInput.trim() || undefined,
     };
@@ -301,12 +303,12 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
               </div>
               <span
                 className={`font-mono font-bold px-2 py-0.5 rounded text-xs ${
-                  fracaoErodidaInput >= 0.25
+                  binarizarFracao(Number(fracaoErodidaInput.toFixed(3))) === 1
                     ? "bg-rose-100 text-rose-800 border border-rose-200"
                     : "bg-emerald-100 text-emerald-800 border border-emerald-200"
                 }`}
               >
-                {fracaoErodidaInput >= 0.25
+                {binarizarFracao(Number(fracaoErodidaInput.toFixed(3))) === 1
                   ? "1 — Positivo (≥ 25 m² erodidos)"
                   : "0 — Negativo (< 25 m² erodidos)"}
               </span>

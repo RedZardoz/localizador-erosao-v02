@@ -104,7 +104,6 @@ export const CAMPOS_PROIBIDOS_MATRIZ_TREINO = [
   "phiDiag",
   "quantilPhi",
   "phi",
-  "estratoId",
   "tercilS",
   "tercilE",
   "nivelK",
@@ -116,8 +115,14 @@ export const CAMPOS_PROIBIDOS_MATRIZ_TREINO = [
   "codigoCar",
   "titularMascarado",
   "documentoMascarado",
+  "perdaSolo",
   "perdaSoloRUSLE",
   "RUSLE_Perda_Solo",
+  "RUSLE_A",
+  "RUSLE_Fator_C",
+  "RUSLE_Fator_P",
+  "fatorC",
+  "fatorP",
   "scoreSuscetibilidade",
   "scoreJev",
   "laudoJev",
@@ -150,6 +155,18 @@ export const CAMPOS_PROIBIDOS_MATRIZ_TREINO = [
   "planetTileUrl",
   "planetRefletancia",
   "planetData",
+] as const;
+
+/**
+ * Chaves permitidas na matriz de treino D16/D26 (DEC-17).
+ * Nunca atuam como preditores (X) no modelo probatório.
+ */
+export const CHAVES_PERMITIDAS_MATRIZ_TREINO = [
+  "Poligono_ID",
+  "Papel_Conjunto",
+  "Estrato_ID",
+  "Celula_ID",
+  "Pixel_ID",
 ] as const;
 
 /**

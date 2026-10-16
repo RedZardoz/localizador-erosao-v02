@@ -24,7 +24,7 @@ export interface Rotulo {
   observacoes?: string;
   cego: boolean;  // desconhecia predicao, score, estrato e rotulo de outra modalidade
   fracaoErodida?: number;                     // D26: alvo contínuo [0, 1] (primário)
-  alvoBinarioDerivado?: 0 | 1;                // D26: secundário derivado a 25% (>= 0.25)
+  alvoBinarioDerivado?: 0 | 1;                // D26: secundário derivado via binarizarFracao (LIMIAR_FRACAO_D26)
 }
 
 export interface RotuloConsolidado {

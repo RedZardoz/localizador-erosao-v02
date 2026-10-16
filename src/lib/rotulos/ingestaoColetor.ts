@@ -16,6 +16,7 @@
  */
 
 import { Rotulo } from "@/types/rotulo";
+import { binarizarFracao } from "./binarizacao";
 import { calcularDistanciaHaversineMetros, CoordenadaEsperada } from "./ingestaoKobo";
 
 export interface ItemColetorProcessado {
@@ -207,16 +208,19 @@ export function ingestarSubmissoesSarelColetor(
     let fracaoErodida: number | undefined = undefined;
     if (reg.fracaoErodida !== undefined && reg.fracaoErodida !== "") {
       const parsedFracao = parseFloat(String(reg.fracaoErodida));
-      if (!isNaN(parsedFracao) && parsedFracao >= 0 && parsedFracao <= 1) {
-        fracaoErodida = Number(parsedFracao.toFixed(3));
+      if (isNaN(parsedFracao) || parsedFracao < 0 || parsedFracao > 1) {
+        rejeitados.push({
+          registro: reg,
+          motivo: `Fração erodida inválida ('${reg.fracaoErodida}'). Esperado valor contínuo em [0, 1].`,
+        });
+        continue;
       }
+      fracaoErodida = Number(parsedFracao.toFixed(3));
     }
 
     const alvoBinarioDerivado: 0 | 1 =
       fracaoErodida !== undefined
-        ? fracaoErodida >= 0.25
-          ? 1
-          : 0
+        ? binarizarFracao(fracaoErodida)
         : classeNormalizada === "erosao"
         ? 1
         : 0;

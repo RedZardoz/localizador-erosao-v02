@@ -114,12 +114,58 @@ export function ingestarValidacaoDrone(
 }
 
 /**
- * Guarda estrita: recusa qualquer tentativa de incluir dados de drone no conjunto de treino.
+ * Guarda estrita de segregação espacial (D16 / D26 e Regra 4):
+ * Garante que um mesmo poligonoId NUNCA esteja simultaneamente nos conjuntos de treino e held-out.
+ * Mantém suporte a chamadas de guarda por modalidade/parâmetros de polígono.
  */
-export function assegurarSegregacaoTreino(modalidade: string): void {
-  if (modalidade === "drone") {
-    throw new Error(
-      "VIOLAÇÃO DA LEI FUNDAMENTAL (Regra 4 e §12.1): Observações da modalidade 'drone' são estritamente 'held-out' e nunca podem integrar a matriz de treino."
+export function assegurarSegregacaoTreino(
+  param1: string | Array<{ poligonoId?: string | null }>,
+  param2?: string | Array<{ poligonoId?: string | null }>,
+  param3?: Set<string> | string[]
+): void {
+  // Chamada estrutural: assegurarSegregacaoTreino(linhasTreino, linhasHeldOut)
+  if (Array.isArray(param1) && Array.isArray(param2)) {
+    const poligonosHeldOut = new Set(
+      param2
+        .map((l) => l.poligonoId)
+        .filter((id): id is string => Boolean(id && id !== "POLIGONO_INDEFINIDO"))
     );
+    for (const linha of param1) {
+      if (
+        linha.poligonoId &&
+        linha.poligonoId !== "POLIGONO_INDEFINIDO" &&
+        poligonosHeldOut.has(linha.poligonoId)
+      ) {
+        throw new Error(
+          `VIOLAÇÃO DE SEGREGAÇÃO (D16): O polígono '${linha.poligonoId}' está presente simultaneamente nos conjuntos de treino e held-out.`
+        );
+      }
+    }
+    return;
+  }
+
+  // Chamada explícita de verificação: assegurarSegregacaoTreino(modalidade, poligonoId, poligonosHeldOut)
+  if (typeof param1 === "string" && typeof param2 === "string") {
+    const heldOutSet = param3 instanceof Set ? param3 : new Set(param3 ?? []);
+    if (heldOutSet.has(param2)) {
+      throw new Error(
+        `VIOLAÇÃO DE SEGREGAÇÃO (D16): O polígono '${param2}' está presente simultaneamente nos conjuntos de treino e held-out.`
+      );
+    }
+    return;
+  }
+
+  // Chamada de guarda por modalidade (legado / pós-condição):
+  if (typeof param1 === "string") {
+    if (param1 === "drone") {
+      throw new Error(
+        "VIOLAÇÃO DA LEI FUNDAMENTAL (Regra 4 e §12.1): Observações da modalidade 'drone' são estritamente 'held-out' e nunca podem integrar a matriz de treino."
+      );
+    }
+    if (param1 === "campo") {
+      throw new Error(
+        "VIOLAÇÃO DE D16/D26: Observações da modalidade 'campo' nunca podem integrar a matriz de treino do modelo D26."
+      );
+    }
   }
 }

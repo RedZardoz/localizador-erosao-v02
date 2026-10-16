@@ -120,9 +120,11 @@ export function gerarCsvMatrizTreinamento(
   const resultadoMatriz = montarMatrizTreino(pontos, rotulosConsolidados, { modeloJanela: "D" });
 
   // Pós-condição de segregação held-out (Decisão D16 e Regra 4):
-  // Nenhuma linha efetivamente emitida na matriz de treino pode ter modalidade "drone"
+  assegurarSegregacaoTreino(resultadoMatriz.linhas, resultadoMatriz.heldOutDrone);
   for (const linhaTreino of resultadoMatriz.linhas) {
-    assegurarSegregacaoTreino(linhaTreino.rotuloModalidade);
+    if (linhaTreino.papelConjunto === "held-out") {
+      throw new Error("VIOLAÇÃO DE SEGREGAÇÃO (D16): Ponto held-out detectado na matriz de treino.");
+    }
   }
 
   const linhaPorPontoId = new Map(resultadoMatriz.linhas.map((l) => [l.pontoId, l]));
@@ -224,7 +226,9 @@ export function gerarCsvMatrizTreinamento(
 
   for (const p of pontosEmitidos) {
     const linhaCanonica = linhaPorPontoId.get(p.id)!;
-    assegurarSegregacaoTreino(linhaCanonica.rotuloModalidade);
+    if (linhaCanonica.papelConjunto === "held-out") {
+      throw new Error("VIOLAÇÃO DE SEGREGAÇÃO (D16): Ponto held-out emitido na matriz de treino.");
+    }
 
     const latDms = formatToDMS(p.latitude, true);
     const lngDms = formatToDMS(p.longitude, false);

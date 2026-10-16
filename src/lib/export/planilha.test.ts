@@ -130,7 +130,7 @@ describe("Exportação XLSX e CSV — Validações e Guardas", () => {
       [p1.codigo]: {
         final: {
           classe: "severa",
-          modalidade: "campo" as const,
+          modalidade: "drone" as const,
           observador: "Perito_1",
           observadoEm: "2026-09-26",
           cego: true,
@@ -159,25 +159,25 @@ describe("Exportação XLSX e CSV — Validações e Guardas", () => {
     const linhasDados = csv
       .replace(/^\uFEFF/, "")
       .split(/\r?\n/)
-      .filter((l) => l.trim().length > 0 && !l.startsWith("#") && !l.startsWith("Ponto_ID,"));
+      .filter((l) => l.trim().length > 0 && !l.startsWith("#") && !l.startsWith("Ponto_ID,") && !l.startsWith("Celula_ID,"));
 
     // Apenas p1 é emitido (p2 sem rótulo excluído, p3 drone segregado em heldOutDrone)
     expect(linhasDados).toHaveLength(1);
     expect(linhasDados[0]).toContain("ponto-1");
     expect(linhasDados[0]).not.toContain("ponto-2");
     expect(linhasDados[0]).not.toContain("ponto-3");
-    expect(linhasDados[0].endsWith(",1,severa,campo")).toBe(true);
+    expect(linhasDados[0].endsWith(",1,severa,drone")).toBe(true);
   });
 
-  it("montarMatrizTreino respeita estritamente a Regra 4: classeAmostral espectral não sobrescreve rótulo humano 'controle'", () => {
+  it("montarMatrizTreino respeita estritamente a Regra 4: classeAmostral espectral não sobrescreve rótulo humano 'ausente'", () => {
     const p = mockPonto(1, { classeAmostral: "erosao" });
     const res = montarMatrizTreino(
       [p],
       {
         [p.codigo]: {
           final: {
-            classe: "controle",
-            modalidade: "campo",
+            classe: "ausente",
+            modalidade: "drone",
             observador: "Perito_1",
             observadoEm: "2026-09-26",
             cego: true,
@@ -192,7 +192,7 @@ describe("Exportação XLSX e CSV — Validações e Guardas", () => {
     );
     expect(res.linhas).toHaveLength(1);
     expect(res.linhas[0].classeAlvoBinaria).toBe(0);
-    expect(res.linhas[0].rotuloClasse).toBe("controle");
+    expect(res.linhas[0].rotuloClasse).toBe("ausente");
   });
 
   describe("N14: Contrato de Exportações e Invariantes", () => {
