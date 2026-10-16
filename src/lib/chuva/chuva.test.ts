@@ -45,6 +45,29 @@ describe("CHIRPS Acumulados Diários", () => {
       expect(prov.causa).toBe("insuficiente");
     }
   });
+
+  it("vetor com -9999 não vira acumulado negativo (N17 / M14)", () => {
+    const serieComSentinela = Array.from({ length: 30 }, (_, i) => ({
+      data: `2026-01-${String(i + 1).padStart(2, "0")}`,
+      precipitacaoMm: i === 0 ? -9999.0 : 2.0,
+    }));
+    const res = calcularAcumuladosChuva(serieComSentinela);
+    expect(res.acum30d).not.toBeNull();
+    expect(res.acum30d!).toBeGreaterThanOrEqual(0);
+    expect(res.acum30d).toBe(58.0);
+  });
+
+  it("janela de 60 dias com 26 registros resulta em acum30d null por densidade insuficiente na janela (N17 / M14)", () => {
+    const serie60Dias = Array.from({ length: 26 }, (_, i) => {
+      const d = new Date(Date.UTC(2026, 0, 1) + Math.round(i * (59 / 25)) * 24 * 60 * 60 * 1000);
+      return {
+        data: d.toISOString().split("T")[0],
+        precipitacaoMm: 2.0,
+      };
+    });
+    const res = calcularAcumuladosChuva(serie60Dias, "2026-03-01");
+    expect(res.acum30d).toBeNull();
+  });
 });
 
 describe("GPM IMERG Intensidade Sub-horária", () => {
@@ -56,6 +79,14 @@ describe("GPM IMERG Intensidade Sub-horária", () => {
     ];
 
     expect(extrairI30Maximo(registros)).toBe(24.8);
+  });
+
+  it("extrairI30Maximo com apenas valores de preenchimento -9999 deve retornar null (N17 / M14)", () => {
+    const registros = [
+      { timestamp: "2026-01-01T12:00:00Z", taxaMmH: -9999.0 },
+      { timestamp: "2026-01-01T12:30:00Z", taxaMmH: -9999.0 },
+    ];
+    expect(extrairI30Maximo(registros)).toBeNull();
   });
 
   it("deve retornar null para lista vazia de registros IMERG", () => {

@@ -18,9 +18,15 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { isClasseUsoElegivel } from "./elegibilidade";
-import { WORLDCOVER_V100_ASSET_ID, WORLDCOVER_V200_ASSET_ID } from "./copernicusGeeClient";
+import {
+  WORLDCOVER_V100_ASSET_ID,
+  WORLDCOVER_V200_ASSET_ID,
+  avaliarSuficienciaAmostralD11,
+} from "./copernicusGeeClient";
 import { Proveniencia, medido, indisponivel, valorOuNulo } from "../../types/proveniencia";
 import { DiarioRequisicoes, registrarChamadaDiario } from "../seguranca/diarioRequisicoes";
+import { JANELA_TEMPORAL_D05 } from "@/lib/matriz/perfis";
+export { JANELA_TEMPORAL_D05 };
 
 export const DEFINICAO_METRICA_SOLO_NU =
   "s2_sr_harmonized_2016_2026_ndvi_lt_0.25_worldcover_v100_v200";
@@ -29,17 +35,14 @@ export const ASSET_SENTINEL2_SR = "COPERNICUS/S2_SR_HARMONIZED";
 export const LIMIAR_NDVI_SOLO_NU_D10 = 0.25;
 export const TAMANHO_BLOCO_PADRAO = 100;
 
-/** Intervalo da janela de composição (D05), NÃO é data de aquisição; revisar em N17/C10. */
-export const INTERVALO_COMPOSICAO_D05 = "2016-2026";
+/** Intervalo da janela de composição (D05), derivado da constante única de D05. */
+export const INTERVALO_COMPOSICAO_D05 = `${JANELA_TEMPORAL_D05.inicio} a ${JANELA_TEMPORAL_D05.fim}`;
 
 export interface PontoAmostragemSoloNu {
   id: string;
   latitude: number;
   longitude: number;
 }
-
-import { JANELA_TEMPORAL_D05 } from "@/lib/matriz/perfis";
-export { JANELA_TEMPORAL_D05 };
 
 export interface MedicaoSoloNuLote {
   id: string;
@@ -476,13 +479,21 @@ export function processarRespostaGeeReduceRegions(
 
     const rawCount = props.solo_nu_count ?? props.count ?? props.n_observacoes;
     const nObservacoes = typeof rawCount === "number" && Number.isFinite(rawCount) ? Math.round(rawCount) : 0;
+    const avaliacaoD11 =
+      typeof rawCount === "number" && Number.isFinite(rawCount)
+        ? avaliarSuficienciaAmostralD11(nObservacoes)
+        : {
+            suficiente: false,
+            causa: "insuficiente" as const,
+            motivo: "Contagem de observações válida ausente.",
+          };
 
     const rawSoloNu = props.solo_nu_mean ?? props.solo_nu ?? props.frequenciaSoloNu;
     let freqNuProv: Proveniencia<number>;
 
     if (rawSoloNu && typeof rawSoloNu === "object" && "estado" in rawSoloNu) {
       freqNuProv = rawSoloNu as Proveniencia<number>;
-    } else if (typeof rawSoloNu === "number" && Number.isFinite(rawSoloNu)) {
+    } else if (typeof rawSoloNu === "number" && Number.isFinite(rawSoloNu) && avaliacaoD11.suficiente) {
       const clamped = Number(Math.max(0, Math.min(1, rawSoloNu)).toFixed(4)); // permitido: clamp de seguranca numerica para fracao normalizada de satelite no intervalo 0 a 1
       freqNuProv = medido(
         clamped,
@@ -494,7 +505,7 @@ export function processarRespostaGeeReduceRegions(
     } else {
       freqNuProv = indisponivel(
         "insuficiente",
-        "Sem observações válidas ou pixel sem dado para cálculo de frequência de solo nu"
+        avaliacaoD11.motivo ?? "Sem observações válidas ou pixel sem dado para cálculo de frequência de solo nu"
       );
     }
 

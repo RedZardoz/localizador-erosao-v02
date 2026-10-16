@@ -5,7 +5,8 @@ export type CausaIndisponibilidade =
   | "insuficiente"           // há dado, mas abaixo do mínimo (ex.: D11)
   | "fora-do-dominio"        // valor fora do domínio físico ou da fórmula
   | "decisao-pendente"       // depende de decisão ainda não tomada
-  | "nao-calculado";         // etapa ainda não executada
+  | "nao-calculado"          // etapa ainda não executada
+  | "data-da-fonte-desconhecida"; // data de aquisição da fonte não informada (DEC-9)
 
 export interface QualidadeAjuste {
   nObservacoes: number;

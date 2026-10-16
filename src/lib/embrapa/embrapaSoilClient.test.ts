@@ -479,6 +479,22 @@ describe("W1 e W2: kAmbiguoAssociacao na fonte em dois ramos (D08 emendada) e nÃ
     expect(extrairOrdemSibcsDeLegenda("NITOSSOLO VERMELHO Eutroferrico")).toBe("NITOSSOLO");
   });
 
+  it("candidato sem k_solos nÃ£o-urbano deve ter nivelK null e ser descartado (N17 / A12)", () => {
+    const resSemKSolos = derivarNivelKDaCarta2024({
+      ogc_fid: 99999,
+      cod_um: "SG22_SEM_K",
+      cod_um2: "SG22_SEM_K",
+      erod_um: "ClasseDesconhecida",
+      k_solos: null,
+      legenda: "Solo Real Sem Erodibilidade Tabelada",
+    });
+    expect(resSemKSolos.nivelK).toBeNull();
+    expect(resSemKSolos.provenienciaNivelK.estado).toBe("indisponivel");
+    if (resSemKSolos.provenienciaNivelK.estado === "indisponivel") {
+      expect(resSemKSolos.provenienciaNivelK.causa).toBe("insuficiente");
+    }
+  });
+
   it("queryEmbrapaSoil sinaliza foraDoDominioSolo === true quando qualquer camada retorna Area urbana ou Corpos dagua (T3.2 / T3.3)", async () => {
     vi.stubGlobal(
       "fetch",

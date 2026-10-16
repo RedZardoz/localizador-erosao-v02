@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * Ingestão de Intensidade Sub-horária — GPM IMERG (PPGTCA 2026)
  * ============================================================================
@@ -27,11 +27,15 @@ export interface RegistroImergSemiHorario {
 export function extrairI30Maximo(registros: RegistroImergSemiHorario[]): number | null {
   if (!registros || registros.length === 0) return null;
 
-  let maxTaxa = 0;
+  let maxTaxa = -Infinity;
   let teveValido = false;
 
   for (const reg of registros) {
-    if (Number.isFinite(reg.taxaMmH)) {
+    if (
+      typeof reg.taxaMmH === "number" &&
+      Number.isFinite(reg.taxaMmH) &&
+      reg.taxaMmH > -9000
+    ) {
       if (reg.taxaMmH > maxTaxa) {
         maxTaxa = reg.taxaMmH;
       }
@@ -39,7 +43,7 @@ export function extrairI30Maximo(registros: RegistroImergSemiHorario[]): number 
     }
   }
 
-  return teveValido ? Number(maxTaxa.toFixed(1)) : null;
+  return teveValido && maxTaxa >= 0 ? Number(maxTaxa.toFixed(1)) : null;
 }
 
 export function criarProvenienciaImerg(

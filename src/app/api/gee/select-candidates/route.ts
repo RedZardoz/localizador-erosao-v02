@@ -86,6 +86,7 @@ import {
   DATA_PUBLICACAO_IAT_BACIAS_PR,
   extrairDataAquisicaoSentinel2,
 } from "@/lib/gee/metadadosColecoes";
+import { JANELA_TEMPORAL_D05 } from "@/lib/matriz/perfis";
 import { REGISTRO_DECISOES, PARAMETROS, exigirDecisao } from "@/config/decisoes";
 import type { PontoAmostral } from "@/types/ponto";
 import type { AreaEstudo } from "@/types/ui";
@@ -780,10 +781,7 @@ export async function POST(request: NextRequest) {
                   "Aguardando consulta pontual ao GeoServer OGC WFS da Embrapa GeoInfo.",
               };
 
-        const dataAquisicaoS2 =
-          medicaoS2?.adquiridoEm ??
-          extrairDataAquisicaoSentinel2({ cenas: ["S2B_MSIL2A_20231031T134209_N0509_R124_T21JYM"] }) ??
-          dataConsultaAtual;
+        const dataAquisicaoS2 = medicaoS2?.adquiridoEm ?? null;
 
         const motivoD11 = medicaoS2
           ? `Suficiência amostral insuficiente (${medicaoS2.nObservacoesValidas} < ${LIMIAR_MINIMO_OBSERVACOES_D11} observações válidas sem nuvem/sombra exigidas pela Decisão D11).`
@@ -796,13 +794,20 @@ export async function POST(request: NextRequest) {
                 causa: "insuficiente" as const,
                 motivo: motivoD11,
               }
-            : {
-                estado: "medido" as const,
-                valor: medicaoS2.ndvi,
-                fonte: medicaoS2.fonte,
-                adquiridoEm: dataAquisicaoS2,
-                consultadoEm: dataConsultaAtual,
-              }
+            : !dataAquisicaoS2
+              ? {
+                  estado: "indisponivel" as const,
+                  causa: "data-da-fonte-desconhecida" as const,
+                  motivo:
+                    "Data de aquisição da cena Sentinel-2 não informada pela fonte (DEC-9).",
+                }
+              : {
+                  estado: "medido" as const,
+                  valor: medicaoS2.ndvi,
+                  fonte: medicaoS2.fonte,
+                  adquiridoEm: dataAquisicaoS2,
+                  consultadoEm: dataConsultaAtual,
+                }
           : {
               estado: "indisponivel" as const,
               causa: "nao-calculado" as const,
@@ -817,13 +822,20 @@ export async function POST(request: NextRequest) {
                 causa: "insuficiente" as const,
                 motivo: motivoD11,
               }
-            : {
-                estado: "medido" as const,
-                valor: medicaoS2.bsi,
-                fonte: medicaoS2.fonte,
-                adquiridoEm: dataAquisicaoS2,
-                consultadoEm: dataConsultaAtual,
-              }
+            : !dataAquisicaoS2
+              ? {
+                  estado: "indisponivel" as const,
+                  causa: "data-da-fonte-desconhecida" as const,
+                  motivo:
+                    "Data de aquisição da cena Sentinel-2 não informada pela fonte (DEC-9).",
+                }
+              : {
+                  estado: "medido" as const,
+                  valor: medicaoS2.bsi,
+                  fonte: medicaoS2.fonte,
+                  adquiridoEm: dataAquisicaoS2,
+                  consultadoEm: dataConsultaAtual,
+                }
           : {
               estado: "indisponivel" as const,
               causa: "nao-calculado" as const,
@@ -833,57 +845,92 @@ export async function POST(request: NextRequest) {
 
         const b2Proveniencia =
           medicaoS2 && !medicaoS2.insuficienteD11
-            ? {
-                estado: "medido" as const,
-                valor: medicaoS2.b2,
-                fonte: medicaoS2.fonte,
-                adquiridoEm: dataAquisicaoS2,
-                consultadoEm: dataConsultaAtual,
-              }
+            ? !dataAquisicaoS2
+              ? {
+                  estado: "indisponivel" as const,
+                  causa: "data-da-fonte-desconhecida" as const,
+                  motivo:
+                    "Data de aquisição da cena Sentinel-2 não informada pela fonte (DEC-9).",
+                }
+              : {
+                  estado: "medido" as const,
+                  valor: medicaoS2.b2,
+                  fonte: medicaoS2.fonte,
+                  adquiridoEm: dataAquisicaoS2,
+                  consultadoEm: dataConsultaAtual,
+                }
             : undefined;
 
         const b4Proveniencia =
           medicaoS2 && !medicaoS2.insuficienteD11
-            ? {
-                estado: "medido" as const,
-                valor: medicaoS2.b4,
-                fonte: medicaoS2.fonte,
-                adquiridoEm: dataAquisicaoS2,
-                consultadoEm: dataConsultaAtual,
-              }
+            ? !dataAquisicaoS2
+              ? {
+                  estado: "indisponivel" as const,
+                  causa: "data-da-fonte-desconhecida" as const,
+                  motivo:
+                    "Data de aquisição da cena Sentinel-2 não informada pela fonte (DEC-9).",
+                }
+              : {
+                  estado: "medido" as const,
+                  valor: medicaoS2.b4,
+                  fonte: medicaoS2.fonte,
+                  adquiridoEm: dataAquisicaoS2,
+                  consultadoEm: dataConsultaAtual,
+                }
             : undefined;
 
         const b8Proveniencia =
           medicaoS2 && !medicaoS2.insuficienteD11
-            ? {
-                estado: "medido" as const,
-                valor: medicaoS2.b8,
-                fonte: medicaoS2.fonte,
-                adquiridoEm: dataAquisicaoS2,
-                consultadoEm: dataConsultaAtual,
-              }
+            ? !dataAquisicaoS2
+              ? {
+                  estado: "indisponivel" as const,
+                  causa: "data-da-fonte-desconhecida" as const,
+                  motivo:
+                    "Data de aquisição da cena Sentinel-2 não informada pela fonte (DEC-9).",
+                }
+              : {
+                  estado: "medido" as const,
+                  valor: medicaoS2.b8,
+                  fonte: medicaoS2.fonte,
+                  adquiridoEm: dataAquisicaoS2,
+                  consultadoEm: dataConsultaAtual,
+                }
             : undefined;
 
         const b11Proveniencia =
           medicaoS2 && !medicaoS2.insuficienteD11
-            ? {
-                estado: "medido" as const,
-                valor: medicaoS2.b11,
-                fonte: medicaoS2.fonte,
-                adquiridoEm: dataAquisicaoS2,
-                consultadoEm: dataConsultaAtual,
-              }
+            ? !dataAquisicaoS2
+              ? {
+                  estado: "indisponivel" as const,
+                  causa: "data-da-fonte-desconhecida" as const,
+                  motivo:
+                    "Data de aquisição da cena Sentinel-2 não informada pela fonte (DEC-9).",
+                }
+              : {
+                  estado: "medido" as const,
+                  valor: medicaoS2.b11,
+                  fonte: medicaoS2.fonte,
+                  adquiridoEm: dataAquisicaoS2,
+                  consultadoEm: dataConsultaAtual,
+                }
             : undefined;
 
         const b12Proveniencia =
           medicaoS2 && !medicaoS2.insuficienteD11
-            ? {
-                estado: "medido" as const,
-                valor: medicaoS2.b12,
-                fonte: medicaoS2.fonte,
-                adquiridoEm: dataAquisicaoS2,
-                consultadoEm: dataConsultaAtual,
-              }
+            ? !dataAquisicaoS2
+              ? {
+                  estado: "indisponivel" as const,
+                  causa: "data-da-fonte-desconhecida" as const,
+                  motivo:
+                    "Data de aquisição da cena Sentinel-2 não informada pela fonte (DEC-9).",
+                }
+              : {
+                  estado: "medido" as const,
+                  valor: medicaoS2.b12,
+                  fonte: medicaoS2.fonte,
+                  adquiridoEm: dataAquisicaoS2,
+                  consultadoEm: dataConsultaAtual,
+                }
             : undefined;
 
         const freqNuProveniencia =
@@ -1151,7 +1198,7 @@ export async function POST(request: NextRequest) {
           kAmbiguoAssociacao: marcadorKAmbiguoPonto,
           temporal: {
             D: {
-              janela: { inicio: "2018-01-01", fim: "2023-12-31" },
+              janela: { inicio: JANELA_TEMPORAL_D05.inicio, fim: JANELA_TEMPORAL_D05.fim },
               serie: {
                 sensores: ["COPERNICUS/S2_SR_HARMONIZED"],
                 nObservacoesValidas: medicaoS2

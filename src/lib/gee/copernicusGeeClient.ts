@@ -171,7 +171,7 @@ export async function medirTerrenoCopernicusEmLote(
             elevacaoMetros: Math.round(z0),
             declividadePct: declivPct,
             declividadeGraus: declivGraus,
-            fonte: "Copernicus DEM GLO-30 (ESA 30m / EPSG:31982)",
+            fonte: "Open-Meteo (resolução não verificada)",
           };
         }
       }
@@ -512,12 +512,20 @@ export function processarRespostaGeeSentinel2(
 
   const classeWorldCover = classeWorldCover2021;
 
+  const rawCount = props.B4_count ?? props.B2_count ?? props.nObservacoesValidas;
   const nObservacoesValidas =
-    typeof (props.B4_count ?? props.B2_count ?? props.nObservacoesValidas) === "number"
-      ? Math.round(props.B4_count ?? props.B2_count ?? props.nObservacoesValidas)
-      : LIMIAR_MINIMO_OBSERVACOES_D11;
+    typeof rawCount === "number" && Number.isFinite(rawCount)
+      ? Math.round(rawCount)
+      : 0;
 
-  const avaliacaoD11 = avaliarSuficienciaAmostralD11(nObservacoesValidas);
+  const avaliacaoD11 =
+    typeof rawCount === "number" && Number.isFinite(rawCount)
+      ? avaliarSuficienciaAmostralD11(nObservacoesValidas)
+      : {
+          suficiente: false,
+          causa: "insuficiente" as const,
+          motivo: "Contagem de observações válidas ausente na resposta GEE.",
+        };
 
   const b2_15 = typeof props.B2_p15 === "number" ? props.B2_p15 / 10000 : null;
   const b4_15 = typeof props.B4_p15 === "number" ? props.B4_p15 / 10000 : null;

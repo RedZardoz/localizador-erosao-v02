@@ -167,5 +167,17 @@ describe("Cliente GEE Sentinel-2 e Concordância Multitemporal ESA WorldCover (D
         .constantValue
     ).toBe(5);
   });
+
+  it("resposta sem contagem de observações deve resultar em insuficienteD11 e frequenciaSoloNu null (N17 / A9)", () => {
+    const payloadSemContagem = criarPayloadSentinel2Base(40, 40);
+    delete (payloadSemContagem as any).B4_count;
+    delete (payloadSemContagem as any).B2_count;
+    delete (payloadSemContagem as any).nObservacoesValidas;
+
+    const res = processarRespostaGeeSentinel2(payloadSemContagem);
+    expect(res).not.toBeNull();
+    expect(res!.insuficienteD11).toBe(true);
+    expect(res!.frequenciaSoloNu).toBeNull();
+  });
 });
 

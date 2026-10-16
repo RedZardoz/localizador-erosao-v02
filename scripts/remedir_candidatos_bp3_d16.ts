@@ -258,24 +258,48 @@ async function executarRemedicao() {
   // 5. Medição de solo e erodibilidade via WFS Embrapa / Cache Persistente
   console.log("\n[5/6] Consultando caracterização pedológica oficial (Embrapa GeoInfo)...");
   const cachePedologiaPath = path.resolve(process.cwd(), "docs/verificacoes/cache_pedologia_bp3.json");
-  let cachePedologia: Record<string, { nivelK: 1 | 2; classeErodibilidade: string; kSolos: number | null; foraDoDominioSolo: boolean }> = {};
+  let cachePedologia: Record<
+    string,
+    {
+      nivelK: 1 | 2;
+      classeErodibilidade: string;
+      fonteClasse?: string;
+      kSolos: number | null;
+      foraDoDominioSolo: boolean;
+    }
+  > = {};
 
   if (fs.existsSync(cachePedologiaPath)) {
     try {
       const parsedCache = JSON.parse(fs.readFileSync(cachePedologiaPath, "utf8"));
-      cachePedologia = parsedCache.itens ?? {};
-      console.log(`  -> Cache pedológico carregado: ${Object.keys(cachePedologia).length} registros em ${cachePedologiaPath}`);
+      const itensBrutos = parsedCache.itens ?? {};
+      cachePedologia = {};
+      for (const [id, reg] of Object.entries(itensBrutos) as [string, any][]) {
+        if (
+          reg &&
+          (reg.nivelK === 1 || reg.nivelK === 2) &&
+          typeof reg.kSolos === "number" &&
+          Number.isFinite(reg.kSolos)
+        ) {
+          cachePedologia[id] = reg;
+        }
+      }
+      console.log(`  -> Cache pedológico carregado: ${Object.keys(cachePedologia).length} registros válidos em ${cachePedologiaPath}`);
     } catch {
       cachePedologia = {};
     }
   }
 
-  const resultadosSolo = new Map<string, {
-    nivelK: 1 | 2;
-    classeErodibilidade: string;
-    kSolos: number | null;
-    foraDoDominioSolo: boolean;
-  }>();
+  const resultadosSolo = new Map<
+    string,
+    {
+      nivelK: 1 | 2;
+      classeErodibilidade: string;
+      fonteClasse?: string;
+      kSolos: number | null;
+      foraDoDominioSolo: boolean;
+    }
+  >();
 
   // Verifica se todos os candidatos já estão em cache
   let faltamNoCache = candidatosComTerreno.filter(c => !cachePedologia[c.id]);
@@ -297,11 +321,26 @@ async function executarRemedicao() {
             }
             const foraDominio = res.foraDoDominioSolo || res.solo?.foraDoDominioSolo || false;
             const derivK = derivarNivelKDaCarta2024(res.erodibilidade2024);
-            const nK = derivK.nivelK === 1 || derivK.nivelK === 2 ? derivK.nivelK : 1;
+            const nK = derivK.nivelK;
+            const kSolos = res.erodibilidade2024?.kSolos ?? null;
+            if (nK !== 1 && nK !== 2) {
+              delete cachePedologia[c.id];
+              return;
+            }
+            if (kSolos === null || !Number.isFinite(kSolos)) {
+              delete cachePedologia[c.id];
+              return;
+            }
+            const fonteClasse = res.erodibilidade2024?.erodUm
+              ? "Carta 2024 (erodUm)"
+              : res.erodibilidade?.classe
+                ? "Camada Antiga (classe)"
+                : "Indeterminada";
             cachePedologia[c.id] = {
               nivelK: nK,
-              classeErodibilidade: res.erodibilidade?.classe ?? res.erodibilidade2024?.erodUm ?? "Média",
-              kSolos: res.erodibilidade2024?.kSolos ?? null,
+              classeErodibilidade: res.erodibilidade2024?.erodUm ?? res.erodibilidade?.classe ?? "Indeterminada",
+              fonteClasse,
+              kSolos,
               foraDoDominioSolo: foraDominio,
             };
           } catch {
@@ -416,6 +455,7 @@ async function executarRemedicao() {
     pontoRealocado: boolean;
     nivelK: 1 | 2;
     classeErodibilidade: string;
+    fonteClasse?: string;
     kSolos: number | null;
     frequenciaSoloNu: number | null;
   }
@@ -430,7 +470,7 @@ async function executarRemedicao() {
     }
 
     const nivelK = solo.nivelK;
-    if (nivelK !== 1 && nivelK !== 2) {
+    if ((nivelK !== 1 && nivelK !== 2) || solo.kSolos === null || !Number.isFinite(solo.kSolos)) {
       descartadosSemK++;
       continue;
     }
@@ -452,6 +492,7 @@ async function executarRemedicao() {
       pontoRealocado: c.pontoRealocado,
       nivelK,
       classeErodibilidade: solo.classeErodibilidade,
+      fonteClasse: solo.fonteClasse,
       kSolos: solo.kSolos,
       frequenciaSoloNu: freqNu,
     });

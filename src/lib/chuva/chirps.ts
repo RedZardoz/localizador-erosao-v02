@@ -13,6 +13,8 @@ import { Proveniencia } from "@/types/proveniencia";
 
 export const CHIRPS_COLECAO = "UCSB-CHG/CHIRPS/DAILY";
 export const CHIRPS_BANDA = "precipitation";
+export const CHIRPS_NODATA_SENTINEL = -9999.0;
+export const CHIRPS_LIMIAR_NODATA = -9000.0;
 
 export interface RegistroChuvaDiaria {
   data: string; // YYYY-MM-DD
@@ -21,9 +23,14 @@ export interface RegistroChuvaDiaria {
 
 /**
  * Calcula acumulados de chuva (30 e 90 dias) a partir de uma série diária observada.
+ * Acumulados por janela [dataRef − 30 d, dataRef] e [dataRef − 90 d, dataRef] com contagem
+ * de dias distintos (N17 / M14). Descarte valores <= -9000 e não-finitos.
  * Exige pelo menos 80% de dias válidos em cada janela móvel (25 dias para 30d, 75 dias para 90d).
  */
-export function calcularAcumuladosChuva(serieDiaria: RegistroChuvaDiaria[]): {
+export function calcularAcumuladosChuva(
+  serieDiaria: RegistroChuvaDiaria[],
+  dataReferencia?: string
+): {
   acum30d: number | null;
   acum90d: number | null;
   diasValidos: number;
@@ -32,26 +39,64 @@ export function calcularAcumuladosChuva(serieDiaria: RegistroChuvaDiaria[]): {
     return { acum30d: null, acum90d: null, diasValidos: 0 };
   }
 
-  // Ordena por data decrescente (mais recente primeiro)
-  const ordenada = [...serieDiaria].sort((a, b) => b.data.localeCompare(a.data));
+  // Filtrar valores válidos (descartar <= -9000 e não-finitos) e agrupar por dia (YYYY-MM-DD)
+  const mapaDias = new Map<string, number>();
+  for (const r of serieDiaria) {
+    if (
+      typeof r.precipitacaoMm === "number" &&
+      Number.isFinite(r.precipitacaoMm) &&
+      r.precipitacaoMm > CHIRPS_LIMIAR_NODATA &&
+      r.data
+    ) {
+      const dia = r.data.split("T")[0];
+      const anterior = mapaDias.get(dia);
+      mapaDias.set(dia, anterior !== undefined ? anterior + r.precipitacaoMm : r.precipitacaoMm);
+    }
+  }
 
-  const ultimos30 = ordenada.slice(0, 30);
-  const ultimos90 = ordenada.slice(0, 90);
+  if (mapaDias.size === 0) {
+    return { acum30d: null, acum90d: null, diasValidos: 0 };
+  }
 
-  const acum30 =
-    ultimos30.length >= 25
-      ? Number(ultimos30.reduce((acc, r) => acc + r.precipitacaoMm, 0).toFixed(1))
-      : null;
+  const diasOrdenados = Array.from(mapaDias.keys()).sort();
+  const dataRefStr = dataReferencia ? dataReferencia.split("T")[0] : diasOrdenados[diasOrdenados.length - 1];
 
-  const acum90 =
-    ultimos90.length >= 75
-      ? Number(ultimos90.reduce((acc, r) => acc + r.precipitacaoMm, 0).toFixed(1))
-      : null;
+  const parseUtcDia = (s: string) => {
+    const [y, m, d] = s.split("-").map(Number);
+    return Date.UTC(y, m - 1, d);
+  };
+
+  const refMs = parseUtcDia(dataRefStr);
+  const msPorDia = 86400000;
+
+  // Janela móvel de 30 e 90 dias de calendário terminando em dataRef (inclusive):
+  const inicio30Ms = refMs - 30 * msPorDia;
+  const inicio90Ms = refMs - 90 * msPorDia;
+
+  let soma30 = 0;
+  let contagem30 = 0;
+  let soma90 = 0;
+  let contagem90 = 0;
+
+  for (const [dia, prec] of mapaDias.entries()) {
+    const diaMs = parseUtcDia(dia);
+    if (diaMs > inicio30Ms && diaMs <= refMs) {
+      soma30 += prec;
+      contagem30++;
+    }
+    if (diaMs > inicio90Ms && diaMs <= refMs) {
+      soma90 += prec;
+      contagem90++;
+    }
+  }
+
+  const acum30 = contagem30 >= 25 ? Number(soma30.toFixed(1)) : null;
+  const acum90 = contagem90 >= 75 ? Number(soma90.toFixed(1)) : null;
 
   return {
     acum30d: acum30,
     acum90d: acum90,
-    diasValidos: serieDiaria.length,
+    diasValidos: mapaDias.size,
   };
 }
 
@@ -78,8 +123,6 @@ export function criarProvenienciaChirps(
   };
 }
 
-export const CHIRPS_NODATA_SENTINEL = -9999.0;
-export const CHIRPS_LIMIAR_NODATA = -9000.0;
 
 export interface RegistroMesChirps {
   ano: number;

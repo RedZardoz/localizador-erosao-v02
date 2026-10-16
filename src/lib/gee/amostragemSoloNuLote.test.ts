@@ -380,6 +380,55 @@ describe("Amostragem de Solo Nu em Lote via GEE REST e Cache Determinístico (C3
         .constantValue
     ).toBe(5);
   });
+
+  it("lote com nObservações 1 ou ausente não deve retornar frequenciaSoloNu em estado medido (N17 / A9)", () => {
+    const pontos: PontoAmostragemSoloNu[] = [
+      { id: "cand-obs-1", latitude: -24.71, longitude: -53.74 },
+      { id: "cand-obs-ausente", latitude: -24.82, longitude: -53.65 },
+    ];
+
+    const respostaGee = {
+      result: {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            id: "0",
+            properties: {
+              ponto_id: "cand-obs-1",
+              solo_nu_mean: 0.2,
+              solo_nu_count: 1,
+              Map_2020: 40,
+              Map_2021: 40,
+            },
+          },
+          {
+            type: "Feature",
+            id: "1",
+            properties: {
+              ponto_id: "cand-obs-ausente",
+              solo_nu_mean: 0.2,
+              Map_2020: 40,
+              Map_2021: 40,
+            },
+          },
+        ],
+      },
+    };
+
+    const processados = processarRespostaGeeReduceRegions(respostaGee, pontos);
+    const p1 = processados.get("cand-obs-1");
+    const pAusente = processados.get("cand-obs-ausente");
+
+    expect(p1!.frequenciaSoloNu.estado).not.toBe("medido");
+    expect(p1!.frequenciaSoloNu.estado).toBe("indisponivel");
+    expect((p1!.frequenciaSoloNu as any).causa).toBe("insuficiente");
+
+    expect(pAusente!.frequenciaSoloNu.estado).not.toBe("medido");
+    expect(pAusente!.frequenciaSoloNu.estado).toBe("indisponivel");
+    expect((pAusente!.frequenciaSoloNu as any).causa).toBe("insuficiente");
+  });
 });
+
 
 
