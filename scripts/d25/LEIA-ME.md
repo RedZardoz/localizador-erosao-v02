@@ -1,0 +1,7 @@
+# Avaliador de Referência D25 — SAREL v2
+
+O diretório `scripts/d25/` contém a implementação de referência independente do pipeline estatístico e protocolo de refutação D24/D25/D26 (DEC-14c, DEC-15c). O módulo compreende a avaliação comparativa contra a linha de base física RUSLE e regressão penalizada, o cálculo da correlação de postos de Spearman com inferência agrupada por polígono (bootstrap por cluster), a verificação de monotonicidade e a agregação espacial da fração erodida por célula de 10 m a partir de delineações sobre ortomosaicos VANT.
+
+Todo dado sintético processado pelos testes unitários ou pelo modo `--dryrun-sintetico` é categorizado estritamente como teste de encanamento (`SINTETICO_TESTE_ENCANAMENTO`). Nenhum resultado derivado de dados sintéticos ou de simulações locais constitui evidência científica, estimativa de desempenho preditivo do modelo ou corroboração/refutação das hipóteses metodológicas do projeto PPGTCA 2026.
+
+Para executar a suíte completa de 49 testes unitários independentes, utilize o comando `cd scripts/d25 && python -m unittest discover -s . -p "test_*.py"`. Para executar o fluxo completo de verificação técnica do encanamento, use `python scripts/d25/avaliacao_d25_referencia.py --dryrun-sintetico --saida <diretorio_saida>`. A execução em modo probatório (`--probatorio`) é restrita e condicionada ao pré-registro formal validado pelo pesquisador, sendo estritamente obrigatórios os parâmetros `--dados`, `--config` e `--saida`.
