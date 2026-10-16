@@ -1,7 +1,7 @@
 # Registro de Decisões Metodológicas — SAREL
 
 **Espelho legível e auditável de `src/config/decisoes.ts`.**  
-Última atualização: 2026-09-23.
+Gerado automaticamente via `npm run decisoes:md` em 2026-10-16.
 
 > **Regra 9 do SAREL (Governança Metodológica):**  
 > Todo parâmetro metodológico tem dono e registro. Decisão pendente gera estado `indisponivel` com causa `"decisao-pendente"` e o respectivo ID. **Somente o pesquisador tem autoridade para mudar uma decisão para `"decidida"`.**
@@ -12,42 +12,63 @@
 
 | ID | Título da Decisão | Estado | Valor / Diretriz Adotada | Decidido Em |
 |:---|:---|:---:|:---|:---:|
-| **D01** | Fórmula do Fator C | ✅ Decidida | $C = (1 - \text{NDVI}) / 2$ (Durigon et al., 2014) | 2026-09-08 |
-| **D02** | Critérios observacionais presente/ausente | ✅ Decidida | Amostragem estratificada pura: Classe 1 (Erosão: BSI > 0,10 e NDVI < 0,40) vs Classe 0 (Controle/SPD: BSI < 0,00 e NDVI > 0,65) | 2026-09-13 |
-| **D03** | Escala do rótulo | ✅ Decidida | Binária estrita (0: Controle/Não-Erosão em SPD; 1: Erosão Laminar Ativa) | 2026-09-13 |
-| **D04** | Modelos D e P e Guarda Temporal | ✅ Decidida | Modelo D (detecção $t_0$) e Modelo P (predição com guarda temporal de 24 meses / bienal) | 2026-09-22 |
-| **D05** | Extensão da série temporal | 🛑 Proposta Madura | Série Sentinel-2 MSI (2016–2026) a 10 m; Landsat restrito a contextualização histórica | Proposta |
-| **D06** | Unidade de predição e calibração VANT | ✅ Decidida | Pixel Sentinel-2 de 10 m calibrado por VANT Spectral 2 (5 bandas, PPK/RTK, GSD 3–7,5 cm) em 4 sítios contínuos | 2026-09-22 |
-| **D07** | Domínio de validade | 🛑 Proposta Madura | Declividade 3% a 20% (relevo suave ondulado a ondulado) e uso agrícola de grãos/pastagem cultivada | Proposta |
-| **D08** | Tratamento de associação pedológica | 🛑 Proposta Madura | Componente dominante `ordem_1` com propagação de confiança pedológica `"media"` | Proposta |
-| **D09** | Classes de erodibilidade e corte em 2 níveis | ✅ Decidida | Domínio agrícola [1..5] Embrapa Solos (Doc. 246/2024); Corte $\hat{K}$: Nível 1 ($\le 0,0285$) e Nível 2 ($\ge 0,0300$) | 2026-09-22 |
-| **D10** | Limiar de NDVI para solo descoberto | ✅ Decidida | $\text{NDVI} \le 0,25$ combinado com $\text{BSI} > 0,10$ (GEOS3 / Demattê et al., 2018) | 2026-09-22 |
-| **D11** | Cobertura temporal mínima de observações | ✅ Decidida | Mínimo de 6 observações orbitais válidas (livres de nuvem/sombra) por ponto/janela | 2026-09-13 |
-| **D12** | Dimensões da estratificação amostral | 🛑 Proposta Madura | 18 estratos canônicos ($3\hat{S} \times 3\hat{E} \times 2\hat{K}$) com ocupação equilibrada e *thinning* | Proposta |
-| **D13** | Formulação do Fator R (Erosividade) | 🛑 Proposta Madura | Equação de erosividade regional do Paraná (Waltrick et al., 2015 / Oliveira et al., 2013) baseada em série de precipitação | Proposta |
-| **D14** | Fator K numérico para linha de base | ✅ Decidida | Tabela 5 Embrapa Solos (Doc. 246/2024) fundamentada em Mannigel et al. (2002) | 2026-09-22 |
-| **D15** | Fator LS (Topografia RUSLE) | 🛑 Proposta Madura | Algoritmo Desmet & Govers (1996) e McCool et al. (1989) projetado estritamente em EPSG:31982 | Proposta |
-| **D16** | Estratégia de campo e voos VANT | ✅ Decidida | 4 sítios contínuos de 10 a 50 ha (*held-out* inviolável) + 120 a 180 pontos de inspeção KoboCollect sob protocolo cego | 2026-09-22 |
-| **D17** | Ciclo da cota PlanetScope | 🛑 Proposta Madura | Quota de pesquisa acadêmica em volume de área acumulada total (não renovável mensalmente) | Proposta |
-| **D18** | Buffer do recorte PlanetScope | 🛑 Proposta Madura | Raio de buffer de 250 m ao redor do centróide (cobre $\approx 19,6$ ha, compatível com a escala do talhão) | Proposta |
-| **D19** | Quantidade de pontos com pares de evento | 🛑 Proposta Madura | Subconjunto de 40 a 60 pontos amostrais pareados pré/pós evento erosivo pluviométrico | Proposta |
+| **D01** | Fórmula do Fator C: Durigon et al. (2014) | ✅ Decidida | (1 - NDVI) / 2 | 2026-09-08 |
+| **D02** | Critérios observacionais de presente/ausente e negativo explícito | ✅ Decidida | Amostragem estratificada pura: Classe 1 (Erosão: BSI > 0.10 e NDVI < 0.40) vs Classe 0 (Controle/SPD: BSI < 0.00 e ND... | 2026-09-13 |
+| **D03** | Escala do rótulo: coleta ordinal com binarização declarada | ✅ Decidida | COLETA em escala ordinal de quatro níveis, com o vocabulário do SAREL Coletor como canônico: 'ausente', 'incipiente',... | 2026-09-27 |
+| **D04** | Modelo D (detecção), Modelo P (predição) e intervalo de guarda temporal | ✅ Decidida | Ambos os modelos integrados: Modelo D para detecção contemporânea de feições ativas (t0) e Modelo P para predição pro... | 2026-09-22 |
+| **D05** | Série de treino: Sentinel-2 exclusivo; Landsat só como camada de tendência, nunca preditor | ✅ Decidida | MATRIZ DE TREINO: exclusivamente a série Sentinel-2 MSI nível L2A, a 10 m e 20 m conforme a banda, no período de 2016... | 2026-09-27 |
+| **D06** | Unidade de predição: pixel 10m calibrado por VANT Multiespectral | ✅ Decidida | DECISÃO ORIGINAL DE 22/09/2026, EMENDADA EM 27/09/2026. UNIDADE DE ANÁLISE E DE PREDIÇÃO: a célula de 10 x 10 m do Se... | 2026-09-27 |
+| **D07** | Domínio de validade: declividade 3 a 20%, WorldCover 30 e 40, concordância entre épocas | ✅ Decidida | DOMÍNIO DE VALIDADE do método, fora do qual nenhuma predição é declarada válida e nenhuma métrica é reportada. (a) DE... | 2026-09-27 |
+| **D08** | Unidades em associação: ambiguidade de K determinada na fonte oficial, sem heurística | ✅ Decidida | DECISÃO ORIGINAL DE 27/09/2026, EMENDADA EM 28/09/2026 após amostra dirigida de 32 pontos em associações. O QUE SAIU ... | 2026-09-28 |
+| **D09** | Mapa ordinal das classes de erodibilidade e corte em 2 níveis de K^ | ✅ Decidida | Domínio agrícola estrito [1..5] conforme escala Embrapa Solos (1 a 5 mapeadas ordinalmente). Classes não-agrícolas ex... | 2026-09-22 |
+| **D10** | Limiar de NDVI para solo descoberto | ✅ Decidida | NDVI <= 0.25 (combinado com BSI > 0.10 quando aplicável na assinatura espectral) | 2026-09-22 |
+| **D11** | Cobertura temporal mínima (nº mínimo de observações válidas) | ✅ Decidida | Mínimo de 6 observações orbitais válidas (sem nuvem/sombra) por ponto/janela temporal para análise de persistência te... | 2026-09-13 |
+| **D12** | Dimensões da estratificação: 18 estratos, com K̂ da carta de erodibilidade de 2024 | ✅ Decidida | DECISÃO ORIGINAL DE 27/09/2026, EMENDADA EM 28/09/2026 quanto à FONTE da dimensão K̂. 18 ESTRATOS CANÔNICOS, pela mat... | 2026-09-28 |
+| **D13** | Fator R: equação regional do Paraná sobre CHIRPS climatológico, sucedâneo declarado do EI30 | ✅ Decidida | FATOR R por EQUAÇÃO DE EROSIVIDADE REGIONAL DO PARANÁ aplicada a totais pluviométricos de satélite, com três especifi... | 2026-09-27 |
+| **D14** | Fator K numérico: k_solos da camada oficial, com faixa de classe como fallback | ✅ Decidida | DECISÃO ORIGINAL DE 22/09/2026, EMENDADA EM 28/09/2026 para preferir o valor numérico publicado pela fonte oficial à ... | 2026-09-28 |
+| **D15** | Fator LS: Desmet & Govers a 30 m, com distorção de projeção medida e m dependente da declividade | ✅ Decidida | FATOR LS pelo algoritmo BIDIMENSIONAL DE ÁREA DE CONTRIBUIÇÃO ESPECÍFICA de Desmet & Govers (1996), calculado sobre o... | 2026-09-27 |
+| **D16** | Campanha: polígonos de VANT como massa de treino e teste, campo como âncora e confirmação | ✅ Decidida | INVERSÃO DE PAPÉIS em relação à versão anterior desta decisão: o VANT deixa de ser exclusivamente held-out e passa a ... | 2026-09-27 |
+| **D17** | Ciclo da cota Planet e alocação racional entre download e tiles | ✅ Decidida | Cota de Scene Downloads de 3.000 km² tratada como TOTAL do período de vigência do plano (Education and Research Basic... | 2026-09-27 |
+| **D18** | Buffer do recorte Planet por ponto amostral | ✅ Decidida | Raio de 250 m ao redor do centróide amostral, materializado como bounding box de 500 m de lado em EPSG:4326, equivale... | 2026-09-27 |
+| **D19** | Pares de evento: reescrita do ponto para o polígono, análise secundária fora de D25 | ✅ Decidida | REESCRITA PARA O DESENHO POR POLÍGONOS. A proposta original — 40 a 60 PONTOS amostrais pareados pré e pós evento eros... | 2026-09-27 |
+| **D20** | Fórmula do Fator C híbrido SPD: Durigon et al. (2014) modulada pelo BSI | ✅ Decidida | C = ((1 - NDVI) / 2) * (1 + BSI), com domínio físico estrito C em [0, 1]; qualquer C fora de [0, 1] resulta em indisp... | 2026-09-27 |
+| **D21** | Fonte e resolução do Modelo Digital de Elevação | ✅ Decidida | Copernicus DEM GLO-30 (ESA) na resolução nativa de 30 m, processado em projeção métrica SIRGAS 2000 / UTM 22S (EPSG:3... | 2026-09-27 |
+| **D22** | Fator P derivado de observação de campo, estratificado por declividade | ✅ Decidida | Nos pontos com visita de campo, o Fator P deixa de ser a constante tabelada 1,0 e passa a ser derivado da combinação ... | 2026-09-27 |
+| **D23** | Regime amostral: estratificação desproporcional com probabilidade de inclusão registrada | ✅ Decidida | Amostragem ESTRATIFICADA DESPROPORCIONAL com a probabilidade de inclusão pi_i REGISTRADA POR UNIDADE SORTEADA, substi... | 2026-09-27 |
+| **D24** | Regime de dados do XGBoost: teto de preditores por bloco físico, não teto global | ✅ Decidida | CONSTATAÇÃO. O desenho por polígonos de D16 não elevou o regime de dados de modo uniforme: elevou-o de forma ASSIMÉTR... | 2026-09-27 |
+| **D25** | Critério de refutação pré-registrado: piso, margem e três desfechos | ✅ Decidida | CRITÉRIO DE REFUTAÇÃO PRÉ-REGISTRADO, fixado ANTES de qualquer ajuste e de qualquer observação de resultado. CONJUNTO... | 2026-09-27 |
+| **D26** | Alvo do modelo treinado por delineação de VANT: fração contínua com binário derivado | ✅ Decidida | ALVO PRIMÁRIO: fração contínua da área da célula de 10 m delineada como erodida, no intervalo [0, 1], obtida por rast... | 2026-09-27 |
 
 ---
 
-## 2. Decisões Tomadas ✅ (Formalizadas pelo Pesquisador)
+## 2. Quadro Resumo de Parâmetros Operacionais
+
+| ID | Parâmetro | Estado | Valor / Diretriz | Decidido Em |
+|:---|:---|:---:|:---|:---:|
+| **P01** | Aresta do bloco espacial | 🛑 Proposta | — | — |
+| **P02** | Espaçamento mínimo do thinning | ✅ Decidida | 1000 | 2026-09-27 |
+| **P03** | Critério de casamento geodésico de campo com o ponto planejado | ✅ Decidida | Três critérios independentes, substituindo o limiar único anterior de 15/25 m. (a) TETO DE ERRO GROSSEIRO: 30 m entre... | 2026-09-27 |
+| **P04** | Buffers de exclusão (água 30m, urbano 150m, ocorrência água 10%) | 🛑 Proposta | — | — |
+| **P05** | Classes elegíveis do ESA WorldCover (30 e 40; classe 60 excluída por D07) | ✅ Decidida | [30,40] | 2026-09-27 |
+| **P06** | Fração limpa mínima (UDM2) na AOI do ponto | ⏳ Pendente | — | — |
+| **P07** | Semente aleatória da amostragem | ✅ Decidida | dinamica-registrada | 2026-09-08 |
+| **P08** | Limiar do alerta visual de baixa variância | 🛑 Proposta | — | — |
+| **P09** | Método de máscara de nuvem Sentinel-2 (QA60 / SCL) | 🛑 Proposta | — | — |
+
+---
+
+## 3. Detalhamento das Decisões Metodológicas
 
 ### D01 — Fórmula do Fator C: Durigon et al. (2014)
 
 | Campo | Valor |
 |---|---|
 | **Estado** | ✅ **Decidida** |
-| **Valor Adotado** | $C = \frac{1 - \text{NDVI}}{2}$ |
-| **Referência** | Durigon, V.T. et al. (2014). NDVI time series for monitoring RUSLE cover management factor in a tropical watershed. *International Journal of Remote Sensing*, 35(2), 441–453. |
-| **Justificativa** | Validade regional comprovada para bacias agrícolas tropicais e subtropicais brasileiras; concebida nativamente para séries temporais de sensoriamento remoto; sem parâmetros livres ou empíricos adicionais; mapeamento contínuo estrito $C \in [0, 1]$ para $\text{NDVI} \in [-1, 1]$ sem truncamento artificial; proveniência computacional rastreável. |
-| **Decidido por** | Pesquisador |
+| **Valor Adotado** | (1 - NDVI) / 2 |
+| **Referência** | Durigon et al. (2014), International Journal of Remote Sensing 35(2):441-453 |
+| **Justificativa** | Validade regional em bacia tropical brasileira, concebida para serie temporal, sem parametros livres e sem corte em [0, 1]. |
+| **Decidido por** | pesquisador |
 | **Decidido em** | 2026-09-08 |
-
-*Limitação metodológica declarada:* Resposta linear e saturação do NDVI sob biomassa vegetal densa comprimem a diferenciação de $C$ em estágios avançados de lavoura. Análise de sensibilidade comparativa contra van der Knijff et al. (2000) prevista na Fase 8.
 
 ---
 
@@ -56,24 +77,24 @@
 | Campo | Valor |
 |---|---|
 | **Estado** | ✅ **Decidida** |
-| **Valor Adotado** | Amostragem estratificada pura ancorada em contrastes biofísicos objetivos e reprodutíveis:<br/>• **Classe 1 (Erosão Laminar Ativa):** $\text{BSI} > 0,10$ e $\text{NDVI} < 0,40$, presença de selamento superficial e descontinuidade de horizontes pedológicos.<br/>• **Classe 0 (Controle / Plantio Direto Estável):** $\text{BSI} < 0,00$ e $\text{NDVI} > 0,65$, com presença contínua de palhada/cobertura vegetal viva sem sinais de arraste laminar de sedimentos. |
-| **Referência** | Metodologia PPGTCA 2026, Seções 3.1 e 3.3; Dieckow et al. (2009); Embrapa Soja (Franchini et al., 2011). |
-| **Justificativa** | A classificação supervisionada requer contraste biofísico nítido e verificável entre a feição degradada e o estado de conservação do solo. A adoção de limiares espectrais corroborados por evidências de campo elimina ambiguidades e previne contaminação entre classes. |
-| **Decidido por** | Pesquisador |
+| **Valor Adotado** | Amostragem estratificada pura: Classe 1 (Erosão: BSI > 0.10 e NDVI < 0.40) vs Classe 0 (Controle/SPD: BSI < 0.00 e NDVI > 0.65) |
+| **Referência** | Metodologia PPGTCA 2026, Seção 3.1 e Tabela 1 |
+| **Justificativa** | Critérios biofísicos objetivos e reprodutíveis validados no Sentinel-2 e PlanetScope. |
+| **Decidido por** | pesquisador |
 | **Decidido em** | 2026-09-13 |
 
 ---
 
-### D03 — Escala do rótulo: Binária estrita
+### D03 — Escala do rótulo: coleta ordinal com binarização declarada
 
 | Campo | Valor |
 |---|---|
 | **Estado** | ✅ **Decidida** |
-| **Valor Adotado** | Escala Binária Estrita: `0` = Controle / Ausência de Erosão em SPD; `1` = Presença de Erosão Laminar Ativa. |
-| **Referência** | Metodologia PPGTCA 2026, Seções 3.1 e 5; Chen & Guestrin (2016) — XGBoost `binary:logistic`. |
-| **Justificativa** | A escala ordinal preliminar (`ausente / incipiente / moderada / severa`) introduz alta subjetividade na estimativa visual de campo (variabilidade interobservador). A escala binária maximiza o rigor de separabilidade biofísica, ancora-se diretamente no algoritmo XGBoost com função de perda logística e viabiliza validação direta de alta resolução via ortomosaicos VANT. |
-| **Decidido por** | Pesquisador |
-| **Decidido em** | 2026-09-13 |
+| **Valor Adotado** | COLETA em escala ordinal de quatro níveis, com o vocabulário do SAREL Coletor como canônico: 'ausente', 'incipiente', 'moderada', 'severa'. ALVO SUPERVISIONADO binário, obtido por binarização explícita com corte entre 'ausente' e 'incipiente': ausente => 0; incipiente, moderada e severa => 1. INCIPIENTE CONTA COMO POSITIVO. Os termos 'presente', 'erosao', 'erosão' e '1', aceitos por montarMatrizTreino (montagem.ts:139-148), são aliases legados de versões anteriores e mapeiam para 1. A escala ordinal de quatro níveis é preservada integralmente no dado, não apenas o binário derivado. Fica PRÉ-REGISTRADA uma análise de sensibilidade secundária que repete o ajuste com corte alternativo — ausente => 0, moderada e severa => 1, com 'incipiente' excluído do treino — cujo resultado é reportado junto do principal, qualquer que seja. |
+| **Referência** | Metodologia PPGTCA 2026, Seções 3.1 e 5; src/lib/matriz/montagem.ts:139-148 (implementação canônica); modelo de dados do SAREL Coletor (FieldCollection.classe) |
+| **Justificativa** | Três razões sustentam o corte em 'incipiente'. Primeira, de propósito: a finalidade declarada do método é localização e predição, e detectar apenas erosão moderada ou severa tem baixo valor prático, porque nesse estágio o dano já está consolidado; excluir a erosão incipiente contrariaria a razão de existir do instrumento. Segunda, de tamanho amostral: o positivo é o recurso escasso da pesquisa, e este é o único corte que não o reduz — a decisão D24 registra que o regime de dados já está abaixo do recomendado para ensembles de árvores, e reduzir positivos agravaria. Terceira, de honestidade: classificar como 'sem erosão' um ponto onde o observador registrou erosão incipiente seria rótulo falso, ainda que conveniente ao desempenho medido. O custo é assumido e declarado: a classe positiva fica heterogênea, e a erosão incipiente é justamente a de detecção mais difícil no pixel de 10 m do Sentinel-2, de modo que incluí-la tende a reduzir o desempenho aparente. É precisamente por isso que a análise de sensibilidade é pré-registrada: a diferença de desempenho entre os dois cortes mede quanto do sinal está na erosão incipiente, e esse contraste é resultado científico, não escolha metodológica a ser feita depois. A binarização é fixada ANTES da campanha e não pode ser alterada após a observação dos resultados, sob pena de flexibilidade analítica. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
 
 ---
 
@@ -82,36 +103,75 @@
 | Campo | Valor |
 |---|---|
 | **Estado** | ✅ **Decidida** |
-| **Valor Adotado** | Arquitetura dual integrada:<br/>• **Modelo D (Detecção):** Identificação contemporânea de feições ativas no instante $t_0$.<br/>• **Modelo P (Predição Prospectiva de Risco):** Predição de suscetibilidade futura impondo intervalo de guarda temporal (*embargo*) estrito de 2 anos (24 meses) encerrado antes da data do evento. |
-| **Referência** | Kaufman, S., Rosset, S., Perlich, C., & Stitelman, O. (2012). Leakage in data mining: Formulation, detection, and avoidance. *ACM TKDD*, 6(4), 15; Embrapa Soja (Franchini et al., 2011). |
-| **Justificativa** | Obedece rigorosamente ao princípio de *learn-predict separation* de Kaufman et al. (2012), eliminando o vazamento de dados temporal (*data leakage*). Agronomicamente, coincide com a rotação bienal completa do Sistema Plantio Direto paranaense (Soja no verão / Milho safrinha e Trigo no inverno). Amostragens com intervalo inferior a 24 meses amostram a mesma fase de manejo cultural e mesmo resíduo, induzindo autocorrelação espúria no gradiente descendente do XGBoost. |
-| **Decidido por** | Pesquisador |
+| **Valor Adotado** | Ambos os modelos integrados: Modelo D para detecção contemporânea de feições ativas (t0) e Modelo P para predição prospectiva de risco com intervalo de guarda temporal estrito de 2 anos (24 meses) encerrado antes da data do evento para eliminar vazamento temporal (data leakage). |
+| **Referência** | Kaufman et al. (2012), ACM TKDD 6(4):15; Embrapa Soja (Franchini et al., 2011) |
+| **Justificativa** | A segregação obedece ao princípio de 'learn-predict separation' de Kaufman et al. (2012) e coincide com a rotação bienal do Sistema Plantio Direto (Embrapa Soja), eliminando atalhos e autocorrelação espúria no XGBoost. |
+| **Decidido por** | pesquisador |
 | **Decidido em** | 2026-09-22 |
 
 ---
 
-### D06 — Unidade de predição: pixel 10 m calibrado por VANT Multiespectral
+### D05 — Série de treino: Sentinel-2 exclusivo; Landsat só como camada de tendência, nunca preditor
 
 | Campo | Valor |
 |---|---|
 | **Estado** | ✅ **Decidida** |
-| **Valor Adotado** | Pixel Sentinel-2 de 10 m com calibração sub-métrica e confronto radiométrico direto pelo VANT Multiespectral Spectral 2 (Nuvem UAV) — 5 bandas calibradas (Azul, Verde, Vermelho, RedEdge, NIR), sensor de irradiância solar DLS, georreferenciamento PPK/RTK centimétrico e GSD de 3 a 7,5 cm — em 4 polígonos contínuos de 10 a 50 ha (Céu Azul e Medianeira). |
-| **Referência** | Metodologia PPGTCA 2026, Seções 3.1 e 3.2; Nuvem UAV (2024); Congalton & Green (2019). |
-| **Justificativa** | Elimina a subjetividade e os erros de borda da vetorização manual de microparcelas isoladas; viabiliza o confronto radiométrico direto (correlação de Pearson $r$) entre a reflectância de satélite e a do drone; captura o gradiente toposequencial completo da catena agrícola (topo, meia-encosta e sopé). |
-| **Decidido por** | Pesquisador |
-| **Decidido em** | 2026-09-22 |
+| **Valor Adotado** | MATRIZ DE TREINO: exclusivamente a série Sentinel-2 MSI nível L2A, a 10 m e 20 m conforme a banda, no período de 2016 a 2026. NENHUMA refletância Landsat entra na matriz de treino, em nenhuma forma, nem reamostrada, nem harmonizada, nem como preditor derivado. LANDSAT ADMITIDO, mas fora da matriz: como CAMADA INDEPENDENTE DE TENDÊNCIA HISTÓRICA a 30 m, com suporte espacial próprio declarado conforme D06, destinada exclusivamente a contextualizar a trajetória de uso e exposição de solo antes de 2016. É produto separado, com sua própria proveniência, e JAMAIS preditor do modelo nem insumo de qualquer métrica de D25. DENSIDADE DESIGUAL DECLARADA: o Sentinel-2A opera desde 2015 e o 2B desde 2017, de modo que a revisita de cinco dias só vigora a partir de 2017 e o trecho inicial da série é mais esparso. As métricas de série temporal — frequência de solo nu de Ê em D12, persistência, sequência máxima — devem ser calculadas sobre FRAÇÃO DE CENAS VÁLIDAS e não sobre contagem absoluta, sob pena de o trecho esparso produzir frequência artificialmente baixa. Quando a contagem de cenas válidas de uma célula-ano ficar abaixo do mínimo declarado no pacote de reprodutibilidade, a métrica é 'indisponivel' e não um valor deflacionado. |
+| **Referência** | Drusch, M. et al. (2012), Remote Sensing of Environment 120:25-36 (missão Sentinel-2); Metodologia PPGTCA 2026, Seção 3.1; D06 (unidade de 10 m e suporte nativo declarado); D12 (dimensão Ê por frequência de solo nu); D24 (teto por bloco e regime de dados); D25 (métricas restritas à matriz Sentinel-2); src/lib/gee/persistenciaTemporal.ts e src/lib/gee/compostoSoloNu.ts (métricas de série) |
+| **Justificativa** | A razão decisiva é de suporte espacial, não de preferência por sensor: D06 fixa a célula de 10 m como unidade de análise e acaba de ser emendada para declarar o suporte nativo de cada preditor. Um pixel Landsat de 30 m cobre 900 m2 contra 100 m2 da célula, um salto de nove vezes em área, e injetar sua refletância na matriz como se fosse observação da célula é precisamente a confusão de suporte que D06 passou a proibir — seria repetir, no bloco espectral, o erro que o teto por bloco de D24 combate nos blocos de terreno e de solo. O objetivo declarado da pesquisa inclui análise de série histórica, e é por isso que o Landsat não é simplesmente descartado: dez anos de Sentinel-2 informam pouco sobre trajetória de uso de décadas, e o Landsat é a única fonte que alcança 1984. Admiti-lo como camada separada preserva esse objetivo sem contaminar a matriz, porque a pergunta que ele responde — como este talhão se comportou antes de 2016 — é de contexto, não de predição da célula. A declaração da densidade desigual corrige um defeito latente que o registro não cobria: sem ela, uma célula com poucas cenas válidas em 2016 teria frequência de solo nu baixa por falta de observação e não por cobertura do solo, e essa frequência é justamente a dimensão Ê que define o estrato. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
 
 ---
 
-### D09 — Mapa ordinal das classes de erodibilidade e corte em 2 níveis de K̂
+### D06 — Unidade de predição: pixel 10m calibrado por VANT Multiespectral
 
 | Campo | Valor |
 |---|---|
 | **Estado** | ✅ **Decidida** |
-| **Valor Adotado** | Domínio agrícola estrito [1..5] conforme escala Embrapa Solos. Classes ordinais de 1 a 5 mapeadas diretamente:<br/>1: 'Muito baixa', 2: 'Baixa', 3: 'Média', 4: 'Alta', 5: 'Muito alta'.<br/>Classes não-agrícolas (6 a 9: afloramentos, dunas, corpos d'água) são excluídas por máscara ou marcadas como `indisponivel` (`causa: "fora-do-dominio"`).<br/>**Corte K̂ para estratificação amostral:** Nível 1 = Baixa/Média erodibilidade (classes 1 a 3, $K \le 0,0285\ \text{t}\cdot\text{h}\cdot\text{MJ}^{-1}\cdot\text{mm}^{-1}$); Nível 2 = Alta/Muito alta erodibilidade (classes 4 e 5, $K \ge 0,0300\ \text{t}\cdot\text{h}\cdot\text{MJ}^{-1}\cdot\text{mm}^{-1}$). |
-| **Referência** | Coelho, M.R. et al. (2024). *Erodibilidade dos solos do Brasil*. Documentos 246, Embrapa Solos, Rio de Janeiro, 38 p. (Tabela 5, p. 13–15); Mannigel, E. et al. (2002). *RBCS*, 26:1039–1049. |
-| **Justificativa** | Respaldo normativo oficial da Embrapa Solos (Doc. 246/2024), garantindo que os limites da estratificação amostral reflitam descontinuidades pedológicas reais da paisagem agrícola brasileira. |
-| **Decidido por** | Pesquisador |
+| **Valor Adotado** | DECISÃO ORIGINAL DE 22/09/2026, EMENDADA EM 27/09/2026. UNIDADE DE ANÁLISE E DE PREDIÇÃO: a célula de 10 x 10 m do Sentinel-2, sobre a grade nativa do produto L2A, sem reamostragem para outra resolução. Todo rótulo, todo preditor e toda métrica de desempenho são definidos nessa célula. SUPORTE NATIVO DECLARADO POR PREDITOR: a unidade de análise de 10 m NÃO afirma que todo preditor foi medido a 10 m. Cada preditor carrega o suporte espacial de sua fonte, declarado na proveniência: as bandas e índices do Sentinel-2 a 10 m ou 20 m conforme a banda; o terreno a 30 m do Copernicus DEM GLO-30, por D21, atribuído às células de 10 m nele contidas e JAMAIS reamostrado para fingir suporte de 10 m; a erodibilidade K no suporte do polígono da unidade de mapeamento pedológico; a erosividade da chuva no suporte da grade de 5 a 10 km do produto pluviométrico. A consequência estatística dessa assimetria é o teto de preditores por bloco de D24, e é por ela que o bloco de terreno rende cerca de 11 unidades efetivas por polígono contra cerca de 51 do bloco espectro-temporal. CALIBRAÇÃO E CONFRONTO RADIOMÉTRICO: pelo VANT Multiespectral Spectral 2 (Nuvem UAV), 5 bandas calibradas (Azul, Verde, Vermelho, RedEdge, NIR), com GSD medido de 3,59 e 3,96 cm nas missões já executadas. SUPERAÇÃO PARCIAL POR D16: a extensão de 4 polígonos contínuos de 10 a 50 ha em Céu Azul e Medianeira, fixada em 22/09/2026, fica SUPERADA pelos 36 polígonos de 10 ha sorteados dois por estrato sobre os 18 estratos de D12, conforme D16 de 27/09/2026. As missões de Céu Azul e Medianeira permanecem úteis como aferição instrumental — foi delas que saíram o GSD, a produtividade de voo e o CE90 medidos — mas não constituem a massa de treino, porque não foram sorteadas probabilisticamente. CONSEQUÊNCIA POSICIONAL, que é a razão de ser desta unidade: com célula de 10 m, o acerto de atribuição do rótulo à célula verdadeira depende do erro posicional da fonte do rótulo. Por delineação sobre ortomosaico, com CE90 medido de 1,47 m, o acerto é de cerca de 78%; por GNSS de frequência única do aparelho de campo, com 3 a 8 m, cai para cerca de 37%, e é isso que a medição estática por média do SAREL Coletor visa mitigar. Essa diferença é o fundamento quantitativo da inversão de papéis de D16. |
+| **Referência** | Metodologia PPGTCA 2026, Seções 3.1 e 3.2; Nuvem UAV (2024); docs/verificacoes/voo/cobertura_voos.geojson (GSD, produtividade e CE90 medidos em 27/09/2026); D21 (Copernicus GLO-30 a 30 m, sem reamostragem); D24 (teto de preditores por bloco); D16 (36 polígonos, que superam a extensão originalmente fixada aqui); D12 (18 estratos) |
+| **Justificativa** | A célula de 10 m é a menor unidade em que o Sentinel-2 entrega sinal ótico sem reamostragem, e a erosão laminar se manifesta como mancha contínua na vertente, em escala de dezenas de metros, compatível com essa célula. Fixá-la como unidade única de análise elimina a subjetividade de vetorizar microparcelas à mão e viabiliza o confronto radiométrico direto entre satélite e VANT. A declaração explícita do suporte nativo de cada preditor, acrescentada nesta emenda, existe para impedir um erro que a unidade única convida: tratar um valor de terreno de 30 m, ou de solo por polígono de mapeamento, como se fosse medição independente em cada célula de 10 m. Seriam 36.000 células e apenas 36 valores de chuva; confundir as duas contagens é pseudorreplicação, e é exatamente o que o teto por bloco de D24 impede. A superação parcial por D16 é registrada de forma aditiva, e não por reescrita, porque as missões de Céu Azul e Medianeira continuam sendo a fonte das medições instrumentais que sustentam D16 e D24 — apagá-las do registro removeria a base empírica das decisões posteriores. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
+
+---
+
+### D07 — Domínio de validade: declividade 3 a 20%, WorldCover 30 e 40, concordância entre épocas
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | DOMÍNIO DE VALIDADE do método, fora do qual nenhuma predição é declarada válida e nenhuma métrica é reportada. (a) DECLIVIDADE entre 3% e 20%, relevo suave ondulado a ondulado do SiBCS, calculada em EPSG:31982 conforme P04. (b) USO E COBERTURA: ESA WorldCover a 10 m, EXCLUSIVAMENTE as classes 30 (pastagem) e 40 (lavoura). A CLASSE 60 (solo exposto e vegetação esparsa) É EXCLUÍDA, revertendo a proposta original que a admitia. (c) ÉPOCA DA COBERTURA: exige-se CONCORDÂNCIA entre as duas épocas disponíveis do produto, v100 (2020) e v200 (2021); célula classificada como 30 ou 40 em apenas uma das duas fica FORA do domínio. (d) Os buffers de exclusão hídrica e urbana de P04 permanecem vigentes e são cumulativos com este domínio. (e) EXTRAPOLAÇÃO VEDADA: fora da faixa de 3% a 20% e fora das classes 30 e 40 o modelo NÃO é aplicado nem avaliado, e a D25 é avaliada exclusivamente dentro deste domínio. OBRIGAÇÃO DE IMPLEMENTAÇÃO, registrada porque o código ainda não a cumpre nesta data: o parâmetro P05 e a constante OPCOES_ELEGIBILIDADE_PADRAO.allowedLandCoverClasses em src/lib/gee/elegibilidade.ts trazem [30, 40, 60] e devem passar a [30, 40]; e o cliente GEE em src/lib/gee/copernicusGeeClient.ts consulta apenas ESA/WorldCover/v200/2021, de modo que a exigência de concordância entre épocas requer acrescentar v100/2020 ao grafo de expressão. Até que isso seja feito existe DIVERGÊNCIA DECLARADA entre decisão e código, e ela vale contra o código. LIMITAÇÃO ASSUMIDA: restringir a declividade a 3% a 20% TRUNCA a amplitude do preditor de terreno, o que reduz a capacidade do modelo de aprender a resposta à declividade e é uma das razões pelas quais o bloco de terreno tem teto baixo em D24. O truncamento é preço do domínio de validade, não defeito a corrigir depois. |
+| **Referência** | Zanaga, D. et al. (2022), ESA WorldCover 10 m 2021 v200, Zenodo; Zanaga, D. et al. (2021), ESA WorldCover 10 m 2020 v100, Zenodo; SiBCS / Embrapa Solos (2018), Sistema Brasileiro de Classificação de Solos, 5a ed. (classes de relevo); Metodologia PPGTCA 2026, Seção 3.1; src/lib/gee/elegibilidade.ts e src/lib/gee/copernicusGeeClient.ts (implementação a alinhar); P04 (declividade em EPSG:31982 e buffers); P05 (classes elegíveis); D06 (unidade de 10 m); D12 (tercis calculados sobre este domínio); D16 (sorteio dos polígonos); D24 (teto do bloco de terreno); D25 (avaliação restrita ao domínio) |
+| **Justificativa** | Os limites de declividade delimitam onde a erosão laminar é o processo dominante: abaixo de 3% o escoamento superficial raramente adquire competência para desagregar e transportar de forma laminar, e acima de 20% o processo passa a ser dominado por sulco e voçoroca, que são fenômenos distintos do que esta pesquisa rotula. Restringir AMBOS os competidores de D24 ao mesmo domínio é também o que torna a comparação de D25 justa, porque impede que um deles seja avaliado em terreno onde o outro não se aplica. A EXCLUSÃO DA CLASSE 60 corrige um problema de circularidade que a proposta original não havia percebido: a dimensão Ê da estratificação de D12 É a frequência de solo nu, de modo que admitir solo exposto como critério de ENTRADA no domínio faria a definição do domínio determinar em parte o estrato de destino. É a mesma família de defeito que D16 já barra ao proibir voar onde o rastreio espectral aponta erosão. O custo é pequeno: talhão agrícola em declividade de 3% a 20% é classificado como 40 na maioria dos anos do produto, e a fração efetivamente perdida é a de solo exposto permanente, que não é uso agrícola ativo. A EXIGÊNCIA DE CONCORDÂNCIA ENTRE ÉPOCAS responde a uma incompatibilidade temporal que estava passando em silêncio: o produto de cobertura é de época única enquanto a série de treino vai de 2016 a 2026, de modo que uma máscara de um ano estava sendo aplicada a dez. Exigir que as duas épocas concordem reduz o erro de classificação de ano único ao custo de encolher o domínio, e é o máximo que se pode fazer com duas épocas. Fica DECLARADO como não modelado o que nenhuma das duas resolve: a mudança de uso ocorrida dentro da série, que para uma célula que virou lavoura em 2019 significa atribuir preditores de período em que ela não era lavoura. A classe 30 é adotada como pastagem cultivada por pressuposto declarado, pois o produto não distingue pastagem cultivada de campo natural; na Bacia do Paraná 3, em declividade agrícola, a fração de campo natural é pequena, mas o pressuposto é registrado e não verificado nesta data. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
+
+---
+
+### D08 — Unidades em associação: ambiguidade de K determinada na fonte oficial, sem heurística
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | DECISÃO ORIGINAL DE 27/09/2026, EMENDADA EM 28/09/2026 após amostra dirigida de 32 pontos em associações. O QUE SAIU DO ESCOPO: a atribuição pelo componente dominante NÃO governa mais o fator K, porque D14, emendada, faz K vir de `k_solos` da unidade que CONTÉM o ponto na carta `bra_erodibilidade_2024_sirgas2000`. D08 deixa de reger atribuição de valor e passa a reger exclusivamente o MARCADOR DE QUALIDADE da composição pedológica. A HEURÍSTICA TAXONÔMICA DE ENQUADRAMENTO POR ORDEM E SUBORDEM É APOSENTADA desta decisão: nunca foi conferida contra a fonte primária e a medição mostrou que é dispensável. REGRA NOVA, EM DOIS RAMOS. (a) DETERMINÁVEL NA FONTE: quando a carta de 2024 traz DOIS OU MAIS componentes no ponto (`erod_c1` a `erod_c4`), a ambiguidade é decidida por esses valores, com proveniência `tabelado`. Se os níveis de D09 dos componentes ATRAVESSAREM a fronteira — algum em classe 1 a 3, com K menor ou igual a 0,0285, e algum em classe 4 a 6, com K maior ou igual a 0,0300 — então `kAmbiguoAssociacao` é VERDADEIRO; se todos caírem do mesmo lado, é FALSO. Sem heurística em nenhum dos dois casos. (b) INDETERMINÁVEL NA FONTE: quando a carta de 2024 traz UM ÚNICO componente no ponto e a carta estadual `parana_solos_20201105` declara `tipo_unida = associacao`, a composição NÃO está resolvida na fonte oficial, e o marcador é `indisponivel` com causa `insuficiente`. JAMAIS `false`, e JAMAIS resolvido por heurística — afirmar ausência de ambiguidade onde a fonte não se pronuncia é o mesmo defeito que converter `indisponivel` em valor. EVIDÊNCIA MEDIDA em 28/09/2026, amostra dirigida e estratificada sobre os 193 polígonos de associação da bacia, em 8 unidades de mapeamento, com 32 pontos e ponto interior garantido: 16 de 32 (50%) caem no ramo (a), e destes 4 (25%) são oficialmente K-ambíguos; 16 de 32 (50%) caem no ramo (b), porque a carta nacional a 1:250.000 generaliza a associação para unidade simples. MÉTRICA DECLARADA IRRELEVANTE PARA ESTA DECISÃO: a correspondência estrita da sequência de componentes entre as duas cartas, medida em 2 de 32 (6,2%), NÃO governa nada aqui. A pergunta de D08 é se os níveis DENTRO da unidade atravessam a fronteira de D09, e isso os `erod_cN` da carta de 2024 respondem sozinhos, sem casar ordem de componentes entre levantamentos. O casamento de sequência só seria necessário para atribuir a classe de um componente específico de uma carta a um componente específico da outra, o que esta decisão deixou de fazer. PERMANECE VEDADA a ponderação de K pela área dos componentes por NÓS: a média que nós calculássemos não existe em fonte alguma. O `k_solos` é ponderação publicada pela autoridade cartográfica, conforme registrado em D14. AS UNIDADES MARCADAS PERMANECEM NO QUADRO AMOSTRAL e não são excluídas do sorteio de D16, em qualquer dos dois ramos. ANÁLISE DE SENSIBILIDADE PRÉ-REGISTRADA, atualizada e fixada antes de qualquer resultado: a avaliação de D25 é recalculada uma segunda vez removendo as células cujo marcador seja VERDADEIRO **ou** `indisponivel` — as duas condições, porque composição não resolvida desqualifica tanto quanto ambiguidade confirmada — e a DIFERENÇA entre as duas avaliações é reportada como custo da incerteza pedológica. A hierarquia é fixada nesta data: a avaliação PRINCIPAL é a que inclui todas as células, e a segunda é sensibilidade declarada; nenhuma das duas pode ser escolhida depois em função do resultado obtido. |
+| **Referência** | docs/verificacoes/fontes/wfs_erodibilidade/amostra_dirigida_associacoes_2026-09-28.md e amostra_dirigida_associacoes_2026-09-28.json (32 pontos, 8 unidades, 193 polígonos de associação na bacia); amostra_dirigida_associacoes.py (script da campanha); camada `geonode:bra_erodibilidade_2024_sirgas2000` e `geonode:parana_solos_20201105` em https://geoinfo.dados.embrapa.br/geoserver/ows; Coelho, M. R. et al. (2024). Erodibilidade dos solos do Brasil. Embrapa Solos, Documentos 246, 40 p.; Embrapa GeoInfo, parana_solos_20201105; D09 (fronteira entre classes 3 e 4); D14 (K por k_solos, que retirou de D08 a atribuição de valor); D12 (K̂ como dimensão); D16 (quadro amostral); D25 (sensibilidade pré-registrada); D03 (precedente do padrão de sensibilidade pré-registrada) |
+| **Justificativa** | A emenda decorre de medição, não de preferência. A amostra dirigida de 28/09/2026 existiu porque as duas caracterizações anteriores da discordância entre cartas em unidades compostas tinham base de 3 e depois de 2 pontos incidentais, insuficiente para sustentar uma regra que afeta a estratificação. Com 32 pontos sobre as 8 unidades de associação da bacia, o quadro ficou claro e inverteu o diagnóstico: o problema não era ordenação de componentes entre cartas, e sim GRANULARIDADE — em metade dos pontos a carta nacional simplesmente não representa a unidade como composta. Esse achado tornou visível que a decisão anterior media a coisa errada. Ao exigir correspondência de sequência, ela condicionava a determinação da ambiguidade a um casamento entre cartas que é irrelevante à pergunta: para saber se os níveis dentro de uma unidade atravessam a fronteira de D09, basta ler os níveis daquela unidade. Reenquadrada assim, metade dos casos passa a ter resposta de fonte oficial com proveniência tabelada, e a outra metade passa a ter um NÃO SEI honesto — o que é estritamente melhor que a heurística em ambas as metades, porque a heurística dava resposta nos dois casos e não era conferida em nenhum. A escolha de declarar `indisponivel` em lugar de `false` no ramo (b) é a parte que mais importa. Seria confortável tratar 'a carta de erodibilidade vê unidade simples' como 'não há ambiguidade', e o resultado pareceria mais limpo: metade das associações deixaria de ser marcada. Mas a carta estadual, de maior detalhe, diz que há mais de um solo ali, e o silêncio da carta nacional sobre isso é generalização de escala, não negativa. Converter esse silêncio em `false` seria produzir informação a partir de ausência de informação, que é precisamente o defeito que a auditoria de 26/09 encontrou em outra forma. Incluir `indisponivel` junto de VERDADEIRO na análise de sensibilidade segue do mesmo raciocínio: o que a sensibilidade mede é o custo de não saber a composição da célula, e não saber por indeterminação vale tanto quanto saber que é ambígua. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-28 |
+
+---
+
+### D09 — Mapa ordinal das classes de erodibilidade e corte em 2 níveis de K^
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | Domínio agrícola estrito [1..5] conforme escala Embrapa Solos (1 a 5 mapeadas ordinalmente). Classes não-agrícolas excluídas por máscara. Corte K^ para estratificação: Nível 1 = Baixa/Média (classes 1-3, K <= 0.0285) e Nível 2 = Alta/Muito Alta (classes 4-5, K >= 0.0300). |
+| **Referência** | Coelho, M. R.; Lumbreras, J. F.; Amaral, A. J. do; Vasques, G. M.; Mansilla Baca, J. F.; Dart, R. de O. & Pedreira, J. P. das N. C. (2024). Erodibilidade dos solos do Brasil. Rio de Janeiro: Embrapa Solos, Documentos 246, 40 p. ISSN 1517-2627 / e-ISSN 2966-2443 [autoria, titulo e paginacao CONFERIDOS na capa e na folha de autores do PDF em 28/09/2026; a localizacao interna da tabela de erodibilidade NAO foi conferida]; Mannigel et al. (2002), RBCS 26:1039-1049 |
+| **Justificativa** | Adoção da Proposta A com respaldo normativo oficial da Embrapa Solos (Doc. 246/2024) e validação pedológica de Mannigel et al. (2002). |
+| **Decidido por** | pesquisador |
 | **Decidido em** | 2026-09-22 |
 
 ---
@@ -121,136 +181,326 @@
 | Campo | Valor |
 |---|---|
 | **Estado** | ✅ **Decidida** |
-| **Valor Adotado** | $\text{NDVI} \le 0,25$ (combinado com $\text{BSI} > 0,10$ na identificação espectral de superfície). |
-| **Referência** | Demattê, J.A.M. et al. (2018). Geospatial Soil Sensing System (GEOS3). *Remote Sensing of Environment*, 212:161–175; Safanelli, J.L. et al. (2021). *Revista Brasileira de Ciência do Solo*, 45:e0210080. |
-| **Justificativa** | Calibrado no sistema GEOS3 (GeoCiS/ESALQ-USP) para solos tropicais sob imagens orbitais (Landsat e Sentinel-2). O limiar estrito $\text{NDVI} \le 0,25$ discrimina com precisão o solo exposto suscetível a salpicamento (*splash*) de áreas com palhada remanescente de Plantio Direto ou rebrota vegetal, eliminando falsos positivos na frequência de exposição ($\hat{E}$). |
-| **Decidido por** | Pesquisador |
+| **Valor Adotado** | NDVI <= 0.25 (combinado com BSI > 0.10 quando aplicável na assinatura espectral) |
+| **Referência** | Demattê et al. (2018), Remote Sensing of Environment 212:161-175; Safanelli et al. (2021), RBCS 45:e0210080 |
+| **Justificativa** | Calibrado no sistema GEOS3 (GeoCiS/ESALQ-USP) para solos brasileiros sob imagens orbitais (Landsat e Sentinel-2). Garante separação rigorosa entre solo exposto e resíduos de palhada de Plantio Direto. |
+| **Decidido por** | pesquisador |
 | **Decidido em** | 2026-09-22 |
 
 ---
 
-### D11 — Cobertura temporal mínima de observações orbitais
+### D11 — Cobertura temporal mínima (nº mínimo de observações válidas)
 
 | Campo | Valor |
 |---|---|
 | **Estado** | ✅ **Decidida** |
-| **Valor Adotado** | Mínimo de 6 observações orbitais válidas (livres de nuvens e sombras pela máscara SCL) por ponto/janela temporal para aceitação na amostragem e análise de persistência temporal. |
-| **Referência** | Metodologia PPGTCA 2026, Seção 6.1. |
-| **Justificativa** | Exigência biofísica mínima para assegurar significância estatística na estimativa de tendências lineares no infravermelho SWIR (B12), na avaliação da recomposição da cobertura vegetal e no cálculo da frequência anual de solo descoberto. |
-| **Decidido por** | Pesquisador |
+| **Valor Adotado** | Mínimo de 6 observações orbitais válidas (sem nuvem/sombra) por ponto/janela temporal para análise de persistência temporal e time-series stacking. |
+| **Referência** | Metodologia PPGTCA 2026, Seção 6.1 |
+| **Justificativa** | Critério biofísico necessário para estimar com significância a taxa de degradação linear no SWIR B12, a recuperação do dossel vegetal e a frequência de solo exposto. |
+| **Decidido por** | pesquisador |
 | **Decidido em** | 2026-09-13 |
 
 ---
 
-### D14 — Fator K numérico para a linha de base RUSLE
+### D12 — Dimensões da estratificação: 18 estratos, com K̂ da carta de erodibilidade de 2024
 
 | Campo | Valor |
 |---|---|
 | **Estado** | ✅ **Decidida** |
-| **Valor Adotado** | Conversão tabular oficial da Tabela 5 da Embrapa Solos (Documentos 246/2024), fundamentada em Mannigel et al. (2002):<br/>• **Muito baixa (1,0 a 1,4):** $K = 0,0020 \text{ a } 0,0084\ \text{t}\cdot\text{h}\cdot\text{MJ}^{-1}\cdot\text{mm}^{-1}$ (média $\approx 0,0052$)<br/>• **Baixa (1,5 a 2,4):** $K = 0,0090 \text{ a } 0,0144\ \text{t}\cdot\text{h}\cdot\text{MJ}^{-1}\cdot\text{mm}^{-1}$ (média $\approx 0,0117$)<br/>• **Média (2,5 a 3,4):** $K = 0,0150 \text{ a } 0,0285\ \text{t}\cdot\text{h}\cdot\text{MJ}^{-1}\cdot\text{mm}^{-1}$ (média $\approx 0,0218$)<br/>• **Alta (3,5 a 4,4):** $K = 0,0300 \text{ a } 0,0420\ \text{t}\cdot\text{h}\cdot\text{MJ}^{-1}\cdot\text{mm}^{-1}$ (média $\approx 0,0360$)<br/>• **Muito alta (4,5 a 5,4):** $K = 0,0450 \text{ a } 0,0585\ \text{t}\cdot\text{h}\cdot\text{MJ}^{-1}\cdot\text{mm}^{-1}$ (média $\approx 0,0518$) |
-| **Referência** | Coelho, M.R. et al. (2024). *Erodibilidade dos solos do Brasil*. Documentos 246, Embrapa Solos, Rio de Janeiro, 38 p. (Tabela 5); Mannigel, E. et al. (2002). *RBCS*, 26:1039–1049. |
-| **Justificativa** | Resolve a incompatibilidade entre as cartas pedológicas regionais (que fornecem classes ordinais qualitativas) e a formulação da RUSLE (que requer valores contínuos de $K$). Ancoragem estrita na literatura agronômica nacional oficial sem estimativas ad-hoc. |
-| **Decidido por** | Pesquisador |
-| **Decidido em** | 2026-09-22 |
+| **Valor Adotado** | DECISÃO ORIGINAL DE 27/09/2026, EMENDADA EM 28/09/2026 quanto à FONTE da dimensão K̂. 18 ESTRATOS CANÔNICOS, pela matriz fatorial Ŝ x Ê x K̂: (a) Ŝ — TERRENO, 3 tercis de declividade em porcento; (b) Ê — EXPOSIÇÃO, 3 tercis de FREQUÊNCIA DE SOLO NU no intervalo [0, 1], isto é a fração de cenas válidas da série em que a célula aparece com solo exposto, e NÃO orientação de vertente; (c) K̂ — ERODIBILIDADE, 2 níveis conforme D09. Total de 3 x 3 x 2 = 18. NÃO AMPLIADA. FONTE DE K̂, EMENDADA: o nível de K̂ vem de `erod_um`, ou equivalentemente da faixa de `k_solos`, da unidade que CONTÉM o ponto na carta `geonode:bra_erodibilidade_2024_sirgas2000`, conforme D14 emendada e por atribuição de ponto-em-polígono. NÃO vem mais do componente dominante da carta pedológica estadual, e NÃO passa por regra de enquadramento taxonômico. Categoria não-pedológica — área urbana, corpo d'água — não tem nível de K̂ e retira o ponto do domínio, conforme D07 e D14. CONSEQUÊNCIA DECLARADA, INTENCIONAL E NÃO EFEITO COLATERAL: células situadas dentro da MESMA unidade de mapeamento da carta estadual podem cair em ESTRATOS DE K̂ DIFERENTES, porque a carta de erodibilidade tem suas próprias unidades. Medido em 28/09/2026 sobre 32 pontos em associações: 2 das 8 unidades de associação da bacia recebem níveis de K̂ DIFERENTES em pontos distintos — `RRe12` (nível 2 em `SG21RLm4`, nível 1 em `SG22NVef3`) e `RRe9` (nível 2 em `SG22CXvef` e `SG22RLm2`, nível 1 em `SG22NVef3`) — e o `k_solos` observado varia dentro de uma mesma unidade estadual por fator de até 2,8, com `RRe9` aparecendo como 0,012, 0,0315 e 0,033. LIMITAÇÃO A DECLARAR NA DISSERTAÇÃO: as duas unidades discordantes são as associações de Neossolo Regolítico, e a `RRe12` sozinha é 90 dos 193 polígonos de associação da bacia, isto é 47%. Em alguns pontos a carta de 2024 atribui nível 1 onde o componente dominante da carta estadual é NEOSSOLO, cuja subordem regolítica a prosa do Documentos 246 situa entre alta e muito alta erodibilidade. A estratificação segue a carta ESPECÍFICA de erodibilidade, que é posterior, é a citada por D09 e D14, e tem cobertura integral com valor tabelado; a discordância com o levantamento estadual fica registrada como limitação e NÃO é reconciliada por regra nossa. OS TERCIS SÃO PERCENTIS EMPÍRICOS de 33,33% e 66,67% calculados sobre o conjunto de candidatos efetivamente levantado, e não limiares absolutos fixados de antemão; por consequência os pontos de corte só se tornam numéricos depois que esse conjunto existir. Amplitude zero em qualquer dimensão obriga phiDiag estritamente null, jamais 0,5 inventado. Implementação canônica em src/lib/gee/estratificacao.ts. DEPENDÊNCIAS, ATUALIZADAS: D07 PERMANECE dependência, porque fixa o domínio de validade sobre o qual os tercis empíricos são calculados. D08 DEIXA DE SER DEPENDÊNCIA DO NÍVEL DE K̂ — com a emenda de D08, ela fornece apenas marcador de qualidade da composição, que é metadado e não entra na matriz por Invariante 2. Ambas estão decididas nesta data, de modo que os 18 estratos têm fronteira numérica e a probabilidade de inclusão pi_i exigida por D23 é calculável: o SORTEIO dos 36 polígonos de D16 está LIBERADO. |
+| **Referência** | Cochran, W. G. (1977), Sampling Techniques, 3a ed.; Planejamento V3, §7.2; src/lib/gee/estratificacao.ts (implementação canônica da partição Ŝ x Ê x K̂); docs/verificacoes/fontes/wfs_erodibilidade/amostra_dirigida_associacoes_2026-09-28.md (medição da discordância de K̂ entre cartas); Coelho, M. R. et al. (2024). Erodibilidade dos solos do Brasil. Embrapa Solos, Documentos 246, 40 p.; D09 (dois níveis de K̂); D14 (K por k_solos da carta de 2024); D08 (marcador de composição, emendada); D07 (domínio de validade, dependência remanescente); D16 (dois polígonos por estrato); D23 (pi_i registrado); D24 (unidades efetivas por bloco) |
+| **Justificativa** | As dimensões escolhidas são as três que governam a erosão laminar de forma separável e mensurável por sensoriamento remoto antes de qualquer visita: energia disponível no relevo, tempo de solo descoberto e suscetibilidade intrínseca do solo. Fixar em 18 e não ampliar decorre de aritmética de campanha: D16 exige dois polígonos por estrato, o que já consome 36 polígonos, 360 ha e cerca de 3 jornadas de voo; passar K̂ a 3 níveis levaria a 27 estratos e 540 ha, além da capacidade do projeto, e os 60 a 80 pontos de campo distribuídos por 18 estratos já rendem apenas 3 a 4 por estrato. A emenda quanto à fonte de K̂ escolhe entre duas opções reais, e o critério foi proveniência. Derivar K̂ do componente dominante da carta estadual exigiria a regra de enquadramento taxonômico, que nunca foi conferida contra a fonte primária e que a emenda de D08 acaba de aposentar; ler K̂ da carta específica de erodibilidade entrega valor tabelado, com cobertura integral medida em 20 de 20 pontos rurais, na mesma obra que D09 e D14 já citam. Trocar regra nossa não conferida por leitura de fonte oficial é a direção que a auditoria de 26/09 estabeleceu para todo o sistema, e valia aplicá-la justamente na dimensão que define o sorteio. O custo é assumido e declarado em lugar de escondido: a carta nacional generaliza a 1:250.000 e, na associação mais comum da bacia, discorda do levantamento estadual sobre o nível de erodibilidade. Reconciliar as duas por regra nossa produziria um terceiro mapa que não existe em fonte alguma, e excluir do quadro as unidades discordantes removeria 47% das associações, com risco de esvaziar estratos — que é exatamente o problema que levou D08 a manter as unidades marcadas no quadro. Preferiu-se a fonte de melhor proveniência com a discordância registrada, porque limitação declarada é auditável e reconciliação inventada não é. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-28 |
 
 ---
 
-### D16 — Campanha de campo e voos de drone de alta resolução
+### D13 — Fator R: equação regional do Paraná sobre CHIRPS climatológico, sucedâneo declarado do EI30
 
 | Campo | Valor |
 |---|---|
 | **Estado** | ✅ **Decidida** |
-| **Valor Adotado** | 4 sítios contínuos de referência territorial (10 a 50 ha cada) em Céu Azul e Medianeira, sobrevoados com VANT Multiespectral Spectral 2 (Nuvem UAV, 5 bandas calibradas, PPK/RTK centimétrico), mantidos estritamente como partição *held-out* inviolável, combinados com 120 a 180 pontos de inspeção presencial via formulário digital KoboCollect executado sob protocolo cego. |
-| **Referência** | Metodologia PPGTCA 2026, Seções 3.2 e 3.3; Nuvem UAV (2024). |
-| **Justificativa** | Assegura representatividade exaustiva da catena pedológica e geomorfológica da Bacia do Paraná 3, respeitando o cronograma operacional de campo e assegurando a blindagem contra vazamento de dados (*data leakage*). |
-| **Decidido por** | Pesquisador |
-| **Decidido em** | 2026-09-22 |
+| **Valor Adotado** | FATOR R por EQUAÇÃO DE EROSIVIDADE REGIONAL DO PARANÁ aplicada a totais pluviométricos de satélite, com três especificações que a proposta original não fixava. (a) PROVENIÊNCIA 'modelado', jamais 'medido': as equações regionais são calibradas sobre séries de pluviógrafo e aqui são aplicadas a totais estimados por satélite, de modo que o R resultante é valor modelado e assim deve constar na matriz, no Inspetor e no pacote de reprodutibilidade. (b) R CLIMATOLÓGICO, média de longo prazo sobre toda a série disponível, e NÃO erosividade de um ano. A erosão laminar que o VANT delineia em 2026 é resultado acumulado de histórico pluviométrico, não de uma safra; usar R anual faria o preditor descrever um período que o rótulo não representa. O R de ano ou de evento fica RESERVADO à análise de pares de evento de D19. (c) DIVISÃO EXPLÍCITA ENTRE PRODUTOS: CHIRPS, de grade 0,05 grau e registro longo, alimenta os totais mensais da equação regional; IMERG, sub-diário, fica reservado a D19. LIMITAÇÃO CENTRAL DECLARADA: o EI30 do RUSLE requer intensidade em 30 minutos, e o CHIRPS é DIÁRIO — o EI30 verdadeiro NÃO é obtenível dele. A equação regional sobre totais mensais é portanto SUCEDÂNEO declarado do EI30, não o EI30, e essa substituição deve constar como limitação na dissertação e no selo de proveniência. RESSALVA DE VERIFICAÇÃO, no mesmo regime adotado em D22: a forma funcional e os coeficientes da equação regional NÃO foram conferidos contra a fonte primária nesta data. A conferência é OBRIGATÓRIA antes da implementação, e até que ocorra o fator R fica marcado como pendente de verificação bibliográfica, com a marca propagando ao selo de proveniência. |
+| **Referência** | Waltrick, P. C. et al. (2015), Revista Brasileira de Ciência do Solo (erosividade das chuvas no Paraná) — NÃO conferida contra a fonte primária nesta data; Oliveira, P. T. S. et al. (2013) (erosividade no Brasil) — idem; Renard, K. G. et al. (1997), Agriculture Handbook 703 (RUSLE, definição de EI30); Funk, C. et al. (2015), Scientific Data 2:150066 (CHIRPS); Huffman, G. J. et al., IMERG / GPM (produto sub-diário); D19 (pares de evento, onde o IMERG é usado); D21 (grade de terreno); D24 (bloco de chuva, 36 unidades); D25 (linha de base RUSLE); Invariante 1 |
+| **Justificativa** | O Invariante 1 exige os cinco fatores do RUSLE, e sem R não existe linha de base física — o que tornaria inavaliável o rho_RUSLE que D25 acabou de pré-registrar como referência de comparação. A escolha de equação regional, em lugar de equação genérica, segue de que a erosividade é fortemente dependente de regime pluviométrico e o Paraná dispõe de estudos próprios. A insistência na proveniência 'modelado' não é formalidade: foi exatamente a rotulagem de valor modelado como medido que a auditoria integral encontrou no pacote de reprodutibilidade, e o fator R é o candidato mais óbvio à reincidência, porque parece um dado climático quando é saída de equação sobre estimativa de satélite. A opção pelo R climatológico resolve um desalinhamento temporal que passaria em silêncio: o rótulo do VANT é um estado acumulado, e emparelhá-lo com a erosividade de um único ano criaria discordância entre a janela do preditor e a do rótulo. A divisão entre CHIRPS e IMERG existe porque os dois produtos servem a perguntas diferentes e nenhum serve às duas: o CHIRPS tem o registro longo que a climatologia exige, mas é diário; o IMERG tem a resolução sub-diária que o pareamento de evento exige, mas registro curto. Declarar que o EI30 verdadeiro é inalcançável é preferível a reportar um EI30 que não é EI30, e tem consequência prática sobre D25: parte da distância entre o RUSLE e os competidores pode vir da degradação do fator R, não da inferioridade do modelo físico, e essa possibilidade precisa estar escrita antes dos resultados. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
 
 ---
 
-## 3. Parâmetros Operacionais Decididos ✅
+### D14 — Fator K numérico: k_solos da camada oficial, com faixa de classe como fallback
 
-### P03 — Tolerância Geodésica de Casamento Kobo vs Ponto Planejado
-- **Estado:** ✅ **Decidida (2026-09-22, Pesquisador)**
-- **Valor:** **15 m nominal** (com tolerância estendida de até 25 m sob aviso de qualidade; rejeição estrita e descarte para desvios $> 25\ \text{m}$).
-- **Justificativa:** Readequado do raio preliminar de 150 m para 15 m (1,5 pixel do Sentinel-2), compatibilizando o modelo com a acurácia submétrica do GPS/GNSS de navegação (3 a 8 m) e o pixel de 10 m do Sentinel-2. O intervalo de 15 a 25 m acomoda desvios operacionais causados por obstáculos físicos em campo (valas, cercas, terraços agrícolas), enquanto desvios superiores a 25 m são sumariamente rejeitados para evitar contaminação do rótulo por pixels vizinhos.
-- **Referência:** Congalton & Green (2019); LUCAS Survey (2022); Metodologia PPGTCA 2026, Seção 3.3.
-
-### P07 — Semente Aleatória da Amostragem
-- **Estado:** ✅ **Decidida (2026-09-08, Pesquisador)**
-- **Valor:** `dinamica-registrada` (armazenada nos metadados de cada lote amostral para assegurar reprodutibilidade computacional exata).
-
----
-
-## 4. Decisões em Aberto com Propostas Metodológicas Estruturadas 🛑
-
-Para agilizar as decisões do pesquisador, as propostas abaixo foram integralmente estruturadas com respaldo técnico e bibliográfico.
-
-### D05 — Extensão da série temporal: Sentinel-2 MSI vs Landsat
-- **Estado Atual:** 🛑 Proposta Metodológica Formal
-- **Proposta Recomendada:** **Adotar exclusivamente a série Sentinel-2 MSI (2016–2026, 10 m e 20 m)** para todo o treinamento supervisionado, cálculo harmônico e persistência biofísica. Restringir o Landsat (30 m) estritamente a análises contextuais qualitativas pré-2016 se necessário na introdução da dissertação.
-- **Justificativa Técnica:** O Sentinel-2 oferece resolução espacial de 10 m e revisita de 5 dias (constelação 2A/2B), perfeitamente compatível com o pixel centimétrico do drone Spectral 2 (3–7,5 cm) e com a escala de feições de erosão laminar. Mesclar dados Landsat (30 m) introduziria um salto de agregação espacial de 9 vezes na área do pixel ($900\ \text{m}^2 \text{ vs } 100\ \text{m}^2$), criando descontinuidades radiométricas e artefatos de escala na modelagem XGBoost.
-- **O Agente Entrega:** Relatório comparativo de contagem de observações livres de nuvens por ponto na Bacia do Paraná 3.
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | DECISÃO ORIGINAL DE 22/09/2026, EMENDADA EM 28/09/2026 para preferir o valor numérico publicado pela fonte oficial à conversão por faixa de classe. FONTE PRIMÁRIA DO FATOR K: o campo `k_solos` (xsd:decimal) da camada `geonode:bra_erodibilidade_2024_sirgas2000` do GeoServer da Embrapa, que é o valor de erodibilidade tabulado pela própria autoridade cartográfica para a unidade de mapeamento. Proveniência `tabelado`, com `tabela` = Tabela 5 do Documentos 246 acessada pela camada oficial e `chave` = `cod_um` ou `ogc_fid` da feição. EVIDÊNCIA MEDIDA em 28/09/2026 sobre 15 coordenadas da Bacia do Paraná 3: os valores observados de `k_solos` foram 0,0020, 0,0084, 0,0120, 0,0225, 0,0285 e 0,0315 — discretos, compatíveis com os 48 valores tabulados da Tabela 5, e VARIANDO DENTRO DE UMA MESMA CLASSE ORDINAL: a classe Muito baixa apareceu como 0,0020 e como 0,0084, e a classe Média como 0,0225 e como 0,0285. Logo `k_solos` NÃO é representante de classe e carrega estritamente MAIS informação que a classe ordinal, que é a razão de ser desta emenda. FALLBACK, quando `k_solos` estiver ausente: permanece vigente a conversão por faixa de classe da decisão original — Muito baixa 0,0020 a 0,0084; Baixa 0,0090 a 0,0144; Média 0,0150 a 0,0285; Alta 0,0300 a 0,0420; Muito alta 0,0450 a 0,0585 t*h/(MJ*mm) — com proveniência DISTINTA, declarada como derivada de classe. O registro de cada ponto deve dizer QUAL das duas vias operou; sem isso não se sabe depois o que foi lido da fonte e o que foi derivado. PROIBIÇÃO CRÍTICA, e é o motivo de esta emenda ser normativa e não apenas informativa: para categorias que não são solo — `Área urbana`, `Corpo d'água` — a camada devolve `k_solos = 0`. ZERO É UM NÚMERO VÁLIDO QUE NÃO É UM VALOR DE K: levá-lo à RUSLE produziria A = R * 0 * LS * C * P = 0, isto é, 'sem erosão' em lugar de 'fora do domínio'. É VEDADO ler `k_solos` numericamente sem antes verificar `erod_um`; categoria não-pedológica obriga `indisponivel` com causa `fora-do-dominio`, por P12 e pelo Invariante 1. VEDADO TAMBÉM interpretar `fator_k_um` como número: é campo `xsd:string` que carrega ora o mesmo valor numérico, ora o nome da categoria. O número vem de `k_solos`; a verificação de domínio vem de `erod_um`. RELAÇÃO COM D08, registrada para impedir leitura errada: D08 VEDA a ponderação de K pela área dos componentes, e `k_solos` É um composto dos componentes da unidade. Não há contradição, e a distinção é de PROVENIÊNCIA e não de aritmética — o que D08 proíbe é NÓS misturarmos valores e apresentarmos o resultado como K da célula, porque aí o número não existe em fonte alguma; `k_solos` é a ponderação calculada e PUBLICADA pela autoridade cartográfica por método documentado, e portanto é leitura de fonte, não fabricação. A vedação de D08 permanece integralmente em vigor para qualquer valor que nós mesmos computássemos. AUSÊNCIA DE INCERTEZA NA CAMADA: nas 15 coordenadas amostradas, NENHUM registro trouxe incerteza associada ao valor de K; `fator_k_um` apareceu como número puro ou como nome de categoria, nunca na forma 'valor (+-erro)'. Enquanto a incerteza não for lida na Tabela 5 do próprio Documentos 246, o fator K entra como valor pontual SEM incerteza declarada, e isso deve constar como limitação — porque D25 compara os competidores contra a linha de base RUSLE, e a incerteza de K faz parte do orçamento de erro dessa linha de base. |
+| **Referência** | Coelho, M. R.; Lumbreras, J. F.; Amaral, A. J. do; Vasques, G. M.; Mansilla Baca, J. F.; Dart, R. de O. & Pedreira, J. P. das N. C. (2024). Erodibilidade dos solos do Brasil. Rio de Janeiro: Embrapa Solos, Documentos 246, 40 p. ISSN 1517-2627 / e-ISSN 2966-2443 — autoria, título e paginação CONFERIDOS na capa e na folha de autores em 28/09/2026; localização interna TAMBÉM CONFERIDA nesta data: Tabela 4 (seis classes) em PDF p. 13 / Doc. p. 12 e Tabela 5 (conversão para K) em PDF p. 14 / Doc. p. 13; Mannigel, A. R. et al. (2002), Revista Brasileira de Ciência do Solo 26:1039-1049; camada `geonode:bra_erodibilidade_2024_sirgas2000` em https://geoinfo.dados.embrapa.br/geoserver/ows (esquema de 20 campos conferido por DescribeFeatureType em 28/09/2026); docs/verificacoes/fontes/wfs_erodibilidade/reconhecimento_2026-09-28.md (medições); docs/verificacoes/fontes/doc246/ (extração do PDF); D08 (vedação da ponderação por nós); D09 (níveis de K̂); D25 (orçamento de erro da linha de base); Invariante 1 |
+| **Justificativa** | A decisão original convertia a classe ordinal da carta pedológica numa FAIXA de K, o que obrigava a escolher um ponto dentro da faixa e descartava a informação que distingue unidades de mesma classe. A medição de 28/09/2026 mostrou que essa informação existe e está publicada: `k_solos` varia dentro da classe, de modo que duas unidades ambas classificadas como Muito baixa podem ter K de 0,0020 e de 0,0084 — um fator de quatro entre elas, que a conversão por faixa apagava. Preferir o campo publicado é, ao mesmo tempo, mais informativo e de proveniência melhor: sai de valor derivado por regra nossa para valor tabelado pela autoridade cartográfica, o que é exatamente a direção que a auditoria de 26/09 estabeleceu para todo o sistema. A proibição sobre `k_solos = 0` é a parte mais importante desta emenda, e não é hipotética: a camada devolve zero para área urbana e corpo d'água, e zero atravessa silenciosamente qualquer validação que apenas verifique se o número é finito. O efeito seria pior que um valor errado — um K nulo zera o produto da RUSLE e faz uma represa ou uma cidade aparecer como terreno sem perda de solo, resultado que parece plausível e não dispara alarme algum. É o mesmo mecanismo do defeito de imputação que a auditoria encontrou, entrando por uma porta nova. A explicitação da relação com D08 existe porque a leitura apressada dessa decisão levaria a recusar `k_solos` por ser composto de componentes. Seria um erro de categoria: D08 protege contra inventarmos um número, não contra usarmos um número que a fonte publica. Deixar isso escrito evita que a emenda seja revertida depois por quem reencontrar a vedação sem o contexto. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-28 |
 
 ---
 
-### D07 — Domínio de Validade da Modelagem
-- **Estado Atual:** 🛑 Proposta Metodológica Formal
-- **Proposta Recomendada:** **Declividade de 3% a 20%** e **Uso do Solo Agrícola** (Classes 30 e 40 do ESA WorldCover / MapBiomas lavouras temporárias e pastagem cultivada).
-- **Justificativa Técnica:** Relevos com declividade $< 3\%$ possuem baixíssima energia cinética de deflúvio, estando sujeitos primariamente a sedimentação e encharcamento. Relevos $> 20\%$ são classificados como forte ondulados a montanhosos pelo SiBCS, onde o Sistema Plantio Direto mecanizado de grãos é restrito e predominam voçorocas lineares ou cobertura florestal. A faixa de 3% a 20% concentra $> 90\%$ das lavouras sob risco de perda laminar na Bacia do Paraná 3.
+### D15 — Fator LS: Desmet & Govers a 30 m, com distorção de projeção medida e m dependente da declividade
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | FATOR LS pelo algoritmo BIDIMENSIONAL DE ÁREA DE CONTRIBUIÇÃO ESPECÍFICA de Desmet & Govers (1996), calculado sobre o Copernicus DEM GLO-30 a 30 m conforme D21, SEM reamostragem para 10 m — o LS carrega suporte nativo de 30 m e é atribuído às células de 10 m nele contidas, conforme D06. É por isso que o bloco de terreno tem cerca de 11 unidades efetivas por polígono em D24. PROJEÇÃO, com obrigação de medição: adotar EPSG:31982 (SIRGAS 2000 / UTM 22S), MAS medir e registrar a distorção linear de escala no extremo OESTE da bacia antes de aceitar. A Bacia do Paraná 3 ATRAVESSA o meridiano de 54 graus oeste, fronteira entre as zonas UTM 21S e 22S — Medianeira está a cerca de 54,1 graus oeste, já em 21S, e a bacia segue até o rio Paraná. TOLERÂNCIA DECLARADA: se a distorção linear máxima dentro da bacia exceder 0,5%, abandonar a UTM 22S e adotar Mercator Transversa customizada com meridiano central em cerca de 54,2 graus oeste. A medição é OBRIGATÓRIA e seu resultado entra no pacote de reprodutibilidade, ainda que confirme a UTM 22S. EXPOENTES: adotar m DEPENDENTE DA DECLIVIDADE conforme o RUSLE, e não valor fixo único, porque o domínio de 3% a 20% fixado em D07 ATRAVESSA o ponto de quebra da formulação; n conforme a formulação de declividade do RUSLE. RESSALVA DE VERIFICAÇÃO, obrigatória antes da implementação: os valores exatos dos patamares de m e a forma da função de S NÃO foram conferidos contra a fonte primária nesta data e devem ser lidos em Renard et al. (1997), Agriculture Handbook 703, antes de qualquer código. Até a conferência, o fator LS fica marcado como pendente de verificação bibliográfica, com a marca propagando ao selo de proveniência. PROVENIÊNCIA 'modelado', por ser saída de algoritmo sobre modelo digital de elevação. |
+| **Referência** | Desmet, P. J. J. & Govers, G. (1996), Journal of Soil and Water Conservation 51(5):427-433; McCool, D. K. et al. (1989), Transactions of the ASAE (fator de declividade); Renard, K. G. et al. (1997), Agriculture Handbook 703 — patamares de m e forma de S NÃO conferidos nesta data; Copernicus DEM GLO-30 (ESA, 2022); D21 (GLO-30 a 30 m sem reamostragem); D06 (suporte nativo declarado); D07 (domínio de 3% a 20%); D24 (bloco de terreno, cerca de 396 unidades efetivas); D25 (linha de base RUSLE); docs/verificacoes/voo/cobertura_voos.geojson (erro de zona UTM documentado em 27/09/2026) |
+| **Justificativa** | A formulação de Desmet & Govers é preferível à aproximação unidimensional por comprimento de rampa porque calcula área de contribuição específica por célula, o que é o que existe de fato numa vertente agrícola com convergência e divergência de fluxo; a aproximação por rampa exigiria segmentar a encosta manualmente, reintroduzindo a subjetividade que D06 eliminou. A obrigação de medir a distorção de projeção vem de erro cometido e documentado nesta pesquisa: a conversão de coordenadas da Missão 009 foi feita supondo zona 22S e devolveu posição litorânea, porque a missão está em 21S. O mesmo pressuposto tácito estava embutido no cálculo de declividade de toda a bacia. A distorção esperada é pequena — a algo como 3,6 graus do meridiano central o fator de escala fica na ordem de 1,002, e como o comprimento entra no LS com expoente inferior à unidade o erro propagado é menor ainda — mas 'esperada pequena' é exatamente o tipo de afirmação que esta pesquisa passou a exigir medida em lugar de suposta, e a tolerância de 0,5% existe para que a medição tenha critério de aceitação em vez de servir de justificativa retrospectiva. A escolha de m dependente da declividade, e não fixo, segue de que o domínio de validade de D07 cobre desde relevo suave ondulado até ondulado, faixa em que a razão entre erosão em sulcos e entre sulcos muda; fixar um único m otimizaria uma extremidade do domínio ao custo da outra. A ressalva de verificação é registrada porque este fator entra diretamente na linha de base de D25, e coeficiente citado de memória em decisão de governança seria o mesmo defeito de fabricação que a auditoria integral encontrou no pacote de reprodutibilidade. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
 
 ---
 
-### D08 — Tratamento de Associações Pedológicas
-- **Estado Atual:** 🛑 Proposta Metodológica Formal
-- **Proposta Recomendada:** Utilizar o componente dominante (`ordem_1`) da associação cartográfica como valor pedológico base, atribuindo `confiancaPedologica = "media"` quando a unidade for do tipo `"associacao"`, e `"alta"` quando for unidade `"simples"`.
-- **Justificativa Técnica:** A escala 1:250.000 da carta pedológica não possui resolução para segregar os limites espaciais exatos de associações complexas. A regra preserva a integridade científica sem inventar dados espaciais inexistentes na fonte primária.
+### D16 — Campanha: polígonos de VANT como massa de treino e teste, campo como âncora e confirmação
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | INVERSÃO DE PAPÉIS em relação à versão anterior desta decisão: o VANT deixa de ser exclusivamente held-out e passa a ser a MASSA DE TREINO e o TESTE INDEPENDENTE; o campo deixa de ser massa de treino e passa a ser ÂNCORA DE PREVALÊNCIA e CONFIRMAÇÃO PROSPECTIVA. (1) POLÍGONOS DE VANT — GEOMETRIA EMENDADA EM 29/09/2026: 72 polígonos de 5,02 ha, QUATRO POR ESTRATO sobre os 18 estratos de D12, sorteados probabilisticamente com pi_i registrado, jamais escolhidos por suspeita de erosão. FORMA: quadrado de cerca de 224 x 224 m, OU retângulo de mesma área com razão de aspecto até 1:2 — por exemplo 160 x 314 m — orientado preferencialmente no sentido do declive quando a geometria do imóvel permitir. DE CADA QUARTETO, DOIS polígonos vão para treino e DOIS para held-out, de modo que treino E teste tenham replicação DENTRO de cada estrato, o que a versão anterior, de um par por estrato, não permitia. Total de 361 ha, praticamente idêntico aos 360 ha da versão anterior, com produtividade medida de 2,3 ha/min a GSD de aproximadamente 4 cm — de modo que o tempo de MAPEAMENTO é o mesmo, cerca de 2,2 min de voo por polígono. Rende cerca de 1.845 unidades espacialmente independentes a alcance de 50 m, contra 1.836 da versão anterior, e cerca de 34.800 células de 10 m. POR QUE A ÁREA TOTAL É O QUE IMPORTA: as unidades espacialmente independentes resultam da área total dividida pelo alcance de autocorrelação de 50 m, e NÃO do tamanho de cada polígono. Encolher o polígono e aumentar o número na mesma área total preserva o regime de dados integralmente, e portanto preserva o teto de 8 preditores espectro-temporais fixado em D24 — que continua válido sem recálculo. O que muda é a logística, não a estatística. RAZÃO DA EMENDA, medida em 29/09/2026 sobre os 73.643 imóveis rurais do envelope da bacia em data/fundiario_brasil.db: exigir que o polígono caiba dentro de UM ÚNICO imóvel, o que a necessidade de autorização de sobrevoo impõe, tornava elegíveis apenas 43,4% dos imóveis a 10 ha em quadrado. A mediana de área dos imóveis da bacia é de 11,7 ha — padrão de minifúndio do oeste do Paraná — de modo que um polígono de 10 ha exigia praticamente o imóvel inteiro. A 5,02 ha em quadrado a elegibilidade sobe a 64,7%, e admitindo retângulo até 1:2 sobe a 71,8%. A fração EXCLUÍDA cai de 57% para 28%. VIÉS QUE A EMENDA REDUZ MAS NÃO ELIMINA, a declarar na dissertação: exigir que o polígono caiba num só imóvel ainda enviesa a amostra para os imóveis maiores, e tamanho de propriedade correlaciona com prática de manejo — terraceamento, rotação, mecanização — que é justamente o que os fatores C e P do RUSLE capturam. É viés sobre variável que importa ao desfecho, e permanece declarado. CUSTO ASSUMIDO: 72 autorizações de proprietário e 72 sítios a visitar, contra 36 da versão anterior. Registra-se também a correção de uma subestimação da versão anterior: a cifra de 3 jornadas de voo derivava da produtividade de MAPEAMENTO, mas uma campanha de sítios dispersos é dominada por deslocamento e montagem, não por bateria, de modo que o número de dias de campo é maior que 3 nas duas versões e maior com 72 que com 36. RESSALVA DE MÉTODO sobre a medição de elegibilidade: o teste aplicado foi de CAIXA ENVOLVENTE do imóvel, que é condição necessária e não suficiente — imóvel em faixa alongada ou em L pode ter envelope suficiente sem comportar o retângulo. Os percentuais são portanto limites SUPERIORES da elegibilidade real. (2) PONTOS DE CAMPO: 60 a 80 pontos dispersos pela bacia, FORA dos polígonos, sorteados com pi_i conhecido, coletados pelo SAREL Coletor em aparelho Android sob protocolo cego. Sua função NÃO é treinar, e sim estimar a prevalência real e calibrar a acurácia posicional efetiva. (3) CONFIRMAÇÃO PROSPECTIVA: após o treino, amostra sorteada das predições do modelo sobre a bacia, visitada em campo — teste prospectivo, cujo tamanho será fixado quando o modelo existir. (4) FOTOINTERPRETAÇÃO DA FASE A: APOSENTADA. (5) O instrumento de campo passa de KoboCollect para SAREL Coletor. |
+| **Referência** | Metodologia PPGTCA 2026, Seções 3.2 e 3.3; docs/verificacoes/voo/cobertura_voos.geojson (produtividade, GSD e CE90 medidos em 27/09/2026); D12 (18 estratos); D23 (regime amostral); D26 (alvo contínuo); van der Ploeg, Austin & Steyerberg (2014) |
+| **Justificativa** | A inversão decorre de três medições feitas sobre as missões de VANT já executadas, registradas em docs/verificacoes/voo/cobertura_voos.geojson. Primeira, posição: a delineação sobre ortomosaico tem CE90 medido de 1,47 m, contra 3 a 8 m do GNSS de frequência única do aparelho de campo, o que eleva o acerto de atribuição ao pixel de 10 m de cerca de 37% para cerca de 78%. Segunda, volume: cada polígono de 10 ha rende cerca de 51 unidades espacialmente independentes, de modo que 36 polígonos entregam ordem de 1.800 — contra 200 positivos do desenho por pontos, o que retira o classificador do regime criticamente subdimensionado descrito em D24, ao menos para os preditores que variam dentro do talhão. Terceira, qualidade de rótulo: delinear sobre imagem de 4 cm é mais confiável que fotointerpretar a 10 m, e mais fiel ao fenômeno que a visita a um ponto, porque a erosão laminar é mancha contínua na vertente e não ocorrência pontual. A escolha de DOIS polígonos por estrato, e não um, resolve um problema que só apareceu no cálculo: com um por estrato, reservar cinco como held-out deixaria cinco estratos sem treino e treze sem teste, de modo que o conjunto de teste não cobriria o espaço de covariáveis. A duplicação custa uma jornada de voo adicional e entrega divisão treino/teste completa sobre os 18 estratos, além de permitir estimar variância entre paisagens do mesmo estrato. A aposentadoria da fotointerpretação segue do mesmo raciocínio: sua única vantagem remanescente era alcançar qualquer ponto da bacia sem voar até lá, mas a diversidade de covariáveis passa a ser garantida pelo próprio sorteio estratificado dos 36 polígonos; mantê-la custaria dois intérpretes e a maquinaria de concordância para injetar rótulo de qualidade inferior num conjunto que passou a ter rótulo centimétrico. GUARDA CONTRA CIRCULARIDADE: os polígonos são sorteados pelos estratos biofísicos, nunca pelo rastreio espectral de D02; voar onde o rastreio aponta erosão faria o modelo aprender a concordar com o rastreio em vez de detectar erosão, que é o defeito eliminado em 207dca2 reentrando por outra porta. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
 
 ---
 
-### D12 — Dimensões da Estratificação Amostral
-- **Estado Atual:** 🛑 Proposta Metodológica Formal
-- **Proposta Recomendada:** Estrutura tridimensional canônica $3(\hat{S}) \times 3(\hat{E}) \times 2(\hat{K}) = 18$ estratos biofísicos:
-  - $\hat{S}$ (Declividade): Baixa ($3–8\%$), Média ($8–14\%$), Alta ($14–20\%$);
-  - $\hat{E}$ (Frequência de Solo Nu): Rara ($< 15\%$), Moderada ($15–30\%$), Frequente ($> 30\%$);
-  - $\hat{K}$ (Erodibilidade Embrapa): Nível 1 (Baixa/Média) e Nível 2 (Alta/Muito Alta).
-- **Justificativa Técnica:** Garante distribuição ortogonal balanceada entre fatores topográficos, dinâmicos de manejo e intrínsecos do solo, evitando viés de concentração amostral.
+### D17 — Ciclo da cota Planet e alocação racional entre download e tiles
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | Cota de Scene Downloads de 3.000 km² tratada como TOTAL do período de vigência do plano (Education and Research Basic, Plan ID 798565, até 05/04/2028), não como cota mensal renovável. Alocação: a fotointerpretação de rotulagem consome exclusivamente a cota de Scene Tiles (100.000 tiles), que não debita km²; a cota de km² fica reservada aos recortes analíticos ortho_analytic (PSScene), incluindo os trios pré/pós evento. |
+| **Referência** | Planet Labs Education & Research Program, Plan ID 798565 (vigência até 05/04/2028); src/lib/planet/quota.ts (livro-razão persistente); Planejamento V3, §11.1-11.3 |
+| **Justificativa** | A leitura conservadora (total, não mensal) é segura sob ambas as hipóteses contratuais: se o ciclo for de fato mensal, o planejamento apenas folga, nunca aperta; a hipótese inversa esgotaria a cota com OVERAGE desligado, situação em que a API rejeita a requisição. O dimensionamento medido em 27/09/2026 confirma folga ampla sob a leitura conservadora: com o buffer de D18 (0,25 km² por recorte), 180 pontos em uma data mais 60 trios pré/pós evento consomem 75 km², ou 2,5% da cota total; 180 pontos em três datas consomem 135 km², ou 4,5%. A separação entre tiles e km² é a economia estruturante: rotular por fotointerpretação não deve debitar a cota analítica, e o plano oferece 100.000 tiles exatamente para esse uso. O ciclo contratual efetivo deve ser confirmado na página do plano na conta Planet; a confirmação de ciclo mensal permite relaxar esta decisão sem qualquer alteração operacional. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
 
 ---
 
-### D13 — Formulação do Fator R (Erosividade da Chuva)
-- **Estado Atual:** 🛑 Proposta Metodológica Formal
-- **Proposta Recomendada:** Equação de erosividade regional de Waltrick et al. (2015) para o Estado do Paraná:
-  $$EI_{30} = 67,355 \cdot \left(\frac{p^2}{P}\right)^{0,85}$$
-  calculada a partir da precipitação mensal ($p$) e anual ($P$) obtida de estações meteorológicas oficiais do SIMEPAR/INMET ou grade CHIRPS/ERA5-Land calibrada.
-- **Justificativa Técnica:** Validada empiricamente para o regime pluviométrico do Estado do Paraná, com excelente correlação com medições de energia cinética de chuvas erosivas.
+### D18 — Buffer do recorte Planet por ponto amostral
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | Raio de 250 m ao redor do centróide amostral, materializado como bounding box de 500 m de lado em EPSG:4326, equivalente a 0,25 km² (25 ha) por recorte. |
+| **Referência** | Planejamento V3, §10.4; src/lib/planet/ordersApi.ts:56 (geometria efetiva do buffer); docs/Delimitacao_Territorial_e_Selecao_Amostral_MultiEscala_BP3.md (catena topo-sequencial) |
+| **Justificativa** | O raio de 250 m cobre a encosta do talhão e o gradiente topo-sequencial da catena agrícola (topo, encosta e baixada), que é a unidade do processo hidrossedimentológico da erosão laminar — o fenômeno não se manifesta num ponto isolado. A área registrada é 25 ha, e não os 19,6 ha da proposta original: criarPoligonoBufferAoi (src/lib/planet/ordersApi.ts:56) produz uma bounding box quadrada de lado 2r, não um círculo de raio r, e o valor circular subestimava o consumo real de cota em 27%. A restrição operante aqui é metodológica, não orçamentária: a cota permitiria raio de até cerca de 1.179 m em 180 pontos por três datas, mas ampliar o recorte além da encosta acrescenta área sem acrescentar relevância de processo. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
 
 ---
 
-### D15 — Fator Topográfico LS na Equação RUSLE
-- **Estado Atual:** 🛑 Proposta Metodológica Formal
-- **Proposta Recomendada:** Algoritmo bidimensional de Desmet & Govers (1996) acoplado aos expoentes de inclinação de McCool et al. (1989):
-  $$LS = \frac{A_{i,j-in}^{m+1} - A_{i,j-out}^{m+1}}{D \cdot x^m \cdot (22,13)^m} \cdot S$$
-  executado em projeção conforme métrica estrita SIRGAS 2000 / UTM fuso 22S (EPSG:31982).
-- **Justificativa Técnica:** Modela adequadamente o acúmulo de deflúvio em encostas convergentes e divergentes da catena agrícola, superando as limitações da fórmula unidimensional de Wischmeier & Smith (1978).
+### D19 — Pares de evento: reescrita do ponto para o polígono, análise secundária fora de D25
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | REESCRITA PARA O DESENHO POR POLÍGONOS. A proposta original — 40 a 60 PONTOS amostrais pareados pré e pós evento erosivo — pressupunha o desenho por pontos e fica SUPERADA por D16, que reduziu os pontos de campo a 60 a 80 e mudou sua função para âncora de prevalência. UNIDADE DO PAREAMENTO: o POLÍGONO, não o ponto. Os 36 polígonos de D16, com erosão delineada a cerca de 4 cm, rendem cerca de 1.836 unidades efetivas por D24, contra 40 a 60 do desenho anterior. PROCEDIMENTO: (1) identificar eventos erosivos por IMERG sub-diário sobre a bacia, conforme a divisão de produtos de D13; (2) compor Sentinel-2 imediatamente antes e imediatamente depois do evento, sobre os mesmos polígonos; (3) analisar a RESPOSTA ESPECTRAL DIFERENCIAL por célula, condicionada à fração erodida delineada de D26. A análise é SECUNDÁRIA e exploratória: NÃO entra na matriz de treino, NÃO gera preditor, e NÃO participa de D25. Serve a uma pergunta distinta — se o sinal espectral responde a evento individual, e não apenas ao estado acumulado. REVISITA DE CAMPO: reservada a subconjunto pequeno de confirmação, e seu tamanho NÃO é fixado nesta data, deliberadamente, porque depende de quais polígonos o evento efetivamente cobrir e de sua magnitude — fixar número agora seria inventar um valor que nenhuma informação disponível sustenta. Será fixado quando um evento ocorrer dentro da janela de campanha, com o critério de seleção registrado antes da visita. CONDIÇÃO DE INEXISTÊNCIA: se nenhum evento erosivo de magnitude suficiente ocorrer na janela, a análise simplesmente NÃO é realizada e isso é reportado. Não há substituto, e a ausência não autoriza retroceder a eventos anteriores à delineação, porque o rótulo de fração erodida não existiria para eles. |
+| **Referência** | Planejamento V3, §10.5 (proposta original, por pontos, superada); Huffman, G. J. et al., IMERG / GPM (identificação de eventos sub-diários); D16 (36 polígonos e nova função dos pontos de campo); D13 (divisão CHIRPS/IMERG); D24 (unidades efetivas e teto do bloco espectro-temporal); D26 (fração erodida como condicionante); D25 (do qual esta análise está explicitamente excluída) |
+| **Justificativa** | Esta era a última decisão do registro que ainda pressupunha o desenho por pontos, e mantê-la criaria incoerência com D16, D23, D24 e D26: com 60 a 80 pontos de campo no total, dedicar 40 a 60 ao pareamento de evento consumiria quase toda a âncora de prevalência, que é a função pela qual os pontos foram preservados. A migração para o polígono segue o mesmo raciocínio que justificou a inversão de papéis: onde há delineação centimétrica há duas ordens de grandeza mais unidades, e a resposta espectral diferencial é justamente uma medida por célula, que o polígono fornece e o ponto não. Declarar a análise como secundária e fora de D25 é necessário para proteger o critério de refutação: admitir resposta a evento como preditor acrescentaria dimensionalidade ao bloco espectro-temporal, que já opera no teto de oito fixado em D24, e o faria depois do pré-registro. A recusa em fixar o número de revisitas agora é deliberada e coerente com a regra de não fabricação: o tamanho depende de informação que só existirá quando o evento ocorrer, e um número escrito hoje seria decoração de rigor. Pela mesma razão se registra de antemão a condição de inexistência, para que a ausência de evento não seja depois compensada por análise improvisada sobre eventos anteriores à delineação, para os quais não há rótulo. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
 
 ---
 
-### D17, D18 e D19 — Protocolo de Sensoriamento de Alta Resolução PlanetScope
-- **D17 (Cota Planet):** Adotar modelo de cota total de pesquisa (volume fixo de quilômetros quadrados alocados ao projeto acadêmico).
-- **D18 (Buffer de Recorte):** Raio de 250 m ao redor de cada centróide amostral ($\approx 19,6\ \text{ha}$ por ponto), cobrindo integralmente o talhão agrícola circundante.
-- **D19 (Pares de Evento):** Subconjunto focado de 40 a 60 pontos pareados antes e depois de eventos de precipitação extrema ($> 50\ \text{mm}$ em 24h).
+### D20 — Fórmula do Fator C híbrido SPD: Durigon et al. (2014) modulada pelo BSI
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | C = ((1 - NDVI) / 2) * (1 + BSI), com domínio físico estrito C em [0, 1]; qualquer C fora de [0, 1] resulta em indisponivel com causa fora-do-dominio. Na ausência de BSI válido, aplica-se a forma pura de D01: C = (1 - NDVI) / 2. |
+| **Referência** | Durigon et al. (2014), International Journal of Remote Sensing 35(2):441-453 (formulação base); Rikimaru et al. (2002) (Bare Soil Index); Renard et al. (1997), USDA-ARS Agriculture Handbook 703 (domínio do Fator C); docs/auditorias/Relatorio_Auditoria_Integral_Coerencia_Efetividade_2026-09-26.md, achado C1 |
+| **Justificativa** | Estende a formulação de Durigon et al. (2014) — decidida em D01 e preservada como caminho puro — acrescentando modulação pelo Índice de Solo Exposto (BSI). Fundamento físico: sob Sistema Plantio Direto, o NDVI isolado não distingue palhada senescente de solo mineral exposto, pois ambos apresentam NDVI baixo. O BSI resolve a ambiguidade pelo sinal: palhada senescente exibe NDVI baixo com BSI negativo (cobertura morta ainda protege o solo do impacto da gota), enquanto solo mineral exposto exibe NDVI baixo com BSI positivo (superfície desprotegida e suscetível ao salpicamento). Como o Fator C expressa a razão de perda de solo sob determinada cobertura em relação ao solo continuamente descoberto, é fisicamente correto que a mesma leitura de NDVI produza C menor sob palhada e C maior sob solo exposto. O domínio estrito em [0, 1] é imposto na saída porque o Fator C é razão adimensional por construção (Renard et al., 1997): sem essa verificação, a combinação NDVI = -1 com BSI = 1 produzia C = 2,0, o dobro do máximo físico, que se propagaria para A = R*K*LS*C*P. Conforme a Regra 2, valor fora do domínio não é cortado por piso ou teto artificial: causa indisponibilidade explícita. Esta decisão NÃO substitui nem revoga D01, que permanece registrada com a formulação original e segue vigente quando o BSI não está disponível. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
 
 ---
 
-## 5. Parâmetros Operacionais em Proposta 🟡
+### D21 — Fonte e resolução do Modelo Digital de Elevação
 
-| ID | Parâmetro | Valor Proposto | Origem | Justificativa |
-|:---|:---|:---:|:---|:---|
-| **P01** | Aresta do Bloco Espacial | 20 km (ou variograma) | Roberts et al. (2017) | Tamanho mínimo para bloquear autocorrelação espacial no LOCO |
-| **P02** | Espaçamento de *Thinning* | 1,0 km a 5,0 km | Metodologia PPGTCA 2026 | Descorrelação geodésica entre amostras de treinamento |
-| **P04** | Buffers de Exclusão Física | Água: 30 m; Urbano: 150 m | Legislação Florestal / Cartografia | Elimina contaminação espectral de corpos d'água e malha urbana |
-| **P05** | Classes Elegíveis ESA WorldCover | 30 (Lavouras) e 40 (Campos) | ESA WorldCover 2021 | Delimitação estrita do domínio agropecuário |
-| **P06** | Fração Limpa Mínima (UDM2) | $\ge 80\%$ na AOI do ponto | PlanetScope Quality Mask | Garante visualização nítida sem névoa ou artefatos de nuvem |
-| **P08** | Limiar de Alerta de Baixa Variância | Desvio Padrão $< 10^{-4}$ | Auditoria Pericial | Alerta imediato contra preditores estáticos ou corrompidos |
-| **P09** | Máscara de Nuvens Sentinel-2 | SCL (Scene Classification) | Copernicus ESA | Classes 3 (sombra), 8 (nuvem média), 9 (nuvem alta) e 10 (cirrus) mascaradas |
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | Copernicus DEM GLO-30 (ESA) na resolução nativa de 30 m, processado em projeção métrica SIRGAS 2000 / UTM 22S (EPSG:31982). Todas as derivadas topográficas — declividade, curvatura de perfil, curvatura plana, área de contribuição específica e TWI — são calculadas na grade nativa de 30 m. É PROIBIDO reamostrar o MDE para grade mais fina: a área de contribuição específica e o fator LS são grandezas dependentes de escala, e reamostrar produziria valores diferentes sem informação nova, sob selo 'medido'. A resolução da fonte é registrada na proveniência de cada variável derivada. |
+| **Referência** | ESA Copernicus DEM GLO-30; Zevenbergen & Thorne (1987) para curvaturas; Beven & Kirkby (1979) para TWI; Desmet & Govers (1996) para dependência de escala de As; docs/auditorias/Relatorio_Auditoria_Integral_Coerencia_Efetividade_2026-09-26.md, achado A3 |
+| **Justificativa** | Não existe MDE gratuito de resolução superior a 30 m com cobertura da Bacia do Paraná 3: o Copernicus EEA-10 (10 m) cobre apenas território europeu, e NASADEM, AW3D30 e FABDEM são igualmente de 30 m. O TOPODATA (INPE) tem 30 m nominais reamostrados de 90 m, ou seja, menor conteúdo real na mesma grade. Limitação declarada e assumida: terraços agrícolas espaçados a 15-40 m no Oeste do Paraná são sub-pixel a 30 m, o que sustenta P = 1,0 na linha de base RUSLE e o selo 'modelado' no fator LS. Desencontro de escala declarado em relação a D06: a unidade de predição é o pixel de 10 m do Sentinel-2, de modo que um único valor de terreno abrange 9 pixels de predição e validação. Esta decisão é expressamente revisável: obtida fonte de resolução superior com cobertura do recorte — o MDT da cartografia base 1:10.000 do ITCG/IAT é o candidato a verificar —, a substituição é feita sem alteração arquitetural, porque a resolução está registrada na proveniência e não embutida em constante de código. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
+
+---
+
+### D22 — Fator P derivado de observação de campo, estratificado por declividade
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | Nos pontos com visita de campo, o Fator P deixa de ser a constante tabelada 1,0 e passa a ser derivado da combinação entre as variáveis observadas pelo SAREL Coletor (sentido_plantio, presenca_terraco, estado_conservacao_terraco) e a declividade medida. TABELA ADOTADA (valores PROVISÓRIOS — ver ressalva na justificativa), por intervalo de declividade em %: [1,0-2,0] morro abaixo 1,00 / contorno 0,60 / faixas 0,30 / terraceamento 0,12; [2,1-7,0] 1,00 / 0,50 / 0,25 / 0,10; [7,1-12,0] 1,00 / 0,60 / 0,30 / 0,12; [12,1-18,0] 1,00 / 0,80 / 0,40 / 0,16; [18,1-24,0] 1,00 / 0,90 / 0,45 / 0,18; [>24,0] 1,00 / 0,95 / 0,50 / 0,20. REGRAS DE MAPEAMENTO: sentido_plantio 'morro_abaixo' usa a coluna Morro Abaixo; 'em_nivel' sem terraço usa Contorno; 'em_nivel' com terraço em bom estado de conservação usa Terraceamento associado ao Contorno; 'em_gradiente' usa 1,00 por decisão conservadora, por não constar da tabela; terraço 'assoreado' ou 'rompido' é tratado como AUSENTE, pois terraço rompido não reduz perda de solo, com a condição preservada no dado; terraço combinado a plantio morro abaixo usa a coluna Contorno, não a de Terraceamento, porque o valor tabelado de terraceamento pressupõe associação ao contorno. A coluna 'Cultivo em Faixas' não é utilizável, pois o app não coleta essa prática. Onde NÃO houver visita de campo, P permanece tabelado em 1,0, por prática desconhecida. O selo de proveniência de todo P derivado desta tabela deve declarar o status provisório no campo 'tabela'. |
+| **Referência** | Wischmeier & Smith (1978), USDA Agriculture Handbook 537 (estrutura multiplicativa); Bertoni & Lombardi Neto, Conservação do Solo (fonte primária a conferir); Lombardi Neto (1990) apud ABRHidro (valores de 1,0 e 0,5 confirmados em fonte secundária); Renard et al. (1997), Handbook 703; modelo de dados do SAREL Coletor |
+| **Justificativa** | RESSALVA DE PROCEDÊNCIA, REGISTRADA A PEDIDO DO PESQUISADOR: os coeficientes acima vieram de uma saída de modelo de inteligência artificial, atribuída a 'Bertoni & Lombardi Neto / Wischmeier & Smith adaptados', e AINDA NÃO FORAM CONFERIDOS CONTRA A FONTE PRIMÁRIA. São adotados em caráter provisório até que o pesquisador localize o original. Dois elementos sustentam a adoção provisória: a tabela é internamente coerente, com faixas equivalendo a 0,50 vezes o contorno e terraceamento a 0,20 vezes o contorno em todas as classes de declividade, que é a estrutura multiplicativa canônica de Wischmeier & Smith (1978, Handbook 537); e uma fonte secundária independente (artigo ABRHidro citando Lombardi Neto, 1990) confirma os valores de 1,0 para morro abaixo e 0,5 para contorno. Os intervalos de declividade divergem dos de Wischmeier & Smith original, o que é compatível com a designação 'adaptados'. AUSÊNCIA DE DUPLA CONTAGEM: na RUSLE o efeito do terraceamento costuma ser atribuído ao fator LS, por encurtamento do comprimento de rampa, o que criaria dupla contagem se também entrasse em P. Isso NÃO ocorre aqui, porque D21 fixa o MDE em Copernicus GLO-30 a 30 m, resolução em que terraços espaçados de 15 a 40 m são sub-pixel: o comprimento de rampa derivado do MDE não enxerga o terraço e usa a vertente inteira, de modo que P é o único lugar onde o efeito pode ser contabilizado. CONDICIONAL EXPRESSA: se D21 for revista e adotado MDE que resolva terraços — o MDT 1:10.000 do ITCG é o candidato —, a componente de terraceamento deve SAIR de P, sob pena de dupla contagem. Decisão conservadora em 'em_gradiente': na ausência de coeficiente verificado adota-se 1,00, porque para um instrumento de risco superestimar a perda é a direção segura. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
+
+---
+
+### D23 — Regime amostral: estratificação desproporcional com probabilidade de inclusão registrada
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | Amostragem ESTRATIFICADA DESPROPORCIONAL com a probabilidade de inclusão pi_i REGISTRADA POR UNIDADE SORTEADA, substituindo o balanceamento 50/50 que constava do relatório comparativo e nunca foi implementado. A UNIDADE DE SORTEIO PRIMÁRIA É O POLÍGONO DE VANT, não o ponto: 36 polígonos de 10 ha, dois por estrato sobre os 18 estratos de D12, conforme D16. Para cada estrato h, pi_i = n_h / N_h, com n_h e N_h registrados junto do sorteio. ÂNCORA DE PREVALÊNCIA: 60 a 80 pontos de campo dispersos, fora dos polígonos, sorteados com pi_i conhecido, que estimam a prevalência real por estimador ponderado por 1/pi_i (Horvitz-Thompson) com precisão esperada de cerca de mais ou menos 0,08. A campanha da âncora é executada em DUAS ONDAS: os primeiros 30 pontos funcionam como LOTE PILOTO, validando o protocolo de campo, entregando a primeira estimativa de prevalência e medindo a acurácia posicional efetiva do aparelho no terreno real, que calibra a faixa intermediária de P03; os demais completam a precisão após revisão. REGRAS DE INFERÊNCIA: toda afirmação sobre a Bacia do Paraná 3 — área afetada, prevalência, acurácia do mapa — usa os estimadores estratificados de Olofsson et al. (2014), com intervalo de confiança e com o n EFETIVO declarado, jamais a contagem bruta de pixels ou de células; toda probabilidade predita exige CORREÇÃO A PRIORI (King & Zeng, 2001) ancorada na prevalência estimada. A métrica primária de D26, correlação de postos, é reportada sem correção por ser independente de prevalência. |
+| **Referência** | King, G. & Zeng, L. (2001), Political Analysis 9:137-163; Olofsson, P. et al. (2014), Remote Sensing of Environment 148:42-57; Cochran (1977), Sampling Techniques; D12 (estratos), D16 (campanha), D26 (alvo); docs/auditorias/Relatorio_Auditoria_Integral_Coerencia_Efetividade_2026-09-26.md |
+| **Justificativa** | O balanceamento 50/50 é um caso particular com razão arbitrária e não justificada; a estratificação desproporcional com pi_i registrado o domina, porque entrega as duas inferências ao mesmo tempo. Treinar na amostra desproporcional é eficiente: King & Zeng (2001) demonstram que sobreamostrar o evento raro e subamostrar os não-eventos economiza até 99% do custo de coleta sem perda de validade, desde que a correção a priori seja aplicada; e registrar pi_i preserva a inferência populacional, que uma amostra desbalanceada sem pesos destrói. O que sobrevive e o que não sobrevive ao desbalanceamento precisa estar explícito, porque a distinção é fonte comum de erro: a correlação de postos e a AUC sobrevivem, por dependerem apenas da ordenação; a probabilidade predita, a acurácia, a precisão e o kappa NÃO sobrevivem, por dependerem de prevalência. MUDANÇA DA UNIDADE DE SORTEIO: a versão anterior desta decisão foi registrada quando a unidade era o ponto; com a inversão de papéis formalizada em D16, a unidade primária passa a ser o polígono, e a lógica de pi_i se aplica igualmente, apenas trocando a população amostrada de pontos candidatos para polígonos candidatos dentro de cada estrato. DIMENSIONAMENTO DA ÂNCORA: a precisão da estimativa de prevalência foi calculada e é o que determina o tamanho. Para prevalência real em torno de 0,15, sessenta a oitenta pontos entregam mais ou menos 0,08, ao passo que alcançar mais ou menos 0,05 exigiria cerca de 196 pontos. Aceitou-se a precisão menor porque a prevalência entra apenas na correção a priori, que afeta CALIBRAÇÃO de probabilidade e não ORDENAÇÃO, e a métrica primária desta pesquisa é de ordenação. O lote piloto foi fundido à primeira onda da âncora em lugar de constituir amostra separada, porque a aposentadoria da fotointerpretação (D16) eliminou uma das quatro funções que ele originalmente cumpria, e as três restantes são cumpridas pelos próprios pontos da âncora. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
+
+---
+
+### D24 — Regime de dados do XGBoost: teto de preditores por bloco físico, não teto global
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | CONSTATAÇÃO. O desenho por polígonos de D16 não elevou o regime de dados de modo uniforme: elevou-o de forma ASSIMÉTRICA POR BLOCO DE PREDITOR, porque cada bloco varia numa escala espacial diferente. As unidades efetivas por bloco, sobre 36 polígonos de 10 ha, são: (a) ESPECTRO-TEMPORAL (bandas do Sentinel-2, índices, métricas de série) — cerca de 1.836 unidades, porque o sinal varia de célula para célula e o alcance de autocorrelação adotado no planejamento é de 50 m, o que deflaciona as 1.000 células nominais de cada polígono para cerca de 51 efetivas; (b) TERRENO a 30 m (declividade, LS, curvatura, área de contribuição, índices topográficos) — cerca de 396 unidades, ou cerca de 11 efetivas por polígono, porque o terreno é suave e a célula de 30 m já agrega; (c) SOLO, isto é a erodibilidade K — cerca de 36 unidades, uma por polígono, porque cada polígono de 316 m de lado cai tipicamente dentro de uma única unidade de mapeamento pedológico; (d) CHUVA (I30, erosividade, contagem de eventos) — cerca de 36 unidades, uma por polígono, porque a grade de produto de chuva é de 5 a 10 km. NOTA DE 29/09/2026, após a emenda de geometria de D16: os polígonos passaram de 36 de 10 ha para 72 de 5,02 ha, mantendo a área total em cerca de 361 ha. As unidades efetivas resultam da ÁREA TOTAL dividida pelo alcance de autocorrelação, e NÃO do tamanho de cada polígono, de modo que o total passou de 1.836 para 1.845 e TODOS OS TETOS DESTA DECISÃO PERMANECEM VÁLIDOS SEM RECÁLCULO. Muda a contagem por polígono, de cerca de 51 para cerca de 26, e o número de polígonos held-out, de 18 para 36, o que ELEVA as unidades efetivas do held-out de cerca de 918 para cerca de 936. Os blocos de solo e de chuva passam de 36 para 72 unidades NOMINAIS, mas isso NÃO os retira do regime crítico: polígonos vizinhos compartilham unidade pedológica e célula de chuva, de modo que o ganho efetivo é menor que o nominal e os tetos de 1 preditor para solo e 1 para chuva PERMANECEM. TETO DE PREDITORES POR BLOCO, e não global: espectro-temporal ATÉ 8; terreno ATÉ 4; solo 1, a erodibilidade K; chuva 1. Total de ATÉ 14 preditores. QUATRO MITIGAÇÕES OBRIGATÓRIAS, todas exigíveis em revisão: (1) TRÊS COMPETIDORES comparados pela correlação de postos de Spearman de D26 — a linha de base RUSLE, uma regressão penalizada (logística para o alvo binário derivado, Tweedie penalizada para o alvo contínuo) e o XGBoost; nenhum deles é privilegiado a priori, e o resultado admissível inclui a regressão parcimoniosa vencer o ensemble. (2) RESTRIÇÕES DE MONOTONICIDADE FÍSICA sobre os preditores de sinal conhecido (parâmetro monotone_constraints no XGBoost), declaradas antes do ajuste; seu valor é máximo justamente nos blocos fracos, onde os dados não identificam a forma da relação e apenas o mecanismo físico a determina. (3) DIMENSIONALIDADE DECLARADA DE ANTEMÃO por mecanismo físico, nunca por seleção dirigida pelos dados sobre os mesmos dados de ajuste; selecionar preditores olhando o desempenho burla o teto e contamina a estimativa held-out. (4) VALIDAÇÃO CRUZADA ANINHADA E AGRUPADA POR POLÍGONO (GroupKFold sobre o identificador do polígono), com a estimativa honesta vinda exclusivamente dos 36 polígonos held-out de D16, que reúnem cerca de 936 unidades efetivas. (Valores corrigidos em 02/10/2026: a emenda de geometria de D16 levou os polígonos de 36 para 72 e o held-out de 18 para 36; o corpo desta decisão ainda trazia os números anteriores, em contradição com a própria nota acrescentada naquela emenda.) RESSALVA REGISTRADA sobre a mitigação (4): com dois polígonos por estrato e um de cada par no held-out, cada dobra interna da validação aninhada perde um estrato; isso degrada o ajuste de hiperparâmetros, mas NÃO contamina nem enviesa a estimativa final, que é calculada uma única vez sobre o held-out. DUAS RESSALVAS DE HONESTIDADE, a declarar como limitação na dissertação: PRIMEIRA, os tetos de terreno, solo e chuva EXCEDEM o que o critério de 200 observações por variável suportaria — a 1.836, 396 e 36 unidades efetivas, o critério admitiria 9, 1 e 0 preditores respectivamente, de modo que apenas o bloco espectro-temporal está dentro do regime; terreno, solo e chuva são admitidos por NECESSIDADE FÍSICA, porque o Invariante 1 exige os cinco fatores do RUSLE e a comparação com a linha de base ficaria impossível sem K, sem R e sem LS, e por serem os blocos em que a monotonicidade imposta reduz os graus de liberdade efetivos por preditor. São mínimos fisicamente mandatórios, não máximos estatisticamente suportados. SEGUNDA, o critério de observações por variável governa o alvo contínuo primário de D26; sob o alvo binário derivado a 25% o que governa é a contagem de células POSITIVAS, que é necessariamente menor e desconhecida antes da delineação. OBRIGAÇÃO DE RECONTAGEM: quando a delineação dos polígonos de treino existir, recontar as unidades efetivas de duas maneiras — o alcance de autocorrelação EMPÍRICO, por variograma sobre a fração erodida, substituindo o alcance de 50 m adotado no planejamento, e a contagem de positivos sob o limiar de 25% — e fazer valer o MENOR dos dois tetos assim obtidos. Se o alcance empírico exceder 50 m, os tetos caem e esta decisão deve ser emendada antes do ajuste, nunca depois de observados os resultados. |
+| **Referência** | van der Ploeg, T., Austin, P. C. & Steyerberg, E. W. (2014), BMC Medical Research Methodology 14:137; Riley, R. D. et al. (2019), Statistics in Medicine 38(7):1262-1275; Riley, R. D. et al. (2020), BMJ 368:m441; Roberts, D. R. et al. (2017), Ecography 40(8):913-929 (validação cruzada com estrutura espacial); Hanley, J. A. & McNeil, B. J. (1982), Radiology 143(1):29-36; D16 (36 polígonos, 1.836 unidades efetivas, alcance de 50 m); D12 (18 estratos); D26 (alvo contínuo e correlação de postos); D25 (critério de refutação) |
+| **Justificativa** | van der Ploeg, Austin e Steyerberg (2014) mostram que métodos flexíveis — ensembles de árvores, redes neurais, máquinas de vetores de suporte — precisam de ordem de 200 eventos por variável para atingir desempenho estável, contra 10 a 20 do modelo de regressão clássico; abaixo disso o desempenho medido em amostra independente degrada de forma acentuada e errática. O desenho anterior por pontos, com cerca de 200 positivos totais, ficava de 5 a 15 vezes abaixo desse regime para qualquer número útil de preditores, e esse era o achado central desta decisão. O desenho por polígonos de D16 corrige o problema para o bloco espectro-temporal, que é precisamente onde o XGBoost tem algo a fazer que o RUSLE não faz — aprender forma não linear e interação a partir de sinal que varia dentro do talhão. Não corrige, e não poderia corrigir por voo algum, os blocos de solo e de chuva: são 36 valores porque existem 36 polígonos, e aumentar polígonos é a ÚNICA via de aumento, a um custo de voo que o projeto não suporta. Impor um teto global único seria errado nas duas direções: calibrado pelo bloco fraco, desperdiçaria a informação espectro-temporal efetivamente obtida; calibrado pelo bloco forte, admitiria oito preditores de chuva sobre 36 valores, o que produziria sobreajuste invisível na validação interna. O teto por bloco faz cada família de preditores responder ao seu próprio regime. As quatro mitigações atacam o que resta: a comparação com dois competidores mais parcimoniosos torna a hipótese refutável em vez de assumida, a monotonicidade repõe por física a informação que falta por amostra, a declaração prévia impede que o teto seja burlado por seleção, e o agrupamento por polígono impede que a pseudorreplicação dentro de polígono infle a estimativa — 36.000 células não são 36.000 observações, e tratar células vizinhas de um mesmo polígono como independentes seria o mesmo erro de pseudorreplicação já corrigido em outras partes do sistema. A honestidade sobre os tetos excedidos é deliberada: é preferível registrar que três dos quatro blocos operam fora do regime recomendado, com a razão física pela qual são mantidos, do que apresentar catorze preditores como se todos estivessem estatisticamente suportados. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
+
+---
+
+### D25 — Critério de refutação pré-registrado: piso, margem e três desfechos
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | CRITÉRIO DE REFUTAÇÃO PRÉ-REGISTRADO, fixado ANTES de qualquer ajuste e de qualquer observação de resultado. CONJUNTO DE AVALIAÇÃO: exclusivamente os 36 polígonos held-out de D16, cerca de 936 unidades efetivas por D24. (Corrigido em 02/10/2026: eram 18 e 918 antes da emenda de geometria de D16, que passou a 72 polígonos de 5,02 ha com quatro por estrato, dois de treino e dois de held-out.) Uma única avaliação, sem reuso do held-out para escolha alguma. MÉTRICA PRIMÁRIA: correlação de postos de Spearman entre predito e fração erodida observada, por D26, calculada de forma emparelhada sobre as MESMAS células para os três competidores de D24. CALIBRAGEM ADOTADA (intermediária, entre três consideradas): PISO DE UTILIDADE rho maior ou igual a 0,40; MARGEM SOBRE A LINHA DE BASE rho_XGBoost menos rho_RUSLE maior ou igual a 0,10. MÉTRICA SECUNDÁRIA, sobre o alvo binário derivado a 25% de D26: AUC maior ou igual a 0,70 e delta de AUC sobre o RUSLE limiarizado maior ou igual a 0,05. INFERÊNCIA: intervalo de 95% da DIFERENÇA EMPARELHADA obtido por bootstrap cuja UNIDADE DE REAMOSTRAGEM É O POLÍGONO, nunca a célula — reamostrar células trataria vizinhas do mesmo polígono como independentes, que é a pseudorreplicação combatida em D24. Consequência assumida: a potência é governada por 18 AGRUPAMENTOS, não por 918 unidades, de modo que o intervalo é largo e pode conter zero ainda que a margem seja atingida no ponto. Por isso o desfecho é TERNÁRIO e não binário. TRÊS DESFECHOS, declarados de antemão: (1) CORROBORADA — a estimativa pontual atinge o piso E a margem, E o intervalo de 95% da diferença emparelhada exclui zero. (2) INCONCLUSIVA — a margem é atingida na estimativa pontual, mas o intervalo contém zero. Reporta-se limitação de potência por 36 agrupamentos; NÃO se reporta superioridade, e é VEDADO reclassificar este desfecho como corroboração por qualquer análise posterior. (3) REFUTADA — a estimativa pontual fica abaixo do piso de utilidade de 0,40, OU abaixo do RUSLE. QUARTO DESFECHO, independente dos três e igualmente pré-registrado: se a REGRESSÃO PENALIZADA empatar com o XGBoost ou vencê-lo dentro do intervalo, a hipótese específica sobre ensembles de árvores — a de que não linearidade e interação são necessárias — fica REFUTADA, ainda que o sensoriamento remoto vença o RUSLE. São resultados distintos e ambos publicáveis. PROIBIÇÕES EXPLÍCITAS: é vedado alterar piso, margem, métrica primária, unidade de bootstrap ou definição de desfecho após observar qualquer resultado no held-out; é vedado reportar métrica de validação interna como se fosse desempenho; é vedado escolher, entre as duas métricas, a que favorecer o resultado obtido — a primária é a de D26 e assim permanece. Refutação é resultado científico válido e será apresentada como tal. |
+| **Referência** | Nosek, B. A., Ebersole, C. R., DeHaven, A. C. & Mellor, D. T. (2018), PNAS 115(11):2600-2606 (pré-registro); Cameron, A. C., Gelbach, J. B. & Miller, D. L. (2008), Review of Economics and Statistics 90(3):414-427 (inferência com poucos agrupamentos); Hanley, J. A. & McNeil, B. J. (1982), Radiology 143(1):29-36; DeLong, E. R., DeLong, D. M. & Clarke-Pearson, D. L. (1988), Biometrics 44(3):837-845 (AUC correlacionadas); Roberts, D. R. et al. (2017), Ecography 40(8):913-929; Hosmer, D. W. & Lemeshow, S., Applied Logistic Regression (convenção de AUC, não conferida); D26 (métrica primária e binário derivado a 25%); D24 (competidores, unidades efetivas e agrupamento); D16 (36 polígonos held-out após a emenda de geometria) |
+| **Justificativa** | Sem critério fixado de antemão a hipótese não é falsificável, e a flexibilidade analítica no ajuste de hiperparâmetros e na escolha de métrica basta para produzir superioridade aparente em qualquer conjunto de dados (Nosek et al., 2018). O piso de 0,40 em correlação de postos e o de 0,70 em AUC correspondem à fronteira convencional de discriminação aceitável, abaixo da qual a ordenação produzida não sustenta o uso operacional declarado, que é priorizar visitas de campo. A margem de 0,10 foi escolhida entre uma calibragem estrita de 0,15 e uma permissiva de 0,05, por duas razões simétricas. Contra a estrita: D24 registra que três dos quatro blocos de preditores operam abaixo do regime de dados recomendado, de modo que exigir rho maior ou igual a 0,50 cobraria do modelo um desempenho que o próprio desenho amostral não pode fornecer, e arriscaria declarar refutação sobre um instrumento genuinamente útil. Contra a permissiva: uma margem de 0,05 não se distingue de ruído no tamanho amostral disponível, o que tornaria o critério infalsificável na prática — precisamente o oposto da função do pré-registro. A estrutura ternária, em lugar da binária usual, decorre da unidade de reamostragem: com poucos agrupamentos a inferência de cluster é conhecidamente conservadora e de intervalo largo (Cameron, Gelbach & Miller, 2008). RESSALVA DE 02/10/2026, registrada por honestidade: quando esta decisão foi redigida o held-out tinha 18 agrupamentos, que é faixa claramente problemática para inferência de cluster; a emenda de geometria de D16 elevou-o a 36, que é faixa de fronteira e não de problema agudo. A PREMISSA DA ESTRUTURA TERNÁRIA ENFRAQUECEU, portanto, sem desaparecer. A estrutura é MANTIDA, e a manutenção é deliberada: afrouxar um critério pré-registrado porque a potência melhorou é exatamente a flexibilidade analítica que o pré-registro existe para impedir, e o desfecho INCONCLUSIVA continua sendo resposta legítima e não porta de saída, e forçar veredito binário sobre comparação subdimensionada produziria ou falsa refutação ou falsa corroboração. Declarar de antemão que INCONCLUSIVA é desfecho legítimo é o que impede que o resultado seja depois empurrado para um dos extremos. O quarto desfecho existe porque a hipótese da pesquisa tem duas partes separáveis que a literatura costuma confundir: que o sensoriamento remoto multifonte supera o RUSLE, e que é preciso um ensemble de árvores para extrair esse ganho. A segunda pode falhar com a primeira verdadeira, e esse é um resultado informativo — indicaria que o ganho está nos preditores e não na flexibilidade do algoritmo, o que é diretamente útil a quem for reproduzir o método com menos dados. RESSALVA BIBLIOGRÁFICA: a convenção de 0,70 como piso de AUC aceitável é regra de bolso usualmente atribuída a Hosmer e Lemeshow, NÃO conferida contra a fonte primária nesta data, e é adotada aqui como convenção declarada e não como limiar derivado. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
+
+---
+
+### D26 — Alvo do modelo treinado por delineação de VANT: fração contínua com binário derivado
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | ALVO PRIMÁRIO: fração contínua da área da célula de 10 m delineada como erodida, no intervalo [0, 1], obtida por rasterização da delineação vetorial feita sobre o ortomosaico. A ~4 cm de GSD cada célula de 10 m contém cerca de 62.500 micropixels de VANT, e um polígono de 10 ha contém 1.000 células. TRATAMENTO DA INFLAÇÃO DE ZEROS: a maioria das células é 0, de modo que o ajuste usa objetivo apropriado a variável contínua não-negativa com excesso de zeros — em XGBoost, 'reg:tweedie'. MÉTRICA PRIMÁRIA DE COMPARAÇÃO: correlação de postos de Spearman entre o valor predito e a fração observada, aplicada igualmente aos três competidores de D24, por ser independente de prevalência e por permitir comparação direta com a linha de base RUSLE, que também prediz quantidade contínua. ALVO BINÁRIO DERIVADO: célula classificada como positiva quando a fração erodida for maior ou igual a 25% — isto é, 25 m² de superfície erodida numa célula de 100 m². O binário é SECUNDÁRIO e destina-se a três usos: compatibilidade com os rótulos ordinais de campo e fotointerpretação regidos por D03, reporte de AUC comparável à literatura, e o critério de refutação de D25. RELAÇÃO COM D03: D03 permanece vigente e governa os rótulos de campo e de fotointerpretação, intrinsecamente ordinais; D26 governa os rótulos de VANT, intrinsecamente contínuos. Duas fontes de rótulo, duas representações naturais, mapeamento declarado entre elas. A hierarquia entre alvo primário e secundário é fixada nesta data e NÃO pode ser invertida após a observação de resultados. |
+| **Referência** | Altman, D. G. & Royston, P. (2006), BMJ 332(7549):1080; Royston, P., Altman, D. G. & Sauerbrei, W. (2006), Statistics in Medicine; docs/verificacoes/voo/cobertura_voos.geojson (GSD medido de 3,59 e 3,96 cm nas missões existentes); van der Ploeg, Austin & Steyerberg (2014) para o regime de dados |
+| **Justificativa** | Dicotomizar variável contínua descarta informação, e a literatura estatística é enfática a respeito (Altman & Royston, 2006; Royston, Altman & Sauerbrei, 2006). No caso desta pesquisa o argumento pesa mais que o usual, porque informação por observação é precisamente o recurso escasso: D24 registra que o regime de dados está entre 5 e 15 vezes abaixo do recomendado para ensembles de árvores. Adotar a fração contínua é a única alteração de desenho discutida que AUMENTA a informação disponível sem aumentar a coleta — a delineação vetorial já produz a fração, e binarizá-la seria descartá-la de graça. Há ainda uma convergência decisiva com a hipótese central: a linha de base RUSLE prediz quantidade contínua em toneladas por hectare por ano, de modo que compará-la a um classificador binário exigiria limiarizá-la ou reduzi-la a mero ordenador; com alvo contínuo a comparação entre os três competidores torna-se direta por correlação de postos. O limiar de 25% para o binário derivado foi escolhido entre os extremos: a maioria simples, acima de 50%, descartaria como negativas as células mistas, que são justamente onde a erosão laminar incipiente se manifesta; e qualquer presença acima de zero faria uma mancha de 1 m² positivar uma célula de 100 m². Vinte e cinco por cento correspondem a 25 m² de superfície erodida contígua ou dispersa dentro da célula, extensão fisicamente significativa e detectável. A cifra por vezes citada de que a dicotomização equivale a descartar cerca de um terço da amostra, atribuída a Cohen (1983), NÃO foi conferida contra a fonte primária e é registrada aqui apenas como ordem de grandeza. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
+
+---
+
+## 4. Detalhamento dos Parâmetros Operacionais
+
+### P01 — Aresta do bloco espacial
+
+| Campo | Valor |
+|---|---|
+| **Estado** | 🛑 **Proposta** |
+| **Referência** | Roberts et al. (2017) |
+| **Justificativa** | Derivada do alcance do variograma empírico; fallback provisório de 20 km |
+| **Decidido por** | — |
+| **Decidido em** | — |
+
+---
+
+### P02 — Espaçamento mínimo do thinning
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | 1000 |
+| **Referência** | Herdado do Localizador de Erosão (SAREL 1) para dispersão espacial; docs/auditorias/Relatorio_Auditoria_Integral_Coerencia_Efetividade_2026-09-26.md, achado C4 |
+| **Justificativa** | Piso absoluto de 1.000 m para o espaçamento geodésico mínimo entre pontos amostrais, aplicado como limite inferior inviolável do relaxamento iterativo do thinning. O raio de partida permanece em 5.000 m e pode ser reduzido para atingir a meta de pool, mas nunca abaixo deste piso. Substitui o literal de 800 m que vigorava no laço de relaxamento e que furava silenciosamente o próprio parâmetro herdado, afrouxando a independência espacial da amostra para acomodar o tamanho do pool (achado C4 da auditoria integral de 26/09/2026). O thinning controla a autocorrelação espacial entre unidades amostrais e é anterior e independente da aresta do bloco espacial (P01), que governa as dobras da validação cruzada. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
+
+---
+
+### P03 — Critério de casamento geodésico de campo com o ponto planejado
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | Três critérios independentes, substituindo o limiar único anterior de 15/25 m. (a) TETO DE ERRO GROSSEIRO: 30 m entre a coordenada observada e a planejada; acima disso o registro é rejeitado, por indicar ponto errado visitado ou código digitado errado, não qualidade de posicionamento. (b) CRITÉRIO DE INTEGRIDADE: o ponto observado deve permanecer no mesmo estrato (tercil S^, tercil E^ e nivelK) do ponto sorteado, verificado por reextração das covariáveis na coordenada observada; falha aqui invalida a amostra mesmo dentro dos 30 m. (c) TRAVA DE QUALIDADE POSICIONAL: acurácia GNSS declarada pelo aparelho de até 5 m (meio pixel) é aceita; de 5 a 10 m é aceita com marcação de qualidade que acompanha o registro; acima de 10 m é rejeitada e o ponto deve ser remedido em campo. As features são extraídas na COORDENADA OBSERVADA, nunca na planejada. |
+| **Referência** | Congalton & Green (2019); LUCAS Survey (2022); Metodologia PPGTCA 2026, Seção 3.3; docs/auditorias/Relatorio_Auditoria_Integral_Coerencia_Efetividade_2026-09-26.md; medições de atribuição de pixel registradas em 2026-09-27 |
+| **Justificativa** | O limiar único anterior confundia três fontes de erro distintas. Primeira: o deslocamento entre o planejado e o observado é conhecido e corrigível — basta extrair as features onde o observador esteve, o que elimina o problema de atribuição em vez de tolerá-lo. Segunda: a incerteza posicional do GNSS é desconhecida e irredutível sem melhor equipamento, e é ela que limita a atribuição ao pixel; medido para pixel de 10 m com erro gaussiano isotrópico, o acerto é de 57,9% a sigma de 3 m, 37,2% a 5 m e 19,6% a 8 m, faixa típica de GNSS de frequência única em campo aberto. Terceira: a pertinência ao estrato é o que a amostragem estratificada realmente exige, e é diretamente verificável — em relevo dissecado o tercil de declividade muda em 10 m, enquanto em chapadão uniforme 30 m não alteram nada, de modo que nenhum limiar métrico único serve aos dois casos. A faixa intermediária de 5 a 10 m foi adotada em lugar de corte seco porque o Galaxy M13 entrega tipicamente 3 a 8 m: cortar em 5 m rejeitaria parcela grande do trabalho de campo. O registro entra com a acurácia gravada, e a decisão de excluir ou ponderar a faixa intermediária é tomada depois, sobre a distribuição empírica obtida no lote piloto. A incoerência anterior fica registrada: os 15 m nominais equivaliam a 1,5 pixel e os 25 m a 2,5 pixels, de modo que a tolerância nominal já garantia a atribuição a pixel vizinho que a própria justificativa dizia querer evitar. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
+
+---
+
+### P04 — Buffers de exclusão (água 30m, urbano 150m, ocorrência água 10%)
+
+| Campo | Valor |
+|---|---|
+| **Estado** | 🛑 **Proposta** |
+| **Justificativa** | Constantes herdadas de eligibilityConstants.ts |
+| **Decidido por** | — |
+| **Decidido em** | — |
+
+---
+
+### P05 — Classes elegíveis do ESA WorldCover (30 e 40; classe 60 excluída por D07)
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | [30,40] |
+| **Justificativa** | Restringido a [30, 40] por D07: a classe 60 foi excluída porque a dimensão Ê da estratificação de D12 é a própria frequência de solo nu, e admitir solo exposto como critério de entrada no domínio faria a definição do domínio determinar em parte o estrato. DIVERGÊNCIA DECLARADA nesta data: a constante OPCOES_ELEGIBILIDADE_PADRAO.allowedLandCoverClasses em src/lib/gee/elegibilidade.ts ainda traz [30, 40, 60], assim como o comentário de cabeçalho do mesmo arquivo, o comentário em src/app/api/gee/select-candidates/route.ts e a asserção correspondente em src/lib/gee/elegibilidade.test.ts. O alinhamento cabe ao agente executor; até que ocorra, este registro vale contra o código. |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-27 |
+
+---
+
+### P06 — Fração limpa mínima (UDM2) na AOI do ponto
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ⏳ **Pendente** |
+| **Decidido por** | — |
+| **Decidido em** | — |
+
+---
+
+### P07 — Semente aleatória da amostragem
+
+| Campo | Valor |
+|---|---|
+| **Estado** | ✅ **Decidida** |
+| **Valor Adotado** | dinamica-registrada |
+| **Justificativa** | Registrada a cada execução para permitir reprodutibilidade exata |
+| **Decidido por** | pesquisador |
+| **Decidido em** | 2026-09-08 |
+
+---
+
+### P08 — Limiar do alerta visual de baixa variância
+
+| Campo | Valor |
+|---|---|
+| **Estado** | 🛑 **Proposta** |
+| **Justificativa** | Alerta visual informativo quando desvio padrão for baixo |
+| **Decidido por** | — |
+| **Decidido em** | — |
+
+---
+
+### P09 — Método de máscara de nuvem Sentinel-2 (QA60 / SCL)
+
+| Campo | Valor |
+|---|---|
+| **Estado** | 🛑 **Proposta** |
+| **Justificativa** | maskS2Clouds sem unmask em bandas físicas |
+| **Decidido por** | — |
+| **Decidido em** | — |
+
+---
+
