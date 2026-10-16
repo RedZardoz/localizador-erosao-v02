@@ -42,7 +42,8 @@ export const DECISOES: Record<string, Decisao<any>> = {
     id: "D02",
     titulo: "Critérios observacionais de presente/ausente e negativo explícito",
     estado: "decidida" as EstadoDecisao,
-    valor: "Amostragem estratificada pura: Classe 1 (Erosão: BSI > 0.10 e NDVI < 0.40) vs Classe 0 (Controle/SPD: BSI < 0.00 e NDVI > 0.65)",
+    valor: "Amostragem estratificada pura: Classe 1 (Erosão: BSI > 0.10 e NDVI < 0.40) vs Classe 0 (Controle/SPD: BSI < 0.00 e NDVI > 0.65) " +
+      "EMENDA DE 06/10/2026 (proposta do assistente, aceita pelo pesquisador em conversa; pré-dados): os limiares de BSI e NDVI de D02 definem um CRITÉRIO DE TRIAGEM DE CANDIDATOS e uma ajuda visual, NÃO um rótulo (Regra 4: nada calculado vira rótulo). Por D16 os polígonos de VANT são sorteados pelos estratos biofísicos e nunca pelo rastreio espectral; logo estes limiares não têm papel na seleção de polígonos nem no alvo do modelo (D26). Onde o texto original diz \"Classe 1\" e \"Classe 0\", leia-se \"candidato espectral a erosão\" e \"candidato espectral a controle\".",
     justificativa: "Critérios biofísicos objetivos e reprodutíveis validados no Sentinel-2 e PlanetScope.",
     referencia: "Metodologia PPGTCA 2026, Seção 3.1 e Tabela 1",
     decididoPor: "pesquisador",
