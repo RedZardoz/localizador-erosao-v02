@@ -238,23 +238,25 @@ export function montarMatrizTreino(
         ? 1
         : null;
 
-    // Métricas de Composto de Solo Nu e Série Temporal (N02d)
+    // Métricas de Composto de Solo Nu e Série Temporal (N02d / N02-fix2)
+    // As métricas de composto de solo nu vêm SOMENTE do composto multitemporal de série.
+    // Sem composto -> null. NUNCA utilizar bandas espectrais de data única como fallback.
     const compB12 =
       janelaTemporal?.serie?.compostoSoloNuB12 !== undefined
         ? valorOuNulo(janelaTemporal.serie.compostoSoloNuB12)
         : janelaTemporal?.serie?.compostoSoloNu?.["B12"] !== undefined
         ? valorOuNulo(janelaTemporal.serie.compostoSoloNu["B12"])
-        : valorOuNulo(ponto.espectral?.b12);
+        : null;
 
     const compB4 =
       janelaTemporal?.serie?.compostoSoloNu?.["B4"] !== undefined
         ? valorOuNulo(janelaTemporal.serie.compostoSoloNu["B4"])
-        : valorOuNulo(ponto.espectral?.b4);
+        : null;
 
     const compB2 =
       janelaTemporal?.serie?.compostoSoloNu?.["B2"] !== undefined
         ? valorOuNulo(janelaTemporal.serie.compostoSoloNu["B2"])
-        : valorOuNulo(ponto.espectral?.b2);
+        : null;
 
     let compRazaoB4B2: number | null = null;
     if (janelaTemporal?.serie?.compostoSoloNuRazaoB4B2 !== undefined) {

@@ -3,6 +3,9 @@ import { montarMatrizTreino, LinhaMatrizTreino } from "./montagem";
 import { assegurarSegregacaoTreino } from "../rotulos/ingestaoDrone";
 import { PontoAmostral } from "@/types/ponto";
 import { RotuloConsolidado } from "@/types/rotulo";
+import { medido } from "@/types/proveniencia";
+
+const prov = (v: number) => medido(v, "SINTETICO_TESTE_ENCANAMENTO", "2026-01-01");
 
 function criarPontoBase(id: string, codigo: string): PontoAmostral {
   return {
@@ -271,6 +274,134 @@ describe("N02 — Contrato de Dados D16/D26 (montagemD16.test.ts)", () => {
           [{ pontoId: "p2", codigo: "SINTETICO_TESTE_ENCANAMENTO_H1", poligonoId: "POL_COMPARTILHADO" } as any]
         );
       }).toThrow(/VIOLAÇÃO DE SEGREGAÇÃO \(D16\): O polígono 'POL_COMPARTILHADO' está presente simultaneamente nos conjuntos de treino e held-out/);
+    });
+  });
+
+  describe("DEFEITO 2 (N02-fix2) — Desvincula compostos de solo nu das bandas de data única", () => {
+    it("(i) ponto com espectral.b12=0.2 e SEM composto resulta em compostoSoloNuB12 === null", () => {
+      // Dado SINTETICO_TESTE_ENCANAMENTO
+      const p: PontoAmostral = {
+        ...criarPontoBase("p-sintetico-b12", "SINTETICO_TESTE_ENCANAMENTO_B12"),
+        poligonoId: "POL_TESTE_B12",
+        espectral: {
+          b2: prov(0.1),
+          b4: prov(0.15),
+          b8: prov(0.35),
+          b12: prov(0.2),
+        } as any,
+        temporal: {}, // SEM composto de solo nu
+      };
+      const rotulos: Record<string, RotuloConsolidado> = {
+        "SINTETICO_TESTE_ENCANAMENTO_B12": {
+          final: { classe: "erosao", modalidade: "drone", observador: "Obs", observadoEm: "2026-02-01", cego: true },
+          origens: [],
+          kappa: 0.9,
+          divergencia: "nenhuma",
+          papelConjunto: "treino",
+        },
+      };
+
+      const res = montarMatrizTreino([p], rotulos);
+      expect(res.linhas).toHaveLength(1);
+      expect(res.linhas[0].compostoSoloNuB12).toBeNull();
+    });
+
+    it("(ii) ponto com espectral.b4 e b2 e SEM composto resulta em compostoSoloNuRazaoB4B2 === null", () => {
+      // Dado SINTETICO_TESTE_ENCANAMENTO
+      const p: PontoAmostral = {
+        ...criarPontoBase("p-sintetico-razao", "SINTETICO_TESTE_ENCANAMENTO_RAZAO"),
+        poligonoId: "POL_TESTE_RAZAO",
+        espectral: {
+          b2: prov(0.1),
+          b4: prov(0.2),
+          b8: prov(0.4),
+          b12: prov(0.25),
+        } as any,
+        temporal: {}, // SEM composto
+      };
+      const rotulos: Record<string, RotuloConsolidado> = {
+        "SINTETICO_TESTE_ENCANAMENTO_RAZAO": {
+          final: { classe: "erosao", modalidade: "drone", observador: "Obs", observadoEm: "2026-02-01", cego: true },
+          origens: [],
+          kappa: 0.9,
+          divergencia: "nenhuma",
+          papelConjunto: "treino",
+        },
+      };
+
+      const res = montarMatrizTreino([p], rotulos);
+      expect(res.linhas).toHaveLength(1);
+      expect(res.linhas[0].compostoSoloNuRazaoB4B2).toBeNull();
+    });
+
+    it("(iii) com composto presente, assume os valores do composto da série e não de espectral", () => {
+      // Dado SINTETICO_TESTE_ENCANAMENTO
+      const p: PontoAmostral = {
+        ...criarPontoBase("p-sintetico-comp", "SINTETICO_TESTE_ENCANAMENTO_COMP"),
+        poligonoId: "POL_TESTE_COMP",
+        espectral: {
+          b2: prov(0.05),
+          b4: prov(0.1),
+          b8: prov(0.2),
+          b12: prov(0.15),
+        } as any,
+        temporal: {
+          D: {
+            serie: {
+              compostoSoloNuB12: prov(0.28),
+              compostoSoloNu: {
+                B2: prov(0.08),
+                B4: prov(0.16),
+                B12: prov(0.28),
+              },
+              compostoSoloNuRazaoB4B2: prov(2.0),
+            } as any,
+          } as any,
+        },
+      };
+      const rotulos: Record<string, RotuloConsolidado> = {
+        "SINTETICO_TESTE_ENCANAMENTO_COMP": {
+          final: { classe: "erosao", modalidade: "drone", observador: "Obs", observadoEm: "2026-02-01", cego: true },
+          origens: [],
+          kappa: 0.9,
+          divergencia: "nenhuma",
+          papelConjunto: "treino",
+        },
+      };
+
+      const res = montarMatrizTreino([p], rotulos, { modeloJanela: "D" });
+      expect(res.linhas).toHaveLength(1);
+      expect(res.linhas[0].compostoSoloNuB12).toBe(0.28);
+      expect(res.linhas[0].compostoSoloNuRazaoB4B2).toBe(2.0);
+    });
+
+    it("(iv) Banda_B12 continua igual a espectral.b12 de data única", () => {
+      // Dado SINTETICO_TESTE_ENCANAMENTO
+      const p: PontoAmostral = {
+        ...criarPontoBase("p-sintetico-b12-unica", "SINTETICO_TESTE_ENCANAMENTO_B12_UNICA"),
+        poligonoId: "POL_TESTE_B12_UNICA",
+        espectral: {
+          b2: prov(0.12),
+          b4: prov(0.18),
+          b8: prov(0.44),
+          b12: prov(0.23),
+        } as any,
+        temporal: {},
+      };
+      const rotulos: Record<string, RotuloConsolidado> = {
+        "SINTETICO_TESTE_ENCANAMENTO_B12_UNICA": {
+          final: { classe: "erosao", modalidade: "drone", observador: "Obs", observadoEm: "2026-02-01", cego: true },
+          origens: [],
+          kappa: 0.9,
+          divergencia: "nenhuma",
+          papelConjunto: "treino",
+        },
+      };
+
+      const res = montarMatrizTreino([p], rotulos);
+      expect(res.linhas).toHaveLength(1);
+      expect(res.linhas[0].bandaB12).toBe(0.23);
+      expect(res.linhas[0].compostoSoloNuB12).toBeNull();
     });
   });
 });
