@@ -436,6 +436,55 @@ export const PARAMETROS: Record<string, Decisao<any>> = {
     estado: "proposta" as EstadoDecisao,
     justificativa: "maskS2Clouds sem unmask em bandas físicas",
   },
+  P10: {
+    id: "P10",
+    titulo: "Expoente de Tweedie (grade {1,2; 1,5; 1,8})",
+    estado: "proposta" as EstadoDecisao,
+    justificativa: "Escolhido por validação interna agrupada dentro da grade pré-registrada {1,2; 1,5; 1,8}.",
+    referencia: "ANEXOS_PROMPT_EXECUTOR_2026-10-06/EMENDAS_PROPOSTAS_2026-10-06.md (E-D24); DEC-16",
+  },
+  P11: {
+    id: "P11",
+    titulo: "Cobertura mínima da célula (0,95)",
+    estado: "proposta" as EstadoDecisao,
+    justificativa: "Fração mínima de área da célula de 10 m coberta por observação válida (0,95).",
+    referencia: "DEC-7; ANEXOS_PROMPT_EXECUTOR_2026-10-06",
+  },
+  P20: {
+    id: "P20",
+    titulo: "Tolerância da janela temporal Sentinel-2 (30 d)",
+    estado: "proposta" as EstadoDecisao,
+    justificativa: "Janela máxima de 30 dias para composição espectro-temporal.",
+    referencia: "DEC-7",
+  },
+  P21: {
+    id: "P21",
+    titulo: "Tolerância da janela temporal PlanetScope (45 d)",
+    estado: "proposta" as EstadoDecisao,
+    justificativa: "Janela temporal máxima de 45 dias para pares de evento.",
+    referencia: "DEC-7",
+  },
+  P22: {
+    id: "P22",
+    titulo: "Ângulo de visada off-nadir máximo PlanetScope (75°)",
+    estado: "proposta" as EstadoDecisao,
+    justificativa: "Limite angular de 75° para evitar distorções geométricas severas.",
+    referencia: "DEC-7",
+  },
+  P23: {
+    id: "P23",
+    titulo: "Área mínima sem nuvem/sombra na célula (0,95)",
+    estado: "proposta" as EstadoDecisao,
+    justificativa: "Fração limpa mínima de 0,95 para descarte de contaminação atmosférica.",
+    referencia: "DEC-7",
+  },
+  P24: {
+    id: "P24",
+    titulo: "Mínimo de anos da série de R (23 anos / Waltrick)",
+    estado: "proposta" as EstadoDecisao,
+    justificativa: "Série histórica pluviométrica com no mínimo 23 anos conforme Waltrick et al. (2015).",
+    referencia: "Waltrick et al. (2015); N09",
+  },
 };
 
 export const REGISTRO_DECISOES = DECISOES;
