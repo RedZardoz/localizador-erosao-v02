@@ -24,6 +24,7 @@ import { assegurarSegregacaoTreino } from "@/lib/rotulos/ingestaoDrone";
 import { calcularCorrelacaoPearson } from "@/lib/padraoOuro/validacaoMatricial";
 import { formatToDMS } from "./dms";
 import { valorOuNulo } from "@/types/proveniencia";
+import { SCRIPT_AVALIACAO_D25, REQUIREMENTS_D25 } from "./scriptAvaliacaoD25.generated";
 
 export interface ArquivosPacoteReprodutibilidade {
   matrizTreinamentoCsv: string;
@@ -31,6 +32,7 @@ export interface ArquivosPacoteReprodutibilidade {
   confrontoRadiometricoCsv: string;
   datasheetJson: string;
   scriptPython: string;
+  requirementsTxt: string;
   manifestoSha256Txt: string;
 }
 
@@ -654,207 +656,10 @@ export function gerarJsonDatasheetMetadados(
 }
 
 /**
- * Gera o Arquivo 05: Script Autônomo de Auditoria e Reprodutibilidade (Python 3).
+ * Gera o Arquivo 05: Script Autônomo de Auditoria e Avaliação D25 de Referência (Python 3).
  */
 export function gerarScriptPythonAuditoria(): string {
-  return `#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-SAREL — Script de Auditoria e Reprodutibilidade Científica Independente
-======================================================================
-Programa de Pós-Graduação em Tecnologias Computacionais para o Agronegócio
-PPGTCA 2026 — UEL / UEM / UFPR
-
-Instruções para a Banca Examinadora:
-  1. Instale as dependências (ambiente Python 3.9+):
-     pip install pandas numpy scikit-learn xgboost
-  2. Execute diretamente no terminal:
-     python 05_script_auditoria_reproduzivel.py
-"""
-
-import sys
-import hashlib
-from pathlib import Path
-import pandas as pd
-import numpy as np
-
-try:
-    from sklearn.model_selection import GroupKFold
-    from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_auc_score, f1_score, confusion_matrix, cohen_kappa_score
-    import xgboost as xgb
-except ImportError as err:
-    print(f"[ERRO] Dependência ausente: {err}")
-    print("Por favor, instale: pip install pandas numpy scikit-learn xgboost")
-    sys.exit(1)
-
-
-def verificar_manifesto_sha256(diretorio: Path):
-    manifesto_path = diretorio / "06_manifesto_integridade_sha256.txt"
-    if not manifesto_path.exists():
-        print("[AVISO] Arquivo de manifesto SHA-256 não encontrado.")
-        return
-
-    print("=" * 70)
-    print("1. VERIFICAÇÃO CRIPTOGRÁFICA DE INTEGRIDADE (SHA-256)")
-    print("=" * 70)
-
-    linhas = manifesto_path.read_text(encoding="utf-8").strip().splitlines()
-    todos_validos = True
-
-    for linha in linhas:
-        linha = linha.strip()
-        if not linha or linha.startswith("#"):
-            continue
-        partes = linha.split(maxsplit=1)
-        if len(partes) != 2:
-            continue
-        hash_esperado, nome_arquivo = partes
-        arquivo_alvo = diretorio / nome_arquivo
-
-        if not arquivo_alvo.exists():
-            print(f"  [FALHA] Arquivo ausente: {nome_arquivo}")
-            todos_validos = False
-            continue
-
-        conteudo = arquivo_alvo.read_bytes()
-        hash_calculado = hashlib.sha256(conteudo).hexdigest()
-
-        if hash_calculado == hash_esperado:
-            print(f"  [OK] {nome_arquivo} (SHA-256 verificado com sucesso)")
-        else:
-            print(f"  [CORRUPÇÃO] {nome_arquivo}")
-            print(f"    Esperado:  {hash_esperado}")
-            print(f"    Calculado: {hash_calculado}")
-            todos_validos = False
-
-    if todos_validos:
-        print(">> Todos os arquivos do compêndio estão matematicamente íntegros!\n")
-
-
-def auditar_modelo():
-    base_dir = Path(__file__).resolve().parent
-    verificar_manifesto_sha256(base_dir)
-
-    print("=" * 70)
-    print("2. CARREGAMENTO DA MATRIZ DE TREINAMENTO (ARQUIVO 01)")
-    print("=" * 70)
-
-    treino_path = base_dir / "01_matriz_preditores_treinamento_sarel.csv"
-    if not treino_path.exists():
-        print(f"[ERRO] Não encontrado: {treino_path}")
-        return
-
-    # Leitura com suporte a comentários
-    df = pd.read_csv(treino_path, comment="#")
-    print(f"  Total de amostras: {len(df)}")
-    if len(df) == 0:
-        print("[ABORTO] Matriz de treino vazia (0 amostras rotuladas emitidas no Arquivo 01). Campanha de rotulagem humana ainda não consolidada.")
-        return
-    print(f"  Colunas disponíveis: {list(df.columns[:8])} ...")
-
-    colunas_preditoras = [
-        "Elevacao_m", "Declividade_pct", "Curvatura_Perfil", "Curvatura_Plana",
-        "Acumulo_Fluxo", "TWI", "RUSLE_Fator_K", "RUSLE_Fator_R"
-    ]
-    # Filtrar colunas existentes no dataframe e converter sem imputação (Regra 1)
-    # O XGBClassifier trata NaN nativamente por aprendizado da direção de ausência (missing=np.nan é o padrão)
-    # Referência: Chen & Guestrin (2016), XGBoost: A Scalable Tree Boosting System, KDD 2016, seção 3.4 "Sparsity-aware Split Finding"
-    cols_existentes = [c for c in colunas_preditoras if c in df.columns]
-    X_bruto = df[cols_existentes].apply(pd.to_numeric, errors="coerce")
-
-    preditores_ativos = []
-    for col in cols_existentes:
-        validas = int(X_bruto[col].notna().sum())
-        if validas == 0:
-            print(f"  [RETIDA] {col}: 0/{len(df)} observações válidas — excluída dos preditores (indisponível na origem).")
-        else:
-            pct_ausentes = 100.0 * (len(df) - validas) / len(df) if len(df) > 0 else 0.0
-            print(f"  {col}: {validas}/{len(df)} válidas ({pct_ausentes:.1f}% ausentes) — NaN preservado, tratado por sparsity-aware split.")
-            preditores_ativos.append(col)
-
-    if len(preditores_ativos) < 3:
-        print(f"[ABORTO] Restaram apenas {len(preditores_ativos)} preditores válidos ({preditores_ativos}) após o descarte (< 3 mínimos exigidos). Modelagem interrompida.")
-        return
-
-    if "Bloco_Espacial" not in df.columns:
-        print("[ABORTO] Coluna 'Bloco_Espacial' ausente no Arquivo 01. Validação cruzada espacial interrompida.")
-        return
-
-    bloco_str = df["Bloco_Espacial"].astype(str).str.strip()
-    mascara_bloco_valido = (~df["Bloco_Espacial"].isna()) & (bloco_str != "") & (bloco_str != "nan") & (bloco_str != "BLOCO_INDEFINIDO")
-    n_sem_bloco = int((~mascara_bloco_valido).sum())
-    if n_sem_bloco > 0:
-        print(f"  [DESCARTE] {n_sem_bloco}/{len(df)} pontos sem bloco espacial atribuído — excluídos da validação cruzada espacial.")
-
-    df_valido = df[mascara_bloco_valido]
-    X = X_bruto.loc[mascara_bloco_valido, preditores_ativos]
-    y = df_valido["Classe_Alvo_Binaria"].astype(int)
-    grupos = bloco_str[mascara_bloco_valido]
-
-    print(f"  Preditores selecionados para treino ({len(preditores_ativos)}): {preditores_ativos}")
-    print(f"  Distribuição de classes após filtro espacial: 0={sum(y==0)}, 1={sum(y==1)}\n")
-
-    print("=" * 70)
-    print("3. VALIDAÇÃO CRUZADA ESPACIAL POR BLOCOS (SPATIAL BLOCK BOOTSTRAP)")
-    print("=" * 70)
-
-    n_grupos = len(set(grupos))
-    if n_grupos < 2:
-        print(f"[ABORTO] Validação cruzada espacial requer ao menos 2 blocos espaciais independentes (n_grupos={n_grupos}). A validação cruzada por blocos espaciais exige grupos independentes para estimar o erro sem inflação por autocorrelação espacial (Roberts et al., 2017).")
-        return
-
-    n_splits = min(3, n_grupos)
-    if len(df_valido) < n_splits:
-        print(f"[ABORTO] Número de amostras válidas ({len(df_valido)}) insuficiente para {n_splits} dobras espaciais.")
-        return
-
-    contagem_por_bloco = grupos.value_counts().to_dict()
-    print(f"  Blocos espaciais independentes (n_grupos={n_grupos}) | Dobras efetivas (n_splits={n_splits})")
-    print(f"  Contagem de pontos por bloco: {contagem_por_bloco}")
-
-    gkf = GroupKFold(n_splits=n_splits)
-    acuracias = []
-
-    for fold, (train_idx, val_idx) in enumerate(gkf.split(X, y, grupos)):
-        X_tr, y_tr = X.iloc[train_idx], y.iloc[train_idx]
-        X_va, y_va = X.iloc[val_idx], y.iloc[val_idx]
-
-        modelo = xgb.XGBClassifier(
-            n_estimators=50,
-            max_depth=4,
-            learning_rate=0.08,
-            random_state=42,
-            eval_metric="logloss"
-        )
-        modelo.fit(X_tr, y_tr)
-        preds = modelo.predict(X_va)
-        acc = accuracy_score(y_va, preds)
-        acuracias.append(acc)
-        print(f"  Fold {fold + 1} — Acurácia Balanceada: {acc:.4f}")
-
-    print(f"  >> Acurácia Média Espacial: {np.mean(acuracias):.4f} +/- {np.std(acuracias):.4f}\n")
-
-    print("=" * 70)
-    print("4. CONFRONTO RADIOMÉTRICO SENTINEL-2 VS SPECTRAL 2 (ARQUIVO 03)")
-    print("=" * 70)
-
-    confronto_path = base_dir / "03_confronto_radiometrico_sentinel_spectral2.csv"
-    if confronto_path.exists():
-        df_conf = pd.read_csv(confronto_path, comment="#")
-        r = np.corrcoef(df_conf["NDVI_Sentinel2_10m"], df_conf["NDVI_Medio_Spectral2"])[0, 1]
-        print(f"  Pares radiométricos confrontados: {len(df_conf)}")
-        print(f"  Correlação Linear de Pearson (r): {r:.4f}")
-        print(f"  Coeficiente de Determinação (R²): {r**2:.4f}")
-        print("  >> Validação Multiespectral aprovada com significância estatística!\n")
-
-    print("=" * 70)
-    print("AUDITORIA CIENTÍFICA CONCLUÍDA COM SUCESSO — RESULTADOS VERIFICADOS")
-    print("=" * 70)
-
-
-if __name__ == "__main__":
-    auditar_modelo()
-`;
+  return SCRIPT_AVALIACAO_D25;
 }
 
 /**
@@ -896,6 +701,7 @@ export async function gerarConteudoPacoteReprodutibilidade(
     pontos
   );
   const f5_scriptPy = gerarScriptPythonAuditoria();
+  const f_reqs = REQUIREMENTS_D25;
 
   // 3. Cálculo dos Hashes SHA-256
   const hashes: Record<string, string> = {
@@ -903,7 +709,8 @@ export async function gerarConteudoPacoteReprodutibilidade(
     "02_validacao_padrao_ouro_held_out_drone.csv": await calcularSha256(f2_validacaoDrone),
     "03_confronto_radiometrico_sentinel_spectral2.csv": await calcularSha256(f3_confrontoRad),
     "04_datasheet_metadados_dicionario.json": await calcularSha256(f4_datasheet),
-    "05_script_auditoria_reproduzivel.py": await calcularSha256(f5_scriptPy),
+    "05_avaliacao_d25.py": await calcularSha256(f5_scriptPy),
+    "requirements.txt": await calcularSha256(f_reqs),
   };
 
   // 4. Montagem do manifesto
@@ -915,6 +722,7 @@ export async function gerarConteudoPacoteReprodutibilidade(
     confrontoRadiometricoCsv: f3_confrontoRad,
     datasheetJson: f4_datasheet,
     scriptPython: f5_scriptPy,
+    requirementsTxt: f_reqs,
     manifestoSha256Txt: f6_manifesto,
   };
 }
@@ -933,7 +741,8 @@ export async function gerarPacoteReprodutibilidadeZip(
   zip.file("02_validacao_padrao_ouro_held_out_drone.csv", arquivos.validacaoDroneCsv);
   zip.file("03_confronto_radiometrico_sentinel_spectral2.csv", arquivos.confrontoRadiometricoCsv);
   zip.file("04_datasheet_metadados_dicionario.json", arquivos.datasheetJson);
-  zip.file("05_script_auditoria_reproduzivel.py", arquivos.scriptPython);
+  zip.file("05_avaliacao_d25.py", arquivos.scriptPython);
+  zip.file("requirements.txt", arquivos.requirementsTxt);
   zip.file("06_manifesto_integridade_sha256.txt", arquivos.manifestoSha256Txt);
 
   return await zip.generateAsync({

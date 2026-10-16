@@ -16,7 +16,8 @@
     "test": "vitest run",
     "test:vivo": "vitest run --config vitest.vivo.config.mts",
     "sortear:d16": "node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts",
-    "decisoes:md": "node scripts/gerar_decisoes_md.mjs --gerar"
+    "decisoes:md": "node scripts/gerar_decisoes_md.mjs --gerar",
+    "gerar:script-d25": "node scripts/gerar_script_pacote.mjs"
   },
   "dependencies": {
     "@google/earthengine": "^1.7.41",

@@ -3,6 +3,7 @@ import JSZip from "jszip";
 import type { PontoAmostral } from "@/types/ponto";
 import type { RotuloConsolidado } from "@/types/rotulo";
 import { assegurarSegregacaoTreino } from "@/lib/rotulos/ingestaoDrone";
+import { SCRIPT_AVALIACAO_D25, SCRIPT_AVALIACAO_D25_SHA256 } from "./scriptAvaliacaoD25.generated";
 import {
   calcularSha256,
   gerarCsvMatrizTreinamento,
@@ -195,13 +196,23 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
     expect(data.referenciasBibliograficasABNT.length).toBeGreaterThan(3);
   });
 
-  it("deve gerar o Arquivo 05 (Script Python de Auditoria) com seed fixa e XGBoost", () => {
+  it("deve gerar o Arquivo 05 (Script de Avaliação D25 de Referência) idêntico ao arquivo-fonte", async () => {
     const script = gerarScriptPythonAuditoria();
-    expect(script).toContain("#!/usr/bin/env python3");
-    expect(script).toContain("random_state=42");
-    expect(script).toContain("GroupKFold");
-    expect(script).toContain("XGBClassifier");
-    expect(script).toContain("06_manifesto_integridade_sha256.txt");
+    expect(script).toBe(SCRIPT_AVALIACAO_D25);
+    const hash = await calcularSha256(script);
+    expect(hash).toBe(SCRIPT_AVALIACAO_D25_SHA256);
+  });
+
+  it("deve falhar se scriptAvaliacaoD25.generated.ts estiver desatualizado em relação a scripts/d25", async () => {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const crypto = await import("node:crypto");
+    const pyPath = path.resolve(process.cwd(), "scripts/d25/avaliacao_d25_referencia.py");
+    expect(fs.existsSync(pyPath)).toBe(true);
+    const pyContent = fs.readFileSync(pyPath, "utf8").replace(/\r\n/g, "\n");
+    const pySha = crypto.createHash("sha256").update(pyContent, "utf8").digest("hex");
+    expect(SCRIPT_AVALIACAO_D25).toBe(pyContent);
+    expect(SCRIPT_AVALIACAO_D25_SHA256).toBe(pySha);
   });
 
   it("deve gerar o manifesto de integridade com os hashes corretos", () => {
@@ -249,7 +260,8 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
     expect(zip.file("02_validacao_padrao_ouro_held_out_drone.csv")).not.toBeNull();
     expect(zip.file("03_confronto_radiometrico_sentinel_spectral2.csv")).not.toBeNull();
     expect(zip.file("04_datasheet_metadados_dicionario.json")).not.toBeNull();
-    expect(zip.file("05_script_auditoria_reproduzivel.py")).not.toBeNull();
+    expect(zip.file("05_avaliacao_d25.py")).not.toBeNull();
+    expect(zip.file("requirements.txt")).not.toBeNull();
     expect(zip.file("06_manifesto_integridade_sha256.txt")).not.toBeNull();
 
     // N07: ZIP de reprodutibilidade nunca deve conter código CAR completo de 43 caracteres
