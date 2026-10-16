@@ -4,6 +4,7 @@ import { assegurarSegregacaoTreino } from "../rotulos/ingestaoDrone";
 import { PontoAmostral } from "@/types/ponto";
 import { RotuloConsolidado } from "@/types/rotulo";
 import { medido } from "@/types/proveniencia";
+import { extrairLinhasPorPerfil } from "@/lib/export/planilha";
 
 const prov = (v: number) => medido(v, "SINTETICO_TESTE_ENCANAMENTO", "2026-01-01");
 
@@ -402,6 +403,84 @@ describe("N02 — Contrato de Dados D16/D26 (montagemD16.test.ts)", () => {
       expect(res.linhas).toHaveLength(1);
       expect(res.linhas[0].bandaB12).toBe(0.23);
       expect(res.linhas[0].compostoSoloNuB12).toBeNull();
+    });
+  });
+
+  describe("DEFEITO 3 (N02-fix3) — Identificadores Padrão Silenciosos", () => {
+    it("(i) ponto sem celulaId resulta em celulaId === null e Celula_ID vazio na exportação", () => {
+      // Dado SINTETICO_TESTE_ENCANAMENTO
+      const p: PontoAmostral = {
+        ...criarPontoBase("p-sintetico-sem-celula", "SINTETICO_TESTE_ENCANAMENTO_SEM_CEL"),
+        poligonoId: "POL_TESTE_CEL",
+      };
+      delete (p as any).celulaId;
+      const rotulos: Record<string, RotuloConsolidado> = {
+        "SINTETICO_TESTE_ENCANAMENTO_SEM_CEL": {
+          final: { classe: "erosao", modalidade: "drone", observador: "Obs", observadoEm: "2026-02-01", cego: true },
+          origens: [],
+          kappa: 0.9,
+          divergencia: "nenhuma",
+          papelConjunto: "treino",
+        },
+      };
+
+      const res = montarMatrizTreino([p], rotulos);
+      expect(res.linhas).toHaveLength(1);
+      expect(res.linhas[0].celulaId).toBeNull();
+
+      const linhasExport = extrairLinhasPorPerfil([p], "matriz-treino", rotulos);
+      expect(linhasExport).toHaveLength(1);
+      expect(linhasExport[0].Celula_ID).toBe("");
+    });
+
+    it("(ii) ponto sem estratoId resulta em estratoId === null", () => {
+      // Dado SINTETICO_TESTE_ENCANAMENTO
+      const p: PontoAmostral = {
+        ...criarPontoBase("p-sintetico-sem-estrato", "SINTETICO_TESTE_ENCANAMENTO_SEM_EST"),
+        poligonoId: "POL_TESTE_EST",
+      };
+      delete (p as any).estratoId;
+      const rotulos: Record<string, RotuloConsolidado> = {
+        "SINTETICO_TESTE_ENCANAMENTO_SEM_EST": {
+          final: { classe: "erosao", modalidade: "drone", observador: "Obs", observadoEm: "2026-02-01", cego: true },
+          origens: [],
+          kappa: 0.9,
+          divergencia: "nenhuma",
+          papelConjunto: "treino",
+        },
+      };
+
+      const res = montarMatrizTreino([p], rotulos);
+      expect(res.linhas).toHaveLength(1);
+      expect(res.linhas[0].estratoId).toBeNull();
+    });
+
+    it("(iii) ponto com celulaId e estratoId presentes mantém ambos inalterados", () => {
+      // Dado SINTETICO_TESTE_ENCANAMENTO
+      const p: PontoAmostral = {
+        ...criarPontoBase("p-sintetico-ambos", "SINTETICO_TESTE_ENCANAMENTO_AMBOS"),
+        celulaId: "CEL-OPACA-99",
+        estratoId: "E05",
+        poligonoId: "POL_TESTE_AMBOS",
+      };
+      const rotulos: Record<string, RotuloConsolidado> = {
+        "SINTETICO_TESTE_ENCANAMENTO_AMBOS": {
+          final: { classe: "erosao", modalidade: "drone", observador: "Obs", observadoEm: "2026-02-01", cego: true },
+          origens: [],
+          kappa: 0.9,
+          divergencia: "nenhuma",
+          papelConjunto: "treino",
+        },
+      };
+
+      const res = montarMatrizTreino([p], rotulos);
+      expect(res.linhas).toHaveLength(1);
+      expect(res.linhas[0].celulaId).toBe("CEL-OPACA-99");
+      expect(res.linhas[0].estratoId).toBe("E05");
+
+      const linhasExport = extrairLinhasPorPerfil([p], "matriz-treino", rotulos);
+      expect(linhasExport).toHaveLength(1);
+      expect(linhasExport[0].Celula_ID).toBe("CEL-OPACA-99");
     });
   });
 });

@@ -48,7 +48,7 @@ export function extrairLinhasAbaDados(pontos: PontoAmostral[]): Record<string, u
       Bacia_Hidrografica_Origem: formatarDescricaoOrigem(p.localizacao?.bacia),
 
       Bloco_Espacial: p.blocoEspacial ?? "não atribuído",
-      Estrato_ID: p.estratoId,
+      Estrato_ID: p.estratoId ?? "",
 
       Elevacao_m: valorOuNulo(p.terreno?.elevacao) ?? "",
       Elevacao_m_Origem: formatarDescricaoOrigem(p.terreno?.elevacao),
@@ -224,7 +224,7 @@ export function extrairLinhasPorPerfil(
 
   if (perfil === "linha-de-base-rusle") {
     return pontos.map((p) => {
-      const celulaId = p.celulaId ?? p.codigo ?? p.id;
+      const celulaId = p.celulaId ?? "";
       const rProv = p.linhaDeBase?.fatorR;
       const kProv = p.linhaDeBase?.fatorK;
       const lsProv = p.linhaDeBase?.fatorLS;
@@ -301,7 +301,7 @@ export function extrairLinhasPorPerfil(
     }
 
     return linhasFonte.map((l) => ({
-      Celula_ID: l.celulaId,
+      Celula_ID: l.celulaId ?? "",
       Poligono_ID: l.poligonoId,
       Papel_Conjunto: l.papelConjunto,
       Fracao_Erodida: l.fracaoErodida !== null ? l.fracaoErodida : "",

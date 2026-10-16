@@ -127,25 +127,28 @@ export function assegurarSegregacaoTreino(
   if (Array.isArray(param1) && Array.isArray(param2)) {
     const obterRef = (l: any) => l.codigo || l.pontoId || l.id || "desconhecido";
 
+    const ehInvalido = (id?: string | null) =>
+      !id || typeof id !== "string" || id.trim() === "" || /indefinido/i.test(id);
+
     const poligonosHeldOut = new Set<string>();
     for (const linha of param2) {
       const pid = linha.poligonoId;
-      if (!pid || typeof pid !== "string" || pid.trim() === "" || pid === "POLIGONO_INDEFINIDO") {
+      if (ehInvalido(pid)) {
         throw new Error(
           `VIOLAÇÃO DE SEGREGAÇÃO (D16): Linha held-out '${obterRef(linha)}' com poligonoId ausente.`
         );
       }
-      poligonosHeldOut.add(pid.trim());
+      poligonosHeldOut.add(pid!.trim());
     }
 
     for (const linha of param1) {
       const pid = linha.poligonoId;
-      if (!pid || typeof pid !== "string" || pid.trim() === "" || pid === "POLIGONO_INDEFINIDO") {
+      if (ehInvalido(pid)) {
         throw new Error(
           `VIOLAÇÃO DE SEGREGAÇÃO (D16): Linha de treino '${obterRef(linha)}' com poligonoId ausente.`
         );
       }
-      const idLimpo = pid.trim();
+      const idLimpo = pid!.trim();
       if (poligonosHeldOut.has(idLimpo)) {
         throw new Error(
           `VIOLAÇÃO DE SEGREGAÇÃO (D16): O polígono '${idLimpo}' está presente simultaneamente nos conjuntos de treino e held-out.`
@@ -157,7 +160,7 @@ export function assegurarSegregacaoTreino(
 
   // Chamada explícita de verificação: assegurarSegregacaoTreino(modalidade, poligonoId, poligonosHeldOut)
   if (typeof param1 === "string" && typeof param2 === "string") {
-    if (!param2 || param2.trim() === "" || param2 === "POLIGONO_INDEFINIDO") {
+    if (!param2 || param2.trim() === "" || /indefinido/i.test(param2)) {
       throw new Error("VIOLAÇÃO DE SEGREGAÇÃO (D16): poligonoId ausente.");
     }
     const heldOutSet = param3 instanceof Set ? param3 : new Set(param3 ?? []);

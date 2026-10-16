@@ -24,10 +24,10 @@ import { validarRotulo } from "@/lib/rotulos/concordancia";
 
 export interface LinhaMatrizTreino {
   pontoId: string;
-  celulaId: string;
+  celulaId: string | null; // produtor pendente (DP-18)
   poligonoId: string;
   papelConjunto: "treino" | "held-out";
-  estratoId: string;
+  estratoId: string | null; // produtor pendente (DP-18)
   fracaoErodida: number | null;
   alvoBinario25: 0 | 1 | null;
   rotuloNObservadores: number | null;
@@ -228,8 +228,8 @@ export function montarMatrizTreino(
 
     const janelaTemporal = ponto.temporal?.[modeloJanela];
 
-    const celulaId = ponto.celulaId ?? ponto.codigo ?? ponto.id;
-    const estratoId = ponto.estratoId ?? "ESTRATO_INDEFINIDO";
+    const celulaId = ponto.celulaId ?? null;
+    const estratoId = ponto.estratoId ?? null;
 
     const rotuloNObservadores =
       rotuloCons.origens && rotuloCons.origens.length > 0
