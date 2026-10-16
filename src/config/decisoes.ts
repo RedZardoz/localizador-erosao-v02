@@ -142,7 +142,8 @@ export const DECISOES: Record<string, Decisao<any>> = {
     estado: "decidida" as EstadoDecisao,
     valor: "NDVI <= 0.25 (combinado com BSI > 0.10 quando aplicável na assinatura espectral)",
     justificativa: "Calibrado no sistema GEOS3 (GeoCiS/ESALQ-USP) para solos brasileiros sob imagens orbitais (Landsat e Sentinel-2). Garante separação rigorosa entre solo exposto e resíduos de palhada de Plantio Direto.",
-    referencia: "Demattê et al. (2018), Remote Sensing of Environment 212:161-175; Safanelli et al. (2021), RBCS 45:e0210080",
+    referencia: "Demattê et al. (2018), Remote Sensing of Environment 212:161-175; Safanelli et al. (2021), RBCS 45:e0210080 " +
+      "EMENDA DE 06/10/2026 (proposta do assistente, aceita pelo pesquisador em conversa): a citação \"Mannigel et al. (2002), RBCS 26:1039-1049\" NÃO foi confirmada; a obra encontrada com esses autores e ano é Mannigel, Carvalho, Moreti e Medeiros, \"Fator erodibilidade e tolerância de perda dos solos do Estado de São Paulo\", Acta Scientiarum, Maringá, v. 24, n. 5, p. 1335-1340, 2002, que trata de solos de São Paulo e não sustenta, por si, as classes de erodibilidade do Paraná. A citação fica SUSPENSA até conferência; a sustentação normativa de D09 é o Documentos 246 da Embrapa Solos.",
     decididoPor: "pesquisador",
     decididoEm: "2026-09-22",
   },
