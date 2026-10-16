@@ -311,7 +311,8 @@ export function listarArquivosCodigo(dir: string): string[] {
       entry.isFile() &&
       (fullPath.endsWith(".ts") || fullPath.endsWith(".tsx")) &&
       !fullPath.endsWith(".test.ts") &&
-      !fullPath.endsWith(".test.tsx")
+      !fullPath.endsWith(".test.tsx") &&
+      !fullPath.endsWith(".generated.ts")
     ) {
       arquivos.push(fullPath);
     }
@@ -325,7 +326,12 @@ export function listarArquivosScripts(dir: string): string[] {
   const arquivos: string[] = [];
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory() && entry.name !== "__pycache__" && entry.name !== ".git") {
+    if (
+      entry.isDirectory() &&
+      entry.name !== "__pycache__" &&
+      entry.name !== ".git" &&
+      entry.name !== "d25"
+    ) {
       arquivos.push(...listarArquivosScripts(fullPath));
     } else if (
       entry.isFile() &&

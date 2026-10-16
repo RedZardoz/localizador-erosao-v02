@@ -2,6 +2,17 @@
 # -*- coding: utf-8 -*-
 """
 ===============================================================================
+[DEPRECATED] Pipeline Legado de Treinamento XGBoost e Explicabilidade SHAP
+===============================================================================
+AVISO: Este script foi DEPRECADO conforme as decisões metodológicas D24/D25/D26
+(DEC-14c, DEC-15c). O pipeline probatório oficial do projeto SAREL v2 para a
+dissertação é executado exclusivamente através do avaliador de referência:
+    scripts/d25/avaliacao_d25_referencia.py
+
+Este script é mantido unicamente para fins de benchmark histórico e testes de
+infraestrutura em modo `--dry-run`. Qualquer tentativa de execução em modo
+probatório é recusada com código de saída 2.
+===============================================================================
 Pipeline de Treinamento XGBoost e Explicabilidade SHAP com Validação Cruzada
 Espacial (Leave-One-Catchment-Out - LOCO, K=5) — Metodologia PPGTCA 2026
 ===============================================================================
@@ -695,8 +706,9 @@ def executar_spatial_kfold_loco(
         f1 = f1_score(y_test, y_pred, zero_division=0)
         try:
             auc = roc_auc_score(y_test, y_prob)
-        except Exception:
-            auc = 0.5
+        except Exception as e:
+            auc = float("nan")
+            print(f"[AVISO] Falha no cálculo de ROC AUC (definido como NaN): {e}")
 
         resultados_folds.append({
             'fold': fold_idx + 1,
@@ -916,6 +928,15 @@ def main():
     resultado_cv = executar_spatial_kfold_loco(X, y, blocos, k_blocos=args.k_blocos, random_state=args.semente)
 
     eh_modo_dryrun = args.permitir_dryrun_sintetico or eh_dryrun
+    if not eh_modo_dryrun:
+        print(
+            "[ERRO] Execução probatória desativada neste script legado (DEC-14c, DEC-15c).\n"
+            "O avaliador oficial probatório de referência (D24/D25/D26) é:\n"
+            "    scripts/d25/avaliacao_d25_referencia.py\n"
+            "Use --dry-run se desejar executar apenas benchmark de infraestrutura.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
     if eh_modo_dryrun:
         diretorio_saida_efetivo = os.path.join(args.saida, "DRYRUN_SINTETICO")
         prefixo_arquivo = "DRYRUN_SINTETICO_"

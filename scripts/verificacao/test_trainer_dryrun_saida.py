@@ -139,6 +139,44 @@ class TestTrainerDryrunSaida(unittest.TestCase):
             self.assertEqual(dados_relatorio["origem_dados"]["caminho"], caminho_dados)
             self.assertEqual(dados_relatorio["origem_dados"]["sha256"], hash_esperado)
 
+    def test_invocacao_sem_dryrun_recusa_modo_probatorio_com_exit_2(self):
+        """Testa que execução em modo probatório (sem --dry-run) é recusada com código 2 (DEC-14c, DEC-15c)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            caminho_dados = os.path.join(tmpdir, "dados_teste.csv")
+            diretorio_saida = os.path.join(tmpdir, "saida_teste")
+
+            conteudo_csv = (
+                "declividade_pct,elevacao_m,bsi,ndvi,Bloco_Espacial,Classe_Alvo_Binaria\n"
+                "10.5,450.0,0.15,0.35,Bacia Tibagi,1\n"
+                "5.1,380.0,-0.10,0.75,Bacia Tibagi,0\n"
+                "15.2,520.0,0.22,0.28,Macrobacia Ivai (IAT),1\n"
+                "4.8,390.0,-0.08,0.72,Macrobacia Ivai (IAT),0\n"
+            )
+            with open(caminho_dados, "w", encoding="utf-8") as f:
+                f.write(conteudo_csv)
+
+            cmd = [
+                sys.executable,
+                "scripts/treinar_xgboost_loco.py",
+                "--dados",
+                caminho_dados,
+                "--saida",
+                diretorio_saida,
+            ]
+            proc = subprocess.run(
+                cmd,
+                cwd=str(RAIZ_REPOSITORIO),
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(
+                proc.returncode,
+                2,
+                f"Esperado retorno 2 para recusa de modo probatório. Retornou {proc.returncode}.\nStderr: {proc.stderr}",
+            )
+            self.assertIn("scripts/d25/", proc.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
+
