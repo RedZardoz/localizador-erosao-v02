@@ -84,8 +84,8 @@ describe("Registro de Decisões — Mecanismo e Integridade", () => {
     }
   });
 
-  it("Parâmetros operacionais P01 a P09 devem ter IDs e estados válidos", () => {
-    expect(Object.keys(PARAMETROS).length).toBe(9);
+  it("Parâmetros operacionais devem ter IDs e estados válidos", () => {
+    expect(Object.keys(PARAMETROS).length).toBe(16);
     for (const p of Object.values(PARAMETROS)) {
       expect(["pendente", "proposta", "decidida"]).toContain(p.estado);
     }
