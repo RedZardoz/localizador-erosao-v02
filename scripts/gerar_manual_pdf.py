@@ -64,6 +64,24 @@ plt.rcParams['font.sans-serif'] = 'DejaVu Sans'
 plt.rcParams['font.family'] = 'sans-serif'
 plt.rcParams['figure.dpi'] = 200
 
+TEXTO_FAIXA_FICTICIA = "ILUSTRAÇÃO ESQUEMÁTICA — VALORES FICTÍCIOS, NÃO SÃO RESULTADO"
+
+
+def adicionar_faixa_esquematica(ax):
+    """Insere faixa visível conspícua indicando ilustração esquemática com valores fictícios."""
+    faixa = patches.Rectangle((0, 0), 100, 3.8, facecolor='#DC2626', edgecolor='#EF4444', lw=1, zorder=100)
+    ax.add_patch(faixa)
+    ax.text(
+        50, 1.9,
+        TEXTO_FAIXA_FICTICIA,
+        color='#FFFFFF',
+        fontsize=8.5,
+        weight='bold',
+        ha='center',
+        va='center',
+        zorder=101,
+    )
+
 
 def criar_diagramas_telas(pasta_figuras: str) -> dict[str, str]:
     """Gera as 5 telas demonstrativas esquemáticas do sistema SAREL em alta resolução."""
@@ -140,6 +158,7 @@ def criar_diagramas_telas(pasta_figuras: str) -> dict[str, str]:
     ax.scatter(x_ctrl, y_ctrl, c='#10B981', marker='s', s=45, edgecolors='#FFFFFF', lw=1, zorder=5, label='Controle / SPD (Classe 0)')
 
     ax.legend(loc='lower right', facecolor='#0F172A', edgecolor='#334155', labelcolor='#F8FAFC', fontsize=8)
+    adicionar_faixa_esquematica(ax)
 
     caminho_t1 = os.path.join(pasta_figuras, "tela1_triagem_mapa3d.png")
     plt.tight_layout()
@@ -207,6 +226,8 @@ def criar_diagramas_telas(pasta_figuras: str) -> dict[str, str]:
     # Rótulos no eixo X
     for idx, ano in enumerate(['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026']):
         ax.text(8 + idx * 8.6, 8, ano, color='#64748B', fontsize=7, ha='center')
+
+    adicionar_faixa_esquematica(ax)
 
     caminho_t2 = os.path.join(pasta_figuras, "tela2_inspetor_temporal.png")
     plt.tight_layout()
@@ -278,6 +299,8 @@ def criar_diagramas_telas(pasta_figuras: str) -> dict[str, str]:
     ax.text(66, 18, "1. Mesma Macrobacia (IAT)\n2. Mesma Classe de Solo\n3. Declividade equivalente (±3%)\n4. Área contínua de 10 a 50 ha", color='#38BDF8', fontsize=6.8, weight='bold')
     ax.text(65, 8, "Rastreabilidade pericial preservada.", color='#10B981', fontsize=6.8, style='italic')
 
+    adicionar_faixa_esquematica(ax)
+
     caminho_t3 = os.path.join(pasta_figuras, "tela3_campanha_drone.png")
     plt.tight_layout()
     plt.savefig(caminho_t3, dpi=200, bbox_inches='tight')
@@ -335,6 +358,8 @@ def criar_diagramas_telas(pasta_figuras: str) -> dict[str, str]:
     ax.text(71, 37, "Perfil Modelador Espectral:", color='#34D399', fontsize=7, weight='bold')
     ax.text(71, 18, "Exporta bandas Sentinel-2,\ntrajetórias e preditores.\nOCULTA: Avaliação visual e\nnotas qualitativas de campo.", color='#CBD5E1', fontsize=6.3)
 
+    adicionar_faixa_esquematica(ax)
+
     caminho_t4 = os.path.join(pasta_figuras, "tela4_ingestao_kobo.png")
     plt.tight_layout()
     plt.savefig(caminho_t4, dpi=200, bbox_inches='tight')
@@ -361,25 +386,25 @@ def criar_diagramas_telas(pasta_figuras: str) -> dict[str, str]:
     ax.text(5, 80, "DESEMPENHO LOCO (K=5)", color='#38BDF8', fontsize=8, weight='bold')
     ax.text(5, 75, "Isolamento de bacias completas:", color='#94A3B8', fontsize=6.8)
 
-    # Métricas do modelo
-    ax.text(5, 68, "Acurácia Global: 89.3%", color='#10B981', fontsize=7.5, weight='bold')
-    ax.text(5, 63, "ROC-AUC Global: 0.924", color='#10B981', fontsize=7.5, weight='bold')
-    ax.text(5, 58, "F1-Score: 0.891", color='#10B981', fontsize=7.5, weight='bold')
-    ax.text(5, 53, "Precisão: 88.5%  |  Recall: 89.8%", color='#E2E8F0', fontsize=6.8)
+    # Métricas do modelo (esquemáticas / valores fictícios rotulados)
+    ax.text(5, 68, "Acurácia Global: [FICTÍCIO]", color='#F59E0B', fontsize=7.2, weight='bold')
+    ax.text(5, 63, "ROC-AUC Global: [FICTÍCIO]", color='#F59E0B', fontsize=7.2, weight='bold')
+    ax.text(5, 58, "F1-Score: [FICTÍCIO]", color='#F59E0B', fontsize=7.2, weight='bold')
+    ax.text(5, 53, "Precisão: [FICTÍCIO]  |  Recall: [FICTÍCIO]", color='#94A3B8', fontsize=6.5)
 
     # Mini Curva ROC
     rect_roc = patches.Rectangle((5, 12), 27, 36, facecolor='#0F172A', edgecolor='#334155', lw=1)
     ax.add_patch(rect_roc)
     ax.plot([7, 30], [14, 46], color='#64748B', linestyle='--', lw=1) # diagonal aleatória
     ax.plot([7, 9, 14, 20, 30], [14, 38, 43, 45, 46], color='#10B981', lw=2) # ROC do XGBoost
-    ax.text(7, 43, "Curva ROC (AUC=0.924)", color='#34D399', fontsize=6.5, weight='bold')
+    ax.text(7, 43, "Curva ROC (Esquemática Fictícia)", color='#34D399', fontsize=6.2, weight='bold')
     ax.text(7, 10, "1 - Especificidade vs Sensibilidade", color='#64748B', fontsize=5.8)
 
     # Painel Central: SHAP Feature Importance
     rect_m2 = patches.Rectangle((36, 6), 31, 79, facecolor='#020617', edgecolor='#334155', lw=1)
     ax.add_patch(rect_m2)
     ax.text(38, 80, "EXPLICABILIDADE SHAP", color='#F59E0B', fontsize=8, weight='bold')
-    ax.text(38, 75, "Impacto Médio Absoluto (|SHAP|):", color='#94A3B8', fontsize=6.8)
+    ax.text(38, 75, "Impacto Médio Absoluto (|SHAP|) [Fictício]:", color='#94A3B8', fontsize=6.8)
 
     features_shap = [
         ("bsi (Índice Solo Exposto)", 0.42, '#F97316'),
@@ -419,6 +444,8 @@ def criar_diagramas_telas(pasta_figuras: str) -> dict[str, str]:
         y_d = 67 - d_idx * 7.5
         ax.text(71, y_d + 2.5, d_nome, color='#E2E8F0', fontsize=6.3, weight='bold')
         ax.text(71, y_d, f"Status: {d_status}", color=d_cor, fontsize=5.8)
+
+    adicionar_faixa_esquematica(ax)
 
     caminho_t5 = os.path.join(pasta_figuras, "tela5_xgboost_decisoes.png")
     plt.tight_layout()
@@ -1264,6 +1291,13 @@ def main():
     print("SAREL - Sistema de Amostragem e Rotulagem para Erosão Laminar")
     print("PPGTCA / UTFPR Campus Medianeira — 2026")
     print("================================================================================")
+
+    import sys
+    if '--apenas-figuras' in sys.argv:
+        print(f"[FIGURAS] Gerando apenas os 5 PNGs esquemáticos em '{DIRETORIO_FIGURAS}'...")
+        criar_diagramas_telas(DIRETORIO_FIGURAS)
+        print("[SUCESSO] Figuras esquemáticas regeradas com selo. PDF do manual NÃO regerado.")
+        return
 
     construir_manual_pdf(CAMINHO_PDF_FINAL)
 
