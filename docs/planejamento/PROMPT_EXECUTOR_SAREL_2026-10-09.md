@@ -104,6 +104,17 @@ R15. Saída LITERAL: cole a saída EXATA dos comandos. Proibido resumir com "...
      reescrever mensagens de commit. Saída longa: as 30 primeiras e as 10 últimas linhas, mais o total de linhas.
      (Em 14/10/2026 um relatório de teste trouxe mensagens de commit e de lint que não correspondiam às reais:
      o pesquisador confere por amostragem as saídas coladas.)
+R16. Inventário de remoção: quando um commit SUBSTITUIR ou APAGAR um artefato (script, função, arquivo gerado, teste)
+     ou remover/enfraquecer asserções de teste, o relatório traz a tabela "o que o artefato antigo fazia → onde passou a
+     ser feito / decisão de abandonar (com a linha do prompt que autoriza)". Capacidade removida sem autorização EXPLÍCITA
+     no prompt → PARE e pergunte antes de commitar. (16/10/2026: N03/Passo 4 trocou o script do ZIP e, junto, sumiu o
+     verificador de manifesto SHA-256 da banca; o prompt só descrevia o estado final e o executor cumpriu a letra.)
+R17. Sem trapaça: o objetivo é um aplicativo CORRETO e VERDADEIRO, não testes verdes. É proibido, para passar um gate:
+     apagar, pular ou afrouxar teste/asserção; alargar exclusão de varredura além do arquivo exato que a exige; trocar
+     dado real por constante, mock ou valor plausível; silenciar erro; usar 0, 0,5 ou mediana no lugar de ausência.
+     Se o prompt e a verdade científica/técnica entrarem em conflito, ou se o gate só passar enfraquecendo algo, PARE,
+     relate o conflito com a saída literal e proponha a correção; nunca contorne em silêncio. Toda exclusão, isenção ou
+     asserção removida entra no relatório em seção própria "ENFRAQUECIMENTOS" (vazia = escreva "nenhum").
 
 ════════════════════════════════════════════════════════════════════════════════════════
 2. PRÉ-VOO (Fase 0) — nada é editado antes de todos os itens passarem
