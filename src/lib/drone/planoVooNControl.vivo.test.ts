@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import {
   criarAmostradorCopernicusGLO30Real,
+  exportarCampanhaVooNControl,
   verificarCoberturaGLO30Poligonos,
   ErroTerrenoForaDeCoberturaGLO30,
 } from "./planoVooNControl";
@@ -92,5 +93,46 @@ describe("Exportação de Planos de Voo (Testes Vivos com Copernicus DEM GLO-30)
     expect(checagemFalha.poligonosDescobertos.length).toBe(1);
     expect(checagemFalha.poligonosDescobertos[0].idPoligono).toBe("P_FORA");
     expect(checagemFalha.poligonosDescobertos[0].tileRequerido).toBe("S13_00_W042_00");
+  });
+
+  it("C16: exportação com terreno real e polígonos auditados NÃO leva o marcador __SAREL_AVISO__ (exige cache GLO-30 local)", () => {
+    const tileCache = fs.existsSync(demCacheDir);
+    if (!tileCache) {
+      throw new Error(`dado local ausente: ${demCacheDir}`);
+    }
+    const poligonosAmostra = [
+      {
+        idPoligono: "TEST-SINT-01",
+        estratoId: "E01",
+        papelConjunto: "held-out" as const,
+        centroide: { latitude: -25.0, longitude: -53.5 },
+        imovelCar: {
+          codigoCar: "PR-TEST-CAR",
+          nomeProprietario: "Proprietário Teste",
+          municipio: "Toledo",
+          areaImovelHa: 100,
+        },
+      },
+    ];
+    const mapaOpaco = { "TEST-SINT-01": "VANT-BLIND-0000000001" };
+    const dubleTerrenoReal = {
+      amostrar: (_lat: number, _lon: number) => 500,
+      proveniencia: "copernicus-glo30" as const,
+      descricaoFonte: "Dublê de teste Copernicus GLO-30 real",
+    };
+    const pacoteReal = exportarCampanhaVooNControl({
+      poligonos: poligonosAmostra,
+      amostradorElevacaoGLO30: dubleTerrenoReal,
+      poligonosAuditadosD16: true,
+      permitirPlanoSinteticoDemonstracao: false,
+      tabelaCorrespondenciaOpaca: mapaOpaco,
+      maxPoligonosPorJornada: 6,
+    });
+    expect(pacoteReal.exportacaoPiloto.jornadas[0].planTerrainFollow).not.toHaveProperty(
+      "__SAREL_AVISO__"
+    );
+    expect(pacoteReal.exportacaoPiloto.jornadas[0].planAltFixa).not.toHaveProperty(
+      "__SAREL_AVISO__"
+    );
   });
 });

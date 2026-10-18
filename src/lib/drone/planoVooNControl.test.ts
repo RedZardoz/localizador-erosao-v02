@@ -17,6 +17,7 @@ import {
   exportarCampanhaVooNControl,
   gerarCodigoOpacoInterprete,
   gerarSurveyMicasenseAltum,
+  montarPlanJornadaQGC,
   validarIsolamentoCegoInterprete,
   verificarCoberturaGLO30Poligonos,
   ErroEmissaoPlanoSinteticoRecusada,
@@ -686,24 +687,22 @@ describe("Exportação de Planos de Voo QGroundControl (.plan v1) para o NContro
       "SINTETICO_NAO_VOAR"
     );
 
-    const dubleTerrenoReal = {
-      amostrar: (_lat: number, _lon: number) => 500,
-      proveniencia: "copernicus-glo30" as const,
-      descricaoFonte: "Dublê de teste Copernicus GLO-30 real",
+    // Ramo "plano voável" (terreno real): o exportador exige o cache local de tiles GLO-30
+    // (data/), logo ele é exercitado em planoVooNControl.vivo.test.ts. Aqui, de forma hermética,
+    // testa-se o ponto de decisão do marcador: montarPlanJornadaQGC.
+    const entradaPlan = {
+      surveys: [],
+      pontoDecolagem: [-25.0, -53.5] as [number, number],
+      altitudeInicialMetros: 500,
+      lastDoJumpId: 2,
     };
-    const pacoteReal = exportarCampanhaVooNControl({
-      poligonos: poligonosAmostra,
-      amostradorElevacaoGLO30: dubleTerrenoReal,
-      poligonosAuditadosD16: true,
-      permitirPlanoSinteticoDemonstracao: false,
-      tabelaCorrespondenciaOpaca: mapaOpaco,
-      maxPoligonosPorJornada: 6,
-    });
-    expect(pacoteReal.exportacaoPiloto.jornadas[0].planTerrainFollow).not.toHaveProperty(
+    expect(montarPlanJornadaQGC({ ...entradaPlan, sintetico: true })).toHaveProperty(
+      "__SAREL_AVISO__",
+      "SINTETICO_NAO_VOAR"
+    );
+    expect(montarPlanJornadaQGC({ ...entradaPlan, sintetico: false })).not.toHaveProperty(
       "__SAREL_AVISO__"
     );
-    expect(pacoteReal.exportacaoPiloto.jornadas[0].planAltFixa).not.toHaveProperty(
-      "__SAREL_AVISO__"
-    );
+    expect(montarPlanJornadaQGC(entradaPlan)).not.toHaveProperty("__SAREL_AVISO__");
   });
 });
