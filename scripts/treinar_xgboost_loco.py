@@ -37,6 +37,7 @@ Fundamentação Teórica e Metodológica (Seções 5 e 6 do Método):
    - TreeExplainer para cálculo das contribuições marginais de cada preditor.
    - Geração automática de gráficos de publicação científica (Beeswarm, Bar Plot, ROC).
 """
+from __future__ import annotations
 
 import os
 import sys
@@ -46,28 +47,64 @@ import json
 import sqlite3
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 
-from sklearn.metrics import (
-    accuracy_score,
-    precision_score,
-    recall_score,
-    f1_score,
-    roc_auc_score,
-    confusion_matrix,
-    roc_curve,
-    classification_report,
-)
-from sklearn.model_selection import KFold
-import xgboost as xgb
-import shap
+# Módulos pesados de machine learning e gráficos são carregados sob demanda
+# para permitir que a recusa probatória ocorra em menos de 1 segundo sem sobrecarga de I/O no Windows.
+plt = None
+sns = None
+xgb = None
+shap = None
+accuracy_score = None
+precision_score = None
+recall_score = None
+f1_score = None
+roc_auc_score = None
+confusion_matrix = None
+roc_curve = None
+classification_report = None
+KFold = None
 
-# Configuração de estilo científico para gráficos de publicação
-plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
-plt.rcParams['font.sans-serif'] = 'Arial'
-plt.rcParams['font.family'] = 'sans-serif'
-plt.rcParams['figure.dpi'] = 300
+
+def _importar_dependencias_modelagem():
+    global plt, sns, xgb, shap
+    global accuracy_score, precision_score, recall_score, f1_score
+    global roc_auc_score, confusion_matrix, roc_curve, classification_report, KFold
+    if xgb is not None:
+        return
+    import matplotlib.pyplot as _plt
+    import seaborn as _sns
+    from sklearn.metrics import (
+        accuracy_score as _acc,
+        precision_score as _prec,
+        recall_score as _rec,
+        f1_score as _f1,
+        roc_auc_score as _auc,
+        confusion_matrix as _cm,
+        roc_curve as _roc,
+        classification_report as _cr,
+    )
+    from sklearn.model_selection import KFold as _KFold
+    import xgboost as _xgb
+    import shap as _shap
+
+    plt = _plt
+    sns = _sns
+    xgb = _xgb
+    shap = _shap
+    accuracy_score = _acc
+    precision_score = _prec
+    recall_score = _rec
+    f1_score = _f1
+    roc_auc_score = _auc
+    confusion_matrix = _cm
+    roc_curve = _roc
+    classification_report = _cr
+    KFold = _KFold
+
+    plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
+    plt.rcParams['font.sans-serif'] = 'Arial'
+    plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams['figure.dpi'] = 300
 
 # Limiares espectrais oficiais da pesquisa (Seção 3.1)
 LIMIAR_EROSAO_BSI = 0.10
@@ -651,6 +688,7 @@ def executar_spatial_kfold_loco(
     isola geograficamente bacias hidrográficas inteiras para teste, garantindo que o algoritmo seja
     submetido à prova de generalização regional em condições reais de extrapolação espacial no Paraná.
     """
+    _importar_dependencias_modelagem()
     blocos_unicos = np.array(sorted(blocos.unique()))
     n_splits = min(k_blocos, len(blocos_unicos))
     kf = KFold(n_splits=n_splits, shuffle=True, random_state=random_state)
@@ -811,6 +849,7 @@ def gerar_graficos_e_explicabilidade_shap(
     risco de erosão, e se o alto NDVI exerce papel protetivo mitigador), conferindo transparência,
     auditabilidade e validade teórica ao arcabouço preditivo.
     """
+    _importar_dependencias_modelagem()
     os.makedirs(diretorio_saida, exist_ok=True)
 
     print(f"\n[SHAP] Calculando valores de Shapley (TreeExplainer)...")
@@ -917,6 +956,17 @@ def main():
     parser.add_argument('--semente', type=int, default=42, help="Semente determinística de reprodutibilidade")
     args = parser.parse_args()
 
+    eh_modo_dryrun = args.permitir_dryrun_sintetico
+    if not eh_modo_dryrun:
+        print(
+            "[ERRO] Execução probatória desativada neste script legado (DEC-14c, DEC-15c).\n"
+            "O avaliador oficial probatório de referência (D24/D25/D26) é:\n"
+            "    scripts/d25/avaliacao_d25_referencia.py\n"
+            "Use --dry-run se desejar executar apenas benchmark de infraestrutura.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+
     df = carregar_dados_reais(args.dados)
     X, y, blocos, features, eh_dryrun, alertas_variancia = preparar_matriz_preditores(
         df,
@@ -927,23 +977,8 @@ def main():
     )
     resultado_cv = executar_spatial_kfold_loco(X, y, blocos, k_blocos=args.k_blocos, random_state=args.semente)
 
-    eh_modo_dryrun = args.permitir_dryrun_sintetico or eh_dryrun
-    if not eh_modo_dryrun:
-        print(
-            "[ERRO] Execução probatória desativada neste script legado (DEC-14c, DEC-15c).\n"
-            "O avaliador oficial probatório de referência (D24/D25/D26) é:\n"
-            "    scripts/d25/avaliacao_d25_referencia.py\n"
-            "Use --dry-run se desejar executar apenas benchmark de infraestrutura.",
-            file=sys.stderr,
-        )
-        sys.exit(2)
-    if eh_modo_dryrun:
-        diretorio_saida_efetivo = os.path.join(args.saida, "DRYRUN_SINTETICO")
-        prefixo_arquivo = "DRYRUN_SINTETICO_"
-    else:
-        diretorio_saida_efetivo = args.saida
-        prefixo_arquivo = ""
-
+    diretorio_saida_efetivo = os.path.join(args.saida, "DRYRUN_SINTETICO")
+    prefixo_arquivo = "DRYRUN_SINTETICO_"
     os.makedirs(diretorio_saida_efetivo, exist_ok=True)
 
     resultado_shap = gerar_graficos_e_explicabilidade_shap(

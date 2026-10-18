@@ -163,18 +163,36 @@ class TestTrainerDryrunSaida(unittest.TestCase):
                 "--saida",
                 diretorio_saida,
             ]
+            import time
+            inicio = time.time()
             proc = subprocess.run(
                 cmd,
                 cwd=str(RAIZ_REPOSITORIO),
                 capture_output=True,
                 text=True,
             )
+            duracao = time.time() - inicio
+
             self.assertEqual(
                 proc.returncode,
                 2,
                 f"Esperado retorno 2 para recusa de modo probatório. Retornou {proc.returncode}.\nStderr: {proc.stderr}",
             )
             self.assertIn("scripts/d25/", proc.stderr)
+            self.assertLess(
+                duracao,
+                5.0,
+                f"Recusa do modo probatório demorou {duracao:.2f}s (esperado < 5.0s porque deve recusar antes de carregar dados e treinar).",
+            )
+            # Não deve ter executado treino nem imprimido progresso de modelagem na stdout
+            self.assertEqual(
+                proc.stdout.strip(),
+                "",
+                f"Stdout deveria estar vazia (recusa prévia antes de qualquer processamento), mas continha:\n{proc.stdout}",
+            )
+            # Diretório de saída não deve conter arquivos
+            if os.path.exists(diretorio_saida):
+                self.assertEqual(os.listdir(diretorio_saida), [])
 
 
 if __name__ == "__main__":
