@@ -200,17 +200,17 @@ def identificar_bacia_real(lat: float, lon: float) -> str | None:
     # Enquadramento geográfico determinístico por quadrante dentro dos limites do Paraná
     if -26.8 <= lat_f <= -22.5 and -54.7 <= lon_f <= -48.0:
         if lat_f < -25.3:
-            return "Bacia do Rio Iguaçu"
+            return "Bloco-quadrante (não-IAT): Iguaçu"
         elif lon_f < -53.2:
-            return "Bacia do Rio Piquiri / PR 3"
+            return "Bloco-quadrante (não-IAT): Piquiri"
         elif lon_f > -50.2:
-            return "Bacia Litorânea / Ribeira"
+            return "Bloco-quadrante (não-IAT): Litoral/Ribeira"
         elif lat_f > -23.3:
-            return "Bacia do Paranapanema"
+            return "Bloco-quadrante (não-IAT): Paranapanema"
         elif lon_f > -51.8:
-            return "Bacia do Rio Tibagi"
+            return "Bloco-quadrante (não-IAT): Tibagi"
         else:
-            return "Macrobacia Ivai (IAT)"
+            return "Bloco-quadrante (não-IAT): Ivaí"
     return None
 
 
@@ -491,7 +491,11 @@ def preparar_matriz_preditores(
         if 'Bloco_Espacial' in df_alvo.columns and df_alvo['Bloco_Espacial'].notna().any():
             return [None if pd.isna(v) else str(v).strip() for v in df_alvo['Bloco_Espacial']]
         if 'Latitude' in df_alvo.columns and 'Longitude' in df_alvo.columns:
-            return [identificar_bacia_real(lat, lon) for lat, lon in zip(df_alvo['Latitude'], df_alvo['Longitude'])]
+            blocos_res = [identificar_bacia_real(lat, lon) for lat, lon in zip(df_alvo['Latitude'], df_alvo['Longitude'])]
+            n_pol = sum(1 for b in blocos_res if b is not None and not str(b).startswith("Bloco-quadrante (não-IAT):"))
+            n_fb = sum(1 for b in blocos_res if b is not None and str(b).startswith("Bloco-quadrante (não-IAT):"))
+            print(f"  [ATRIBUIÇÃO ESPACIAL] {n_pol} pontos em polígonos simplificados IAT, {n_fb} em blocos-quadrantes (não-IAT)")
+            return blocos_res
         if 'bacia' in df_alvo.columns and df_alvo['bacia'].notna().any() and not (df_alvo['bacia'] == 'Bacia Local').all():
             return [None if pd.isna(v) else str(v).strip() for v in df_alvo['bacia']]
         raise ValueError(
@@ -652,7 +656,10 @@ def preparar_matriz_preditores(
 
     print(f"[FEATURES] {len(preditores_disponiveis)} preditores físico-informados: {preditores_disponiveis}")
     print(f"[AMOSTRAS] Distribuição do Alvo: {dict(y_series.value_counts())} (0: Controle, 1: Erosão)")
-    print(f"[MACROBACIAS] Distribuição por Bacia do Paraná: {dict(blocos.value_counts())}")
+    if 'Bloco_Espacial' in df.columns and df['Bloco_Espacial'].notna().any():
+        print(f"[MACROBACIAS] Distribuição por Bloco Espacial (app): {dict(blocos.value_counts())}")
+    else:
+        print(f"[MACROBACIAS] Distribuição por Bacia do Paraná: {dict(blocos.value_counts())}")
 
     # Auditoria de Variância dos Preditores
     alertas_variancia = auditar_variancia_preditores(X)
