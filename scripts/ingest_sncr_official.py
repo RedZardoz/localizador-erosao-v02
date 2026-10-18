@@ -134,6 +134,7 @@ def ingest_csv_file(conn: sqlite3.Connection, csv_path: str, batch_size: int = 5
     t0 = time.time()
     batch = []
     inserted = 0
+    rejeitados = 0
 
     with open(csv_path, "r", encoding="utf-8", errors="replace") as f:
         reader = csv.reader(f, delimiter=";")
@@ -141,6 +142,7 @@ def ingest_csv_file(conn: sqlite3.Connection, csv_path: str, batch_size: int = 5
 
         for row in reader:
             if len(row) < 7:
+                rejeitados += 1
                 continue
 
             cod_imovel = row[0].strip()
@@ -152,18 +154,20 @@ def ingest_csv_file(conn: sqlite3.Connection, csv_path: str, batch_size: int = 5
                 row_uf = list(ufs_no_csv)[0]
 
             try:
-                area_total = float(row[5].replace(".", "").replace(",", "."))
+                raw_area = row[5].replace(".", "").replace(",", ".").strip()
+                area_total = float(raw_area) if raw_area else None
             except Exception:
-                area_total = 0.0
+                area_total = None
 
             titular = row[6].strip()
             nat_jur = row[7].strip() if len(row) > 7 else ""
             condicao = row[8].strip() if len(row) > 8 else ""
 
             try:
-                perc_det = float(row[9].replace(",", ".")) if len(row) > 9 and row[9].strip() else 100.0
+                raw_perc = row[9].replace(",", ".").strip() if len(row) > 9 else ""
+                perc_det = float(raw_perc) if raw_perc else None
             except Exception:
-                perc_det = 100.0
+                perc_det = None
 
             batch.append((
                 cod_imovel, denominacao, mun_ibge, municipio, row_uf,
@@ -192,6 +196,8 @@ def ingest_csv_file(conn: sqlite3.Connection, csv_path: str, batch_size: int = 5
             """, batch)
             conn.commit()
             inserted += len(batch)
+
+    print(f"\n[OK] Ingestão SNCR concluída: {inserted:,} registros inseridos, {rejeitados:,} linhas rejeitadas.")
 
     # Registra metadados oficiais com contagens reais
     hoje = time.strftime("%Y-%m-%d")

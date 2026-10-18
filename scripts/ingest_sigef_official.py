@@ -176,11 +176,13 @@ def ingest_zip_file(conn: sqlite3.Connection, zip_path: str, batch_size: int = 1
             st = str(rec.get('status') or 'CERTIFICADA').strip()
             dt_aprov = str(rec.get('data_aprov') or '').strip()
 
-            mun_ibge = 0
+            mun_ibge = None
             try:
-                mun_ibge = int(rec.get('municipio_') or 0)
+                raw_mun = str(rec.get('municipio_') or '').strip()
+                if raw_mun and raw_mun not in ('0', 'None'):
+                    mun_ibge = int(raw_mun)
             except Exception:
-                mun_ibge = 0
+                mun_ibge = None
 
             uf_ibge = rec.get('uf_id')
             if uf_ibge and uf_ibge in UF_IBGE_MAP:

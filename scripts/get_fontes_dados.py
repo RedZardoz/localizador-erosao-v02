@@ -17,7 +17,7 @@ def main():
     args = parser.parse_args()
 
     if not os.path.exists(args.db):
-        print(json.dumps([]))
+        print(json.dumps({"erro": f"Banco de dados nao encontrado em {args.db}", "fontes": []}))
         return
 
     try:
@@ -44,7 +44,7 @@ def main():
         print(json.dumps(result, ensure_ascii=False))
     except Exception as e:
         sys.stderr.write(f"Erro ao consultar fontes_dados: {e}\n")
-        print(json.dumps([]))
+        print(json.dumps({"erro": str(e), "fontes": []}))
 
 if __name__ == "__main__":
     main()

@@ -106,7 +106,7 @@ def query_real_properties(min_lng, min_lat, max_lng, max_lat, limit):
         if r[2] is not None and r[3] is not None:
             lat = round(float(r[2]), 6)
             lng = round(float(r[3]), 6)
-            area_ha = round(float(r[4] or 0), 2)
+            area_ha = round(float(r[4]), 2) if r[4] is not None else None
             rows.append({
                 'cod_car': r[0],
                 'municipio': r[1] or '',
@@ -116,7 +116,7 @@ def query_real_properties(min_lng, min_lat, max_lng, max_lat, limit):
                 'nome_imovel': r[5] or '',
                 'proprietario_nome': r[6] or '',
                 'registro_incra': r[7] or '',
-                'mod_fiscal': round(float(r[8] or 0), 2),
+                'mod_fiscal': round(float(r[8]), 2) if r[8] is not None else None,
                 'status': r[9] or '',
                 'fonte': r[10] or 'SICAR Oficial (MMA/SFB)',
                 'lat_min': round(float(r[11]), 6) if r[11] is not None else lat,

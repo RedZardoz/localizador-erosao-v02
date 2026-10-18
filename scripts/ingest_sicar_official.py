@@ -204,8 +204,17 @@ def ingest_zip(conn: sqlite3.Connection, zip_path: str, uf_expected: str, batch_
                     f"cod_estado '{uf_row}' diverge do esperado '{uf_expected}'."
                 )
 
-            area = float(rec.get('num_area') or 0.0)
-            mod = float(rec.get('mod_fiscal') or 0.0)
+            try:
+                raw_area = str(rec.get('num_area') or '').strip()
+                area = float(raw_area) if raw_area and raw_area != 'None' else None
+            except Exception:
+                area = None
+
+            try:
+                raw_mod = str(rec.get('mod_fiscal') or '').strip()
+                mod = float(raw_mod) if raw_mod and raw_mod != 'None' else None
+            except Exception:
+                mod = None
             st = rec.get('ind_status', 'AT') or 'AT'
             cond = rec.get('des_condic', 'Cadastrado') or 'Cadastrado'
             tipo = rec.get('ind_tipo', 'IRU') or 'IRU'
