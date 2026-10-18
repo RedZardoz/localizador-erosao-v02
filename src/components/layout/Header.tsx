@@ -293,40 +293,45 @@ export const Header: React.FC = () => {
         {/* 7. Menu de Configurações, Decisões e Diagnóstico (Engrenagem) */}
         {distribuicao.noCabecalho.includes("config") && (
           <div className="relative" ref={configRef}>
-            <button
-              data-metodologia="menu-configuracoes"
-              onClick={() => setMenuConfigAberto(!menuConfigAberto)}
-              aria-label="Configurações, Governança, Decisões e Diagnóstico"
-              aria-expanded={menuConfigAberto}
-              aria-controls="menu-config-dropdown"
-              className={`h-9 px-2 sm:px-2.5 rounded-xl text-xs font-semibold border transition-all flex items-center justify-center gap-1 shrink-0 relative cursor-pointer shadow-sm min-w-[24px] min-h-[24px] ${
-                menuConfigAberto
-                  ? "bg-slate-200 dark:bg-slate-700 border-slate-400 text-slate-900 dark:text-white"
-                  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 dark:border-slate-700 hover:border-emerald-500/50"
-              }`}
-              title="Configurações, Governança, Decisões e Diagnóstico"
-            >
-              <Settings
-                className={`w-4 h-4 text-slate-600 dark:text-slate-300 transition-transform duration-200 ${
-                  menuConfigAberto ? "rotate-45" : ""
-                }`}
-              />
-              <ChevronDown className="w-3 h-3 text-slate-400" />
+            <div className="flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shadow-sm overflow-hidden h-9">
+              <button
+                data-metodologia="menu-configuracoes"
+                onClick={() => setModalAtiva("settings")}
+                aria-label="Configurações"
+                className="h-full px-2 sm:px-2.5 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all flex items-center justify-center gap-1 shrink-0 relative cursor-pointer min-w-[24px] min-h-[24px]"
+                title="Configurações de Conexão com GEE, Planet, Mapbox e Embrapa"
+              >
+                <Settings className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                {/* Indicador de Status Combinado */}
+                {credenciais.geeSessionActive && !temErrosLogs && (
+                  <span
+                    className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-slate-900"
+                    title="GEE Conectado e Ativo"
+                  />
+                )}
+                {temErrosLogs && (
+                  <span
+                    className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white dark:ring-slate-900 animate-pulse"
+                    title="Erros no diagnóstico"
+                  />
+                )}
+              </button>
 
-              {/* Indicador de Status Combinado */}
-              {credenciais.geeSessionActive && !temErrosLogs && (
-                <span
-                  className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-slate-900"
-                  title="GEE Conectado e Ativo"
+              <button
+                onClick={() => setMenuConfigAberto(!menuConfigAberto)}
+                aria-label="Governança, Decisões e Diagnóstico"
+                aria-expanded={menuConfigAberto}
+                aria-controls="menu-config-dropdown"
+                className="h-full px-1.5 border-l border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-all flex items-center justify-center cursor-pointer min-w-[24px] min-h-[24px]"
+                title="Governança, Decisões e Diagnóstico"
+              >
+                <ChevronDown
+                  className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${
+                    menuConfigAberto ? "rotate-180" : ""
+                  }`}
                 />
-              )}
-              {temErrosLogs && (
-                <span
-                  className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white dark:ring-slate-900 animate-pulse"
-                  title="Erros no diagnóstico"
-                />
-              )}
-            </button>
+              </button>
+            </div>
 
             {/* Dropdown Menu com Governança e Configurações */}
             {menuConfigAberto && (

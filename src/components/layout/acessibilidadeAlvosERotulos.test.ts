@@ -42,6 +42,7 @@ describe("U03 — Rótulos acessíveis e alvos mínimos de 24 px (WCAG 2.5.8 / 4
       "components/diagnostics/SystemLogsModal.tsx",
       "components/decisoes/DecisoesModal.tsx",
       "components/region/RegionRequestModal.tsx",
+      "components/config/SettingsModal.tsx",
     ];
 
     for (const relPath of arquivosModais) {
