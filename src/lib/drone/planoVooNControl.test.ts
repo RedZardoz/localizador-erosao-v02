@@ -638,4 +638,72 @@ describe("Exportação de Planos de Voo QGroundControl (.plan v1) para o NContro
       expect(fs.existsSync(path.join(dirVerificacao, arq))).toBe(true);
     }
   });
+
+  it("C16 — arquivos .plan sintéticos em docs/verificacoes/voo_ncontrol devem conter o marcador __SAREL_AVISO__: 'SINTETICO_NAO_VOAR'", () => {
+    const dirVerificacao = path.resolve(process.cwd(), "docs/verificacoes/voo_ncontrol");
+    const arquivos = fs.readdirSync(dirVerificacao).filter((f) => f.endsWith(".plan"));
+    expect(arquivos.length).toBeGreaterThan(0);
+    for (const arq of arquivos) {
+      const conteudo = JSON.parse(fs.readFileSync(path.join(dirVerificacao, arq), "utf8"));
+      expect(
+        conteudo,
+        `Arquivo ${arq} deve conter __SAREL_AVISO__ = SINTETICO_NAO_VOAR`
+      ).toHaveProperty("__SAREL_AVISO__", "SINTETICO_NAO_VOAR");
+    }
+  });
+
+  it("C16 — gerador de planos injeta __SAREL_AVISO__ apenas para planos sintéticos e omite para planos com terreno real", () => {
+    const poligonosAmostra = [
+      {
+        idPoligono: "TEST-SINT-01",
+        estratoId: "E01",
+        papelConjunto: "held-out" as const,
+        centroide: { latitude: -25.0, longitude: -53.5 },
+        imovelCar: {
+          codigoCar: "PR-TEST-CAR",
+          nomeProprietario: "Proprietário Teste",
+          municipio: "Toledo",
+          areaImovelHa: 100,
+        },
+      },
+    ];
+    const amostradorSint = criarAmostradorSinteticoParaTeste((_lat, _lon) => 500);
+    const mapaOpaco = { "TEST-SINT-01": "VANT-BLIND-0000000001" };
+    const pacoteSintetico = exportarCampanhaVooNControl({
+      poligonos: poligonosAmostra,
+      amostradorElevacaoGLO30: amostradorSint,
+      poligonosAuditadosD16: false,
+      permitirPlanoSinteticoDemonstracao: true,
+      tabelaCorrespondenciaOpaca: mapaOpaco,
+      maxPoligonosPorJornada: 6,
+    });
+    expect(pacoteSintetico.exportacaoPiloto.jornadas[0].planTerrainFollow).toHaveProperty(
+      "__SAREL_AVISO__",
+      "SINTETICO_NAO_VOAR"
+    );
+    expect(pacoteSintetico.exportacaoPiloto.jornadas[0].planAltFixa).toHaveProperty(
+      "__SAREL_AVISO__",
+      "SINTETICO_NAO_VOAR"
+    );
+
+    const dubleTerrenoReal = {
+      amostrar: (_lat: number, _lon: number) => 500,
+      proveniencia: "copernicus-glo30" as const,
+      descricaoFonte: "Dublê de teste Copernicus GLO-30 real",
+    };
+    const pacoteReal = exportarCampanhaVooNControl({
+      poligonos: poligonosAmostra,
+      amostradorElevacaoGLO30: dubleTerrenoReal,
+      poligonosAuditadosD16: true,
+      permitirPlanoSinteticoDemonstracao: false,
+      tabelaCorrespondenciaOpaca: mapaOpaco,
+      maxPoligonosPorJornada: 6,
+    });
+    expect(pacoteReal.exportacaoPiloto.jornadas[0].planTerrainFollow).not.toHaveProperty(
+      "__SAREL_AVISO__"
+    );
+    expect(pacoteReal.exportacaoPiloto.jornadas[0].planAltFixa).not.toHaveProperty(
+      "__SAREL_AVISO__"
+    );
+  });
 });

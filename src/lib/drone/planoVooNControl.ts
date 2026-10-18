@@ -129,6 +129,7 @@ export interface QGCSurveyComplexItem {
 }
 
 export interface QGCPlanFile {
+  __SAREL_AVISO__?: "SINTETICO_NAO_VOAR";
   fileType: "Plan";
   geoFence: {
     circles: unknown[];
@@ -1531,8 +1532,9 @@ export function montarPlanJornadaQGC(opcoes: {
   pontoDecolagem: [number, number];
   altitudeInicialMetros: number;
   lastDoJumpId: number;
+  sintetico?: boolean;
 }): QGCPlanFile {
-  const { surveys, pontoDecolagem, altitudeInicialMetros, lastDoJumpId } = opcoes;
+  const { surveys, pontoDecolagem, altitudeInicialMetros, lastDoJumpId, sintetico } = opcoes;
   const altRounded = Number(altitudeInicialMetros.toFixed(2));
 
   const itemTakeoff: QGCSimpleItem = {
@@ -1554,6 +1556,7 @@ export function montarPlanJornadaQGC(opcoes: {
   };
 
   return {
+    ...(sintetico ? { __SAREL_AVISO__: "SINTETICO_NAO_VOAR" as const } : {}),
     fileType: "Plan",
     geoFence: {
       circles: [],
@@ -1937,6 +1940,7 @@ export function exportarCampanhaVooNControl(
       pontoDecolagem,
       altitudeInicialMetros: aglDesejadaMetros,
       lastDoJumpId: doJumpIdTf,
+      sintetico: !ehPlanoVoavel,
     });
 
     const planAltFixa = montarPlanJornadaQGC({
@@ -1944,6 +1948,7 @@ export function exportarCampanhaVooNControl(
       pontoDecolagem,
       altitudeInicialMetros: aglDesejadaMetros,
       lastDoJumpId: doJumpIdAf,
+      sintetico: !ehPlanoVoavel,
     });
 
     jornadas.push({
