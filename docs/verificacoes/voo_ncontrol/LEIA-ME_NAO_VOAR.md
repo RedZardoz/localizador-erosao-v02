@@ -26,8 +26,7 @@ const amostradorGLO30 = (lat, lon) =>
 da variável. Os valores caem na faixa de 320 a 440 m, que é plausível para a Bacia do Paraná 3
 — o que torna o arquivo mais perigoso, não menos, porque nada nele parece errado.
 
-**Não existe leitor real do GLO-30 no repositório.** `AmostradorElevacaoGLO30` é apenas um
-tipo em `planoVooNControl.ts`; nenhuma implementação o satisfaz fora dos testes.
+Existe amostrador real do GLO-30 no repositório (implementado via `criarAmostradorCopernicusGLO30Real` e `scripts/reduzir_terreno_copernicus.py`), mas os `.plan` comitados foram gerados com a função sintética de demonstração.
 
 ### 2. Os polígonos são sintéticos
 

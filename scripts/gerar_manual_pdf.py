@@ -945,7 +945,7 @@ def construir_manual_pdf(caminho_saida: str, caminhos_figuras: dict[str, str] = 
         "# 1. Iniciar servidor local em modo de desenvolvimento\n"
         "npm run dev\n"
         "# Acesse no navegador: http://localhost:3000\n\n"
-        "# 2. Executar auditoria de seguranca e anti-mock (35 suites / 231 testes vitest)\n"
+        "# 2. Executar auditoria de seguranca e anti-mock (suíte vitest do repositório; rode `npm test` para a contagem atual)\n"
         "npm test\n\n"
         "# 3. Validacao de compilacao estrita TypeScript e Build\n"
         "npx tsc --noEmit\n"
