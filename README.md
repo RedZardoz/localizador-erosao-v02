@@ -32,11 +32,11 @@ O sistema opera sob as **9 Regras Invioláveis da Lei Fundamental** (`docs/plane
 4. **Linha de Base RUSLE (`src/lib/rusle/`):**
    - Fator C regional tropical por **Durigon et al. (2014)**: $C = (1 - \text{NDVI}) / 2$, com análise de sensibilidade por **van der Knijff et al. (2000)**.
    - Fator P tabelado ($1{,}0$) por **Renard et al. (1997)**.
-   - Guardas ativas para decisões metodológicas pendentes (D13 para Fator R, D14 para Fator K, D15 para Fator LS), com perda de solo estritamente vinculada ao Invariante 1.
+   - Fatores físicos da RUSLE parametrizados pelas decisões metodológicas vigentes: Fator R por equação regional do Paraná (Rufino et al., 1993 / Waltrick, 2010; D13) sobre CHIRPS climatológico; Fator K por erodibilidade oficial da Embrapa Solos (Doc. 246/2024; D14); Fator LS bidimensional de Desmet & Govers (1996) com m e S da RUSLE (Renard et al., 1997; D15) sobre MDE Copernicus GLO-30 a 30 m (D21); e cálculo da perda de solo A = R·K·LS·C·P estritamente vinculado ao Invariante 1.
 5. **Ingestão e Matriz de Treino (`src/lib/rotulos/`, `src/lib/matriz/`):**
    - Concordância entre intérpretes via Kappa de Cohen com alerta bloqueante para $\kappa < 0{,}60$.
    - Segregação mandatória de voos de drone como conjunto de teste independente (*held-out*).
-   - Invariantes verificados em tempo de execução antes de qualquer exportação (Invariantes 1, 2, 3, 5, 6 e 7: coerência RUSLE, lista de permissão, campos estimados, negativa fundiária, literais proibidos e variância física).
+   - Invariantes verificados em tempo de execução com bloqueio de exportação caso violados (Invariantes 1 a 7: Coerência RUSLE, Lista de Permissão, Campos Estimados, Rastreabilidade de Satélite, Negativa Fundiária, Literais Proibidos e Variância Física / Constante Disfarçada).
 
 ---
 
@@ -110,8 +110,5 @@ Dê duplo clique em **`Iniciar_Localizador_Erosao.bat`** (ou execute `npm run de
 
 ## Preservação Histórica
 
-O código legado original do Localizador e protótipos prévios encontram-se permanentemente arquivados e congelados na tag Git:
-```bash
-git checkout legado-pre-sarel
-```
+O código legado original do Localizador e protótipos prévios encontram-se permanentemente arquivados e congelados no diretório `legado/` (commit inicial `0078da4`).
 A documentação metodológica, relatórios de auditoria e históricos de planejamento estão organizados no diretório `docs/`.
