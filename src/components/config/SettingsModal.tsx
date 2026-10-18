@@ -19,8 +19,9 @@ export const SettingsModal: React.FC = () => {
   const [statusFundiario, setStatusFundiario] = useState<{
     carregado: boolean;
     existe: boolean;
-    tabelas: number;
-  }>({ carregado: false, existe: false, tabelas: 0 });
+    tabelas: number | null;
+    erro?: string;
+  }>({ carregado: false, existe: false, tabelas: null });
 
   useEffect(() => {
     let cancelado = false;
@@ -31,13 +32,19 @@ export const SettingsModal: React.FC = () => {
           setStatusFundiario({
             carregado: true,
             existe: dados.existe,
-            tabelas: dados.tabelas || 0,
+            tabelas: typeof dados.tabelas === "number" ? dados.tabelas : null,
+            erro: dados.erro,
           });
         }
       })
       .catch(() => {
         if (!cancelado) {
-          setStatusFundiario({ carregado: true, existe: false, tabelas: 0 });
+          setStatusFundiario({
+            carregado: true,
+            existe: false,
+            tabelas: null,
+            erro: "status não verificado nesta sessão",
+          });
         }
       });
 
@@ -127,7 +134,7 @@ export const SettingsModal: React.FC = () => {
                   </div>
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${
-                      !statusFundiario.carregado
+                      !statusFundiario.carregado || statusFundiario.erro === "status não verificado nesta sessão"
                         ? "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                         : statusFundiario.existe
                         ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
@@ -135,10 +142,14 @@ export const SettingsModal: React.FC = () => {
                     }`}
                   >
                     {!statusFundiario.carregado
-                      ? "VERIFICANDO..."
-                      : statusFundiario.existe
-                      ? `SICAR/SIGEF/SNCR: BASE LOCAL PRESENTE (${statusFundiario.tabelas} TABELAS)`
-                      : "BASE LOCAL AUSENTE"}
+                      ? "verificando..."
+                      : statusFundiario.erro === "status não verificado nesta sessão"
+                      ? "status não verificado nesta sessão"
+                      : !statusFundiario.existe
+                      ? "base local ausente"
+                      : typeof statusFundiario.tabelas === "number"
+                      ? `base local presente (${statusFundiario.tabelas} tabelas)`
+                      : "base local presente, tabelas não lidas"}
                   </span>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
