@@ -122,21 +122,16 @@ PACOTE_REPRODUTIBILIDADE_SAREL_PPGTCA_2026.zip
   * Citações bibliográficas associadas a cada equação (em formato ABNT).
 
 ### Arquivo 05: `05_avaliacao_d25.py`
-* **Descrição:** Script autônomo e executável em Python contendo a implementação canônica e reprodutível do protocolo de avaliação D25 da dissertação.
-* **Aviso metodológico:** Este script é a implementação de referência do protocolo D25 e **NÃO é evidência com dado sintético**; ele opera sobre as matrizes reais fornecidas no pacote (Arquivos 01, 02 e 03) sob as regras estritas de integridade científica do SAREL (D16, D24, D25, D26).
-* **Como a banca examinadora o utiliza:**
-  1. O examinador instala as dependências mínimas indicadas em `requirements.txt`:
-     ```bash
-     pip install -r requirements.txt
-     ```
-  2. Executa a rotina de avaliação no diretório descompactado:
-     ```bash
-     python 05_avaliacao_d25.py
-     ```
-  3. O script computa métricas discriminativas, Brier Score, calibração e intervalos de confiança por Spatial Block Bootstrap (D25).
+* **Descrição:** Implementação de REFERÊNCIA, em Python, da avaliação pré-registrada D24/D25/D26 (ρ de Spearman primário com piso e margem de D25, AUC secundária, bootstrap por polígono, alvo `Fracao_Erodida`, binário a 25 %). É cópia byte a byte de `scripts/d25/avaliacao_d25_referencia.py` do repositório.
+* **Aviso metodológico:** o script NÃO é evidência científica por si só. Com dado sintético só roda em `--dryrun-sintetico` e grava arquivos com prefixo `DRYRUN_SINTETICO_`; resultado probatório exige `--probatorio` sobre a matriz real de rótulos delineados pelo pesquisador.
+* **Limitação atual do pacote (declarada, não omitida):** este ZIP ainda NÃO permite à banca reproduzir a avaliação de ponta a ponta. O script exige (a) uma matriz por célula no contrato D26 (`Fracao_Erodida`, `Poligono_ID`, `Papel_Conjunto`, `Estrato_ID` e os preditores), que não é o Arquivo 01 deste pacote; e (b) um JSON de configuração pré-registrado (`--config`), que só será congelado pelo pesquisador depois das decisões pendentes (DP-1, DP-3, DP-4, DP-6) e que não vai neste ZIP. Até lá, o que a banca pode verificar de forma independente aqui é a integridade dos arquivos (Arquivo 07).
+* **Uso (quando matriz e configuração existirem):**
+  1. `pip install -r requirements.txt`
+  2. `python 05_avaliacao_d25.py --dados <matriz.csv> --config <config_pre_registro.json> --saida <pasta> (--probatorio | --dryrun-sintetico)`; opcionalmente `--linha-de-base <csv>`, `--B` (reamostragens) e `--seed`.
+  Sem `--dados`, `--config`, `--saida` e um dos dois modos, o script recusa e termina com código diferente de zero.
 
 ### Arquivo: `requirements.txt`
-* **Descrição:** Especificação das dependências mínimas em Python necessárias para execução do script de avaliação D25 (`scikit-learn`, `scipy`, `numpy`).
+* **Descrição:** dependências do avaliador D25: `numpy`, `pandas`, `scipy`, `scikit-learn`, `xgboost`, `shapely` e `pyproj` (sem versões fixadas; a fixação das versões usadas no resultado probatório ainda precisa ser registrada pelo pesquisador).
 
 ### Arquivo 06: `06_manifesto_integridade_sha256.txt`
 * **Descrição:** Manifesto de integridade criptográfica com *hashes* SHA-256 gerados no momento da compilação do pacote. O manifesto não lista a si próprio.
