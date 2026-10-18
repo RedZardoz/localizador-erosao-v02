@@ -801,13 +801,19 @@ export async function POST(request: NextRequest) {
                   motivo:
                     "Data de aquisição da cena Sentinel-2 não informada pela fonte (DEC-9).",
                 }
-              : {
-                  estado: "medido" as const,
-                  valor: medicaoS2.ndvi,
-                  fonte: medicaoS2.fonte,
-                  adquiridoEm: dataAquisicaoS2,
-                  consultadoEm: dataConsultaAtual,
-                }
+              : medicaoS2.ndvi < -1 || medicaoS2.ndvi > 1
+                ? {
+                    estado: "indisponivel" as const,
+                    causa: "fora-do-dominio" as const,
+                    motivo: `Valor de NDVI (${medicaoS2.ndvi}) fora do domínio físico [-1, 1].`,
+                  }
+                : {
+                    estado: "medido" as const,
+                    valor: medicaoS2.ndvi,
+                    fonte: medicaoS2.fonte,
+                    adquiridoEm: dataAquisicaoS2,
+                    consultadoEm: dataConsultaAtual,
+                  }
           : {
               estado: "indisponivel" as const,
               causa: "nao-calculado" as const,
@@ -829,13 +835,19 @@ export async function POST(request: NextRequest) {
                   motivo:
                     "Data de aquisição da cena Sentinel-2 não informada pela fonte (DEC-9).",
                 }
-              : {
-                  estado: "medido" as const,
-                  valor: medicaoS2.bsi,
-                  fonte: medicaoS2.fonte,
-                  adquiridoEm: dataAquisicaoS2,
-                  consultadoEm: dataConsultaAtual,
-                }
+              : medicaoS2.bsi < -1 || medicaoS2.bsi > 1
+                ? {
+                    estado: "indisponivel" as const,
+                    causa: "fora-do-dominio" as const,
+                    motivo: `Valor de BSI (${medicaoS2.bsi}) fora do domínio físico [-1, 1].`,
+                  }
+                : {
+                    estado: "medido" as const,
+                    valor: medicaoS2.bsi,
+                    fonte: medicaoS2.fonte,
+                    adquiridoEm: dataAquisicaoS2,
+                    consultadoEm: dataConsultaAtual,
+                  }
           : {
               estado: "indisponivel" as const,
               causa: "nao-calculado" as const,

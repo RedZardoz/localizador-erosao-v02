@@ -9,6 +9,7 @@ describe("Metodologia PPGTCA 2026 — Classificação Espectral Biofísica", () 
     expect(classificarPontoEspectral(0.15, 0.35)).toBe("erosao");
     expect(classificarPontoEspectral(0.45, 0.20)).toBe("erosao");
     expect(classificarPontoEspectral(0.11, 0.39)).toBe("erosao");
+    expect(classificarPontoEspectral(0.2, 0.3)).toBe("erosao");
   });
 
   it("classifica como Controle quando BSI < 0.00 e NDVI > 0.65", () => {
@@ -27,6 +28,13 @@ describe("Metodologia PPGTCA 2026 — Classificação Espectral Biofísica", () 
 
     // Ambos intermediários
     expect(classificarPontoEspectral(0.05, 0.50)).toBe("indefinido");
+  });
+
+  it("classifica como Indefinido quando valores finitos estao fora do dominio fisico [-1, 1]", () => {
+    expect(classificarPontoEspectral(5, -3)).toBe("indefinido");
+    expect(classificarPontoEspectral(-5, 3)).toBe("indefinido");
+    expect(classificarPontoEspectral(1.05, 0.20)).toBe("indefinido");
+    expect(classificarPontoEspectral(0.20, -1.05)).toBe("indefinido");
   });
 
   it("rejeita e retorna indefinido quando BSI ou NDVI são nulos ou ausentes (zero mock)", () => {

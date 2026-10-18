@@ -74,6 +74,11 @@ export function classificarPontoEspectral(
     return "indefinido";
   }
 
+  // C27: Valor finito mas fora do domínio físico [-1, 1] vira indefinido
+  if (bsi < -1 || bsi > 1 || ndvi < -1 || ndvi > 1) {
+    return "indefinido";
+  }
+
   // Classe 1: Erosão Laminar (BSI > 0.10 e NDVI < 0.40)
   if (bsi > CRITERIOS_ESPECTRAIS.EROSAO.BSI_MIN && ndvi < CRITERIOS_ESPECTRAIS.EROSAO.NDVI_MAX) {
     return "erosao";

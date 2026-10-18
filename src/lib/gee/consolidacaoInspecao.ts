@@ -218,19 +218,28 @@ export function consolidarInspecaoPonto(
   } else if (medicaoS2) {
     const motivoD11 = `Suficiência amostral insuficiente (${medicaoS2.nObservacoesValidas} < ${LIMIAR_MINIMO_OBSERVACOES_D11} observações válidas sem nuvem/sombra exigidas pela Decisão D11).`;
 
+    const motivoForaDominioNdvi = `Valor medido de NDVI (${medicaoS2.ndvi}) fora do domínio físico válido [-1, 1].`;
+    const motivoForaDominioBsi = `Valor medido de BSI (${medicaoS2.bsi}) fora do domínio físico válido [-1, 1].`;
+
     ndviProveniencia = medicaoS2.insuficienteD11
       ? {
           estado: "indisponivel",
           causa: "insuficiente",
           motivo: motivoD11,
         }
-      : {
-          estado: "medido",
-          valor: medicaoS2.ndvi,
-          fonte: medicaoS2.fonte,
-          adquiridoEm: dataAquisicaoS2,
-          consultadoEm: dataConsultaAtual,
-        };
+      : medicaoS2.ndvi < -1 || medicaoS2.ndvi > 1
+        ? {
+            estado: "indisponivel",
+            causa: "fora-do-dominio",
+            motivo: motivoForaDominioNdvi,
+          }
+        : {
+            estado: "medido",
+            valor: medicaoS2.ndvi,
+            fonte: medicaoS2.fonte,
+            adquiridoEm: dataAquisicaoS2,
+            consultadoEm: dataConsultaAtual,
+          };
 
     bsiProveniencia = medicaoS2.insuficienteD11
       ? {
@@ -238,13 +247,19 @@ export function consolidarInspecaoPonto(
           causa: "insuficiente",
           motivo: motivoD11,
         }
-      : {
-          estado: "medido",
-          valor: medicaoS2.bsi,
-          fonte: medicaoS2.fonte,
-          adquiridoEm: dataAquisicaoS2,
-          consultadoEm: dataConsultaAtual,
-        };
+      : medicaoS2.bsi < -1 || medicaoS2.bsi > 1
+        ? {
+            estado: "indisponivel",
+            causa: "fora-do-dominio",
+            motivo: motivoForaDominioBsi,
+          }
+        : {
+            estado: "medido",
+            valor: medicaoS2.bsi,
+            fonte: medicaoS2.fonte,
+            adquiridoEm: dataAquisicaoS2,
+            consultadoEm: dataConsultaAtual,
+          };
   }
 
   const ndviNum =
@@ -257,8 +272,10 @@ export function consolidarInspecaoPonto(
       : null;
 
   const classeAmostral =
-    ndviNum !== null && bsiNum !== null
-      ? classificarPontoEspectral(bsiNum, ndviNum)
+    medicaoS2
+      ? ndviNum !== null && bsiNum !== null
+        ? classificarPontoEspectral(bsiNum, ndviNum)
+        : "indefinido"
       : point.classeAmostral;
 
   const pontoAtualizado: PontoAmostral = {

@@ -184,4 +184,35 @@ describe("C24 — Consolidação da inspeção pontual registrando falhas sem en
     expect(resultado.ponto.solo.confiancaPedologica).toBe("alta");
     expect(resultado.ponto.solo.subOrdem.estado).toBe("medido");
   });
+
+  it("medicao Sentinel-2 com NDVI ou BSI fora de [-1, 1] vira indisponivel com causa fora-do-dominio", () => {
+    const pontoOriginal = criarPontoBase();
+
+    const resultado = consolidarInspecaoPonto({
+      point: pontoOriginal,
+      gee: {
+        medicaoS2: {
+          b2: 0.07,
+          b4: 0.10,
+          b8: 0.26,
+          b11: 0.21,
+          b12: 0.14,
+          ndvi: -3.0,
+          bsi: 5.0,
+          frequenciaSoloNu: 0.2,
+          nObservacoesValidas: 18,
+          insuficienteD11: false,
+          adquiridoEm: "2024-05-15",
+          fonte: "Sentinel-2 MSI L2A",
+        },
+      },
+      dataConsultaAtual: "2026-10-17",
+    });
+
+    expect(resultado.ponto.espectral?.ndvi?.estado).toBe("indisponivel");
+    expect((resultado.ponto.espectral?.ndvi as any)?.causa).toBe("fora-do-dominio");
+    expect(resultado.ponto.espectral?.bsi?.estado).toBe("indisponivel");
+    expect((resultado.ponto.espectral?.bsi as any)?.causa).toBe("fora-do-dominio");
+    expect(resultado.ponto.classeAmostral).toBe("indefinido");
+  });
 });
