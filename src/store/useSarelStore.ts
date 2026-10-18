@@ -238,6 +238,7 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
   encerrarTour: () =>
     set({
       modalMetodologiaAberta: false,
+      modoApresentacaoAtivo: false,
     }),
 
   avancarPassoTour: () =>
@@ -273,7 +274,11 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
     }));
   },
 
-  fecharModalMetodologia: () => set({ modalMetodologiaAberta: false }),
+  fecharModalMetodologia: () =>
+    set({
+      modalMetodologiaAberta: false,
+      modoApresentacaoAtivo: false,
+    }),
 
   // Pontos Salvos e Pontos Provisórios
   // ZERO dados sintéticos: tela limpa inicialmente
