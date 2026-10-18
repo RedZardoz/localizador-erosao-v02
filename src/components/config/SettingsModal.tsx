@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   X,
   Key,
@@ -12,10 +12,18 @@ import {
 import { useSarelStore } from "@/store/useSarelStore";
 import { GcpCredentialsManager } from "./GcpCredentialsManager";
 import { ApiTokensManager } from "./ApiTokensManager";
+import { useModalA11y } from "@/hooks/useModalA11y";
 
 export const SettingsModal: React.FC = () => {
   const { modalAtiva, setModalAtiva } = useSarelStore();
   const [abaAtiva, setAbaAtiva] = useState<"gee" | "tokens" | "fundiario">("gee");
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useModalA11y({
+    aberto: modalAtiva === "settings",
+    fechar: () => setModalAtiva(null),
+    containerRef: modalRef,
+  });
   const [statusFundiario, setStatusFundiario] = useState<{
     carregado: boolean;
     existe: boolean;
@@ -57,13 +65,19 @@ export const SettingsModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-modal-settings"
+        className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+      >
         {/* Header do Modal */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/80">
           <div className="flex items-center gap-2">
             <Key className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+              <h2 id="titulo-modal-settings" className="text-sm font-bold text-slate-900 dark:text-white">
                 Conexão, Credenciais &amp; Gestão de Dados
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">

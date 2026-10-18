@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import fs from "fs";
+import path from "path";
 import {
   proximoIndiceFoco,
   deveFecharComTecla,
@@ -51,5 +53,54 @@ describe("U02 — Tour/Modo Defesa: encerramento sem persistência de banner res
     // Banner 'MODO DEFESA / APRESENTAÇÃO ATIVO' não pode persistir
     expect(useSarelStore.getState().modoApresentacaoAtivo).toBe(false);
     expect(useSarelStore.getState().modalMetodologiaAberta).toBe(false);
+  });
+});
+
+describe("U02 — Estrutura e conformidade dos 12 componentes analisados", () => {
+  // Lista fechada dos 11 componentes que são ou contêm diálogos modais interativos
+  const COMPONENTES_MODAIS = [
+    "src/components/config/SettingsModal.tsx",
+    "src/components/matriz/PainelMatrizModal.tsx",
+    "src/components/campanha/PainelCampanhaModal.tsx",
+    "src/components/export/ExportModal.tsx",
+    "src/components/audit/AuditDossierModal.tsx",
+    "src/components/diagnostics/SystemLogsModal.tsx",
+    "src/components/decisoes/DecisoesModal.tsx",
+    "src/components/region/CandidateSelectionModal.tsx",
+    "src/components/region/RegionRequestModal.tsx",
+    "src/components/presentation/ModalExplicativaMetodologica.tsx",
+    "src/components/polygon/DrawingToolbar.tsx",
+  ];
+
+  // Componente excluído com motivo documentado (R16)
+  const EXCLUSOES = [
+    {
+      arquivo: "src/components/presentation/ApresentacaoSpotlight.tsx",
+      motivo:
+        "Sobreposição visual passiva SVG com pointer-events-none (efeito holofote no mapa), sem controles interativos ou diálogo; o diálogo correspondente é ModalExplicativaMetodologica",
+    },
+  ];
+
+  it("cada um dos 11 componentes de diálogo deve importar useModalA11y e conter role='dialog', aria-modal='true' e aria-labelledby", () => {
+    for (const relPath of COMPONENTES_MODAIS) {
+      const fullPath = path.resolve(process.cwd(), relPath);
+      expect(fs.existsSync(fullPath)).toBe(true);
+      const content = fs.readFileSync(fullPath, "utf8");
+
+      expect(content, `${relPath} deve importar useModalA11y`).toContain("useModalA11y");
+      expect(content, `${relPath} deve conter role="dialog"`).toMatch(/role="dialog"/);
+      expect(content, `${relPath} deve conter aria-modal="true"`).toMatch(/aria-modal="true"/);
+      expect(content, `${relPath} deve conter aria-labelledby`).toMatch(/aria-labelledby=/);
+    }
+  });
+
+  it("o componente excluído não deve ser marcado como dialog e deve possuir justificativa válida", () => {
+    for (const { arquivo, motivo } of EXCLUSOES) {
+      const fullPath = path.resolve(process.cwd(), arquivo);
+      expect(fs.existsSync(fullPath)).toBe(true);
+      const content = fs.readFileSync(fullPath, "utf8");
+      expect(content).not.toMatch(/role="dialog"/);
+      expect(motivo.length).toBeGreaterThan(20);
+    }
   });
 });

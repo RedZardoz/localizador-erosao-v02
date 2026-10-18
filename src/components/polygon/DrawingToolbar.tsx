@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { useModalA11y } from "@/hooks/useModalA11y";
 import {
   PenTool,
   RotateCcw,
@@ -25,6 +26,13 @@ export const DrawingToolbar: React.FC = () => {
   const [modalSalvarAberto, setModalSalvarAberto] = useState(false);
   const [nomeTalhao, setNomeTalhao] = useState("");
   const [categoria, setCategoria] = useState("Talhão Agrícola");
+
+  const modalRef = useRef<HTMLDivElement>(null);
+  useModalA11y({
+    aberto: modalSalvarAberto,
+    fechar: () => setModalSalvarAberto(false),
+    containerRef: modalRef,
+  });
 
   const numVertices = poligonoDesenhando.length;
   const talhoesExistentes = areas.filter((a) => a.tipo === "talhao");
@@ -102,14 +110,21 @@ export const DrawingToolbar: React.FC = () => {
       {/* Modal para nomear e salvar o talhão delimitado */}
       {modalSalvarAberto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-5 space-y-4">
+          <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titulo-modal-salvar-talhao"
+            className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-5 space-y-4"
+          >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <h3 id="titulo-modal-salvar-talhao" className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Save className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 Salvar Talhão / Polígono Delimitado
               </h3>
               <button
                 onClick={() => setModalSalvarAberto(false)}
+                aria-label="Fechar diálogo de salvar talhão"
                 className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer"
               >
                 <X className="w-4 h-4" />
@@ -118,10 +133,11 @@ export const DrawingToolbar: React.FC = () => {
 
             <form onSubmit={confirmarSalvar} className="space-y-3.5">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <label htmlFor="nome-talhao-input" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Nome ou Identificação do Talhão
                 </label>
                 <input
+                  id="nome-talhao-input"
                   type="text"
                   required
                   value={nomeTalhao}
@@ -132,10 +148,11 @@ export const DrawingToolbar: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <label htmlFor="categoria-talhao-select" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Categoria
                 </label>
                 <select
+                  id="categoria-talhao-select"
                   value={categoria}
                   onChange={(e) => setCategoria(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"

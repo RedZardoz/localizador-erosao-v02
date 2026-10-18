@@ -1,16 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { X, BookOpen, Search, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { useSarelStore } from "@/store/useSarelStore";
 import { DECISOES, Decisao } from "@/config/decisoes";
 import { PainelSorteioD16 } from "./PainelSorteioD16";
 import { PainelCriterioRefutacaoD25 } from "./PainelCriterioRefutacaoD25";
+import { useModalA11y } from "@/hooks/useModalA11y";
 
 export const DecisoesModal: React.FC = () => {
   const { modalAtiva, setModalAtiva } = useSarelStore();
   const [busca, setBusca] = useState("");
   const [filtroEstado, setFiltroEstado] = useState<string>("todos");
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useModalA11y({
+    aberto: modalAtiva === "decisoes",
+    fechar: () => setModalAtiva(null),
+    containerRef: modalRef,
+  });
 
   if (modalAtiva !== "decisoes") return null;
 
@@ -31,13 +39,19 @@ export const DecisoesModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-modal-decisoes"
+        className="w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+      >
         {/* Header */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/80">
           <div className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" />
             <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+              <h2 id="titulo-modal-decisoes" className="text-sm font-bold text-slate-900 dark:text-white">
                 Registro Oficial de Decisões Metodológicas (Regra 9 — D01 a D26)
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">

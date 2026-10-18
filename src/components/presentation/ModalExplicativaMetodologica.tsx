@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useModalA11y } from "@/hooks/useModalA11y";
 import {
   X,
   ChevronLeft,
@@ -40,6 +41,13 @@ export const ModalExplicativaMetodologica: React.FC = () => {
     toggleSidebar,
     sidebarRecolhida,
   } = useSarelStore();
+
+  const modalRef = useRef<HTMLDivElement>(null);
+  useModalA11y({
+    aberto: modalMetodologiaAberta,
+    fechar: fecharModalMetodologia,
+    containerRef: modalRef,
+  });
 
   const [copiado, setCopiado] = useState(false);
   const [abaAtiva, setAbaAtiva] = useState<"tudo" | "calculo" | "script">("tudo");
@@ -113,6 +121,10 @@ export const ModalExplicativaMetodologica: React.FC = () => {
 
       {/* Card da Teoria & Fórmulas (Sempre em Modo Claro de Alto Contraste + Código em Fundo Negro) */}
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="titulo-modal-metodologia"
         className={`pointer-events-auto w-full max-w-4xl max-h-[calc(100vh-120px)] flex flex-col bg-white border-2 border-slate-300 ring-4 ring-black/30 rounded-2xl shadow-[0_25px_70px_-10px_rgba(0,0,0,0.75)] overflow-hidden transition-all duration-300 text-slate-900 ${
           revelado && !espiandoBotao
             ? "opacity-100 translate-y-0 scale-100"
@@ -161,7 +173,7 @@ export const ModalExplicativaMetodologica: React.FC = () => {
                   </span>
                 )}
               </div>
-              <h2 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
+              <h2 id="titulo-modal-metodologia" className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
                 {item.titulo}
               </h2>
               <p className="text-xs text-slate-700 mt-0.5 font-semibold">
@@ -173,6 +185,7 @@ export const ModalExplicativaMetodologica: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={fecharModalMetodologia}
+              aria-label="Fechar modal metodológica"
               className="p-1.5 text-slate-500 hover:text-slate-950 hover:bg-slate-200/80 rounded-lg transition-colors cursor-pointer"
               title="Fechar (Esc)"
             >
