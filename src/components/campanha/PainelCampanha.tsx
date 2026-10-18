@@ -592,7 +592,7 @@ export function PainelCampanha() {
                 className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 text-xs font-bold rounded-lg shadow-sm cursor-pointer flex items-center gap-1.5"
               >
                 <Plane className="w-3.5 h-3.5" />
-                Calcular Métricas Matriciais (GSD vs 10m)
+                Executar demonstração com pixels fictícios (GSD vs 10m)
               </button>
             </div>
 
@@ -604,11 +604,17 @@ export function PainelCampanha() {
                     <span className="text-base font-bold text-slate-900 dark:text-white font-mono">
                       {(metricasSimuladas.acuraciaGlobal * 100).toFixed(1)}%
                     </span>
+                    <span className="text-[9px] text-amber-600 dark:text-amber-400 block mt-1 font-semibold">
+                      DEMONSTRAÇÃO — pixels fictícios, não é validação
+                    </span>
                   </div>
                   <div className="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
                     <span className="text-[10px] text-slate-500 block">Kappa (κ)</span>
                     <span className="text-base font-bold text-cyan-600 dark:text-cyan-400 font-mono">
                       {metricasSimuladas.kappaCohen !== null ? metricasSimuladas.kappaCohen.toFixed(3) : "—"}
+                    </span>
+                    <span className="text-[9px] text-amber-600 dark:text-amber-400 block mt-1 font-semibold">
+                      DEMONSTRAÇÃO — pixels fictícios, não é validação
                     </span>
                   </div>
                   <div className="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
@@ -616,11 +622,17 @@ export function PainelCampanha() {
                     <span className="text-base font-bold text-slate-900 dark:text-white font-mono">
                       {(metricasSimuladas.f1Score * 100).toFixed(1)}%
                     </span>
+                    <span className="text-[9px] text-amber-600 dark:text-amber-400 block mt-1 font-semibold">
+                      DEMONSTRAÇÃO — pixels fictícios, não é validação
+                    </span>
                   </div>
                   <div className="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
                     <span className="text-[10px] text-slate-500 block">Precisão</span>
                     <span className="text-base font-bold text-emerald-600 font-mono">
                       {(metricasSimuladas.precisao * 100).toFixed(1)}%
+                    </span>
+                    <span className="text-[9px] text-amber-600 dark:text-amber-400 block mt-1 font-semibold">
+                      DEMONSTRAÇÃO — pixels fictícios, não é validação
                     </span>
                   </div>
                   <div className="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
@@ -628,10 +640,16 @@ export function PainelCampanha() {
                     <span className="text-base font-bold text-blue-600 font-mono">
                       {(metricasSimuladas.iouErosao * 100).toFixed(1)}%
                     </span>
+                    <span className="text-[9px] text-amber-600 dark:text-amber-400 block mt-1 font-semibold">
+                      DEMONSTRAÇÃO — pixels fictícios, não é validação
+                    </span>
                   </div>
                   <div className="bg-white dark:bg-slate-800 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
                     <span className="text-[10px] text-indigo-600 font-bold block">Confronto Radiom.</span>
                     <span className="text-base font-bold text-indigo-700 font-mono">r = 0.982</span>
+                    <span className="text-[9px] text-amber-600 dark:text-amber-400 block mt-1 font-semibold">
+                      DEMONSTRAÇÃO — pixels fictícios, não é validação
+                    </span>
                   </div>
                 </div>
               </div>
