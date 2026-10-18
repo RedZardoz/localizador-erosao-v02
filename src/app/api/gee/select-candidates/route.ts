@@ -1228,28 +1228,28 @@ export async function POST(request: NextRequest) {
               chuva: {
                 precipAcum30d: {
                   estado: "indisponivel",
-                  causa: "decisao-pendente",
-                  motivo: "Aguardando Decisão D13",
+                  causa: "nao-calculado",
+                  motivo: "Módulo de chuva (src/lib/chuva) não está ligado a esta rota; ligação depende da DEC-6 do pesquisador",
                 },
                 precipAcum90d: {
                   estado: "indisponivel",
-                  causa: "decisao-pendente",
-                  motivo: "Aguardando Decisão D13",
+                  causa: "nao-calculado",
+                  motivo: "Módulo de chuva (src/lib/chuva) não está ligado a esta rota; ligação depende da DEC-6 do pesquisador",
                 },
                 i30Max: {
                   estado: "indisponivel",
-                  causa: "decisao-pendente",
-                  motivo: "Aguardando Decisão D13",
+                  causa: "nao-calculado",
+                  motivo: "Módulo de chuva (src/lib/chuva) não está ligado a esta rota; ligação depende da DEC-6 do pesquisador",
                 },
                 nEventosErosivos: {
                   estado: "indisponivel",
-                  causa: "decisao-pendente",
-                  motivo: "Aguardando Decisão D13",
+                  causa: "nao-calculado",
+                  motivo: "Módulo de chuva (src/lib/chuva) não está ligado a esta rota; ligação depende da DEC-6 do pesquisador",
                 },
                 indiceMecanismo: {
                   estado: "indisponivel",
-                  causa: "decisao-pendente",
-                  motivo: "Aguardando Decisão D13",
+                  causa: "nao-calculado",
+                  motivo: "Módulo de chuva (src/lib/chuva) não está ligado a esta rota; ligação depende da DEC-6 do pesquisador",
                 },
               },
             },
