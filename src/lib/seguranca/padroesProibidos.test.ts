@@ -305,6 +305,7 @@ export function listarArquivosCodigo(dir: string): string[] {
   const arquivos: string[] = [];
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
+    const relPath = path.relative(process.cwd(), fullPath).replace(/\\/g, "/");
     if (entry.isDirectory() && entry.name !== "node_modules" && entry.name !== ".next") {
       arquivos.push(...listarArquivosCodigo(fullPath));
     } else if (
@@ -312,7 +313,10 @@ export function listarArquivosCodigo(dir: string): string[] {
       (fullPath.endsWith(".ts") || fullPath.endsWith(".tsx")) &&
       !fullPath.endsWith(".test.ts") &&
       !fullPath.endsWith(".test.tsx") &&
-      !fullPath.endsWith(".generated.ts")
+      // 2026-10-17 (Bloco B / R17): Exclusão EXATA: apenas o script D25 embutido,
+      // cujo código byte-exato do pesquisador contém RNG legítimo para bootstrap estatístico (D25).
+      // Nenhum outro *.generated.ts é isento (ex.: verificadorIntegridade.generated.ts é examinado).
+      relPath !== "src/lib/export/scriptAvaliacaoD25.generated.ts"
     ) {
       arquivos.push(fullPath);
     }
@@ -326,11 +330,15 @@ export function listarArquivosScripts(dir: string): string[] {
   const arquivos: string[] = [];
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
+    const relDir = path.relative(process.cwd(), fullPath).replace(/\\/g, "/");
+    // 2026-10-17 (Bloco B / R17): Exclusão EXATA: apenas o diretório scripts/d25 relativo à raiz do repositório,
+    // onde reside o código byte-exato do pesquisador com RNG legítimo para bootstrap estatístico.
+    // Qualquer outro diretório com nome 'd25' fora deste caminho exato é varrido.
     if (
       entry.isDirectory() &&
       entry.name !== "__pycache__" &&
       entry.name !== ".git" &&
-      entry.name !== "d25"
+      relDir !== "scripts/d25"
     ) {
       arquivos.push(...listarArquivosScripts(fullPath));
     } else if (
@@ -452,6 +460,33 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
             `Varredura de padrões proibidos em código ativo examinou apenas ${arquivosTmp.length} arquivos (esperado >= ${PISO_MINIMO}). Possível diretório ausente ou renomeado: ${tmpDir}`
           ).toBeGreaterThanOrEqual(PISO_MINIMO);
         }).toThrow(/Possível diretório ausente ou renomeado/);
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    it("B3: prova que *.generated.ts fora da lista exata e diretório d25 fora de scripts/d25 ainda são listados e detectados", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sarel-padroes-b3-"));
+      try {
+        // 1. Arquivo .generated.ts fora da lista exata
+        const fakeGen = path.join(tmpDir, "outroModulo.generated.ts");
+        fs.writeFileSync(fakeGen, "const x = np.random.uniform(0, 1);\n");
+
+        const arquivosCodigo = listarArquivosCodigo(tmpDir);
+        expect(arquivosCodigo).toContain(fakeGen);
+        const violacoesGen = varrerCodigo(fs.readFileSync(fakeGen, "utf-8"), path.relative(process.cwd(), fakeGen));
+        expect(violacoesGen.some((v) => v.padrao === "sintese-aleatoria-atributos-fisicos")).toBe(true);
+
+        // 2. Diretório d25 fora de scripts/d25 (ex: outro/d25)
+        const subDirD25 = path.join(tmpDir, "outro", "d25");
+        fs.mkdirSync(subDirD25, { recursive: true });
+        const scriptOutroD25 = path.join(subDirD25, "simulacao.py");
+        fs.writeFileSync(scriptOutroD25, "val = np.random.uniform(0, 1)\n");
+
+        const arquivosScripts = listarArquivosScripts(tmpDir);
+        expect(arquivosScripts).toContain(scriptOutroD25);
+        const violacoesScript = varrerCodigo(fs.readFileSync(scriptOutroD25, "utf-8"), path.relative(process.cwd(), scriptOutroD25));
+        expect(violacoesScript.some((v) => v.padrao === "sintese-aleatoria-atributos-fisicos")).toBe(true);
       } finally {
         fs.rmSync(tmpDir, { recursive: true, force: true });
       }
