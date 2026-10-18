@@ -33,3 +33,14 @@ nextjs-portal,
   height: 0 !important;
   overflow: hidden !important;
 }
+
+/* WCAG 2.5.8: Alvos mínimos acessíveis para controles de mapa (24x24 px) */
+.maplibregl-ctrl-attrib a,
+.maplibregl-ctrl-attrib button {
+  min-height: 24px;
+  min-width: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+

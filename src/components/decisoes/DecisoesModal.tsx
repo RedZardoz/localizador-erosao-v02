@@ -61,6 +61,7 @@ export const DecisoesModal: React.FC = () => {
           </div>
           <button
             onClick={() => setModalAtiva(null)}
+            aria-label="Fechar registro de decisões"
             className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -75,6 +76,7 @@ export const DecisoesModal: React.FC = () => {
               type="text"
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
+              aria-label="Buscar decisão por ID, título, autor ou referência"
               placeholder="Buscar decisão por ID, título, autor ou referência..."
               className="w-full pl-8 pr-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
             />

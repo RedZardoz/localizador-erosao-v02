@@ -187,7 +187,7 @@ export const MapControls: React.FC = () => {
             <button
               key={factor}
               onClick={() => setMapState({ exageracao3d: factor })}
-              className={`px-1.5 py-0.5 rounded text-[11px] font-mono font-bold transition-all ${
+              className={`min-w-[24px] min-h-[24px] px-1.5 py-0.5 rounded text-[11px] font-mono font-bold transition-all flex items-center justify-center ${
                 mapState.exageracao3d === factor
                   ? "bg-emerald-600 text-white"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"

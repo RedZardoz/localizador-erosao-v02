@@ -157,6 +157,7 @@ export const CandidateSelectionModal: React.FC = () => {
           </div>
           <button
             onClick={() => setModalAtiva(null)}
+            aria-label="Fechar eleição amostral GEE"
             className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -220,10 +221,11 @@ export const CandidateSelectionModal: React.FC = () => {
           {/* Parâmetros Metodológicos */}
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="space-y-1">
-              <label className="font-semibold text-slate-700 dark:text-slate-300">
+              <label htmlFor="qtd-candidatos" className="font-semibold text-slate-700 dark:text-slate-300">
                 Quantidade de Candidatos
               </label>
               <input
+                id="qtd-candidatos"
                 type="number"
                 min="10"
                 max="500"
@@ -234,10 +236,11 @@ export const CandidateSelectionModal: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="font-semibold text-slate-700 dark:text-slate-300">
+              <label htmlFor="raio-thinning" className="font-semibold text-slate-700 dark:text-slate-300">
                 Raio de Thinning Espacial (km)
               </label>
               <input
+                id="raio-thinning"
                 type="number"
                 step="0.5"
                 min="1.0"
@@ -249,10 +252,11 @@ export const CandidateSelectionModal: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="font-semibold text-slate-700 dark:text-slate-300">
+              <label htmlFor="freq-solo-nu-min" className="font-semibold text-slate-700 dark:text-slate-300">
                 Frequência Solo Nu Mínima (0 a 1)
               </label>
               <input
+                id="freq-solo-nu-min"
                 type="number"
                 step="0.05"
                 min="0.05"
@@ -264,10 +268,11 @@ export const CandidateSelectionModal: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="font-semibold text-slate-700 dark:text-slate-300">
+              <label htmlFor="decliv-min" className="font-semibold text-slate-700 dark:text-slate-300">
                 Declividade Mínima DEM (%)
               </label>
               <input
+                id="decliv-min"
                 type="number"
                 step="1"
                 min="0"
@@ -279,10 +284,11 @@ export const CandidateSelectionModal: React.FC = () => {
             </div>
 
             <div className="space-y-1 col-span-2 sm:col-span-1">
-              <label className="font-semibold text-slate-700 dark:text-slate-300">
+              <label htmlFor="decliv-max" className="font-semibold text-slate-700 dark:text-slate-300">
                 Declividade Máxima DEM (%)
               </label>
               <input
+                id="decliv-max"
                 type="number"
                 step="1"
                 min="1"
@@ -294,10 +300,11 @@ export const CandidateSelectionModal: React.FC = () => {
             </div>
 
             <div className="space-y-1 col-span-2 sm:col-span-1">
-              <label className="font-semibold text-amber-700 dark:text-amber-300">
+              <label htmlFor="subamostra-in-loco" className="font-semibold text-amber-700 dark:text-amber-300">
                 Subamostra In-Loco (Corredor Foz–Céu Azul %)
               </label>
               <input
+                id="subamostra-in-loco"
                 type="number"
                 step="5"
                 min="0"

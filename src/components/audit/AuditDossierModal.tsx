@@ -160,6 +160,7 @@ print('Amostra ${p.codigo}:', {
 
             <button
               onClick={() => setModalAtiva(null)}
+              aria-label="Fechar dossiê de auditoria"
               className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer"
             >
               <X className="w-5 h-5" />

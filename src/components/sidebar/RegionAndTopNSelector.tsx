@@ -27,7 +27,7 @@ export const RegionAndTopNSelector: React.FC = () => {
           </span>
           <button
             onClick={() => setModalAtiva("region")}
-            className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline font-semibold cursor-pointer"
+            className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline font-semibold cursor-pointer min-h-[24px] inline-flex items-center"
           >
             Gerenciar Áreas
           </button>

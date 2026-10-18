@@ -42,6 +42,7 @@ export const PainelCampanhaModal: React.FC = () => {
           </div>
           <button
             onClick={() => setModalAtiva(null)}
+            aria-label="Fechar painel de campanha"
             className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer"
           >
             <X className="w-5 h-5" />
