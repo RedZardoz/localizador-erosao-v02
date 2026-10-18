@@ -63,6 +63,12 @@ export function useModalA11y({
   restaurarFoco = true,
 }: UseModalA11yOptions): void {
   const elementoOrigemRef = useRef<HTMLElement | null>(null);
+  // `fechar` costuma chegar como função nova a cada render. Guardá-la em ref evita que o
+  // efeito rode de novo (e roube o foco do campo em que a pessoa está digitando) a cada render.
+  const fecharRef = useRef(fechar);
+  fecharRef.current = fechar;
+  const restaurarFocoRef = useRef(restaurarFoco);
+  restaurarFocoRef.current = restaurarFoco;
 
   useEffect(() => {
     if (!aberto) return;
@@ -71,7 +77,7 @@ export function useModalA11y({
       elementoOrigemRef.current = document.activeElement as HTMLElement | null;
     }
 
-    // Foca o primeiro elemento focável ou o contêiner
+    // Foca o primeiro elemento focável ou o contêiner (só na abertura)
     const timer = setTimeout(() => {
       const container = containerRef.current;
       if (container) {
@@ -89,7 +95,7 @@ export function useModalA11y({
       if (deveFecharComTecla(e.key)) {
         e.preventDefault();
         e.stopPropagation();
-        fechar();
+        fecharRef.current();
         return;
       }
 
@@ -115,12 +121,13 @@ export function useModalA11y({
       clearTimeout(timer);
       document.removeEventListener("keydown", handleKeyDown);
       if (
-        restaurarFoco &&
+        restaurarFocoRef.current &&
         elementoOrigemRef.current &&
         typeof elementoOrigemRef.current.focus === "function"
       ) {
         elementoOrigemRef.current.focus();
       }
     };
-  }, [aberto, fechar, containerRef, restaurarFoco]);
+    // Depende só de `aberto` e do contêiner: abrir move o foco; fechar (ou desmontar) o devolve.
+  }, [aberto, containerRef]);
 }

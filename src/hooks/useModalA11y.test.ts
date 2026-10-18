@@ -103,4 +103,16 @@ describe("U02 — Estrutura e conformidade dos 12 componentes analisados", () =>
       expect(motivo.length).toBeGreaterThan(20);
     }
   });
+
+  it("o efeito do hook não depende de `fechar` (função nova a cada render roubaria o foco de quem digita)", () => {
+    // Regressão medida no navegador: com `fechar` nas dependências, cada re-render devolvia o foco
+    // ao botão de origem e o movia ao primeiro elemento do modal, e o campo perdia o foco a cada tecla.
+    // O repositório não tem jsdom; a digitação em campo é verificada com Playwright fora do repo.
+    const fonte = fs.readFileSync(path.resolve(__dirname, "useModalA11y.ts"), "utf8");
+    const m = fonte.match(/\}, \[([^\]]*)\]\);\s*\}\s*$/);
+    expect(m).not.toBeNull();
+    const deps = m![1].split(",").map((x) => x.trim()).filter(Boolean);
+    expect(deps).toEqual(["aberto", "containerRef"]);
+    expect(deps).not.toContain("fechar");
+  });
 });
