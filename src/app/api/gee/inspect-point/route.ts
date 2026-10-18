@@ -5,18 +5,11 @@ import { exigirRequisicaoLocalConfiavel } from "@/lib/seguranca/localOnly";
 import {
   medirTerrenoCopernicusEmLote,
   medirSentinel2PontoGeeRest,
-  LIMIAR_MINIMO_OBSERVACOES_D11,
   ultimoErroGee,
 } from "@/lib/gee/copernicusGeeClient";
-import {
-  DATA_PUBLICACAO_COPERNICUS_GLO30,
-  DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
-  extrairDataAquisicaoSentinel2,
-} from "@/lib/gee/metadadosColecoes";
 import { queryEmbrapaSoil } from "@/lib/embrapa/embrapaSoilClient";
-import { matchRuralProperty, toContextoFundiario } from "@/lib/fundiario/matcher";
-import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
-import { montarLinhaDeBaseRUSLE } from "@/lib/rusle/linhaDeBase";
+import { matchRuralProperty } from "@/lib/fundiario/matcher";
+import { consolidarInspecaoPonto } from "@/lib/gee/consolidacaoInspecao";
 import type { PontoAmostral } from "@/types/ponto";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +25,8 @@ export const dynamic = "force-dynamic";
  *
  * ZERO DADOS SINTÉTICOS OU ESTIMADOS: Qualquer variável não retornada pela fonte oficial
  * permanece declarada com `{ estado: "indisponivel", causa: ... }`.
+ * Nenhuma falha de consulta é engolida silenciosamente: cada falha é registrada em 'avisos'
+ * e reflete nos estados do ponto (erro-na-consulta para fundiário, servico-indisponivel para os demais).
  */
 export async function POST(request: NextRequest) {
   const bloqueio = exigirRequisicaoLocalConfiavel(request);
@@ -56,13 +51,19 @@ export async function POST(request: NextRequest) {
     const sessionId = request.cookies.get(SAREL_SESSION_COOKIE)?.value;
     const sessao = obterSessao(sessionId);
 
-    // Dispara em paralelo as consultas reais às fontes primárias oficiais
-    const [terrenoLote, soloRes, fundiarioRes, geeToken] = await Promise.all([
-      medirTerrenoCopernicusEmLote([{ latitude, longitude }]),
-      queryEmbrapaSoil(latitude, longitude).catch(() => null),
+    // Dispara em paralelo as consultas reais às fontes primárias oficiais com captura explícita de falhas
+    const [terrenoRes, soloRes, fundiarioRes, geeTokenRes] = await Promise.all([
+      medirTerrenoCopernicusEmLote([{ latitude, longitude }])
+        .then((res) => ({ medicao: res[0] ?? null, erro: null }))
+        .catch((err) => ({ medicao: null, erro: err })),
+      queryEmbrapaSoil(latitude, longitude)
+        .then((res) => ({ dados: res, erro: null }))
+        .catch((err) => ({ dados: null, erro: err })),
       point.fundiario?.status === "encontrado" && point.fundiario?.codigoCar
-        ? Promise.resolve(null)
-        : matchRuralProperty(latitude, longitude, "PR").catch(() => null),
+        ? Promise.resolve({ dados: null, erro: null })
+        : matchRuralProperty(latitude, longitude, "PR")
+            .then((res) => ({ dados: res, erro: null }))
+            .catch((err) => ({ dados: null, erro: err })),
       sessao?.gee
         ? getGoogleAccessToken(
             {
@@ -71,267 +72,44 @@ export async function POST(request: NextRequest) {
               token_uri: sessao.gee.token_uri,
             },
             EARTH_ENGINE_SCOPES
-          ).catch(() => null)
-        : Promise.resolve(null),
+          )
+            .then((res) => ({ token: res, erro: null }))
+            .catch((err) => ({ token: null, erro: err }))
+        : Promise.resolve({ token: null, erro: null }),
     ]);
-
-    const medicaoTerreno = terrenoLote[0] ?? null;
 
     // Consulta espectral real ao Google Earth Engine REST v1 (se autenticado)
     let medicaoS2 = null;
-    if (geeToken?.accessToken && sessao?.gee?.project_id) {
-      medicaoS2 = await medirSentinel2PontoGeeRest(
-        latitude,
-        longitude,
-        geeToken.accessToken,
-        sessao.gee.project_id
-      );
+    let erroGee = geeTokenRes.erro ?? null;
+    if (geeTokenRes?.token?.accessToken && sessao?.gee?.project_id) {
+      try {
+        medicaoS2 = await medirSentinel2PontoGeeRest(
+          latitude,
+          longitude,
+          geeTokenRes.token.accessToken,
+          sessao.gee.project_id
+        );
+      } catch (err) {
+        erroGee = err;
+      }
     }
 
-    const compDominante = soloRes?.solo?.componentes?.[0];
-
-    const erodibilidadeProveniencia = soloRes?.erodibilidade?.classe
-      ? {
-          estado: "tabelado" as const,
-          valor: soloRes.erodibilidade.classe,
-          tabela:
-            "Embrapa Solos - Levantamento Pedológico do Estado do Paraná (geonode:brasil_erodibilidade_solo)",
-          chave: soloRes.erodibilidade.classe,
-        }
-      : point.solo.erodibilidadeClasse;
-
-    const dataAquisicaoS2 =
-      medicaoS2?.adquiridoEm ??
-      extrairDataAquisicaoSentinel2({ cenas: point.rastreio?.cenas }) ??
-      point.rastreio?.calculadoEm?.slice(0, 10) ??
-      dataConsultaAtual;
-
-    const motivoD11 = medicaoS2
-      ? `Suficiência amostral insuficiente (${medicaoS2.nObservacoesValidas} < ${LIMIAR_MINIMO_OBSERVACOES_D11} observações válidas sem nuvem/sombra exigidas pela Decisão D11).`
-      : "";
-
-    const ndviProveniencia = medicaoS2
-      ? medicaoS2.insuficienteD11
-        ? {
-            estado: "indisponivel" as const,
-            causa: "insuficiente" as const,
-            motivo: motivoD11,
-          }
-        : {
-            estado: "medido" as const,
-            valor: medicaoS2.ndvi,
-            fonte: medicaoS2.fonte,
-            adquiridoEm: dataAquisicaoS2,
-            consultadoEm: dataConsultaAtual,
-          }
-      : point.espectral?.ndvi;
-
-    const bsiProveniencia = medicaoS2
-      ? medicaoS2.insuficienteD11
-        ? {
-            estado: "indisponivel" as const,
-            causa: "insuficiente" as const,
-            motivo: motivoD11,
-          }
-        : {
-            estado: "medido" as const,
-            valor: medicaoS2.bsi,
-            fonte: medicaoS2.fonte,
-            adquiridoEm: dataAquisicaoS2,
-            consultadoEm: dataConsultaAtual,
-          }
-      : point.espectral?.bsi;
-
-    const ndviNum =
-      ndviProveniencia && ndviProveniencia.estado !== "indisponivel"
-        ? ndviProveniencia.valor
-        : null;
-    const bsiNum =
-      bsiProveniencia && bsiProveniencia.estado !== "indisponivel"
-        ? bsiProveniencia.valor
-        : null;
-
-    const classeAmostral =
-      ndviNum !== null && bsiNum !== null
-        ? classificarPontoEspectral(bsiNum, ndviNum)
-        : point.classeAmostral;
-
-    const pontoAtualizado: PontoAmostral = {
-      ...point,
-      origemSintetica: false,
-      classeAmostral,
-      espectral:
-        ndviProveniencia && bsiProveniencia
-          ? {
-              ...point.espectral,
-              ndvi: ndviProveniencia,
-              bsi: bsiProveniencia,
-              ...(medicaoS2 && !medicaoS2.insuficienteD11
-                ? {
-                    b2: {
-                      estado: "medido" as const,
-                      valor: medicaoS2.b2,
-                      fonte: medicaoS2.fonte,
-                      adquiridoEm: dataAquisicaoS2,
-                      consultadoEm: dataConsultaAtual,
-                    },
-                    b4: {
-                      estado: "medido" as const,
-                      valor: medicaoS2.b4,
-                      fonte: medicaoS2.fonte,
-                      adquiridoEm: dataAquisicaoS2,
-                      consultadoEm: dataConsultaAtual,
-                    },
-                    b8: {
-                      estado: "medido" as const,
-                      valor: medicaoS2.b8,
-                      fonte: medicaoS2.fonte,
-                      adquiridoEm: dataAquisicaoS2,
-                      consultadoEm: dataConsultaAtual,
-                    },
-                    b11: {
-                      estado: "medido" as const,
-                      valor: medicaoS2.b11,
-                      fonte: medicaoS2.fonte,
-                      adquiridoEm: dataAquisicaoS2,
-                      consultadoEm: dataConsultaAtual,
-                    },
-                    b12: {
-                      estado: "medido" as const,
-                      valor: medicaoS2.b12,
-                      fonte: medicaoS2.fonte,
-                      adquiridoEm: dataAquisicaoS2,
-                      consultadoEm: dataConsultaAtual,
-                    },
-                  }
-                : {}),
-            }
-          : point.espectral,
-      terreno: {
-        ...point.terreno,
-        elevacao: medicaoTerreno
-          ? {
-              estado: "medido",
-              valor: medicaoTerreno.elevacaoMetros,
-              fonte: medicaoTerreno.fonte,
-              adquiridoEm: DATA_PUBLICACAO_COPERNICUS_GLO30,
-              consultadoEm: dataConsultaAtual,
-            }
-          : point.terreno.elevacao,
-        declividadePct: medicaoTerreno
-          ? {
-              estado: "medido",
-              valor: medicaoTerreno.declividadePct,
-              fonte: medicaoTerreno.fonte,
-              adquiridoEm: DATA_PUBLICACAO_COPERNICUS_GLO30,
-              consultadoEm: dataConsultaAtual,
-            }
-          : point.terreno.declividadePct,
-        declividadeGraus: medicaoTerreno
-          ? {
-              estado: "medido",
-              valor: medicaoTerreno.declividadeGraus,
-              fonte: medicaoTerreno.fonte,
-              adquiridoEm: DATA_PUBLICACAO_COPERNICUS_GLO30,
-              consultadoEm: dataConsultaAtual,
-            }
-          : point.terreno.declividadeGraus,
+    const resultado = consolidarInspecaoPonto({
+      point,
+      terreno: terrenoRes,
+      solo: soloRes,
+      fundiario: fundiarioRes,
+      gee: {
+        medicaoS2,
+        erro: erroGee,
       },
-      solo: {
-        ordem: compDominante
-          ? {
-              estado: "medido",
-              valor: compDominante.ordem,
-              fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
-              adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
-              consultadoEm: dataConsultaAtual,
-            }
-          : point.solo.ordem,
-        subOrdem: compDominante
-          ? {
-              estado: "medido",
-              valor: compDominante.subOrdem,
-              fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
-              adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
-              consultadoEm: dataConsultaAtual,
-            }
-          : point.solo.subOrdem,
-        grandeGrupo: compDominante?.grandeGrupo
-          ? {
-              estado: "medido",
-              valor: compDominante.grandeGrupo,
-              fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
-              adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
-              consultadoEm: dataConsultaAtual,
-            }
-          : point.solo.grandeGrupo,
-        tipoUnidade: soloRes?.solo?.tipoUnidade
-          ? {
-              estado: "medido",
-              valor: soloRes.solo.tipoUnidade,
-              fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
-              adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
-              consultadoEm: dataConsultaAtual,
-            }
-          : point.solo.tipoUnidade,
-        confiancaPedologica:
-          soloRes?.solo?.confianca ?? point.solo.confiancaPedologica,
-        erodibilidadeClasse: erodibilidadeProveniencia,
-      },
-      temporal: {
-        ...point.temporal,
-        D: point.temporal?.D
-          ? {
-              ...point.temporal.D,
-              serie: {
-                ...point.temporal.D.serie,
-                nObservacoesValidas: medicaoS2
-                  ? {
-                      ...point.temporal.D.serie.nObservacoesValidas,
-                      B4: medicaoS2.nObservacoesValidas,
-                      B11: medicaoS2.nObservacoesValidas,
-                      B12: medicaoS2.nObservacoesValidas,
-                    }
-                  : point.temporal.D.serie.nObservacoesValidas,
-                estatisticas: {
-                  ...point.temporal.D.serie.estatisticas,
-                  ...(ndviProveniencia ? { B8_p50: ndviProveniencia } : {}),
-                },
-                frequenciaSoloNu:
-                  medicaoS2
-                    ? medicaoS2.insuficienteD11
-                      ? {
-                          estado: "indisponivel",
-                          causa: "insuficiente",
-                          motivo: motivoD11,
-                        }
-                      : medicaoS2.frequenciaSoloNu !== null
-                        ? {
-                            estado: "medido",
-                            valor: medicaoS2.frequenciaSoloNu,
-                            fonte: medicaoS2.fonte,
-                            adquiridoEm: dataAquisicaoS2,
-                            consultadoEm: dataConsultaAtual,
-                          }
-                        : point.temporal.D.serie.frequenciaSoloNu
-                    : point.temporal.D.serie.frequenciaSoloNu,
-              },
-            }
-          : point.temporal?.D,
-      },
-      linhaDeBase: montarLinhaDeBaseRUSLE({
-        ndviProveniencia: ndviProveniencia ?? null,
-        bsiProveniencia: bsiProveniencia ?? null,
-        erodibilidadeProveniencia: erodibilidadeProveniencia ?? null,
-      }),
-      fundiario: fundiarioRes
-        ? toContextoFundiario(fundiarioRes, "PR")
-        : point.fundiario,
-    };
+      dataConsultaAtual,
+    });
 
     return NextResponse.json({
       ok: true,
-      ponto: pontoAtualizado,
+      ponto: resultado.ponto,
+      avisos: resultado.avisos,
       geeDebug: ultimoErroGee,
     });
   } catch (err: any) {
