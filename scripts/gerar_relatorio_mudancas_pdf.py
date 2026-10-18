@@ -575,7 +575,7 @@ def gerar_relatorio_mudancas_pdf(output_path="Relatorio_Mudancas_Metodologicas_S
         ("Slide 8: Linha de Base RUSLE", "Fator C regional (Durigon et al., 2014), Fator P tabelado (Renard et al., 1997) e travas metodológicas para R, K e LS."),
         ("Slide 9: Inteligência Fundiária", "Integração SICAR, SIGEF e SNCR (INCRA/Lei 5.868), indexação R*Tree no SQLite e anonimização estrita segundo a LGPD."),
         ("Slide 10: Protocolo de Rotulagem", "As 4 Fases (A: orbital cego, B: campo Kobo, C: auditoria Kappa com IC 95% ≥ 0,61, D: drone mantido compulsoriamente como teste)."),
-        ("Slide 11: Modelagem Preditiva", "XGBoost espacial Leave-One-Catchment-Out (LOCO), explicabilidade física por SHAP e métricas realistas (AUC 0,82-0,91)."),
+        ("Slide 11: Modelagem Preditiva", "XGBoost espacial Leave-One-Catchment-Out (LOCO) e explicabilidade física por SHAP sob validação cruzada espacial."),
         ("Slide 12: Invariantes de Dados", "Os 7 portões automatizados de segurança, incluindo o Invariante 7 atualizado com suporte a fatores tabelados."),
         ("Slide 13: Limitações & Compensações", "Transparência e mitigações: MDE 30m compensado por PlanetScope (3m) e drones (<5cm); nuvens atenuadas por revisita diária e radar; dupla cegueira e pares de eventos."),
         ("Slide 14: Conclusão & Referências", "Síntese da maturidade instrumental e citações canônicas (Renard, Durigon, Zhu & Woodcock, Landis & Koch, Roberts, Tobler, Lundberg).")
@@ -610,10 +610,9 @@ def gerar_relatorio_mudancas_pdf(output_path="Relatorio_Mudancas_Metodologicas_S
 
     resumo_testes = (
         "<b>STATUS DA SUÍTE DE TESTES (VITEST):</b><br/>"
-        "• <b>35 Arquivos de Teste</b> avaliados e aprovados com 100% de sucesso (35 passed);<br/>"
-        "• <b>235 Asserções de Integridade</b> verificadas sem qualquer falha (235 passed);<br/>"
-        "• Validação bem-sucedida dos 7 invariantes de exportação, regras anti-mock de integridade de dados, "
-        "algoritmo de rarefação espacial (thinning) e rotinas de consulta ao banco fundiário SQLite."
+        "• Suíte completa de testes automatizados do repositório (consulte <code>npm test</code> na data do relatório);<br/>"
+        "• Validação contínua de invariantes de exportação, regras anti-mock de integridade de dados, "
+        "algoritmo de rarefação espacial (thinning) e rotinas de integridade metodológica."
     )
     story.append(callout_box("Homologação da Suíte Automatizada", resumo_testes, styles, C_MINT_BG, C_EMERALD_MID, C_EMERALD_DARK))
     story.append(Spacer(1, 10))
