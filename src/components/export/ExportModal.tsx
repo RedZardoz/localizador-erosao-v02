@@ -240,12 +240,12 @@ export const ExportModal: React.FC = () => {
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-                    Arquivo unificado para entrega à <strong>Banca Examinadora do PPGTCA</strong> e submissão em periódicos de alto impacto. Reúne a matriz de preditores, base cega do <strong>VANT Spectral 2</strong>, confronto radiométrico (Pearson <em>r</em>), dicionário em JSON, script autônomo em Python e manifesto criptográfico <strong>SHA-256</strong>.
+                    Arquivo unificado para entrega à <strong>Banca Examinadora do PPGTCA</strong> e submissão em periódicos de alto impacto. Reúne a matriz de preditores, base cega do <strong>VANT Spectral 2</strong>, confronto radiométrico (Pearson <em>r</em>), dicionário em JSON, script de avaliação D25 em Python, manifesto criptográfico <strong>SHA-256</strong> e verificador independente de integridade.
                   </p>
                 </div>
               </div>
 
-              {/* Badges dos 6 Arquivos e Literatura */}
+              {/* Badges dos Arquivos e Literatura */}
               <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] text-slate-600 dark:text-slate-400 font-mono">
                 <span className="bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 flex items-center gap-1">
                   <FileText className="w-3 h-3 text-emerald-500" /> 01_matriz_treinamento.csv
@@ -260,10 +260,16 @@ export const ExportModal: React.FC = () => {
                   <FileCode className="w-3 h-3 text-purple-500" /> 04_datasheet_metadados.json
                 </span>
                 <span className="bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 flex items-center gap-1">
-                  <FileCode className="w-3 h-3 text-cyan-500" /> 05_script_auditoria.py
+                  <FileCode className="w-3 h-3 text-cyan-500" /> 05_avaliacao_d25.py
+                </span>
+                <span className="bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 flex items-center gap-1">
+                  <FileText className="w-3 h-3 text-slate-500" /> requirements.txt
                 </span>
                 <span className="bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 flex items-center gap-1">
                   <Lock className="w-3 h-3 text-rose-500" /> 06_manifesto_sha256.txt
+                </span>
+                <span className="bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 flex items-center gap-1">
+                  <FileCode className="w-3 h-3 text-teal-500" /> 07_verificar_integridade.py
                 </span>
               </div>
 

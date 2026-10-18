@@ -25,6 +25,7 @@ import { calcularCorrelacaoPearson } from "@/lib/padraoOuro/validacaoMatricial";
 import { formatToDMS } from "./dms";
 import { valorOuNulo } from "@/types/proveniencia";
 import { SCRIPT_AVALIACAO_D25, REQUIREMENTS_D25 } from "./scriptAvaliacaoD25.generated";
+import { VERIFICADOR_INTEGRIDADE } from "./verificadorIntegridade.generated";
 
 export interface ArquivosPacoteReprodutibilidade {
   matrizTreinamentoCsv: string;
@@ -33,6 +34,7 @@ export interface ArquivosPacoteReprodutibilidade {
   datasheetJson: string;
   scriptPython: string;
   requirementsTxt: string;
+  verificadorIntegridadePy: string;
   manifestoSha256Txt: string;
 }
 
@@ -671,6 +673,7 @@ export function gerarManifestoSha256(hashes: Record<string, string>): string {
   linhas.push(`# SAREL — Sistema de Amostragem e Rotulagem para Erosão Laminar (PPGTCA 2026)`);
   linhas.push(`# Gerado em: ${new Date().toISOString()}`);
   linhas.push(`# Comando de verificação em Linux/macOS: sha256sum -c 06_manifesto_integridade_sha256.txt`);
+  linhas.push(`# Windows/qualquer sistema: python 07_verificar_integridade.py`);
   linhas.push(``);
 
   for (const [arquivo, hash] of Object.entries(hashes)) {
@@ -681,7 +684,7 @@ export function gerarManifestoSha256(hashes: Record<string, string>): string {
 }
 
 /**
- * Monta todos os 6 arquivos do pacote e calcula os hashes SHA-256.
+ * Monta todos os arquivos do pacote e calcula os hashes SHA-256.
  */
 export async function gerarConteudoPacoteReprodutibilidade(
   pontos: PontoAmostral[],
@@ -690,7 +693,7 @@ export async function gerarConteudoPacoteReprodutibilidade(
   // 1. Barreira antissintética obrigatória
   assegurarApenasPontosReais(pontos, "geração do pacote de reprodutibilidade da dissertação");
 
-  // 2. Geração dos 5 primeiros arquivos
+  // 2. Geração dos arquivos
   const resultadoMatriz = montarMatrizTreino(pontos, rotulosConsolidados, { modeloJanela: "D" });
   const f1_matrizTreino = gerarCsvMatrizTreinamento(pontos, rotulosConsolidados);
   const f2_validacaoDrone = gerarCsvValidacaoDroneHeldOut();
@@ -702,8 +705,9 @@ export async function gerarConteudoPacoteReprodutibilidade(
   );
   const f5_scriptPy = gerarScriptPythonAuditoria();
   const f_reqs = REQUIREMENTS_D25;
+  const f7_verificadorPy = VERIFICADOR_INTEGRIDADE;
 
-  // 3. Cálculo dos Hashes SHA-256
+  // 3. Cálculo dos Hashes SHA-256 (o manifesto NÃO lista a si mesmo; o verificador SIM é listado)
   const hashes: Record<string, string> = {
     "01_matriz_preditores_treinamento_sarel.csv": await calcularSha256(f1_matrizTreino),
     "02_validacao_padrao_ouro_held_out_drone.csv": await calcularSha256(f2_validacaoDrone),
@@ -711,6 +715,7 @@ export async function gerarConteudoPacoteReprodutibilidade(
     "04_datasheet_metadados_dicionario.json": await calcularSha256(f4_datasheet),
     "05_avaliacao_d25.py": await calcularSha256(f5_scriptPy),
     "requirements.txt": await calcularSha256(f_reqs),
+    "07_verificar_integridade.py": await calcularSha256(f7_verificadorPy),
   };
 
   // 4. Montagem do manifesto
@@ -723,12 +728,13 @@ export async function gerarConteudoPacoteReprodutibilidade(
     datasheetJson: f4_datasheet,
     scriptPython: f5_scriptPy,
     requirementsTxt: f_reqs,
+    verificadorIntegridadePy: f7_verificadorPy,
     manifestoSha256Txt: f6_manifesto,
   };
 }
 
 /**
- * Compacta os 6 arquivos no formato .ZIP para download direto na plataforma.
+ * Compacta todos os arquivos no formato .ZIP para download direto na plataforma.
  */
 export async function gerarPacoteReprodutibilidadeZip(
   pontos: PontoAmostral[],
@@ -744,6 +750,7 @@ export async function gerarPacoteReprodutibilidadeZip(
   zip.file("05_avaliacao_d25.py", arquivos.scriptPython);
   zip.file("requirements.txt", arquivos.requirementsTxt);
   zip.file("06_manifesto_integridade_sha256.txt", arquivos.manifestoSha256Txt);
+  zip.file("07_verificar_integridade.py", arquivos.verificadorIntegridadePy);
 
   return await zip.generateAsync({
     type: "blob",

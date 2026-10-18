@@ -224,9 +224,25 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
     expect(manifesto).toContain("a1b2c3d4  01_matriz.csv");
     expect(manifesto).toContain("e5f6g7h8  02_drone.csv");
     expect(manifesto).toContain("sha256sum -c");
+    expect(manifesto).toContain("python 07_verificar_integridade.py");
   });
 
-  it("deve gerar o conteúdo completo dos 6 arquivos e verificar coerência do manifesto", async () => {
+  it("deve falhar se verificadorIntegridade.generated.ts estiver desatualizado em relação a scripts/verificar_integridade_pacote.py", async () => {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const crypto = await import("node:crypto");
+    const pyPath = path.resolve(process.cwd(), "scripts/verificar_integridade_pacote.py");
+    expect(fs.existsSync(pyPath)).toBe(true);
+    const pyContent = fs.readFileSync(pyPath, "utf8").replace(/\r\n/g, "\n");
+    const pySha = crypto.createHash("sha256").update(pyContent, "utf8").digest("hex");
+
+    // Import dinâmico do módulo gerado
+    const mod = await import("./verificadorIntegridade.generated");
+    expect(mod.VERIFICADOR_INTEGRIDADE).toBe(pyContent);
+    expect(mod.VERIFICADOR_INTEGRIDADE_SHA256).toBe(pySha);
+  });
+
+  it("deve gerar o conteúdo completo dos arquivos e verificar coerência do manifesto incluindo o verificador", async () => {
     const pontos = [criarPontoTeste("1", -25.14, -53.84, "erosao")];
     const pacote = await gerarConteudoPacoteReprodutibilidade(pontos, extrairMapaRotulos(pontos));
 
@@ -235,14 +251,23 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
     expect(pacote.confrontoRadiometricoCsv).toBeDefined();
     expect(pacote.datasheetJson).toBeDefined();
     expect(pacote.scriptPython).toBeDefined();
+    expect(pacote.requirementsTxt).toBeDefined();
+    expect((pacote as any).verificadorIntegridadePy).toBeDefined();
     expect(pacote.manifestoSha256Txt).toBeDefined();
 
     // Conferir se o hash do arquivo 01 no manifesto corresponde ao SHA-256 real calculado
     const hashRealF1 = await calcularSha256(pacote.matrizTreinamentoCsv);
     expect(pacote.manifestoSha256Txt).toContain(`${hashRealF1}  01_matriz_preditores_treinamento_sarel.csv`);
+
+    // Conferir se 07_verificar_integridade.py está no manifesto
+    const hashVerificador = await calcularSha256((pacote as any).verificadorIntegridadePy);
+    expect(pacote.manifestoSha256Txt).toContain(`${hashVerificador}  07_verificar_integridade.py`);
+    // O manifesto NÃO lista a si mesmo nas entradas de hash
+    const linhasEntradas = pacote.manifestoSha256Txt.split(/\r?\n/).filter(l => !l.startsWith("#") && l.trim().length > 0);
+    expect(linhasEntradas.some(l => l.includes("06_manifesto_integridade_sha256.txt"))).toBe(false);
   });
 
-  it("deve gerar um arquivo ZIP válido contendo os 6 arquivos", async () => {
+  it("deve gerar um arquivo ZIP válido contendo todos os arquivos incluindo 07_verificar_integridade.py", async () => {
     const pontos = [
       criarPontoTeste("1", -25.14, -53.84, "erosao"),
       criarPontoTeste("2", -25.15, -53.85, "ausente"),
@@ -252,7 +277,7 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
     expect(blob).toBeDefined();
     expect(blob.size).toBeGreaterThan(1000);
 
-    // Descompactar o ZIP e verificar que contém exatamente os 6 arquivos
+    // Descompactar o ZIP e verificar que contém exatamente os arquivos esperados
     const arrayBuffer = await blob.arrayBuffer();
     const zip = await JSZip.loadAsync(arrayBuffer);
 
@@ -263,6 +288,7 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
     expect(zip.file("05_avaliacao_d25.py")).not.toBeNull();
     expect(zip.file("requirements.txt")).not.toBeNull();
     expect(zip.file("06_manifesto_integridade_sha256.txt")).not.toBeNull();
+    expect(zip.file("07_verificar_integridade.py")).not.toBeNull();
 
     // N07: ZIP de reprodutibilidade nunca deve conter código CAR completo de 43 caracteres
     const carRegex = /[A-Z]{2}-[0-9]{7}-[0-9A-F]{32}/;
@@ -271,6 +297,72 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
         const texto = await arquivo.async("text");
         expect(carRegex.test(texto)).toBe(false);
       }
+    }
+  });
+
+  it("INTEGRAÇÃO A5(c): extrai ZIP e roda 07_verificar_integridade.py via Python (exit 0 em íntegro, exit 1 se corrompido)", async () => {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const os = await import("node:os");
+    const { spawnSync } = await import("node:child_process");
+
+    let pythonBin = "";
+    for (const bin of ["python", "python3"]) {
+      try {
+        const check = spawnSync(bin, ["--version"]);
+        if (check.status === 0) {
+          pythonBin = bin;
+          break;
+        }
+      } catch {}
+    }
+    if (!pythonBin) {
+      expect.fail("Interpretador Python (python ou python3) não encontrado no ambiente para teste de integração");
+    }
+
+    const pontos = [
+      criarPontoTeste("1", -25.14, -53.84, "erosao"),
+      criarPontoTeste("2", -25.15, -53.85, "ausente"),
+    ];
+
+    const blob = await gerarPacoteReprodutibilidadeZip(pontos, extrairMapaRotulos(pontos));
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sarel-zip-integ-"));
+    try {
+      for (const [nome, file] of Object.entries(zip.files)) {
+        if (!file.dir) {
+          const buf = await file.async("nodebuffer");
+          fs.writeFileSync(path.join(tmpDir, nome), buf);
+        }
+      }
+
+      const scriptVerificador = path.join(tmpDir, "07_verificar_integridade.py");
+      expect(fs.existsSync(scriptVerificador)).toBe(true);
+
+      // Execução 1: íntegro -> exit 0
+      const resOk = spawnSync(pythonBin, [scriptVerificador], {
+        cwd: tmpDir,
+        encoding: "utf-8",
+      });
+      expect(resOk.status).toBe(0);
+      expect(resOk.stdout).toContain("RESULTADO: INTEGRIDADE CONFIRMADA");
+
+      // Execução 2: corromper 1 byte de 01_matriz_preditores_treinamento_sarel.csv
+      const csvPath = path.join(tmpDir, "01_matriz_preditores_treinamento_sarel.csv");
+      const csvBuf = fs.readFileSync(csvPath);
+      csvBuf[csvBuf.length - 1] = csvBuf[csvBuf.length - 1] === 0x30 ? 0x31 : 0x30;
+      fs.writeFileSync(csvPath, csvBuf);
+
+      const resFail = spawnSync(pythonBin, [scriptVerificador], {
+        cwd: tmpDir,
+        encoding: "utf-8",
+      });
+      expect(resFail.status).toBe(1);
+      expect(resFail.stdout).toContain("RESULTADO: FALHA DE INTEGRIDADE");
+      expect(resFail.stdout).toContain("01_matriz_preditores_treinamento_sarel.csv");
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
 

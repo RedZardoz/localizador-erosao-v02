@@ -64,7 +64,7 @@ A funcionalidade é integrada à interface gráfica do SAREL através do módulo
 
 > **[ Gerar Pacote de Reprodutibilidade da Dissertação (.ZIP) ]**
 
-Ao ser disparada, a rotina aplica os filtros de perfil estabelecidos em [`src/lib/matriz/perfis.ts`](file:///c:/Users/lalfr/Docs%20Fora%20do%20Ar/LUIS%20ALFREDO/01%20-%20MESTRADO%20PPGTCA%202026/02%20-%20PESQUISA%20EROS%C3%83O%20LAMINAR/geolocalizacao-erosao-propriedade/src/lib/matriz/perfis.ts) e valida os 7 invariantes numéricos e de segurança ([`src/lib/matriz/invariantes.ts`](file:///c:/Users/lalfr/Docs%20Fora%20do%20Ar/LUIS%20ALFREDO/01%20-%20MESTRADO%20PPGTCA%202026/02%20-%20PESQUISA%20EROS%C3%83O%20LAMINAR/geolocalizacao-erosao-propriedade/src/lib/matriz/invariantes.ts)), compactando automaticamente **6 arquivos padronizados**:
+Ao ser disparada, a rotina aplica os filtros de perfil estabelecidos em [`src/lib/matriz/perfis.ts`](file:///c:/Users/lalfr/Docs%20Fora%20do%20Ar/LUIS%20ALFREDO/01%20-%20MESTRADO%20PPGTCA%202026/02%20-%20PESQUISA%20EROS%C3%83O%20LAMINAR/geolocalizacao-erosao-propriedade/src/lib/matriz/perfis.ts) e valida os 7 invariantes numéricos e de segurança ([`src/lib/matriz/invariantes.ts`](file:///c:/Users/lalfr/Docs%20Fora%20do%20Ar/LUIS%20ALFREDO/01%20-%20MESTRADO%20PPGTCA%202026/02%20-%20PESQUISA%20EROS%C3%83O%20LAMINAR/geolocalizacao-erosao-propriedade/src/lib/matriz/invariantes.ts)), compactando automaticamente os **arquivos padronizados do pacote**:
 
 ```
 PACOTE_REPRODUTIBILIDADE_SAREL_PPGTCA_2026.zip
@@ -73,13 +73,15 @@ PACOTE_REPRODUTIBILIDADE_SAREL_PPGTCA_2026.zip
 ├── 02_validacao_padrao_ouro_held_out_drone.csv
 ├── 03_confronto_radiometrico_sentinel_spectral2.csv
 ├── 04_datasheet_metadados_dicionario.json
-├── 05_script_auditoria_reproduzivel.py
-└── 06_manifesto_integridade_sha256.txt
+├── 05_avaliacao_d25.py
+├── requirements.txt
+├── 06_manifesto_integridade_sha256.txt
+└── 07_verificar_integridade.py
 ```
 
 ---
 
-## 3. Especificação Detalhada dos 6 Arquivos Exportados
+## 3. Especificação Detalhada dos Arquivos Exportados
 
 ### Arquivo 01: `01_matriz_preditores_treinamento_sarel.csv`
 * **Descrição:** Matriz tabular estruturada de dados biofísicos e geoespaciais alimentadora do modelo supervisionado regional.
@@ -119,29 +121,44 @@ PACOTE_REPRODUTIBILIDADE_SAREL_PPGTCA_2026.zip
   * Fontes primárias oficiais dos dados (Sentinel-2 L2A via GEE, Copernicus DEM, Embrapa Solos GeoServer, CHIRPS/INMET, Nuvem UAV);
   * Citações bibliográficas associadas a cada equação (em formato ABNT).
 
-### Arquivo 05: `05_script_auditoria_reproduzivel.py`
-* **Descrição:** Script autônomo e executável em Python (dependências universais: `pandas`, `numpy`, `scikit-learn`, `xgboost`).
+### Arquivo 05: `05_avaliacao_d25.py`
+* **Descrição:** Script autônomo e executável em Python contendo a implementação canônica e reprodutível do protocolo de avaliação D25 da dissertação.
+* **Aviso metodológico:** Este script é a implementação de referência do protocolo D25 e **NÃO é evidência com dado sintético**; ele opera sobre as matrizes reais fornecidas no pacote (Arquivos 01, 02 e 03) sob as regras estritas de integridade científica do SAREL (D16, D24, D25, D26).
 * **Como a banca examinadora o utiliza:**
-  1. O examinador descompacta o arquivo ZIP e digita em seu terminal:
+  1. O examinador instala as dependências mínimas indicadas em `requirements.txt`:
      ```bash
-     python 05_script_auditoria_reproduzivel.py
+     pip install -r requirements.txt
      ```
-  2. O script carrega `01_matriz_preditores_treinamento_sarel.csv` com semente pseudoaleatória pré-fixada (`random_state=42`);
-  3. Executa o particionamento espacial por blocos (*Spatial Block Bootstrap* / LOCO);
-  4. Treina o classificador XGBoost e avalia cegamente contra `02_validacao_padrao_ouro_held_out_drone.csv`;
-  5. Imprime no terminal a Matriz de Confusão, Acurácia Balanceada, ROC-AUC, Kappa de Cohen ($\kappa$) e a correlação de Pearson ($r$) do Arquivo 03, **gerando exatamente os mesmos números e tabelas que constam no corpo da dissertação de mestrado**.
+  2. Executa a rotina de avaliação no diretório descompactado:
+     ```bash
+     python 05_avaliacao_d25.py
+     ```
+  3. O script computa métricas discriminativas, Brier Score, calibração e intervalos de confiança por Spatial Block Bootstrap (D25).
+
+### Arquivo: `requirements.txt`
+* **Descrição:** Especificação das dependências mínimas em Python necessárias para execução do script de avaliação D25 (`scikit-learn`, `scipy`, `numpy`).
 
 ### Arquivo 06: `06_manifesto_integridade_sha256.txt`
-* **Descrição:** Manifesto de integridade criptográfica com *hashes* SHA-256 gerados no momento da compilação do pacote.
+* **Descrição:** Manifesto de integridade criptográfica com *hashes* SHA-256 gerados no momento da compilação do pacote. O manifesto não lista a si próprio.
 * **Exemplo de conteúdo:**
   ```text
-  b4a92c81ef40d927a7... 01_matriz_preditores_treinamento_sarel.csv
-  5e1039dc4ba109a28b... 02_validacao_padrao_ouro_held_out_drone.csv
-  98cf01aa72e5912401... 03_confronto_radiometrico_sentinel_spectral2.csv
-  28d9c12b1a50893012... 04_datasheet_metadados_dicionario.json
-  7c32098dca00129fec... 05_script_auditoria_reproduzivel.py
+  <sha256>  01_matriz_preditores_treinamento_sarel.csv
+  <sha256>  02_validacao_padrao_ouro_held_out_drone.csv
+  <sha256>  03_confronto_radiometrico_sentinel_spectral2.csv
+  <sha256>  04_datasheet_metadados_dicionario.json
+  <sha256>  05_avaliacao_d25.py
+  <sha256>  requirements.txt
+  <sha256>  07_verificar_integridade.py
   ```
-* **Finalidade:** Permite ao avaliador checar a integridade com o comando `sha256sum -c 06_manifesto_integridade_sha256.txt`, provando matematicamente que nenhuma linha de dado ou linha de código foi editada manualmente após a emissão da versão de defesa.
+* **Finalidade:** Permite ao avaliador checar a integridade de todos os arquivos. No Linux/macOS pode ser verificado via `sha256sum -c 06_manifesto_integridade_sha256.txt`; em qualquer sistema (inclusive Windows), recomenda-se executar `python 07_verificar_integridade.py`.
+
+### Arquivo 07: `07_verificar_integridade.py`
+* **Descrição:** Verificador autônomo e multiplataforma de integridade criptográfica SHA-256 desenvolvido estritamente com a biblioteca padrão do Python (`hashlib`, `pathlib`, `sys`), dispensando dependências externas ou utilitários específicos de SO (como `sha256sum`).
+* **Como utilizar:**
+  ```bash
+  python 07_verificar_integridade.py
+  ```
+* **Limitação honesta:** O manifesto e o verificador atestam que os arquivos descompactados não sofreram corrupção nem alteração posterior à geração do pacote contido no mesmo diretório. Para comprovação irrefutável de autoria e não repúdio, o *hash* global do arquivo `.zip` ou do manifesto deve ser cotejado com o valor publicado pelo pesquisador em canal independente (e.g. corpo da dissertação ou repositório institucional com DOI).
 
 ---
 
