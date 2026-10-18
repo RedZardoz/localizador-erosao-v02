@@ -1,8 +1,9 @@
-﻿import { execFile } from "child_process";
+import { execFile } from "child_process";
 import path from "path";
 import fs from "fs";
 import { ContextoFundiario, StatusFundiario } from "@/types/ponto";
 import { mascararDocumentoPessoal, validarMascaraTitularSncr } from "./protecao";
+import { dataCivilSaoPaulo } from "@/lib/tempo/datas";
 
 export interface RuralPropertyMatch {
   status: StatusFundiario;
@@ -52,7 +53,7 @@ export function toContextoFundiario(
   return {
     status,
     motivo,
-    consultadoEm: match.dataConsulta || new Date().toISOString().split("T")[0],
+    consultadoEm: match.dataConsulta || dataCivilSaoPaulo(),
     criterioAssociacao: match.criterioAssociacao || null,
     codigoCar: match.carCode || null,
     titularMascarado: validarMascaraTitularSncr(match.ownerName),

@@ -72,6 +72,7 @@ import { pontoEmGeoJson } from "@/lib/localizacao/municipio";
 import { montarLinhaDeBaseRUSLE } from "@/lib/rusle/linhaDeBase";
 import { converterErodibilidadeFatorK, identificarViaFatorKD14 } from "@/lib/rusle/fatorK";
 import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
+import { dataCivilSaoPaulo } from "@/lib/tempo/datas";
 import {
   medirTerrenoCopernicusEmLote,
   medirSentinel2EmLoteGeeRest,
@@ -286,7 +287,7 @@ export async function POST(request: NextRequest) {
         : imoveisReais.filter((im) => !estaEmUnidadeConservacaoFlorestalBp3(im.lat, im.lng));
 
     // 4. Thinning Espacial Determinístico (P02) sobre os centroides reais SICAR/SNCR
-    const dataConsultaAtual = new Date().toISOString().split("T")[0];
+    const dataConsultaAtual = dataCivilSaoPaulo();
     const semente = 42;
 
     const candidatosBase = listaParaAmostragem.map((im, i) => ({

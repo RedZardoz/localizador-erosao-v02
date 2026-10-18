@@ -23,6 +23,7 @@ import {
   verificarPreCondicoesSorteioD16,
   sortear72PoligonosD16,
 } from "@/lib/gee/sorteioPoligonos";
+import { dataCivilSaoPaulo } from "@/lib/tempo/datas";
 import { TODOS_ESTRATOS_D12 } from "@/lib/gee/estratificacao";
 
 const DIRETORIO_SELOS = path.join(process.cwd(), "docs", "verificacoes", "sorteio");
@@ -204,7 +205,7 @@ function executarCli(): void {
     .update(JSON.stringify(candidatos))
     .digest("hex");
   const gitCommit = obterGitCommitAtual();
-  const dataHoje = new Date().toISOString().slice(0, 10);
+  const dataHoje = dataCivilSaoPaulo();
   const caminhoSelo = path.join(DIRETORIO_SELOS, `sorteio_d16_${dataHoje}.json`);
 
   if (fs.existsSync(caminhoSelo)) {

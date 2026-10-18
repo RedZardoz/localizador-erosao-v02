@@ -117,24 +117,34 @@ export function calcularIndiceMecanismo(
 export function construirBlocoChuva(insumos: InsumosChuvaCompletos): BlocoChuva {
   const acumulados = calcularAcumuladosChuva(insumos.serieDiariaChirps);
   const i30 = extrairI30Maximo(insumos.serieImerg);
-  const dataRef = insumos.dataReferencia || new Date().toISOString().split("T")[0];
+  const dataRefChirps =
+    insumos.dataReferencia ??
+    (insumos.serieDiariaChirps.length > 0
+      ? insumos.serieDiariaChirps[insumos.serieDiariaChirps.length - 1].data
+      : "");
+
+  const dataRefImerg =
+    insumos.dataReferencia ??
+    (insumos.serieImerg.length > 0
+      ? insumos.serieImerg[insumos.serieImerg.length - 1].timestamp.slice(0, 10)
+      : "");
 
   const precipAcum30d = criarProvenienciaChirps(
     acumulados.acum30d,
     "Acumulado móvel de 30 dias na janela de amostragem",
-    dataRef
+    dataRefChirps
   );
 
   const precipAcum90d = criarProvenienciaChirps(
     acumulados.acum90d,
     "Acumulado móvel de 90 dias na janela de amostragem",
-    dataRef
+    dataRefChirps
   );
 
   const i30Max = criarProvenienciaImerg(
     i30,
     "Intensidade máxima sub-horária (taxa em janela de 30 min)",
-    dataRef
+    dataRefImerg
   );
 
   // nEventosErosivos aguarda formalização do critério de corte D13 (10 mm vs 12,7 mm/h)

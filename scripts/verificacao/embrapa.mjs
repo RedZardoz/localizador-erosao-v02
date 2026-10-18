@@ -4,7 +4,12 @@ import path from "path";
 const EMBRAPA_OWS = "https://geoinfo.dados.embrapa.br/geoserver/ows";
 
 async function capturar() {
-  const dataHoje = new Date().toISOString().slice(0, 10);
+  const dataHoje = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
   const dirVerif = path.resolve(process.cwd(), "docs/verificacoes");
   if (!fs.existsSync(dirVerif)) {
     fs.mkdirSync(dirVerif, { recursive: true });

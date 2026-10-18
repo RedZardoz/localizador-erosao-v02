@@ -20,6 +20,8 @@
  * 6. CEGAMENTO W2: Qualquer relatório exportado NÃO contém dados de intérprete cego.
  */
 
+import { dataCivilSaoPaulo } from "@/lib/tempo/datas";
+
 export const CONFIGURACAO_REGISTRADA_D16 = {
   ladoMetros: 224,
   razaoAspectoMaxima: 2.0, // 1:2
@@ -329,7 +331,7 @@ export function exportarRelatorioSimulacaoDesenho(
   entradas: EntradasCalculadoraDesenho,
   saidas: SaidasCalculadoraDesenho
 ): string {
-  const agora = new Date().toISOString().split("T")[0];
+  const agora = dataCivilSaoPaulo();
   return `# Relatório de Simulação de Desenho Amostral — SAREL v2.0
 Data da Simulação: ${agora}
 Metodologia: PPGTCA 2026 (Decisões D12, D16, D24 e D26)

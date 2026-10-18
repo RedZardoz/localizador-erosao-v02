@@ -71,6 +71,7 @@ export function GraficoSerieTemporal({
     if (dataRefStr) {
       const dRef = new Date(dataRefStr);
       dRef.setMonth(dRef.getMonth() - intervaloGuardaMeses);
+      // C26: d.data na série de satélite segue o padrão de cenas orbitais em UTC; o corte de guarda permanece em UTC
       dataCorteGuarda = dRef.toISOString().split("T")[0];
 
       // Encontrar índice do primeiro ponto dentro da guarda

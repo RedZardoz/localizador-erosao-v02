@@ -76,6 +76,7 @@ export function extrairDataAquisicaoSentinel2(
   opcoes: { timestampMs?: number | null; cenas?: string[] | null }
 ): string | null {
   if (typeof opcoes.timestampMs === "number" && Number.isFinite(opcoes.timestampMs) && opcoes.timestampMs > 0) {
+    // C26: Timestamps orbitais do catálogo GEE (system:time_start) são estritamente UTC
     return new Date(opcoes.timestampMs).toISOString().slice(0, 10);
   }
   if (Array.isArray(opcoes.cenas)) {

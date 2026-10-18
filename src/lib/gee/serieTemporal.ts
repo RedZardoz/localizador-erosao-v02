@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * Séries Temporais Multiespectrais (Sentinel-2 / Landsat) — SAREL (PPGTCA 2026)
  * ============================================================================
@@ -117,6 +117,8 @@ export function definirJanelasModelo(
   const inicioP = new Date(fimP);
   inicioP.setFullYear(fimP.getFullYear() - duracaoJanelaAnos);
 
+  // C26: Limites de janelas temporais de coleções multiespectrais Sentinel-2/Landsat
+  // são estritamente mantidos em UTC conforme padronizado nos catálogos orbitais.
   return {
     modeloD: {
       inicio: inicioD.toISOString().split("T")[0],

@@ -10,6 +10,7 @@ import {
 import { queryEmbrapaSoil } from "@/lib/embrapa/embrapaSoilClient";
 import { matchRuralProperty } from "@/lib/fundiario/matcher";
 import { consolidarInspecaoPonto } from "@/lib/gee/consolidacaoInspecao";
+import { dataCivilSaoPaulo } from "@/lib/tempo/datas";
 import type { PontoAmostral } from "@/types/ponto";
 
 export const dynamic = "force-dynamic";
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { latitude, longitude } = point;
-    const dataConsultaAtual = new Date().toISOString().split("T")[0];
+    const dataConsultaAtual = dataCivilSaoPaulo();
 
     const sessionId = request.cookies.get(SAREL_SESSION_COOKIE)?.value;
     const sessao = obterSessao(sessionId);

@@ -49,8 +49,16 @@ export function extrairI30Maximo(registros: RegistroImergSemiHorario[]): number 
 export function criarProvenienciaImerg(
   valor: number | null,
   detalhe: string,
-  adquiridoEm = new Date().toISOString().split("T")[0]
+  adquiridoEm: string
 ): Proveniencia<number> {
+  if (!adquiridoEm) {
+    return {
+      estado: "indisponivel",
+      causa: "data-da-fonte-desconhecida",
+      motivo: "Data de aquisição da fonte IMERG desconhecida (DEC-9).",
+    };
+  }
+
   if (valor === null || !Number.isFinite(valor)) {
     return {
       estado: "indisponivel",

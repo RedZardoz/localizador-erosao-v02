@@ -10,6 +10,7 @@ import {
   sortear72PoligonosD16,
   asseverarCaminhoSeloIgnoradoGit,
 } from "@/lib/gee/sorteioPoligonos";
+import { dataCivilSaoPaulo } from "@/lib/tempo/datas";
 
 const DIRETORIO_SELOS = path.join(process.cwd(), "docs", "verificacoes", "sorteio");
 
@@ -176,7 +177,7 @@ export async function POST(req: NextRequest) {
       .update(JSON.stringify(candidatos))
       .digest("hex");
     const gitCommit = obterGitCommitAtual();
-    const dataHoje = new Date().toISOString().slice(0, 10);
+    const dataHoje = dataCivilSaoPaulo();
     const caminhoSeloAbs = path.join(DIRETORIO_SELOS, `sorteio_d16_${dataHoje}.json`);
     const caminhoRelativo = path
       .relative(process.cwd(), caminhoSeloAbs)

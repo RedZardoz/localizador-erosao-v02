@@ -39,7 +39,7 @@ describe("CHIRPS Acumulados Diários", () => {
   });
 
   it("criarProvenienciaChirps deve retornar indisponivel com causa insuficiente se nulo", () => {
-    const prov = criarProvenienciaChirps(null, "teste");
+    const prov = criarProvenienciaChirps(null, "teste", "2026-01-01");
     expect(prov.estado).toBe("indisponivel");
     if (prov.estado === "indisponivel") {
       expect(prov.causa).toBe("insuficiente");
@@ -94,7 +94,7 @@ describe("GPM IMERG Intensidade Sub-horária", () => {
   });
 
   it("criarProvenienciaImerg deve retornar indisponivel com causa insuficiente se nulo", () => {
-    const prov = criarProvenienciaImerg(null, "teste");
+    const prov = criarProvenienciaImerg(null, "teste", "2026-01-01");
     expect(prov.estado).toBe("indisponivel");
     if (prov.estado === "indisponivel") {
       expect(prov.causa).toBe("insuficiente");

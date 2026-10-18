@@ -9,6 +9,7 @@ import { LIMIAR_MINIMO_OBSERVACOES_D11 } from "./copernicusGeeClient";
 import { classificarPontoEspectral } from "./amostragemBiofisica";
 import { montarLinhaDeBaseRUSLE } from "@/lib/rusle/linhaDeBase";
 import { toContextoFundiario } from "@/lib/fundiario/matcher";
+import { dataCivilSaoPaulo } from "@/lib/tempo/datas";
 
 export interface ParametrosConsolidacaoInspecao {
   point: PontoAmostral;
@@ -47,7 +48,7 @@ export function consolidarInspecaoPonto(
   const { point, terreno, solo, fundiario, gee } = params;
   const avisos: string[] = [];
   const dataConsultaAtual =
-    params.dataConsultaAtual || new Date().toISOString().split("T")[0];
+    params.dataConsultaAtual || dataCivilSaoPaulo();
 
   // 1. Processamento Fundiário
   let contextoFundiario = point.fundiario;
