@@ -225,14 +225,34 @@ export function ingestarSubmissoesSarelColetor(
         ? 1
         : 0;
 
-    // Metadados periciais
-    const observador = String(reg.observador ?? "").trim() || "Perito SAREL Coletor";
-    const observadoEm = String(reg.observadoEm ?? new Date().toISOString().split("T")[0]).trim();
+    // Metadados periciais — Regras 1, 3 e C25 (proibido preenchimento por padrão)
+    const observador = String(reg.observador ?? "").trim();
+    if (!observador) {
+      rejeitados.push({
+        registro: reg,
+        motivo: `Observador pericial ausente no registro do ponto '${codigoPonto}'. Proibido preenchimento por padrão de sistema (C25).`,
+      });
+      continue;
+    }
+
+    const observadoEm = String(reg.observadoEm ?? "").trim();
+    if (!observadoEm) {
+      rejeitados.push({
+        registro: reg,
+        motivo: `Data de observação (observadoEm) ausente no registro do ponto '${codigoPonto}'. Proibido preenchimento por padrão de sistema (C25).`,
+      });
+      continue;
+    }
+
     const confiancaRaw = String(reg.confianca ?? "").trim().toLowerCase();
-    const confianca: "alta" | "media" | "baixa" =
-      confiancaRaw === "alta" || confiancaRaw === "media" || confiancaRaw === "baixa"
-        ? (confiancaRaw as any)
-        : "alta";
+    if (confiancaRaw !== "alta" && confiancaRaw !== "media" && confiancaRaw !== "baixa") {
+      rejeitados.push({
+        registro: reg,
+        motivo: `Nível de confiança inválido ou ausente ('${reg.confianca}') no registro do ponto '${codigoPonto}'. Esperado: 'alta', 'media' ou 'baixa'.`,
+      });
+      continue;
+    }
+    const confianca: "alta" | "media" | "baixa" = confiancaRaw;
 
     const cego = reg.cego === true || reg.cego === "true" || reg.cego === "1";
 

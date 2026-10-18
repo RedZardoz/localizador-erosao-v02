@@ -86,4 +86,45 @@ describe("Ingestão SAREL Coletor (Fase B / D16)", () => {
     expect(res.rejeitados).toHaveLength(1);
     expect(res.rejeitados[0].motivo).toContain("Desvio geodésico excessivo");
   });
+
+  it("C25: rejeita registro sem observador, sem observadoEm ou sem confianca valida (sem preencher padroes)", () => {
+    const res = ingestarSubmissoesSarelColetor(
+      [
+        // Sem observador
+        {
+          codigoPonto: "PONTO-01",
+          classe: "erosao",
+          latitude: -24.850000,
+          longitude: -54.050000,
+          observadoEm: "2026-10-02",
+          confianca: "alta",
+        },
+        // Sem data (observadoEm)
+        {
+          codigoPonto: "PONTO-01",
+          classe: "erosao",
+          latitude: -24.850000,
+          longitude: -54.050000,
+          observador: "Perito Real",
+          confianca: "alta",
+        },
+        // Sem confianca valida
+        {
+          codigoPonto: "PONTO-01",
+          classe: "erosao",
+          latitude: -24.850000,
+          longitude: -54.050000,
+          observador: "Perito Real",
+          observadoEm: "2026-10-02",
+        },
+      ],
+      coordenadasEsperadas
+    );
+
+    expect(res.aceitos).toHaveLength(0);
+    expect(res.rejeitados).toHaveLength(3);
+    expect(res.rejeitados[0].motivo).toContain("Observador");
+    expect(res.rejeitados[1].motivo).toContain("observadoEm");
+    expect(res.rejeitados[2].motivo).toContain("confiança");
+  });
 });

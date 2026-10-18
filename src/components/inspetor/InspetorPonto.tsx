@@ -10,6 +10,7 @@ import { REGISTRO_DECISOES } from "@/config/decisoes";
 import type { LaudoAuditoriaPonto } from "@/types/jev";
 import type { Rotulo } from "@/types/rotulo";
 import { binarizarFracao } from "@/lib/rotulos/binarizacao";
+import { validarEConstruirRotuloHumano } from "@/lib/rotulos/rotuloHumano";
 
 export interface InspetorPontoProps {
   modoInicial?: "inspecao" | "registro";
@@ -36,8 +37,10 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
   const [classeRotuloInput, setClasseRotuloInput] = React.useState<"erosao" | "controle">("erosao");
   const [modalidadeRotuloInput, setModalidadeRotuloInput] = React.useState<"campo" | "drone" | "interpretacao-visual">("campo");
   const [observadorInput, setObservadorInput] = React.useState<string>("Pesquisador PPGTCA");
+  const [observadoEmInput, setObservadoEmInput] = React.useState<string>("");
   const [confiancaInput, setConfiancaInput] = React.useState<"alta" | "media" | "baixa">("alta");
   const [observacoesInput, setObservacoesInput] = React.useState<string>("");
+  const [erroValidacao, setErroValidacao] = React.useState<string | null>(null);
 
   const ponto = obterPontoSelecionado();
 
@@ -47,11 +50,24 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
 
   const salvarRotuloHumano = () => {
     if (!ponto) return;
-    const hoje = new Date().toISOString().split("T")[0];
 
-    // J1: cego é estritamente DERIVADO do modo da tela no momento do registro.
-    // Se a tela exibiu estrato, tercil, nível de K ou score heurístico/JEV (modo inspeção), cego é falso.
-    const cegoDerivado = modo === "registro";
+    // C25: validação estrita sem preencher padrão de data ou observador
+    const resultado = validarEConstruirRotuloHumano({
+      classe: classeRotuloInput,
+      modalidade: modalidadeRotuloInput as any,
+      observador: observadorInput,
+      observadoEm: observadoEmInput,
+      confianca: confiancaInput,
+      modo,
+      fracaoErodida: fracaoErodidaInput,
+      observacoes: observacoesInput,
+    });
+
+    if (!resultado.valido) {
+      setErroValidacao(resultado.motivo);
+      return;
+    }
+    setErroValidacao(null);
 
     // J1: papelConjunto deixa de ser literal e vem da designação registrada no sorteio D16, ou indisponivel.
     const papelConjuntoDerivado: "treino" | "held-out" | "indisponivel" =
@@ -62,21 +78,7 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
       "indisponivel";
     const kappaDerivado = null;
 
-    // D26: Alvo binário derivado a partir do valor armazenado (toFixed(3))
-    const fracaoArmazenada = Number(fracaoErodidaInput.toFixed(3));
-    const alvoBinarioDerivado: 0 | 1 = binarizarFracao(fracaoArmazenada);
-
-    const novoRotulo: Rotulo = {
-      classe: classeRotuloInput,
-      modalidade: modalidadeRotuloInput as any,
-      observador: observadorInput.trim() || "Pesquisador PPGTCA",
-      observadoEm: hoje,
-      cego: cegoDerivado,
-      confianca: confiancaInput,
-      fracaoErodida: fracaoArmazenada,
-      alvoBinarioDerivado,
-      observacoes: observacoesInput.trim() || undefined,
-    };
+    const novoRotulo: Rotulo = resultado.rotulo;
 
     definirRotuloConsolidado(ponto.codigo, {
       final: novoRotulo,
@@ -89,7 +91,7 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
     adicionarLog(
       "info",
       "Rotulagem-Humana",
-      `Rótulo pericial consolidado para ${ponto.codigo} [cego=${cegoDerivado}, fração=${fracaoErodidaInput.toFixed(2)}, papel=${papelConjuntoDerivado}].`
+      `Rótulo pericial consolidado para ${ponto.codigo} [cego=${novoRotulo.cego}, data=${novoRotulo.observadoEm}, fração=${fracaoErodidaInput.toFixed(2)}, papel=${papelConjuntoDerivado}].`
     );
   };
 
@@ -355,6 +357,22 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
               </div>
 
               <div>
+                <label className="text-[11px] text-slate-600 block mb-1 font-semibold">
+                  Data da Observação in-situ / Voo (obrigatória):
+                </label>
+                <input
+                  type="date"
+                  value={observadoEmInput}
+                  onChange={(e) => {
+                    setObservadoEmInput(e.target.value);
+                    if (erroValidacao) setErroValidacao(null);
+                  }}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 shadow-xs focus:border-emerald-500 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
                 <label className="text-[11px] text-slate-600 block mb-1 font-semibold">Nível de Confiança:</label>
                 <select
                   value={confiancaInput}
@@ -378,6 +396,12 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
                 placeholder="Detalhes in-situ, estado de palhada, microrrelevo ou feições diagnósticas..."
               />
             </div>
+
+            {erroValidacao && (
+              <div className="p-3 rounded-lg border border-red-200 bg-red-50 text-xs text-red-800 font-medium">
+                {erroValidacao}
+              </div>
+            )}
 
             {/* Botão de Gravação — EXCLUSIVO DO MODO REGISTRO */}
             <div className="pt-2">
