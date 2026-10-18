@@ -30,25 +30,30 @@ describe("C26 — Data civil no fuso de Brasília e instantes UTC", () => {
     expect((provImerg as any).causa).toBe("data-da-fonte-desconhecida");
   });
 
+function normalizePath(p: string) {
+  return p.replace(/\\/g, "/");
+}
+
+const EXCECOES_UTC_AUTORIZADAS = new Set([
+  // Janelas de consulta temporal a acervos multiespectrais Sentinel-2/Landsat (estritamente UTC)
+  normalizePath("src/lib/gee/serieTemporal.ts"),
+  // Timestamps de metadados e coleções de satélite GEE (estritamente UTC)
+  normalizePath("src/lib/gee/metadadosColecoes.ts"),
+  // Linha de corte de guarda temporal para séries de satélite (estritamente UTC)
+  normalizePath("src/components/inspetor/GraficoSerieTemporal.tsx"),
+  // Utilitário de datas que encapsula e define as conversões
+  normalizePath("src/lib/tempo/datas.ts"),
+]);
+
+function detectarViolacaoIso(relPath: string, content: string, excecoes: Set<string>): boolean {
+  const padrao = /toISOString\(\)\s*\.\s*(?:split\s*\(\s*["']T["']\s*\)\s*\[\s*0\s*\]|slice\s*\(\s*0\s*,\s*10\s*\)|substring\s*\(\s*0\s*,\s*10\s*\))/;
+  if (padrao.test(content)) {
+    return !excecoes.has(normalizePath(relPath));
+  }
+  return false;
+}
+
   it("varre src e falha se sobrar toISOString().split('T')[0] ou .slice(0, 10) fora do utilitário e da lista fechada de exceções UTC", () => {
-    function normalizePath(p: string) {
-      return p.replace(/\\/g, "/");
-    }
-
-    const EXCECOES_UTC_AUTORIZADAS = new Set([
-      // Janelas de consulta temporal a acervos multiespectrais Sentinel-2/Landsat (estritamente UTC)
-      normalizePath("src/lib/gee/serieTemporal.ts"),
-      // Timestamps de metadados e coleções de satélite GEE (estritamente UTC)
-      normalizePath("src/lib/gee/metadadosColecoes.ts"),
-      // Linha de corte de guarda temporal para séries de satélite (estritamente UTC)
-      normalizePath("src/components/inspetor/GraficoSerieTemporal.tsx"),
-      // Utilitário de datas que encapsula e define as conversões
-      normalizePath("src/lib/tempo/datas.ts"),
-      // Exceções C25 pendentes de remoção de valor-padrão (InspetorPonto e ingestaoColetor)
-      normalizePath("src/components/inspetor/InspetorPonto.tsx"),
-      normalizePath("src/lib/rotulos/ingestaoColetor.ts"),
-    ]);
-
     const arquivosComSplitIso: string[] = [];
     function scanDir(dir: string) {
       const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -62,11 +67,8 @@ describe("C26 — Data civil no fuso de Brasília e instantes UTC", () => {
           !entry.name.includes(".test.")
         ) {
           const content = fs.readFileSync(full, "utf8");
-          const padrao = /toISOString\(\)\s*\.\s*(?:split\s*\(\s*["']T["']\s*\)\s*\[\s*0\s*\]|slice\s*\(\s*0\s*,\s*10\s*\)|substring\s*\(\s*0\s*,\s*10\s*\))/;
-          if (padrao.test(content)) {
-            if (!EXCECOES_UTC_AUTORIZADAS.has(rel)) {
-              arquivosComSplitIso.push(rel);
-            }
+          if (detectarViolacaoIso(rel, content, EXCECOES_UTC_AUTORIZADAS)) {
+            arquivosComSplitIso.push(rel);
           }
         }
       }
@@ -74,5 +76,11 @@ describe("C26 — Data civil no fuso de Brasília e instantes UTC", () => {
 
     scanDir(path.resolve(process.cwd(), "src"));
     expect(arquivosComSplitIso).toEqual([]);
+  });
+
+  it("assevera que arquivos antes isentos (InspetorPonto e ingestaoColetor) agora disparam falha se receberem toISOString().split('T')[0]", () => {
+    const trechoComIso = "const d = new Date().toISOString().split('T')[0];";
+    expect(detectarViolacaoIso("src/components/inspetor/InspetorPonto.tsx", trechoComIso, EXCECOES_UTC_AUTORIZADAS)).toBe(true);
+    expect(detectarViolacaoIso("src/lib/rotulos/ingestaoColetor.ts", trechoComIso, EXCECOES_UTC_AUTORIZADAS)).toBe(true);
   });
 });
