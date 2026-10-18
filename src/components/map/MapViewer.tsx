@@ -744,14 +744,14 @@ export const MapViewer: React.FC = () => {
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-red-500 border border-white shadow-sm shrink-0" />
           <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-slate-800 dark:text-slate-200 text-[11px]">Erosão (Classe 1)</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200 text-[11px]">Candidato espectral a erosão (limiar BSI/NDVI) — não é rótulo</span>
             <span className="text-[9px] text-slate-400 font-mono">BSI &gt; 0.10 | NDVI &lt; 0.40</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-emerald-500 border border-white shadow-sm shrink-0" />
           <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-slate-800 dark:text-slate-200 text-[11px]">Controle / SPD (Classe 0)</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200 text-[11px]">Candidato espectral a controle (limiar BSI/NDVI) — não é rótulo</span>
             <span className="text-[9px] text-slate-400 font-mono">BSI &lt; 0.00 | NDVI &gt; 0.65</span>
           </div>
         </div>

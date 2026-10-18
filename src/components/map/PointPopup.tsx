@@ -166,9 +166,9 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
           <div>
             <div className="font-bold text-[11px] uppercase tracking-wider">
               {classeAmostral === "erosao"
-                ? "Erosão Laminar (Classe 1)"
+                ? "Candidato espectral a erosão (limiar BSI/NDVI) — não é rótulo"
                 : classeAmostral === "controle"
-                ? "Controle / SPD (Classe 0)"
+                ? "Candidato espectral a controle (limiar BSI/NDVI) — não é rótulo"
                 : "Amostra em Avaliação"}
             </div>
             <div className="text-[10px] opacity-80">

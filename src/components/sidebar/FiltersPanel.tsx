@@ -142,8 +142,8 @@ export const FiltersPanel: React.FC = () => {
           className="w-full py-1.5 px-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-medium"
         >
           <option value="todas">Todas as amostras</option>
-          <option value="erosao">🔴 Apenas Erosão Laminar (Classe 1)</option>
-          <option value="controle">🟢 Apenas Controle / SPD (Classe 0)</option>
+          <option value="erosao">🔴 Candidato espectral a erosão (limiar BSI/NDVI) — não é rótulo</option>
+          <option value="controle">🟢 Candidato espectral a controle (limiar BSI/NDVI) — não é rótulo</option>
         </select>
       </div>
 
