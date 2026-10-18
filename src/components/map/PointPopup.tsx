@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Building,
   RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 import type { PontoAmostral } from "@/types/ponto";
 import { formatToDMS } from "@/lib/export/dms";
@@ -28,6 +29,7 @@ interface PointPopupProps {
 export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
   const { setPontoAuditoria, setModalAtiva, atualizarPontoIndividual } = useSarelStore();
   const [consultandoFontesReais, setConsultandoFontesReais] = useState(false);
+  const [avisosInspecao, setAvisosInspecao] = useState<string[]>([]);
 
   useEffect(() => {
     const precisaTerreno = point.terreno.elevacao.estado === "indisponivel";
@@ -51,6 +53,9 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
       .then((dados) => {
         if (!cancelado && dados?.ok && dados?.ponto) {
           atualizarPontoIndividual(dados.ponto);
+        }
+        if (!cancelado && Array.isArray(dados?.avisos) && dados.avisos.length > 0) {
+          setAvisosInspecao(dados.avisos);
         }
       })
       .catch(() => {})
@@ -321,6 +326,23 @@ export const PointPopup: React.FC<PointPopupProps> = ({ point, onClose }) => {
               <span className="font-bold">{valorOuNulo(rusle.fatorP) !== null ? valorOuNulo(rusle.fatorP)!.toFixed(2) : "—"}</span>
             </div>
           </div>
+        </div>
+      )}
+
+      {avisosInspecao.length > 0 && (
+        <div
+          data-testid="avisos-inspect-point"
+          className="p-2.5 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/40 dark:border-amber-700/60 text-xs text-amber-900 dark:text-amber-200 space-y-1"
+        >
+          <div className="font-semibold text-[11px] flex items-center gap-1 text-amber-800 dark:text-amber-300">
+            <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+            <span>Avisos de inspeção em tempo real:</span>
+          </div>
+          <ul className="list-disc pl-4 space-y-0.5 text-[10px]">
+            {avisosInspecao.map((aviso, idx) => (
+              <li key={idx}>{aviso}</li>
+            ))}
+          </ul>
         </div>
       )}
 

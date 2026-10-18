@@ -28,6 +28,7 @@ export interface BlocoPreditorD24 {
   exemplos: string;
   tetoPreditores: number;
   unidadesEfetivasEstimadas: number;
+  unidadesRotulo?: string;
   alcanceEspacial: string;
   statusRegime: "adequado" | "abaixo_regime_fisico";
   justificativaFisica: string;
@@ -39,6 +40,7 @@ export const BLOCOS_PREDITORES_D24: BlocoPreditorD24[] = [
     exemplos: "Sentinel-2 bandas, índices biofísicos (NDVI, BSI), métricas temporais",
     tetoPreditores: 8,
     unidadesEfetivasEstimadas: 1845,
+    unidadesRotulo: "~1.841 a 1.845 calculadas (D24)",
     alcanceEspacial: "50 m de alcance de autocorrelação espacial (~26 efetivas/polígono de 5,02 ha)",
     statusRegime: "adequado",
     justificativaFisica: "Varia livremente dentro do talhão; é onde o XGBoost aprende não-linearidades e interações que o RUSLE não capta.",
@@ -48,6 +50,7 @@ export const BLOCOS_PREDITORES_D24: BlocoPreditorD24[] = [
     exemplos: "Copernicus DEM GLO-30 (declividade, fator LS, curvatura vertical/horizontal)",
     tetoPreditores: 4,
     unidadesEfetivasEstimadas: 396,
+    unidadesRotulo: "~396 calculadas (D24)",
     alcanceEspacial: "~11 unidades efetivas por polígono de 5,02 ha (pixel 30 m já agrega)",
     statusRegime: "abaixo_regime_fisico",
     justificativaFisica: "Admitido por necessidade física (Invariante 1 — cinco fatores do RUSLE). Monotonicidade reduz graus de liberdade.",
@@ -57,18 +60,20 @@ export const BLOCOS_PREDITORES_D24: BlocoPreditorD24[] = [
     exemplos: "Erodibilidade K̂ (Embrapa Solos / cartas oficiais)",
     tetoPreditores: 1,
     unidadesEfetivasEstimadas: 72,
-    alcanceEspacial: "1 unidade por polígono (polígono de 5,02 ha cai tipicamente numa mesma mancha pedológica)",
+    unidadesRotulo: "72 (polígonos nominais; n efetivo < 72)",
+    alcanceEspacial: "1 unidade por polígono (72 polígonos nominais; n efetivo reduzido por compartilhamento de unidade pedológica)",
     statusRegime: "abaixo_regime_fisico",
-    justificativaFisica: "Crítico: 1 único preditor admitido (K̂). Impossível aumentar sem novos polígonos. Monotonicidade física imposta.",
+    justificativaFisica: "Crítico: 1 único preditor admitido (K̂). 72 polígonos nominais; n efetivo menor por manchas compartilhadas. Monotonicidade física imposta.",
   },
   {
     bloco: "Chuva",
     exemplos: "Erosividade R (séries CHIRPS / TRMM / I30)",
     tetoPreditores: 1,
     unidadesEfetivasEstimadas: 72,
-    alcanceEspacial: "Grade regional (5 a 10 km de resolução nativa)",
+    unidadesRotulo: "72 (polígonos nominais; n efetivo < 72)",
+    alcanceEspacial: "Grade regional (5 a 10 km de resolução nativa; 72 polígonos nominais)",
     statusRegime: "abaixo_regime_fisico",
-    justificativaFisica: "Crítico: 1 único preditor admitido (fator R). Polígonos próximos compartilham a mesma célula de chuva.",
+    justificativaFisica: "Crítico: 1 único preditor admitido (fator R). 72 nominais; polígonos próximos compartilham a mesma célula de chuva.",
   },
 ];
 
@@ -294,7 +299,7 @@ export const PainelCriterioRefutacaoD25: React.FC = () => {
                           até {b.tetoPreditores}
                         </td>
                         <td className="p-1.5 font-mono text-slate-600 dark:text-slate-400">
-                          ~{b.unidadesEfetivasEstimadas}
+                          {b.unidadesRotulo ?? `~${b.unidadesEfetivasEstimadas}`}
                         </td>
                         <td className="p-1.5 text-slate-500 dark:text-slate-400 text-[10px] max-w-xs">
                           {b.alcanceEspacial}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   Key,
@@ -16,6 +16,35 @@ import { ApiTokensManager } from "./ApiTokensManager";
 export const SettingsModal: React.FC = () => {
   const { modalAtiva, setModalAtiva } = useSarelStore();
   const [abaAtiva, setAbaAtiva] = useState<"gee" | "tokens" | "fundiario">("gee");
+  const [statusFundiario, setStatusFundiario] = useState<{
+    carregado: boolean;
+    existe: boolean;
+    tabelas: number;
+  }>({ carregado: false, existe: false, tabelas: 0 });
+
+  useEffect(() => {
+    let cancelado = false;
+    fetch("/api/fundiario/status")
+      .then((res) => res.json())
+      .then((dados) => {
+        if (!cancelado && typeof dados?.existe === "boolean") {
+          setStatusFundiario({
+            carregado: true,
+            existe: dados.existe,
+            tabelas: dados.tabelas || 0,
+          });
+        }
+      })
+      .catch(() => {
+        if (!cancelado) {
+          setStatusFundiario({ carregado: true, existe: false, tabelas: 0 });
+        }
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   if (modalAtiva !== "settings") return null;
 
@@ -89,40 +118,106 @@ export const SettingsModal: React.FC = () => {
           {abaAtiva === "fundiario" && (
             <div className="space-y-4">
               <div className="p-4 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
-                <div className="flex items-center gap-2">
-                  <HardDrive className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  <span className="text-xs font-bold text-slate-900 dark:text-white">
-                    Base Cartográfica Fundiária Local (SQLite)
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <HardDrive className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">
+                      Base Cartográfica Fundiária Local (SQLite)
+                    </span>
+                  </div>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${
+                      !statusFundiario.carregado
+                        ? "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                        : statusFundiario.existe
+                        ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                        : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                    }`}
+                  >
+                    {!statusFundiario.carregado
+                      ? "VERIFICANDO..."
+                      : statusFundiario.existe
+                      ? `SICAR/SIGEF/SNCR: BASE LOCAL PRESENTE (${statusFundiario.tabelas} TABELAS)`
+                      : "BASE LOCAL AUSENTE"}
                   </span>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  O SAREL v2 utiliza a base de dados fundiária oficial consolidada em{" "}
+                  O SAREL v2 consulta a base de dados fundiária oficial consolidada em{" "}
                   <code className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-[11px] font-mono">
-                    data/
+                    data/fundiario_brasil.db
                   </code>{" "}
-                  (~1,6 GB) com cruzamento espacial direto entre coordenadas e imóveis rurais
-                  do SICAR, SIGEF e SNCR do Paraná.
+                  com cruzamento espacial direto entre coordenadas e imóveis rurais do SICAR, SIGEF e SNCR do Paraná.
                 </p>
 
                 <div className="grid grid-cols-3 gap-2 pt-2 text-xs font-mono">
                   <div className="p-2.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
                     <span className="text-[10px] text-slate-400 block font-sans">SICAR (CAR)</span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">Ativo</span>
+                    <span
+                      className={`font-bold ${
+                        !statusFundiario.carregado
+                          ? "text-slate-500"
+                          : statusFundiario.existe
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-amber-600 dark:text-amber-400"
+                      }`}
+                    >
+                      {!statusFundiario.carregado
+                        ? "não verificado nesta sessão"
+                        : statusFundiario.existe
+                        ? "Presente na base local"
+                        : "Base ausente"}
+                    </span>
                   </div>
                   <div className="p-2.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
                     <span className="text-[10px] text-slate-400 block font-sans">SIGEF (INCRA)</span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">Ativo</span>
+                    <span
+                      className={`font-bold ${
+                        !statusFundiario.carregado
+                          ? "text-slate-500"
+                          : statusFundiario.existe
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-amber-600 dark:text-amber-400"
+                      }`}
+                    >
+                      {!statusFundiario.carregado
+                        ? "não verificado nesta sessão"
+                        : statusFundiario.existe
+                        ? "Presente na base local"
+                        : "Base ausente"}
+                    </span>
                   </div>
                   <div className="p-2.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
                     <span className="text-[10px] text-slate-400 block font-sans">SNCR Titulares</span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">Protegido LGPD</span>
+                    <span
+                      className={`font-bold ${
+                        !statusFundiario.carregado
+                          ? "text-slate-500"
+                          : statusFundiario.existe
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-amber-600 dark:text-amber-400"
+                      }`}
+                    >
+                      {!statusFundiario.carregado
+                        ? "não verificado nesta sessão"
+                        : statusFundiario.existe
+                        ? "Presente na base local (Protegido LGPD)"
+                        : "Base ausente"}
+                    </span>
                   </div>
                 </div>
 
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-300 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+                <div
+                  className={`p-3 rounded-xl border text-xs flex items-center gap-2 ${
+                    statusFundiario.existe
+                      ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300"
+                      : "bg-slate-100 dark:bg-slate-800/60 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+                  }`}
+                >
                   <ShieldCheck className="w-4 h-4 shrink-0" />
                   <span>
-                    Casamento espacial verificado sem geração de dados sintéticos ou titulares fictícios.
+                    {statusFundiario.existe
+                      ? "Base fundiária oficial detectada. Casamento espacial configurado sem geração de dados sintéticos ou fictícios."
+                      : "Base de dados fundiária não encontrada em data/fundiario_brasil.db. Consultas espaciais retornarão estado 'base-nao-disponivel'."}
                   </span>
                 </div>
               </div>

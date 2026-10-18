@@ -29,4 +29,14 @@ describe("PainelCriterioRefutacaoD25 e Regime D24 / D26", () => {
     const blocosAbaixo = BLOCOS_PREDITORES_D24.filter((b) => b.statusRegime === "abaixo_regime_fisico");
     expect(blocosAbaixo).toHaveLength(3);
   });
+
+  it("N15: deve rotular 72 como polígonos nominais e explicitar o n efetivo em Solo e Chuva", () => {
+    const blocoSolo = BLOCOS_PREDITORES_D24.find((b) => b.bloco === "Solo");
+    expect(blocoSolo?.unidadesRotulo).toContain("polígonos nominais");
+    expect(blocoSolo?.unidadesRotulo).toContain("n efetivo");
+
+    const blocoChuva = BLOCOS_PREDITORES_D24.find((b) => b.bloco === "Chuva");
+    expect(blocoChuva?.unidadesRotulo).toContain("polígonos nominais");
+    expect(blocoChuva?.unidadesRotulo).toContain("n efetivo");
+  });
 });

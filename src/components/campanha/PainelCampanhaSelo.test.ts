@@ -52,4 +52,9 @@ describe("C19 — Selo de demonstração nas métricas fictícias do painel da c
       ).toContain(seloEsperado);
     }
   });
+
+  it("N15: não deve conter as afirmações não verificadas ~78% nem o literal 1.845 unidades", () => {
+    expect(conteudoPainel).not.toContain("~78%");
+    expect(conteudoPainel).not.toContain("1.845 unidades");
+  });
 });

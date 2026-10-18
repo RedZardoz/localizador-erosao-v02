@@ -22,6 +22,7 @@ import {
   CoordenadaEsperada,
 } from "@/lib/rotulos/ingestaoKobo";
 import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
+import { CONFIGURACAO_REGISTRADA_D16 } from "@/lib/fundiario/calculadoraDesenho";
 import {
   FileSpreadsheet,
   CheckCircle2,
@@ -404,8 +405,8 @@ export function PainelCampanha() {
                 <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
                   Conforme formalizado na <strong>Decisão D16</strong>, o VANT deixou de ser exclusivamente held-out e assumiu o papel de 
                   <strong> massa de treino e teste independente balanceado</strong>. A delineação vetorial centimétrica sobre ortomosaicos 
-                  eleva a acurácia de atribuição ao pixel de 10 m para <strong>~78%</strong> (contra ~37% do GNSS de campo isolado), 
-                  entregando cerca de <strong>1.845 unidades espacialmente independentes</strong> ao longo dos 18 estratos biofísicos.
+                  eleva a acurácia de atribuição ao pixel de 10 m (em verificação — R-F, contra GNSS de campo isolado também em verificação — R-F), 
+                  entregando cerca de <strong>{CONFIGURACAO_REGISTRADA_D16.unidadesEfetivasTotais} unidades independentes calculadas</strong> ao longo dos 18 estratos biofísicos.
                 </p>
               </div>
             </div>

@@ -18,7 +18,7 @@ export const ApiTokensManager: React.FC = () => {
 
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [testResult, setTestResult] = useState<
-    Record<string, { success: boolean; message: string }>
+    Record<string, { success: boolean; message: string; offline?: boolean }>
   >({});
 
   const testarToken = async (tipo: "planet" | "mapbox" | "carto" | "google" | "jev") => {
@@ -46,32 +46,41 @@ export const ApiTokensManager: React.FC = () => {
         if (!credenciais.planetApiKey.trim()) {
           throw new Error("Chave de API Planet não informada.");
         }
-        // Testa requisição de cota
-        await fetch("/api/planet/quota", {
+        // Testa requisição de cota (rota opcional/externa)
+        const res = await fetch("/api/planet/quota", {
           headers: { Authorization: `Bearer ${credenciais.planetApiKey.trim()}` },
         }).catch(() => null);
 
-        // Se API route local não responder agora, valida sintaxe
-        if (credenciais.planetApiKey.trim().length > 15) {
+        // Se o serviço remoto respondeu com sucesso:
+        if (res && res.ok) {
           setTestResult((prev) => ({
             ...prev,
             planet: {
               success: true,
-              message: "Chave Planet validada. Contexto visual de alta resolução liberado no Inspetor.",
+              message: "Chave Planet validada com sucesso pelo serviço.",
+            },
+          }));
+        } else if (credenciais.planetApiKey.trim().length > 15) {
+          // Sem confirmação do serviço, estado é apenas formato aceito, NÃO verificada (N15)
+          setTestResult((prev) => ({
+            ...prev,
+            planet: {
+              success: true,
+              message: "Chave Planet: formato aceito; NÃO verificada por serviço externo.",
             },
           }));
         } else {
-          throw new Error("Formato da chave Planet inválido.");
+          throw new Error("Formato da chave Planet inválido (mínimo de 16 caracteres).");
         }
       } else if (tipo === "carto") {
-        // Valida conectividade com a infraestrutura de basemaps CARTO
+        // Valida conectividade com a infraestrutura de basemaps CARTO (sem falar em chave)
         const res = await fetch("https://a.basemaps.cartocdn.com/dark_all/0/0/0@2x.png");
         if (res.ok) {
           setTestResult((prev) => ({
             ...prev,
             carto: {
               success: true,
-              message: "Conexão com CARTO Basemaps verificada. Camadas Dark Matter ativas no MapLibre.",
+              message: "Conectividade com o servidor de mapas verificada. Camadas Dark Matter ativas no MapLibre.",
             },
           }));
         } else {
@@ -85,7 +94,7 @@ export const ApiTokensManager: React.FC = () => {
           ...prev,
           google: {
             success: true,
-            message: "Chave Google Maps registrada para links de navegação espacial e Street View.",
+            message: "Chave Google Maps registrada localmente (não verificada por chamada de rede).",
           },
         }));
       } else if (tipo === "jev") {
@@ -99,13 +108,25 @@ export const ApiTokensManager: React.FC = () => {
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok && data.ok) {
-          setTestResult((prev) => ({
-            ...prev,
-            jev: {
-              success: true,
-              message: data.message || "Conexão com Jev validada. Motor de decisão System One ativo.",
-            },
-          }));
+          if (data.offline) {
+            setTestResult((prev) => ({
+              ...prev,
+              jev: {
+                success: true,
+                offline: true,
+                message: "Chave Jev registrada: NÃO verificada (sem rede).",
+              },
+            }));
+          } else {
+            setTestResult((prev) => ({
+              ...prev,
+              jev: {
+                success: true,
+                offline: false,
+                message: data.message || "Conexão com Jev validada. Motor de decisão System One ativo.",
+              },
+            }));
+          }
         } else {
           throw new Error(data.error || `Falha na API Jev: status HTTP ${res.status}`);
         }
@@ -142,11 +163,11 @@ export const ApiTokensManager: React.FC = () => {
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${
               credenciais.planetApiKey
-                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
                 : "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
             }`}
           >
-            {credenciais.planetApiKey ? "ATIVADA" : "NÃO CONFIGURADA"}
+            {credenciais.planetApiKey ? "CONFIGURADA, NÃO VERIFICADA" : "NÃO CONFIGURADA"}
           </span>
         </div>
 
@@ -210,7 +231,7 @@ export const ApiTokensManager: React.FC = () => {
                 : "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
             }`}
           >
-            {credenciais.mapboxToken ? "ATIVADA" : "NÃO CONFIGURADA"}
+            {credenciais.mapboxToken ? "CONFIGURADA" : "NÃO CONFIGURADA"}
           </span>
         </div>
 
@@ -274,7 +295,7 @@ export const ApiTokensManager: React.FC = () => {
                 : "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
             }`}
           >
-            {credenciais.cartoApiKey ? "ATIVADA" : "PADRÃO PÚBLICO"}
+            {credenciais.cartoApiKey ? "CONFIGURADA" : "PADRÃO PÚBLICO"}
           </span>
         </div>
 
@@ -334,11 +355,11 @@ export const ApiTokensManager: React.FC = () => {
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${
               credenciais.googleMapsKey
-                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
                 : "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
             }`}
           >
-            {credenciais.googleMapsKey ? "ATIVADA" : "NÃO CONFIGURADA"}
+            {credenciais.googleMapsKey ? "CONFIGURADA, NÃO VERIFICADA" : "NÃO CONFIGURADA"}
           </span>
         </div>
 
@@ -397,12 +418,22 @@ export const ApiTokensManager: React.FC = () => {
           </div>
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${
-              credenciais.jevApiKey
+              !credenciais.jevApiKey
+                ? "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                : testResult.jev?.offline
+                ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                : testResult.jev?.success && !testResult.jev?.offline
                 ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                : "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
             }`}
           >
-            {credenciais.jevApiKey ? "ATIVADA" : "NÃO CONFIGURADA"}
+            {!credenciais.jevApiKey
+              ? "NÃO CONFIGURADA"
+              : testResult.jev?.offline
+              ? "NÃO VERIFICADA (SEM REDE)"
+              : testResult.jev?.success && !testResult.jev?.offline
+              ? "VALIDADA EM REDE"
+              : "CONFIGURADA, NÃO VERIFICADA"}
           </span>
         </div>
 
