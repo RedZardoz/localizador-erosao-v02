@@ -101,9 +101,16 @@ o que a anterior fez. Este é o motor mais barato de desligar.
 REPRODUZIR:
   git ls-files CLAUDE.md AGENTS.md
 
-ESPERADO HOJE: nenhuma linha (os dois arquivos não existem).
+ESPERADO HOJE (1 linha):
+  CLAUDE.md
 
-AÇÃO: criar `CLAUDE.md` na raiz, com NO MÁXIMO 150 linhas, contendo exatamente:
+ATENÇÃO: `CLAUDE.md` JÁ EXISTE, criado em 19/10/2026 com a regra de autorização de
+git do pesquisador (seção 1), a seção "O que o assistente não decide" (seção 2) e um
+marcador na seção 3. As seções 1 e 2 são do pesquisador: PRESERVE-AS INTEGRALMENTE,
+sem reescrever uma linha. Seu trabalho é SUBSTITUIR a seção 3 pelo conteúdo abaixo.
+
+AÇÃO: substituir a seção 3 de `CLAUDE.md`, mantendo o arquivo com NO MÁXIMO 200
+linhas no total, por:
   a) As 9 Regras Invioláveis, copiadas de `docs/design.md` §1 sem reescrita.
   b) Os 7 Invariantes, copiados de `docs/design.md` §4 sem reescrita.
   c) Seção "Onde vivem os números": tabela com uma linha por grandeza governada por
@@ -116,11 +123,13 @@ AÇÃO: criar `CLAUDE.md` na raiz, com NO MÁXIMO 150 linhas, contendo exatament
      "decidida" e alteração de valor numérico são do pesquisador.
 
 PROIBIDO: inventar regra que não esteja em `docs/design.md`; parafrasear as 9 Regras
-ou os 7 Invariantes (copie-os); escrever mais de 150 linhas.
+ou os 7 Invariantes (copie-os); escrever mais de 200 linhas; ALTERAR AS SEÇÕES 1 E 2
+de `CLAUDE.md`, que são regras do pesquisador.
 
-ACEITE: `git ls-files CLAUDE.md` retorna uma linha; `node -e "const t=require('fs').readFileSync('CLAUDE.md','utf8');console.log(t.split('\n').length)"`
-retorna <= 150; e as 9 Regras aparecem com a mesma redação de `docs/design.md`
-(cole a saída de `git grep -c "Regra" CLAUDE.md`).
+ACEITE: `node -e "const t=require('fs').readFileSync('CLAUDE.md','utf8');console.log(t.split('\n').length)"`
+retorna <= 200; as 9 Regras aparecem com a mesma redação de `docs/design.md` (cole a
+saída de `git grep -c "Regra" CLAUDE.md`); e `git diff` do bloco NÃO toca nenhuma
+linha das seções 1 e 2 (cole `git diff CLAUDE.md` e confirme).
 
 ════════════════════════════════════════════════════════════════════════════════════
 3. BLOCO GOV-2 — desambiguar D02 × D10 e corrigir a atribuição na UI
