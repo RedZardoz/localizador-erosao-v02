@@ -19,7 +19,7 @@ Você auxilia o apresentador a responder perguntas da audiência sobre o projeto
 - Título: Arcabouço computacional auditável para amostragem estratificada de erosão laminar.
 - Autores: Luis Alfredo Ferreira da Silva; Fabiana Costa de Araujo Schutz; Kiria Vitoria Nakahati. Orientador: Claudio Leones Bazzi.
 - Programa: Pós-Graduação em Tecnologias Computacionais para o Agronegócio (PPGTCA), Universidade Tecnológica Federal do Paraná (UTFPR), Campus Medianeira.
-- Sistema: SAREL (Sistema Automatizado de Reconhecimento de Risco de Erosão Laminar), versão 2.
+- Sistema: SAREL, "Sistema de Amostragem e Rotulagem para Erosão Laminar" (expansão do README e da maioria dos documentos), versão 2.0.0. Um documento antigo usa outra expansão ("Sistema Automatizado de Reconhecimento de Risco de Erosão Laminar"); a vigente é a do README.
 - Área de estudo: Bacia Hidrográfica do Paraná 3 (BP3), oeste do Paraná.
 
 ## 2. O problema e a pergunta
@@ -46,6 +46,17 @@ Princípios de projeto, aplicados no código:
 - **Cegamento.** O intérprete recebe um código opaco, sem estrato nem papel do polígono; a exportação é cega por perfil.
 - **Exportação com invariantes.** Sete invariantes bloqueiam a exportação se violados. O pacote traz manifesto com SHA-256 e verificador. O manifesto prova integridade, não autoria.
 - **Governança.** O registro de decisões (26 decisões e parâmetros) tem dono, referência e estado; só o pesquisador pode marcar uma decisão como decidida.
+
+### 3.1 Linguagens, tecnologias e arquitetura (verificado no branch de desenvolvimento em 19/10/2026)
+
+- **TypeScript** (principal): interface e regras do método. Next.js 14 (App Router), React 18, Tailwind CSS 3, MapLibre GL 4 (mapas), Zustand 5 (estado), Zod 3 (validação), jsPDF e JSZip (exportação), Papa Parse (CSV), cliente JavaScript do Google Earth Engine (`@google/earthengine`). Cerca de 36 mil linhas em 138 arquivos de código, mais 85 arquivos de teste automatizado (Vitest 4, cerca de 14 mil linhas). Verificação de tipos (`tsc`), lint (ESLint) e testes rodam por scripts do projeto.
+- **Python**: dados geoespaciais e estatística. Cerca de 17 mil linhas em 46 scripts em `scripts/`: ingestão das bases fundiárias oficiais (SICAR, SIGEF, SNCR) para um banco SQLite local, download de chuva CHIRPS, redução do relevo Copernicus GLO-30, leitura de dados pluviométricos, e a implementação de referência da avaliação D25 (`scripts/d25`, com numpy, pandas, scipy, scikit-learn, xgboost, shapely, pyproj). O verificador de integridade do pacote exportado é um script Python. Também há scripts Python que geram PDFs, apresentações e manuais. Os scripts de verificação de fontes ficam em `docs/verificacoes`, e há código antigo em `legado/`.
+- **SQL (SQLite)**: base fundiária local (`data/fundiario_brasil.db`), consultada em modo somente leitura. A interface Next.js chama Python para consultá-la.
+- **Kotlin**: o SAREL Coletor, aplicativo Android com Jetpack Compose e Room, offline (minSdk 24). **O código-fonte do aplicativo Android não está neste repositório**; as informações vêm da especificação e dos prompts de correção de 27/09/2026 e da ingestão do CSV no SAREL.
+- **C# (Windows Forms)**: instalador do Windows (`InstaladorSAREL.cs`, cerca de 800 linhas). **PowerShell e Batch**: lançadores e geração do pacote portátil, que embute Node.js e Python. **JavaScript (módulos .mjs)**: scripts de apoio (geração do registro de decisões, do script do pacote, verificação de build).
+- **Google Earth Engine**: fonte do Sentinel-2 e da frequência de solo nu, via API JavaScript/REST, com Service Account configurada pela tela de Conexão e Chaves.
+- **Execução:** local, no Windows, a partir do lançador `Iniciar_Localizador_Erosao.bat` (servidor Next.js local e navegador); a rede só é usada para o Earth Engine. Há modo portátil autônomo sem instalar Node.js ou Python.
+- **Contagens** incluem comentários e linhas em branco e valem para o branch de desenvolvimento do executor em 19/10/2026; podem mudar. A avaliação com XGBoost ainda não foi executada com dados reais.
 
 ## 4. Metodologia: a sequência de dez passos e por que nessa ordem
 
@@ -131,7 +142,22 @@ Duas medições existem; a posterior substitui a anterior.
 - **Sorteio pelos estratos biofísicos, nunca pelo rastreio espectral (D02):** voar onde o rastreio aponta erosão faria o modelo aprender a concordar com o rastreio (circularidade).
 - **Campo (60 a 80 pontos), fora dos polígonos:** âncora de prevalência e confirmação prospectiva, sorteados com probabilidade conhecida, coletados no SAREL Coletor (Android, em substituição ao KoboCollect), sob protocolo cego, em duas ondas; os 30 primeiros pontos são lote piloto. Funções: estimar a prevalência real (estimador ponderado) e calibrar a acurácia posicional do aparelho.
 - **Por que inverter os papéis (D16):** (1) posição: a delineação sobre ortomosaico tem posição melhor que o GNSS de frequência única do aparelho de campo (3 a 8 m); (2) volume: polígonos rendem muito mais unidades independentes que pontos; (3) qualidade do rótulo: delinear sobre imagem de 4 cm é mais confiável que fotointerpretar a 10 m, e mais fiel ao fenômeno contínuo. A fotointerpretação (Fase A) foi aposentada. O valor numérico do ganho de posição (CE90 de 1,47 m, e 78% contra 37% de acerto de atribuição ao pixel) está em verificação (seção 13).
-- **Escala do rótulo no campo (D03):** coleta ordinal de quatro níveis (ausente, incipiente, ...), com binarização declarada.
+- **Escala do rótulo no campo (D03):** coleta ordinal de quatro níveis (ausente, incipiente, moderada, severa), com binarização declarada: ausente = 0 e os demais = 1 (incipiente conta como positivo). A escala completa é preservada no dado. Análise de sensibilidade pré-registrada: repetir o ajuste com corte alternativo, excluindo o incipiente.
+
+### 8.1 O que o SAREL Coletor registra em cada ponto
+
+Cada ponto é uma linha de um CSV de 28 colunas canônicas (separado por ponto e vírgula), lido pela ingestão do SAREL. Seis grupos:
+
+1. **Identificação e protocolo:** código do ponto (opaco), observador, data e hora (`observadoEm`, `dataHoraCompleta`), modalidade (campo) e a marca de protocolo cego (o observador não vê estrato nem predição).
+2. **Posição (GNSS):** latitude, longitude, altitude, acurácia informada pelo aparelho, distância ao ponto planejado e conformidade com a tolerância (P03). Colunas de qualidade acrescentadas ao final (definidas no prompt do coletor): método de posição (média estática ou fix único), erro padrão, número de amostras, duração, satélites usados, constelações, C/N0 médio, dupla frequência, qualidade P03 e marca de posição simulada. A ingestão do SAREL rejeita posição simulada e aceita o método de posição e o erro padrão. **Não foi verificado se a versão atual do aplicativo Android já implementa a média estática e as métricas de satélites.**
+3. **Rótulo de erosão:** classe ordinal (ausente, incipiente, moderada, severa) e confiança do observador (alta, média, baixa).
+4. **Indicadores diagnósticos de erosão laminar:** pedestais e raízes expostas, exposição do horizonte B, espessura do horizonte A (cm), crosta e selamento superficial, microssulcos iniciais, sedimentação no sopé.
+5. **Manejo e conservação:** sistema de manejo, cobertura vegetal (%), presença de terraço, estado de conservação do terraço, sentido de plantio. Três deles (sentido de plantio, presença e estado do terraço) alimentam o fator P do RUSLE (D22), cujos coeficientes são provisórios e ainda não conferidos contra a fonte primária.
+6. **Evidências:** foto nadir, foto panorâmica e observações.
+
+Aparelho de campo previsto: Samsung Galaxy M13, GNSS de frequência única, que entrega tipicamente 3 a 8 m em campo aberto. A acurácia de posição limita a atribuição do rótulo ao pixel de 10 m: com erro gaussiano isotrópico, o acerto é de cerca de 58% com sigma de 3 m, 37% com 5 m e 20% com 8 m. A média estática de posição (cerca de 60 s) foi especificada para reduzir esse erro; o ganho esperado (de 37% para cerca de 64 a 71%) é uma estimativa, não medida.
+
+**Critério P03 (casamento do ponto de campo com o ponto planejado), decidido em 27/09/2026:** três critérios independentes. (a) Teto de erro grosseiro: 30 m entre a coordenada observada e a planejada; acima disso, rejeita. (b) Integridade de estrato: o ponto observado deve permanecer no mesmo estrato do ponto sorteado, verificado por reextração das covariáveis na coordenada observada; falha invalida a amostra mesmo dentro de 30 m. (c) Trava de qualidade posicional pela acurácia declarada pelo aparelho: até 5 m aceita; de 5 a 10 m aceita com marcação de qualidade; acima de 10 m rejeita e exige remedição. As features são extraídas na coordenada observada, nunca na planejada. **Divergência conhecida:** o módulo de ingestão do SAREL e um texto da interface ainda aplicam o limiar antigo de 15 m (aceito) e 25 m (aceito com ressalva); o alinhamento ao P03 está em um prompt guardado para depois da apresentação, e o critério (b) não tem implementação confirmada.
 - **Voo cego:** o intérprete recebe código opaco, sem estrato nem papel; planos de voo só saem com terreno real (Copernicus GLO-30); os de demonstração são marcados como sintéticos. Cada polígono é exportado com identificador opaco.
 
 ## 9. Avaliação única e critério pré-registrado (D25)
@@ -193,8 +219,18 @@ O RUSLE entra aqui como competidor de referência, não como verdade.
 10. **Referências:** só algumas foram conferidas contra a fonte (Coelho 2024, Rufino 1993, Waltrick, Desmet e Govers 1996, Renard 1997). A citação de Mannigel et al. (2002) está suspensa até conferência (a obra encontrada trata de solos de São Paulo). A regra de AUC de 0,70 não foi conferida.
 11. **Cifras do held-out divergentes** em textos antigos (918, 936, 920, 922, 923); a decisão sobre qual vale é pendente (DP-16).
 12. **Empates dos tercis:** regra pendente (DP-6).
+13. **Ingestão do Coletor desalinhada do P03:** o código ainda usa 15/25 m em vez de 30 m e acurácia de 5/10 m; o critério P03 (b), de integridade de estrato, não tem implementação confirmada. Alinhamento pendente.
+14. **Código do aplicativo Android fora do repositório:** o que se diz do Coletor vem da especificação, dos prompts e da ingestão, não da leitura do código do app.
 
 ## 14. Perguntas e respostas prováveis
+
+**O que significa a sigla SAREL?** Sistema de Amostragem e Rotulagem para Erosão Laminar (versão 2.0.0).
+
+**Em que linguagens o SAREL foi construído?** Principalmente TypeScript (Next.js e React; cerca de 36 mil linhas, com 85 arquivos de teste), Python (dados fundiários, chuva, relevo e a avaliação de referência; cerca de 17 mil linhas), Kotlin (aplicativo Android SAREL Coletor, código fora do repositório), C# (instalador do Windows), PowerShell e Batch (lançadores), SQL com SQLite (base fundiária) e o Google Earth Engine para o Sentinel-2. Roda localmente no Windows.
+
+**O que o SAREL Coletor coleta?** Por ponto: identificação e protocolo cego, posição GNSS com acurácia, o rótulo ordinal de quatro níveis com confiança, seis indicadores diagnósticos de erosão laminar, variáveis de manejo e conservação (que alimentam o fator P), fotos nadir e panorâmica e observações; veja a seção 8.1.
+
+**Qual a tolerância de posição dos pontos de campo?** O critério decidido (P03) é: erro grosseiro acima de 30 m rejeita; acurácia GNSS até 5 m aceita, de 5 a 10 m aceita com marcação, acima de 10 m rejeita; e o ponto deve permanecer no mesmo estrato do planejado. A ingestão ainda usa um limiar antigo, a alinhar.
 
 **O que é o SAREL?** Uma plataforma que seleciona, de forma auditável, onde amostrar erosão laminar: elege candidatos por satélite, estratifica, sorteia com selo irreversível, planeja a campanha de voo e de campo, monta a matriz com a origem de cada valor e exporta um pacote verificável.
 

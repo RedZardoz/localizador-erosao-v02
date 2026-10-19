@@ -215,9 +215,49 @@ AVISO DE TÉRMINO (ao fim): imprima `=== TESTE AO VIVO CONCLUÍDO — HEAD <hash
 
 ---
 
+## PROMPT GUARDADO (só depois da apresentação): alinhar a ingestão do SAREL Coletor ao P03
+
+Não rodar antes do seminário. Pode rodar em qualquer ordem em relação aos quatro anteriores, desde que não haja outro prompt alterando `src/lib/rotulos/` ao mesmo tempo.
+
+```
+FASE P03-INGESTAO: alinhar a ingestão do SAREL Coletor à decisão P03 (SEM ALTERAR DECISÕES, SEM SELAR NADA)
+Branch: sarel/executor-2026-10-09 (cole `git log --oneline -1` e `git status`; deve estar limpo).
+
+CONTEXTO (verificado em 19/10/2026 sobre o branch)
+P03, decidida em 27/09/2026, substituiu o limiar único de 15/25 m por três critérios independentes: (a) TETO DE ERRO GROSSEIRO: 30 m entre a coordenada observada e a planejada; acima disso o registro é rejeitado; (b) INTEGRIDADE DE ESTRATO: o ponto observado deve permanecer no mesmo estrato (tercil de declividade, tercil de solo nu e nível de K) do ponto sorteado, verificado por reextração das covariáveis na coordenada observada; (c) TRAVA DE QUALIDADE POSICIONAL pela acurácia GNSS declarada pelo aparelho: até 5 m aceita; de 5 a 10 m aceita com marcação de qualidade que acompanha o registro; acima de 10 m rejeita e exige remedição em campo. As features são extraídas na coordenada OBSERVADA, nunca na planejada.
+O código ainda traz o limiar antigo: `src/lib/rotulos/ingestaoColetor.ts` (comentário de cabeçalho e ~linhas 173-185: `<= 15` aceito, `<= 25` aceito_com_ressalva, acima rejeitado) e a interface `src/components/campanha/PainelCampanha.tsx` (~linhas 672, 736: "Aceitos (P03 ≤ 25m)"). Esta fase alinha o código à decisão. NÃO edite `src/config/decisoes.ts` nem `DECISOES.md`: a decisão não muda.
+
+REGRAS
+ - R15: saída literal; R17: nada de valor plausível nem padrão para fazer passar.
+ - Não mude o contrato de colunas do CSV (28 canônicas, mesma ordem). Colunas de qualidade posicional continuam só ao final.
+ - Se o dado necessário não existir no registro, o resultado é "indisponível" com motivo, não um valor presumido.
+
+PASSO 0 (ler antes de editar; cole as saídas): `git grep -n -E "15\.0|25\.0|15 m|25 m|<= 25|≤ 25" -- src/lib/rotulos src/components/campanha`; os testes existentes de `ingestaoColetor.test.ts`; e onde `qualidadeP03`, `distanciaGpsMetros` e `dentroToleranciaP03` são consumidos (`git grep -n`). Diga se algum consumidor depende do limiar de 15/25 m.
+
+PASSO 1: critérios (a) e (c) na ingestão. Constantes nomeadas e comentadas em português: `P03_TETO_ERRO_GROSSEIRO_M = 30`, `P03_ACURACIA_ACEITA_M = 5`, `P03_ACURACIA_LIMITE_M = 10`.
+ (a) distância Haversine observada versus planejada > 30 m: rejeita, motivo "erro grosseiro (> 30 m): ponto errado ou código digitado errado (P03 a)".
+ (c) usa a coluna `acuraciaGps` (acurácia declarada pelo aparelho): <= 5 aceito; > 5 e <= 10 aceito_com_ressalva, com a acurácia gravada no registro; > 10 rejeita, motivo "acurácia GNSS > 10 m: remedir no local (P03 c)". Se `acuraciaGps` estiver ausente ou não numérica, NÃO presuma: rejeite com motivo "acurácia GNSS ausente: P03 (c) não pode ser verificada" e relate no resumo quantos registros caíram nisso. (Se você julgar que rejeitar é a escolha errada, não mude: descreva a alternativa e pare nesse ponto para o pesquisador decidir.)
+ A qualidade final do registro é a PIOR entre (a) e (c). Preserve `metodoPosicao` e `erroPadraoM`. Não use a distância ao ponto planejado para classificar qualidade em faixa de 15/25 m em nenhum lugar.
+
+PASSO 2: critério (b) NÃO se implementa nesta fase. Verifique e relate: já existe algum código que reextrai as covariáveis na coordenada observada e compara o estrato? (`git grep -n -i "observada\|reextra\|mesmo estrato" -- src`). Cole o achado. Se não existir, registre no relatório como pendência "P03 (b) sem implementação" e NÃO invente uma. O campo `dentroToleranciaP03` não deve afirmar integridade de estrato que ninguém verificou: diga como ele é calculado hoje e, se afirmar mais do que (a) e (c) comprovam, proponha o rótulo correto, sem aplicá-lo.
+
+PASSO 3: interface. Em `PainelCampanha.tsx` troque "Aceitos (P03 ≤ 25m)" e textos vizinhos por contagens fiéis aos novos critérios: aceitos (acurácia <= 5 m), aceitos com ressalva (5 a 10 m) e rejeitados (por motivo: > 30 m, > 10 m, acurácia ausente). Nada de número escrito à mão; leia das constantes. Atualize o comentário de cabeçalho de `ingestaoColetor.ts` e qualquer texto de manual/ajuda que cite 15/25 m (`git grep -n "15 m\|25 m\|1,5 pixel"`; liste cada ocorrência e diga o que fez; arquivos de `docs/` e do manual PDF só LISTE, não edite).
+
+PASSO 4: testes. Atualize `ingestaoColetor.test.ts` e acrescente casos de fronteira: acurácia 5,0 (aceita), 5,01 (ressalva), 10,0 (ressalva), 10,01 (rejeita); distância 30,0 (passa em (a)), 30,01 (rejeita); acurácia ausente; (a) aprovado com (c) rejeitado e vice-versa; contrato de 28 colunas intacto; posição simulada continua rejeitada. Nenhum teste pode depender de rede.
+
+PROVA DE ACEITE: `npm run typecheck`, `npm run lint`, `npm run test` com saída literal (números de arquivos e testes); `git diff --stat`; confirmação de que `src/config/decisoes.ts` e `docs/planejamento/DECISOES.md` NÃO mudaram (`git diff --quiet -- src/config/decisoes.ts docs/planejamento/DECISOES.md; echo $?` deve imprimir 0); e que `git grep -n -E "<= 15|<= 25" -- src/lib/rotulos src/components/campanha` não acha o limiar antigo.
+Commit: "P03: ingestão do Coletor alinhada à decisão (teto 30 m e acurácia 5/10 m); critério (b) pendente". Push em sarel/executor-2026-10-09; se falhar por autenticação, diga e PARE.
+Encerre com: "FASE P03-INGESTAO CONCLUÍDA; P03 (b) SEM IMPLEMENTAÇÃO (se for o caso)."
+
+AVISO DE TÉRMINO (ao fim, depois do push): linha `=== FASE P03-INGESTAO CONCLUÍDA — HEAD <hash> — push: <ok|falhou> ===`; `powershell -NoProfile -Command "[console]::Beep(880,400); [console]::Beep(1175,600)"` (se falhar, diga); crie a pasta (`New-Item -ItemType Directory -Force ..\sarel_ui_out`) e grave `..\sarel_ui_out\AVISO_P03.txt` com a linha, data/hora e hash.
+```
+
+---
+
 ## Depois destes quatro
 
 - DP-15 (Drive e CAR), a escrever depois das suas respostas: remover o ID da pasta dos arquivos versionados, passar a lê-lo de arquivo local não versionado e acrescentar verificação de hash ao download do banco. Deve vir **antes** de qualquer outra coisa que mexa em publicação.
+- Prompt guardado "alinhar a ingestão do Coletor ao P03" (acima): só depois da apresentação.
 - Fase 7: C28 (2 avisos do lint), C29 (rótulo do CRS do MDE, conferindo a fonte oficial), C30 (funções duplicadas de Kappa e Pearson) e a conferência final N05.
 - Decisões suas: DP-3, DP-4, DP-6, DP-7, DP-2, DP-16 e DP-15. Elas bloqueiam o sorteio.
 - Fast-forward no `sarel/v2`, só com a sua autorização, e a reescrita do histórico do GitHub, só no fim.
