@@ -1,0 +1,216 @@
+# Prompts pendentes do executor, na ordem de execução (19/10/2026)
+
+Como usar: rode um prompt por vez. Depois de cada um: o executor faz o push e dá o aviso de término (linha de destaque, sinal sonoro e arquivo de aviso); você me avisa; eu verifico o branch num clone limpo antes de você liberar o próximo. Cada prompt parte do HEAD atual de `sarel/executor-2026-10-09`.
+
+Ordem e razões:
+1. DP-20: checagem do pool por estrato e reservas ordenadas no selo (muda o sorteio e acrescenta P25 a P27).
+2. DP-1: classe 6 de erodibilidade (emendas D09 e D14). Roda depois do DP-20, porque os dois alteram `decisoes.ts`.
+3. 6B: textos, estados vazios e Modo Defesa/Tour. Roda depois dos dois, para o Tour descrever o sorteio e o K como estão.
+4. Teste ao vivo com o GEE: por último, sobre o app final, na máquina do pesquisador.
+
+Antes de tudo, fora desta lista: DP-15 (pasta pública do Drive, códigos CAR no histórico público). Depende das respostas do pesquisador e ainda não tem prompt.
+
+Nenhum destes prompts cria selo de sorteio. Decisões que ainda bloqueiam o sorteio e não pertencem a estes prompts: DP-3, DP-4, DP-6, DP-7, DP-2, DP-16.
+
+---
+
+## PROMPT 1 de 4: DP-20 (pool por estrato e reservas no selo)
+
+```
+FASE DP-20: Protocolo de negação de acesso: checagem do pool por estrato + reservas ordenadas no selo (SEM SELAR NADA)
+Branch: sarel/executor-2026-10-09, a partir do HEAD atual (cole `git log --oneline -1` e `git status`; deve estar limpo). Duas partes; cada uma termina com push e aviso de término.
+
+FILOSOFIA: o objetivo é um aplicativo CORRETO e VERDADEIRO, não testes verdes.
+R16 (antigo → destino em tabela quando substituir/apagar algo), R17 (nada de afrouxar teste, alargar isenção, silenciar erro, usar 0/valor plausível no lugar de ausência; se um gate só passar enfraquecendo algo, PARE), R18 (nenhuma frase na tela ou documento descreve função que o código não tem), R15 (saída literal), R12 (≤15 arquivos de src por bloco). Sem dependência nova. Windows: `python`, os.tmpdir(), sem push --force. Gates também SEM `data/` (mova para `..\sarel_data_bkp`, restaure no fim, `dir data` colado; rode `npm test` de novo COM `data/`).
+PROIBIDO: rodar `sortear_poligonos_d16.ts --confirmar`, chamar a rota com `confirmar: true`, criar qualquer `sorteio_d16_*.json`, ou tocar em selo existente. Prove no fim: `dir docs\verificacoes\sorteio` sem arquivo novo. NÃO invente taxa de recusa, número de reservas nem n mínimo: são decisões do pesquisador (parâmetros de entrada).
+
+CONTEXTO (decisão do pesquisador, opção B): se um proprietário negar acesso depois do sorteio, o sorteio NÃO pode ser refeito (D23: idempotência estrita do selo). Então o MESMO selo deve conter, por estrato, os 4 titulares e uma lista ORDENADA de reservas; uma recusa aciona a próxima reserva do mesmo estrato por regra registrada antes de qualquer resultado. Hoje `sortear72PoligonosD16` (`src/lib/gee/sorteioPoligonos.ts`) sorteia só os 72 e exige ≥ 4 candidatos por estrato.
+
+PRÉ-FLIGHT (literal): typecheck; lint (0 erros; 2 warnings conhecidos); `npm test`; build; verificar_sha256 (anexos 12/12 e R10 6/6). Divergiu → PARE.
+
+══════════ PARTE 1: Checagem do pool por estrato (só leitura) ══════════
+P1.1 Função pura `analisarPoolPorEstrato(contagemPorEstrato, parametros)` em `src/lib/gee/poolEstratos.ts` (+ teste). Entrada: contagem de candidatos elegíveis por estrato (N_h, as 18 chaves de `TODOS_ESTRATOS_D12`), e parâmetros OBRIGATÓRIOS fornecidos pelo chamador: `reservasPorEstrato` (inteiro ≥ 0), `nMinimoPorEstrato` (inteiro, 1 a 4) e `taxasRecusa` (lista de números em [0,1]). Sem padrões embutidos para esses três: se faltarem, lança erro claro. Saída por estrato: N_h; titulares exigidos (4); reservas possíveis = max(0, N_h − 4); reservas efetivas = min(reservasPorEstrato, reservas possíveis); `ok` = N_h ≥ 4 + reservasPorEstrato; e, para CADA taxa de recusa p, a probabilidade de completar pelo menos `nMinimoPorEstrato` titulares com as reservas efetivas, assumindo recusas independentes com probabilidade p e substituição na ordem: P(X ≥ nMin), com X ~ Binomial(4 + reservasEfetivas, 1 − p) limitado aos que são consumidos (documente a fórmula exata que usar no cabeçalho do arquivo e prove-a nos testes com 3 casos calculados à mão; 4 titulares e p = 0 → 1; reservas 0 e p = 0,5 → P(4 de 4) = 0,0625).
+P1.2 CLI `scripts/verificar_pool_estratos.ts` (use `node --import ./scripts/ts-loader.mjs`): `--candidatos <json>` (mesmo formato do sorteio), `--reservas N`, `--n-minimo N`, `--taxas 0.1,0.25,...`. Reaproveite a função de contagem por estrato que o sorteio já usa (`verificarPreCondicoesSorteioD16` ou equivalente; cite qual). REGRAS DA CLI: (a) recusa candidato sintético (`DRY-CAND-`, `isSynthetic`, `origemSintetica`) com a MESMA mensagem do sorteio, para que um relatório de pool nunca nasça de dado fabricado; (b) recusa rodar sem `--candidatos` real; (c) não escreve nenhum arquivo em `docs/verificacoes/sorteio`; imprime tabela em texto e, opcionalmente, grava `--saida <caminho>` em pasta FORA do repositório; (d) não imprime coordenadas nem códigos CAR, só contagens por estrato; (e) imprime no topo o aviso: "Cenários de taxa de recusa são ILUSTRATIVOS; não são estimativa. O pool só é confiável depois de fixadas as decisões DP-1, DP-3 e DP-6 (mudam N_h)."
+P1.3 TESTES (falha primeiro): função pura (os 3 casos à mão, parâmetro ausente lança, N_h = 3 marca estrato inviável, `reservasPorEstrato` maior que N_h − 4 marca `ok:false`); CLI: sem `--candidatos` recusa (exit ≠ 0), com candidato sintético recusa com a mensagem do sorteio, e NENHUMA execução cria arquivo em `docs/verificacoes/sorteio` (verifique o diretório antes e depois). Teste com contagens numéricas simples, sem dado real.
+P1.4 Commits: "DP-20/P1: analise do pool por estrato (funcao pura e testes)" e "DP-20/P1: CLI verificar_pool_estratos (somente leitura, recusa sintetico)".
+>>> FIM DA PARTE 1: gates, push, AVISO DE TÉRMINO "PARTE 1 (DP-20) CONCLUÍDA". Depois siga para a Parte 2.
+
+══════════ PARTE 2: Reservas ordenadas no selo + registro de substituições ══════════
+P2.1 Reservas no selo. Estenda `sortear72PoligonosD16` com a opção OBRIGATÓRIA `reservasPorEstrato` (inteiro ≥ 0, sem valor padrão) e o selo devolvido passa a ter, por estrato, `reservas`: lista ORDENADA de candidatos (posição 1, 2, ...), com os mesmos campos de identificação dos titulares (código opaco gerado pelo mesmo gerador, pi nominal, estrato). Regras: (a) os 4 titulares por estrato e os papéis treino/held-out devem sair IDÊNTICOS aos que a função atual sorteia com a mesma semente e as mesmas entradas (as reservas são tiradas DEPOIS, do que sobrou, com o mesmo PRNG, sem consumir números antes dos titulares): teste de regressão que sorteia sem reservas e com reservas e compara os 72 IDs e os papéis; (b) se N_h < 4 + reservasPorEstrato, lança erro que nomeia o estrato e N_h (nada de reduzir em silêncio); (c) o `hashIntegridade` passa a cobrir também as reservas e sua ordem (hash diferente se a ordem das reservas mudar); (d) a ordem de chegada dos candidatos não altera titulares nem reservas (embaralhe a entrada nos testes); (e) as demais guardas ficam como estão (semente, sintético, git commit, SHA-256 do conjunto, idempotência, `.gitignore` do caminho). A tabela reversa de cegamento (códigos opacos) passa a incluir as reservas e continua só no arquivo ignorado pelo Git.
+P2.2 Registro de substituições (função pura + arquivo local, SEM tocar no selo). `src/lib/gee/substituicaoReservas.ts`: `ativarReserva(selo, registroAtual, evento)` onde `evento` = { codigoOpacoTitular, motivo (um de: "recusa-do-proprietario", "acesso-impossivel", "inelegivel-apos-sorteio"), data (AAAA-MM-DD, obrigatória, informada pelo chamador, nunca "hoje" por padrão) }. Regras do protocolo (copie-as no cabeçalho do arquivo e nos testes): (1) a reserva ativada é SEMPRE a próxima não usada na ordem do MESMO estrato; nunca se escolhe reserva fora de ordem; (2) a reserva herda o papel (treino ou held-out) do titular que substitui; (3) um titular só pode ser substituído uma vez e uma reserva só pode ser usada uma vez; (4) se não houver mais reserva no estrato, devolve `estrato-nao-preenchido` (não sorteia nada novo, não rebaixa regra); (5) o registro é APPEND-ONLY: cada linha traz o hash SHA-256 da linha anterior (cadeia), e a função recusa evento cuja data seja anterior à do último evento; (6) o selo nunca é modificado. O arquivo do registro fica em `docs/verificacoes/sorteio/` com nome `substituicoes_d16.local.jsonl` E DEVE estar coberto pelo `.gitignore` (adicione `docs/verificacoes/sorteio/*.local.jsonl` e prove com `git check-ignore -v`); a função de escrita recusa gravar se o caminho não estiver ignorado (mesma guarda do selo). NÃO crie esse arquivo agora; só o código e os testes (use diretório temporário nos testes).
+P2.3 TESTES (falha primeiro): regressão dos 72 e papéis (P2.1a); erro nomeado quando N_h < 4 + reservas; hash muda com a ordem das reservas; reserva herda papel; ordem estrita (tentar pular a reserva 1 falha); dupla ativação falha; estrato sem reserva → `estrato-nao-preenchido`; cadeia de hashes detecta linha alterada; data anterior recusada; recusa gravar fora de caminho ignorado.
+P2.4 Registro das decisões pendentes (SEM valor): em `src/config/decisoes.ts` acrescente `P25` (número de reservas por estrato), `P26` (n mínimo de titulares por estrato) e `P27` (taxa de recusa esperada) com `estado: "proposta"`, sem `valor`, justificativa: "proposta do revisor; decisão do pesquisador (DP-20, protocolo de negação de acesso); calibrar com a checagem do pool (scripts/verificar_pool_estratos.ts) depois de DP-1, DP-3 e DP-6". Regere `DECISOES.md` com `node scripts/gerar_decisoes_md.mjs --gerar` e rode o teste de paridade. Não toque em `estado`/`decididoPor`/`decididoEm` de nada existente (prove com o mesmo método do N06).
+P2.5 Documento `docs/planejamento/PROTOCOLO_NEGACAO_ACESSO_PROPOSTA.md` (marcado "PROPOSTA: aguarda aprovação do pesquisador; não é decisão registrada"): copie as regras (1) a (6) do P2.2, a herança de papel, as três categorias de motivo, o que entra no relatório da dissertação (taxa de recusa observada por estrato, estratos não preenchidos, análise de sensibilidade com e sem unidades substituídas) e a lista dos três parâmetros em aberto (P25 a P27). Sem números inventados.
+P2.6 Commits: "DP-20/P2: reservas ordenadas no selo (titulares inalterados)", "DP-20/P2: registro append-only de substituicoes", "DP-20/P2: P25-P27 propostas e protocolo proposto".
+
+FECHAMENTO: gates SEM `data/` e depois com `data/` restaurada; `dir docs\verificacoes\sorteio` (nenhum arquivo novo); `git status` limpo; `git check-ignore -v docs/verificacoes/sorteio/substituicoes_d16.local.jsonl` colado.
+Relatório (formato estrito): (1) HEAD e `git log --oneline` desde o HEAD inicial; (2) `git show --stat` de cada commit; (3) gates literais; (4) por parte: REPRODUZIR (estado antes), falha antes, verde depois; (5) R16 e ENFRAQUECIMENTOS ("nenhum" se não houve); (6) prova de que os 72 titulares e papéis não mudaram; (7) o que NÃO foi verificado ou desvios; (8) `dir data` e `dir docs\verificacoes\sorteio`; (9) push.
+Encerre exatamente com: "FASE DP-20 CONCLUÍDA; NENHUM SELO CRIADO."
+
+AVISO DE TÉRMINO (ao fim da Parte 1 e da Parte 2, depois do push): linha `=== <MENSAGEM> — HEAD <hash> — push: <ok|falhou> ===`; `powershell -NoProfile -Command "[console]::Beep(880,400); [console]::Beep(1175,600)"` (se falhar, diga); grave `..\sarel_ui_out\AVISO_<MENSAGEM>.txt` com a linha, data/hora e hash. Se o push falhar por autenticação, diga e PARE antes da Parte 2.
+```
+
+---
+
+## PROMPT 2 de 4: DP-1 (classe 6 de erodibilidade)
+
+```
+FASE DP-1: Classe 6 de erodibilidade ("extremamente alta"): emenda a D09 e D14 + K da classe 6 (SEM SELAR NADA)
+Branch: sarel/executor-2026-10-09, a partir do HEAD atual (cole `git log --oneline -1` e `git status`; deve estar limpo). A fase DP-20 deve já estar integrada; parta dela.
+
+FILOSOFIA: o objetivo é um aplicativo CORRETO e VERDADEIRO, não testes verdes.
+R16, R17, R18, R15, R12 como nas fases anteriores. Sem dependência nova. Windows: `python`, os.tmpdir(), sem push --force. Gates também SEM `data/` (mova para `..\sarel_data_bkp`, restaure no fim; `dir data` colado; `npm test` de novo COM `data/`).
+As EMENDAS são do pesquisador: copie o texto abaixo BYTE A BYTE (após CRLF→LF), ao FINAL do campo `valor` de D09 e de D14, precedido de um espaço. NÃO reescreva, NÃO resuma, NÃO altere `estado`, `decididoPor` nem `decididoEm` de nenhuma decisão, nem o texto original dos campos.
+PROIBIDO: criar selo; rodar `sortear_poligonos_d16.ts --confirmar`; chamar a rota com `confirmar: true`; tocar em qualquer arquivo de `docs/verificacoes/sorteio`.
+
+PRÉ-FLIGHT (literal): typecheck; lint (0 erros; 2 warnings conhecidos); `npm test`; build; verificar_sha256 (anexos 12/12; R10 6/6). `dir docs\verificacoes\sorteio` (cole): se existir QUALQUER selo `sorteio_d16_*.json`, PARE (a emenda diz "anterior a qualquer selo").
+
+PASSO 1: Arquivo das emendas: crie `docs/planejamento/EMENDAS_DP1_2026-10-19.md` com, para cada emenda, o título "## E-D09 (19/10/2026)" / "## E-D14 (19/10/2026)", a linha "**Parágrafo a acrescentar a `valor` de D09:**" (ou D14) e o parágrafo em bloco de citação que começa com "> EMENDA DE 19/10/2026". Textos:
+
+E-D09:
+> EMENDA DE 19/10/2026 (proposta do assistente, aceita pelo pesquisador em conversa; pré-dados e anterior a qualquer selo de sorteio): (1) CORREÇÃO DE ENUMERAÇÃO, NÃO DE LIMIAR. A carta de erodibilidade de 2024 (Embrapa Solos, Documentos 246) classifica as unidades em SEIS classes (muito baixa, baixa, média, alta, muito alta e extremamente alta); a Tabela 5 do Documentos 246 dá à sexta classe, 'extremamente alta', K de 0,0600 a 0,1100 (Tabelas 4 e 5 do Documentos 246; o próprio documento atribui os intervalos de K a Mannigel et al. (2002), cuja citação segue com conferência suspensa). O texto acima enumerava o domínio como [1..5] e o nível 2 como 'classes 4-5'. O critério numérico de D09 para o nível 2 (K maior ou igual a 0,0300) já abrange a sexta classe, de modo que passam a valer: DOMÍNIO [1..6] e NÍVEL 2 = classes 4, 5 e 6 (alta, muito alta e extremamente alta). O NÍVEL 1 continua sendo as classes 1 a 3 (K menor ou igual a 0,0285); a fronteira entre as classes 3 e 4 fica INALTERADA, e 'média' continua nível 1. (2) A DECISÃO NÃO DEPENDE DO TAMANHO DO CONJUNTO DE CANDIDATOS. Ela decorre da fonte e do critério numérico já registrado; o efeito da classe 6 sobre o número de candidatos por estrato NÃO foi medido e será medido depois (checagem do pool de DP-20), sem poder reabrir esta decisão: não se move critério físico para acomodar a amostra. (3) As classes não agrícolas (área urbana, corpo d'água) continuam fora do domínio por máscara, conforme D07 e D14. A suspensão da citação de Mannigel et al. (2002), da emenda de 06/10/2026, permanece.
+
+E-D14:
+> EMENDA DE 19/10/2026 (proposta do assistente, aceita pelo pesquisador em conversa; pré-dados): CLASSE 6 NA ALTERNATIVA POR FAIXA. A fonte primária do fator K continua sendo o campo k_solos da camada oficial. Quando a alternativa por classe for usada, a sexta classe da carta de 2024, 'extremamente alta' (Documentos 246, Tabela 5), entra com a FAIXA de 0,0600 a 0,1100 e SEM valor pontual: a fonte não publica valor central para a classe e rotula esses valores como semiquantitativos (nota 1 da Tabela 5), e este registro não o inventa. Se k_solos estiver ausente e a unidade for de classe 6, o K do ponto é INDISPONÍVEL, com motivo declarado (Regra 5), e não o ponto médio da faixa. As classes 1 a 5 permanecem como estão registradas acima; a revisão do valor pontual dessas classes é assunto do DP-19 e esta emenda não a antecipa. O nível de K̂ para estratificação da classe 6 é o nível 2, conforme a emenda de 19/10/2026 a D09.
+
+(Se o pesquisador vetou os refinamentos de procedência, use os mesmos parágrafos SEM a oração entre parênteses "(Tabelas 4 e 5 do Documentos 246; ... suspensa)" na E-D09 e SEM "e rotula esses valores como semiquantitativos (nota 1 da Tabela 5)," na E-D14. O pesquisador informa isso ao entregar o prompt; se nada foi dito, use os textos acima.)
+
+PASSO 2: Provas e testes ANTES de editar (falha primeiro): (a) script em os.tmpdir() que importa DECISOES e PARAMETROS com `node --import ./scripts/ts-loader.mjs` e grava `dp1_antes.json` com {id: {estado, decididoPor, decididoEm, valor, referencia}}; (b) teste novo `src/config/decisoesEmendasDP1.test.ts`: lê `docs/planejamento/EMENDAS_DP1_2026-10-19.md`, extrai os 2 parágrafos e exige que `DECISOES.D09.valor` e `DECISOES.D14.valor` TERMINEM com o respectivo parágrafo e que o prefixo (texto anterior) esteja preservado; fixe no teste, como expectativas literais, `estado`, `decididoPor` e `decididoEm` ATUAIS de D09 e D14 (copie do arquivo). Cole a falha literal.
+
+PASSO 3: Inserir as emendas: um commit por decisão ("EMENDA D09 (DP-1): classe 6 no nivel 2 por criterio de K", "EMENDA D14 (DP-1): classe 6 por faixa, sem valor pontual"), com o escape correto para o estilo do arquivo. Depois, prova de aceite (como no N06): `dp1_depois.json` e script que mostre, para TODAS as decisões e parâmetros pré-existentes, `estado`, `decididoPor` e `decididoEm` idênticos; para D09 e D14, `valor` novo COMEÇA com o antigo; só D09 e D14 mudaram. Cole a saída. Regere `DECISOES.md` (`node scripts/gerar_decisoes_md.mjs --gerar`) e rode `--verificar` (exit 0) e o teste de paridade.
+
+PASSO 4: Código (classe 6). LEIA primeiro `src/lib/rusle/fatorK.ts`, `src/lib/embrapa/embrapaSoilClient.ts` (~linhas 495-520 e 680-700) e rode `grep -rnE "Muito alta|muito alta|classeOrdinal|\[1\.\.5\]|ClasseErodibilidadeAgricola|nivelEstratoK" src --include=*.ts --include=*.tsx | grep -v "\.test\."` e cole a lista COMPLETA: todo lugar que enumere só 5 classes deve entrar no relatório (arquivo:linha, o que faz), e você corrige o que for necessário para a classe 6.
+ MUDANÇA mínima: (a) tipo `ClasseErodibilidadeAgricola` e tabela de `fatorK.ts` ganham "Extremamente alta": `classeOrdinal: 6`, `faixaK: [0.0600, 0.1100]`, `nivelEstratoK: 2` e SEM `kValor` (torne `kValor` opcional no tipo; as classes 1 a 5 ficam EXATAMENTE como estão: não mexa nos valores pontuais delas, é o DP-19); (b) `normalizarTextoClasse` reconhece "extremamente alta" (com e sem acentos/caixa); (c) quando só a classe estiver disponível e for a 6, o K do ponto é `indisponivel` com `causa: "insuficiente"` e motivo exato "classe 6 (extremamente alta): a fonte publica apenas a faixa 0,0600 a 0,1100, sem valor pontual; K não é estimado pelo ponto médio (D14, emenda de 19/10/2026)". NÃO crie nova causa no tipo `CausaIndisponibilidade`; no relatório, diga que "insuficiente" é a causa mais próxima disponível e que o vocabulário não tem uma causa específica (decisão do pesquisador); (d) quando `k_solos` numérico existir (caminho primário de D14), NADA muda: o K da classe 6 vem do número publicado pela camada, como nas outras classes; (e) `embrapaSoilClient` já manda "extremamente alta" ao nível 2: confirme e mantenha (não mude comportamento, só teste).
+ TESTES (falha primeiro, em `fatorK.test.ts` e no teste do cliente): "extremamente alta" → nível 2 (com e sem acento/caixa); classes 1 a 5 inalteradas (regressão: valores e níveis idênticos aos de antes, compare com a tabela atual); classe 6 sem `k_solos` → `indisponivel` com a causa e o motivo acima, e NÃO igual a 0,0850 nem a qualquer ponto médio; classe 6 COM `k_solos` numérico → usa o número e selo `tabelado`; domínio [1..6]: classe 7 ou texto desconhecido continua recusado.
+ Commit: "DP-1: classe 6 (extremamente alta) em fatorK, nivel 2 e K indisponivel sem valor pontual".
+
+PASSO 5: Não medir o pool agora. NÃO rode `verificar_pool_estratos` sobre dado real nesta fase. A emenda diz que o efeito será medido depois.
+
+FECHAMENTO: gates SEM `data/` e depois com `data/` restaurada; `dir docs\verificacoes\sorteio` (nenhum selo novo); `git status` limpo.
+Relatório (formato estrito): (1) HEAD inicial e final e `git log --oneline`; (2) `git show --stat` de cada commit; (3) gates literais; (4) falha antes e verde depois (Passos 2, 3 e 4); (5) a lista COMPLETA do `grep` do Passo 4 e o que cada ocorrência faz (inclua as que ainda enumeram 5 classes e ficaram, com o motivo); (6) saída da prova de metadados do Passo 3; (7) R16 e ENFRAQUECIMENTOS ("nenhum" se não houve); (8) o que NÃO foi verificado ou desvios; (9) `dir data` e `dir docs\verificacoes\sorteio`; (10) push.
+Encerre exatamente com: "FASE DP-1 CONCLUÍDA; NENHUM SELO CRIADO."
+
+AVISO DE TÉRMINO (ao fim, depois do push): linha `=== FASE DP-1 CONCLUÍDA — HEAD <hash> — push: <ok|falhou> ===`; `powershell -NoProfile -Command "[console]::Beep(880,400); [console]::Beep(1175,600)"` (se falhar, diga); grave `..\sarel_ui_out\AVISO_DP1.txt` com a linha, data/hora e hash. Se o push falhar por autenticação, diga e PARE.
+```
+
+---
+
+## PROMPT 3 de 4: Fase 6B (textos, estados vazios, Modo Defesa/Tour)
+
+```
+FASE 6B: N04 (parte 2): textos que contradizem decisões, estados vazios, Modo Defesa/Tour
+Branch: sarel/executor-2026-10-09, a partir do HEAD atual (cole `git log --oneline -1` e `git status`; deve estar limpo). As fases DP-20 e DP-1 devem já estar integradas. O trabalho tem DUAS PARTES; cada uma termina com push e aviso de término.
+
+FILOSOFIA (vale sempre): o objetivo é um aplicativo CORRETO e VERDADEIRO, não testes verdes.
+R16: se substituir ou apagar algo (texto, função, comportamento, teste), tabela "antigo → destino" no relatório. R17: proibido afrouxar teste, alargar isenção, silenciar erro, ou usar 0/valor plausível no lugar de ausência; se um gate só passar enfraquecendo algo, PARE e relate. R18: nenhuma afirmação na tela pode descrever uma função que o código não tem; toda frase do Tour que você mantiver ou escrever deve apontar para uma FONTE (arquivo:linha do código, ou id de decisão/parâmetro em `decisoes.ts`) na tabela de rastreabilidade do relatório. R15: saída literal, sem "...". R12: ≤15 arquivos de src por bloco. NÃO adicione dependência ao repositório. Windows: `python`, os.tmpdir(), sem push --force.
+AMBIENTE: pré-flight COM `data/`; depois mova `data/` para `..\sarel_data_bkp` e faça os gates SEM `data/`; restaure ao fim (`dir data` colado) e rode `npm test` COM `data/`.
+INSTRUMENTO (fora do repo): `..\sarel_ui_tools` (Playwright) e `..\sarel_ui_out`. Se não existirem mais, refaça: pasta fora do repo, `npm init -y`, `npm i playwright`, `npx playwright install chromium`.
+
+PRÉ-FLIGHT (literal): typecheck; lint (0 erros; 2 warnings conhecidos); `npm test`; build.
+
+══════════════ PARTE 1 ══════════════
+
+P0: Pendências da 6A (sem commit)
+ (a) Cabeçalho: tabela R16 "ação do cabeçalho → onde fica em 1440, 1024, 768 e 390 px" (leia `src/components/layout/acoesCabecalho.ts`). Confirme que NENHUMA ação sumiu em comparação com `git show 7615a8e:src/components/layout/Header.tsx`.
+ (b) `ApresentacaoSpotlight` não recebeu role="dialog": justifique em 3 linhas, lendo o componente, e diga como o Escape/foco funcionam nele.
+ (c) Crie, FORA do repo, `..\sarel_ui_tools\digitacao_modais.cjs`: para cada botão do cabeçalho que abre modal (nomes acessíveis: /Amostragem GEE/, /Campanha e Rótulos/, /Montagem da Matriz/, /^Configurações/, /Exportar dados/, /Governança/), abre, confere 1 `[role=dialog]`, se houver input (text, number, password) ou textarea visível digita "12" com delay de 150 ms SEM limpar o campo antes (use `press("End")` e depois digite) e exige que (i) o valor termine em "12" e (ii) `document.activeElement` seja o MESMO campo; Tab 30 vezes mantém o foco dentro do diálogo; Escape fecha e o foco volta ao botão de origem. Cole o código e a saída.
+ (d) Medição ANTES com `docs/planejamento/ANEXOS_PROMPT_EXECUTOR_2026-10-06/verificar_ui.cjs` (NODE_PATH apontando para `..\sarel_ui_tools\node_modules`; app em `npm run dev`; saída em `..\sarel_ui_out\ui_antes.json`) e cole a saída literal.
+
+U04: Textos que contradizem decisões registradas
+ REPRODUZIR: `grep -rnE "198,5|7,5 cm|3,8 cm|Sítios Padrão-Ouro|10 a 50 ha|1\.845|922 held" src/components src/lib --include=*.tsx --include=*.ts | grep -v "\.test\."` e cole.
+ MUDANÇA (troque por valor derivado de constante ou remova o número; não invente):
+  - `region/CandidateSelectionModal.tsx` (bloco "Fase D: VANT/Drone (Held-Out)", "4 Sítios (~198,5 ha)", "GSD 7,5 cm"): D16 = 72 polígonos de 5,02 ha, 4 por estrato nos 18 estratos de D12, 36 de treino e 36 de held-out; leia os números de `CONFIGURACAO_REGISTRADA_D16` (`src/lib/fundiario/calculadoraDesenho.ts`) e NÃO escreva GSD de campanha sem fonte (D26 cita ≈4 cm, mas a campanha ainda não foi voada: escreva "GSD alvo conforme D26", sem número, se não houver constante).
+  - A partição 80/20 (40 pts Fase A / 10 pts Fase B) do mesmo modal: se nenhuma constante de D16 a sustentar, rotule "PARÂMETRO DE TRIAGEM, não é D16" e relate a divergência.
+  - `campanha/PainelCampanha.tsx`, `map/MapViewer.tsx`, `map/MapControls.tsx` ("GSD ~3,8 cm", "Sítios Padrão-Ouro", "10 a 50 ha"): são as MISSÕES DE AFERIÇÃO. Confirme em `docs/verificacoes/voo/cobertura_voos.geojson` e em D06 o GSD medido (a N04 original cita 3,59 e 3,96 cm; use SÓ o que você ler na fonte, e cite arquivo:linha) e troque por "missões de aferição instrumental" com o GSD medido.
+  - `decisoes/CalculadoraDesenhoAmostral.tsx` ("1.845 (922 held-out)" literal): leia de `saidas.*`. RELATE as cinco cifras do held-out que coexistem (918/936 em textos originais de D25; 920 na emenda de D24; 922 no componente; 923 em `calculadoraDesenho.ts`) sem decidir qual vale: é DP-16 do pesquisador.
+ TESTE (falha primeiro): varredura que falha se os textos acima reaparecerem em `src/components`; teste de que os números de D16 exibidos vêm de `CONFIGURACAO_REGISTRADA_D16`.
+ Commit: "U04: textos de interface alinhados a D16/D06 (numeros por constante)".
+
+U05 a U10: Verificar e fechar
+ U05 `inspetor/InspetorPonto.tsx`: `fracaoErodidaInput` NÃO pode iniciar em 0; deve iniciar `null`, exigir interação explícita e desabilitar "Gravar" até haver valor e data da observação (C25). Se a 5B/6A já fez, registre "já feito em <commit>" e mostre o teste; senão corrija com teste.
+ U06 legenda do mapa e U07/U08 (selo DEMONSTRAÇÃO, nº de invariantes): VERIFIQUE apenas e registre "feito em Cxx"; não edite duas vezes.
+ U09 Modo Defesa/Tour: a 6A fez `fecharModalMetodologia` zerar `modoApresentacaoAtivo`. Prove com teste de store (já existe em `useModalA11y.test.ts`: indique o nome do teste) e com o instrumento: abrir o Tour, fechar com Escape e com o botão, e confirmar que o banner "MODO DEFESA / APRESENTAÇÃO ATIVO" some e o foco volta.
+ U10 estados vazios: `grep -rnE "\?\? 0|\|\| 0" src/components` e relate CADA ocorrência (arquivo:linha, o que é exibido). Corrija só as que mostram como número um valor possivelmente ausente (ausente não é zero); liste as que ficam e por quê.
+ Commit(s): "U05/U10: ..." conforme o que mudar (um commit por bloco que mudar código).
+
+>>> FIM DA PARTE 1: rode gates (typecheck, lint, `npm test`, build), verificar_ui e digitacao_modais DEPOIS; faça `git push` do branch e dê o AVISO DE TÉRMINO "PARTE 1 CONCLUÍDA". Depois siga direto para a Parte 2.
+
+══════════════ PARTE 2: Modo Defesa / Tour (`src/config/tourMetodologico.ts`) ══════════════
+
+Contexto: uma auditoria do catálogo (13 itens) achou afirmações que o código não sustenta, afirmações que contradizem decisões e a ausência dos elementos centrais do desenho. NÃO reescreva a prosa metodológica por conta própria (DP-17): troque só por fatos verificáveis; cada frase mantida ou nova vai para a tabela de rastreabilidade (frase → fonte).
+
+T1: Remover o que o código não tem (verifique cada um com `git grep` antes de remover; se achar implementação, mantenha e cite a fonte):
+ - VIF > 5 com eliminação recursiva (item `matriz-treino`); exportação em Parquet; "Índice de Moran I" (item `thinning-espacial`); "buffer de isolamento de 1 km" na validação cruzada espacial; "interceptadores de eventos em cada módulo" (item `diagnostico`). A busca da auditoria não achou nenhum deles em `src`; descreva no lugar o que o código FAZ (leia `src/lib/gee/blocosEspaciais.ts`, `src/lib/gee/thinning.ts`, `src/components/diagnostics/*`, `src/lib/export/*`).
+T2: Alinhar a decisões registradas:
+ - `fator-k-pedologia`: reescrever conforme D14 E AS EMENDAS: K vem do campo `k_solos` da camada oficial `bra_erodibilidade_2024_sirgas2000` da Embrapa, selo `tabelado` (Tabela 5 do Documentos 246), faixa de classe só como alternativa; a sexta classe ("extremamente alta") entra só por faixa e sem valor pontual (emenda de 19/10/2026 a D14), no nível 2 de K̂ (emenda de 19/10/2026 a D09); REMOVER os valores K=0,015/0,022/0,045 e a heurística por nome de solo (D08 a aposentou) e a citação de Mannigel et al. (2002) (suspensa); decisaoId D14.
+ - `thinning-espacial`: distância mínima de 1.000 m (P02 decidida), não "500 m (ou 1 km)".
+ - `amostragem-gee`: BSI/NDVI definem triagem de candidatos, NÃO o rótulo (D02, emenda de 06/10/2026); troque "Erosão laminar ativa exige…" por texto de triagem; confirme em `src/lib/gee/` cada passo descrito (máscara de nuvens, "mediana nos meses secos") e remova o que não achar.
+ - `campanha-rotulos`: pareamento conforme P03 (três critérios; teto de erro grosseiro 30 m; leia os outros dois em `decisoes.ts`), não "buffer de 15 m"; o limiar de Kappa exibido deve ser o que `src/lib/rotulos/concordancia.ts` aplica (leia); o alvo do modelo é fração contínua com binário derivado (D26), com D03 regendo os rótulos ordinais de campo.
+ - `matriz-treino`: alvo D26 (fração, binário ≥ 25% derivado), preditores com teto POR BLOCO (D24; o pré-registro propõe 10), sem "mais de 15"; formatos de exportação reais (leia `src/lib/export/`).
+ - `decisoes-metodologicas`: "D01 a D26", número lido de `Object.keys(DECISOES)`; trocar "registro imutável" por "registro versionado com emendas datadas"; `decisaoId` correto.
+ - `dossie-auditoria`: Fator R = CHIRPS climatológico (D13), não "CHIRPS/IMERG"; Fator K = D14.
+ - `fator-c-rusle`: se `src/lib/rusle/fatorC.ts` implementa a forma híbrida de D20, mencione-a com o selo; senão, diga só D01.
+ - `exportacao-oficial`: descreva o que o ZIP tem (manifesto SHA-256 e verificador independente `07_verificar_integridade.py`) e a limitação declarada (o manifesto prova integridade, não autoria).
+ - `config-api`: confira em `src/lib/seguranca/credenciaisSeguras.ts` e `sessaoEfemera.ts` onde as chaves ficam e ajuste "exclusivamente no navegador" ao que o código faz.
+ - `decisaoId` trocados: `aoi-selector` (D10 é o limiar de NDVI), `terreno-3d` (D07 → D21 para o MDE), `thinning-espacial` (D08 é o marcador de K): corrija ou deixe indefinido; se o componente só aceita ids "D.." e P02 é parâmetro, deixe indefinido e cite P02 no texto. NÃO reatribua os demais `decisaoId` sem fonte; liste os que ficaram.
+ - `aoi-selector`: o texto diz R_e = 6.371.008 m e o código de exemplo usa 6.378.137: descubra o que a implementação REAL usa (`git grep -nE "6378137|6371008" src`) e deixe texto e exemplo iguais a ela.
+T3: Itens novos (só com conteúdo verificável de `decisoes.ts` e das constantes; sem número de "unidades efetivas" no texto: remeta a D24 e à emenda; marque no relatório cada item como "TEXTO PROPOSTO, revisão do pesquisador (DP-17)"):
+ 1. `sorteio-poligonos` (D16/D23): 72 polígonos de 5,02 ha, 4 por estrato nos 18 estratos (D12), pi_i registrada, sorteio selado e irreversível, nunca por suspeita de erosão; números lidos de `CONFIGURACAO_REGISTRADA_D16`. Se o código já tiver reservas ordenadas no selo (fase DP-20), descreva-as como "PROPOSTA de protocolo de negação de acesso; parâmetros P25 a P27 ainda sem decisão", sem afirmar valores; descreva só o que o código faz.
+ 2. `alvo-fracao` (D26/D03): célula de 10 m, fração erodida [0,1], binário ≥ 0,25 derivado, `reg:tweedie`.
+ 3. `avaliacao-d25` (D25): Spearman primária no held-out, piso 0,40, margem 0,10 sobre a RUSLE, bootstrap por polígono, uma única avaliação com trava, desfechos (corroborada, inconclusiva, refutada, e INCONCLUSIVA_MARGEM da emenda) e o quarto desfecho (regressão penalizada). Cada número vem do texto de D25.
+ 4. `proveniencia`: selos medido/modelado/tabelado/indisponível e a regra "ausente nunca vira zero", com os 7 invariantes lidos de `src/lib/matriz/invariantes.ts` (nomes reais).
+ Cada item precisa de `seletorAlvo`. NÃO invente elementos de UI: reutilize elementos existentes que tenham `data-metodologia` (leia como `seletorAlvo` é usado no componente do Tour) e prove com o instrumento que o holofote encontra o alvo; se um alvo não existir, deixe o item sem destaque de elemento (modal centralizado) se o componente suportar, ou PARE e relate.
+T4: Testes (falha primeiro): (a) varredura do catálogo que falha se aparecer qualquer um de: "D01 a D19", "imutável", "mais de 15", "VIF", "Parquet", "Moran", "buffer de 15 m", "500 m", "0.015", "Mannigel" (exceto em frase que diga que a citação está suspensa), "Moore", "Erosão laminar ativa exige"; (b) todo `decisaoId` que for "D.." existe em `DECISOES`; (c) os números dos itens novos (72, 5,02, 18, 36) vêm de `CONFIGURACAO_REGISTRADA_D16`/`DECISOES` (compare); (d) o catálogo tem os 4 itens novos e nenhum `id` repetido; (e) todo `seletorAlvo` do catálogo existe no código (`grep` por `data-metodologia="<id>"` em `src/components`) ou é explicitamente sem alvo.
+Commits: "T1: tour sem afirmacoes que o codigo nao sustenta", "T2: tour alinhado a decisoes registradas", "T3: tour com sorteio, alvo, avaliacao e proveniencia", "T4: testes do catalogo do tour" (junte T4 aos commits de código quando fizer sentido; um commit por bloco).
+ACEITE DA PARTE 2 (instrumento): abra o Modo Defesa/Tour e percorra TODOS os itens (13 + 4 novos) em 1440 e 390 px; para cada um, confirme que o holofote encontra o alvo e que o texto não corta; salve capturas em `..\sarel_ui_out\tour_shots\` e descreva em 1 frase cada. Escape fecha e devolve o foco; o banner some.
+
+══════════════ FECHAMENTO ══════════════
+Gates SEM `data/`: typecheck; lint (0 erros; 2 warnings conhecidos); `npm test`; build; verificar_sha256 dos anexos (12/12) e de R10 (6/6); `git status --porcelain docs/verificacoes` vazio. `verificar_ui.cjs` e `digitacao_modais.cjs` DEPOIS (saída literal). Restaure `data/` (`dir data`) e rode `npm test` COM `data/`.
+Relatório (formato estrito): (1) HEAD e `git log --oneline` desde o HEAD inicial; (2) `git show --stat` de cada commit; (3) gates literais; (4) medições ANTES e DEPOIS; (5) tabela de rastreabilidade do Tour: cada frase mantida/nova → fonte (arquivo:linha ou id de decisão); (6) R16 e ENFRAQUECIMENTOS ("nenhum" se não houve); (7) lista dos itens novos marcados "TEXTO PROPOSTO, revisão do pesquisador"; as cinco cifras do held-out; U10 ocorrência a ocorrência; (8) o que NÃO foi verificado ou desvios; (9) `dir data`; (10) `git push`.
+Encerre exatamente com: "FASE 6B CONCLUÍDA; FASE 7 NÃO INICIADA."
+
+AVISO DE TÉRMINO (obrigatório, ao fim da Parte 1 e ao fim da Parte 2, DEPOIS do push; use a mensagem "PARTE 1 CONCLUÍDA" ou "FASE 6B CONCLUÍDA"):
+ 1. Imprima uma linha de destaque no terminal: `=== <MENSAGEM> — HEAD <hash> — push: <ok|falhou> ===`.
+ 2. Toque um sinal sonoro: `powershell -NoProfile -Command "[console]::Beep(880,400); [console]::Beep(1175,600)"` (se falhar, diga).
+ 3. Grave `..\sarel_ui_out\AVISO_<MENSAGEM>.txt` com a mesma linha, a data/hora e o hash do HEAD.
+ 4. Se o push falhar por autenticação, diga isso na linha de destaque (o pesquisador envia) e PARE em vez de seguir para a Parte 2.
+```
+
+---
+
+## PROMPT 4 de 4: Teste ao vivo com o Google Earth Engine (somente leitura)
+
+```
+TESTE AO VIVO: SAREL v2: conexão real com o Google Earth Engine (SOMENTE LEITURA: nada é commitado)
+Branch: sarel/executor-2026-10-09 (cole `git log --oneline -1`). `git status` limpo. As fases anteriores (DP-20, DP-1, 6B) devem estar integradas. Este teste NÃO altera o repositório.
+
+REGRAS
+ - O pesquisador (pessoa) faz o passo das credenciais. Você NUNCA abre, imprime, copia, cola em relatório, nem commita o JSON da Service Account, chaves ou tokens. Em capturas e saídas, oculte e-mail da conta, project_id, chaves e tokens.
+ - Se um passo falhar (quota, rede, serviço, mensagem de erro), cole a mensagem LITERAL, marque "FALHOU" e siga para o próximo. NÃO use mock, valor plausível nem dado sintético para "fazer passar" (R17).
+ - NÃO rode `sortear_poligonos_d16.ts --confirmar` nem chame `/api/gee/sorteio-d16` com `confirmar: true`. O selo é irreversível. Só modo prévia.
+ - Saídas em `..\sarel_live_out\` (fora do repo). Relatório com saída literal (R15).
+
+PRÉ-FLIGHT: `npm run dev` sobe (200 em http://127.0.0.1:3000); `git status` limpo; `dir data` (liste só nomes).
+
+L1 CONEXÃO (passo do pesquisador): pare e peça ao pesquisador que abra "Conexão & Chaves" e carregue a Service Account pela própria tela. Depois dele confirmar, siga. Registre o texto exato mostrado após o teste de conexão (verificada / falhou / não verificada) e capture a tela (oculte dados da conta).
+L2 ELEIÇÃO AMOSTRAL PEQUENA: em "Amostragem GEE", ative uma área pequena e use: Quantidade de Candidatos = 10; demais campos como estão (Thinning 5 km, Solo Nu mín. 0,15, Declividade 3 a 20). Registre: tempo, quantos candidatos voltaram, quantos foram descartados e o motivo de cada descarte, mensagens de aviso. NÃO é para sortear.
+L3 PROVENIÊNCIA DOS CANDIDATOS: para cada um dos 10, abra o ponto (Inspetor) e liste, em tabela (sem coordenadas completas, use só o número do ponto): selo de cada fator (R, K, LS, C, NDVI/BSI) = medido/modelado/tabelado/indisponível; data de aquisição (adquiridoEm); para cada "indisponível", a causa e o motivo. Verifique e relate: (a) nenhum valor ausente aparece como 0; (b) nenhuma data de aquisição é a data de hoje; (c) K vem rotulado "tabelado" com a fonte (campo `k_solos`/camada Embrapa); se a consulta à Embrapa falhar, o ponto deve mostrar a falha (aviso `erro-na-consulta`/`servico-indisponivel`), não sumir; se algum candidato tiver classe 6 ("extremamente alta"), relate o selo e se o K veio de `k_solos` ou ficou indisponível; (d) nenhum texto "Aguardando Decisão D13".
+L4 DESCONECTAR E RECUSAR: desative/remova a conexão pela tela e tente eleger de novo: o app deve RECUSAR com a mensagem de que a conexão precisa estar ativa. Cole a mensagem. Reconecte só se o pesquisador quiser seguir.
+L5 EXPORTAÇÃO: com os 10 candidatos (ou os que ficarem), exporte CSV, XLSX, GeoJSON e o ZIP de reprodutibilidade. Para cada arquivo informe: se foi gerado ou recusado e por qual invariante (nome real); se contém coordenadas (sim/não, em quais colunas); se há "SINTETICO"/"DRY-CAND" (deve ser não). Extraia o ZIP em uma pasta FORA do repo e rode `python 07_verificar_integridade.py` (esperado: "INTEGRIDADE CONFIRMADA"); depois altere 1 byte de um CSV extraído e rode de novo (esperado: FALHA, exit 1). Cole as duas saídas.
+L6 SORTEIO: SÓ PRÉVIA, SEM SELO: rode `node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts` SEM `--confirmar` (modo prévia/dry-run). Cole a saída. Depois `dir docs\verificacoes\sorteio` e confirme que NENHUM arquivo `sorteio_d16_*.json` foi criado ou alterado (cole). Se a CLI exigir candidatos, NÃO invente: diga o que ela pediu e pare nesse passo. NÃO rode `verificar_pool_estratos` sobre esses 10 candidatos reais como se fosse a checagem do pool (10 candidatos não representam o pool; o pool real exige a eleição completa depois de DP-1, DP-3 e DP-6).
+L7 DIÁRIO: abra "Diagnóstico/Logs do sistema" e cole as linhas de requisição (sem tokens, sem chaves). Confirme que não há segredo nos logs.
+L8 FECHAMENTO: `git status` (deve estar limpo; arquivos de `data/` são ignorados) e `git log --oneline -1`. Nada foi commitado.
+
+RELATÓRIO (formato estrito): tabela "passo → esperado → observado → verdade (OK / FALHOU / NÃO VERIFICADO)", com as saídas literais, as capturas em `..\sarel_live_out\shots\` (descreva cada uma em 1 frase) e a lista do que NÃO foi possível verificar. Sem interpretar além do observado.
+
+AVISO DE TÉRMINO (ao fim): imprima `=== TESTE AO VIVO CONCLUÍDO — HEAD <hash> ===`, toque `powershell -NoProfile -Command "[console]::Beep(880,400); [console]::Beep(1175,600)"` (se falhar, diga) e grave `..\sarel_live_out\AVISO_TESTE_AO_VIVO.txt` com a mesma linha e a data/hora.
+```
+
+---
+
+## Depois destes quatro
+
+- DP-15 (Drive e CAR), a escrever depois das suas respostas: remover o ID da pasta dos arquivos versionados, passar a lê-lo de arquivo local não versionado e acrescentar verificação de hash ao download do banco. Deve vir **antes** de qualquer outra coisa que mexa em publicação.
+- Fase 7: C28 (2 avisos do lint), C29 (rótulo do CRS do MDE, conferindo a fonte oficial), C30 (funções duplicadas de Kappa e Pearson) e a conferência final N05.
+- Decisões suas: DP-3, DP-4, DP-6, DP-7, DP-2, DP-16 e DP-15. Elas bloqueiam o sorteio.
+- Fast-forward no `sarel/v2`, só com a sua autorização, e a reescrita do histórico do GitHub, só no fim.
