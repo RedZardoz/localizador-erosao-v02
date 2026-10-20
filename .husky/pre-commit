@@ -1,0 +1,17 @@
+#!/bin/sh
+# Hook de pre-commit do SAREL v2 (Governança GOV-6)
+# Executa typecheck estrito e a varredura de padrões proibidos (rápido e bloqueante).
+
+echo "[pre-commit] Executando verificação de tipos (tsc --noEmit)..."
+npm run typecheck || {
+  echo "[pre-commit] ERRO: Falha no typecheck estático. Commit abortado."
+  exit 1
+}
+
+echo "[pre-commit] Executando varredor de padrões proibidos..."
+npm test src/lib/seguranca/padroesProibidos.test.ts || {
+  echo "[pre-commit] ERRO: Violação de padrões proibidos detectada pelo varredor. Commit abortado."
+  exit 1
+}
+
+exit 0

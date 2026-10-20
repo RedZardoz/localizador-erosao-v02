@@ -85,5 +85,10 @@ Antes da persistência ou exportação de qualquer tabela, o módulo `src/lib/ma
 Comandos obrigatórios de verificação prévia e pós-edição:
 - `npm run typecheck`
 - `npm test`
+- `npm test src/lib/seguranca/padroesProibidos.test.ts`
+
+Guardas automatizadas ativas (GOV-6):
+- **Pre-commit hook** (`.husky/pre-commit`): executa `typecheck` e a varredura do varredor de padrões proibidos antes de cada commit.
+- **CI / GitHub Actions** (`.github/workflows/guardas_cientificas.yml`): executa `typecheck`, `lint -- --max-warnings 0` e a suíte completa de testes em todo push e pull request.
 
 Regra fundamental: limiar científico não se escreve literal no código — lê-se do registro de decisões (`src/config/decisoes.ts`). Mudança de metodologia, promoção de decisão a "decidida" e alteração de valor numérico são de competência exclusiva do pesquisador.

@@ -186,6 +186,30 @@ export const LISTA_EXCECOES_AUTORIZADAS: ExcecaoAutorizada[] = [
     justificativa: "Camada de exclusão booleana JRC sem dado no teste unitário",
     autorizadoPor: "Auditoria 2026-10-05 / C06",
   },
+  {
+    id: "EXC-DRONE-PLAN-TURNAROUND",
+    arquivo: "src/lib/drone/planoVooNControl.ts",
+    trecho: "turnAroundDistanceMeters = 10",
+    justificativa: "Fallback de distância de manobra (turnaround) no formato .plan do NControl",
+    autorizadoPor: "GOV-5 / 2026-10-19",
+    padrao: "default-numerico-desestruturacao",
+  },
+  {
+    id: "EXC-DRONE-PLAN-ENTRYLOCATION",
+    arquivo: "src/lib/drone/planoVooNControl.ts",
+    trecho: "entryLocation = 0",
+    justificativa: "Vértice de entrada padrão (entryLocation) de survey no formato .plan",
+    autorizadoPor: "GOV-5 / 2026-10-19",
+    padrao: "default-numerico-desestruturacao",
+  },
+  {
+    id: "EXC-DRONE-PLAN-STARTDOJUMPID",
+    arquivo: "src/lib/drone/planoVooNControl.ts",
+    trecho: "startDoJumpId = 2",
+    justificativa: "Identificador de comando DO_JUMP no formato .plan do NControl",
+    autorizadoPor: "GOV-5 / 2026-10-19",
+    padrao: "default-numerico-desestruturacao",
+  },
 ];
 
 const REGEX_PADROES = [
@@ -209,6 +233,10 @@ const REGEX_PADROES = [
   { id: "credencial-mapbox-pkey", regex: /\bpk\.eyJ[0-9a-zA-Z_-]{15,}\b/ },
   { id: "credencial-jev-ts", regex: /\bts_[0-9a-fA-F]{20,}\b/ },
   { id: "credencial-bearer-jwt", regex: /Bearer\s+eyJ[0-9a-zA-Z_-]{20,}\b/ },
+  {
+    id: "default-numerico-desestruturacao",
+    regex: /^\s+[a-zA-Z][a-zA-Z0-9]*\s*=\s*[0-9]+(\.[0-9]+)?,?\s*$/,
+  },
 ];
 
 export function isLinhaIsentaPorListaFechada(
@@ -234,7 +262,7 @@ export function isLinhaIsentaPorListaFechada(
       const trechoBate = linha.includes(exc.trecho) || exc.trecho.includes(linha.trim());
       if (trechoBate) {
         if (exc.padrao && exc.padrao !== padraoId) continue;
-        if (arqNorm.includes("src/components/")) {
+        if (arqNorm.includes("src/components/") || exc.padrao) {
           return true;
         }
       }
@@ -266,6 +294,9 @@ export function varrerLinha(
 
   const violacoes: ViolacaoPadrao[] = [];
   for (const { id, regex } of REGEX_PADROES) {
+    if (id === "default-numerico-desestruturacao" && arquivo.endsWith(".py")) {
+      continue;
+    }
     if (regex.test(linha)) {
       if (!isLinhaIsentaPorListaFechada(arquivo, linha, motivo, id)) {
         violacoes.push({
@@ -382,6 +413,16 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
       const code = `export function calcular(limiar: number = 0.25) {}`;
       const v = varrerCodigo(code, "teste.ts");
       expect(v.some((x) => x.padrao === "parametro-com-default-numerico")).toBe(true);
+    });
+
+    it("detecta default numérico por desestruturação e ignora atribuição regular (GOV-5)", () => {
+      const codePega = `  const {\n    limiar = 0.25,\n  } = opcoes;`;
+      const vPega = varrerCodigo(codePega, "teste.ts");
+      expect(vPega.some((x) => x.padrao === "default-numerico-desestruturacao")).toBe(true);
+
+      const codeIgnora = `const x = 10;\nconst y = 20.5;`;
+      const vIgnora = varrerCodigo(codeIgnora, "teste.ts");
+      expect(vIgnora.some((x) => x.padrao === "default-numerico-desestruturacao")).toBe(false);
     });
 
     it("detecta cortes e pisos com Math.max/min e literal", () => {

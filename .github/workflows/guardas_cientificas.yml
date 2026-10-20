@@ -1,0 +1,44 @@
+name: Guardas Científicas e Integridade SAREL
+
+on:
+  push:
+    branches:
+      - main
+      - 'sarel/**'
+  pull_request:
+    branches:
+      - main
+      - 'sarel/**'
+
+jobs:
+  verificacao-cientifica:
+    name: Verificação de Tipos, Padrões Proibidos e Integridade
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js (LTS corrente compatível com package.json >=18.17.0)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Verificação estática de tipos (TypeScript)
+        run: npm run typecheck
+
+      - name: Verificação de lint estrito (zero warnings)
+        # NOTA DE GOVERNANÇA (GOV-6):
+        # Este passo requer 0 warnings. Enquanto o bloco C28 (dependências de useEffect
+        # em MapViewer.tsx:526 e PointPopup.tsx:69) não for aplicado pelo pesquisador,
+        # este passo reprovará conforme portão de governança declarado.
+        run: npm run lint -- --max-warnings 0
+
+      - name: Execução da suíte de testes (Vitest)
+        # Todos os 86 arquivos e 663+ testes do SAREL executam em ambiente autocontido
+        # sem depender de credenciais GEE/PlanetScope nem do diretório data/.
+        run: npm test
