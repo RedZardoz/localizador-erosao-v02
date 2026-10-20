@@ -55,10 +55,20 @@ Portanto `amostragemBiofisica.ts:38` (`NDVI_MAX: 0.40`) está **correto** por D0
 | **DP-21** | **Contradição D01 × código.** O registro de D01 diz `valor: "(1 - NDVI) / 2"` (Durigon et al., 2014) e o teste afirma essa string. O código calcula `((1 - ndvi) / 2) * (1 + bsiNum)` e declara-se autorizado por `decisoes: ["D01"]`. A híbrida multiplicativa **não é** Durigon: é formulação nova, e precisa de validação própria e de redação na dissertação, ou o registro deve ser emendado para descrevê-la. **Qual das duas é a metodologia?** | GOV-4 |
 | **DP-22** | O gráfico temporal deve passar a desenhar **também** a linha de D10 (`NDVI <= 0.25`), além da linha de triagem de D02 (`NDVI < 0.40`), ou apenas uma delas? Duas linhas informam mais e poluem mais. | GOV-2 |
 | **DP-23** | `calcularFatorC(ndvi, bsi?)` substitui BSI ausente por `0` (`bsiNum = bsi !== undefined ? bsi : 0`), o que faz a híbrida degenerar na fórmula de Durigon. O invólucro `obterFatorCComProveniencia` **registra** qual modelo foi usado, então a proveniência está preservada; a função crua, não. Manter a substituição silenciosa, ou exigir BSI explícito e recusar o cálculo sem ele? Depende de DP-21. | GOV-4 |
-| **DP-24** | `select-candidates/route.ts:188-192` traz `tamanhoAmostra = 50`, `raioThinningKm = 5.0`, `frequenciaSoloNuMin = 0.15`, `declividadeMin = 3.0`, `declividadeMax = 20.0` como defaults silenciosos. `3.0–20.0` parece ser o domínio de D07 e `raioThinningKm` parece colidir com P02 ("1 km herdado do Localizador"). **Cada um desses cinco números corresponde a qual decisão ou parâmetro registrado — e o valor registrado é esse?** O executor apenas inventaria e relata. | GOV-5 |
+| **DP-24** | `select-candidates/route.ts:188-192` traz `tamanhoAmostra = 50`, `raioThinningKm = 5.0`, `frequenciaSoloNuMin = 0.15`, `declividadeMin = 3.0`, `declividadeMax = 20.0` como defaults silenciosos. `3.0–20.0` parece ser o domínio de D07. **Cada um desses cinco números corresponde a qual decisão ou parâmetro registrado — e o valor registrado é esse?** O executor apenas inventaria e relata. **NÃO se aplica a `raioThinningKm`:** ver a nota abaixo. | GOV-5 |
+| **DP-27** | O laço de relaxamento do thinning é **global** (reduz o raio até a meta de pool total), mas os estratos têm concentrações geográficas distintas: o espaçamento **realizado** pode variar entre estratos, deixando os geograficamente concentrados mais redundantes. `historicoRelaxamentoThinning` registra as iterações de raio, **não** o espaçamento realizado por estrato. Registrar distância mínima e mediana por estrato na prestação de contas da amostra? | — |
 | **DP-25** | `calcularFatorCVanDerKnijff` retorna `0.0` para `ndvi >= beta` e `1.0` para `ndvi <= 0`. O primeiro é o **limite analítico** correto (o expoente diverge para −∞). O segundo é exato em `ndvi = 0`, mas para `ndvi < 0` a fórmula daria `C > 1` e o código **limita em 1.0** — isto é um teto real, e C ≤ 1 por definição da RUSLE pode justificá-lo. Documentar como limite justificado, ou tratar `ndvi < 0` como fora-do-domínio? | GOV-5 |
 
 Onde a tabela acima não decide, o executor **para e relata**. Não há preenchimento por suposição.
+
+> **NOTA SOBRE `raioThinningKm = 5.0` — NÃO é divergência, não trate como achado.**
+> Uma versão anterior deste prompt dizia que ele colidia com P02. Não colide. P02 está
+> **decidida** com `valor: 1000` (metros) e sua justificativa nomeia os dois números:
+> 5.000 m é o **raio de partida** e 1.000 m é o **piso inviolável**. `route.ts` lê P02
+> por `exigirDecisao` e relaxa o raio iterativamente até a meta de pool, nunca abaixo do
+> piso. O erro veio de ler P02 no merge antigo `d2a7b5a`, onde ela ainda estava em
+> `proposta`. Se o executor "corrigir" o 5.0 para 1.0, quebra o mecanismo de
+> relaxamento e aperta o desenho amostral sem decisão do pesquisador.
 
 ---
 

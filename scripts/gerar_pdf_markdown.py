@@ -43,6 +43,12 @@ S = {
                            alignment=TA_LEFT, textColor=colors.white, spaceAfter=0),
     "cod": ParagraphStyle("cod", parent=base["BodyText"], fontName="Courier", fontSize=8,
                           leading=10.5, leftIndent=8, textColor=CINZA, spaceAfter=5),
+    # Citacao em bloco: usada para avisos e notas de correcao, que precisam saltar
+    # aos olhos de quem le o documento em diagonal.
+    "cit": ParagraphStyle("cit", parent=base["BodyText"], fontSize=9, leading=13,
+                          alignment=TA_JUSTIFY, leftIndent=10, rightIndent=6,
+                          backColor=CLARO, borderColor=AZUL, borderWidth=0,
+                          borderPadding=6, spaceBefore=4, spaceAfter=6),
 }
 
 
@@ -153,6 +159,10 @@ for bruta in open(ENTRADA, encoding="utf-8").read().split("\n"):
         fluxo.append(Paragraph(inline(linha[3:]), S["h2"]))
     elif linha.startswith("# "):
         fluxo.append(Paragraph(inline(linha[2:]), S["h1"]))
+    elif linha.startswith(">"):
+        corpo = re.sub(r"^>\s?", "", linha)
+        if corpo.strip():
+            fluxo.append(Paragraph(inline(corpo), S["cit"]))
     elif re.match(r"^\s*[-*] ", linha):
         fluxo.append(Paragraph(inline(re.sub(r"^\s*[-*] ", "", linha)), S["li"], bulletText="•"))
     elif re.match(r"^\s*\d+\. ", linha):

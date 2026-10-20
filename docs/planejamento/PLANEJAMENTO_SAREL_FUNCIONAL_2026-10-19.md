@@ -219,14 +219,22 @@ São exatamente os dois warnings que C28 descreve. A âncora do `MapViewer` saiu
 
 ### E-5. Os cinco parâmetros científicos não registrados
 
-Em `select-candidates/route.ts` há `tamanhoAmostra = 50`, `raioThinningKm = 5.0`, `frequenciaSoloNuMin = 0.15`, `declividadeMin = 3.0`, `declividadeMax = 20.0` como defaults silenciosos. `3.0–20.0` parece ser o domínio de D07; `raioThinningKm = 5.0` parece colidir com P02, que diz "1 km herdado do Localizador".
+Em `select-candidates/route.ts` há `tamanhoAmostra = 50`, `raioThinningKm = 5.0`, `frequenciaSoloNuMin = 0.15`, `declividadeMin = 3.0`, `declividadeMax = 20.0` como defaults silenciosos. `3.0–20.0` parece ser o domínio de D07.
+
+> **CORREÇÃO DE 20/10/2026 — a colisão que eu apontei não existe.** A versão anterior deste documento dizia que `raioThinningKm = 5.0` colidia com P02. **Não colide**, e o erro foi meu: li o texto de P02 no merge antigo `d2a7b5a`, onde ela estava em `proposta` com "1 km herdado do Localizador". Na branch atual P02 está **decidida**, `valor: 1000` metros, e sua justificativa nomeia os dois números: 5.000 m é o **raio de partida** e 1.000 m é o **piso inviolável**. O código lê P02 por `exigirDecisao` e relaxa o raio iterativamente até a meta de pool, nunca abaixo do piso. Os dois números têm papéis distintos no mesmo mecanismo.
+>
+> Lição de método, não de conteúdo: a análise foi feita contra o commit errado. Toda análise deste projeto precisa declarar o commit em que foi medida — e esta declara (cabeçalho).
+
+**Achado que substitui a colisão falsa, e que me preocupa mais:** o laço de relaxamento é **global** — reduz o raio até a meta de pool **total** ser atingida. Mas os estratos têm concentrações geográficas diferentes. Se o relaxamento for puxado por estratos escassos, o espaçamento **realizado varia entre estratos**, e os pontos de estratos geograficamente concentrados ficam mais redundantes entre si. É independência espacial diferencial por estrato, sistemática e silenciosa. O código guarda `historicoRelaxamentoThinning` e o devolve na resposta, mas ele registra as **iterações de raio**, não o **espaçamento realizado por estrato**. Mesmo padrão do atrito de recusas: efeito diferencial que some se não for medido por estrato.
+
+**E uma medição que fecha duas coisas de uma vez:** `blocosEspaciais.ts` já implementa `calcularSemivariogramaEmpirico`, que estima o **alcance** do variograma sobre declividade e solo nu — a distância além da qual duas observações deixam de ser redundantes. Esse alcance responde empiricamente se 5 km compra algo sobre 1 km, **e** fecha P01, cuja aresta de 20 km é hoje contingência declarada (a função recua para o fallback quando `n < 15`). Rodar sobre o pool real custa quase nada: usa coordenadas que já existem.
 
 | Opção | Viabilidade | Impacto |
 |---|---|---|
 | **(a) Inventariar e você decide a que decisão cada um pertence** | Alta | Única opção honesta: criar registro é ato metodológico |
 | (b) O executor infere o vínculo | Alta | Exatamente o retroajuste que queremos parar |
 
-**Minha opinião: (a), e com prioridade.** A possível divergência entre `raioThinningKm = 5.0` e o 1 km de P02 precisa ser esclarecida **antes** do sorteio D16, porque o raio de thinning entra no desenho amostral e o selo é irreversível.
+**Minha opinião: (a), e com prioridade** — mas a prioridade mudou de alvo. Não é mais "esclarecer a divergência de P02", que não existe. É **rodar o variograma antes do sorteio D16** e registrar o espaçamento realizado por estrato, porque o selo é irreversível e ambos entram no desenho amostral. Dos cinco números, `tamanhoAmostra`, `frequenciaSoloNuMin` e o par de declividade continuam sem vínculo declarado com decisão registrada, e isso é o que o executor deve inventariar.
 
 ### E-6. Os 12 parâmetros em `proposta`/`pendente`
 
