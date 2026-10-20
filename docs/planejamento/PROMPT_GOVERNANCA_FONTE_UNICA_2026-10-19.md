@@ -4,7 +4,18 @@
 
 **Estado: NÃO EXECUTADO.** Nada aqui foi aplicado ao código.
 
-**Base verificada.** Todos os portões "esperado hoje" deste prompt foram capturados em `6af6dc8` (`sarel/executor-2026-10-09`, 19/10/2026) com `git grep` num worktree limpo. Nenhum teste foi executado pelo redator: o contêiner não tinha `node_modules`. O executor roda a suíte e **cola a saída**.
+**Base verificada.** Todos os portões "esperado hoje" deste prompt foram capturados em `6af6dc8` (`sarel/executor-2026-10-09`, 19/10/2026) com `git grep` num worktree limpo.
+
+**Revisão de 20/10/2026.** As dependências foram instaladas e a suíte passou a ser executada pelo redator. Baseline medido em `9a45ed9`:
+
+| Comando | Resultado |
+|---|---|
+| `npm run typecheck` | limpo |
+| `npm test` | **86 arquivos, 663 testes passando** |
+| `npm test src/lib/seguranca/padroesProibidos.test.ts` | 23/23 |
+| `npm run lint` | **2 warnings** (bloco C28, ainda pendente — ver GOV-6) |
+
+Esse baseline é o seu ponto de comparação: qualquer bloco que reduza a contagem de testes ou acrescente warning está regredindo. O executor continua obrigado a rodar e **colar a saída** (R5) — baseline do redator não substitui execução.
 
 **Branch de trabalho:** `sarel/executor-2026-10-09` (a mesma em que o pesquisador vem commitando). Um commit **local** por bloco. **Sem push, sem PR, sem tag.**
 
@@ -251,9 +262,12 @@ ACEITE (três partes, as três coladas no relatório):
   1. Tabela antes/depois com uma linha por literal movido, colunas
      [arquivo:linha | chave no registro | valor_antigo | valor_novo]. TODAS as linhas
      com valor_antigo == valor_novo.
-  2. `npm test` verde na suíte INTEIRA (não só nos arquivos tocados). A suíte já
-     cobre amostragem, persistência e montagem temporal: se um número tivesse mudado,
-     ela reprovaria. Essa é a prova de que a refatoração preservou valores.
+  2. `npm test` verde na suíte INTEIRA (não só nos arquivos tocados), com contagem
+     IGUAL OU MAIOR que o baseline de 86 arquivos e 663 testes medido em `9a45ed9`.
+     A suíte já cobre amostragem, persistência e montagem temporal: se um número
+     tivesse mudado, ela reprovaria. Essa é a prova de que a refatoração preservou
+     valores. Contagem menor que o baseline significa teste perdido pelo caminho —
+     PARE e relate, não prossiga (R6).
   3. `git grep -nE "NDVI_MAX: 0|NDVI_MIN: 0|BSI_MIN: 0|BSI_MAX: 0" -- src/lib`
      sem nenhuma linha (os literais saíram dos módulos).
 
@@ -338,6 +352,12 @@ AÇÃO:
      ganhar um caso para o padrão novo: um trecho que ele PEGA e um que ele
      legitimamente ignora.
 
+NOTA SOBRE `src/lib/autorizacao/` (módulo novo, de 20/10/2026): ele traz a constante
+`LIMITE_DIGITOS_IDENTIFICADOR = 6`. NÃO é parâmetro científico e NÃO entra em DP-24:
+é heurística de higiene de dado, que recusa RA ou CPF no campo `registradoPor` de um
+log publicável. Não entra em cálculo, não vira preditor e não afeta métrica. A própria
+documentação da constante diz isso. Classifique-a como (iii) e siga.
+
 PROIBIDO: conceder exceção a limiar científico para obter verde; alterar valor (R7);
 decidir a que decisão pertence um número não registrado (R4, DP-24).
 
@@ -358,11 +378,28 @@ REPRODUZIR:
 
 ESPERADO HOJE: nenhuma linha em nenhum dos dois.
 
+ATENÇÃO — C28 É PRÉ-REQUISITO DESTE BLOCO. Medido em 20/10/2026, `npm run lint`
+devolve exatamente os dois warnings que o bloco C28 do prompt de 05/10 descreve, e
+que nunca foram corrigidos:
+
+  ./src/components/map/MapViewer.tsx
+  526:6  Warning: React Hook useEffect has a missing dependency: 'credenciais.mapboxToken'
+  ./src/components/map/PointPopup.tsx
+  69:6   Warning: React Hook useEffect has missing dependencies: 'atualizarPontoIndividual' and 'point'
+
+`next lint` NÃO falha com warning, só com erro. Logo, um CI que rode `npm run lint`
+puro fica VERDE carregando os dois, e o aceite de C28 ("0 warnings") nunca se cumpre
+— o CI passa a mascarar a dívida em vez de revelá-la.
+
 AÇÃO:
   a) Criar `.github/workflows/guardas_cientificas.yml`, disparado em `push` e
      `pull_request`, com um job único em `ubuntu-latest`, Node na versão de
      `package.json` (se não houver `engines`, relate e use a LTS corrente), passos:
-     `npm ci`, `npm run typecheck`, `npm run lint`, `npm test`.
+     `npm ci`, `npm run typecheck`, `npm run lint -- --max-warnings 0`, `npm test`.
+     Se `--max-warnings 0` reprovar por causa dos dois warnings acima, PARE e relate:
+     corrigi-los é o bloco C28, NÃO este bloco. Misturar os dois é o retroajuste que
+     este prompt existe para evitar. Com autorização do pesquisador para executar C28
+     antes, faça-o como commit separado, com seu próprio ID.
   b) O job NÃO pode depender de `data/`, de credencial, de rede para GEE/Planet/
      Embrapa nem de cota. Se a suíte inteira não passar sem `data/`, NÃO contorne:
      relate exatamente quais testes falham sem `data/` e configure o job para rodar a
