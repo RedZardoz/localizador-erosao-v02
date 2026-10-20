@@ -1,0 +1,849 @@
+{
+  "versao": "2.0.0",
+  "gerado_em": "2026-10-20",
+  "commit_base": "30681d0",
+  "escopo": "Serie A01..A54 das auditorias de 05/10/2026, a unica com IDs estaveis e mapeamento declarado para remediacao (C = correcao, DEC = decisao do pesquisador, V = verificacao). Relatorios de 07/09 a 01/10 e o Zero Trust de 19/10 NAO possuem IDs estaveis e ficam fora desta versao; entram quando receberem IDs.",
+  "limite_declarado": "Casamento por assunto de commit e proxy, nao prova: ausencia nao prova que nada foi feito, presenca nao prova que foi feito direito. Estado nao determinavel por evidencia fica 'indeterminado' e NUNCA e preenchido por suposicao (Regra 1).",
+  "criterios": {
+    "fechado": "metodo 'commit': ha commit cujo assunto inicia pelo ID. metodo 'documento': decisao declarada resolvida em documento datado.",
+    "aberto": "metodo 'codigo-execucao': pendencia confirmada por leitura de codigo ou saida de comando. metodo 'regra-8': verificacao sem arquivo de prova arquivado.",
+    "recusado-na-origem": "a propria auditoria refutou o achado; sem acao.",
+    "indeterminado": "nenhuma evidencia em nenhuma direcao; exige conferencia humana."
+  },
+  "achados": [
+    {
+      "id": "A01",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C01",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C01=fechado"
+    },
+    {
+      "id": "A02",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C02",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "V10",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C02=fechado; V10=aberto"
+    },
+    {
+      "id": "A03",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C28",
+          "estado": "aberto",
+          "metodo": "codigo-execucao",
+          "nota": "sem commit em nenhuma das 6 branches; pendencia confirmada no codigo em 20/10/2026"
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C28=aberto"
+    },
+    {
+      "id": "A04",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-1",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "DEC-1=indeterminado"
+    },
+    {
+      "id": "A05",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C12",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-12",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        },
+        {
+          "token": "V9",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C12=fechado; DEC-12=fechado; V9=aberto"
+    },
+    {
+      "id": "A06",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C06",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C06=fechado"
+    },
+    {
+      "id": "A07",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C17",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C17=fechado"
+    },
+    {
+      "id": "A08",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C18",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-13",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C18=fechado; DEC-13=fechado"
+    },
+    {
+      "id": "A09",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C19",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C19=fechado"
+    },
+    {
+      "id": "A10",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [],
+      "estado": "recusado-na-origem",
+      "evidencia": "Refutado pela propria auditoria (secao 8 do prompt de correcao de 05/10): sem acao."
+    },
+    {
+      "id": "A11",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C13",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-3",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "C13=fechado; DEC-3=indeterminado"
+    },
+    {
+      "id": "A12",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C14",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "C22",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C14=fechado; C22=fechado"
+    },
+    {
+      "id": "A13",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-2",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "DEC-2=indeterminado"
+    },
+    {
+      "id": "A14",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-7",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "DEC-7=fechado"
+    },
+    {
+      "id": "A15",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C07",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "V5",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C07=fechado; V5=aberto"
+    },
+    {
+      "id": "A16",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C08",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-9",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C08=fechado; DEC-9=fechado"
+    },
+    {
+      "id": "A17",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-8",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "DEC-8=indeterminado"
+    },
+    {
+      "id": "A18",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C23",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C23=fechado"
+    },
+    {
+      "id": "A19",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-10",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        },
+        {
+          "token": "V13",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "DEC-10=fechado; V13=aberto"
+    },
+    {
+      "id": "A20",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C05",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "V6",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C05=fechado; V6=aberto"
+    },
+    {
+      "id": "A21",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [],
+      "estado": "recusado-na-origem",
+      "evidencia": "Refutado pela propria auditoria (secao 8 do prompt de correcao de 05/10): sem acao."
+    },
+    {
+      "id": "A22",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-6",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "DEC-6=fechado"
+    },
+    {
+      "id": "A23",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C15",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C15=fechado"
+    },
+    {
+      "id": "A24",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C03",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C03=fechado"
+    },
+    {
+      "id": "A25",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-5",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "DEC-5=fechado"
+    },
+    {
+      "id": "A26",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C09",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-3",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "C09=fechado; DEC-3=indeterminado"
+    },
+    {
+      "id": "A27",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-4",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "DEC-4=indeterminado"
+    },
+    {
+      "id": "A28",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C04",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-15",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "C04=fechado; DEC-15=indeterminado"
+    },
+    {
+      "id": "A29",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-3",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        },
+        {
+          "token": "DEC-4",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "DEC-3=indeterminado; DEC-4=indeterminado"
+    },
+    {
+      "id": "A30",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-11",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "DEC-11=fechado"
+    },
+    {
+      "id": "A31",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C16",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C16=fechado"
+    },
+    {
+      "id": "A32",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C20",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C20=fechado"
+    },
+    {
+      "id": "A33",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C21",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "V4",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C21=fechado; V4=aberto"
+    },
+    {
+      "id": "A34",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C29",
+          "estado": "aberto",
+          "metodo": "codigo-execucao",
+          "nota": "sem commit em nenhuma das 6 branches; pendencia confirmada no codigo em 20/10/2026"
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C29=aberto"
+    },
+    {
+      "id": "A35",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C10",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-16",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        },
+        {
+          "token": "V11",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C10=fechado; DEC-16=fechado; V11=aberto"
+    },
+    {
+      "id": "A36",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C22",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C22=fechado"
+    },
+    {
+      "id": "A37",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-4",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        },
+        {
+          "token": "V8",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "DEC-4=indeterminado; V8=aberto"
+    },
+    {
+      "id": "A38",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C11",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-6",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        },
+        {
+          "token": "V12",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C11=fechado; DEC-6=fechado; V12=aberto"
+    },
+    {
+      "id": "A39",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C23",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C23=fechado"
+    },
+    {
+      "id": "A40",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C24",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C24=fechado"
+    },
+    {
+      "id": "A41",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C25",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "V7",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C25=fechado; V7=aberto"
+    },
+    {
+      "id": "A42",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C26",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C26=fechado"
+    },
+    {
+      "id": "A43",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C27",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C27=fechado"
+    },
+    {
+      "id": "A44",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "V1",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "V1=aberto"
+    },
+    {
+      "id": "A45",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-13",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "DEC-13=fechado"
+    },
+    {
+      "id": "A46",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-14",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "DEC-14=indeterminado"
+    },
+    {
+      "id": "A47",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C30",
+          "estado": "aberto",
+          "metodo": "codigo-execucao",
+          "nota": "sem commit em nenhuma das 6 branches; pendencia confirmada no codigo em 20/10/2026"
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C30=aberto"
+    },
+    {
+      "id": "A48",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "V2",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "V2=aberto"
+    },
+    {
+      "id": "A49",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "V3",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "V3=aberto"
+    },
+    {
+      "id": "A50",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [],
+      "estado": "recusado-na-origem",
+      "evidencia": "Refutado pela propria auditoria (secao 8 do prompt de correcao de 05/10): sem acao."
+    },
+    {
+      "id": "A51",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [],
+      "estado": "recusado-na-origem",
+      "evidencia": "Refutado pela propria auditoria (secao 8 do prompt de correcao de 05/10): sem acao."
+    },
+    {
+      "id": "A52",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [],
+      "estado": "recusado-na-origem",
+      "evidencia": "Refutado pela propria auditoria (secao 8 do prompt de correcao de 05/10): sem acao."
+    },
+    {
+      "id": "A53",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [],
+      "estado": "recusado-na-origem",
+      "evidencia": "Refutado pela propria auditoria (secao 8 do prompt de correcao de 05/10): sem acao."
+    },
+    {
+      "id": "A54",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C12",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C12=fechado"
+    }
+  ]
+}
