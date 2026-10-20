@@ -41,6 +41,24 @@ Metodologia, valor numérico de limiar científico, e promoção de decisão a `
 
 ---
 
+## 2-A. Lastro científico (NORMA DO PESQUISADOR, 20/10/2026)
+
+**Todo procedimento, limiar, parâmetro ou decisão metodológica precisa de lastro em bibliografia científica externa, verdadeira e verificável — e, onde não houver, isso deve estar escrito.**
+
+Norma completa, obrigatória para qualquer sessão: **`docs/NORMA_LASTRO_CIENTIFICO.md`**. Em resumo:
+
+- **R-L1** — Autorreferência não é lastro. Citar "Metodologia PPGTCA", "Planejamento V3", um caminho em `docs/`, uma linha de código, outra decisão do registro ou "herdado do SAREL 1" **não referencia nada**: apenas move a pergunta de lugar.
+- **R-L2** — Citação vinda de fonte secundária fica marcada como **não conferida** até alguém abrir o primário.
+- **R-L3** — Conferência no primário arquiva a fonte em `docs/verificacoes/fontes/` e gera verificação em `docs/verificacoes/`, **com uma seção dizendo o que a fonte NÃO sustenta**. Esticar citação verdadeira é a forma mais comum de corrompê-la.
+- **R-L4** — Sem fonte, registre **dívida declarada** com data; nunca deixe o campo vazio nem o preencha com documento interno. Decisão de natureza contratual ou operacional declara essa natureza e aponta o instrumento correto.
+- **R-L5** — Obra citada entra em `docs/Selecao Bibliografica/` com autor, ano, título e DOI.
+
+**Nunca invente, infira de memória ou extrapole uma referência.** É falta mais grave que a ausência, porque a ausência é visível e a invenção não. Na dúvida sobre se a fonte sustenta a afirmação, **ela não sustenta**.
+
+Trava automática: `src/config/lastroCientifico.test.ts`.
+
+---
+
 ## 3. Princípios Norteadores e as 9 Regras Invioláveis
 
 1. **Regra 1 — Sem Valores Fabricados:** Variáveis sem resposta da fonte permanecem estritamente como `indisponivel` acompanhadas de causa e motivo formal. É terminantemente proibido o uso de números mágicos (`|| 16`, `?? 0.035`) ou preenchimentos arbitrários.
