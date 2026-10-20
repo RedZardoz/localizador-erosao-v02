@@ -115,6 +115,29 @@ function textoPreenchido(valor: unknown): valor is string {
 }
 
 /**
+ * A partir de quantos dígitos um `registradoPor` deixa de parecer pseudônimo de papel
+ * ("bolsista-1", "bolsista-2") e passa a parecer identificador institucional (RA, CPF).
+ *
+ * NÃO é parâmetro científico e não pede número P registrado: é higiene de dado. Não
+ * entra em cálculo, não vira preditor e não afeta nenhuma métrica. Serve só para
+ * impedir que um RA ou um CPF seja colado na planilha num dia corrido — erro que, uma
+ * vez publicado junto com a dissertação, é irreversível.
+ */
+export const LIMITE_DIGITOS_IDENTIFICADOR = 6;
+
+/**
+ * Heurística de higiene: o valor tem cara de RA ou CPF?
+ *
+ * LIMITE DECLARADO: pega identificador numérico (RA de 6+ dígitos, CPF de 11). NÃO pega
+ * nome próprio — "Ana Souza" passa. Nome em `registradoPor` é questão de política, não
+ * de formato, e é resolvida pela relação da equipe em `equipe.ts`, não por regex.
+ */
+export function pareceIdentificadorInstitucional(valor: string): boolean {
+  const digitos = valor.replace(/\D/g, "").length;
+  return digitos >= LIMITE_DIGITOS_IDENTIFICADOR;
+}
+
+/**
  * Valida um registro isolado. Devolve a causa da rejeição, ou null se o registro
  * estiver íntegro. Nenhuma lacuna é preenchida: lacuna é rejeição (Regra 1).
  */
@@ -132,6 +155,13 @@ export function validarRegistroAutorizacao(
   }
   if (!textoPreenchido(r.registradoPor)) {
     return "registradoPor ausente: a prestação de contas exige autoria do registro.";
+  }
+  if (pareceIdentificadorInstitucional(r.registradoPor)) {
+    return (
+      `registradoPor "${r.registradoPor}" tem forma de identificador institucional (RA ou CPF). ` +
+      "Este log é publicável junto com a dissertação: use o pseudônimo de papel " +
+      "(ex.: \"bolsista-1\"). O vínculo com nome e RA vive apenas na relação local da equipe."
+    );
   }
   if (!textoPreenchido(r.solicitadoEm) || !FORMATO_DATA.test(r.solicitadoEm)) {
     return "solicitadoEm ausente ou fora do formato AAAA-MM-DD.";
@@ -187,13 +217,22 @@ export function validarRegistroAutorizacao(
   return null;
 }
 
-/** Ingere um lote, separando aceitos de rejeitados. Nunca corrige um registro. */
+/**
+ * Ingere um lote, separando aceitos de rejeitados. Nunca corrige um registro.
+ *
+ * `pseudonimosConhecidos`, quando informado, vem da relação local da equipe
+ * (`carregarEquipeLocal`) e faz a ingestão recusar autor desconhecido — pega o erro de
+ * digitação que a heurística de dígitos não pega. Omitido, só a heurística se aplica:
+ * a relação da equipe fica fora do git e nem sempre está presente.
+ */
 export function ingestarRegistrosAutorizacao(
-  registros: Partial<RegistroAutorizacao>[]
+  registros: Partial<RegistroAutorizacao>[],
+  pseudonimosConhecidos?: readonly string[]
 ): ResultadoIngestaoAutorizacoes {
   const aceitos: RegistroAutorizacao[] = [];
   const rejeitados: RegistroRejeitado[] = [];
   const codigosVistos = new Set<string>();
+  const conhecidos = pseudonimosConhecidos ? new Set(pseudonimosConhecidos) : null;
 
   for (const registro of registros) {
     const causa = validarRegistroAutorizacao(registro);
@@ -202,6 +241,15 @@ export function ingestarRegistrosAutorizacao(
       continue;
     }
     const pronto = registro as RegistroAutorizacao;
+    if (conhecidos !== null && !conhecidos.has(pronto.registradoPor)) {
+      rejeitados.push({
+        registro,
+        causa:
+          `registradoPor "${pronto.registradoPor}" não consta da relação local da equipe. ` +
+          "Pseudônimo não cadastrado impede resolver o autor do registro depois.",
+      });
+      continue;
+    }
     if (codigosVistos.has(pronto.codigoPonto)) {
       rejeitados.push({
         registro,

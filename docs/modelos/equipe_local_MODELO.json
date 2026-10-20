@@ -1,0 +1,13 @@
+[
+  {
+    "_leia_me": "MODELO. Copie para data/equipe_local.json e substitua os campos pelos dados reais. O arquivo em data/ esta coberto pelo .gitignore e NUNCA deve ser versionado: ele contem nome e RA dos bolsistas. Este modelo traz apenas marcadores de preenchimento, nao dados ficticios, para que nenhuma entrada possa ser confundida com cadastro real.",
+    "pseudonimo": "bolsista-1",
+    "nome": "<NOME COMPLETO DO BOLSISTA 1>",
+    "ra": "<RA DO BOLSISTA 1>"
+  },
+  {
+    "pseudonimo": "bolsista-2",
+    "nome": "<NOME COMPLETO DO BOLSISTA 2>",
+    "ra": "<RA DO BOLSISTA 2>"
+  }
+]

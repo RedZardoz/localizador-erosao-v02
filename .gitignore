@@ -84,6 +84,8 @@ data/sigef_cache/
 data/dem_cache/
 data/chirps_cache/
 data/sitios_referencia_local.json*
+# Relacao local da equipe de autorizacoes (nome e RA dos bolsistas) — guarda K2
+data/equipe_local.json*
 
 # Python cache
 __pycache__/
