@@ -41,6 +41,43 @@ Metodologia, valor numérico de limiar científico, e promoção de decisão a `
 
 ---
 
-## 3. Seções a preencher
+## 3. Princípios Norteadores e as 9 Regras Invioláveis
 
-As 9 Regras Invioláveis, os 7 Invariantes e o mapa "Onde vivem os números" entram aqui pelo bloco GOV-1 de `docs/planejamento/PROMPT_GOVERNANCA_FONTE_UNICA_2026-10-19.md`. Até lá, a fonte é `docs/design.md` §1 e §4.
+1. **Regra 1 — Sem Valores Fabricados:** Variáveis sem resposta da fonte permanecem estritamente como `indisponivel` acompanhadas de causa e motivo formal. É terminantemente proibido o uso de números mágicos (`|| 16`, `?? 0.035`) ou preenchimentos arbitrários.
+2. **Regra 2 — Sem Cortes Silenciosos:** Proibição de pisos ou limites artificiais (`Math.max`, `Math.min`). Valores fora do domínio físico ou biofísico disparam exceções explícitas ou causam indisponibilidade técnica (`fora-do-dominio`).
+3. **Regra 3 — Rastreabilidade e Proveniência:** Todas as grandezas científicas são encapsuladas no tipo discriminado `Proveniencia<T>` (`medido`, `modelado`, `tabelado`, `indisponivel`).
+4. **Regra 4 — Nada Calculado Vira Rótulo:** Modelos matemáticos (como RUSLE ou índices empíricos) jamais atuam como gabarito supervisionado. O rótulo da erosão provém unicamente da observação primária humana (campo, fotointerpretação PlanetScope, ortomosaicos de drone).
+5. **Regra 5 — Guarda Antissintético Universal:** O sistema valida continuamente e de forma recursiva que nenhum ponto amostral possua a flag `origemSintetica: true`.
+6. **Regra 6 — Segregação Cega de Exportação:** As equipes de interpretação, campo e modelagem recebem artefatos estritamente cegos projetados por listas de permissão (Invariante 2). Coordenadas não entram na matriz de treino tabular para evitar que o algoritmo aprenda localização espacial em vez de processo físico.
+7. **Regra 7 — Preservação de Máscaras:** Nuvem, sombra de nuvem e dados inválidos de sensoriamento remoto são preservados como máscaras reais e desenhados como descontinuidades nos gráficos temporais.
+8. **Regra 8 — Evidência de Verificação:** Comentários com asserções de verificação exigem arquivo físico de prova arquivado em `docs/verificacoes/`.
+9. **Regra 9 — Preservação do Histórico:** Mudanças arquiteturais mantêm rastreabilidade Git intacta, com o código histórico isolado na tag `legado-pre-sarel`.
+
+---
+
+## 4. Invariantes do Sistema
+
+Antes da persistência ou exportação de qualquer tabela, o módulo `src/lib/matriz/invariantes.ts` valida os **Sete Invariantes de Integridade**:
+1. **Invariante 1:** Coerência RUSLE: $\text{perdaSolo} \iff 5\text{ fatores presentes} \iff \text{memória de cálculo presente}$.
+2. **Invariante 2:** Lista de Permissão Estrita do Perfil de Exportação (bloqueia vazamento de variáveis internas como $\Phi_{\text{diag}}$ ou coordenadas).
+3. **Invariante 3:** Derivação exata de `Campos_Estimados` a partir de variáveis com estado diferente de `"medido"`.
+4. **Invariante 4:** Rastreabilidade de Satélite: dados orbitais exigem lista de `PRODUCT_ID`, versão do motor e timestamp.
+5. **Invariante 5:** Afirmação Negativa Fundiária: declaração de `"sem-correspondencia"` exige histórico de consulta válida sem match geográfico.
+6. **Invariante 6:** Proibição de Literais Geográficos Espúrios (`"Custom"`, `"Bacia Local"`, nome de UF no município).
+7. **Invariante 7:** Detector de Constante Disfarçada: recusa exportação se qualquer coluna numérica possuir valor idêntico em todas as linhas válidas para $n \ge 21$.
+
+---
+
+## 5. Onde vivem os números
+
+A PREENCHER EM GOV-3
+
+---
+
+## 6. Antes de editar
+
+Comandos obrigatórios de verificação prévia e pós-edição:
+- `npm run typecheck`
+- `npm test`
+
+Regra fundamental: limiar científico não se escreve literal no código — lê-se do registro de decisões (`src/config/decisoes.ts`). Mudança de metodologia, promoção de decisão a "decidida" e alteração de valor numérico são de competência exclusiva do pesquisador.
