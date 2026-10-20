@@ -27,7 +27,7 @@ export interface GraficoSerieTemporalProps {
  *    representadas como DESCONTINUIDADE REAL no traçado da linha. Interpolar
  *    visualmente através de uma lacuna é falseamento de dados.
  * 2. LIMIARES BIOFÍSICOS:
- *    - NDVI = 0.40 (Solo Exposto / Degradação - Decisão D10)
+ *    - NDVI = 0.40 (Candidato Espectral / Triagem - Decisão D02)
  *    - NDVI = 0.65 (Dossel Fechado / Manejo SPD - Critério de Controle)
  * 3. MODELO D vs MODELO P (Decisão D04):
  *    - Modelo D: série contemporânea até t0.
@@ -242,7 +242,7 @@ export function GraficoSerieTemporal({
           </div>
           <div className="flex items-center gap-1.5">
             <span className="inline-block border-b border-dashed border-amber-600 w-3" />
-            <span>Solo Exposto (NDVI &lt; 0.40 · D10)</span>
+            <span>Candidato Espectral (NDVI &lt; 0.40 · D02)</span>
           </div>
         </div>
       </div>
@@ -318,7 +318,7 @@ export function GraficoSerieTemporal({
               strokeDasharray="3 3"
             />
 
-            {/* Linha Biofísica: Limiar de Solo Exposto (NDVI = 0.40 - D10) */}
+            {/* Linha Biofísica: Limiar de Triagem de Candidato Espectral (NDVI = 0.40 - D02) */}
             <g>
               <line
                 x1={padding.left}
@@ -335,7 +335,7 @@ export function GraficoSerieTemporal({
                 textAnchor="end"
                 className="text-[9px] fill-amber-700 font-medium"
               >
-                Solo Exposto (NDVI &lt; 0.40 · D10)
+                Candidato Espectral (NDVI &lt; 0.40 · D02)
               </text>
             </g>
 

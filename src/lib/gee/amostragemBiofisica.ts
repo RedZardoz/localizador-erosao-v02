@@ -12,7 +12,7 @@
  *   2. Classe 0 (Controle / SPD Pleno): BSI < 0.00 e NDVI > 0.65
  *   3. Classe Indefinida (Zona de Transição / Mista): Retida fora do conjunto de treino.
  *
- * POR QUÊ ESTE PROCEDIMENTO É EXIGIDO NA METODOLOGIA (SEÇÃO 3.1 & DECISÕES D02, D10):
+ * POR QUÊ ESTE PROCEDIMENTO É EXIGIDO NA METODOLOGIA (SEÇÃO 3.1 & DECISÃO D02):
  * 1. Eliminação de Viés e Subjetividade: A vetorização manual sobre tela introduz
  *    inconsistências cognitivas entre intérpretes. O isolamento espectral automatizado
  *    estabelece critérios matemáticos auditáveis e universais para toda a Bacia do Paraná 3.
