@@ -31,17 +31,18 @@
  */
 
 import type { ClasseAmostral } from "@/types/ponto";
+import { DECISOES, exigirParametro } from "@/config/decisoes";
 
 export const CRITERIOS_ESPECTRAIS = {
   EROSAO: {
-    BSI_MIN: 0.10,
-    NDVI_MAX: 0.40,
+    BSI_MIN: exigirParametro(DECISOES.D02, "bsiMin").valor,
+    NDVI_MAX: exigirParametro(DECISOES.D02, "ndviMax").valor,
     rotulo: "Erosão Laminar (Classe 1)",
     descricao: "Solo exposto e mineralizado sem cobertura vegetal ativa (Horizonte B exposto)",
   },
   CONTROLE: {
-    BSI_MAX: 0.00,
-    NDVI_MIN: 0.65,
+    BSI_MAX: exigirParametro(DECISOES.D02, "bsiMax").valor,
+    NDVI_MIN: exigirParametro(DECISOES.D02, "ndviMin").valor,
     rotulo: "Controle / SPD (Classe 0)",
     descricao: "Solo protegido por biomassa ativa ou palhada residual densa no Sistema Plantio Direto",
   },

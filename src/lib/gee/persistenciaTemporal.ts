@@ -25,6 +25,7 @@
  */
 
 import { ObservacaoCena, calcularNdvi, calcularBsi } from "./serieTemporal";
+import { DECISOES, exigirParametro } from "@/config/decisoes";
 
 export type RegimeFenologico =
   | "degradacao_persistente" // Erosao laminar ativa / cronica (Classe 1)
@@ -51,7 +52,7 @@ export interface OpcoesPersistencia {
 }
 
 export const OPCOES_PERSISTENCIA_PADRAO: Required<OpcoesPersistencia> = {
-  limiarNdviSoloNu: 0.25,
+  limiarNdviSoloNu: exigirParametro(DECISOES.D10, "ndviSoloNu").valor,
   limiarNdviDosselFechado: 0.65,
   limiarFreqDegradacao: 0.25,
 };

@@ -9,6 +9,12 @@ export interface Decisao<T> {
   referencia?: string;     // obra e secao, conferida na fonte
   decididoPor?: string;
   decididoEm?: string;     // AAAA-MM-DD
+  parametros?: Record<string, {
+    valor: number;
+    operador: "<" | "<=" | ">" | ">=";
+    finalidade: string;   // para que serve ESTE limiar, em uma linha
+    unidade?: string;
+  }>;
 }
 
 export class ErroDecisaoPendente extends Error {
@@ -20,11 +26,36 @@ export class ErroDecisaoPendente extends Error {
   }
 }
 
+export class ErroParametroAusente extends Error {
+  readonly decisaoId: string;
+  readonly chave: string;
+  constructor(decisaoId: string, chave: string) {
+    super(`Parâmetro ausente: chave '${chave}' não encontrada na decisão ${decisaoId}`);
+    this.name = "ErroParametroAusente";
+    this.decisaoId = decisaoId;
+    this.chave = chave;
+  }
+}
+
 export function exigirDecisao<T>(d: Decisao<T>): T {
   if (d.estado !== "decidida" || d.valor === undefined) {
     throw new ErroDecisaoPendente(d.id, d.titulo);
   }
   return d.valor;
+}
+
+export function exigirParametro(
+  d: Decisao<unknown>,
+  chave: string
+): { valor: number; operador: "<" | "<=" | ">" | ">=" } {
+  if (d.estado !== "decidida") {
+    throw new ErroDecisaoPendente(d.id, d.titulo);
+  }
+  const param = d.parametros?.[chave];
+  if (!param) {
+    throw new ErroParametroAusente(d.id, chave);
+  }
+  return param;
 }
 
 export const DECISOES: Record<string, Decisao<any>> = {
@@ -48,6 +79,28 @@ export const DECISOES: Record<string, Decisao<any>> = {
     referencia: "Metodologia PPGTCA 2026, Seção 3.1 e Tabela 1",
     decididoPor: "pesquisador",
     decididoEm: "2026-09-13",
+    parametros: {
+      bsiMin: {
+        valor: 0.10,
+        operador: ">",
+        finalidade: "Triagem de candidatos espectrais a erosão (BSI mínimo)",
+      },
+      ndviMax: {
+        valor: 0.40,
+        operador: "<",
+        finalidade: "Triagem de candidatos espectrais a erosão (NDVI máximo)",
+      },
+      bsiMax: {
+        valor: 0.00,
+        operador: "<",
+        finalidade: "Triagem de candidatos espectrais a controle/SPD (BSI máximo)",
+      },
+      ndviMin: {
+        valor: 0.65,
+        operador: ">",
+        finalidade: "Triagem de candidatos espectrais a controle/SPD (NDVI mínimo)",
+      },
+    },
   },
   D03: {
     id: "D03",
@@ -146,6 +199,13 @@ export const DECISOES: Record<string, Decisao<any>> = {
       "EMENDA DE 06/10/2026 (proposta do assistente, aceita pelo pesquisador em conversa): a citação \"Mannigel et al. (2002), RBCS 26:1039-1049\" NÃO foi confirmada; a obra encontrada com esses autores e ano é Mannigel, Carvalho, Moreti e Medeiros, \"Fator erodibilidade e tolerância de perda dos solos do Estado de São Paulo\", Acta Scientiarum, Maringá, v. 24, n. 5, p. 1335-1340, 2002, que trata de solos de São Paulo e não sustenta, por si, as classes de erodibilidade do Paraná. A citação fica SUSPENSA até conferência; a sustentação normativa de D09 é o Documentos 246 da Embrapa Solos.",
     decididoPor: "pesquisador",
     decididoEm: "2026-09-22",
+    parametros: {
+      ndviSoloNu: {
+        valor: 0.25,
+        operador: "<=",
+        finalidade: "Limiar de solo descoberto do preditor de frequência de solo exposto Ê",
+      },
+    },
   },
   D11: {
     id: "D11",

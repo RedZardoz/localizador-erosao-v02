@@ -25,6 +25,7 @@ import { ObservacaoCena, calcularNdvi, calcularBsi, definirJanelasModelo, filtra
 import { analisarPersistenciaTemporal, DiagnosticoPersistencia } from "../gee/persistenciaTemporal";
 import { ajustarHarmonicosBanda } from "../gee/harmonicos";
 import { extrairMetricasSoloExposto } from "../gee/compostoSoloNu";
+import { DECISOES, exigirParametro } from "@/config/decisoes";
 
 export interface PreditoresTemporaisPonto {
   tipoModelo: "D" | "P";
@@ -107,7 +108,7 @@ export function montarPreditoresTemporais(
     dataReferencia,
     intervaloGuardaMeses = 24,
     duracaoJanelaAnos = 3,
-    limiarNdviSoloNu = 0.25,
+    limiarNdviSoloNu = exigirParametro(DECISOES.D10, "ndviSoloNu").valor,
   } = opcoes;
 
   const guardaAnos = intervaloGuardaMeses / 12;

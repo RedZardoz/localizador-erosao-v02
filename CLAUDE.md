@@ -70,7 +70,13 @@ Antes da persistência ou exportação de qualquer tabela, o módulo `src/lib/ma
 
 ## 5. Onde vivem os números
 
-A PREENCHER EM GOV-3
+| Grandeza | Decisão | Arquivo que é a fonte | Como ler |
+|---|---|---|---|
+| Triagem espectral erosão BSI mín (`> 0.10`) | D02 | `src/config/decisoes.ts` | `exigirParametro(DECISOES.D02, "bsiMin").valor` |
+| Triagem espectral erosão NDVI máx (`< 0.40`) | D02 | `src/config/decisoes.ts` | `exigirParametro(DECISOES.D02, "ndviMax").valor` |
+| Triagem espectral controle BSI máx (`< 0.00`) | D02 | `src/config/decisoes.ts` | `exigirParametro(DECISOES.D02, "bsiMax").valor` |
+| Triagem espectral controle NDVI mín (`> 0.65`) | D02 | `src/config/decisoes.ts` | `exigirParametro(DECISOES.D02, "ndviMin").valor` |
+| Solo descoberto preditor Ê (`<= 0.25`) | D10 | `src/config/decisoes.ts` | `exigirParametro(DECISOES.D10, "ndviSoloNu").valor` |
 
 ---
 
