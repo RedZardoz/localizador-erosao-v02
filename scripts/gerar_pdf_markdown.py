@@ -53,11 +53,28 @@ S = {
 
 
 def inline(t: str) -> str:
-    """Markdown inline -> marcação do reportlab. Escapa XML primeiro."""
+    """
+    Markdown inline -> marcacao do reportlab. Escapa XML primeiro.
+
+    Os trechos entre crases sao RETIRADOS antes das substituicoes de negrito e
+    italico e devolvidos no fim. Sem isso, um asterisco dentro de codigo (por
+    exemplo `tamanhoAmostra * 25`) e consumido como marcador de italico e produz
+    aninhamento invalido, que o reportlab rejeita com erro de parse.
+    """
     t = t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-    t = re.sub(r"`([^`]+)`", r'<font face="Courier" size="8.2">\1</font>', t)
+
+    guardados: list[str] = []
+
+    def _guardar(m: re.Match) -> str:
+        guardados.append(m.group(1))
+        return f"\x00{len(guardados) - 1}\x00"
+
+    t = re.sub(r"`([^`]+)`", _guardar, t)
     t = re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", t)
     t = re.sub(r"(?<![\*\w])\*([^*\n]+)\*(?!\*)", r"<i>\1</i>", t)
+
+    for i, codigo in enumerate(guardados):
+        t = t.replace(f"\x00{i}\x00", f'<font face="Courier" size="8.2">{codigo}</font>')
     return t
 
 
