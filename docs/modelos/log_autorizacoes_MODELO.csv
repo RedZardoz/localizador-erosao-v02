@@ -1,0 +1,8 @@
+codigo_ponto,estrato_id,solicitado_em,respondido_em,desfecho,motivo_recusa,motivo_livre,registrado_por,autorizacao_id,substituido_por
+PT-0001,E_2_3_1,2026-10-01,2026-10-05,autorizada,,,bolsista-1,AUT-2026-0001,
+PT-0002,E_1_1_1,2026-10-01,2026-10-03,recusada,receio-fiscalizacao,,bolsista-1,,PT-0003
+PT-0003,E_1_1_1,2026-10-04,2026-10-06,autorizada,,,bolsista-1,AUT-2026-0003,
+PT-0004,E_3_2_2,2026-10-02,2026-10-08,recusada,outro,"obra na estrada de acesso, sem passagem ate dezembro",bolsista-1,,
+PT-0005,E_2_1_1,2026-10-02,,pendente,,,bolsista-1,,
+PT-0006,E_1_3_2,2026-10-02,2026-10-09,sem-resposta,,,bolsista-1,,
+PT-0007,E_3_1_1,2026-10-03,2026-10-07,recusada,sem-motivo-declarado,,bolsista-2,,
