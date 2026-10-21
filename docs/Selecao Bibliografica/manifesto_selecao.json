@@ -1,5 +1,5 @@
 {
-  "total_processado": 100,
+  "total_processado": 122,
   "diretamente_relacionadas": [
     {
       "filename": "Análise espaço_temporal da degradação usando aprendizado de máquina e técnicas geoespaciais..pdf",
@@ -609,6 +609,206 @@
       "filename": "Machine learning-based predictions of soil burn severity using spectral and LiDAR remote sensing data - Digital CSIC.pdf",
       "rel_path": "XGBoost\\Artigos02\\Machine learning-based predictions of soil burn severity using spectral and LiDAR remote sensing data - Digital CSIC.pdf",
       "justification": "Arquivo não correlato ao escopo de erosão do solo (LLMs, sinistro agrícola, queimadas, registros de busca, slides ou cópia duplicada)."
+    }
+  ],
+  "para_revisar": [
+    {
+      "filename": "AlissonA_Ribeiro_2026.pdf",
+      "rel_path": "Para Revisar\\AlissonA_Ribeiro_2026.pdf",
+      "sha256": "10df41566f6d6da099ca9d5a5a47da4e4111aca50cca3cf853e7d3054fb668c4",
+      "size_bytes": 4727437,
+      "num_pages": 131,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "Analise_espaco-temporal_da_erosao_hidrica_por_meio.pdf",
+      "rel_path": "Para Revisar\\Analise_espaco-temporal_da_erosao_hidrica_por_meio.pdf",
+      "sha256": "af56c331621912006809fc642e0573dfc270f44a1500229b5786d997f742e49e",
+      "size_bytes": 3291103,
+      "num_pages": 28,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "Bloco+1+-+3+-+Manoel+et+al+SENSORIAMENTO+REMOTO+E+MACHINE+LEARNING.pdf",
+      "rel_path": "Para Revisar\\Bloco+1+-+3+-+Manoel+et+al+SENSORIAMENTO+REMOTO+E+MACHINE+LEARNING.pdf",
+      "sha256": "e7df65fcccaf5ba7e1c80953651270a01588e115bc4cb5e2a0d9cd1a9cf4ef89",
+      "size_bytes": 990036,
+      "num_pages": 23,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "Busca por artigos FLOW.pdf",
+      "rel_path": "Para Revisar\\Busca por artigos FLOW.pdf",
+      "sha256": "70247fcbb0fbc218534fb4db95520425a0788d5dfdef6bd868b315283e960fa9",
+      "size_bytes": 12417238,
+      "num_pages": 32,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "Erosodesoloemambienteamaznico.pdf",
+      "rel_path": "Para Revisar\\Erosodesoloemambienteamaznico.pdf",
+      "sha256": "5f12ce3588b97e896835c653669e262b9f897d588bffefb4b106ba6c55ab9bb8",
+      "size_bytes": 28426099,
+      "num_pages": 156,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "Estimativa da perda de solo por erosão laminar usando ferramentas computacionais na agricultura de precisão.pdf",
+      "rel_path": "Para Revisar\\Estimativa da perda de solo por erosão laminar usando ferramentas computacionais na agricultura de precisão.pdf",
+      "sha256": "64ae9bfa593f27210e0143ed317a4b8307c6ddd163679aaf7682060831434945",
+      "size_bytes": 1623656,
+      "num_pages": 8,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "Estimativa de Perda de Solos por Erosão Laminar na Bacia Hidrográfica do Córrego.pdf",
+      "rel_path": "Para Revisar\\Estimativa de Perda de Solos por Erosão Laminar na Bacia Hidrográfica do Córrego.pdf",
+      "sha256": "2d42f6c38e1cd7b9ff90aed9112aae8e8125e582c0140d064a2742080ab6d061",
+      "size_bytes": 1265581,
+      "num_pages": 14,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "IV_SLGFA_1.pdf",
+      "rel_path": "Para Revisar\\IV_SLGFA_1.pdf",
+      "sha256": "ea78a09a58b02f61c1f59ae957a0dbcc4ccf589d967c345733be38f6223b0bbe",
+      "size_bytes": 2472730,
+      "num_pages": 10,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "Monitoramento de Erosão Laminar em Diferentes Usos da Terra.pdf",
+      "rel_path": "Para Revisar\\Monitoramento de Erosão Laminar em Diferentes Usos da Terra.pdf",
+      "sha256": "0a12236c8646c0f1cb1c8857480bec9427a6b6601082224e3ab8bbbbd913fee7",
+      "size_bytes": 542119,
+      "num_pages": 19,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "Relatório de Curadoria e Auditoria Bibliográfica - Projeto SAREL.pdf",
+      "rel_path": "Para Revisar\\Relatório de Curadoria e Auditoria Bibliográfica - Projeto SAREL.pdf",
+      "sha256": "2497648afe4ccbb72fd93604e46af3ebe6f7578e5b66dcd923937031a8a0fdab",
+      "size_bytes": 385774,
+      "num_pages": 4,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "TCC_Lucas Duarte Oliveira.pdf",
+      "rel_path": "Para Revisar\\TCC_Lucas Duarte Oliveira.pdf",
+      "sha256": "8fc615b8d272fc7c4a4fa87c63dda37cc950d3f71cf92f6295a5a8ca1c7cbc36",
+      "size_bytes": 3904328,
+      "num_pages": 46,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "Trabalho-Apa-RNCS-.pdf",
+      "rel_path": "Para Revisar\\Trabalho-Apa-RNCS-.pdf",
+      "sha256": "fdd21595a91654f99cc7ca73dd79688692530ae6bbfa926789e323f262071982",
+      "size_bytes": 267715,
+      "num_pages": 1,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "Técnicas de Sensoriamento Remoto.pdf",
+      "rel_path": "Para Revisar\\Técnicas de Sensoriamento Remoto.pdf",
+      "sha256": "0fbf04fc6f2dde3c464a7b901ab405474fb91aab04b0b399d36bb048a024ef57",
+      "size_bytes": 523736,
+      "num_pages": 25,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "admin,+RBG_Ano_7_n_2_2006_73_85.pdf",
+      "rel_path": "Para Revisar\\admin,+RBG_Ano_7_n_2_2006_73_85.pdf",
+      "sha256": "f3045e3d298a3a1e9dee7e329071b20a5b7d6da3b26fb71efc3898802d35bdf0",
+      "size_bytes": 2046694,
+      "num_pages": 13,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "agb_xxvi_4-00.pdf",
+      "rel_path": "Para Revisar\\agb_xxvi_4-00.pdf",
+      "sha256": "f19567db2db8df0d388f0735586c54aee6ebbb9f9b53cddd0a52004afbe8ba63",
+      "size_bytes": 2133531,
+      "num_pages": 16,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "dissertacao_elaine_final (2).pdf",
+      "rel_path": "Para Revisar\\dissertacao_elaine_final (2).pdf",
+      "sha256": "30438ff83b7dbd281327636bc8d7a2497715d7813821dba251ee04ae8d67e228",
+      "size_bytes": 26670146,
+      "num_pages": 75,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "estimativaerosaolaminar.pdf",
+      "rel_path": "Para Revisar\\estimativaerosaolaminar.pdf",
+      "sha256": "77f0bcfbaca0b086d91f293c60b268b9ec5e2728aaa8114fae62c3b3bc787e6e",
+      "size_bytes": 4725368,
+      "num_pages": 88,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "geoprocessamentoerosaosolovalidacao.pdf",
+      "rel_path": "Para Revisar\\geoprocessamentoerosaosolovalidacao.pdf",
+      "sha256": "e66a25cb1c454bc2eafdebd06c87b798d507e1c9149b8ce6271b087154bfa299",
+      "size_bytes": 13908930,
+      "num_pages": 184,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "l+ARTIGO+7101+-+2023-03-09.pdf",
+      "rel_path": "Para Revisar\\l+ARTIGO+7101+-+2023-03-09.pdf",
+      "sha256": "fdcda7a0710af48e0ec69cb3056f53ffba899f8f8da849ff9d6dad50cc8fbc97",
+      "size_bytes": 1443103,
+      "num_pages": 12,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "perdasolobaciahidrografica.pdf",
+      "rel_path": "Para Revisar\\perdasolobaciahidrografica.pdf",
+      "sha256": "3484fca1086ab2e317a4b5941679465bbb873f134b1b9919ab50dd3963e797ad",
+      "size_bytes": 3951062,
+      "num_pages": 69,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "pereira_lh_me_rcla.pdf",
+      "rel_path": "Para Revisar\\pereira_lh_me_rcla.pdf",
+      "sha256": "4b59f4c94fa37fe433b5367f562152fa274fe0cd20a6919922695eae2be3353b",
+      "size_bytes": 2022527,
+      "num_pages": 125,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
+    },
+    {
+      "filename": "rgmf,+05+-+GUERRA,+A.+J.+T.;+JORGE,+M.+C.+O.;+RANGEL,+L.+A.;+BEZERRA,+J.+F.+R.;+LOUREIRO,+H.+A.+S.;+GARRITANO,+F.pdf",
+      "rel_path": "Para Revisar\\rgmf,+05+-+GUERRA,+A.+J.+T.;+JORGE,+M.+C.+O.;+RANGEL,+L.+A.;+BEZERRA,+J.+F.+R.;+LOUREIRO,+H.+A.+S.;+GARRITANO,+F.pdf",
+      "sha256": "8deffc36d10a6ab477e70af17bfbd4af7360ec4895b4f324531416129768da90",
+      "size_bytes": 1516024,
+      "num_pages": 43,
+      "status": "em_triagem_e_revisao",
+      "justification": "Lote extraido do fluxo de curadoria e busca (20/10/2026). Registrado no inventario de Para Revisar conforme Norma de Lastro Cientifico e mantido em disco local fora do versionamento binario pesado do git."
     }
   ]
 }
