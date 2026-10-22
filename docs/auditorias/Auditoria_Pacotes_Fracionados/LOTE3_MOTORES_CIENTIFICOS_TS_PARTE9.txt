@@ -1,0 +1,277 @@
+================================================================================
+PACOTE DE AUDITORIA EXTERNA — SAREL v2 (PPGTCA 2026)
+LOTE: LOTE3_MOTORES_CIENTIFICOS_TS | PARTE 9/9
+================================================================================
+Data de Geração: 21 de Outubro de 2026
+Limite por Arquivo: <= 90.000 bytes (Limite Rígido de Leitura)
+Total de Arquivos nesta parte: 3
+Arquivos contidos nesta parte:
+ - src/lib/export/scriptAvaliacaoD25.generated.ts
+ - src/lib/export/verificadorIntegridade.generated.ts
+ - src/lib/export/xlsxWriter.ts
+================================================================================
+
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/export/scriptAvaliacaoD25.generated.ts
+TAMANHO: 29,460 bytes
+--------------------------------------------------------------------------------
+
+// Arquivo gerado automaticamente por scripts/gerar_script_pacote.mjs — NÃO EDITE MANUALMENTE
+export const SCRIPT_AVALIACAO_D25 = "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\"\"\"\nSAREL v2 - avaliacao pre-registrada D24/D25/D26 (IMPLEMENTACAO DE REFERENCIA).\n\nEsta implementacao NAO e evidencia cientifica por si so. Ela so produz resultado cientifico\nquando alimentada com a matriz real (rotulos delineados pelo pesquisador) e com\n--probatorio. Qualquer execucao sobre dado sintetico exige --dryrun-sintetico e grava\narquivos com prefixo DRYRUN_SINTETICO_.\n\nContrato de colunas da matriz (CSV/XLSX exportado pelo app):\n  Fracao_Erodida   alvo primario D26, [0,1]\n  Poligono_ID      unidade de agrupamento (D24 mitigacao 4; D25 bootstrap)\n  Papel_Conjunto   'treino' | 'held-out'\n  Estrato_ID       um dos 18 estratos de D12 (informativo)\n  + as colunas de preditores declaradas no JSON de configuracao (blocos D24).\n\nDecisoes aplicadas: D24 (tres competidores, teto por bloco, monotonicidade, validacao\ninterna agrupada por poligono), D25 (rho de Spearman primaria, piso 0,40, margem 0,10,\nbootstrap por poligono, tres desfechos + quarto), D26 (reg:tweedie, binario a 25 %).\n\"\"\"\nfrom __future__ import annotations\n\nimport argparse\nimport hashlib\nimport io\nimport json\nimport math\nimport os\nimport sys\nimport time\nfrom dataclasses import dataclass, field\n\nimport numpy as np\nimport pandas as pd\nfrom scipy.stats import rankdata, spearmanr\n\nLIMIAR_BINARIO = 0.25          # D26\nPISO_RHO = 0.40                # D25\nMARGEM_RHO = 0.10              # D25\nEPS = 1e-9                     # tolerancia de ponto flutuante nas comparacoes >= (0,50-0,40 = 0,0999...98)\nPISO_AUC = 0.70                # D25 (secundaria)\nMARGEM_AUC = 0.05              # D25 (secundaria)\nTETO_BLOCO = {\"espectro\": 8, \"terreno\": 4, \"solo\": 1, \"chuva\": 1}   # D24\nTWEEDIE_POWER = 1.5            # padrao quando a configuracao nao declara grade (P10, proposta)\nGRADE_PADRAO = {\"p\": [1.2, 1.5, 1.8],\n                \"xgb\": [dict(max_depth=md, learning_rate=lr, n_estimators=ne, min_child_weight=mcw)\n                        for md in (2, 3) for lr in (0.05, 0.1) for ne in (100, 300) for mcw in (5, 20)],\n                \"alpha\": [1e-3, 1e-2, 1e-1, 1.0, 10.0]}\n# Saidas/derivados do competidor RUSLE nunca entram como preditor (D25: o modelo nao pode receber a\n# saida do competidor). LS e K/R sao admitidos pelos blocos de D24 (terreno, solo, chuva).\nPROIBIDOS_COMO_PREDITOR = {\"RUSLE_Fator_C\", \"RUSLE_Fator_P\", \"RUSLE_Perda_Solo_t_ha_ano\", \"RUSLE_A\"}\n# Alvo, chaves, geometria e metadados nunca entram como preditor (revisao de 09/10/2026: o teto numerico\n# por bloco nao pegava um erro de digitacao que levasse o alvo ou um identificador ao modelo).\nPROIBIDOS_ALVO_E_CHAVES = {\"Fracao_Erodida\", \"Alvo_Binario_25\", \"Classe_Alvo_Binaria\", \"Poligono_ID\",\n                           \"Papel_Conjunto\", \"Estrato_ID\", \"Celula_ID\", \"Lat\", \"Lon\", \"Grade_X\", \"Grade_Y\",\n                           \"Cobertura_Celula\", \"Incluida\", \"Area_Delineada_m2\", \"Marcador_K_Ambiguo_D08\", \"Pixel_ID\"}\nPREFIXOS_PROIBIDOS = (\"Rotulo_\",)\nCOLUNAS_OBRIGATORIAS = (\"Fracao_Erodida\", \"Poligono_ID\", \"Papel_Conjunto\")\n\n\nclass ErroAvaliacao(Exception):\n    pass\n\n\n# ---------------------------------------------------------------- carga\ndef carregar_csv_sarel(caminho: str) -> pd.DataFrame:\n    \"\"\"Le o CSV do app: ignora BOM, linhas '#' e linhas em branco ANTES do cabecalho.\"\"\"\n    with open(caminho, \"r\", encoding=\"utf-8-sig\", newline=\"\") as fh:\n        linhas = fh.read().splitlines()\n    i = 0\n    while i < len(linhas) and (linhas[i].strip() == \"\" or linhas[i].lstrip().startswith(\"#\")):\n        i += 1\n    if i >= len(linhas):\n        raise ErroAvaliacao(\"CSV sem cabecalho apos as linhas de metadado\")\n    return pd.read_csv(io.StringIO(\"\\n\".join(linhas[i:])))\n\n\ndef sha256_arquivo(caminho: str) -> str:\n    h = hashlib.sha256()\n    with open(caminho, \"rb\") as fh:\n        for bloco in iter(lambda: fh.read(1 << 20), b\"\"):\n            h.update(bloco)\n    return h.hexdigest()\n\n\n# ---------------------------------------------------------------- estatisticas\ndef spearman_rapido(x, y) -> float:\n    \"\"\"Spearman = Pearson dos postos medios (trata empates). NaN se um dos lados e constante.\"\"\"\n    x = np.asarray(x, dtype=float)\n    y = np.asarray(y, dtype=float)\n    if x.size < 3:\n        return float(\"nan\")\n    rx, ry = rankdata(x), rankdata(y)\n    sx, sy = rx.std(), ry.std()\n    if sx == 0.0 or sy == 0.0:\n        return float(\"nan\")\n    return float(np.mean((rx - rx.mean()) * (ry - ry.mean())) / (sx * sy))\n\n\ndef auc_postos(y_bin, score) -> float:\n    \"\"\"AUC por Mann-Whitney (equivale a roc_auc_score com empates = 0,5). NaN se uma so classe.\"\"\"\n    y_bin = np.asarray(y_bin, dtype=int)\n    score = np.asarray(score, dtype=float)\n    n1 = int(y_bin.sum())\n    n0 = int(y_bin.size - n1)\n    if n1 == 0 or n0 == 0:\n        return float(\"nan\")\n    r = rankdata(score)\n    return float((r[y_bin == 1].sum() - n1 * (n1 + 1) / 2.0) / (n1 * n0))\n\n\ndef n_efetivo(area_m2: float, alcance_m: float) -> float:\n    \"\"\"Unidades espacialmente independentes: area / (pi (alcance/2)^2). Reproduz D24:\n    10 ha e 50 m -> 50,9 (D24 diz ~51).\"\"\"\n    if alcance_m <= 0:\n        raise ErroAvaliacao(\"alcance deve ser > 0\")\n    return float(area_m2 / (math.pi * (alcance_m / 2.0) ** 2))\n\n\ndef validar_teto_blocos(blocos: dict) -> None:\n    \"\"\"D24: espectro<=8, terreno<=4, solo=1, chuva=1 (total <= 14). Bloco desconhecido = erro.\"\"\"\n    for nome, cols in blocos.items():\n        if nome not in TETO_BLOCO:\n            raise ErroAvaliacao(f\"bloco desconhecido: {nome}\")\n        if len(cols) > TETO_BLOCO[nome]:\n            raise ErroAvaliacao(f\"teto D24 excedido no bloco {nome}: {len(cols)} > {TETO_BLOCO[nome]}\")\n    usados = {c for cols in blocos.values() for c in cols}\n    if usados & PROIBIDOS_COMO_PREDITOR:\n        raise ErroAvaliacao(f\"preditor proibido (saida do competidor RUSLE): {sorted(usados & PROIBIDOS_COMO_PREDITOR)}\")\n    vazados = sorted(c for c in usados if c in PROIBIDOS_ALVO_E_CHAVES or c.startswith(PREFIXOS_PROIBIDOS))\n    if vazados:\n        raise ErroAvaliacao(f\"preditor proibido (alvo, chave, geometria ou rotulo): {vazados}\")\n    if sum(len(c) for c in blocos.values()) > 14:\n        raise ErroAvaliacao(\"total de preditores > 14 (D24)\")\n\n\ndef validar_monotonicidade(blocos: dict, mono: dict) -> None:\n    \"\"\"Toda chave de monotonicidade deve ser um preditor declarado e o sinal deve ser -1, 0 ou 1.\n    (Uma chave com erro de digitacao desligaria a restricao pre-registrada em silencio.)\"\"\"\n    cols = {c for b in blocos.values() for c in b}\n    desconhecidas = sorted(set(mono) - cols)\n    if desconhecidas:\n        raise ErroAvaliacao(f\"monotonicidade referencia coluna que nao e preditor declarado: {desconhecidas}\")\n    invalidos = {k: v for k, v in mono.items() if v not in (-1, 0, 1)}\n    if invalidos:\n        raise ErroAvaliacao(f\"sinal de monotonicidade fora de {{-1,0,1}}: {invalidos}\")\n\n\ndef hash_config(cfg: dict) -> str:\n    \"\"\"SHA-256 da configuracao SEM a chave 'pre_registro', em JSON canonico (chaves ordenadas, UTF-8, sem\n    espacos). E o valor que o pesquisador declara em pre_registro.sha256_config_congelada.\"\"\"\n    corpo = {k: v for k, v in cfg.items() if k != \"pre_registro\"}\n    texto = json.dumps(corpo, sort_keys=True, ensure_ascii=False, separators=(\",\", \":\"))\n    return hashlib.sha256(texto.encode(\"utf-8\")).hexdigest()\n\n\ndef auditar_preditores(treino: pd.DataFrame, teste: pd.DataFrame, cols: list) -> dict:\n    \"\"\"Recusa preditor ausente do CSV, 100 % ausente ou constante no treino; devolve n_validos por coluna.\"\"\"\n    faltam = [c for c in cols if c not in treino.columns]\n    if faltam:\n        raise ErroAvaliacao(f\"preditor declarado ausente da matriz: {faltam}\")\n    rel = {}\n    for c in cols:\n        v = pd.to_numeric(treino[c], errors=\"coerce\")\n        if v.notna().sum() == 0:\n            raise ErroAvaliacao(f\"preditor {c} esta 100 % ausente no treino\")\n        if v.dropna().nunique() < 2:\n            raise ErroAvaliacao(f\"preditor {c} e constante no treino\")\n        vt = pd.to_numeric(teste[c], errors=\"coerce\")\n        rel[c] = {\"n_validos_treino\": int(v.notna().sum()), \"n_treino\": int(len(v)),\n                  \"n_validos_heldout\": int(vt.notna().sum()), \"n_heldout\": int(len(vt))}\n    return rel\n\n\ndef _so_incluidas(df: pd.DataFrame) -> pd.DataFrame:\n    \"\"\"Se a matriz traz 'Incluida' (cobertura minima da celula no voo, P11), usa so as incluidas.\"\"\"\n    if \"Incluida\" not in df.columns:\n        return df\n    inc = df[\"Incluida\"].map(lambda v: v is True or str(v).strip().lower() in (\"true\", \"1\", \"1.0\", \"verdadeiro\"))\n    return df[inc].reset_index(drop=True)\n\n\ndef _checar_pixels_disjuntos(treino: pd.DataFrame, teste: pd.DataFrame) -> None:\n    \"\"\"O mesmo pixel de 10 m nao pode estar em treino e held-out (poligonos vizinhos compartilham pixels\n    de borda). Usa a coluna opaca Pixel_ID; na falta dela, Grade_X/Grade_Y (so no CSV intermediario local).\"\"\"\n    if \"Pixel_ID\" in treino.columns:\n        k = lambda d: set(d[\"Pixel_ID\"].astype(str))\n    elif {\"Grade_X\", \"Grade_Y\"} <= set(treino.columns):\n        k = lambda d: set(zip(d[\"Grade_X\"].round(3), d[\"Grade_Y\"].round(3)))\n    else:\n        return\n    comum = k(treino) & k(teste)\n    if comum:\n        raise ErroAvaliacao(f\"{len(comum)} pixel(is) de 10 m em treino e held-out (vazamento espacial)\")\n\n\n# ---------------------------------------------------------------- bootstrap por poligono\n@dataclass\nclass ResultadoBootstrap:\n    n_reps_validas: int\n    estimativa: float\n    ic95: tuple\n    exclui_zero: bool\n\n\ndef _indices_por_grupo(grupos) -> list:\n    grupos = np.asarray(grupos)\n    return [np.flatnonzero(grupos == g) for g in pd.unique(grupos)]\n\n\ndef bootstrap_diferenca(y, pred_a, pred_b, grupos, estatistica=\"spearman\", limiar=LIMIAR_BINARIO,\n                        B=10000, seed=20261006) -> ResultadoBootstrap:\n    \"\"\"IC 95 % percentil da DIFERENCA EMPARELHADA (a - b); unidade de reamostragem = poligono (D25).\"\"\"\n    y = np.asarray(y, dtype=float)\n    pa = np.asarray(pred_a, dtype=float)\n    pb = np.asarray(pred_b, dtype=float)\n    idx = _indices_por_grupo(grupos)\n    G = len(idx)\n    if G < 2:\n        raise ErroAvaliacao(\"bootstrap exige >= 2 poligonos\")\n\n    def est(yy, pp):\n        return spearman_rapido(yy, pp) if estatistica == \"spearman\" else auc_postos((yy >= limiar).astype(int), pp)\n\n    ponto = est(y, pa) - est(y, pb)\n    rng = np.random.default_rng(seed)\n    difs = []\n    for _ in range(B):\n        sel = rng.integers(0, G, G)\n        ii = np.concatenate([idx[k] for k in sel])\n        d = est(y[ii], pa[ii]) - est(y[ii], pb[ii])\n        if not math.isnan(d):\n            difs.append(d)\n    if len(difs) < 0.9 * B:\n        raise ErroAvaliacao(f\"so {len(difs)}/{B} reamostras validas; amostra degenerada\")\n    lo, hi = np.percentile(difs, [2.5, 97.5])\n    return ResultadoBootstrap(len(difs), float(ponto), (float(lo), float(hi)), bool(lo > 0 or hi < 0))\n\n\n# ---------------------------------------------------------------- desfechos pre-registrados D25\ndef classificar_desfecho(rho_xgb, rho_rusle, rho_pen, ic_xgb_rusle, ic_xgb_pen) -> dict:\n    \"\"\"Aplica D25 + emenda proposta de 06/10/2026 (lacuna da margem: INCONCLUSIVA_MARGEM).\"\"\"\n    if any(v is None or (isinstance(v, float) and math.isnan(v)) for v in (rho_xgb, rho_rusle)):\n        return {\"desfecho\": \"NAO_AVALIAVEL\", \"motivo\": \"rho_xgb ou rho_rusle indisponivel\",\n                \"hipotese_ensemble_refutada\": None}\n    margem = rho_xgb - rho_rusle\n    if rho_xgb < PISO_RHO - EPS or rho_xgb < rho_rusle - EPS:\n        desfecho, motivo = \"REFUTADA\", \"estimativa pontual abaixo do piso 0,40 ou abaixo do RUSLE\"\n    elif margem >= MARGEM_RHO - EPS:\n        if ic_xgb_rusle is not None and ic_xgb_rusle[0] > 0:\n            desfecho, motivo = \"CORROBORADA\", \"piso e margem atingidos; IC95% da diferenca exclui zero\"\n        else:\n            desfecho, motivo = \"INCONCLUSIVA\", \"margem atingida na estimativa, IC95% contem zero (potencia por poligonos)\"\n    else:\n        desfecho, motivo = \"INCONCLUSIVA_MARGEM\", (\"piso atingido e rho_xgb >= rho_rusle, mas margem < 0,10: \"\n                                                    \"utilidade sem vantagem demonstrada (nao refuta nem corrobora)\")\n    quarto = None\n    if rho_pen is not None and not (isinstance(rho_pen, float) and math.isnan(rho_pen)) and ic_xgb_pen is not None:\n        # D25: regressao penalizada empata ou vence o XGBoost dentro do intervalo\n        quarto = not (ic_xgb_pen[0] > 0)\n    return {\"desfecho\": desfecho, \"motivo\": motivo, \"hipotese_ensemble_refutada\": quarto,\n            \"margem_rho_pontual\": margem}\n\n\n# ---------------------------------------------------------------- competidores\ndef rusle_a(df: pd.DataFrame, cols: dict) -> np.ndarray:\n    \"\"\"A = R*K*LS*C*P (linha de base). NaN se qualquer fator estiver ausente (nunca 0).\n    Se cols tiver a chave 'A', usa a coluna ja calculada (arquivo de linha de base separado).\"\"\"\n    if \"A\" in cols:\n        return df[cols[\"A\"]].astype(float).to_numpy()\n    m = df[[cols[k] for k in (\"R\", \"K\", \"LS\", \"C\", \"P\")]].astype(float)\n    a = m.prod(axis=1, skipna=False)\n    return a.to_numpy()\n\n\ndef _grades(cfg: dict) -> dict:\n    \"\"\"Grade pre-registrada (cfg['grade']) ou o padrao. A escolha dentro da grade usa SO o treino.\"\"\"\n    g = dict(GRADE_PADRAO)\n    g.update(cfg.get(\"grade\") or {})\n    if not g[\"p\"] or not all(1.0 < float(p) < 2.0 for p in g[\"p\"]):\n        raise ErroAvaliacao(\"expoentes de Tweedie devem estar em (1, 2)\")\n    return g\n\n\ndef _xgb(params, cols, mono, seed, p=TWEEDIE_POWER):\n    import xgboost as xgb\n    cst = \"(\" + \",\".join(str(int(mono.get(c, 0))) for c in cols) + \")\"\n    return xgb.XGBRegressor(objective=\"reg:tweedie\", tweedie_variance_power=float(p),\n                            tree_method=\"hist\", subsample=0.8, colsample_bytree=0.8, reg_lambda=1.0,\n                            monotone_constraints=cst, random_state=seed, n_jobs=1, verbosity=0, **params)\n\n\ndef _penalizado(alpha, p=TWEEDIE_POWER):\n    from sklearn.impute import SimpleImputer\n    from sklearn.linear_model import TweedieRegressor\n    from sklearn.pipeline import make_pipeline\n    from sklearn.preprocessing import StandardScaler\n    # imputacao pela mediana SOMENTE do treino da dobra, com indicador de ausencia (DEC-7)\n    return make_pipeline(SimpleImputer(strategy=\"median\", add_indicator=True), StandardScaler(),\n                         TweedieRegressor(power=float(p), link=\"log\", alpha=alpha, max_iter=2000))\n\n\ndef _cv_agrupado(fabrica, X, y, g, n_splits, seed):\n    from sklearn.model_selection import GroupKFold\n    gkf = GroupKFold(n_splits=min(n_splits, len(np.unique(g))))\n    rhos = []\n    for tr, va in gkf.split(X, y, g):\n        mdl = fabrica()\n        mdl.fit(X.iloc[tr], y[tr])\n        r = spearman_rapido(y[va], mdl.predict(X.iloc[va]))\n        if not math.isnan(r):\n            rhos.append(r)\n    return float(np.mean(rhos)) if rhos else float(\"-inf\")\n\n\ndef ajustar_competidores(treino: pd.DataFrame, cfg: dict, seed: int):\n    \"\"\"Ajusta XGBoost (com e sem monotonicidade) e Tweedie penalizado SO com os poligonos de treino.\n    Hiperparametros e expoente p de Tweedie escolhidos por validacao agrupada interna (no treino).\"\"\"\n    validar_teto_blocos(cfg[\"blocos\"])\n    cols = [c for b in cfg[\"blocos\"].values() for c in b]\n    X = treino[cols]\n    y = treino[cfg[\"alvo\"]].to_numpy(dtype=float)\n    g = treino[cfg[\"grupo\"]].to_numpy()\n    if (y < 0).any() or (y > 1).any() or np.isnan(y).any():\n        raise ErroAvaliacao(\"Fracao_Erodida fora de [0,1] ou ausente no treino\")\n    mono = cfg.get(\"monotonicidade\", {})\n    gr = _grades(cfg)\n    melhor_x, melhor_s = None, -np.inf\n    for pw in gr[\"p\"]:\n        for par in gr[\"xgb\"]:\n            s_ = _cv_agrupado(lambda par=par, pw=pw: _xgb(par, cols, mono, seed, pw), X, y, g, 4, seed)\n            if s_ > melhor_s:\n                melhor_x, melhor_s = (par, pw), s_\n    xgb_final = _xgb(melhor_x[0], cols, mono, seed, melhor_x[1]).fit(X, y)\n    # sensibilidade pre-registrada: mesmos hiperparametros e p, SEM restricoes de monotonicidade\n    xgb_livre = _xgb(melhor_x[0], cols, {}, seed, melhor_x[1]).fit(X, y)\n    melhor_a, melhor_sa = None, -np.inf\n    for pw in gr[\"p\"]:\n        for a in gr[\"alpha\"]:\n            s_ = _cv_agrupado(lambda a=a, pw=pw: _penalizado(a, pw), X, y, g, 4, seed)\n            if s_ > melhor_sa:\n                melhor_a, melhor_sa = (a, pw), s_\n    pen_final = _penalizado(melhor_a[0], melhor_a[1]).fit(X, y)\n    return {\"xgb\": xgb_final, \"xgb_livre\": xgb_livre, \"pen\": pen_final, \"cols\": cols,\n            \"hiper\": {\"xgb\": melhor_x[0], \"xgb_p_tweedie\": melhor_x[1], \"pen_alpha\": melhor_a[0],\n                      \"pen_p_tweedie\": melhor_a[1], \"grade_p\": gr[\"p\"],\n                      \"cv_interna_rho\": {\"xgb\": melhor_s, \"pen\": melhor_sa}}}\n\n\n# ---------------------------------------------------------------- avaliacao unica no held-out\ndef _gravar_json(caminho: str, obj: dict) -> None:\n    with open(caminho, \"w\", encoding=\"utf-8\") as fh:\n        json.dump(obj, fh, ensure_ascii=False, indent=2, default=float)\n\n\ndef avaliar_held_out(df: pd.DataFrame, cfg: dict, saida: str, *, dryrun_sintetico: bool,\n                     B: int = 10000, seed: int = 20261006, origem_dados: str = \"\",\n                     caminho_dados: str = \"\") -> dict:\n    \"\"\"Avaliacao unica do held-out (D25). A TRAVA e gravada ANTES do ajuste e da leitura dos rotulos do\n    held-out; falha depois dela conta como tentativa consumida. Com caminho_dados, uma segunda trava fica\n    ao lado do arquivo de dados (nao depende de --saida).\"\"\"\n    for c in COLUNAS_OBRIGATORIAS:\n        if c not in df.columns:\n            raise ErroAvaliacao(f\"coluna obrigatoria ausente: {c}\")\n    h_cfg = hash_config(cfg)\n    if not dryrun_sintetico:\n        pr = cfg.get(\"pre_registro\") or {}\n        if not (pr.get(\"declarado_por\") and pr.get(\"declarado_em\") and pr.get(\"sha256_config_congelada\")):\n            raise ErroAvaliacao(\"modo probatorio exige cfg['pre_registro'] com declarado_por, declarado_em e \"\n                                \"sha256_config_congelada (D24 mitigacoes 2 e 3: blocos e monotonicidade \"\n                                \"declarados ANTES do ajuste, pelo pesquisador)\")\n        if str(pr[\"sha256_config_congelada\"]).strip().lower() != h_cfg:\n            raise ErroAvaliacao(\"sha256_config_congelada nao confere com o hash da configuracao \"\n                                f\"(esperado {h_cfg}): a configuracao mudou depois do congelamento\")\n    prefixo = \"DRYRUN_SINTETICO_\" if dryrun_sintetico else \"\"\n    os.makedirs(saida, exist_ok=True)\n    trava = os.path.join(saida, f\"{prefixo}avaliacao_heldout.TRAVA.json\")\n    travas = [trava] + ([os.path.join(os.path.dirname(os.path.abspath(caminho_dados)),\n                                      f\"{prefixo}{os.path.basename(caminho_dados)}.TRAVA_D25.json\")]\n                        if caminho_dados else [])\n    for t in travas:\n        if os.path.exists(t):\n            raise ErroAvaliacao(\"o held-out ja foi avaliado ou a tentativa foi consumida (D25: uma unica \"\n                                \"avaliacao). Apague a trava somente por decisao escrita do pesquisador: \" + t)\n    df = _so_incluidas(df)\n    papeis = set(df[\"Papel_Conjunto\"].unique())\n    if not papeis <= {\"treino\", \"held-out\"}:\n        raise ErroAvaliacao(f\"Papel_Conjunto invalido: {sorted(papeis)}\")\n    treino = df[df[\"Papel_Conjunto\"] == \"treino\"].reset_index(drop=True)\n    teste = df[df[\"Papel_Conjunto\"] == \"held-out\"].reset_index(drop=True)\n    if set(treino[\"Poligono_ID\"]) & set(teste[\"Poligono_ID\"]):\n        raise ErroAvaliacao(\"poligono presente em treino e held-out (vazamento)\")\n    if teste[\"Poligono_ID\"].nunique() < 2 or treino[\"Poligono_ID\"].nunique() < 4:\n        raise ErroAvaliacao(\"poligonos insuficientes\")\n    _checar_pixels_disjuntos(treino, teste)\n    validar_teto_blocos(cfg[\"blocos\"])\n    validar_monotonicidade(cfg[\"blocos\"], cfg.get(\"monotonicidade\", {}))\n    cols = [c for b in cfg[\"blocos\"].values() for c in b]\n    auditoria = auditar_preditores(treino, teste, cols)\n    trava_dados = {\"estado\": \"iniciada\", \"criado_em\": time.strftime(\"%Y-%m-%dT%H:%M:%SZ\", time.gmtime()),\n                   \"origem_dados\": origem_dados, \"sha256_config\": h_cfg, \"dryrun_sintetico\": dryrun_sintetico}\n    for t in travas:\n        _gravar_json(t, trava_dados)\n    try:\n        rel = _ajustar_e_pontuar(df, treino, teste, cfg, saida, prefixo, dryrun_sintetico, B, seed,\n                                 origem_dados, auditoria, h_cfg)\n    except Exception as e:                      # tentativa consumida: a trava permanece e registra a falha\n        for t in travas:\n            _gravar_json(t, dict(trava_dados, estado=\"falhou\", erro=f\"{type(e).__name__}: {e}\"))\n        raise\n    for t in travas:\n        _gravar_json(t, dict(trava_dados, estado=\"concluida\", relatorio=f\"{prefixo}avaliacao_d25.json\",\n                             sha256_relatorio=sha256_arquivo(os.path.join(saida, f\"{prefixo}avaliacao_d25.json\"))))\n    return rel\n\n\ndef _ajustar_e_pontuar(df, treino, teste, cfg, saida, prefixo, dryrun_sintetico, B, seed, origem_dados,\n                       auditoria, h_cfg) -> dict:\n    mod = ajustar_competidores(treino, cfg, seed)\n    X_te = teste[mod[\"cols\"]]\n    y_te = teste[cfg[\"alvo\"]].to_numpy(dtype=float)\n    g_te = teste[cfg[\"grupo\"]].to_numpy()\n    preds = {\"xgb\": mod[\"xgb\"].predict(X_te), \"pen\": mod[\"pen\"].predict(X_te),\n             \"rusle\": rusle_a(teste, cfg[\"rusle\"]), \"xgb_livre\": mod[\"xgb_livre\"].predict(X_te)}\n    # emparelhamento: mesmas celulas para os tres (descarta as sem RUSLE e REPORTA)\n    ok = ~np.isnan(preds[\"rusle\"]) & ~np.isnan(y_te)\n    n_desc = int((~ok).sum())\n    rusle_indisponivel = (ok.sum() == 0)\n    rel = {\"dryrun_sintetico\": dryrun_sintetico, \"origem_dados\": origem_dados, \"seed\": seed, \"B\": B,\n           \"n_poligonos_treino\": int(treino[\"Poligono_ID\"].nunique()),\n           \"n_poligonos_heldout\": int(teste[\"Poligono_ID\"].nunique()),\n           \"n_celulas_heldout\": int(len(teste)), \"celulas_descartadas_sem_rusle\": n_desc,\n           \"sha256_config\": h_cfg, \"preditores_n_validos\": auditoria,\n           \"hiperparametros\": mod[\"hiper\"], \"criterio\": {\"piso_rho\": PISO_RHO, \"margem_rho\": MARGEM_RHO,\n           \"piso_auc\": PISO_AUC, \"margem_auc\": MARGEM_AUC, \"limiar_binario\": LIMIAR_BINARIO,\n           \"grade_p_tweedie_P10\": _grades(cfg)[\"p\"]}}\n    if rusle_indisponivel:\n        rel[\"desfecho\"] = classificar_desfecho(float(\"nan\"), float(\"nan\"), float(\"nan\"), None, None)\n    else:\n        y, g = y_te[ok], g_te[ok]\n        P = {k: v[ok] for k, v in preds.items()}\n        rho = {k: spearman_rapido(y, v) for k, v in P.items()}\n        yb = (y >= LIMIAR_BINARIO).astype(int)\n        auc = {k: auc_postos(yb, v) for k, v in P.items() if k != \"xgb_livre\"}\n        b_xr = bootstrap_diferenca(y, P[\"xgb\"], P[\"rusle\"], g, \"spearman\", B=B, seed=seed)\n        b_xp = bootstrap_diferenca(y, P[\"xgb\"], P[\"pen\"], g, \"spearman\", B=B, seed=seed + 1)\n        b_auc = bootstrap_diferenca(y, P[\"xgb\"], P[\"rusle\"], g, \"auc\", B=B, seed=seed + 2)\n        b_livre = bootstrap_diferenca(y, P[\"xgb_livre\"], P[\"rusle\"], g, \"spearman\", B=B, seed=seed + 3)\n        sens = {\"xgb_sem_monotonicidade\": {\"rho\": rho[\"xgb_livre\"], \"dif_rho_menos_rusle\": vars(b_livre),\n                \"nota\": \"sensibilidade pre-registrada; o desfecho principal usa o XGBoost COM monotonicidade\"}}\n        col_d08 = cfg.get(\"coluna_marcador_d08\")\n        if col_d08 and col_d08 in teste.columns:\n            m08 = teste[col_d08].to_numpy()[ok]\n            manter = np.array([(v is False) or (str(v).strip().lower() in (\"false\", \"falso\", \"0\", \"0.0\")) for v in m08])\n            if manter.sum() >= 3 and len(set(g[manter])) >= 2:\n                b08 = bootstrap_diferenca(y[manter], P[\"xgb\"][manter], P[\"rusle\"][manter], g[manter],\n                                          \"spearman\", B=B, seed=seed + 4)\n                sens[\"d08_sem_marcador_verdadeiro_ou_indisponivel\"] = {\n                    \"n_celulas\": int(manter.sum()), \"rho_xgb\": spearman_rapido(y[manter], P[\"xgb\"][manter]),\n                    \"rho_rusle\": spearman_rapido(y[manter], P[\"rusle\"][manter]), \"dif_rho_xgb_menos_rusle\": vars(b08),\n                    \"nota\": \"avaliacao PRINCIPAL inclui todas as celulas (D08); esta e sensibilidade declarada\"}\n        rel[\"sensibilidades_pre_registradas\"] = sens\n        rel.update({\"rho_spearman\": {k: v for k, v in rho.items() if k != \"xgb_livre\"}, \"auc_binario_25pct\": auc,\n                    \"prevalencia_binaria_heldout\": float(yb.mean()),\n                    \"dif_rho_xgb_menos_rusle\": vars(b_xr), \"dif_rho_xgb_menos_pen\": vars(b_xp),\n                    \"dif_auc_xgb_menos_rusle\": vars(b_auc),\n                    \"secundaria_atendida\": {\"auc_xgb>=0,70\": bool(auc[\"xgb\"] >= PISO_AUC - EPS),\n                                            \"delta_auc>=0,05\": bool(auc[\"xgb\"] - auc[\"rusle\"] >= MARGEM_AUC - EPS)},\n                    \"desfecho\": classificar_desfecho(rho[\"xgb\"], rho[\"rusle\"], rho[\"pen\"],\n                                                     b_xr.ic95, b_xp.ic95)})\n    rel[\"aviso\"] = (\"DRYRUN SINTETICO: nenhum numero deste arquivo e evidencia cientifica.\"\n                    if dryrun_sintetico else \"Resultado PROBATORIO: avaliacao unica do held-out (D25).\")\n    caminho = os.path.join(saida, f\"{prefixo}avaliacao_d25.json\")\n    with open(caminho, \"w\", encoding=\"utf-8\") as fh:\n        json.dump(rel, fh, ensure_ascii=False, indent=2, default=float)\n    return rel\n\n\ndef juntar_linha_de_base(df: pd.DataFrame, caminho_csv: str) -> pd.DataFrame:\n    \"\"\"Left join por Celula_ID com o arquivo do perfil 'linha-de-base-rusle' (Celula_ID, RUSLE_A e, se houver,\n    Marcador_K_Ambiguo_D08).\n    Celula sem correspondencia fica com RUSLE_A ausente (NaN), nunca 0.\"\"\"\n    if \"Celula_ID\" not in df.columns:\n        raise ErroAvaliacao(\"matriz sem Celula_ID: nao e possivel juntar a linha de base\")\n    lb = carregar_csv_sarel(caminho_csv)\n    for c in (\"Celula_ID\", \"RUSLE_A\"):\n        if c not in lb.columns:\n            raise ErroAvaliacao(f\"linha de base sem coluna {c}\")\n    if lb[\"Celula_ID\"].duplicated().any():\n        raise ErroAvaliacao(\"Celula_ID duplicado na linha de base\")\n    lb[\"RUSLE_A\"] = pd.to_numeric(lb[\"RUSLE_A\"], errors=\"coerce\")\n    extras = [c for c in (\"Marcador_K_Ambiguo_D08\",) if c in lb.columns]   # metadado D08 (nunca preditor)\n    return df.merge(lb[[\"Celula_ID\", \"RUSLE_A\"] + extras], on=\"Celula_ID\", how=\"left\")\n\n\ndef main(argv=None) -> int:\n    ap = argparse.ArgumentParser(description=\"Avaliacao D25 (SAREL v2)\")\n    ap.add_argument(\"--dados\", required=True, help=\"CSV ou XLSX da matriz (obrigatorio; sem padrao)\")\n    ap.add_argument(\"--config\", required=True, help=\"JSON: alvo, grupo, blocos, monotonicidade, rusle\")\n    ap.add_argument(\"--saida\", required=True)\n    g = ap.add_mutually_exclusive_group(required=True)\n    g.add_argument(\"--probatorio\", action=\"store_true\")\n    g.add_argument(\"--dryrun-sintetico\", action=\"store_true\")\n    ap.add_argument(\"--linha-de-base\", help=\"CSV do perfil linha-de-base-rusle (Celula_ID, RUSLE_A)\")\n    ap.add_argument(\"--B\", type=int, default=10000)\n    ap.add_argument(\"--seed\", type=int, default=20261006)\n    a = ap.parse_args(argv)\n    df = carregar_csv_sarel(a.dados) if a.dados.lower().endswith(\".csv\") else pd.read_excel(a.dados)\n    if a.linha_de_base:\n        df = juntar_linha_de_base(df, a.linha_de_base)\n    with open(a.config, encoding=\"utf-8\") as fh:\n        cfg = json.load(fh)\n    rel = avaliar_held_out(df, cfg, a.saida, dryrun_sintetico=a.dryrun_sintetico, B=a.B, seed=a.seed,\n                           origem_dados=f\"{a.dados} sha256={sha256_arquivo(a.dados)}\", caminho_dados=a.dados)\n    print(json.dumps(rel[\"desfecho\"], ensure_ascii=False))\n    return 0\n\n\nif __name__ == \"__main__\":\n    try:\n        sys.exit(main())\n    except ErroAvaliacao as e:\n        print(f\"[ERRO] {e}\", file=sys.stderr)\n        sys.exit(2)\n";
+
+export const SCRIPT_AVALIACAO_D25_SHA256 = "dd97a7c11dfea0248d3ff30f32c6a8ea639bbcfa37b45f8d29b21926942e7f76";
+
+export const REQUIREMENTS_D25 = "numpy\npandas\nscipy\nscikit-learn\nxgboost\nshapely\npyproj\n";
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/export/verificadorIntegridade.generated.ts
+TAMANHO: 7,017 bytes
+--------------------------------------------------------------------------------
+
+// Arquivo gerado automaticamente por scripts/gerar_script_pacote.mjs — NÃO EDITE MANUALMENTE
+export const VERIFICADOR_INTEGRIDADE = "#!/usr/bin/env python3\n\"\"\"\nVerificador de Integridade Criptográfica do Pacote de Reprodutibilidade\nSAREL — Sistema de Amostragem e Rotulagem para Erosão Laminar (PPGTCA 2026)\n\nINSTRUÇÕES PARA A BANCA EXAMINADORA / AUDITORIA:\n------------------------------------------------\nEste script permite verificar a integridade de todos os arquivos de dados,\ncódigos e dicionários do pacote sem depender de utilitários externos (como o\ncomando 'sha256sum' do Unix, frequentemente ausente em ambientes Windows).\n\nComo executar:\n  - Windows:\n      python 07_verificar_integridade.py\n    ou apontando para o diretório descompactado:\n      python 07_verificar_integridade.py \"C:\\\\caminho\\\\do\\\\pacote\"\n\n  - Linux / macOS:\n      python3 07_verificar_integridade.py\n    ou\n      python3 07_verificar_integridade.py /caminho/do/pacote\n\nLIMITAÇÃO HONESTA DE SEGURANÇA:\n-------------------------------\nO manifesto criptográfico ('06_manifesto_integridade_sha256.txt') comprova\nestritamente que os arquivos locais não sofreram corrupção de bytes ou\nalteração em relação aos hashes registrados no momento da extração do pacote.\nEle NÃO comprova autoria de terceiros e NÃO impede que um adulterador malicioso\nmodifique os dados e recalcule simultaneamente os hashes dentro do próprio\nmanifesto. A autenticidade externa integral exige o confronto do hash SHA-256\ndeste manifesto (ou do arquivo .ZIP completo) com a cifra publicada\noficialmente pelo pesquisador em repositório público ou ata de dissertação.\n\"\"\"\n\nimport sys\nimport os\nimport re\nimport hashlib\nfrom pathlib import Path\n\nNOME_MANIFESTO = \"06_manifesto_integridade_sha256.txt\"\nREGEX_HEX64 = re.compile(r\"^[0-9a-fA-F]{64}$\")\n\n\ndef calcular_sha256_bytes(caminho: Path) -> str:\n    h = hashlib.sha256()\n    with open(caminho, \"rb\") as f:\n        while chunk := f.read(65536):\n            h.update(chunk)\n    return h.hexdigest().lower()\n\n\ndef validar_seguranca_nome_arquivo(nome: str) -> bool:\n    \"\"\"Rejeita caminhos absolutos ou que contenham '..' para evitar path traversal.\"\"\"\n    if nome.startswith(\"/\") or nome.startswith(\"\\\\\"):\n        return False\n    if \":\" in nome:\n        return False\n    p = Path(nome)\n    if p.is_absolute():\n        return False\n    partes = p.parts\n    if \"..\" in partes:\n        return False\n    return True\n\n\ndef main() -> int:\n    diretorio_alvo = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(__file__).resolve().parent\n\n    print(f\"=== Verificação de Integridade SHA-256 — SAREL ===\")\n    print(f\"Diretório examinado: {diretorio_alvo}\")\n\n    caminho_manifesto = diretorio_alvo / NOME_MANIFESTO\n    if not caminho_manifesto.is_file():\n        print(f\"[ERRO] Manifesto de integridade não encontrado: {NOME_MANIFESTO}\", file=sys.stderr)\n        print(\"RESULTADO: FALHA DE INTEGRIDADE (manifesto ausente ou ilegível)\")\n        return 2\n\n    try:\n        linhas = caminho_manifesto.read_bytes().decode(\"utf-8\").splitlines()\n    except Exception as e:\n        print(f\"[ERRO] Falha ao ler manifesto '{NOME_MANIFESTO}': {e}\", file=sys.stderr)\n        print(\"RESULTADO: FALHA DE INTEGRIDADE (manifesto ilegível)\")\n        return 2\n\n    entradas: list[tuple[str, str]] = []\n    nomes_no_manifesto: set[str] = set()\n\n    for idx, l in enumerate(linhas, start=1):\n        linha = l.strip()\n        if not linha or linha.startswith(\"#\"):\n            continue\n\n        # Formatos aceitos: '<64 hex>  <nome>' ou '<64 hex> *<nome>'\n        partes = re.split(r\"\\s+[ *]?\", linha, maxsplit=1)\n        if len(partes) != 2:\n            print(f\"[ERRO] Entrada malformada na linha {idx} do manifesto: '{l}'\", file=sys.stderr)\n            print(\"RESULTADO: FALHA DE INTEGRIDADE (entrada malformada no manifesto)\")\n            return 2\n\n        hash_esperado, nome_arquivo = partes[0].strip(), partes[1].strip()\n\n        if not REGEX_HEX64.match(hash_esperado):\n            print(f\"[ERRO] Hash inválido (não possui 64 dígitos hex) na linha {idx}: '{hash_esperado}'\", file=sys.stderr)\n            print(\"RESULTADO: FALHA DE INTEGRIDADE (hash inválido no manifesto)\")\n            return 2\n\n        if not validar_seguranca_nome_arquivo(nome_arquivo):\n            print(f\"[ERRO] Nome de arquivo perigoso (absoluto ou com '..') na linha {idx}: '{nome_arquivo}'\", file=sys.stderr)\n            print(\"RESULTADO: FALHA DE INTEGRIDADE (nome de arquivo inseguro)\")\n            return 2\n\n        entradas.append((hash_esperado.lower(), nome_arquivo))\n        nomes_no_manifesto.add(nome_arquivo)\n\n    if not entradas:\n        print(f\"[ERRO] Manifesto '{NOME_MANIFESTO}' não contém nenhuma entrada válida de arquivo.\", file=sys.stderr)\n        print(\"RESULTADO: FALHA DE INTEGRIDADE (manifesto vazio ou sem entradas válidas)\")\n        return 2\n\n    falhas = 0\n    conferidos = 0\n\n    for hash_esperado, nome_relativo in entradas:\n        arquivo_alvo = diretorio_alvo / nome_relativo\n        if not arquivo_alvo.is_file():\n            print(f\"[FALHA] Arquivo listado no manifesto NÃO existe: {nome_relativo}\")\n            falhas += 1\n            continue\n\n        try:\n            hash_obtido = calcular_sha256_bytes(arquivo_alvo)\n        except Exception as e:\n            print(f\"[FALHA] Não foi possível ler bytes de '{nome_relativo}': {e}\")\n            falhas += 1\n            continue\n\n        if hash_obtido == hash_esperado:\n            print(f\"[OK] {nome_relativo}\")\n            conferidos += 1\n        else:\n            print(f\"[DIVERGÊNCIA] {nome_relativo}\")\n            print(f\"   Esperado: {hash_esperado}\")\n            print(f\"   Obtido:   {hash_obtido}\")\n            falhas += 1\n\n    # Varredura de arquivos adicionais não listados\n    arquivos_extras = 0\n    try:\n        for item in diretorio_alvo.iterdir():\n            if item.is_file():\n                nome = item.name\n                if nome == NOME_MANIFESTO or nome.endswith(\".pyc\"):\n                    continue\n                if nome not in nomes_no_manifesto:\n                    print(f\"AVISO: arquivo não listado no manifesto: {nome}\")\n                    arquivos_extras += 1\n    except Exception:\n        pass\n\n    if arquivos_extras > 0:\n        print(f\"Observação: {arquivos_extras} arquivos não listados no manifesto encontrados.\")\n\n    if falhas > 0:\n        print(f\"RESULTADO: FALHA DE INTEGRIDADE ({falhas} erro(s) em {len(entradas)} arquivo(s))\")\n        return 1\n\n    print(f\"RESULTADO: INTEGRIDADE CONFIRMADA ({conferidos} arquivos)\")\n    return 0\n\n\nif __name__ == \"__main__\":\n    sys.exit(main())\n";
+
+export const VERIFICADOR_INTEGRIDADE_SHA256 = "23679d0762e14b2cdddcfb0cd47f6b94afe81f992091cc3d4dfcd0b7be8f79f9";
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/export/xlsxWriter.ts
+TAMANHO: 8,390 bytes
+--------------------------------------------------------------------------------
+
+import JSZip from "jszip";
+import { escapeXml } from "./exportUtils";
+
+export interface XlsxCell {
+  value: string | number | null | undefined;
+  type?: "string" | "number";
+  bold?: boolean;
+}
+
+export type XlsxRowValue = XlsxCell | string | number | null | undefined;
+
+export interface XlsxColWidth {
+  colIndex: number; // 1-based (1 = A, 2 = B...)
+  width: number;
+}
+
+export interface XlsxSheet {
+  name: string;
+  rows: XlsxRowValue[][];
+  cols?: XlsxColWidth[];
+  freezeHeader?: boolean;
+  autoFilterRef?: string; // e.g. "A1:BB1"
+}
+
+/**
+ * Converte um índice de coluna numérico 1-based (1=A, 26=Z, 27=AA, 54=BB)
+ * para a notação de letras de colunas do Excel.
+ */
+export function colToLetter(colIndex: number): string {
+  let temp = colIndex;
+  let letter = "";
+  while (temp > 0) {
+    const rem = (temp - 1) % 26;
+    letter = String.fromCharCode(65 + rem) + letter;
+    temp = Math.floor((temp - 1) / 26);
+  }
+  return letter;
+}
+
+/**
+ * Gera o XML de uma planilha OpenXML.
+ */
+export function buildSheetXml(sheet: XlsxSheet): string {
+  let xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+  xml += `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">\n`;
+
+  if (sheet.freezeHeader) {
+    xml += `  <sheetViews>\n`;
+    xml += `    <sheetView tabSelected="1" workbookViewId="0">\n`;
+    xml += `      <pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>\n`;
+    xml += `    </sheetView>\n`;
+    xml += `  </sheetViews>\n`;
+  } else {
+    xml += `  <sheetViews>\n`;
+    xml += `    <sheetView workbookViewId="0"/>\n`;
+    xml += `  </sheetViews>\n`;
+  }
+
+  if (sheet.cols && sheet.cols.length > 0) {
+    xml += `  <cols>\n`;
+    for (const c of sheet.cols) {
+      xml += `    <col min="${c.colIndex}" max="${c.colIndex}" width="${c.width}" customWidth="1"/>\n`;
+    }
+    xml += `  </cols>\n`;
+  }
+
+  xml += `  <sheetData>\n`;
+  for (let rIdx = 0; rIdx < sheet.rows.length; rIdx++) {
+    const rowNum = rIdx + 1;
+    const row = sheet.rows[rIdx];
+    let rowXml = `    <row r="${rowNum}">\n`;
+    let hasCells = false;
+
+    for (let cIdx = 0; cIdx < row.length; cIdx++) {
+      const colNum = cIdx + 1;
+      const cellRef = `${colToLetter(colNum)}${rowNum}`;
+      const cellData = row[cIdx];
+
+      if (cellData === null || cellData === undefined) {
+        continue;
+      }
+
+      let val: string | number | null | undefined;
+      let isBold = false;
+      let explicitType: "string" | "number" | undefined;
+
+      if (typeof cellData === "object" && "value" in cellData) {
+        val = cellData.value;
+        isBold = Boolean(cellData.bold);
+        explicitType = cellData.type;
+      } else {
+        val = cellData;
+      }
+
+      if (val === null || val === undefined || val === "") {
+        continue;
+      }
+
+      const styleId = isBold ? 1 : 0;
+      hasCells = true;
+
+      const isNumeric =
+        explicitType === "number" ||
+        (explicitType !== "string" && typeof val === "number" && !isNaN(val));
+
+      if (isNumeric) {
+        const numVal = typeof val === "number" ? val : parseFloat(String(val));
+        rowXml += `      <c r="${cellRef}" s="${styleId}"><v>${numVal}</v></c>\n`;
+      } else {
+        const strVal = String(val);
+        rowXml += `      <c r="${cellRef}" s="${styleId}" t="inlineStr"><is><t xml:space="preserve">${escapeXml(strVal)}</t></is></c>\n`;
+      }
+    }
+
+    rowXml += `    </row>\n`;
+    if (hasCells) {
+      xml += rowXml;
+    } else {
+      xml += `    <row r="${rowNum}"/>\n`;
+    }
+  }
+  xml += `  </sheetData>\n`;
+
+  if (sheet.autoFilterRef) {
+    xml += `  <autoFilter ref="${sheet.autoFilterRef}"/>\n`;
+  }
+
+  xml += `</worksheet>`;
+  return xml;
+}
+
+/**
+ * Gera o XML de estilos (styles.xml) com fonte normal e negrito.
+ */
+function buildStylesXml(): string {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts count="2">
+    <font>
+      <sz val="10"/>
+      <name val="Calibri"/>
+      <family val="2"/>
+    </font>
+    <font>
+      <b/>
+      <sz val="10"/>
+      <name val="Calibri"/>
+      <family val="2"/>
+    </font>
+  </fonts>
+  <fills count="2">
+    <fill><patternFill patternType="none"/></fill>
+    <fill><patternFill patternType="gray125"/></fill>
+  </fills>
+  <borders count="1">
+    <border><left/><right/><top/><bottom/><diagonal/></border>
+  </borders>
+  <cellStyleXfs count="1">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>
+  </cellStyleXfs>
+  <cellXfs count="2">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+  </cellXfs>
+</styleSheet>`;
+}
+
+/**
+ * Constrói um arquivo .xlsx completo em memória e retorna como Blob.
+ *
+ * Implementação nativa via JSZip em conformidade com ISO/IEC 29500 (OpenXML).
+ * Não utiliza a biblioteca 'xlsx' (SheetJS) para evitar riscos de segurança (A-2).
+ */
+export async function buildXlsxBlob(sheets: XlsxSheet[]): Promise<Blob> {
+  const zip = new JSZip();
+
+  // 1. [Content_Types].xml
+  let contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+  contentTypesXml += `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n`;
+  contentTypesXml += `  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>\n`;
+  contentTypesXml += `  <Default Extension="xml" ContentType="application/xml"/>\n`;
+  contentTypesXml += `  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>\n`;
+  contentTypesXml += `  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>\n`;
+  sheets.forEach((_, idx) => {
+    contentTypesXml += `  <Override PartName="/xl/worksheets/sheet${idx + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>\n`;
+  });
+  contentTypesXml += `</Types>`;
+  zip.file("[Content_Types].xml", contentTypesXml);
+
+  // 2. _rels/.rels
+  const rootRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`;
+  zip.file("_rels/.rels", rootRelsXml);
+
+  // 3. xl/workbook.xml
+  let workbookXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+  workbookXml += `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">\n`;
+  workbookXml += `  <sheets>\n`;
+  sheets.forEach((sheet, idx) => {
+    workbookXml += `    <sheet name="${escapeXml(sheet.name)}" sheetId="${idx + 1}" r:id="rId${idx + 1}"/>\n`;
+  });
+  workbookXml += `  </sheets>\n`;
+  workbookXml += `</workbook>`;
+  zip.file("xl/workbook.xml", workbookXml);
+
+  // 4. xl/_rels/workbook.xml.rels
+  let workbookRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n`;
+  workbookRelsXml += `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n`;
+  sheets.forEach((_, idx) => {
+    workbookRelsXml += `  <Relationship Id="rId${idx + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${idx + 1}.xml"/>\n`;
+  });
+  workbookRelsXml += `  <Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>\n`;
+  workbookRelsXml += `</Relationships>`;
+  zip.file("xl/_rels/workbook.xml.rels", workbookRelsXml);
+
+  // 5. xl/styles.xml
+  zip.file("xl/styles.xml", buildStylesXml());
+
+  // 6. xl/worksheets/sheet{N}.xml
+  sheets.forEach((sheet, idx) => {
+    zip.file(`xl/worksheets/sheet${idx + 1}.xml`, buildSheetXml(sheet));
+  });
+
+  return await zip.generateAsync({
+    type: "blob",
+    mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+}
+
+export async function generateXlsxBuffer(sheets: XlsxSheet[]): Promise<Buffer> {
+  const blob = await buildXlsxBlob(sheets);
+  const arrayBuffer = await blob.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}

@@ -1,0 +1,1938 @@
+================================================================================
+PACOTE DE AUDITORIA EXTERNA — SAREL v2 (PPGTCA 2026)
+LOTE: LOTE3_MOTORES_CIENTIFICOS_TS | PARTE 1/9
+================================================================================
+Data de Geração: 21 de Outubro de 2026
+Limite por Arquivo: <= 90.000 bytes (Limite Rígido de Leitura)
+Total de Arquivos nesta parte: 7
+Arquivos contidos nesta parte:
+ - src/lib/gee/amostragemBiofisica.ts
+ - src/lib/gee/amostragemSoloNuLote.ts
+ - src/lib/gee/aoiTiling.ts
+ - src/lib/gee/auth.ts
+ - src/lib/gee/blocosEspaciais.ts
+ - src/lib/gee/compostoSoloNu.ts
+ - src/lib/gee/consolidacaoInspecao.ts
+================================================================================
+
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/amostragemBiofisica.ts
+TAMANHO: 4,527 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Classificação e Limiares Biofísicos Espectrais — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * O QUÊ ESTE MÓDULO REALIZA:
+ * - Realiza a separação objetiva, determinística e reprodutível de candidatos amostrais
+ *   no espaço biofísico bidimensional composto pelo Índice de Vegetação por Diferença
+ *   Normalizada (NDVI) e pelo Índice de Solo Exposto (BSI).
+ * - Categoriza o pixel orbital em três estados disjuntos:
+ *   1. Classe 1 (Erosão Laminar Ativa): BSI > 0.10 e NDVI < 0.40
+ *   2. Classe 0 (Controle / SPD Pleno): BSI < 0.00 e NDVI > 0.65
+ *   3. Classe Indefinida (Zona de Transição / Mista): Retida fora do conjunto de treino.
+ *
+ * POR QUÊ ESTE PROCEDIMENTO É EXIGIDO NA METODOLOGIA (SEÇÃO 3.1 & DECISÃO D02):
+ * 1. Eliminação de Viés e Subjetividade: A vetorização manual sobre tela introduz
+ *    inconsistências cognitivas entre intérpretes. O isolamento espectral automatizado
+ *    estabelece critérios matemáticos auditáveis e universais para toda a Bacia do Paraná 3.
+ * 2. Física da Degradação do Solo Paranaense: Na entressafra agrícola, a erosão laminar
+ *    decapita o horizonte A (rico em matéria orgânica), expondo o horizonte B textural
+ *    ou latossólico com acúmulo relativo de quartzo e óxidos de ferro (hematita/goethita).
+ *    Isso provoca elevação anômala da reflectância nas bandas do Vermelho (B4) e SWIR (B12),
+ *    deslocando o BSI para valores positivos (> 0.10) e mantendo o NDVI estagnado (< 0.40).
+ * 3. Física do Controle no Sistema Plantio Direto (SPD): Talhões com cobertura vegetal
+ *    intacta ou alta densidade de palhada residual seca mitigam a reflectância do solo nu
+ *    e garantem alta absorção fotossintética, posicionando o BSI em faixa negativa (< 0.00)
+ *    e o NDVI acima de 0.65.
+ * 4. Barreira de Proteção contra "Mixed Pixels": Manter pixels da faixa intermediária
+ *    como "indefinido" evita contaminar os algoritmos de aprendizado de máquina com
+ *    amostras espúrias de borda de talhão, estradas rurais ou terraços agrícolas.
+ */
+
+import type { ClasseAmostral } from "@/types/ponto";
+import { DECISOES, exigirParametro } from "@/config/decisoes";
+
+export const CRITERIOS_ESPECTRAIS = {
+  EROSAO: {
+    BSI_MIN: exigirParametro(DECISOES.D02, "bsiMin").valor,
+    NDVI_MAX: exigirParametro(DECISOES.D02, "ndviMax").valor,
+    rotulo: "Erosão Laminar (Classe 1)",
+    descricao: "Solo exposto e mineralizado sem cobertura vegetal ativa (Horizonte B exposto)",
+  },
+  CONTROLE: {
+    BSI_MAX: exigirParametro(DECISOES.D02, "bsiMax").valor,
+    NDVI_MIN: exigirParametro(DECISOES.D02, "ndviMin").valor,
+    rotulo: "Controle / SPD (Classe 0)",
+    descricao: "Solo protegido por biomassa ativa ou palhada residual densa no Sistema Plantio Direto",
+  },
+} as const;
+
+/**
+ * Classifica um ponto amostral estritamente segundo os limiares espectrais da pesquisa.
+ *
+ * O QUÊ: Mapeia o par (BSI, NDVI) medido pelo Sentinel-2 para um indicativo de triagem visual (UI).
+ *
+ * PRINCÍPIO DE DEMARCAÇÃO & REGRA 4 (BLINDAGEM CONTRA CIRCULARIDADE):
+ * Esta classificação espectral NÃO define o rótulo da matriz de treinamento e NUNCA
+ * substitui a verdade terrestre. A matriz de treinamento supervisionado aceita
+ * EXCLUSIVAMENTE rótulos consolidados de observadores humanos (interpretação visual
+ * cega na Fase A, campo na Fase B ou drone na Fase D). O papel deste módulo é
+ * exclusivamente de auditoria física e triagem preliminar de candidatos no mapa.
+ */
+export function classificarPontoEspectral(
+  bsi: number | null | undefined,
+  ndvi: number | null | undefined
+): ClasseAmostral {
+  if (
+    bsi === null ||
+    bsi === undefined ||
+    !Number.isFinite(bsi) ||
+    ndvi === null ||
+    ndvi === undefined ||
+    !Number.isFinite(ndvi)
+  ) {
+    return "indefinido";
+  }
+
+  // C27: Valor finito mas fora do domínio físico [-1, 1] vira indefinido
+  if (bsi < -1 || bsi > 1 || ndvi < -1 || ndvi > 1) {
+    return "indefinido";
+  }
+
+  // Classe 1: Erosão Laminar (BSI > 0.10 e NDVI < 0.40)
+  if (bsi > CRITERIOS_ESPECTRAIS.EROSAO.BSI_MIN && ndvi < CRITERIOS_ESPECTRAIS.EROSAO.NDVI_MAX) {
+    return "erosao";
+  }
+
+  // Classe 0: Controle / SPD (BSI < 0.00 e NDVI > 0.65)
+  if (bsi < CRITERIOS_ESPECTRAIS.CONTROLE.BSI_MAX && ndvi > CRITERIOS_ESPECTRAIS.CONTROLE.NDVI_MIN) {
+    return "controle";
+  }
+
+  return "indefinido";
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/amostragemSoloNuLote.ts
+TAMANHO: 25,129 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Amostragem de Solo Nu em Lote via Earth Engine REST API (C3)
+ * SAREL v2.0 — Disciplina Pericial PPGTCA 2026 (Decisões D07, D10, D11, D12, D16)
+ * ============================================================================
+ *
+ * OTIMIZAÇÃO DE CUSTO E TEMPO (REGRA C3):
+ * - Substitui a amostragem ponto a ponto (680 chamadas REST) por imagem reduzida
+ *   composta amostrada em blocos (~100 pontos por chamada REST v1 `value:compute`
+ *   com `Image.reduceRegions`).
+ * - Redução do tráfego de rede em >95% e diminuição drástica do tempo de parede.
+ * - Cache local determinístico persistente indexado por:
+ *   `${candidatoId}@lat=${lat},lon=${lon}@def=${hash}`
+ * - Invalidação automática quando a definição espectral/temporal é alterada.
+ */
+
+import crypto from "crypto";
+import fs from "fs";
+import path from "path";
+import { isClasseUsoElegivel } from "./elegibilidade";
+import {
+  WORLDCOVER_V100_ASSET_ID,
+  WORLDCOVER_V200_ASSET_ID,
+  avaliarSuficienciaAmostralD11,
+} from "./copernicusGeeClient";
+import { Proveniencia, medido, indisponivel, valorOuNulo } from "../../types/proveniencia";
+import { DiarioRequisicoes, registrarChamadaDiario } from "../seguranca/diarioRequisicoes";
+import { JANELA_TEMPORAL_D05 } from "@/lib/matriz/perfis";
+export { JANELA_TEMPORAL_D05 };
+
+export const DEFINICAO_METRICA_SOLO_NU =
+  "s2_sr_harmonized_2016_2026_ndvi_lt_0.25_worldcover_v100_v200";
+
+export const ASSET_SENTINEL2_SR = "COPERNICUS/S2_SR_HARMONIZED";
+export const LIMIAR_NDVI_SOLO_NU_D10 = 0.25;
+export const TAMANHO_BLOCO_PADRAO = 100;
+
+/** Intervalo da janela de composição (D05), derivado da constante única de D05. */
+export const INTERVALO_COMPOSICAO_D05 = `${JANELA_TEMPORAL_D05.inicio} a ${JANELA_TEMPORAL_D05.fim}`;
+
+export interface PontoAmostragemSoloNu {
+  id: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface MedicaoSoloNuLote {
+  id: string;
+  latitude: number;
+  longitude: number;
+  frequenciaSoloNu: Proveniencia<number>; // Fração de cenas válidas com solo nu [0, 1] ou indisponível
+  nObservacoes: number;
+  classeWorldCover2020: number | null;
+  classeWorldCover2021: number | null;
+  ehElegivelUso: boolean; // Ambas em [30, 40]
+  fonte: string;
+  chaveCache: string;
+}
+
+export interface CacheFrequenciaSoloNuArquivo {
+  versao: string;
+  definicao: string;
+  hashDefinicao: string;
+  atualizadoEm: string;
+  totalItens: number;
+  itens: Record<string, MedicaoSoloNuLote>;
+}
+
+export interface MetricasExecucaoLote {
+  totalPontos: number;
+  cacheHits: number;
+  cacheMisses: number;
+  requisicoesHttp: number;
+  tempoTotalMs: number;
+  requisicoesEvitadas: number;
+  reducaoRequisicoesPct: number;
+  pontosIndisponiveis: number;
+}
+
+export interface OpcoesAmostragemSoloNuLote {
+  tamanhoBloco?: number;
+  caminhoCache?: string;
+  ignorarCache?: boolean;
+  salvarCache?: boolean;
+  timeoutMs?: number;
+  diario?: DiarioRequisicoes;
+}
+
+/**
+ * Calcula o hash determinístico SHA-256 da definição metodológica da métrica.
+ */
+export function calcularHashDefinicao(definicao: string = DEFINICAO_METRICA_SOLO_NU): string {
+  return crypto.createHash("sha256").update(definicao.trim()).digest("hex").slice(0, 16);
+}
+
+/**
+ * Constrói a chave canônica de cache para um candidato.
+ */
+export function gerarChaveCacheSoloNu(
+  id: string,
+  latitude: number,
+  longitude: number,
+  hashDefinicao: string = calcularHashDefinicao()
+): string {
+  const latStr = latitude.toFixed(5);
+  const lonStr = longitude.toFixed(5);
+  return `${id}@lat=${latStr},lon=${lonStr}@def=${hashDefinicao}`;
+}
+
+/**
+ * Retorna o caminho canônico do arquivo de cache de solo nu da BP3.
+ */
+export function obterCaminhoPadraoCacheFrequenciaSoloNu(): string {
+  return path.resolve(process.cwd(), "docs/verificacoes/cache_frequencia_solo_nu_bp3.json");
+}
+
+/**
+ * Carrega o cache local persistente de frequência de solo nu.
+ * Invalida e descarta automaticamente o cache se a definição do método divergir.
+ */
+export function carregarCacheFrequenciaSoloNu(
+  caminhoArquivo?: string
+): CacheFrequenciaSoloNuArquivo | null {
+  const arquivo = caminhoArquivo || obterCaminhoPadraoCacheFrequenciaSoloNu();
+  if (!fs.existsSync(arquivo)) {
+    return null;
+  }
+
+  try {
+    const raw = fs.readFileSync(arquivo, "utf8");
+    const parsed = JSON.parse(raw) as CacheFrequenciaSoloNuArquivo;
+
+    const hashEsperado = calcularHashDefinicao();
+    if (parsed.hashDefinicao !== hashEsperado) {
+      // Invalidação automática por mudança de definição metodológica
+      return null;
+    }
+
+    if (!parsed.itens || typeof parsed.itens !== "object") {
+      return null;
+    }
+
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Salva o cache de frequência de solo nu no disco com formatação legível para auditoria.
+ */
+export function salvarCacheFrequenciaSoloNu(
+  cache: CacheFrequenciaSoloNuArquivo,
+  caminhoArquivo?: string
+): void {
+  const arquivo = caminhoArquivo || obterCaminhoPadraoCacheFrequenciaSoloNu();
+  const dir = path.dirname(arquivo);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  const payload: CacheFrequenciaSoloNuArquivo = {
+    ...cache,
+    hashDefinicao: calcularHashDefinicao(cache.definicao || DEFINICAO_METRICA_SOLO_NU),
+    atualizadoEm: new Date().toISOString(),
+    totalItens: Object.keys(cache.itens).length,
+  };
+
+  fs.writeFileSync(arquivo, JSON.stringify(payload, null, 2), "utf8");
+}
+
+/**
+ * Constrói o grafo de expressão AST do Google Earth Engine REST v1
+ * para executar `Image.reduceRegions` sobre um bloco de pontos.
+ */
+export function construirExpressaoGeeSoloNuLote(
+  pontos: PontoAmostragemSoloNu[]
+): Record<string, unknown> {
+  const featuresGeoJson = pontos.map((pt, idx) => ({
+    type: "Feature",
+    id: String(idx),
+    geometry: {
+      type: "Point",
+      coordinates: [pt.longitude, pt.latitude],
+    },
+    properties: {
+      ponto_id: pt.id,
+      latitude: pt.latitude,
+      longitude: pt.longitude,
+    },
+  }));
+
+  return {
+    result: "0",
+    values: {
+      "0": {
+        functionInvocationValue: {
+          functionName: "Image.reduceRegions",
+          arguments: {
+            image: { valueReference: "img_composta" },
+            collection: { valueReference: "features_pontos" },
+            reducer: {
+              functionInvocationValue: {
+                functionName: "Reducer.first",
+                arguments: {},
+              },
+            },
+            scale: { constantValue: 10 },
+          },
+        },
+      },
+      features_pontos: {
+        functionInvocationValue: {
+          functionName: "FeatureCollection",
+          arguments: {
+            features: {
+              constantValue: featuresGeoJson,
+            },
+          },
+        },
+      },
+      img_composta: {
+        functionInvocationValue: {
+          functionName: "Image.addBands",
+          arguments: {
+            dstImg: { valueReference: "img_com_worldcover_2021" },
+            srcImg: { valueReference: "img_worldcover_2020" },
+          },
+        },
+      },
+      img_worldcover_2020: {
+        functionInvocationValue: {
+          functionName: "Image.rename",
+          arguments: {
+            input: {
+              functionInvocationValue: {
+                functionName: "Image.load",
+                arguments: {
+                  id: { constantValue: WORLDCOVER_V100_ASSET_ID },
+                },
+              },
+            },
+            names: { constantValue: ["Map_2020"] },
+          },
+        },
+      },
+      img_com_worldcover_2021: {
+        functionInvocationValue: {
+          functionName: "Image.addBands",
+          arguments: {
+            dstImg: { valueReference: "img_solo_nu_reduzida" },
+            srcImg: {
+              functionInvocationValue: {
+                functionName: "Image.rename",
+                arguments: {
+                  input: {
+                    functionInvocationValue: {
+                      functionName: "Image.load",
+                      arguments: {
+                        id: { constantValue: WORLDCOVER_V200_ASSET_ID },
+                      },
+                    },
+                  },
+                  names: { constantValue: ["Map_2021"] },
+                },
+              },
+            },
+          },
+        },
+      },
+      img_solo_nu_reduzida: {
+        functionInvocationValue: {
+          functionName: "ImageCollection.reduce",
+          arguments: {
+            collection: { valueReference: "colecao_mascaras_solo_nu" },
+            reducer: {
+              functionInvocationValue: {
+                functionName: "Reducer.combine",
+                arguments: {
+                  reducer1: {
+                    functionInvocationValue: {
+                      functionName: "Reducer.mean",
+                      arguments: {},
+                    },
+                  },
+                  reducer2: {
+                    functionInvocationValue: {
+                      functionName: "Reducer.count",
+                      arguments: {},
+                    },
+                  },
+                  sharedInputs: { constantValue: true },
+                },
+              },
+            },
+          },
+        },
+      },
+      colecao_mascaras_solo_nu: {
+        functionInvocationValue: {
+          functionName: "Collection.map",
+          arguments: {
+            collection: { valueReference: "colecao_filtrada_s2" },
+            baseAlgorithm: {
+              functionDefinitionValue: {
+                argumentNames: ["img"],
+                body: "calcula_solo_nu_binario",
+              },
+            },
+          },
+        },
+      },
+      calcula_solo_nu_binario: {
+        functionInvocationValue: {
+          functionName: "Image.updateMask",
+          arguments: {
+            image: {
+              functionInvocationValue: {
+                functionName: "Image.rename",
+                arguments: {
+                  input: {
+                    functionInvocationValue: {
+                      functionName: "Image.lt",
+                      arguments: {
+                        image1: {
+                          functionInvocationValue: {
+                            functionName: "Image.normalizedDifference",
+                            arguments: {
+                              input: { argumentReference: "img" },
+                              bandNames: { constantValue: ["B8", "B4"] },
+                            },
+                          },
+                        },
+                        image2: {
+                          functionInvocationValue: {
+                            functionName: "Image.constant",
+                            arguments: { value: { constantValue: LIMIAR_NDVI_SOLO_NU_D10 } },
+                          },
+                        },
+                      },
+                    },
+                  },
+                  names: { constantValue: ["solo_nu"] },
+                },
+              },
+            },
+            mask: {
+              functionInvocationValue: {
+                functionName: "Image.or",
+                arguments: {
+                  image1: {
+                    functionInvocationValue: {
+                      functionName: "Image.eq",
+                      arguments: {
+                        image1: {
+                          functionInvocationValue: {
+                            functionName: "Image.select",
+                            arguments: {
+                              input: { argumentReference: "img" },
+                              bandSelectors: { constantValue: ["SCL"] },
+                            },
+                          },
+                        },
+                        image2: {
+                          functionInvocationValue: {
+                            functionName: "Image.constant",
+                            arguments: { value: { constantValue: 4 } },
+                          },
+                        },
+                      },
+                    },
+                  },
+                  image2: {
+                    functionInvocationValue: {
+                      functionName: "Image.eq",
+                      arguments: {
+                        image1: {
+                          functionInvocationValue: {
+                            functionName: "Image.select",
+                            arguments: {
+                              input: { argumentReference: "img" },
+                              bandSelectors: { constantValue: ["SCL"] },
+                            },
+                          },
+                        },
+                        image2: {
+                          functionInvocationValue: {
+                            functionName: "Image.constant",
+                            arguments: { value: { constantValue: 5 } },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      colecao_filtrada_s2: {
+        functionInvocationValue: {
+          functionName: "Collection.filter",
+          arguments: {
+            collection: {
+              functionInvocationValue: {
+                functionName: "Collection.filter",
+                arguments: {
+                  collection: {
+                    functionInvocationValue: {
+                      functionName: "ImageCollection.load",
+                      arguments: { id: { constantValue: ASSET_SENTINEL2_SR } },
+                    },
+                  },
+                  filter: {
+                    functionInvocationValue: {
+                      functionName: "Filter.dateRangeContains",
+                      arguments: {
+                        leftValue: {
+                          functionInvocationValue: {
+                            functionName: "DateRange",
+                            arguments: {
+                              start: { constantValue: JANELA_TEMPORAL_D05.inicio },
+                              end: { constantValue: JANELA_TEMPORAL_D05.fim },
+                            },
+                          },
+                        },
+                        rightField: { constantValue: "system:time_start" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            filter: {
+              functionInvocationValue: {
+                functionName: "Filter.lessThan",
+                arguments: {
+                  leftField: { constantValue: "CLOUDY_PIXEL_PERCENTAGE" },
+                  rightValue: { constantValue: 20 },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+}
+
+/**
+ * Converte a resposta GeoJSON FeatureCollection de `Image.reduceRegions`
+ * em mapa de medições indexado pelo ID do candidato.
+ */
+export function processarRespostaGeeReduceRegions(
+  respostaJson: any,
+  pontosOriginais: PontoAmostragemSoloNu[]
+): Map<string, MedicaoSoloNuLote> {
+  const resultado = new Map<string, MedicaoSoloNuLote>();
+  const mapaOriginais = new Map(pontosOriginais.map((p) => [p.id, p]));
+
+  const features =
+    respostaJson?.result?.features ||
+    respostaJson?.features ||
+    (Array.isArray(respostaJson) ? respostaJson : []);
+
+  const hashDef = calcularHashDefinicao();
+
+  for (const feat of features) {
+    const props = feat?.properties || {};
+    const pontoId = props.ponto_id || feat?.id || props.id;
+    if (!pontoId) continue;
+
+    const pontoOriginal = mapaOriginais.get(pontoId);
+    const lat = pontoOriginal ? pontoOriginal.latitude : Number(props.latitude ?? feat?.geometry?.coordinates?.[1]);
+    const lon = pontoOriginal ? pontoOriginal.longitude : Number(props.longitude ?? feat?.geometry?.coordinates?.[0]);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+
+    const rawCount = props.solo_nu_count ?? props.count ?? props.n_observacoes;
+    const nObservacoes = typeof rawCount === "number" && Number.isFinite(rawCount) ? Math.round(rawCount) : 0;
+    const avaliacaoD11 =
+      typeof rawCount === "number" && Number.isFinite(rawCount)
+        ? avaliarSuficienciaAmostralD11(nObservacoes)
+        : {
+            suficiente: false,
+            causa: "insuficiente" as const,
+            motivo: "Contagem de observações válida ausente.",
+          };
+
+    const rawSoloNu = props.solo_nu_mean ?? props.solo_nu ?? props.frequenciaSoloNu;
+    let freqNuProv: Proveniencia<number>;
+
+    if (rawSoloNu && typeof rawSoloNu === "object" && "estado" in rawSoloNu) {
+      freqNuProv = rawSoloNu as Proveniencia<number>;
+    } else if (typeof rawSoloNu === "number" && Number.isFinite(rawSoloNu) && avaliacaoD11.suficiente) {
+      const clamped = Number(Math.max(0, Math.min(1, rawSoloNu)).toFixed(4)); // permitido: clamp de seguranca numerica para fracao normalizada de satelite no intervalo 0 a 1
+      freqNuProv = medido(
+        clamped,
+        "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        INTERVALO_COMPOSICAO_D05,
+        new Date().toISOString(),
+        `reduceRegions first(solo_nu_mean), nObservacoes=${nObservacoes}`
+      );
+    } else {
+      freqNuProv = indisponivel(
+        "insuficiente",
+        avaliacaoD11.motivo ?? "Sem observações válidas ou pixel sem dado para cálculo de frequência de solo nu"
+      );
+    }
+
+    const raw2020 = props.Map_2020 ?? props.classeWorldCover2020;
+    const classeWorldCover2020 =
+      typeof raw2020 === "number" && Number.isFinite(raw2020) ? Math.round(raw2020) : null;
+
+    const raw2021 = props.Map_2021 ?? props.Map ?? props.classeWorldCover2021;
+    const classeWorldCover2021 =
+      typeof raw2021 === "number" && Number.isFinite(raw2021) ? Math.round(raw2021) : null;
+
+    const ehElegivelUso =
+      classeWorldCover2020 !== null &&
+      classeWorldCover2021 !== null &&
+      isClasseUsoElegivel(classeWorldCover2020) &&
+      isClasseUsoElegivel(classeWorldCover2021);
+
+    const chaveCache = gerarChaveCacheSoloNu(pontoId, lat, lon, hashDef);
+
+    resultado.set(pontoId, {
+      id: pontoId,
+      latitude: lat,
+      longitude: lon,
+      frequenciaSoloNu: freqNuProv,
+      nObservacoes,
+      classeWorldCover2020,
+      classeWorldCover2021,
+      ehElegivelUso,
+      fonte: "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      chaveCache,
+    });
+  }
+
+  return resultado;
+}
+
+/**
+ * Amostragem de Frequência de Solo Nu em Lote via Earth Engine REST API.
+ * Aplica cacheamento persistente e particionamento em blocos de até 100 pontos.
+ */
+export async function medirFrequenciaSoloNuEmLoteGeeRest(
+  pontos: PontoAmostragemSoloNu[],
+  credenciais: { accessToken: string; projectId: string } | null,
+  opcoes?: OpcoesAmostragemSoloNuLote
+): Promise<{ resultados: Map<string, MedicaoSoloNuLote>; metricas: MetricasExecucaoLote }> {
+  const inicioWallClock = performance.now();
+  const tamanhoBloco = typeof opcoes?.tamanhoBloco === "number" ? opcoes.tamanhoBloco : TAMANHO_BLOCO_PADRAO;
+  const caminhoCache = opcoes?.caminhoCache || obterCaminhoPadraoCacheFrequenciaSoloNu();
+  const ignorarCache = Boolean(opcoes?.ignorarCache);
+  const salvarAoFinal = opcoes?.salvarCache !== false;
+  const timeoutMs = typeof opcoes?.timeoutMs === "number" ? opcoes.timeoutMs : 30000; // permitido: timeout de rede de requisicao http em milissegundos para conexao gee
+
+  const resultados = new Map<string, MedicaoSoloNuLote>();
+  let cacheAtual: CacheFrequenciaSoloNuArquivo | null = null;
+  let cacheHits = 0;
+  let cacheMisses = 0;
+  let requisicoesHttp = 0;
+
+  const hashDef = calcularHashDefinicao();
+
+  if (!ignorarCache) {
+    cacheAtual = carregarCacheFrequenciaSoloNu(caminhoCache);
+  }
+
+  if (!cacheAtual) {
+    cacheAtual = {
+      versao: "2.0",
+      definicao: DEFINICAO_METRICA_SOLO_NU,
+      hashDefinicao: hashDef,
+      atualizadoEm: new Date().toISOString(),
+      totalItens: 0,
+      itens: {},
+    };
+  }
+
+  const pontosParaConsultar: PontoAmostragemSoloNu[] = [];
+
+  for (const pt of pontos) {
+    const chave = gerarChaveCacheSoloNu(pt.id, pt.latitude, pt.longitude, hashDef);
+    const itemEmCache = cacheAtual.itens[chave];
+
+    if (itemEmCache && !ignorarCache) {
+      resultados.set(pt.id, itemEmCache);
+      cacheHits++;
+    } else {
+      pontosParaConsultar.push(pt);
+      cacheMisses++;
+    }
+  }
+
+  let houveAtualizacaoCache = false;
+
+  // Se houver pontos pendentes e credenciais NÃO fornecidas, declara-os como indisponíveis (P12)
+  if (pontosParaConsultar.length > 0 && (!credenciais?.accessToken || !credenciais?.projectId)) {
+    for (const pt of pontosParaConsultar) {
+      const chave = gerarChaveCacheSoloNu(pt.id, pt.latitude, pt.longitude, hashDef);
+      resultados.set(pt.id, {
+        id: pt.id,
+        latitude: pt.latitude,
+        longitude: pt.longitude,
+        frequenciaSoloNu: indisponivel(
+          "servico-indisponivel",
+          "Credenciais GEE não configuradas (SAREL_GEE_SERVICE_ACCOUNT_FILE ausente)"
+        ),
+        nObservacoes: 0,
+        classeWorldCover2020: null,
+        classeWorldCover2021: null,
+        ehElegivelUso: false,
+        fonte: "GEE REST v1 (sem credencial)",
+        chaveCache: chave,
+      });
+    }
+  } else if (pontosParaConsultar.length > 0 && credenciais?.accessToken && credenciais?.projectId) {
+    // Executa em blocos via REST com credencial real
+    for (let i = 0; i < pontosParaConsultar.length; i += tamanhoBloco) {
+      const lote = pontosParaConsultar.slice(i, i + tamanhoBloco);
+      const expr = construirExpressaoGeeSoloNuLote(lote);
+
+      const endpoint = `https://earthengine.googleapis.com/v1/projects/${encodeURIComponent(
+        credenciais.projectId
+      )}/value:compute`;
+
+      requisicoesHttp++;
+      const inicioReq = performance.now();
+      let res: Response | null = null;
+      let textoResposta = "";
+      let bytesResposta = 0;
+      let statusHttp = 0;
+
+      try {
+        res = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${credenciais.accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ expression: expr }),
+          signal: AbortSignal.timeout(timeoutMs),
+        });
+        statusHttp = res.status;
+        textoResposta = await res.text();
+        bytesResposta = Buffer.byteLength(textoResposta, "utf8");
+      } catch {
+        statusHttp = 0;
+      }
+
+      const duracaoReq = Math.round(performance.now() - inicioReq);
+
+      if (opcoes?.diario) {
+        registrarChamadaDiario(opcoes.diario, {
+          timestampIso: new Date().toISOString(),
+          servico: "GEE",
+          endpoint,
+          metodoHttp: "POST",
+          quantidadeItens: lote.length,
+          tamanhoRespostaBytes: bytesResposta,
+          codigoHttp: statusHttp,
+          duracaoMs: duracaoReq,
+        });
+      }
+
+      if (res && res.ok && textoResposta) {
+        try {
+          const dados = JSON.parse(textoResposta);
+          const processados = processarRespostaGeeReduceRegions(dados, lote);
+
+          for (const [id, med] of processados.entries()) {
+            resultados.set(id, med);
+            cacheAtual.itens[med.chaveCache] = med;
+            houveAtualizacaoCache = true;
+          }
+        } catch {
+          // Erro de parse de JSON
+        }
+      }
+
+      // Pontos que não receberam resultado nesta chamada são marcados como indisponíveis
+      for (const pt of lote) {
+        if (!resultados.has(pt.id)) {
+          const chave = gerarChaveCacheSoloNu(pt.id, pt.latitude, pt.longitude, hashDef);
+          resultados.set(pt.id, {
+            id: pt.id,
+            latitude: pt.latitude,
+            longitude: pt.longitude,
+            frequenciaSoloNu: indisponivel(
+              "servico-indisponivel",
+              `Falha na requisição HTTP GEE REST (status ${statusHttp})`
+            ),
+            nObservacoes: 0,
+            classeWorldCover2020: null,
+            classeWorldCover2021: null,
+            ehElegivelUso: false,
+            fonte: "GEE REST v1",
+            chaveCache: chave,
+          });
+        }
+      }
+    }
+  }
+
+  if (houveAtualizacaoCache && salvarAoFinal) {
+    salvarCacheFrequenciaSoloNu(cacheAtual, caminhoCache);
+  }
+
+  const fimWallClock = performance.now();
+  const tempoTotalMs = Math.round(fimWallClock - inicioWallClock);
+  const totalPontos = pontos.length;
+  const requisicoesEvitadas = Math.max(0, totalPontos - requisicoesHttp); // permitido: metrica contavel de requisicoes http poupadas no processamento em lote
+  const reducaoRequisicoesPct =
+    totalPontos > 0 ? Number(((requisicoesEvitadas / totalPontos) * 100).toFixed(1)) : 0;
+
+  let pontosIndisponiveis = 0;
+  for (const med of resultados.values()) {
+    if (med.frequenciaSoloNu.estado === "indisponivel") {
+      pontosIndisponiveis++;
+    }
+  }
+
+  return {
+    resultados,
+    metricas: {
+      totalPontos,
+      cacheHits,
+      cacheMisses,
+      requisicoesHttp,
+      tempoTotalMs,
+      requisicoesEvitadas,
+      reducaoRequisicoesPct,
+      pontosIndisponiveis,
+    },
+  };
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/aoiTiling.ts
+TAMANHO: 2,865 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * Utilitários puros de Geometria e Tiling Espacial de Áreas de Interesse (AOI).
+ *
+ * Módulo puramente geométrico (zero dependência de SDKs externos ou I/O)
+ * para garantir testes ultra-rápidos e isolamento de responsabilidades.
+ */
+
+/**
+ * Calcula a Bounding Box [minLng, minLat, maxLng, maxLat] de um GeoJSON Polygon ou MultiPolygon.
+ */
+export function getGeoJsonBBox(
+  geom: GeoJSON.Polygon | GeoJSON.MultiPolygon
+): [number, number, number, number] {
+  let minLng = Infinity;
+  let minLat = Infinity;
+  let maxLng = -Infinity;
+  let maxLat = -Infinity;
+
+  const extractCoords = (coords: any) => {
+    if (typeof coords[0] === "number") {
+      const [lng, lat] = coords;
+      if (lng < minLng) minLng = lng;
+      if (lng > maxLng) maxLng = lng;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+    } else {
+      coords.forEach(extractCoords);
+    }
+  };
+
+  extractCoords(geom.coordinates);
+  return [minLng, minLat, maxLng, maxLat];
+}
+
+/**
+ * Divide uma AOI em uma grade regular de sub-regiões (lotes/tiles) para áreas extensas
+ * (ex: Estado do Paraná), permitindo processamento em lote em resolução máxima (10m)
+ * sem exceder os limites de timeout ou memória do Earth Engine.
+ */
+export function generateAOITiles(
+  aoiGeoJSON: GeoJSON.Polygon | GeoJSON.MultiPolygon,
+  maxTileSizeDeg?: number
+): GeoJSON.Polygon[] {
+  const tamanhoTile = maxTileSizeDeg !== undefined ? maxTileSizeDeg : 1.0;
+  const [minLng, minLat, maxLng, maxLat] = getGeoJsonBBox(aoiGeoJSON);
+  const dLng = maxLng - minLng;
+  const dLat = maxLat - minLat;
+
+  if (dLng <= tamanhoTile && dLat <= tamanhoTile) {
+    if (aoiGeoJSON.type === "Polygon") {
+      return [aoiGeoJSON as GeoJSON.Polygon];
+    }
+    return [
+      {
+        type: "Polygon",
+        coordinates: [
+          [
+            [minLng, minLat],
+            [minLng, maxLat],
+            [maxLng, maxLat],
+            [maxLng, minLat],
+            [minLng, minLat],
+          ],
+        ],
+      },
+    ];
+  }
+
+  let nCols = Math.ceil(dLng / tamanhoTile);
+  if (nCols < 1) nCols = 1;
+  let nRows = Math.ceil(dLat / tamanhoTile);
+  if (nRows < 1) nRows = 1;
+
+  const tiles: GeoJSON.Polygon[] = [];
+  const colStep = dLng / nCols;
+  const rowStep = dLat / nRows;
+
+  for (let i = 0; i < nCols; i++) {
+    for (let j = 0; j < nRows; j++) {
+      const tileMinLng = minLng + i * colStep;
+      const tileMaxLng = minLng + (i + 1) * colStep;
+      const tileMinLat = minLat + j * rowStep;
+      const tileMaxLat = minLat + (j + 1) * rowStep;
+
+      tiles.push({
+        type: "Polygon",
+        coordinates: [
+          [
+            [tileMinLng, tileMinLat],
+            [tileMinLng, tileMaxLat],
+            [tileMaxLng, tileMaxLat],
+            [tileMaxLng, tileMinLat],
+            [tileMinLng, tileMinLat],
+          ],
+        ],
+      });
+    }
+  }
+
+  return tiles;
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/auth.ts
+TAMANHO: 4,273 bytes
+--------------------------------------------------------------------------------
+
+import crypto from "crypto";
+import type { CredenciaisServiceAccount } from "@/lib/seguranca/sessaoEfemera";
+
+/**
+ * Autenticação OAuth2 "Service Account" (RFC 7523 JWT Bearer) implementada com
+ * o módulo nativo `crypto` do Node — sem dependências externas — para trocar a
+ * chave privada da Service Account por um access_token real do Google.
+ *
+ * Isto é usado tanto para o teste de credenciais (/api/auth/gee-test, que hoje
+ * apenas validava o FORMATO do JSON) quanto para autorizar chamadas à API REST
+ * do Earth Engine. Uma falha aqui é sempre um erro real vindo do Google
+ * (chave inválida, projeto sem Earth Engine habilitado, relógio do servidor
+ * dessincronizado, etc.), nunca uma simulação.
+ */
+
+const GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token";
+
+export interface GoogleAccessToken {
+  accessToken: string;
+  expiresAt: number; // epoch ms
+}
+
+function base64url(input: Buffer | string): string {
+  return Buffer.from(input).toString("base64").replace(/=+$/, "").replace(/\+/g, "-").replace(/\//g, "_");
+}
+
+function signJwtRS256(payload: Record<string, unknown>, header: Record<string, unknown>, privateKeyPem: string): string {
+  const encodedHeader = base64url(JSON.stringify(header));
+  const encodedPayload = base64url(JSON.stringify(payload));
+  const signingInput = `${encodedHeader}.${encodedPayload}`;
+
+  const signer = crypto.createSign("RSA-SHA256");
+  signer.update(signingInput);
+  signer.end();
+
+  let signature: Buffer;
+  try {
+    signature = signer.sign(privateKeyPem);
+  } catch (err: any) {
+    throw new Error(
+      `Não foi possível assinar o JWT com a chave privada fornecida. A chave está corrompida, truncada ou não é uma RSA PEM válida. Detalhe: ${err.message}`
+    );
+  }
+
+  return `${signingInput}.${base64url(signature)}`;
+}
+
+/**
+ * Troca a Service Account (client_email + private_key) por um access_token
+ * OAuth2 válido, seguindo o fluxo "JWT Bearer" descrito em
+ * https://developers.google.com/identity/protocols/oauth2/service-account
+ */
+export async function getGoogleAccessToken(
+  credentials: Pick<CredenciaisServiceAccount, "client_email" | "private_key" | "token_uri">,
+  scopes: string[]
+): Promise<GoogleAccessToken> {
+  // N16 / Mitigação SSRF: aceita token_uri apenas se for estritamente o endpoint oficial do Google
+  if (credentials.token_uri && credentials.token_uri !== GOOGLE_TOKEN_URI) {
+    throw new Error(`token_uri não autorizado: apenas ${GOOGLE_TOKEN_URI} é permitido.`);
+  }
+
+  const nowSec = Math.floor(Date.now() / 1000);
+
+  const header = { alg: "RS256", typ: "JWT" };
+  const payload = {
+    iss: credentials.client_email,
+    scope: scopes.join(" "),
+    aud: GOOGLE_TOKEN_URI,
+    iat: nowSec,
+    exp: nowSec + 3600,
+  };
+
+  // A chave privada do JSON baixado do GCP costuma vir com "\n" literais quando
+  // colada/serializada; normaliza para quebras de linha reais antes de assinar.
+  const normalizedKey = credentials.private_key.includes("\\n")
+    ? credentials.private_key.replace(/\\n/g, "\n")
+    : credentials.private_key;
+
+  const assertion = signJwtRS256(payload, header, normalizedKey);
+
+  const body = new URLSearchParams({
+    grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+    assertion,
+  });
+
+  const res = await fetch(GOOGLE_TOKEN_URI, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString(),
+    signal: AbortSignal.timeout(15000),
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok || !data?.access_token) {
+    if (data?.error_description || data?.error) {
+      console.error("[AUTH] Erro retornado pelo Google OAuth:", data?.error, data?.error_description);
+    }
+    throw new Error(`Google recusou a autenticação da Service Account (HTTP ${res.status}).`);
+  }
+
+  const segundosValidade = typeof data.expires_in === "number" ? data.expires_in : 3600; // permitido: fallback de protocolo oauth2 rfc6749 para token expiravel
+  return {
+    accessToken: data.access_token,
+    expiresAt: Date.now() + segundosValidade * 1000,
+  };
+}
+
+export const EARTH_ENGINE_SCOPES = [
+  "https://www.googleapis.com/auth/earthengine",
+  "https://www.googleapis.com/auth/devstorage.read_only",
+  "https://www.googleapis.com/auth/cloud-platform",
+];
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/blocosEspaciais.ts
+TAMANHO: 6,969 bytes
+--------------------------------------------------------------------------------
+
+﻿/**
+ * ============================================================================
+ * Blocos Espaciais e Variograma Empírico — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * FUNDAMENTAÇÃO CIENTÍFICA (PLANO V3, §3.7 E CORREÇÃO DO ACHADO I4):
+ * Dados geoespaciais violam a hipótese de independência (IID). Validação cruzada
+ * aleatória coloca vizinhos autocorrelacionados em treino e teste ao mesmo tempo,
+ * inflando drasticamente as métricas de acurácia (Roberts et al., 2017; Ploton et al., 2020).
+ *
+ * PROCEDIMENTO RIGOROSO:
+ * 1. O tamanho do bloco espacial NÃO é arbitrado; ele é derivado do alcance do
+ *    variograma empírico das features primárias (declividade, solo nu).
+ * 2. Não há piso arbitrário de 10 km (corrigido achado S1-15).
+ * 3. Se o variograma for inconclusivo (poucos pares ou sem patamar nítido),
+ *    adota-se a aresta de fallback (ex.: P01 = 20 km) com registro explícito de que
+ *    é escolha provisória e sem atribuir falsamente o valor de 20 km a Roberts et al.
+ * 4. Parâmetros são passados explicitamente sem defaults numéricos na assinatura (Regra 9).
+ */
+
+export interface PontoGeo {
+  latitude: number;
+  longitude: number;
+  valor: number;
+}
+
+export interface SemivariogramaBin {
+  distanciaMediaKm: number;
+  semivariancia: number;
+  numPares: number;
+}
+
+export interface ResultadoVariograma {
+  bins: SemivariogramaBin[];
+  alcanceEstimadoKm: number;
+  patamarEstimado: number;
+  efeitoPepitaEstimado: number;
+  ehConclusivo: boolean;
+  arestaBlocoAdotadaKm: number;
+  justificativaAresta: string;
+}
+
+/**
+ * Distância Haversine entre duas coordenadas geográficas em km.
+ */
+export function calcularDistanciaKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Raio médio da Terra em km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+export interface ParametrosVariograma {
+  tamanhoPassoKm: number;
+  distanciaMaximaKm: number;
+  fallbackArestaKm: number; // P01 (ex.: 20 km provisório)
+}
+
+/**
+ * Calcula o semivariograma empírico experimental:
+ * gamma(h) = (1 / (2 * N(h))) * Sum ( (z(xi) - z(xj))^2 )
+ */
+export function calcularSemivariogramaEmpirico(
+  pontos: PontoGeo[],
+  params: ParametrosVariograma
+): ResultadoVariograma {
+  const n = pontos.length;
+  const { tamanhoPassoKm, distanciaMaximaKm, fallbackArestaKm } = params;
+
+  if (n < 15) {
+    return {
+      bins: [],
+      alcanceEstimadoKm: fallbackArestaKm,
+      patamarEstimado: 0,
+      efeitoPepitaEstimado: 0,
+      ehConclusivo: false,
+      arestaBlocoAdotadaKm: fallbackArestaKm,
+      justificativaAresta: `Amostra insuficiente (n = ${n} < 15) para ajuste de variograma empírico. Adotada aresta de contingência de ${fallbackArestaKm} km (P01 provisório; Roberts et al., 2017 orientam derivar do alcance, mas não determinam 20 km).`,
+    };
+  }
+
+  // Variância total da amostra
+  const media = pontos.reduce((acc, p) => acc + p.valor, 0) / n;
+  const varianciaTotal = pontos.reduce((acc, p) => acc + Math.pow(p.valor - media, 2), 0) / (n - 1);
+
+  const numBins = Math.floor(distanciaMaximaKm / tamanhoPassoKm);
+  const somaDiferencas: number[] = new Array(numBins).fill(0);
+  const contagemPares: number[] = new Array(numBins).fill(0);
+  const somaDistancias: number[] = new Array(numBins).fill(0);
+
+  // Varredura de todos os pares únicos
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const d = calcularDistanciaKm(pontos[i].latitude, pontos[i].longitude, pontos[j].latitude, pontos[j].longitude);
+      if (d <= distanciaMaximaKm) {
+        const binIdx = Math.floor(d / tamanhoPassoKm);
+        if (binIdx < numBins) {
+          const diffQuadrada = Math.pow(pontos[i].valor - pontos[j].valor, 2);
+          somaDiferencas[binIdx] += diffQuadrada;
+          contagemPares[binIdx] += 1;
+          somaDistancias[binIdx] += d;
+        }
+      }
+    }
+  }
+
+  const bins: SemivariogramaBin[] = [];
+  let alcanceEstimado = fallbackArestaKm;
+  let concluiu = false;
+
+  for (let b = 0; b < numBins; b++) {
+    if (contagemPares[b] >= 5) {
+      const semivar = somaDiferencas[b] / (2 * contagemPares[b]);
+      const distMedia = Number((somaDistancias[b] / contagemPares[b]).toFixed(2));
+      bins.push({
+        distanciaMediaKm: distMedia,
+        semivariancia: Number(semivar.toFixed(4)),
+        numPares: contagemPares[b],
+      });
+
+      // Identifica alcance onde semivariância atinge ~95% da variância total
+      // Sem piso arbitrário de 10 km (achado S1-15 corrigido)
+      if (!concluiu && semivar >= 0.95 * varianciaTotal) {
+        alcanceEstimado = Math.ceil(distMedia);
+        concluiu = true;
+      }
+    }
+  }
+
+  const arestaAdotada = concluiu ? alcanceEstimado : fallbackArestaKm;
+  const justificativa = concluiu
+    ? `Aresta de ${arestaAdotada} km adotada com base no alcance em que o semivariograma empírico atinge o patamar (95% da variância total) sem piso arbitrário.`
+    : `Semivariograma empírico sem patamar nítido (efeito pepita ou alcance superior a ${distanciaMaximaKm} km). Adotada aresta de contingência de ${fallbackArestaKm} km (P01 provisório).`;
+
+  return {
+    bins,
+    alcanceEstimadoKm: arestaAdotada,
+    patamarEstimado: Number(varianciaTotal.toFixed(4)),
+    efeitoPepitaEstimado: bins.length > 0 ? bins[0].semivariancia : 0,
+    ehConclusivo: concluiu,
+    arestaBlocoAdotadaKm: arestaAdotada,
+    justificativaAresta: justificativa,
+  };
+}
+
+export interface ParametrosOrigemGrid {
+  origemLat: number; // Âncora meridional de referência (ex.: -26.5 para o Sul do Paraná)
+  origemLng: number; // Âncora ocidental de referência (ex.: -54.5 para o Oeste do Paraná)
+}
+
+/**
+ * Atribui o identificador de bloco espacial regular (ex.: "BLOCO_R03_C05")
+ * a um ponto geográfico, garantindo separação espacial determinística para validação cruzada.
+ * Aresta e origem devem ser informadas explicitamente sem defaults arbitrários.
+ */
+export function atribuirBlocoEspacial(
+  lat: number,
+  lng: number,
+  arestaKm: number,
+  origem: ParametrosOrigemGrid
+): string {
+  // 1 grau de latitude ≈ 111.13 km
+  const kmPorGrauLat = 111.13;
+  // 1 grau de longitude no Paraná (~25.5°S) ≈ 111.13 * cos(25.5°) ≈ 100.3 km
+  const kmPorGrauLng = 111.13 * Math.cos((-25.5 * Math.PI) / 180);
+
+  const deltaLatKm = (lat - origem.origemLat) * kmPorGrauLat;
+  const deltaLngKm = (lng - origem.origemLng) * kmPorGrauLng;
+
+  const row = Math.floor(Math.abs(deltaLatKm) / arestaKm);
+  const col = Math.floor(Math.abs(deltaLngKm) / arestaKm);
+
+  return `BLOCO_R${String(row).padStart(2, "0")}_C${String(col).padStart(2, "0")}`;
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/compostoSoloNu.ts
+TAMANHO: 8,517 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Composto de Solo Exposto e Métricas de Exposição (Ê) — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * FUNDAMENTAÇÃO:
+ * - Demattê et al. (2018 - GEOS3); Rogge et al. (2018 - SCMaP).
+ * - O composto espectral utiliza EXCLUSIVAMENTE observações nas quais o pixel
+ *   estava comprovadamente sem vegetação (NDVI < limiar D10) e livre de nuvem/sombra.
+ *
+ * REGRAS DA LEI FUNDAMENTAL:
+ * - Regra 1: A constante 0,25 do SAREL 1 foi eliminada (S1-04/S1-16). Limiar D10
+ *   deve ser passado explicitamente.
+ * - Invariante 5: Quando o solo nunca esteve descoberto na série, Ê = 0 é um valor
+ *   modelado legítimo (o pixel foi observado e esteve sempre coberto). Porém, o
+ *   composto espectral e o mês modal são "indisponivel" com causa "fora-do-dominio".
+ */
+
+import { Proveniencia } from "@/types/proveniencia";
+import {
+  ObservacaoCena,
+  NomeBandaEspectral,
+  TODAS_BANDAS_ESPECTRAIS,
+  calcularNdvi,
+  calcularBsi,
+} from "./serieTemporal";
+
+export interface OpcoesExtracaoSoloExposto {
+  /**
+   * Limiar mínimo de Bare Soil Index (BSI) para confirmação de solo mineral.
+   * Em áreas sob Sistema Plantio Direto (SPD), palhada seca residual pode apresentar
+   * NDVI baixo (< 0.25). A exigência opcional de BSI >= limiarMinBsi assegura que apenas
+   * superfícies com assinatura mineral exposta sejam contabilizadas como solo nu (Ê).
+   */
+  limiarMinBsi?: number;
+}
+
+export interface MetricasSoloExposto {
+  frequenciaSoloNu: Proveniencia<number>;       // E^
+  maiorSequenciaSoloNu: Proveniencia<number>;   // Comprimento da maior sequência contínua
+  mesModalExposicao: Proveniencia<number>;      // Mês (1..12) de maior frequência
+  compostoSoloNu: Record<string, Proveniencia<number>>; // Mediana por banda nas datas de solo nu
+  nObservacoesValidas: number;
+  nObservacoesSoloNu: number;
+}
+
+/**
+ * Calcula a mediana de um array de números.
+ */
+function calcularMediana(valores: number[]): number | null {
+  if (valores.length === 0) return null;
+  const ordenados = [...valores].sort((a, b) => a - b);
+  const meio = Math.floor(ordenados.length / 2);
+  if (ordenados.length % 2 !== 0) {
+    return ordenados[meio];
+  }
+  return Number(((ordenados[meio - 1] + ordenados[meio]) / 2).toFixed(4));
+}
+
+/**
+ * Processa a série temporal e extrai as métricas de solo exposto e o composto mediano.
+ * @param cenas Série cronológica de cenas
+ * @param limiarNdvi Limiar de corte para solo nu (Decisão D10, ex: 0.25 ou 0.30)
+ */
+export function extrairMetricasSoloExposto(
+  cenas: ObservacaoCena[],
+  limiarNdvi: number,
+  opcoes?: OpcoesExtracaoSoloExposto
+): MetricasSoloExposto {
+  if (!Number.isFinite(limiarNdvi)) {
+    throw new Error(`Limiar de NDVI inválido: ${limiarNdvi}`);
+  }
+
+  // 1. Filtrar cenas sem nuvem e com bandas B4 e B8 válidas para cálculo de NDVI
+  const ordenadas = [...cenas].sort((a, b) => a.data.localeCompare(b.data));
+  const validas = ordenadas.filter(
+    c => !c.nuvemSombra && c.b4 !== null && c.b8 !== null
+  );
+
+  const nValidas = validas.length;
+
+  if (nValidas === 0) {
+    const indispSemObs: Proveniencia<number> = {
+      estado: "indisponivel",
+      causa: "insuficiente",
+      motivo: "Nenhuma observação válida na série temporal (todas as cenas mascaradas por nuvem).",
+    };
+
+    const compostoVazio: Record<string, Proveniencia<number>> = {};
+    for (const b of TODAS_BANDAS_ESPECTRAIS) {
+      compostoVazio[b.toUpperCase()] = indispSemObs;
+    }
+
+    return {
+      frequenciaSoloNu: indispSemObs,
+      maiorSequenciaSoloNu: indispSemObs,
+      mesModalExposicao: indispSemObs,
+      compostoSoloNu: compostoVazio,
+      nObservacoesValidas: 0,
+      nObservacoesSoloNu: 0,
+    };
+  }
+
+  // 2. Classificar cada cena válida como solo nu (NDVI < limiarNdvi e BSI opcional)
+  const cenasComNdvi = validas.map(c => {
+    const ndvi = calcularNdvi(c.b8, c.b4);
+    let ehSoloNu = ndvi !== null && ndvi < limiarNdvi;
+
+    // Discriminação física contra falso positivo de palhada seca em SPD
+    if (ehSoloNu && typeof opcoes?.limiarMinBsi === "number") {
+      const bsi = calcularBsi(c.b11, c.b4, c.b8, c.b2);
+      if (bsi !== null && bsi < opcoes.limiarMinBsi) {
+        ehSoloNu = false;
+      }
+    }
+
+    return { ...c, ndviCalculado: ndvi, ehSoloNu };
+  });
+
+  const cenasSoloNu = cenasComNdvi.filter(c => c.ehSoloNu);
+  const nSoloNu = cenasSoloNu.length;
+
+  // 3. Frequência de solo nu (Ê)
+  // Regra 1 / Invariante 5: se nSoloNu == 0, frequencia = 0.0 é um valor real medido/modelado!
+  const freqVal = Number((nSoloNu / nValidas).toFixed(4));
+  const insumos = ["serie_B4", "serie_B8"];
+  if (typeof opcoes?.limiarMinBsi === "number") {
+    insumos.push("serie_B2", "serie_B11");
+  }
+
+  const frequenciaSoloNu: Proveniencia<number> = {
+    estado: "modelado",
+    valor: freqVal,
+    modelo: typeof opcoes?.limiarMinBsi === "number"
+      ? "Ê = nSoloNu(NDVI < limiar & BSI >= limiarMin) / nTotalValidas"
+      : "Ê = nSoloNu / nTotalValidas",
+    insumos,
+    decisoes: ["D10"],
+    qualidade: { nObservacoes: nValidas },
+  };
+
+  // 4. Maior sequência contínua de solo nu
+  let maxSeq = 0;
+  let seqAtual = 0;
+  for (const c of cenasComNdvi) {
+    if (c.ehSoloNu) {
+      seqAtual++;
+      if (seqAtual > maxSeq) maxSeq = seqAtual;
+    } else {
+      seqAtual = 0;
+    }
+  }
+
+  const maiorSequenciaSoloNu: Proveniencia<number> = {
+    estado: "modelado",
+    valor: maxSeq,
+    modelo: "Maior sequência temporal consecutiva de cenas com NDVI < limiar",
+    insumos: ["serie_B4", "serie_B8"],
+    decisoes: ["D10"],
+    qualidade: { nObservacoes: nValidas },
+  };
+
+  // 5. Mês modal de exposição
+  let mesModalExposicao: Proveniencia<number>;
+  if (nSoloNu === 0) {
+    mesModalExposicao = {
+      estado: "indisponivel",
+      causa: "fora-do-dominio",
+      motivo: `Nenhuma cena com solo descoberto (NDVI < ${limiarNdvi}) na série observada. Mês modal não aplicável.`,
+    };
+  } else {
+    const contagemMeses: number[] = new Array(13).fill(0);
+    for (const c of cenasSoloNu) {
+      const mes = parseInt(c.data.split("-")[1], 10);
+      if (mes >= 1 && mes <= 12) {
+        contagemMeses[mes] += 1;
+      }
+    }
+
+    let melhorMes = 1;
+    let maxContagem = -1;
+    for (let m = 1; m <= 12; m++) {
+      if (contagemMeses[m] > maxContagem) {
+        maxContagem = contagemMeses[m];
+        melhorMes = m;
+      }
+    }
+
+    mesModalExposicao = {
+      estado: "modelado",
+      valor: melhorMes,
+      modelo: "Moda do mês de calendário das observações de solo descoberto",
+      insumos: ["serie_B4", "serie_B8", "datas_cenas"],
+      decisoes: ["D10"],
+      qualidade: { nObservacoes: nSoloNu },
+    };
+  }
+
+  // 6. Composto espectral mediano por banda nas datas de solo nu
+  const compostoSoloNu: Record<string, Proveniencia<number>> = {};
+
+  for (const b of TODAS_BANDAS_ESPECTRAIS) {
+    const nomeB = b.toUpperCase();
+    if (nSoloNu === 0) {
+      compostoSoloNu[nomeB] = {
+        estado: "indisponivel",
+        causa: "fora-do-dominio",
+        motivo: `Solo permaneceu continuamente coberto na série (zero cenas com NDVI < ${limiarNdvi}). Composto espectral inexistente.`,
+      };
+    } else {
+      const valoresBanda = cenasSoloNu
+        .map(c => c[b])
+        .filter((v): v is number => v !== null && Number.isFinite(v));
+
+      if (valoresBanda.length === 0) {
+        compostoSoloNu[nomeB] = {
+          estado: "indisponivel",
+          causa: "insuficiente",
+          motivo: `Banda ${nomeB} mascarada em todas as cenas de solo descoberto.`,
+        };
+      } else {
+        const medVal = calcularMediana(valoresBanda);
+        if (medVal === null) {
+          compostoSoloNu[nomeB] = {
+            estado: "indisponivel",
+            causa: "insuficiente",
+            motivo: `Falha ao extrair mediana da banda ${nomeB}.`,
+          };
+        } else {
+          compostoSoloNu[nomeB] = {
+            estado: "modelado",
+            valor: medVal,
+            modelo: "Mediana temporal das datas de solo exposto (NDVI < limiar D10)",
+            insumos: [`serie_${nomeB}`, "serie_B4", "serie_B8"],
+            decisoes: ["D10"],
+            qualidade: { nObservacoes: valoresBanda.length },
+          };
+        }
+      }
+    }
+  }
+
+  return {
+    frequenciaSoloNu,
+    maiorSequenciaSoloNu,
+    mesModalExposicao,
+    compostoSoloNu,
+    nObservacoesValidas: nValidas,
+    nObservacoesSoloNu: nSoloNu,
+  };
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/consolidacaoInspecao.ts
+TAMANHO: 13,796 bytes
+--------------------------------------------------------------------------------
+
+import type { PontoAmostral } from "@/types/ponto";
+import type { Proveniencia } from "@/types/proveniencia";
+import {
+  DATA_PUBLICACAO_COPERNICUS_GLO30,
+  DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
+  extrairDataAquisicaoSentinel2,
+} from "./metadadosColecoes";
+import { LIMIAR_MINIMO_OBSERVACOES_D11 } from "./copernicusGeeClient";
+import { classificarPontoEspectral } from "./amostragemBiofisica";
+import { montarLinhaDeBaseRUSLE } from "@/lib/rusle/linhaDeBase";
+import { toContextoFundiario } from "@/lib/fundiario/matcher";
+import { dataCivilSaoPaulo } from "@/lib/tempo/datas";
+
+export interface ParametrosConsolidacaoInspecao {
+  point: PontoAmostral;
+  terreno?: {
+    medicao?: {
+      elevacaoMetros: number;
+      declividadePct: number;
+      declividadeGraus: number;
+      fonte: string;
+    } | null;
+    erro?: Error | string | null;
+  };
+  solo?: {
+    dados?: any | null;
+    erro?: Error | string | null;
+  };
+  fundiario?: {
+    dados?: any | null;
+    erro?: Error | string | null;
+  };
+  gee?: {
+    medicaoS2?: any | null;
+    erro?: Error | string | null;
+  };
+  dataConsultaAtual?: string;
+}
+
+export interface ResultadoConsolidacaoInspecao {
+  ponto: PontoAmostral;
+  avisos: string[];
+}
+
+export function consolidarInspecaoPonto(
+  params: ParametrosConsolidacaoInspecao
+): ResultadoConsolidacaoInspecao {
+  const { point, terreno, solo, fundiario, gee } = params;
+  const avisos: string[] = [];
+  const dataConsultaAtual =
+    params.dataConsultaAtual || dataCivilSaoPaulo();
+
+  // 1. Processamento Fundiário
+  let contextoFundiario = point.fundiario;
+  if (fundiario?.erro) {
+    const msgErro =
+      fundiario.erro instanceof Error
+        ? fundiario.erro.message
+        : String(fundiario.erro);
+    avisos.push(`Falha na consulta fundiária: ${msgErro}`);
+
+    contextoFundiario = {
+      ...(point.fundiario ?? {
+        consultadoEm: null,
+        criterioAssociacao: null,
+        codigoCar: null,
+        titularMascarado: null,
+        documentoMascarado: null,
+        registroIncra: null,
+        areaImovelHa: null,
+        bases: { uf: "PR" },
+      }),
+      status: "erro-na-consulta",
+      motivo: `Falha na consulta à base fundiária: ${msgErro}`,
+      consultadoEm: dataConsultaAtual,
+    };
+  } else if (fundiario?.dados) {
+    contextoFundiario = toContextoFundiario(fundiario.dados, "PR");
+  }
+
+  // 2. Processamento Embrapa Solos
+  const soloRes = solo?.dados ?? null;
+  let subOrdemProv: Proveniencia<string> = point.solo.subOrdem;
+  let grandeGrupoProv: Proveniencia<string> = point.solo.grandeGrupo;
+  let tipoUnidadeProv: Proveniencia<string> = point.solo.tipoUnidade;
+  let erodibilidadeProveniencia: Proveniencia<string> =
+    point.solo.erodibilidadeClasse;
+  let confiancaPedologica: "alta" | "media" | "indisponivel" =
+    point.solo.confiancaPedologica;
+
+  if (solo?.erro) {
+    const msgErro =
+      solo.erro instanceof Error ? solo.erro.message : String(solo.erro);
+    avisos.push(`Falha na consulta Embrapa Solos: ${msgErro}`);
+
+    const provServicoIndisponivel: Proveniencia<string> = {
+      estado: "indisponivel",
+      causa: "servico-indisponivel",
+      motivo: `Serviço Embrapa Solos indisponível: ${msgErro}`,
+    };
+
+    subOrdemProv = provServicoIndisponivel;
+    grandeGrupoProv = provServicoIndisponivel;
+    tipoUnidadeProv = provServicoIndisponivel;
+    erodibilidadeProveniencia = provServicoIndisponivel;
+    confiancaPedologica = "indisponivel";
+  } else if (soloRes) {
+    const compDominante = soloRes?.solo?.componentes?.[0];
+
+    subOrdemProv = compDominante
+      ? {
+          estado: "medido",
+          valor: compDominante.subOrdem,
+          fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
+          adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
+          consultadoEm: dataConsultaAtual,
+        }
+      : point.solo.subOrdem;
+
+    grandeGrupoProv = compDominante?.grandeGrupo
+      ? {
+          estado: "medido",
+          valor: compDominante.grandeGrupo,
+          fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
+          adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
+          consultadoEm: dataConsultaAtual,
+        }
+      : point.solo.grandeGrupo;
+
+    tipoUnidadeProv = soloRes?.solo?.tipoUnidade
+      ? {
+          estado: "medido",
+          valor: soloRes.solo.tipoUnidade,
+          fonte: "Embrapa GeoInfo / SiBCS 2020 (geonode:parana_solos_20201105)",
+          adquiridoEm: DATA_PUBLICACAO_EMBRAPA_SOLOS_PR,
+          consultadoEm: dataConsultaAtual,
+        }
+      : point.solo.tipoUnidade;
+
+    confiancaPedologica =
+      soloRes?.solo?.confianca ?? point.solo.confiancaPedologica;
+
+    erodibilidadeProveniencia = soloRes?.erodibilidade?.classe
+      ? {
+          estado: "tabelado",
+          valor: soloRes.erodibilidade.classe,
+          tabela:
+            "Embrapa Solos - Levantamento Pedológico do Estado do Paraná (geonode:brasil_erodibilidade_solo)",
+          chave: soloRes.erodibilidade.classe,
+        }
+      : point.solo.erodibilidadeClasse;
+  }
+
+  // 3. Processamento Terreno (Copernicus DEM)
+  let elevacaoProv = point.terreno.elevacao;
+  let declividadePctProv = point.terreno.declividadePct;
+  let declividadeGrausProv = point.terreno.declividadeGraus;
+
+  if (terreno?.erro) {
+    const msgErro =
+      terreno.erro instanceof Error ? terreno.erro.message : String(terreno.erro);
+    avisos.push(`Falha na consulta de terreno Copernicus DEM: ${msgErro}`);
+
+    const provServicoIndisponivelNum: Proveniencia<number> = {
+      estado: "indisponivel",
+      causa: "servico-indisponivel",
+      motivo: `Serviço de elevação Copernicus DEM indisponível: ${msgErro}`,
+    };
+    elevacaoProv = provServicoIndisponivelNum;
+    declividadePctProv = provServicoIndisponivelNum;
+    declividadeGrausProv = provServicoIndisponivelNum;
+  } else if (terreno?.medicao) {
+    elevacaoProv = {
+      estado: "medido",
+      valor: terreno.medicao.elevacaoMetros,
+      fonte: terreno.medicao.fonte,
+      adquiridoEm: DATA_PUBLICACAO_COPERNICUS_GLO30,
+      consultadoEm: dataConsultaAtual,
+    };
+    declividadePctProv = {
+      estado: "medido",
+      valor: terreno.medicao.declividadePct,
+      fonte: terreno.medicao.fonte,
+      adquiridoEm: DATA_PUBLICACAO_COPERNICUS_GLO30,
+      consultadoEm: dataConsultaAtual,
+    };
+    declividadeGrausProv = {
+      estado: "medido",
+      valor: terreno.medicao.declividadeGraus,
+      fonte: terreno.medicao.fonte,
+      adquiridoEm: DATA_PUBLICACAO_COPERNICUS_GLO30,
+      consultadoEm: dataConsultaAtual,
+    };
+  }
+
+  // 4. Processamento GEE / Sentinel-2
+  const medicaoS2 = gee?.medicaoS2 ?? null;
+  const dataAquisicaoS2 =
+    medicaoS2?.adquiridoEm ??
+    extrairDataAquisicaoSentinel2({ cenas: point.rastreio?.cenas }) ??
+    point.rastreio?.calculadoEm?.slice(0, 10) ??
+    dataConsultaAtual;
+
+  let ndviProveniencia = point.espectral?.ndvi;
+  let bsiProveniencia = point.espectral?.bsi;
+
+  if (gee?.erro) {
+    const msgErro =
+      gee.erro instanceof Error ? gee.erro.message : String(gee.erro);
+    avisos.push(`Falha na consulta Google Earth Engine / Sentinel-2: ${msgErro}`);
+
+    const provServicoIndisponivelNum: Proveniencia<number> = {
+      estado: "indisponivel",
+      causa: "servico-indisponivel",
+      motivo: `Google Earth Engine indisponível: ${msgErro}`,
+    };
+    ndviProveniencia = provServicoIndisponivelNum;
+    bsiProveniencia = provServicoIndisponivelNum;
+  } else if (medicaoS2) {
+    const motivoD11 = `Suficiência amostral insuficiente (${medicaoS2.nObservacoesValidas} < ${LIMIAR_MINIMO_OBSERVACOES_D11} observações válidas sem nuvem/sombra exigidas pela Decisão D11).`;
+
+    const motivoForaDominioNdvi = `Valor medido de NDVI (${medicaoS2.ndvi}) fora do domínio físico válido [-1, 1].`;
+    const motivoForaDominioBsi = `Valor medido de BSI (${medicaoS2.bsi}) fora do domínio físico válido [-1, 1].`;
+
+    ndviProveniencia = medicaoS2.insuficienteD11
+      ? {
+          estado: "indisponivel",
+          causa: "insuficiente",
+          motivo: motivoD11,
+        }
+      : medicaoS2.ndvi < -1 || medicaoS2.ndvi > 1
+        ? {
+            estado: "indisponivel",
+            causa: "fora-do-dominio",
+            motivo: motivoForaDominioNdvi,
+          }
+        : {
+            estado: "medido",
+            valor: medicaoS2.ndvi,
+            fonte: medicaoS2.fonte,
+            adquiridoEm: dataAquisicaoS2,
+            consultadoEm: dataConsultaAtual,
+          };
+
+    bsiProveniencia = medicaoS2.insuficienteD11
+      ? {
+          estado: "indisponivel",
+          causa: "insuficiente",
+          motivo: motivoD11,
+        }
+      : medicaoS2.bsi < -1 || medicaoS2.bsi > 1
+        ? {
+            estado: "indisponivel",
+            causa: "fora-do-dominio",
+            motivo: motivoForaDominioBsi,
+          }
+        : {
+            estado: "medido",
+            valor: medicaoS2.bsi,
+            fonte: medicaoS2.fonte,
+            adquiridoEm: dataAquisicaoS2,
+            consultadoEm: dataConsultaAtual,
+          };
+  }
+
+  const ndviNum =
+    ndviProveniencia && ndviProveniencia.estado !== "indisponivel"
+      ? ndviProveniencia.valor
+      : null;
+  const bsiNum =
+    bsiProveniencia && bsiProveniencia.estado !== "indisponivel"
+      ? bsiProveniencia.valor
+      : null;
+
+  const classeAmostral =
+    medicaoS2
+      ? ndviNum !== null && bsiNum !== null
+        ? classificarPontoEspectral(bsiNum, ndviNum)
+        : "indefinido"
+      : point.classeAmostral;
+
+  const pontoAtualizado: PontoAmostral = {
+    ...point,
+    origemSintetica: false,
+    classeAmostral,
+    espectral:
+      ndviProveniencia && bsiProveniencia
+        ? {
+            ...point.espectral,
+            ndvi: ndviProveniencia,
+            bsi: bsiProveniencia,
+            ...(medicaoS2 && !medicaoS2.insuficienteD11
+              ? {
+                  b2: {
+                    estado: "medido",
+                    valor: medicaoS2.b2,
+                    fonte: medicaoS2.fonte,
+                    adquiridoEm: dataAquisicaoS2,
+                    consultadoEm: dataConsultaAtual,
+                  },
+                  b4: {
+                    estado: "medido",
+                    valor: medicaoS2.b4,
+                    fonte: medicaoS2.fonte,
+                    adquiridoEm: dataAquisicaoS2,
+                    consultadoEm: dataConsultaAtual,
+                  },
+                  b8: {
+                    estado: "medido",
+                    valor: medicaoS2.b8,
+                    fonte: medicaoS2.fonte,
+                    adquiridoEm: dataAquisicaoS2,
+                    consultadoEm: dataConsultaAtual,
+                  },
+                  b11: {
+                    estado: "medido",
+                    valor: medicaoS2.b11,
+                    fonte: medicaoS2.fonte,
+                    adquiridoEm: dataAquisicaoS2,
+                    consultadoEm: dataConsultaAtual,
+                  },
+                  b12: {
+                    estado: "medido",
+                    valor: medicaoS2.b12,
+                    fonte: medicaoS2.fonte,
+                    adquiridoEm: dataAquisicaoS2,
+                    consultadoEm: dataConsultaAtual,
+                  },
+                }
+              : {}),
+          }
+        : point.espectral,
+    terreno: {
+      ...point.terreno,
+      elevacao: elevacaoProv,
+      declividadePct: declividadePctProv,
+      declividadeGraus: declividadeGrausProv,
+    },
+    solo: {
+      ...point.solo,
+      subOrdem: subOrdemProv,
+      grandeGrupo: grandeGrupoProv,
+      tipoUnidade: tipoUnidadeProv,
+      confiancaPedologica,
+      erodibilidadeClasse: erodibilidadeProveniencia,
+    },
+    temporal: {
+      ...point.temporal,
+      D: point.temporal?.D
+        ? {
+            ...point.temporal.D,
+            serie: {
+              ...point.temporal.D.serie,
+              nObservacoesValidas: medicaoS2
+                ? {
+                    ...point.temporal.D.serie.nObservacoesValidas,
+                    B4: medicaoS2.nObservacoesValidas,
+                    B11: medicaoS2.nObservacoesValidas,
+                    B12: medicaoS2.nObservacoesValidas,
+                  }
+                : point.temporal.D.serie.nObservacoesValidas,
+              estatisticas: {
+                ...point.temporal.D.serie.estatisticas,
+                ...(ndviProveniencia && ndviProveniencia.estado !== "indisponivel"
+                  ? { B8_p50: ndviProveniencia }
+                  : {}),
+              },
+              frequenciaSoloNu:
+                medicaoS2
+                  ? medicaoS2.insuficienteD11
+                    ? {
+                        estado: "indisponivel",
+                        causa: "insuficiente",
+                        motivo: `Suficiência amostral insuficiente (${medicaoS2.nObservacoesValidas} < ${LIMIAR_MINIMO_OBSERVACOES_D11} observações válidas sem nuvem/sombra exigidas pela Decisão D11).`,
+                      }
+                    : medicaoS2.frequenciaSoloNu !== null
+                      ? {
+                          estado: "medido",
+                          valor: medicaoS2.frequenciaSoloNu,
+                          fonte: medicaoS2.fonte,
+                          adquiridoEm: dataAquisicaoS2,
+                          consultadoEm: dataConsultaAtual,
+                        }
+                      : point.temporal.D.serie.frequenciaSoloNu
+                  : point.temporal.D.serie.frequenciaSoloNu,
+            },
+          }
+        : point.temporal?.D,
+    },
+    linhaDeBase: montarLinhaDeBaseRUSLE({
+      ndviProveniencia: ndviProveniencia ?? null,
+      bsiProveniencia: bsiProveniencia ?? null,
+      erodibilidadeProveniencia: erodibilidadeProveniencia ?? null,
+    }),
+    fundiario: contextoFundiario,
+  };
+
+  return {
+    ponto: pontoAtualizado,
+    avisos,
+  };
+}

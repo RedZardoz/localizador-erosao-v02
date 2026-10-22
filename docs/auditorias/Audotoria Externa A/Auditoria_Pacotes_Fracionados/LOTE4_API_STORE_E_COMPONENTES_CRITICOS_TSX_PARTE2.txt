@@ -1,0 +1,1735 @@
+================================================================================
+PACOTE DE AUDITORIA EXTERNA — SAREL v2 (PPGTCA 2026)
+LOTE: LOTE4_API_STORE_E_COMPONENTES_CRITICOS_TSX | PARTE 2/3
+================================================================================
+Data de Geração: 21 de Outubro de 2026
+Limite por Arquivo: <= 90.000 bytes (Limite Rígido de Leitura)
+Total de Arquivos nesta parte: 8
+Arquivos contidos nesta parte:
+ - src/app/api/jev/auditar/route.ts
+ - src/app/api/jev/test/route.ts
+ - src/app/api/sitios-referencia/route.test.ts
+ - src/app/api/sitios-referencia/route.ts
+ - src/store/useSarelStore.ts
+ - src/components/decisoes/PainelSorteioD16.tsx
+ - src/components/decisoes/PainelCriterioRefutacaoD25.tsx
+ - src/components/matriz/PainelMatrizTreino.tsx
+================================================================================
+
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/app/api/jev/auditar/route.ts
+TAMANHO: 2,843 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Rota de Auditoria e Decisão Rápida — Jev & Dual-Engine Fallback
+ * SAREL v2.0 — Metodologia PPGTCA 2026
+ * ============================================================================
+ *
+ * Endpoint: POST /api/jev/auditar
+ *
+ * Entrada:
+ * - ponto: PontoAmostral
+ * - apiKey?: string (opcional, pode ser resolvida da sessão efêmera)
+ *
+ * Saída:
+ * - ok: boolean
+ * - laudo: LaudoAuditoriaPonto ('JEV_SYSTEM_ONE' ou 'HEURISTICA_LOCAL_SUSCETIBILIDADE')
+ */
+
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { executarAuditoriaJev } from "@/lib/jev/jevClient";
+import { executarAuditoriaLocal } from "@/lib/jev/fallbackLocal";
+import { obterSessao, SAREL_SESSION_COOKIE } from "@/lib/seguranca/sessaoEfemera";
+import { exigirRequisicaoLocalConfiavel } from "@/lib/seguranca/localOnly";
+import type { PontoAmostral } from "@/types/ponto";
+
+export const dynamic = "force-dynamic";
+
+export async function POST(request: NextRequest) {
+  const bloqueio = exigirRequisicaoLocalConfiavel(request);
+  if (bloqueio) return bloqueio;
+
+  try {
+    const body = await request.json().catch(() => ({}));
+    const ponto = body.ponto as PontoAmostral | undefined;
+
+    if (!ponto || !ponto.id || !ponto.codigo) {
+      return NextResponse.json(
+        { ok: false, error: "Ponto amostral não informado ou em estrutura inválida." },
+        { status: 400 }
+      );
+    }
+
+    // 1. Resolve a chave da API (ou do body da requisição ou do cookie de sessão efêmera)
+    let apiKey = (body.apiKey || "").trim();
+    if (!apiKey) {
+      const cookieStore = await cookies();
+      const sessionId = cookieStore.get(SAREL_SESSION_COOKIE)?.value;
+      const sessao = obterSessao(sessionId);
+      if (sessao?.jevApiKey) {
+        apiKey = sessao.jevApiKey.trim();
+      }
+    }
+
+    // 2. Executa a auditoria pela arquitetura de dupla camada
+    const laudo = await executarAuditoriaJev(ponto, apiKey);
+
+    return NextResponse.json({
+      ok: true,
+      laudo,
+    });
+  } catch (err: any) {
+    console.error("Erro inesperado no endpoint /api/jev/auditar:", err);
+
+    // Degradação graciosa mesmo em caso de erro no endpoint
+    const bodyFallback = await request.json().catch(() => ({}));
+    const pontoFallback = bodyFallback.ponto as PontoAmostral | undefined;
+
+    if (pontoFallback && pontoFallback.id) {
+      const laudoSeguro = executarAuditoriaLocal(
+        pontoFallback,
+        `Exceção no endpoint de auditoria: ${err?.message || "Erro desconhecido"}.`
+      );
+      return NextResponse.json({ ok: true, laudo: laudoSeguro });
+    }
+
+    return NextResponse.json(
+      { ok: false, error: err?.message || "Erro interno ao processar auditoria." },
+      { status: 500 }
+    );
+  }
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/app/api/jev/test/route.ts
+TAMANHO: 2,876 bytes
+--------------------------------------------------------------------------------
+
+import { NextRequest, NextResponse } from 'next/server';
+import { exigirRequisicaoLocalConfiavel } from '@/lib/seguranca/localOnly';
+
+export const dynamic = 'force-dynamic';
+
+export async function POST(request: NextRequest) {
+  const bloqueio = exigirRequisicaoLocalConfiavel(request);
+  if (bloqueio) return bloqueio;
+
+  try {
+    const body = await request.json().catch(() => ({}));
+    const apiKey = (body.apiKey || '').trim();
+
+    if (!apiKey) {
+      return NextResponse.json(
+        { ok: false, error: 'Chave do Jev não fornecida.' },
+        { status: 400 }
+      );
+    }
+
+    if (apiKey.length < 8) {
+      return NextResponse.json(
+        { ok: false, error: 'Chave do Jev fornecida é excessivamente curta ou em formato inválido.' },
+        { status: 400 }
+      );
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const start = Date.now();
+
+    try {
+      const response = await fetch('https://api.typesafe.ai/v1/systemone', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: 'jev-latest',
+          state: 'Verificação de conectividade SAREL v2.0 - PPGTCA UTFPR',
+          questions: {
+            ping: {
+              type: 'noul',
+              instructions: 'O serviço de decisão rápida está operante?',
+            },
+          },
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      const latencyMs = Date.now() - start;
+
+      if (response.ok) {
+        return NextResponse.json({
+          ok: true,
+          latencyMs,
+          message: `Conexão bem-sucedida com Jev (TypeSafe AI)! Latência do modelo System One: ${latencyMs}ms.`,
+        });
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "Acesso não autorizado: Verifique se sua chave da TypeSafe AI está correta ou possui créditos.",
+          },
+          { status: 401 }
+        );
+      }
+
+      const errText = await response.text().catch(() => "");
+      return NextResponse.json(
+        {
+          ok: false,
+          error: `Resposta da API Jev (HTTP ${response.status}): ${errText.slice(0, 140)}`,
+        },
+        { status: response.status }
+      );
+    } catch (netErr: any) {
+      clearTimeout(timeoutId);
+      return NextResponse.json({
+        ok: true,
+        offline: true,
+        message: 'Chave Jev registrada no SAREL. (Aviso: Validação em rede não pôde ser concluída no momento).',
+      });
+    }
+  } catch (err: any) {
+    return NextResponse.json(
+      { ok: false, error: err.message || 'Erro interno ao validar chave do Jev.' },
+      { status: 500 }
+    );
+  }
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/app/api/sitios-referencia/route.test.ts
+TAMANHO: 2,349 bytes
+--------------------------------------------------------------------------------
+
+import { describe, it, expect, afterEach } from "vitest";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import crypto from "node:crypto";
+import { NextRequest } from "next/server";
+import { GET } from "./route";
+
+// Dado SINTETICO_TESTE_ENCANAMENTO: nenhum código CAR real aqui.
+function requisicao(host: string, extra: Record<string, string> = {}) {
+  return new NextRequest("http://localhost:3000/api/sitios-referencia", { headers: { host, ...extra } });
+}
+
+describe("GET /api/sitios-referencia: restrita a chamadas locais", () => {
+  const original = process.env.SAREL_DATA_DIR;
+  afterEach(() => {
+    if (original === undefined) delete process.env.SAREL_DATA_DIR;
+    else process.env.SAREL_DATA_DIR = original;
+  });
+
+  it("host não local → 403, sem sítios", async () => {
+    const res = await GET(requisicao("exemplo.com"));
+    expect(res.status).toBe(403);
+    const corpo = await res.json();
+    expect(corpo.sitios).toEqual([]);
+  });
+
+  it("x-forwarded-for não local → 403", async () => {
+    const res = await GET(requisicao("localhost:3000", { "x-forwarded-for": "203.0.113.9" }));
+    expect(res.status).toBe(403);
+  });
+
+  it("local, sem arquivo → 200 indisponivel (dado-local-ausente)", async () => {
+    process.env.SAREL_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "sarel-sitios-"));
+    const res = await GET(requisicao("localhost:3000"));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ estado: "indisponivel", causa: "dado-local-ausente" });
+  });
+
+  it("local, com fixture sintética íntegra → 200 disponivel", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "sarel-sitios-"));
+    const conteudo = JSON.stringify({
+      sitios: [{ id: "sitio-ouro-01", codigoCar: "CAR-SINTETICO-01",
+        geometry: { type: "Polygon", coordinates: [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]] } }],
+    });
+    const arquivo = path.join(dir, "sitios_referencia_local.json");
+    fs.writeFileSync(arquivo, conteudo);
+    fs.writeFileSync(arquivo + ".sha256", crypto.createHash("sha256").update(conteudo).digest("hex") + "\n");
+    process.env.SAREL_DATA_DIR = dir;
+    const res = await GET(requisicao("127.0.0.1:3000"));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ estado: "disponivel" });
+  });
+});
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/app/api/sitios-referencia/route.ts
+TAMANHO: 686 bytes
+--------------------------------------------------------------------------------
+
+import { NextRequest, NextResponse } from "next/server";
+import { isLocalRequest } from "@/lib/seguranca/localOnly";
+import { carregarSitiosLocais } from "@/lib/padraoOuro/sitiosLocais";
+
+/**
+ * Sítios de aferição (dado local). A resposta traz código CAR e perímetros, que identificam proprietários (LGPD):
+ * restrita a chamadas locais, como a rota de consulta fundiária.
+ */
+export async function GET(request: NextRequest) {
+  if (!isLocalRequest(request)) {
+    return NextResponse.json(
+      { estado: "indisponivel", causa: "acesso-negado", sitios: [] },
+      { status: 403 }
+    );
+  }
+  const resultado = carregarSitiosLocais();
+  return NextResponse.json(resultado);
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/store/useSarelStore.ts
+TAMANHO: 19,798 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Zustand Store Global do SAREL — SAREL v2 (PPGTCA 2026)
+ * ============================================================================
+ *
+ * REGRAS INVIOLÁVEIS (LEI FUNDAMENTAL):
+ * - Regra 1 e 5: Sem dados sintéticos fabricados por geradores ad-hoc em memória.
+ * - Regra 3: Armazena diretamente objetos PontoAmostral com proveniência limpa.
+ * - Invariante 2: Sem scores determinísticos ou severidade artificial.
+ * - Memória Provisória: Pontos eleitos no GEE ficam em memória efêmera até
+ *   serem salvos, impressos em planilha ou descartados ao limpar da tela.
+ * - Áreas e Polígonos: Suporte a ativação/desativação individual para amostragem.
+ */
+
+import { create } from "zustand";
+import { PontoAmostral } from "@/types/ponto";
+import { RotuloConsolidado } from "@/types/rotulo";
+import { valorOuNulo } from "@/types/proveniencia";
+import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
+import type {
+  AreaEstudo,
+  CredenciaisState,
+  MapViewState,
+  ModalType,
+  SystemLogEntry,
+} from "@/types/ui";
+import { PARANA_BASINS_GEOJSON, PARANA_ESTADO_IBGE_GEOMETRY } from "@/lib/localizacao/bacias";
+import { classificarPontoEspectral } from "@/lib/gee/amostragemBiofisica";
+import { PASSOS_TOUR_APRESENTACAO } from "@/config/tourMetodologico";
+
+export type AbaAtiva = "mapa" | "inspetor" | "matriz" | "campanha" | "decisoes";
+
+export interface FiltrosState {
+  bacia: string | null;
+  solo: string | null;
+  declividadeMin: number | null;
+  declividadeMax: number | null;
+  situacaoFundiaria: "todas" | "com-car" | "sem-car";
+  rotulado: "todos" | "rotulado" | "nao-rotulado";
+  classeAmostral: "todas" | "erosao" | "controle";
+  buscaTexto: string;
+}
+
+interface SarelStoreState {
+  // Abas e Modais
+  abaAtiva: AbaAtiva;
+  modalAtiva: ModalType;
+  setAbaAtiva: (aba: AbaAtiva) => void;
+  setModalAtiva: (modal: ModalType) => void;
+
+  // Tema e Interface Geral
+  tema: "dark" | "light";
+  toggleTema: () => void;
+  sidebarRecolhida: boolean;
+  toggleSidebar: () => void;
+  abaSidebar: "triagem" | "filtros";
+  setAbaSidebar: (aba: "triagem" | "filtros") => void;
+
+  // Modo Apresentação & Tour Metodológico
+  modoApresentacaoAtivo: boolean;
+  passoTourAtual: number;
+  itemMetodologicoAtivoId: string | null;
+  modalMetodologiaAberta: boolean;
+  setModoApresentacaoAtivo: (ativo: boolean) => void;
+  toggleModoApresentacao: () => void;
+  iniciarTour: () => void;
+  encerrarTour: () => void;
+  avancarPassoTour: () => void;
+  voltarPassoTour: () => void;
+  abrirItemMetodologico: (id: string) => void;
+  fecharModalMetodologia: () => void;
+
+  // Pontos Salvos e Pontos Provisórios (Memória Efêmera)
+  pontos: PontoAmostral[];
+  pontosProvisorios: PontoAmostral[];
+  pontoSelecionadoId: string | null;
+  pontoAuditoria: PontoAmostral | null;
+  rotulosConsolidados: Record<string, RotuloConsolidado>;
+
+  // Métodos de Manipulação de Pontos
+  carregarPontos: (novosPontos: PontoAmostral[]) => void;
+  carregarPontosProvisorios: (novosPontos: PontoAmostral[]) => void;
+  salvarPontosProvisorios: () => void;
+  descartarPontosProvisorios: () => void;
+  limparTela: () => void;
+  selecionarPonto: (id: string | null) => void;
+  setPontoAuditoria: (ponto: PontoAmostral | null) => void;
+  definirRotuloConsolidado: (codigo: string, rotulo: RotuloConsolidado) => void;
+  obterPontoSelecionado: () => PontoAmostral | undefined;
+  atualizarPontoIndividual: (pontoAtualizado: PontoAmostral) => void;
+
+  // Áreas Territoriais e Polígonos Persistentes no Mapa
+  areas: AreaEstudo[];
+  adicionarArea: (area: AreaEstudo) => void;
+  removerArea: (id: string) => void;
+  alternarAreaAtiva: (id: string, ativa?: boolean) => void;
+  definirAreas: (areas: AreaEstudo[]) => void;
+
+  // Ferramenta de Desenho de Talhões / Polígonos
+  modoDesenhoAtivo: boolean;
+  poligonoDesenhando: [number, number][]; // [lon, lat]
+  setModoDesenhoAtivo: (ativo: boolean) => void;
+  adicionarVerticeDesenho: (coord: [number, number]) => void;
+  desfazerVerticeDesenho: () => void;
+  cancelarDesenho: () => void;
+  concluirDesenhoTalhao: (nome: string, categoria?: string) => void;
+
+  // Filtros da Sidebar
+  filtroEstrato: string | null;
+  filtroBloco: string | null;
+  filtros: FiltrosState;
+  topN: number | "todas";
+  setFiltroEstrato: (estrato: string | null) => void;
+  setFiltroBloco: (bloco: string | null) => void;
+  setFiltros: (novosFiltros: Partial<FiltrosState>) => void;
+  limparFiltros: () => void;
+  setTopN: (n: number | "todas") => void;
+
+  // Estado Cartográfica (MapLibre GL 3D)
+  mapState: MapViewState;
+  setMapState: (
+    updater:
+      | Partial<MapViewState>
+      | ((prev: MapViewState) => Partial<MapViewState>)
+  ) => void;
+
+  // Credenciais e Status de Conexão com APIs
+  credenciais: CredenciaisState;
+  setCredenciais: (creds: Partial<CredenciaisState>) => void;
+  setGeeSessionActive: (active: boolean) => void;
+
+  // Logs e Diagnósticos
+  systemLogs: SystemLogEntry[];
+  adicionarLog: (
+    severity: "info" | "warning" | "error",
+    component: string,
+    message: string,
+    details?: Record<string, unknown>
+  ) => void;
+  limparLogs: () => void;
+}
+
+// Malha oficial do Estado do Paraná (IBGE 41) como área territorial de referência
+const AREA_PARANA_INICIAL: AreaEstudo = {
+  id: "area-pr-estado",
+  nome: "Estado do Paraná (Malha Oficial IBGE)",
+  tipo: "estado",
+  codigoIbge: "41",
+  areaKm2: 199315,
+  ativa: true,
+  cor: "#059669",
+  geometry: PARANA_ESTADO_IBGE_GEOMETRY as any,
+};
+
+const FILTROS_INICIAIS: FiltrosState = {
+  bacia: null,
+  solo: null,
+  declividadeMin: null,
+  declividadeMax: null,
+  situacaoFundiaria: "todas",
+  rotulado: "todos",
+  classeAmostral: "todas",
+  buscaTexto: "",
+};
+
+function harmonizarClasseAmostral(ponto: PontoAmostral): PontoAmostral {
+  if (ponto.classeAmostral && ponto.classeAmostral !== "indefinido") {
+    return ponto;
+  }
+
+  const bsiVal = valorOuNulo(ponto.espectral?.bsi);
+  const ndviVal = valorOuNulo(ponto.espectral?.ndvi);
+  if (bsiVal !== null && ndviVal !== null) {
+    return {
+      ...ponto,
+      classeAmostral: classificarPontoEspectral(bsiVal, ndviVal),
+    };
+  }
+
+  // Se o ponto tiver rótulo de observador de campo
+  const rotulo = ponto.rotulo?.final?.classe?.toLowerCase();
+  if (rotulo?.includes("erosao") || rotulo?.includes("erosão") || rotulo === "1") {
+    return { ...ponto, classeAmostral: "erosao" };
+  }
+  if (rotulo?.includes("controle") || rotulo?.includes("spd") || rotulo === "0") {
+    return { ...ponto, classeAmostral: "controle" };
+  }
+
+  return { ...ponto, classeAmostral: ponto.classeAmostral || "indefinido" };
+}
+
+export const useSarelStore = create<SarelStoreState>((set, get) => ({
+  // Abas e Modais
+  abaAtiva: "mapa",
+  modalAtiva: null,
+  setAbaAtiva: (aba) => set({ abaAtiva: aba }),
+  setModalAtiva: (modal) => set({ modalAtiva: modal }),
+
+  // Tema e Interface
+  tema: "dark",
+  toggleTema: () =>
+    set((state) => ({ tema: state.tema === "dark" ? "light" : "dark" })),
+  sidebarRecolhida: false,
+  toggleSidebar: () =>
+    set((state) => ({ sidebarRecolhida: !state.sidebarRecolhida })),
+  abaSidebar: "triagem",
+  setAbaSidebar: (aba) => set({ abaSidebar: aba }),
+
+  // Modo Apresentação & Tour Metodológico
+  modoApresentacaoAtivo: false,
+  passoTourAtual: 0,
+  itemMetodologicoAtivoId: null,
+  modalMetodologiaAberta: false,
+
+  setModoApresentacaoAtivo: (ativo) =>
+    set((state) => ({
+      modoApresentacaoAtivo: ativo,
+      modalMetodologiaAberta: ativo ? state.modalMetodologiaAberta : false,
+    })),
+
+  toggleModoApresentacao: () =>
+    set((state) => {
+      const proximo = !state.modoApresentacaoAtivo;
+      return {
+        modoApresentacaoAtivo: proximo,
+        modalMetodologiaAberta: proximo ? state.modalMetodologiaAberta : false,
+      };
+    }),
+
+  iniciarTour: () =>
+    set({
+      modoApresentacaoAtivo: true,
+      passoTourAtual: 0,
+      itemMetodologicoAtivoId: PASSOS_TOUR_APRESENTACAO[0],
+      modalMetodologiaAberta: true,
+    }),
+
+  encerrarTour: () =>
+    set({
+      modalMetodologiaAberta: false,
+      modoApresentacaoAtivo: false,
+    }),
+
+  avancarPassoTour: () =>
+    set((state) => {
+      const proximo = Math.min(
+        state.passoTourAtual + 1,
+        PASSOS_TOUR_APRESENTACAO.length - 1
+      );
+      return {
+        passoTourAtual: proximo,
+        itemMetodologicoAtivoId: PASSOS_TOUR_APRESENTACAO[proximo],
+        modalMetodologiaAberta: true,
+      };
+    }),
+
+  voltarPassoTour: () =>
+    set((state) => {
+      // permitido: controle de indice de paginacao de interface do tour metodologico (>= 0)
+      const anterior = Math.max(state.passoTourAtual - 1, 0);
+      return {
+        passoTourAtual: anterior,
+        itemMetodologicoAtivoId: PASSOS_TOUR_APRESENTACAO[anterior],
+        modalMetodologiaAberta: true,
+      };
+    }),
+
+  abrirItemMetodologico: (id) => {
+    const idx = PASSOS_TOUR_APRESENTACAO.indexOf(id);
+    set((state) => ({
+      itemMetodologicoAtivoId: id,
+      modalMetodologiaAberta: true,
+      passoTourAtual: idx !== -1 ? idx : state.passoTourAtual,
+    }));
+  },
+
+  fecharModalMetodologia: () =>
+    set({
+      modalMetodologiaAberta: false,
+      modoApresentacaoAtivo: false,
+    }),
+
+  // Pontos Salvos e Pontos Provisórios
+  // ZERO dados sintéticos: tela limpa inicialmente
+  pontos: [],
+  pontosProvisorios: [],
+  pontoSelecionadoId: null,
+  pontoAuditoria: null,
+  rotulosConsolidados: {},
+
+  carregarPontos: (novosPontos) => {
+    assegurarApenasPontosReais(novosPontos);
+    const harmonizados = novosPontos.map(harmonizarClasseAmostral);
+    set((state) => {
+      const novosRotulos = { ...state.rotulosConsolidados };
+      for (const p of harmonizados) {
+        if (p.rotulo) {
+          novosRotulos[p.codigo] = p.rotulo;
+        }
+      }
+      return {
+        pontos: harmonizados,
+        rotulosConsolidados: novosRotulos,
+        pontoSelecionadoId: harmonizados.length > 0 ? harmonizados[0].id : null,
+      };
+    });
+  },
+
+  carregarPontosProvisorios: (novosPontos) => {
+    assegurarApenasPontosReais(novosPontos);
+    const harmonizados = novosPontos.map(harmonizarClasseAmostral);
+    set((state) => {
+      const novosRotulos = { ...state.rotulosConsolidados };
+      for (const p of harmonizados) {
+        if (p.rotulo) {
+          novosRotulos[p.codigo] = p.rotulo;
+        }
+      }
+      return {
+        pontosProvisorios: harmonizados,
+        rotulosConsolidados: novosRotulos,
+        pontoSelecionadoId: harmonizados.length > 0 ? harmonizados[0].id : null,
+      };
+    });
+  },
+
+  salvarPontosProvisorios: () => {
+    const { pontosProvisorios, pontos } = get();
+    if (pontosProvisorios.length === 0) return;
+
+    // Combina evitando duplicatas por ID
+    const mapaExistente = new Map(pontos.map((p) => [p.id, p]));
+    for (const p of pontosProvisorios) {
+      mapaExistente.set(p.id, p);
+    }
+    const pontosSalvos = Array.from(mapaExistente.values());
+
+    set({
+      pontos: pontosSalvos,
+      pontosProvisorios: [],
+    });
+  },
+
+  descartarPontosProvisorios: () => {
+    set({
+      pontosProvisorios: [],
+      pontoSelecionadoId: null,
+    });
+  },
+
+  limparTela: () => {
+    set({
+      pontos: [],
+      pontosProvisorios: [],
+      pontoSelecionadoId: null,
+      pontoAuditoria: null,
+    });
+  },
+
+  selecionarPonto: (id) => set({ pontoSelecionadoId: id }),
+
+  atualizarPontoIndividual: (pontoAtualizado) => {
+    assegurarApenasPontosReais([pontoAtualizado]);
+    const harmonizado = harmonizarClasseAmostral(pontoAtualizado);
+    set((state) => ({
+      pontos: state.pontos.map((p) => (p.id === harmonizado.id ? harmonizado : p)),
+      pontosProvisorios: state.pontosProvisorios.map((p) =>
+        p.id === harmonizado.id ? harmonizado : p
+      ),
+      rotulosConsolidados: harmonizado.rotulo
+        ? { ...state.rotulosConsolidados, [harmonizado.codigo]: harmonizado.rotulo }
+        : state.rotulosConsolidados,
+    }));
+  },
+
+  setPontoAuditoria: (ponto) => set({ pontoAuditoria: ponto }),
+
+  definirRotuloConsolidado: (codigo, rotulo) =>
+    set((state) => ({
+      rotulosConsolidados: {
+        ...state.rotulosConsolidados,
+        [codigo]: rotulo,
+      },
+      pontos: state.pontos.map((p) =>
+        p.codigo === codigo ? harmonizarClasseAmostral({ ...p, rotulo }) : p
+      ),
+      pontosProvisorios: state.pontosProvisorios.map((p) =>
+        p.codigo === codigo ? harmonizarClasseAmostral({ ...p, rotulo }) : p
+      ),
+    })),
+
+  obterPontoSelecionado: () => {
+    const { pontos, pontosProvisorios, pontoSelecionadoId } = get();
+    return (
+      pontos.find((p) => p.id === pontoSelecionadoId) ||
+      pontosProvisorios.find((p) => p.id === pontoSelecionadoId)
+    );
+  },
+
+  // Áreas de Estudo e Polígonos
+  areas: [],
+
+  adicionarArea: (area) =>
+    set((state) => ({
+      areas: [...state.areas.filter((a) => a.id !== area.id), area],
+    })),
+
+  removerArea: (id) =>
+    set((state) => ({
+      areas: state.areas.filter((a) => a.id !== id),
+    })),
+
+  alternarAreaAtiva: (id, ativa) =>
+    set((state) => ({
+      areas: state.areas.map((a) =>
+        a.id === id ? { ...a, ativa: ativa ?? !a.ativa } : a
+      ),
+    })),
+
+  definirAreas: (areas) => set({ areas }),
+
+  // Desenho de Polígonos / Talhões
+  modoDesenhoAtivo: false,
+  poligonoDesenhando: [],
+
+  setModoDesenhoAtivo: (ativo) =>
+    set({ modoDesenhoAtivo: ativo, poligonoDesenhando: [] }),
+
+  adicionarVerticeDesenho: (coord) =>
+    set((state) => ({
+      poligonoDesenhando: [...state.poligonoDesenhando, coord],
+    })),
+
+  desfazerVerticeDesenho: () =>
+    set((state) => ({
+      poligonoDesenhando: state.poligonoDesenhando.slice(0, -1),
+    })),
+
+  cancelarDesenho: () =>
+    set({ modoDesenhoAtivo: false, poligonoDesenhando: [] }),
+
+  concluirDesenhoTalhao: (nome, categoria = "Talhão Agrícola") => {
+    const { poligonoDesenhando, areas } = get();
+    if (poligonoDesenhando.length < 3) return;
+
+    // Fecha o anel se necessário
+    const coordsFechadas =
+      poligonoDesenhando[0][0] ===
+        poligonoDesenhando[poligonoDesenhando.length - 1][0] &&
+      poligonoDesenhando[0][1] ===
+        poligonoDesenhando[poligonoDesenhando.length - 1][1]
+        ? poligonoDesenhando
+        : [...poligonoDesenhando, poligonoDesenhando[0]];
+
+    const novoTalhao: AreaEstudo = {
+      id: `talhao-${Date.now()}`,
+      nome: nome.trim() || `Talhão ${areas.filter((a) => a.tipo === "talhao").length + 1}`,
+      tipo: "talhao",
+      categoria,
+      ativa: true,
+      cor: "#10B981",
+      geometry: {
+        type: "Polygon",
+        coordinates: [coordsFechadas],
+      },
+    };
+
+    set((state) => ({
+      areas: [...state.areas, novoTalhao],
+      modoDesenhoAtivo: false,
+      poligonoDesenhando: [],
+    }));
+  },
+
+  // Filtros
+  filtroEstrato: null,
+  filtroBloco: null,
+  filtros: FILTROS_INICIAIS,
+  topN: "todas",
+
+  setFiltroEstrato: (estrato) => set({ filtroEstrato: estrato }),
+  setFiltroBloco: (bloco) => set({ filtroBloco: bloco }),
+  setFiltros: (novos) =>
+    set((state) => ({ filtros: { ...state.filtros, ...novos } })),
+  limparFiltros: () =>
+    set({ filtros: FILTROS_INICIAIS, filtroEstrato: null, filtroBloco: null }),
+  setTopN: (topN) => set({ topN }),
+
+  // Visualização Cartográfica
+  mapState: {
+    basemap: "google-earth",
+    terreno3d: true,
+    exageracao3d: 1.5,
+    mostrarBacias: false,
+    mostrarLimites: false,
+    mostrarSolosEmbrapa: false,
+    mostrarErodibilidade: false,
+    mostrarSitiosPadraoOuro: true,
+    flyToTarget: null,
+  },
+
+  setMapState: (updater) =>
+    set((state) => ({
+      mapState:
+        typeof updater === "function"
+          ? { ...state.mapState, ...updater(state.mapState) }
+          : { ...state.mapState, ...updater },
+    })),
+
+  // Credenciais
+  credenciais: {
+    geeSessionActive: false,
+    gcpCredentials: null,
+    mapboxToken: "",
+    googleMapsKey: "",
+    cartoApiKey: "",
+    planetApiKey: "",
+    embrapaToken: "",
+    jevApiKey: "",
+  },
+
+  setCredenciais: (creds) =>
+    set((state) => ({
+      credenciais: { ...state.credenciais, ...creds },
+    })),
+
+  setGeeSessionActive: (active) =>
+    set((state) => ({
+      credenciais: { ...state.credenciais, geeSessionActive: active },
+    })),
+
+  // Logs
+  systemLogs: [
+    {
+      id: "log-init",
+      timestamp: new Date().toISOString(),
+      severity: "info",
+      component: "SAREL-Core",
+      message: "Sistema SAREL v2 inicializado com rigor de dados verificados.",
+    },
+  ],
+
+  adicionarLog: (severity, component, message, details) =>
+    set((state) => {
+      // Evita duplicar a mesma mensagem consecutiva no relatório
+      if (state.systemLogs[0]?.message === message && state.systemLogs[0]?.component === component) {
+        return state;
+      }
+      return {
+        systemLogs: [
+          {
+            id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            timestamp: new Date().toISOString(),
+            severity,
+            component,
+            message,
+            details,
+          },
+          ...state.systemLogs.slice(0, 149),
+        ],
+      };
+    }),
+
+  limparLogs: () =>
+    set({
+      systemLogs: [
+        {
+          id: `log-clear-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          severity: "info",
+          component: "Governança & Sistema",
+          message: "Relatório de erros e eventos limpo pelo pesquisador.",
+        },
+      ],
+    }),
+}));
+
+/**
+ * Seletor de pontos visíveis combinando pontos salvos e provisórios com os filtros ativos.
+ */
+export function usePontosVisiveis(): PontoAmostral[] {
+  const { pontos, pontosProvisorios, filtros, filtroEstrato, filtroBloco, topN } =
+    useSarelStore();
+
+  // Combina pontos salvos com provisórios
+  const todosPontos = [...pontos, ...pontosProvisorios];
+
+  return todosPontos.filter((p) => {
+    if (filtroEstrato && p.estratoId !== filtroEstrato) return false;
+    if (filtroBloco && p.blocoEspacial !== filtroBloco) return false;
+    if (
+      filtros.bacia &&
+      valorOuNulo(p.localizacao?.bacia) !== filtros.bacia
+    ) {
+      return false;
+    }
+    if (
+      filtros.solo &&
+      valorOuNulo(p.solo?.ordem) !== filtros.solo
+    ) {
+      return false;
+    }
+    const decliv = valorOuNulo(p.terreno?.declividadePct);
+    if (
+      filtros.declividadeMin !== null &&
+      (decliv === null || decliv < filtros.declividadeMin)
+    ) {
+      return false;
+    }
+    if (
+      filtros.declividadeMax !== null &&
+      (decliv === null || decliv > filtros.declividadeMax)
+    ) {
+      return false;
+    }
+    if (filtros.situacaoFundiaria === "com-car") {
+      if (!p.fundiario?.codigoCar) return false;
+    } else if (filtros.situacaoFundiaria === "sem-car") {
+      if (p.fundiario?.codigoCar) return false;
+    }
+    if (filtros.rotulado === "rotulado") {
+      if (!p.rotulo?.final) return false;
+    } else if (filtros.rotulado === "nao-rotulado") {
+      if (p.rotulo?.final) return false;
+    }
+    if (filtros.classeAmostral === "erosao") {
+      if (p.classeAmostral !== "erosao") return false;
+    } else if (filtros.classeAmostral === "controle") {
+      if (p.classeAmostral !== "controle") return false;
+    }
+    if (filtros.buscaTexto) {
+      const q = filtros.buscaTexto.toLowerCase();
+      const matchCodigo = p.codigo.toLowerCase().includes(q);
+      const mun = valorOuNulo(p.localizacao?.municipio);
+      const matchMun = mun ? mun.toLowerCase().includes(q) : false;
+      const bac = valorOuNulo(p.localizacao?.bacia);
+      const matchBacia = bac ? bac.toLowerCase().includes(q) : false;
+      const matchCar = (p.fundiario?.codigoCar || "").toLowerCase().includes(q);
+      if (!matchCodigo && !matchMun && !matchBacia && !matchCar) return false;
+    }
+    return true;
+  }).slice(0, topN === "todas" ? undefined : topN);
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/components/decisoes/PainelSorteioD16.tsx
+TAMANHO: 14,336 bytes
+--------------------------------------------------------------------------------
+
+"use client";
+
+import React, { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, CheckCircle2, Lock, ShieldAlert, FileCheck2, Calculator } from "lucide-react";
+import { useSarelStore } from "@/store/useSarelStore";
+import {
+  CandidatoSorteioD16,
+  SeloSorteioD16,
+  verificarPreCondicoesSorteioD16,
+} from "@/lib/gee/sorteioPoligonosTipos";
+import { valorOuNulo } from "@/types/proveniencia";
+import { CalculadoraDesenhoAmostral } from "./CalculadoraDesenhoAmostral";
+
+/**
+ * Painel exclusivo do pesquisador para o sorteio único e irreversível dos polígonos
+ * (FASE A1 — Decisões D07, D08, D12, D16 e D23) e exploração via Calculadora de Desenho (X5).
+ *
+ * Nunca é exibido em telas de coleta de campo (protocolo cego).
+ */
+export const PainelSorteioD16: React.FC = () => {
+  const { pontos, adicionarLog } = useSarelStore();
+  const [seloExistenteCaminho, setSeloExistenteCaminho] = useState<string | null>(null);
+  const [seloGravado, setSeloGravado] = useState<SeloSorteioD16 | null>(null);
+  const [artefatoRemedicao, setArtefatoRemedicao] = useState<{
+    statusSorteio?: string;
+    dimensoesMedidas?: {
+      S?: { estado: string; fonte?: string };
+      K?: { estado: string; fonte?: string };
+      E?: { estado: string; motivo?: string; fonte?: string };
+    };
+    [chave: string]: unknown;
+  } | null>(null);
+  const [etapaConfirmacao, setEtapaConfirmacao] = useState<0 | 1>(0);
+  const [executando, setExecutando] = useState(false);
+  const [erroExecucao, setErroExecucao] = useState<string | null>(null);
+  const [abaAtiva, setAbaAtiva] = useState<"sorteio" | "calculadora">("sorteio");
+
+  useEffect(() => {
+    let cancelado = false;
+    fetch("/api/gee/sorteio-d16")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelado) {
+          if (d?.seloExistenteCaminho) {
+            setSeloExistenteCaminho(d.seloExistenteCaminho);
+            if (d.selo) setSeloGravado(d.selo);
+          }
+          if (d?.artefatoRemedicao) {
+            setArtefatoRemedicao(d.artefatoRemedicao);
+          }
+        }
+      })
+      .catch(() => {
+        // Ignora erro silenciosamente no carregamento inicial
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
+  const { candidatosMapeados, candidatosExcluidosMedidaAusente } = useMemo(() => {
+    const validos: CandidatoSorteioD16[] = [];
+    let excluidos = 0;
+    for (const p of pontos) {
+      const decliv = valorOuNulo(p.terreno?.declividadePct);
+      const freqNu = valorOuNulo(p.temporal?.D?.serie?.frequenciaSoloNu);
+      if (decliv === null || freqNu === null) {
+        excluidos++;
+        continue;
+      }
+      const wc2020 = valorOuNulo(p.classeWorldCover2020);
+      const wc2021 = valorOuNulo(p.classeWorldCover2021);
+      const kAmbiguo = p.solo?.kAmbiguoAssociacao ?? p.kAmbiguoAssociacao;
+      validos.push({
+        id: p.id,
+        latitude: p.latitude,
+        longitude: p.longitude,
+        declividadePct: decliv,
+        frequenciaSoloNu: freqNu,
+        nivelK: p.criterioSelecao.nivelK,
+        classeWorldCover2020: wc2020,
+        classeWorldCover2021: wc2021,
+        kAmbiguoAssociacao: kAmbiguo,
+        unidadeDeterminanteK2024:
+          p.criterioSelecao.unidadeDeterminanteK2024 ?? p.solo?.unidadeDeterminanteK2024 ?? null,
+      });
+    }
+    return { candidatosMapeados: validos, candidatosExcluidosMedidaAusente: excluidos };
+  }, [pontos]);
+
+  const relatorioPre = useMemo(() => {
+    return verificarPreCondicoesSorteioD16(candidatosMapeados, {
+      seloExistenteCaminho,
+      lancarErro: false,
+    });
+  }, [candidatosMapeados, seloExistenteCaminho]);
+
+  const confirmarSorteioIrreversivel = async () => {
+    setExecutando(true);
+    setErroExecucao(null);
+    try {
+      const res = await fetch("/api/gee/sorteio-d16", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          candidatos: candidatosMapeados,
+          confirmar: true,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.ok) {
+        setErroExecucao(data?.motivo ?? "Falha ao executar sorteio D16.");
+        return;
+      }
+      setSeloExistenteCaminho(data.seloExistenteCaminho);
+      setSeloGravado(data.selo);
+      setEtapaConfirmacao(0);
+      adicionarLog(
+        "info",
+        "Sorteio-D16",
+        `Sorteio irreversível de polígonos selado em ${data.seloExistenteCaminho}.`
+      );
+    } catch (e: unknown) {
+      setErroExecucao(e instanceof Error ? e.message : String(e));
+    } finally {
+      setExecutando(false);
+    }
+  };
+
+  const bloqueioENaoMedido =
+    artefatoRemedicao?.dimensoesMedidas?.E?.estado === "indisponivel" ||
+    (typeof artefatoRemedicao?.statusSorteio === "string" &&
+      artefatoRemedicao.statusSorteio.includes("BLOQUEADO"));
+
+  const motivoBloqueioArtefato =
+    artefatoRemedicao?.statusSorteio ||
+    artefatoRemedicao?.dimensoesMedidas?.E?.motivo ||
+    null;
+
+  return (
+    <div className="space-y-4">
+      {/* Abas de Navegação */}
+      <div className="flex border-b border-slate-700/80 gap-2">
+        <button
+          type="button"
+          onClick={() => setAbaAtiva("sorteio")}
+          className={`py-2 px-3.5 text-xs font-bold rounded-t-lg transition border-t border-x ${
+            abaAtiva === "sorteio"
+              ? "bg-slate-800 text-white border-slate-700 border-b-transparent"
+              : "bg-slate-900/60 text-slate-400 border-transparent hover:text-slate-200"
+          }`}
+        >
+          Sorteio D16 (Selo Irreversível)
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setAbaAtiva("calculadora")}
+          className={`py-2 px-3.5 text-xs font-bold rounded-t-lg transition border-t border-x flex items-center gap-1.5 ${
+            abaAtiva === "calculadora"
+              ? "bg-slate-800 text-sky-400 border-slate-700 border-b-transparent"
+              : "bg-slate-900/60 text-slate-400 border-transparent hover:text-slate-200"
+          }`}
+        >
+          <Calculator className="w-3.5 h-3.5" />
+          Calculadora de Desenho Amostral (X5)
+        </button>
+      </div>
+
+      {abaAtiva === "calculadora" ? (
+        <CalculadoraDesenhoAmostral />
+      ) : seloExistenteCaminho ? (
+        <div className="p-4 rounded-xl border border-emerald-300 bg-emerald-50/80 dark:bg-emerald-950/30 dark:border-emerald-800 space-y-2 text-xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 font-bold text-emerald-900 dark:text-emerald-200">
+              <FileCheck2 className="w-4 h-4 text-emerald-600" />
+              <span>Sorteio D16 Selado e Irreversível (Decisões D16 e D23)</span>
+            </div>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900 font-mono text-[10px] font-bold">
+              SELADO (72 POLÍGONOS / 361 ha)
+            </span>
+          </div>
+          <p className="text-slate-700 dark:text-slate-300">
+            O sorteio estratificado de 72 polígonos de 5,02 ha (36 treino + 36 held-out) já foi executado e selado.
+            Conforme a Decisão D23, as probabilidades de inclusão (<code>pi_i</code>) registradas não podem ser descartadas nem sobrescritas.
+          </p>
+          <div className="flex flex-wrap items-center gap-3 pt-1 font-mono text-[11px] text-emerald-900 dark:text-emerald-300">
+            <span>
+              Arquivo do Selo:{" "}
+              <a
+                href={`/${seloExistenteCaminho}`}
+                target="_blank"
+                rel="noreferrer"
+                className="underline font-bold"
+              >
+                {seloExistenteCaminho}
+              </a>
+            </span>
+            {seloGravado && (
+              <>
+                <span>• Semente: {seloGravado.semente}</span>
+                <span>• Hash: {seloGravado.hashIntegridade.slice(0, 12)}...</span>
+                <span>• Selado em: {seloGravado.geradoEm}</span>
+              </>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="p-4 rounded-xl border border-amber-300 bg-amber-50/70 dark:bg-amber-950/20 dark:border-amber-800 space-y-3 text-xs">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
+              <ShieldAlert className="w-4 h-4 text-amber-600" />
+              <span>Comando de Sorteio dos 72 Polígonos de Drone (FASE A1 — D16 / D23)</span>
+            </div>
+            <span
+              className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                bloqueioENaoMedido
+                  ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-200"
+                  : relatorioPre.aprovado
+                  ? "bg-emerald-100 text-emerald-800"
+                  : "bg-rose-100 text-rose-800"
+              }`}
+            >
+              {bloqueioENaoMedido
+                ? "Bloqueado (Ê não medido — P12)"
+                : relatorioPre.aprovado
+                ? "Pré-condições OK"
+                : `Bloqueado (${relatorioPre.condicaoFalha})`}
+            </span>
+          </div>
+
+          <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+            <b>Escopo e Irreversibilidade:</b> Sorteia exatamente <b>72 polígonos de 5,02 ha</b> (<b>4 por estrato</b> sobre os{" "}
+            <b>18 estratos</b> de D12, totalizando <b>361 ha</b>: 36 para treino e 36 reservados em held-out para avaliação única de D25).
+            Esta ação é <b>irreversível</b> (D23 proíbe descartar <code>pi_i</code> registrado).
+          </p>
+
+          <div className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
+            <span>{candidatosExcluidosMedidaAusente} candidatos excluídos por medida ausente</span>
+          </div>
+
+          {bloqueioENaoMedido && (
+            <div className="p-3 rounded-lg border border-rose-300 bg-rose-50 dark:bg-rose-950/40 dark:border-rose-800 text-rose-950 dark:text-rose-200 flex items-start gap-2.5">
+              <Lock className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+              <div className="space-y-1">
+                <div className="font-bold flex flex-wrap items-center gap-2">
+                  <span>Sorteio D16 Bloqueado — Dimensão Ê Não Medida no GEE (P12)</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-rose-200 dark:bg-rose-900 text-rose-900 dark:text-rose-200">
+                    Fonte: docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json
+                  </span>
+                </div>
+                <p className="text-[11px] leading-relaxed">
+                  {motivoBloqueioArtefato}
+                </p>
+                <div className="text-[10px] font-mono opacity-85 pt-1">
+                  Ŝ: {artefatoRemedicao?.dimensoesMedidas?.S?.estado?.toUpperCase() ?? "MEDIDO"} | K̂: {artefatoRemedicao?.dimensoesMedidas?.K?.estado?.toUpperCase() ?? "MEDIDO"} | Ê: {artefatoRemedicao?.dimensoesMedidas?.E?.estado?.toUpperCase() ?? "INDISPONÍVEL"}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!bloqueioENaoMedido && !relatorioPre.aprovado && (
+            <div className="p-2.5 rounded-lg border border-rose-200 bg-rose-50 dark:bg-rose-950/40 dark:border-rose-800 text-rose-900 dark:text-rose-200 flex items-start gap-2">
+              <Lock className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+              <div>
+                <b>Gatilho Desabilitado — Falha na Pré-condição <code>{relatorioPre.condicaoFalha}</code>:</b>{" "}
+                {relatorioPre.motivoFalha}
+              </div>
+            </div>
+          )}
+
+          {erroExecucao && (
+            <div className="p-2.5 rounded-lg border border-rose-300 bg-rose-100 text-rose-900 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span>{erroExecucao}</span>
+            </div>
+          )}
+
+          {etapaConfirmacao === 0 ? (
+            <button
+              type="button"
+              disabled={bloqueioENaoMedido || !relatorioPre.aprovado || executando}
+              onClick={() => setEtapaConfirmacao(1)}
+              className="px-3.5 py-2 rounded-lg font-bold text-white bg-amber-600 hover:bg-amber-700 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed transition-all cursor-pointer"
+            >
+              {bloqueioENaoMedido
+                ? "Sorteio Bloqueado (Ê não medido — P12)"
+                : relatorioPre.aprovado
+                ? "Etapa 1/2 — Preparar Sorteio Irreversível de 72 Polígonos (361 ha)"
+                : `Sorteio Desabilitado (${relatorioPre.condicaoFalha})`}
+            </button>
+          ) : (
+            <div className="p-3 rounded-lg border border-amber-400 bg-amber-100/80 dark:bg-amber-900/40 space-y-2">
+              <p className="font-bold text-amber-950 dark:text-amber-100 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-amber-700" />
+                Confirmação Explícita (Etapa 2/2): Deseja selar definitivamente os 72 polígonos (4 por estrato, 361 ha) e gravar os pi_i de D23?
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={executando}
+                  onClick={confirmarSorteioIrreversivel}
+                  className="px-3.5 py-1.5 rounded-lg font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-60 cursor-pointer"
+                >
+                  {executando
+                    ? "Gravando Selo D16..."
+                    : "Confirmar e Selar Sorteio Irreversível (72 Polígonos)"}
+                </button>
+                <button
+                  type="button"
+                  disabled={executando}
+                  onClick={() => setEtapaConfirmacao(0)}
+                  className="px-3 py-1.5 rounded-lg font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/components/decisoes/PainelCriterioRefutacaoD25.tsx
+TAMANHO: 19,103 bytes
+--------------------------------------------------------------------------------
+
+"use client";
+
+import React, { useState } from "react";
+import {
+  Scale,
+  AlertCircle,
+  HelpCircle,
+  BarChart3,
+  Layers,
+  Target,
+  ShieldCheck,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+
+export interface CompetidorD24 {
+  id: "rusle" | "regressao_penalizada" | "xgboost";
+  nome: string;
+  descricao: string;
+  objetivoOuPerda: string;
+  rhoSpearman: number | null; // null = não avaliado
+  aucSecundaria: number | null; // null = não avaliado
+  ic95Diferenca: [number, number] | null; // bootstrap agrupado por polígono
+}
+
+export interface BlocoPreditorD24 {
+  bloco: "Espectro-Temporal" | "Terreno" | "Solo" | "Chuva";
+  exemplos: string;
+  tetoPreditores: number;
+  unidadesEfetivasEstimadas: number;
+  unidadesRotulo?: string;
+  alcanceEspacial: string;
+  statusRegime: "adequado" | "abaixo_regime_fisico";
+  justificativaFisica: string;
+}
+
+export const BLOCOS_PREDITORES_D24: BlocoPreditorD24[] = [
+  {
+    bloco: "Espectro-Temporal",
+    exemplos: "Sentinel-2 bandas, índices biofísicos (NDVI, BSI), métricas temporais",
+    tetoPreditores: 8,
+    unidadesEfetivasEstimadas: 1845,
+    unidadesRotulo: "~1.841 a 1.845 calculadas (D24)",
+    alcanceEspacial: "50 m de alcance de autocorrelação espacial (~26 efetivas/polígono de 5,02 ha)",
+    statusRegime: "adequado",
+    justificativaFisica: "Varia livremente dentro do talhão; é onde o XGBoost aprende não-linearidades e interações que o RUSLE não capta.",
+  },
+  {
+    bloco: "Terreno",
+    exemplos: "Copernicus DEM GLO-30 (declividade, fator LS, curvatura vertical/horizontal)",
+    tetoPreditores: 4,
+    unidadesEfetivasEstimadas: 396,
+    unidadesRotulo: "~396 calculadas (D24)",
+    alcanceEspacial: "~11 unidades efetivas por polígono de 5,02 ha (pixel 30 m já agrega)",
+    statusRegime: "abaixo_regime_fisico",
+    justificativaFisica: "Admitido por necessidade física (Invariante 1 — cinco fatores do RUSLE). Monotonicidade reduz graus de liberdade.",
+  },
+  {
+    bloco: "Solo",
+    exemplos: "Erodibilidade K̂ (Embrapa Solos / cartas oficiais)",
+    tetoPreditores: 1,
+    unidadesEfetivasEstimadas: 72,
+    unidadesRotulo: "72 (polígonos nominais; n efetivo < 72)",
+    alcanceEspacial: "1 unidade por polígono (72 polígonos nominais; n efetivo reduzido por compartilhamento de unidade pedológica)",
+    statusRegime: "abaixo_regime_fisico",
+    justificativaFisica: "Crítico: 1 único preditor admitido (K̂). 72 polígonos nominais; n efetivo menor por manchas compartilhadas. Monotonicidade física imposta.",
+  },
+  {
+    bloco: "Chuva",
+    exemplos: "Erosividade R (séries CHIRPS / TRMM / I30)",
+    tetoPreditores: 1,
+    unidadesEfetivasEstimadas: 72,
+    unidadesRotulo: "72 (polígonos nominais; n efetivo < 72)",
+    alcanceEspacial: "Grade regional (5 a 10 km de resolução nativa; 72 polígonos nominais)",
+    statusRegime: "abaixo_regime_fisico",
+    justificativaFisica: "Crítico: 1 único preditor admitido (fator R). 72 nominais; polígonos próximos compartilham a mesma célula de chuva.",
+  },
+];
+
+/**
+ * Painel Metodológico dos Critérios de Refutação D25, Regime de Dados D24 e Alvo Contínuo D26.
+ *
+ * Em conformidade estrita com D25 e P12:
+ * Enquanto não houver avaliação pericial sobre o held-out agrupado de VANT,
+ * o status exibe compulsoriamente "NÃO AVALIADO". Não antecipa nem fabrica resultados.
+ */
+export const PainelCriterioRefutacaoD25: React.FC = () => {
+  const [detalhesAbertos, setDetalhesAbertos] = useState(false);
+
+  // Status de avaliação em conformidade estrita com P12 e D25
+  const statusAvaliacao: "nao_avaliado" | "corroborada" | "inconclusiva" | "refutada" =
+    "nao_avaliado";
+
+  return (
+    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-sm space-y-0 text-xs">
+      {/* Header com Badge Destacado de NÃO AVALIADO */}
+      <div className="p-3.5 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Scale className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+          <div>
+            <h3 className="font-bold text-slate-900 dark:text-white text-xs flex items-center gap-1.5">
+              <span>Critério de Refutação Pré-Registrado (D25) & Regime D24 / D26</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 font-normal">
+                Held-out Agrupado
+              </span>
+            </h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Inferência ternária (Corroborada | Inconclusiva | Refutada) por bootstrap em 36 clusters mantendo D24 e D26.
+            </p>
+          </div>
+        </div>
+
+        {/* Badge de Status Oficial D25 */}
+        <div className="flex items-center gap-2">
+          <span className="px-2.5 py-1 rounded-full font-bold uppercase text-[10px] tracking-wider bg-amber-100 text-amber-900 dark:bg-amber-950/70 dark:text-amber-200 border border-amber-300 dark:border-amber-800 flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            Estado: NÃO AVALIADO
+          </span>
+          <button
+            type="button"
+            onClick={() => setDetalhesAbertos(!detalhesAbertos)}
+            className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 cursor-pointer"
+            title="Expandir detalhes"
+          >
+            {detalhesAbertos ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-4">
+        {/* Banner de Não Avaliado (P12 inviolável) */}
+        <div className="p-3 rounded-lg border border-amber-200 bg-amber-50/70 dark:bg-amber-950/30 dark:border-amber-900/60 text-amber-900 dark:text-amber-200 space-y-1">
+          <div className="flex items-center gap-1.5 font-bold text-xs">
+            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>Avaliação Pré-Registrada Pendente de Sobrevoo e Delineação de VANT (D16 / D25)</span>
+          </div>
+          <p className="text-[11px] leading-relaxed opacity-90">
+            Conforme a Decisão <b>D25</b> e a postura metodológica <b>P12</b>, o teste de refutação é <b>único e cego</b>,
+            executado exclusivamente sobre os 36 polígonos held-out reservados de VANT após a sobreposição ortomosaica (~4 cm GSD).
+            Nenhum resultado sintético ou preliminar é antecipado na interface.
+          </p>
+        </div>
+
+        {/* Três Competidores Pareados (D24 / D25) */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300">
+            <span className="flex items-center gap-1">
+              <BarChart3 className="w-3.5 h-3.5 text-indigo-500" />
+              Os 3 Competidores Emparelhados (Métrica Primária: ρ Spearman — D26)
+            </span>
+            <span className="text-[10px] text-slate-500 font-normal">Piso: ρ ≥ 0,40 | Margem: Δρ ≥ 0,10</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+            {/* Competidor 1: Linha de Base RUSLE */}
+            <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 space-y-1.5">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-slate-800 dark:text-slate-200 text-xs">1. Linha de Base RUSLE</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-mono">
+                  Referência
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                Modelo empírico clássico: <code>A = R · K · LS · C · P</code> em t/ha·ano.
+              </p>
+              <div className="pt-1 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center font-mono text-[10px]">
+                <span className="text-slate-500">ρ Spearman:</span>
+                <span className="font-bold text-slate-600 dark:text-slate-400">não avaliado</span>
+              </div>
+              <div className="flex justify-between items-center font-mono text-[10px]">
+                <span className="text-slate-500">AUC (Secundária):</span>
+                <span className="font-bold text-slate-600 dark:text-slate-400">não avaliado</span>
+              </div>
+            </div>
+
+            {/* Competidor 2: Regressão Penalizada */}
+            <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 space-y-1.5">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-slate-800 dark:text-slate-200 text-xs">2. Regressão Penalizada</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-mono">
+                  Parcimônia
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                Tweedie penalizada (alvo contínuo) / Logística (binário derivado).
+              </p>
+              <div className="pt-1 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center font-mono text-[10px]">
+                <span className="text-slate-500">ρ Spearman:</span>
+                <span className="font-bold text-slate-600 dark:text-slate-400">não avaliado</span>
+              </div>
+              <div className="flex justify-between items-center font-mono text-[10px]">
+                <span className="text-slate-500">AUC (Secundária):</span>
+                <span className="font-bold text-slate-600 dark:text-slate-400">não avaliado</span>
+              </div>
+            </div>
+
+            {/* Competidor 3: Modelo Proposto (XGBoost) */}
+            <div className="p-3 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 space-y-1.5">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-indigo-900 dark:text-indigo-200 text-xs">3. Modelo Proposto (XGBoost)</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 font-mono">
+                  reg:tweedie
+                </span>
+              </div>
+              <p className="text-[10px] text-indigo-800/80 dark:text-indigo-300/80">
+                Sentinel-2 + biofísica com <code>monotone_constraints</code> e tetos D24.
+              </p>
+              <div className="pt-1 border-t border-indigo-200 dark:border-indigo-900/60 flex justify-between items-center font-mono text-[10px]">
+                <span className="text-indigo-700 dark:text-indigo-400">ρ Spearman:</span>
+                <span className="font-bold text-indigo-700 dark:text-indigo-400">não avaliado</span>
+              </div>
+              <div className="flex justify-between items-center font-mono text-[10px]">
+                <span className="text-indigo-700 dark:text-indigo-400">AUC (Secundária):</span>
+                <span className="font-bold text-indigo-700 dark:text-indigo-400">não avaliado</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Estrutura Ternária de Desfecho D25 */}
+        <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+          <div className="font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <Target className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              Estrutura Ternária de Desfechos Pré-Registrados (D25)
+            </span>
+            <span className="text-[10px] font-mono text-slate-500">IC 95% Bootstrap em 36 Clusters Held-Out</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-[11px]">
+            <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-emerald-950 dark:text-emerald-200">
+              <b className="block text-emerald-700 dark:text-emerald-300 font-mono text-xs">1. Corroborada</b>
+              <span>Ponto atinge piso (ρ ≥ 0,40) e margem (Δρ ≥ 0,10), e o IC 95% emparelhado exclui zero.</span>
+            </div>
+            <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 text-blue-950 dark:text-blue-200">
+              <b className="block text-blue-700 dark:text-blue-300 font-mono text-xs">2. Inconclusiva</b>
+              <span>Margem pontual atingida (Δρ ≥ 0,10), porém IC 95% cruza zero. Reporta-se limitação de potência amostral.</span>
+            </div>
+            <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/60 text-rose-950 dark:text-rose-200">
+              <b className="block text-rose-700 dark:text-rose-300 font-mono text-xs">3. Refutada</b>
+              <span>Estimativa pontual fica abaixo do piso de utilidade (ρ &lt; 0,40) ou inferior à linha de base RUSLE.</span>
+            </div>
+          </div>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 italic">
+            * 4º Desfecho de Parcimônia: Se a Regressão Penalizada empatar ou superar o XGBoost dentro do intervalo,
+            a hipótese sobre a necessidade de ensemble de árvores/não-linearidade fica refutada, mantendo o mérito do sensoriamento remoto.
+          </p>
+        </div>
+
+        {/* Tabela do Regime de Dados (D24) e Hierarquia de Alvo (D26) */}
+        {detalhesAbertos && (
+          <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800 animate-in fade-in">
+            {/* D26: Hierarquia de Alvos */}
+            <div className="p-3 bg-indigo-50/50 dark:bg-indigo-950/30 rounded-xl border border-indigo-200 dark:border-indigo-900/60 space-y-1.5">
+              <div className="font-bold text-indigo-950 dark:text-indigo-200 text-xs flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
+                Hierarquia Rígida de Alvos (Decisão D26 — Inversão Irreversível)
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
+                <div className="p-2 bg-white dark:bg-slate-900 rounded border border-indigo-100 dark:border-indigo-900">
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400 block">ALVO PRIMÁRIO (D26):</span>
+                  <span>Fração contínua da área da célula de 10 m delineada sob ortomosaico VANT [0, 1]. Modelo <code>reg:tweedie</code> para inflação de zeros; ordenação por correlação de Spearman.</span>
+                </div>
+                <div className="p-2 bg-white dark:bg-slate-900 rounded border border-indigo-100 dark:border-indigo-900">
+                  <span className="font-bold text-amber-700 dark:text-amber-400 block">ALVO BINÁRIO DERIVADO (D26):</span>
+                  <span>Positivo se fração erodida ≥ 25% (25 m² em célula de 100 m²). Estritamente SECUNDÁRIO para compatibilidade ordinal e reporte de AUC (≥ 0,70).</span>
+                </div>
+              </div>
+            </div>
+
+            {/* D24: Tetos de Preditores por Bloco */}
+            <div className="space-y-1.5">
+              <div className="font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+                  Regime de Dados e Tetos por Bloco Físico (Decisão D24 — Máx. 14 Preditores)
+                </span>
+                <span className="text-[10px] text-rose-600 dark:text-rose-400 font-medium">
+                  3 dos 4 blocos operam abaixo do regime estatístico recomendado
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-[11px] border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 font-semibold">
+                      <th className="p-1.5">Bloco Físico</th>
+                      <th className="p-1.5">Teto</th>
+                      <th className="p-1.5">Unidades Efetivas</th>
+                      <th className="p-1.5">Escala / Autocorrelação</th>
+                      <th className="p-1.5">Regime van der Ploeg</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                    {BLOCOS_PREDITORES_D24.map((b) => (
+                      <tr key={b.bloco} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                        <td className="p-1.5 font-bold text-slate-800 dark:text-slate-200">{b.bloco}</td>
+                        <td className="p-1.5 font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                          até {b.tetoPreditores}
+                        </td>
+                        <td className="p-1.5 font-mono text-slate-600 dark:text-slate-400">
+                          {b.unidadesRotulo ?? `~${b.unidadesEfetivasEstimadas}`}
+                        </td>
+                        <td className="p-1.5 text-slate-500 dark:text-slate-400 text-[10px] max-w-xs">
+                          {b.alcanceEspacial}
+                        </td>
+                        <td className="p-1.5">
+                          {b.statusRegime === "adequado" ? (
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[9px] font-bold">
+                              Suportado
+                            </span>
+                          ) : (
+                            <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[9px] font-bold">
+                              Abaixo (Mín. Físico)
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/components/matriz/PainelMatrizTreino.tsx
+TAMANHO: 6,178 bytes
+--------------------------------------------------------------------------------
+
+﻿"use client";
+
+import React from "react";
+import { useSarelStore } from "@/store/useSarelStore";
+import { montarMatrizTreino } from "@/lib/matriz/montagem";
+
+/**
+ * Painel da Matriz de Treino — SAREL (§19 e §12.4)
+ *
+ * Apresenta:
+ * - Estatísticas de completude por feature.
+ * - Balanço de classes de erosão com prevalência explícita.
+ * - Distribuição por bloco espacial (Spatial CV).
+ * - Tabela de amostras projetada pelo perfil 'matriz-treino' (sem coordenadas, sem vazamento).
+ */
+export function PainelMatrizTreino() {
+  const { pontos, rotulosConsolidados } = useSarelStore();
+
+  const resultadoMatriz = React.useMemo(() => {
+    try {
+      return montarMatrizTreino(pontos, rotulosConsolidados, { modeloJanela: "D" });
+    } catch {
+      return null;
+    }
+  }, [pontos, rotulosConsolidados]);
+
+  if (!resultadoMatriz || resultadoMatriz.totalAmostrasTreino === 0) {
+    return (
+      <div className="flex h-96 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
+        <h3 className="text-base font-semibold text-slate-700">Matriz de Treino Vazia</h3>
+        <p className="mt-1 max-w-md text-xs text-slate-500">
+          Para compor a matriz supervisionada, é necessário carregar pontos amostrais e registrar rótulos
+          consolidados de observação humana (Fase A ou Fase B). Divergências pendentes são excluídas.
+        </p>
+      </div>
+    );
+  }
+
+  const { linhas, distribuicaoClasses, distribuicaoBlocos, heldOutDrone, totalAmostrasTreino } = resultadoMatriz;
+
+  return (
+    <div className="space-y-6">
+      {/* Cards de Resumo */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 text-xs">
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <span className="text-slate-500 font-medium">Amostras de Treino:</span>
+          <p className="text-2xl font-bold text-slate-900 mt-1">{totalAmostrasTreino}</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Projetadas pelo perfil matriz-treino</p>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <span className="text-slate-500 font-medium">Validação Held-Out (Drone):</span>
+          <p className="text-2xl font-bold text-indigo-600 mt-1">{heldOutDrone.length}</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Segregados do treino (Invariável)</p>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <span className="text-slate-500 font-medium">Balanço de Classes:</span>
+          <div className="mt-1 space-y-0.5">
+            {Object.entries(distribuicaoClasses).map(([classe, qtd]) => (
+              <div key={classe} className="flex justify-between">
+                <span className="capitalize text-slate-600">{classe}:</span>
+                <span className="font-bold text-slate-900">{qtd} ({((qtd / totalAmostrasTreino) * 100).toFixed(1)}%)</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <span className="text-slate-500 font-medium">Blocos Espaciais (Spatial CV):</span>
+          <p className="text-2xl font-bold text-purple-600 mt-1">{Object.keys(distribuicaoBlocos).length}</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Particionamento para evitar autocorrelação</p>
+        </div>
+      </div>
+
+      {/* Visualização Tabular da Matriz */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">Prévia da Matriz Tabular de Treino</h3>
+            <p className="text-xs text-slate-500">
+              Coordenadas isoladas no arquivo de chaves · Sem variáveis de score ou vazamento
+            </p>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs text-slate-700">
+            <thead className="bg-slate-50 font-semibold text-slate-900 border-b border-slate-200">
+              <tr>
+                <th className="p-2.5">Ponto_ID</th>
+                <th className="p-2.5">Bloco</th>
+                <th className="p-2.5">Declividade (%)</th>
+                <th className="p-2.5">Elevação (m)</th>
+                <th className="p-2.5">Solo (Ordem)</th>
+                <th className="p-2.5">Freq. Solo Nu (Ê)</th>
+                <th className="p-2.5">Precip 90d (mm)</th>
+                <th className="p-2.5">Rótulo (Alvo)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+              {linhas.slice(0, 10).map((l) => (
+                <tr key={l.pontoId} className="hover:bg-slate-50/80">
+                  <td className="p-2.5 font-sans font-bold text-slate-900">{l.pontoId.slice(0, 8)}...</td>
+                  <td className="p-2.5 text-purple-700">{l.blocoEspacial}</td>
+                  <td className="p-2.5">{l.declividadePct !== null ? `${l.declividadePct.toFixed(1)}%` : "null"}</td>
+                  <td className="p-2.5">{l.elevacao !== null ? `${l.elevacao.toFixed(0)} m` : "null"}</td>
+                  <td className="p-2.5 font-sans">{l.ordemSolo ?? "null"}</td>
+                  <td className="p-2.5">{l.frequenciaSoloNu !== null ? l.frequenciaSoloNu.toFixed(3) : "null"}</td>
+                  <td className="p-2.5">{l.precipAcum90d !== null ? `${l.precipAcum90d.toFixed(1)} mm` : "null"}</td>
+                  <td className="p-2.5 font-sans font-bold uppercase text-emerald-800">{l.rotuloClasse}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {linhas.length > 10 && (
+            <p className="mt-3 text-center text-[11px] text-slate-400">
+              Exibindo as primeiras 10 amostras de {linhas.length} disponíveis na matriz.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

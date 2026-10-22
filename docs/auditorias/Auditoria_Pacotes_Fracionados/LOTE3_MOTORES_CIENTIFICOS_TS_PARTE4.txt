@@ -1,0 +1,992 @@
+================================================================================
+PACOTE DE AUDITORIA EXTERNA — SAREL v2 (PPGTCA 2026)
+LOTE: LOTE3_MOTORES_CIENTIFICOS_TS | PARTE 4/9
+================================================================================
+Data de Geração: 21 de Outubro de 2026
+Limite por Arquivo: <= 90.000 bytes (Limite Rígido de Leitura)
+Total de Arquivos nesta parte: 5
+Arquivos contidos nesta parte:
+ - src/lib/rusle/fatorR.ts
+ - src/lib/rusle/linhaDeBase.ts
+ - src/lib/chuva/chirps.ts
+ - src/lib/chuva/eventos.ts
+ - src/lib/chuva/imerg.ts
+================================================================================
+
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/rusle/fatorR.ts
+TAMANHO: 11,080 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Fator R de Erosividade da Chuva — SAREL (PPGTCA 2026)
+ * Decisão D13 — Equação Regional do Paraná sobre CHIRPS Climatológico
+ * ============================================================================
+ *
+ * FUNDAMENTAÇÃO METODOLÓGICA (DECISÃO D13):
+ * 1. Equação Regional do Paraná (Rufino et al., 1993):
+ *    Formulações de correlação entre o coeficiente de chuva Rc e o índice
+ *    de erosividade mensal EI30 citadas na literatura paranaense (Waltrick et al., 2015;
+ *    SBCS-NEPAR Bol. 01, 2011; Rufino et al., 1993, Quadro 2, p. 443):
+ *      Rc_m = p_m^2 / P_anual
+ *      EI30_m = a + b * Rc_m
+ *      R = FATOR_UNIDADE_RUFINO * Σ (m=1..12) EI30_m
+ *    Para a Região 1 (Bacia do Paraná 3 / Oeste do PR): a = 18,64 e b = 5,73.
+ *
+ * 2. Fator de Unidade de Rufino (9,81):
+ *    REPRODUZIDO nos dados (pluviômetros IAT 1986-2008 reproduzem Waltrick 2015, Quadro 1,
+ *    a <0,3% em 12 estações); origem física (g, kgf.m -> J) é hipótese, não consta de
+ *    fonte lida; a equação impressa com p e P em mm dá ≈ 1/9,81 do R (D13).
+ *
+ * 3. Proposta Metodológica P24 (mínimo de anos de série climática):
+ *    Exige série pluviométrica longa (mínimo MIN_ANOS_SERIE_R = 20 anos) com médias mensais
+ *    climatológicas (Waltrick utilizou 23 anos; a base CHIRPS v2.0 possui 45 anos).
+ *
+ * 4. Envelope Geográfico:
+ *    Restrito estritamente ao envelope da BP3 definido em src/config/areaInteresse.ts.
+ *
+ * VERIFICADO 2026-10-01 — evidência: docs/verificacoes/fontes/waltrick2015/saida_extracao_waltrick_2015.txt
+ * VERIFICADO 2026-10-01 — evidência: docs/verificacoes/fontes/nepar2011/saida_extracao_nepar_2011.txt
+ * VERIFICADO 2026-10-02 — evidência: docs/verificacoes/climatologia_chirps_bp3.json
+ * VERIFICADO 2026-10-02 — evidência: docs/verificacoes/diario_climatologia_chirps_bp3.json
+ */
+
+import { Proveniencia } from "@/types/proveniencia";
+import { AREA_INTERESSE_BP3 } from "@/config/areaInteresse";
+
+export class ErroForaDoDominio extends Error {
+  constructor(mensagem: string) {
+    super(mensagem);
+    this.name = "ErroForaDoDominio";
+  }
+}
+
+export interface InsumoFatorR {
+  /** Array com exatamente 12 valores de precipitação média mensal [mm] (Janeiro a Dezembro). */
+  precipitacaoMensalMm?: number[] | null;
+  /** Latitude geográfica do ponto (WGS 84 / SIRGAS 2000). */
+  latitude?: number | null;
+  /** Longitude geográfica do ponto (WGS 84 / SIRGAS 2000). */
+  longitude?: number | null;
+  /** Identificação da estação ou célula de grade. */
+  identificadorFonte?: string | null;
+  /** Início do período da série temporal (ex.: '1981-01'). */
+  periodoInicio?: string | null;
+  /** Fim do período da série temporal (ex.: '2025-12'). */
+  periodoFim?: string | null;
+  /** Número de anos completos que compõem a série histórica (mínimo 20). */
+  nAnosSerie?: number | null;
+  /** Região pluviométrica de Rufino et al. (1993). Padrão = 1 (Região 1). */
+  regiao?: number | null;
+}
+
+export interface ResultadoCalculoFatorR {
+  rAnual: number;
+  pAnual: number;
+  rcMensal: number[];
+  ei30Mensal: number[];
+  unidade: string;
+}
+
+export interface CoeficientesRufinoRegiao {
+  a: number;
+  b: number;
+  referencia: string;
+}
+
+/**
+ * Tabela de Coeficientes de Rufino et al. (1993), Quadro 2, p. 443.
+ * Apenas a Região 1 está parametrizada; regiões 2 a 8 não entram (retornam indisponível com causa 'regiao-nao-implementada').
+ */
+export const COEFICIENTES_RUFINO_1993: Record<number, CoeficientesRufinoRegiao> = {
+  1: {
+    a: 18.64,
+    b: 5.73,
+    referencia: "Rufino et al. (1993), Quadro 2, p. 443 (Região 1)",
+  },
+};
+
+/**
+ * REPRODUZIDO nos dados (pluviômetros IAT 1986-2008 reproduzem Waltrick 2015, Quadro 1, a <0,3% em 12 estações);
+ * origem física (g, kgf.m -> J) é hipótese, não consta de fonte lida; a equação impressa com p e P em mm dá ≈ 1/9,81 do R (D13).
+ */
+export const FATOR_UNIDADE_RUFINO = 9.81;
+
+/**
+ * Proposta metodológica P24 (Waltrick usou 23 anos 1986-2008; série de referência CHIRPS tem 45 anos).
+ */
+export const MIN_ANOS_SERIE_R = 20;
+
+/**
+ * Faixa física plausível de erosividade anual no Paraná (sem fonte; não barra nada).
+ */
+export const FAIXA_FISICA_R_PARANA: [number, number] = [1000, 25000];
+
+/**
+ * Calcula o Fator R de erosividade a partir dos 12 totais mensais médios de precipitação (mm).
+ * R = FATOR_UNIDADE_RUFINO × Σ_{m=1..12} (a + b · p_m² / P), onde P = Σ p_m.
+ *
+ * @param pMensalMm Array com 12 valores numéricos de precipitação em mm (médias da série).
+ * @param regiao Número da região pluviométrica de Rufino et al. (1993). Padrão = 1.
+ * @returns ResultadoCalculoFatorR com R anual, P anual, Rc e EI30 de cada mês.
+ * @throws ErroForaDoDominio se a região não estiver implementada ou dados forem inválidos.
+ */
+export function calcularFatorR(
+  pMensalMm: number[],
+  regiao?: number
+): ResultadoCalculoFatorR {
+  const reg = typeof regiao === "number" ? regiao : 1;
+  const coefs = COEFICIENTES_RUFINO_1993[reg];
+  if (!coefs) {
+    throw new ErroForaDoDominio(
+      `Região ${reg} de Rufino et al. (1993) não implementada. Apenas Região 1 está parametrizada no escopo BP3.`
+    );
+  }
+
+  if (!Array.isArray(pMensalMm) || pMensalMm.length !== 12) {
+    const qtdRecebida = Array.isArray(pMensalMm) ? String(pMensalMm.length) : "ausente";
+    throw new ErroForaDoDominio(
+      `Fator R requer exatamente 12 totais pluviométricos mensais (recebido: ${qtdRecebida}).`
+    );
+  }
+
+  for (let m = 0; m < 12; m++) {
+    const val = pMensalMm[m];
+    if (typeof val !== "number" || !Number.isFinite(val) || Number.isNaN(val)) {
+      throw new ErroForaDoDominio(
+        `Precipitação do mês ${m + 1} inválida (não numérica ou NaN): ${val}`
+      );
+    }
+    if (val < 0) {
+      throw new ErroForaDoDominio(
+        `Precipitação do mês ${m + 1} negativa (${val} mm); domínio físico exige p >= 0.`
+      );
+    }
+  }
+
+  const pAnual = pMensalMm.reduce((acc, p) => acc + p, 0);
+  if (pAnual <= 0) {
+    throw new ErroForaDoDominio(
+      `Precipitação total anual nula ou insuficiente (${pAnual} mm); impossível calcular erosividade.`
+    );
+  }
+
+  const { a, b } = coefs;
+  const rcMensal: number[] = [];
+  const ei30Mensal: number[] = [];
+  let somaEi30SemFator = 0;
+
+  for (let m = 0; m < 12; m++) {
+    const p = pMensalMm[m];
+    const rc = (p * p) / pAnual;
+    const ei30SemFator = a + b * rc;
+    const ei30ComFator = FATOR_UNIDADE_RUFINO * ei30SemFator;
+
+    somaEi30SemFator += ei30SemFator;
+    rcMensal.push(Number(rc.toFixed(4)));
+    ei30Mensal.push(Number(ei30ComFator.toFixed(4)));
+  }
+
+  const rAnual = Number((FATOR_UNIDADE_RUFINO * somaEi30SemFator).toFixed(2));
+
+  return {
+    rAnual,
+    pAnual: Number(pAnual.toFixed(2)),
+    rcMensal,
+    ei30Mensal,
+    unidade: "MJ·mm·ha⁻¹·h⁻¹·ano⁻¹",
+  };
+}
+
+/**
+ * Encapsula a emissão do Fator R com proveniência auditável para a Linha de Base RUSLE (Decisão D13).
+ *
+ * @param insumo Objeto contendo os totais mensais, metadados da série climatológica e coordenadas.
+ * @returns Proveniencia<number> com estado modelado ou indisponivel.
+ */
+export function obterFatorRComProveniencia(insumo?: InsumoFatorR | null): Proveniencia<number> {
+  // 1. Verificação de presença do insumo
+  if (!insumo) {
+    return {
+      estado: "indisponivel",
+      causa: "insuficiente",
+      motivo: "Insumo de precipitação pluviométrica para cálculo do Fator R não fornecido (Decisão D13).",
+    };
+  }
+
+  // 2. Verificação de domínio espacial estrito (Envelope da BP3 em areaInteresse.ts)
+  const { latMin, latMax, lonMin, lonMax } = AREA_INTERESSE_BP3.envelope;
+  if (
+    typeof insumo.latitude !== "number" ||
+    typeof insumo.longitude !== "number" ||
+    insumo.latitude < latMin ||
+    insumo.latitude > latMax ||
+    insumo.longitude < lonMin ||
+    insumo.longitude > lonMax
+  ) {
+    const latStr = typeof insumo.latitude === "number" ? insumo.latitude.toFixed(4) : "ausente";
+    const lonStr = typeof insumo.longitude === "number" ? insumo.longitude.toFixed(4) : "ausente";
+    return {
+      estado: "indisponivel",
+      causa: "fora-do-dominio",
+      motivo: `Coordenada (${latStr}, ${lonStr}) fora do envelope da Bacia do Paraná 3 (${latMin}° a ${latMax}°, ${lonMin}° a ${lonMax}°).`,
+    };
+  }
+
+  // 3. Verificação de metadados da série temporal climatológica (Diretriz H1 / Proposta P24)
+  if (
+    !insumo.periodoInicio ||
+    !insumo.periodoFim ||
+    typeof insumo.nAnosSerie !== "number" ||
+    insumo.nAnosSerie < MIN_ANOS_SERIE_R
+  ) {
+    return {
+      estado: "indisponivel",
+      causa: "insuficiente",
+      motivo: `Série temporal de precipitação insuficiente ou metadados incompletos (Diretriz H1 / Proposta P24: mínimo exigido de ${MIN_ANOS_SERIE_R} anos de série climatológica, recebido: ${insumo.nAnosSerie ?? "ausente"}).`,
+    };
+  }
+
+  // 4. Verificação dos valores mensais
+  if (
+    !insumo.precipitacaoMensalMm ||
+    !Array.isArray(insumo.precipitacaoMensalMm) ||
+    insumo.precipitacaoMensalMm.length !== 12 ||
+    insumo.precipitacaoMensalMm.some((v) => typeof v !== "number" || !Number.isFinite(v) || v < 0)
+  ) {
+    return {
+      estado: "indisponivel",
+      causa: "insuficiente",
+      motivo: "Precipitação mensal inválida ou incompleta (exige exatamente 12 médias mensais finitas e não-negativas).",
+    };
+  }
+
+  const pAnual = insumo.precipitacaoMensalMm.reduce((acc, p) => acc + p, 0);
+  if (pAnual <= 0) {
+    return {
+      estado: "indisponivel",
+      causa: "insuficiente",
+      motivo: "Precipitação total anual nula ou insuficiente (P = 0 mm).",
+    };
+  }
+
+  // 5. Verificação da região
+  const regiao = typeof insumo.regiao === "number" ? insumo.regiao : 1;
+  if (!COEFICIENTES_RUFINO_1993[regiao]) {
+    return {
+      estado: "indisponivel",
+      causa: "fora-do-dominio",
+      motivo: `Região ${regiao} de Rufino et al. (1993) não implementada. Apenas Região 1 está parametrizada.`,
+    };
+  }
+
+  // 6. Cálculo e emissão de proveniência
+  try {
+    const res = calcularFatorR(insumo.precipitacaoMensalMm, regiao);
+    return {
+      estado: "modelado",
+      valor: res.rAnual,
+      modelo: "Equação Regional do Paraná (Rufino et al., 1993) sobre CHIRPS Climatológico",
+      insumos: [
+        `Precipitação média anual CHIRPS: ${res.pAnual} mm`,
+        `Fator de unidade Rufino: ${FATOR_UNIDADE_RUFINO}`,
+        `Série temporal: ${insumo.nAnosSerie} anos (${insumo.periodoInicio} a ${insumo.periodoFim})`,
+        "Rufino et al. (1993), Quadro 2, Região 1 (a=18,64, b=5,73)",
+      ],
+      decisoes: ["D13"],
+      tabela: "Rufino et al. (1993), Q2, Região 1, x 9,81 (unidade reproduzida em pluviômetros IAT)",
+      pendenteVerificacao: true,
+    } as unknown as Proveniencia<number>;
+  } catch (err: any) {
+    return {
+      estado: "indisponivel",
+      causa: "fora-do-dominio",
+      motivo: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/rusle/linhaDeBase.ts
+TAMANHO: 7,651 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Linha de Base RUSLE — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * REGRAS DA LEI FUNDAMENTAL E IMPLEMENTATION PLAN:
+ * - Fator C: Decisão D01 (Durigon et al., 2014)
+ * - Fator P: Renard et al. (1997) — P = 1.0 tabelado por padrão
+ * - Fator R: Decisão D13 (Rufino et al., 1993 / Waltrick et al., 2015 sobre CHIRPS 0,05°)
+ * - Fator K: Decisão D14 emendada (k_solos da camada oficial 2024 / fallback)
+ * - Fator LS: Decisão D15 (Desmet & Govers 1996 2D com m e S de Renard et al. 1997 AH 703 sobre Copernicus DEM 30 m)
+ * - perdaSolo só existe se TODOS os cinco fatores e a memória de cálculo existirem (Invariante 1).
+ *   Enquanto houver fatores pendentes ou com dados insuficientes, perdaSolo é estritamente "indisponivel".
+ * - Fator P é obrigatoriamente { estado: "tabelado", valor: 1.0, ... }, NUNCA "medido".
+ * - Memória de cálculo registra a proveniência exata de cada fator ou motivo da indisponibilidade.
+ */
+
+import { LinhaDeBaseRUSLE } from "@/types/ponto";
+import { Proveniencia } from "@/types/proveniencia";
+import { REGISTRO_DECISOES } from "@/config/decisoes";
+import { obterFatorCComProveniencia } from "./fatorC";
+import { obterFatorKComProveniencia, InsumoFatorKCamada2024 } from "./fatorK";
+import { obterFatorRComProveniencia, InsumoFatorR } from "./fatorR";
+import { obterFatorLSComProveniencia, InsumoFatorLS } from "./fatorLS";
+
+export interface ParametrosLinhaDeBaseRUSLE {
+  ndviProveniencia?: Proveniencia<number> | null;
+  bsiProveniencia?: Proveniencia<number> | null;
+  erodibilidadeProveniencia?: Proveniencia<string> | null;
+  camadaErodibilidade2024?: InsumoFatorKCamada2024 | null;
+  insumoFatorR?: InsumoFatorR | null;
+  insumoFatorLS?: InsumoFatorLS | null;
+  fatorRSubstituto?: Proveniencia<number>;
+  fatorKSubstituto?: Proveniencia<number>;
+  fatorLSSubstituto?: Proveniencia<number>;
+  fatorPSubstituto?: Proveniencia<number>;
+}
+
+/**
+ * Cria a proveniência padrão para o Fator P segundo Renard et al. (1997).
+ * P = 1.0 quando a prática conservacionista é desconhecida ou não informada.
+ * Estado: "tabelado", NUNCA "medido".
+ */
+export function obterFatorPPadrao(): Proveniencia<number> {
+  return {
+    estado: "tabelado",
+    valor: 1.0,
+    tabela: "Renard et al. (1997) — P = 1 quando a prática conservacionista é desconhecida",
+    chave: "sem-pratica-informada",
+  };
+}
+
+/**
+ * Monta a estrutura da Linha de Base RUSLE para um ponto amostral,
+ * respeitando as decisões em vigor e as travas de decisões pendentes.
+ */
+export function montarLinhaDeBaseRUSLE(params: ParametrosLinhaDeBaseRUSLE = {}): LinhaDeBaseRUSLE {
+  const {
+    ndviProveniencia,
+    bsiProveniencia,
+    erodibilidadeProveniencia,
+    camadaErodibilidade2024,
+    insumoFatorR,
+    insumoFatorLS,
+    fatorRSubstituto,
+    fatorKSubstituto,
+    fatorLSSubstituto,
+    fatorPSubstituto,
+  } = params;
+
+  // 1. Fator C (Decisão D01 - Durigon et al., 2014)
+  const fatorC = obterFatorCComProveniencia(ndviProveniencia, bsiProveniencia);
+
+  // 2. Fator P (Renard et al., 1997 - P = 1.0 tabelado por padrão)
+  const fatorP: Proveniencia<number> = fatorPSubstituto ?? obterFatorPPadrao();
+
+  // 3. Fator R (Decisão D13 — Equação Regional do Paraná sobre CHIRPS Climatológico)
+  const fatorR: Proveniencia<number> =
+    fatorRSubstituto ??
+    (REGISTRO_DECISOES.D13.estado === "pendente"
+      ? {
+          estado: "indisponivel",
+          causa: "decisao-pendente",
+          motivo: "Fator R aguarda definição metodológica da Decisão D13.",
+        }
+      : insumoFatorR
+      ? obterFatorRComProveniencia(insumoFatorR)
+      : {
+          estado: "indisponivel",
+          causa: "insuficiente",
+          motivo:
+            "Insumo de R não é fornecido pela rota (requer totais pluviométricos mensais ou coordenadas geográficas para consulta climatológica CHIRPS — Decisão D13).",
+        });
+
+  // 4. Fator K (Decisão D14 emendada - k_solos de geonode:bra_erodibilidade_2024_sirgas2000, com fallback por faixa de classe)
+  const fatorK: Proveniencia<number> =
+    fatorKSubstituto ??
+    (camadaErodibilidade2024 || erodibilidadeProveniencia
+      ? obterFatorKComProveniencia(erodibilidadeProveniencia, camadaErodibilidade2024)
+      : {
+          estado: "indisponivel",
+          causa: "insuficiente",
+          motivo: "Fator K numérico para RUSLE requer k_solos da camada 2024 ou a classe de erodibilidade pedológica informada (Decisão D14).",
+        });
+
+  // 5. Fator LS (Decisão D15 — Desmet & Govers 1996 2D com m e S de Renard et al. 1997 AH 703)
+  const fatorLS: Proveniencia<number> =
+    fatorLSSubstituto ??
+    (REGISTRO_DECISOES.D15.estado === "pendente"
+      ? {
+          estado: "indisponivel",
+          causa: "decisao-pendente",
+          motivo: "Fator LS topográfico aguarda definição de expoentes m e n da Decisão D15.",
+        }
+      : insumoFatorLS
+      ? obterFatorLSComProveniencia(insumoFatorLS)
+      : {
+          estado: "indisponivel",
+          causa: "insuficiente",
+          motivo:
+            "Insumo de LS não é fornecido pela rota (requer declividade e área de contribuição a montante do Copernicus DEM GLO-30 nativo — Decisão D15).",
+        });
+
+  // Verificação do Invariante 1:
+  // perdaSolo só pode existir e ser calculada se os cinco fatores estiverem simultaneamente disponíveis (valor numérico finito)
+  const fatoresDisponiveis = [fatorR, fatorK, fatorLS, fatorC, fatorP].every(
+    (f) => f.estado !== "indisponivel" && Number.isFinite(f.valor)
+  );
+
+  let perdaSolo: Proveniencia<number>;
+  let memoriaCalculo: string | null = null;
+
+  if (fatoresDisponiveis) {
+    const valR = (fatorR as { valor: number }).valor;
+    const valK = (fatorK as { valor: number }).valor;
+    const valLS = (fatorLS as { valor: number }).valor;
+    const valC = (fatorC as { valor: number }).valor;
+    const valP = (fatorP as { valor: number }).valor;
+
+    const perdaCalculada = valR * valK * valLS * valC * valP;
+    memoriaCalculo = `RUSLE A = R (${valR}) * K (${valK}) * LS (${valLS}) * C (${valC}) * P (${valP}) = ${perdaCalculada.toFixed(4)} t/ha/ano`;
+
+    perdaSolo = {
+      estado: "modelado",
+      valor: Number(perdaCalculada.toFixed(4)),
+      modelo: "Equação Universal de Perda de Solo Revisada (RUSLE: A = R * K * LS * C * P)",
+      insumos: ["Fator R", "Fator K", "Fator LS", "Fator C", "Fator P"],
+      decisoes: ["D01", "D13", "D14", "D15"],
+    };
+  } else {
+    // Coleta as causas de indisponibilidade para justificativa honesta
+    const pendencias: string[] = [];
+    if (fatorR.estado === "indisponivel") pendencias.push(`R (${fatorR.causa})`);
+    if (fatorK.estado === "indisponivel") pendencias.push(`K (${fatorK.causa})`);
+    if (fatorLS.estado === "indisponivel") pendencias.push(`LS (${fatorLS.causa})`);
+    if (fatorC.estado === "indisponivel") pendencias.push(`C (${fatorC.causa})`);
+    if (fatorP.estado === "indisponivel") pendencias.push(`P (${fatorP.causa})`);
+
+    const temDecisaoPendente = [fatorR, fatorK, fatorLS, fatorC, fatorP].some(
+      (f) => f.estado === "indisponivel" && f.causa === "decisao-pendente"
+    );
+
+    perdaSolo = {
+      estado: "indisponivel",
+      causa: temDecisaoPendente ? "decisao-pendente" : "insuficiente",
+      motivo: `Cálculo de perda de solo retido pelo Invariante 1. Fatores ausentes ou retidos: ${pendencias.join(", ")}.`,
+    };
+    memoriaCalculo = null;
+  }
+
+  return {
+    fatorR,
+    fatorK,
+    fatorLS,
+    fatorC,
+    fatorP,
+    perdaSolo,
+    memoriaCalculo,
+  };
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/chuva/chirps.ts
+TAMANHO: 6,098 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Ingestão e Processamento de Chuva Diária — CHIRPS (PPGTCA 2026)
+ * ============================================================================
+ *
+ * PRODUTO: UCSB-CHG/CHIRPS/DAILY
+ * - Resolução espacial: 0,05° (~5,5 km), banda: "precipitation" (mm/dia).
+ * - Cobertura temporal contínua e sem falhas no Paraná.
+ * - REGRA 1: Sem valores inventados. Se faltarem observações na janela, retorna null.
+ */
+
+import { Proveniencia } from "@/types/proveniencia";
+
+export const CHIRPS_COLECAO = "UCSB-CHG/CHIRPS/DAILY";
+export const CHIRPS_BANDA = "precipitation";
+export const CHIRPS_NODATA_SENTINEL = -9999.0;
+export const CHIRPS_LIMIAR_NODATA = -9000.0;
+
+export interface RegistroChuvaDiaria {
+  data: string; // YYYY-MM-DD
+  precipitacaoMm: number;
+}
+
+/**
+ * Calcula acumulados de chuva (30 e 90 dias) a partir de uma série diária observada.
+ * Acumulados por janela [dataRef − 30 d, dataRef] e [dataRef − 90 d, dataRef] com contagem
+ * de dias distintos (N17 / M14). Descarte valores <= -9000 e não-finitos.
+ * Exige pelo menos 80% de dias válidos em cada janela móvel (25 dias para 30d, 75 dias para 90d).
+ */
+export function calcularAcumuladosChuva(
+  serieDiaria: RegistroChuvaDiaria[],
+  dataReferencia?: string
+): {
+  acum30d: number | null;
+  acum90d: number | null;
+  diasValidos: number;
+} {
+  if (!serieDiaria || serieDiaria.length === 0) {
+    return { acum30d: null, acum90d: null, diasValidos: 0 };
+  }
+
+  // Filtrar valores válidos (descartar <= -9000 e não-finitos) e agrupar por dia (YYYY-MM-DD)
+  const mapaDias = new Map<string, number>();
+  for (const r of serieDiaria) {
+    if (
+      typeof r.precipitacaoMm === "number" &&
+      Number.isFinite(r.precipitacaoMm) &&
+      r.precipitacaoMm > CHIRPS_LIMIAR_NODATA &&
+      r.data
+    ) {
+      const dia = r.data.split("T")[0];
+      const anterior = mapaDias.get(dia);
+      mapaDias.set(dia, anterior !== undefined ? anterior + r.precipitacaoMm : r.precipitacaoMm);
+    }
+  }
+
+  if (mapaDias.size === 0) {
+    return { acum30d: null, acum90d: null, diasValidos: 0 };
+  }
+
+  const diasOrdenados = Array.from(mapaDias.keys()).sort();
+  const dataRefStr = dataReferencia ? dataReferencia.split("T")[0] : diasOrdenados[diasOrdenados.length - 1];
+
+  const parseUtcDia = (s: string) => {
+    const [y, m, d] = s.split("-").map(Number);
+    return Date.UTC(y, m - 1, d);
+  };
+
+  const refMs = parseUtcDia(dataRefStr);
+  const msPorDia = 86400000;
+
+  // Janela móvel de 30 e 90 dias de calendário terminando em dataRef (inclusive):
+  const inicio30Ms = refMs - 30 * msPorDia;
+  const inicio90Ms = refMs - 90 * msPorDia;
+
+  let soma30 = 0;
+  let contagem30 = 0;
+  let soma90 = 0;
+  let contagem90 = 0;
+
+  for (const [dia, prec] of mapaDias.entries()) {
+    const diaMs = parseUtcDia(dia);
+    if (diaMs > inicio30Ms && diaMs <= refMs) {
+      soma30 += prec;
+      contagem30++;
+    }
+    if (diaMs > inicio90Ms && diaMs <= refMs) {
+      soma90 += prec;
+      contagem90++;
+    }
+  }
+
+  const acum30 = contagem30 >= 25 ? Number(soma30.toFixed(1)) : null;
+  const acum90 = contagem90 >= 75 ? Number(soma90.toFixed(1)) : null;
+
+  return {
+    acum30d: acum30,
+    acum90d: acum90,
+    diasValidos: mapaDias.size,
+  };
+}
+
+export function criarProvenienciaChirps(
+  valor: number | null,
+  detalhe: string,
+  adquiridoEm: string
+): Proveniencia<number> {
+  if (!adquiridoEm) {
+    return {
+      estado: "indisponivel",
+      causa: "data-da-fonte-desconhecida",
+      motivo: "Data de aquisição da fonte CHIRPS desconhecida (DEC-9).",
+    };
+  }
+
+  if (valor === null || !Number.isFinite(valor)) {
+    return {
+      estado: "indisponivel",
+      causa: "insuficiente",
+      motivo: "Série diária CHIRPS com número insuficiente de observações na janela temporal.",
+    };
+  }
+
+  return {
+    estado: "medido",
+    valor,
+    fonte: CHIRPS_COLECAO,
+    adquiridoEm,
+    consultadoEm: new Date().toISOString(),
+    detalhe,
+  };
+}
+
+
+export interface RegistroMesChirps {
+  ano: number;
+  mes: number; // 1 a 12
+  precipitacaoMm: number | null;
+}
+
+export interface ClimatologiaEstacaoProcessada {
+  mesesEsperados: number;
+  mesesValidos: number;
+  mesesNoData: number;
+  listaMesesNoData: string[];
+  climatologiaMensalMediaMm: (number | null)[];
+  precipitacaoMediaAnualMm: number | null;
+}
+
+/**
+ * Processa uma série histórica mensal do CHIRPS com tratamento estrito de NoData (P12).
+ * Ausência de dado (sentinela <= -9000, null ou NaN) propaga compulsoriamente como ausência e JAMAIS como 0.0 mm.
+ * Médias mensais Jan..Dez são calculadas exclusivamente sobre os meses válidos observados.
+ */
+export function processarClimatologiaMensalChirps(
+  registros: RegistroMesChirps[]
+): ClimatologiaEstacaoProcessada {
+  const listaMesesNoData: string[] = [];
+  const validosPorMes: number[][] = Array.from({ length: 12 }, () => []);
+
+  let mesesValidos = 0;
+  let mesesNoData = 0;
+
+  for (const reg of registros) {
+    if (
+      reg.precipitacaoMm === null ||
+      Number.isNaN(reg.precipitacaoMm) ||
+      reg.precipitacaoMm <= CHIRPS_LIMIAR_NODATA
+    ) {
+      mesesNoData++;
+      listaMesesNoData.push(`${reg.ano}-${String(reg.mes).padStart(2, "0")}`);
+    } else {
+      mesesValidos++;
+      const idxMes = reg.mes - 1;
+      if (idxMes >= 0 && idxMes < 12) {
+        validosPorMes[idxMes].push(reg.precipitacaoMm);
+      }
+    }
+  }
+
+
+  const climatologiaMensalMediaMm = validosPorMes.map((vals) => {
+    if (vals.length === 0) return null;
+    const soma = vals.reduce((acc, v) => acc + v, 0);
+    return Number((soma / vals.length).toFixed(2));
+  });
+
+  const temMesIncompleto = climatologiaMensalMediaMm.some((m) => m === null);
+  const precipitacaoMediaAnualMm = temMesIncompleto
+    ? null
+    : Number(
+        (climatologiaMensalMediaMm as number[])
+          .reduce((acc, v) => acc + v, 0)
+          .toFixed(2)
+      );
+
+
+  return {
+    mesesEsperados: registros.length,
+    mesesValidos,
+    mesesNoData,
+    listaMesesNoData,
+    climatologiaMensalMediaMm,
+    precipitacaoMediaAnualMm,
+  };
+}
+
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/chuva/eventos.ts
+TAMANHO: 6,760 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Detecção de Eventos Erosivos e Bloco de Chuva — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * REGRAS METODOLÓGICAS:
+ * - nEventosErosivos: Retorna rigorosamente "indisponivel" com causa "decisao-pendente"
+ *   enquanto a Decisão D13 (limiar de evento erosivo: 10 mm vs 12,7 mm/h I30) não for
+ *   formalmente tomada pelo pesquisador.
+ * - indiceMecanismo: Retorna rigorosamente "indisponivel" com causa "decisao-pendente"
+ *   enquanto D13 e D10 (limiar de solo exposto) estiverem pendentes.
+ * - Invariante 5: NUNCA preencher variáveis pendentes com 0, null solto ou valores inventados.
+ */
+
+import { BlocoChuva } from "@/types/ponto";
+import { Proveniencia } from "@/types/proveniencia";
+import { RegistroChuvaDiaria, calcularAcumuladosChuva, criarProvenienciaChirps } from "./chirps";
+import { RegistroImergSemiHorario, extrairI30Maximo, criarProvenienciaImerg } from "./imerg";
+
+export interface ObservacaoSoloNuTemporal {
+  data: string; // YYYY-MM-DD
+  ehSoloNu: boolean; // true quando NDVI < 0.40 (D10)
+  ndvi?: number | null;
+  bsi?: number | null;
+}
+
+export interface InsumosChuvaCompletos {
+  serieDiariaChirps: RegistroChuvaDiaria[];
+  serieImerg: RegistroImergSemiHorario[];
+  dataReferencia?: string;
+  serieSoloNu?: ObservacaoSoloNuTemporal[];
+}
+
+/**
+ * Calcula o Índice de Mecanismo Biofísico-Pluviométrico:
+ * Sigma_t (Erosividade_t * SoloNu_t)
+ *
+ * Acopla a série temporal pluviométrica diária (CHIRPS) com o estado de exposição
+ * do solo (Sentinel-2, limiar D10: NDVI < 0.40).
+ *
+ * Para cada evento pluviométrico, associa a observação orbital de solo mais próxima
+ * em uma janela temporal de até toleranciaDias (padrão: 30 dias).
+ *
+ * @param chuvas Série de chuva diária (ou eventos com erosividade)
+ * @param observacoesSolo Série de observações de exposição de solo
+ * @param toleranciaDias Janela máxima de pareamento temporal (padrão: 30 dias)
+ */
+const TOLERANCIA_PAREAMENTO_DIAS_PADRAO = 30;
+
+export function calcularIndiceMecanismo(
+  chuvas: Array<{ data: string; precipitacaoMm?: number; erosividade?: number }>,
+  observacoesSolo: ObservacaoSoloNuTemporal[],
+  toleranciaDias?: number
+): number | null {
+  if (!chuvas || chuvas.length === 0 || !observacoesSolo || observacoesSolo.length === 0) {
+    return null;
+  }
+
+  const tolDias = toleranciaDias !== undefined ? toleranciaDias : TOLERANCIA_PAREAMENTO_DIAS_PADRAO;
+
+  // Prepara série de solo com timestamps ordenados
+  const soloOrdenado = observacoesSolo
+    .map((s) => ({
+      data: s.data,
+      ms: new Date(s.data).getTime(),
+      ehSoloNu: s.ehSoloNu,
+    }))
+    .filter((s) => !isNaN(s.ms))
+    .sort((a, b) => a.ms - b.ms);
+
+  if (soloOrdenado.length === 0) return null;
+
+  const maxDifMs = tolDias * 24 * 60 * 60 * 1000;
+  let soma = 0;
+  let diasPareados = 0;
+
+  for (const chuva of chuvas) {
+    const chuvaMs = new Date(chuva.data).getTime();
+    if (isNaN(chuvaMs)) continue;
+
+    const valorChuva = chuva.erosividade !== undefined ? chuva.erosividade : chuva.precipitacaoMm;
+    if (valorChuva === undefined || !Number.isFinite(valorChuva) || valorChuva <= 0) continue;
+
+    // Busca a observação de satélite temporalmente mais próxima
+    let maisProxima: { ms: number; ehSoloNu: boolean } | null = null;
+    let menorDif = Infinity;
+
+    for (const obs of soloOrdenado) {
+      const dif = Math.abs(obs.ms - chuvaMs);
+      if (dif < menorDif) {
+        menorDif = dif;
+        maisProxima = obs;
+      }
+    }
+
+    if (maisProxima && menorDif <= maxDifMs) {
+      diasPareados++;
+      if (maisProxima.ehSoloNu) {
+        soma += valorChuva;
+      }
+    }
+  }
+
+  if (diasPareados === 0) {
+    return null;
+  }
+
+  return Number(soma.toFixed(2));
+}
+
+/**
+ * Constrói o BlocoChuva completo de um ponto amostral, garantindo:
+ * - Acumulados CHIRPS (30d e 90d) medidos ou indisponíveis com causa.
+ * - I30 máximo IMERG medido ou indisponível com causa.
+ * - nEventosErosivos e indiceMecanismo marcados com proveniência metodológica estrita.
+ */
+export function construirBlocoChuva(insumos: InsumosChuvaCompletos): BlocoChuva {
+  const acumulados = calcularAcumuladosChuva(insumos.serieDiariaChirps);
+  const i30 = extrairI30Maximo(insumos.serieImerg);
+  const dataRefChirps =
+    insumos.dataReferencia ??
+    (insumos.serieDiariaChirps.length > 0
+      ? insumos.serieDiariaChirps[insumos.serieDiariaChirps.length - 1].data
+      : "");
+
+  const dataRefImerg =
+    insumos.dataReferencia ??
+    (insumos.serieImerg.length > 0
+      ? insumos.serieImerg[insumos.serieImerg.length - 1].timestamp.slice(0, 10)
+      : "");
+
+  const precipAcum30d = criarProvenienciaChirps(
+    acumulados.acum30d,
+    "Acumulado móvel de 30 dias na janela de amostragem",
+    dataRefChirps
+  );
+
+  const precipAcum90d = criarProvenienciaChirps(
+    acumulados.acum90d,
+    "Acumulado móvel de 90 dias na janela de amostragem",
+    dataRefChirps
+  );
+
+  const i30Max = criarProvenienciaImerg(
+    i30,
+    "Intensidade máxima sub-horária (taxa em janela de 30 min)",
+    dataRefImerg
+  );
+
+  // nEventosErosivos aguarda formalização do critério de corte D13 (10 mm vs 12,7 mm/h)
+  const nEventosErosivos: Proveniencia<number> = {
+    estado: "indisponivel",
+    causa: "decisao-pendente",
+    motivo:
+      "Cálculo de número de eventos erosivos aguarda homologação da Decisão D13 (critério de evento erosivo).",
+  };
+
+  // Se a série de solo nu for fornecida, calcula o índice de mecanismo acoplado
+  let indiceMecanismo: Proveniencia<number>;
+  if (insumos.serieSoloNu && insumos.serieSoloNu.length > 0) {
+    const valIndice = calcularIndiceMecanismo(insumos.serieDiariaChirps, insumos.serieSoloNu);
+    if (valIndice !== null && Number.isFinite(valIndice)) {
+      indiceMecanismo = {
+        estado: "modelado",
+        valor: valIndice,
+        modelo: "Sigma_t (precipitacao_t * soloNu_t)",
+        insumos: ["CHIRPS (DAILY)", "Sentinel-2 (MSI)"],
+        decisoes: ["D10"],
+      };
+    } else {
+      indiceMecanismo = {
+        estado: "indisponivel",
+        causa: "insuficiente",
+        motivo: "Dados de chuva ou observações de satélite insuficientes para pareamento temporal do índice de mecanismo.",
+      };
+    }
+  } else {
+    // Mantém compatibilidade com pontos onde a série de solo nu ainda não foi processada
+    indiceMecanismo = {
+      estado: "indisponivel",
+      causa: "decisao-pendente",
+      motivo:
+        "Índice de mecanismo [Sigma(erosividade * soloNu)] depende da homologação formal de D13 e D10.",
+    };
+  }
+
+  return {
+    precipAcum30d,
+    precipAcum90d,
+    i30Max,
+    nEventosErosivos,
+    indiceMecanismo,
+  };
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/chuva/imerg.ts
+TAMANHO: 2,134 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Ingestão de Intensidade Sub-horária — GPM IMERG (PPGTCA 2026)
+ * ============================================================================
+ *
+ * PRODUTO: NASA/GPM_L3/IMERG_V06
+ * Resolução Temporal: 30 minutos (semi-horária).
+ * Resolução Espacial: 0,1° (~11 km).
+ * Banda física no Earth Engine: "precipitationCal" (mm/h).
+ *
+ * Captura a taxa máxima semi-horária (I30 aproximado) na janela de interesse.
+ */
+
+import { Proveniencia } from "@/types/proveniencia";
+
+export const IMERG_COLECAO = "NASA/GPM_L3/IMERG_V06";
+export const IMERG_BANDA = "precipitationCal";
+
+export interface RegistroImergSemiHorario {
+  timestamp: string; // ISO 8601
+  taxaMmH: number;   // precipitationCal em mm/h
+}
+
+/**
+ * Calcula o I30 máximo observado (taxa máxima em mm/h em janelas semi-horárias).
+ */
+export function extrairI30Maximo(registros: RegistroImergSemiHorario[]): number | null {
+  if (!registros || registros.length === 0) return null;
+
+  let maxTaxa = -Infinity;
+  let teveValido = false;
+
+  for (const reg of registros) {
+    if (
+      typeof reg.taxaMmH === "number" &&
+      Number.isFinite(reg.taxaMmH) &&
+      reg.taxaMmH > -9000
+    ) {
+      if (reg.taxaMmH > maxTaxa) {
+        maxTaxa = reg.taxaMmH;
+      }
+      teveValido = true;
+    }
+  }
+
+  return teveValido && maxTaxa >= 0 ? Number(maxTaxa.toFixed(1)) : null;
+}
+
+export function criarProvenienciaImerg(
+  valor: number | null,
+  detalhe: string,
+  adquiridoEm: string
+): Proveniencia<number> {
+  if (!adquiridoEm) {
+    return {
+      estado: "indisponivel",
+      causa: "data-da-fonte-desconhecida",
+      motivo: "Data de aquisição da fonte IMERG desconhecida (DEC-9).",
+    };
+  }
+
+  if (valor === null || !Number.isFinite(valor)) {
+    return {
+      estado: "indisponivel",
+      causa: "insuficiente",
+      motivo: "Registros semi-horários do GPM IMERG insuficientes na janela temporal.",
+    };
+  }
+
+  return {
+    estado: "medido",
+    valor,
+    fonte: IMERG_COLECAO,
+    adquiridoEm,
+    consultadoEm: new Date().toISOString(),
+    detalhe,
+  };
+}

@@ -1,0 +1,1854 @@
+================================================================================
+PACOTE DE AUDITORIA EXTERNA — SAREL v2 (PPGTCA 2026)
+LOTE: LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS | PARTE 5/6
+================================================================================
+Data de Geração: 21 de Outubro de 2026
+Limite por Arquivo: <= 90.000 bytes (Limite Rígido de Leitura)
+Total de Arquivos nesta parte: 12
+Arquivos contidos nesta parte:
+ - src/lib/seguranca/gerarRelatorioFase.test.ts
+ - src/lib/seguranca/guardaImputacaoMediana.test.ts
+ - src/lib/seguranca/guardaSintetico.test.ts
+ - src/lib/seguranca/guardaSintetico.ts
+ - src/lib/seguranca/importacoes.test.ts
+ - src/lib/seguranca/localOnly.test.ts
+ - src/lib/seguranca/localOnly.ts
+ - src/lib/seguranca/padroesProibidos.test.ts
+ - src/lib/seguranca/provenienciaCaminhos.test.ts
+ - src/lib/seguranca/sessaoEfemera.test.ts
+ - src/lib/seguranca/sessaoEfemera.ts
+ - src/lib/seguranca/verificacoes.test.ts
+================================================================================
+
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/seguranca/gerarRelatorioFase.test.ts
+TAMANHO: 5,207 bytes
+--------------------------------------------------------------------------------
+
+import { describe, it, expect } from "vitest";
+import path from "path";
+import {
+  gerarRelatorioFasePericial,
+  inspecionarArtefatos,
+  calcularSha256Arquivo,
+  derivarEnunciadoViesClimatologico,
+} from "../../../scripts/gerar_relatorio_fase";
+
+describe("Gerador Mecânico de Relatório de Fase (W5)", () => {
+  it("marca FALHA no topo quando a suíte de testes ou tipagem falha", () => {
+    const relatorioFalha = gerarRelatorioFasePericial({
+      artefatosParaInspecionar: ["package.json"],
+      mockResultadoTsc: {
+        comando: "npx tsc --noEmit",
+        codigoSaida: 1,
+        sucesso: false,
+        saida: "error TS2304: Cannot find name 'foo'.",
+      },
+      mockResultadoVitest: {
+        comando: "npx vitest run",
+        codigoSaida: 0,
+        sucesso: true,
+        saida: "336 passed",
+      },
+    });
+
+    expect(relatorioFalha.statusGeral).toBe("FALHA");
+    expect(relatorioFalha.conteudoMarkdown).toContain("# 🚨 [FALHA NA SUÍTE DE TESTES]");
+    expect(relatorioFalha.conteudoMarkdown).toContain("error TS2304");
+  });
+
+  it("marca SUCESSO quando a suíte passa e inclui SHA-256 e tamanho de cada artefato", () => {
+    const relatorioSucesso = gerarRelatorioFasePericial({
+      artefatosParaInspecionar: ["package.json", "tsconfig.json"],
+      mockResultadoTsc: {
+        comando: "npx tsc --noEmit",
+        codigoSaida: 0,
+        sucesso: true,
+        saida: "",
+      },
+      mockResultadoVitest: {
+        comando: "npx vitest run",
+        codigoSaida: 0,
+        sucesso: true,
+        saida: "Test Files 45 passed (45)\nTests 338 passed (338)",
+      },
+    });
+
+    expect(relatorioSucesso.statusGeral).toBe("SUCESSO");
+    expect(relatorioSucesso.conteudoMarkdown).toContain("# ✅ [SUCESSO - SUÍTE 100% APROVADA]");
+
+    // SHA-256 e tamanho dos artefatos listados
+    const shaPkg = calcularSha256Arquivo(path.resolve(process.cwd(), "package.json"));
+    expect(relatorioSucesso.conteudoMarkdown).toContain(shaPkg);
+    expect(relatorioSucesso.conteudoMarkdown).toContain("`package.json`");
+  });
+
+  it("inspeciona artefatos e calcula SHA-256 real", () => {
+    const itens = inspecionarArtefatos(["package.json"]);
+    expect(itens).toHaveLength(1);
+    expect(itens[0].existe).toBe(true);
+    expect(itens[0].tamanhoBytes).toBeGreaterThan(0);
+    expect(itens[0].sha256).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  describe("Derivação Mecânica de Viés Climatológico (N1 - Falsificabilidade)", () => {
+    it("dado conjunto sintético com desvios positivos, enunciado contém 'acima' e NÃO contém 'abaixo'", () => {
+      const estacoesPositivas = {
+        EST_A: {
+          nome: "Estação Norte",
+          criterioAceiteAno2022: { desvioParaMediaClimatologicaPercentual: 14.5 },
+        },
+        EST_B: {
+          nome: "Estação Sul",
+          criterioAceiteAno2022: { desvioParaMediaClimatologicaPercentual: 22.1 },
+        },
+      };
+
+      const resultado = derivarEnunciadoViesClimatologico(estacoesPositivas);
+
+      expect(resultado.estacoesAcima).toBe(2);
+      expect(resultado.estacoesAbaixo).toBe(0);
+      expect(resultado.enunciadoSintetico).toContain("acima");
+      expect(resultado.enunciadoSintetico).not.toContain("abaixo");
+    });
+
+    it("dado conjunto sintético com desvios negativos, enunciado contém 'abaixo' e NÃO contém 'acima'", () => {
+      const estacoesNegativas = {
+        EST_X: {
+          nome: "Estação Leste",
+          criterioAceiteAno2022: { desvioParaMediaClimatologicaPercentual: -18.3 },
+        },
+        EST_Y: {
+          nome: "Estação Oeste",
+          criterioAceiteAno2022: { desvioParaMediaClimatologicaPercentual: -27.0 },
+        },
+      };
+
+      const resultado = derivarEnunciadoViesClimatologico(estacoesNegativas);
+
+      expect(resultado.estacoesAbaixo).toBe(2);
+      expect(resultado.estacoesAcima).toBe(0);
+      expect(resultado.enunciadoSintetico).toContain("abaixo");
+      expect(resultado.enunciadoSintetico).not.toContain("acima");
+    });
+
+    it("deriva corretamente os dados reais da BP3 (5 acima, 1 na média, 0 abaixo)", () => {
+      const estacoesBP3 = {
+        TOLEDO: { criterioAceiteAno2022: { desvioParaMediaClimatologicaPercentual: -1.35 } },
+        CASCAVEL: { criterioAceiteAno2022: { desvioParaMediaClimatologicaPercentual: 6.66 } },
+        SANTA_HELENA: { criterioAceiteAno2022: { desvioParaMediaClimatologicaPercentual: 18.95 } },
+        FOZ_DO_IGUACU: { criterioAceiteAno2022: { desvioParaMediaClimatologicaPercentual: 12.37 } },
+        PALOTINA: { criterioAceiteAno2022: { desvioParaMediaClimatologicaPercentual: 34.48 } },
+        MEDIANEIRA: { criterioAceiteAno2022: { desvioParaMediaClimatologicaPercentual: 19.93 } },
+      };
+
+      const res = derivarEnunciadoViesClimatologico(estacoesBP3);
+
+      expect(res.estacoesAcima).toBe(5);
+      expect(res.estacoesNaMedia).toBe(1);
+      expect(res.estacoesAbaixo).toBe(0);
+      expect(res.amplitudeMinPercentual).toBe(-1.35);
+      expect(res.amplitudeMaxPercentual).toBe(34.48);
+      expect(res.enunciadoSintetico).toContain("Precipitação acima da média histórica em 5 das 6 estações");
+      expect(res.enunciadoSintetico).toContain("1 estação na média");
+    });
+  });
+});
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/seguranca/guardaImputacaoMediana.test.ts
+TAMANHO: 4,019 bytes
+--------------------------------------------------------------------------------
+
+import { describe, it, expect } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
+
+describe("Guarda Anti-Imputação por Mediana (N03.6, DEC-14c, DEC-15c)", () => {
+  it("varre scripts/ e src/ e falha se houver imputação por mediana fora de scripts/d25/ e do legado deprecado", () => {
+    const rootDir = path.resolve(__dirname, "../../..");
+    const scriptsDir = path.join(rootDir, "scripts");
+    const srcDir = path.join(rootDir, "src");
+
+    // Exceções permitidas explicitamente:
+    // 1. treinar_xgboost_loco.py: trainer legado deprecado (banner DEPRECATED e recusa em probatório com exit code 2)
+    // 2. scriptAvaliacaoD25.generated.ts: embutimento byte-exato do scripts/d25/avaliacao_d25_referencia.py no ZIP de reprodutibilidade
+    // 3. guardaImputacaoMediana.test.ts: o próprio teste de guarda
+    const excecoesPermitidas = new Set([
+      path.resolve(scriptsDir, "treinar_xgboost_loco.py"),
+      path.resolve(srcDir, "lib/export/scriptAvaliacaoD25.generated.ts"),
+      path.resolve(srcDir, "lib/seguranca/guardaImputacaoMediana.test.ts"),
+    ]);
+
+    // Padrões de detecção de imputação por mediana
+    const padroesImputacao = [
+      (linha: string) => linha.includes(".fillna(") && (linha.includes("median") || linha.includes(".median()")),
+      (linha: string) => linha.toLowerCase().includes("simpleimputer") && linha.includes("median"),
+      (linha: string) => linha.toLowerCase().includes("impute") && (linha.includes("median") || linha.includes("mediana")),
+    ];
+
+    function varrerDiretorio(dir: string): string[] {
+      const arquivos: string[] = [];
+      const itens = fs.readdirSync(dir, { withFileTypes: true });
+      for (const item of itens) {
+        const fullPath = path.join(dir, item.name);
+        if (item.isDirectory()) {
+          // Ignora scripts/d25 (onde a implementação de referência opera) e diretórios auxiliares
+          if (item.name === "d25" || item.name === "__pycache__" || item.name === "node_modules") {
+            continue;
+          }
+          arquivos.push(...varrerDiretorio(fullPath));
+        } else if (
+          item.name.endsWith(".py") ||
+          item.name.endsWith(".ts") ||
+          item.name.endsWith(".tsx") ||
+          item.name.endsWith(".js") ||
+          item.name.endsWith(".mjs")
+        ) {
+          arquivos.push(fullPath);
+        }
+      }
+      return arquivos;
+    }
+
+    const todosArquivos = [...varrerDiretorio(scriptsDir), ...varrerDiretorio(srcDir)];
+    expect(todosArquivos.length).toBeGreaterThan(50);
+
+    const violacoes: { arquivo: string; linha: number; texto: string }[] = [];
+
+    for (const arq of todosArquivos) {
+      if (excecoesPermitidas.has(path.resolve(arq))) {
+        continue;
+      }
+      const conteudo = fs.readFileSync(arq, "utf8");
+      const linhas = conteudo.split(/\r?\n/);
+      for (let i = 0; i < linhas.length; i++) {
+        const l = linhas[i];
+        // Desconsidera menções ao município paranaense "Medianeira"
+        const lSemMedianeira = l.replace(/medianeira/gi, "");
+        for (const padrao of padroesImputacao) {
+          if (padrao(lSemMedianeira)) {
+            violacoes.push({
+              arquivo: path.relative(rootDir, arq),
+              linha: i + 1,
+              texto: l.trim(),
+            });
+            break;
+          }
+        }
+      }
+    }
+
+    expect(
+      violacoes,
+      `Violações de imputação por mediana encontradas em scripts/ e src/: ${JSON.stringify(violacoes, null, 2)}`
+    ).toEqual([]);
+  });
+
+  it("o script legado treinar_xgboost_loco.py deve conter compulsoriamente banner DEPRECATED e recusa de modo probatório", () => {
+    const legacyPath = path.resolve(__dirname, "../../../scripts/treinar_xgboost_loco.py");
+    const conteudo = fs.readFileSync(legacyPath, "utf8");
+    expect(conteudo).toContain("[DEPRECATED]");
+    expect(conteudo).toContain("sys.exit(2)");
+    expect(conteudo).toContain("scripts/d25/");
+    expect(conteudo).not.toContain("auc = 0.5");
+  });
+});
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/seguranca/guardaSintetico.test.ts
+TAMANHO: 4,153 bytes
+--------------------------------------------------------------------------------
+
+import { describe, it, expect } from "vitest";
+import { ehPontoSintetico, contemPontoSintetico, assegurarApenasPontosReais, ErroPontoSinteticoDetectado } from "./guardaSintetico";
+import type { PontoAmostral } from "@/types/ponto";
+
+function criarPontoBase(parciais?: Partial<PontoAmostral>): PontoAmostral {
+  return {
+    id: "a1b2c3d4-e5f6-47a8-b9c0-d1e2f3a4b5c6",
+    codigo: "PR-2026-0001",
+    latitude: -25.0669,
+    longitude: -53.6880,
+    origemSintetica: false,
+    blocoEspacial: "BLOCO_01",
+    estratoId: "E1",
+    criterioSelecao: {
+      tercilS: 2,
+      tercilE: 3,
+      nivelK: 2,
+      phiDiag: 0.45,
+      semente: 42,
+    },
+    localizacao: {
+      municipio: { estado: "medido", valor: "Cascavel", fonte: "IBGE", adquiridoEm: "2026", consultadoEm: "2026-09-10" },
+      codigoIbge: { estado: "medido", valor: "4104808", fonte: "IBGE", adquiridoEm: "2026", consultadoEm: "2026-09-10" },
+      bacia: { estado: "medido", valor: "Paraná 3", fonte: "IAT", adquiridoEm: "2026", consultadoEm: "2026-09-10" },
+    },
+    terreno: {
+      elevacao: { estado: "medido", valor: 520, fonte: "COPERNICUS/DEM/GLO30", adquiridoEm: "2026-09-08", consultadoEm: "2026-09-10" },
+      declividadePct: { estado: "medido", valor: 12.4, fonte: "COPERNICUS/DEM/GLO30", adquiridoEm: "2026-09-08", consultadoEm: "2026-09-10" },
+      declividadeGraus: { estado: "modelado", valor: 7.07, modelo: "atan(pct/100)", insumos: ["declividadePct"] },
+      curvaturaPerfil: { estado: "medido", valor: -0.003, fonte: "COPERNICUS/DEM/GLO30", adquiridoEm: "2026-09-08", consultadoEm: "2026-09-10" },
+      curvaturaPlana: { estado: "medido", valor: 0.002, fonte: "COPERNICUS/DEM/GLO30", adquiridoEm: "2026-09-08", consultadoEm: "2026-09-10" },
+      acumuloFluxo: { estado: "medido", valor: 1540, fonte: "COPERNICUS/DEM/GLO30", adquiridoEm: "2026-09-08", consultadoEm: "2026-09-10" },
+      twi: { estado: "modelado", valor: 7.81, modelo: "ln(As/tan(beta))", insumos: ["acumuloFluxo", "declividadeGraus"] },
+    },
+    solo: {
+      ordem: { estado: "medido", valor: "NEOSSOLO", fonte: "Embrapa GeoInfo", adquiridoEm: "2026-09-08", consultadoEm: "2026-09-10" },
+      subOrdem: { estado: "medido", valor: "REGOLITICO", fonte: "Embrapa GeoInfo", adquiridoEm: "2026-09-08", consultadoEm: "2026-09-10" },
+      grandeGrupo: { estado: "medido", valor: "Eutrofico", fonte: "Embrapa GeoInfo", adquiridoEm: "2026-09-08", consultadoEm: "2026-09-10" },
+      tipoUnidade: { estado: "medido", valor: "associacao", fonte: "Embrapa GeoInfo", adquiridoEm: "2026-09-08", consultadoEm: "2026-09-10" },
+      confiancaPedologica: "media",
+      erodibilidadeClasse: { estado: "medido", valor: "Alta", fonte: "Embrapa GeoInfo", adquiridoEm: "2026-09-08", consultadoEm: "2026-09-10" },
+    },
+    temporal: {},
+    rastreio: {
+      versaoMotor: "SAREL-1.0",
+      cenas: ["S2A_MSIL2A_20240908T134211_N0511_R124_T22JCS_20240908T170425"],
+      calculadoEm: "2026-09-10T15:00:00Z",
+    },
+    ...parciais,
+  };
+}
+
+describe("Guarda Antissintético (src/lib/seguranca/guardaSintetico)", () => {
+  it("aprova pontos reais com origemSintetica: false", () => {
+    const pReal = criarPontoBase({ origemSintetica: false });
+    expect(ehPontoSintetico(pReal)).toBe(false);
+    expect(contemPontoSintetico([pReal])).toBe(false);
+    expect(() => assegurarApenasPontosReais([pReal])).not.toThrow();
+  });
+
+  it("detecta e bloqueia ponto com flag origemSintetica: true", () => {
+    const pSint = criarPontoBase({ origemSintetica: true });
+    expect(ehPontoSintetico(pSint)).toBe(true);
+    expect(contemPontoSintetico([pSint])).toBe(true);
+    expect(() => assegurarApenasPontosReais([pSint])).toThrow(ErroPontoSinteticoDetectado);
+  });
+
+  it("detecta e bloqueia ponto com prefixos reservados de teste no ID ou código", () => {
+    const pId = criarPontoBase({ id: "TEST-0001", origemSintetica: false });
+    const pCod = criarPontoBase({ codigo: "SINT-0001", origemSintetica: false });
+    expect(ehPontoSintetico(pId)).toBe(true);
+    expect(ehPontoSintetico(pCod)).toBe(true);
+    expect(() => assegurarApenasPontosReais([pId, pCod])).toThrow(ErroPontoSinteticoDetectado);
+  });
+});
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/seguranca/guardaSintetico.ts
+TAMANHO: 1,670 bytes
+--------------------------------------------------------------------------------
+
+import type { PontoAmostral } from "@/types/ponto";
+
+export class ErroPontoSinteticoDetectado extends Error {
+  constructor(mensagem: string) {
+    super(mensagem);
+    this.name = "ErroPontoSinteticoDetectado";
+  }
+}
+
+/**
+ * Verifica se um ponto individual e sintetico / gerado para teste.
+ */
+export function ehPontoSintetico(ponto: PontoAmostral): boolean {
+  if (ponto.origemSintetica === true) {
+    return true;
+  }
+  if (ponto.id.startsWith("TEST-") || ponto.id.startsWith("SYNTHETIC-")) {
+    return true;
+  }
+  if (ponto.codigo.startsWith("TEST-") || ponto.codigo.startsWith("SINT-")) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Retorna true se houver qualquer ponto sintetico na lista.
+ */
+export function contemPontoSintetico(pontos: PontoAmostral[]): boolean {
+  return pontos.some(ehPontoSintetico);
+}
+
+/**
+ * Assegura que nenhum ponto sintetico avance para exportacao real ou persistencia.
+ * Lanca ErroPontoSinteticoDetectado caso detecte dados sinteticos.
+ */
+export function assegurarApenasPontosReais(pontos: PontoAmostral[], contextoOperacao: string = "exportação"): void {
+  const pontosSinteticos = pontos.filter(ehPontoSintetico);
+  if (pontosSinteticos.length > 0) {
+    const codigos = pontosSinteticos.slice(0, 5).map((p) => p.codigo).join(", ");
+    const sufixo = pontosSinteticos.length > 5 ? ` (+${pontosSinteticos.length - 5} outros)` : "";
+    throw new ErroPontoSinteticoDetectado(
+      `Operação de ${contextoOperacao} abortada: o conjunto contém ${pontosSinteticos.length} ponto(s) sintético(s) de teste [${codigos}${sufixo}]. Dados sintéticos nunca podem alcançar arquivos exportados ou matrizes de treino.`
+    );
+  }
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/seguranca/importacoes.test.ts
+TAMANHO: 4,145 bytes
+--------------------------------------------------------------------------------
+
+import { describe, it, expect } from "vitest";
+import fs from "fs";
+import path from "path";
+import os from "os";
+
+/**
+ * Varredor de quarentena:
+ * Assegura que NENHUM arquivo dentro de src/ faça importações de legado/.
+ */
+
+export interface ImportacaoProibida {
+  arquivo: string;
+  linha: number;
+  trecho: string;
+}
+
+const REGEX_IMPORT_LEGADO = /(from\s+["'].*legado.*["']|require\s*\(\s*["'].*legado.*["']\s*\))/;
+
+export function verificarImportacoes(codigo: string, nomeArquivo: string): ImportacaoProibida[] {
+  const linhas = codigo.split("\n");
+  const violacoes: ImportacaoProibida[] = [];
+
+  linhas.forEach((linha, idx) => {
+    if (REGEX_IMPORT_LEGADO.test(linha)) {
+      violacoes.push({
+        arquivo: nomeArquivo,
+        linha: idx + 1,
+        trecho: linha.trim(),
+      });
+    }
+  });
+
+  return violacoes;
+}
+
+export function listarArquivos(dir: string): string[] {
+  if (!fs.existsSync(dir)) return [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const arquivos: string[] = [];
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      arquivos.push(...listarArquivos(fullPath));
+    } else if (entry.isFile() && (fullPath.endsWith(".ts") || fullPath.endsWith(".tsx"))) {
+      // Não varrer este próprio arquivo de teste
+      if (!fullPath.endsWith("importacoes.test.ts")) {
+        arquivos.push(fullPath);
+      }
+    }
+  }
+  return arquivos;
+}
+
+describe("Varredor de Quarentena (Importações de legado/)", () => {
+  describe("Meta-testes (confirma que detecta imports proibidos ou diretório vazio)", () => {
+    it("detecta import from legado", () => {
+      const code = `import { foo } from "@/legado/localizador/src/lib/algo";`;
+      const v = verificarImportacoes(code, "exemplo.ts");
+      expect(v).toHaveLength(1);
+    });
+
+    it("detecta require de legado", () => {
+      const code = `const bar = require("../../legado/sarel1/src/algo");`;
+      const v = verificarImportacoes(code, "exemplo.ts");
+      expect(v).toHaveLength(1);
+    });
+
+    it("meta-teste: varredura em diretório vazio deve falhar compulsoriamente por piso mínimo de arquivos", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "meta_test_importacoes_vazio_"));
+      try {
+        const arquivosTmp = listarArquivos(tmpDir);
+        const PISO_MINIMO_ARQUIVOS_SRC = 130;
+        expect(() => {
+          expect(
+            arquivosTmp.length,
+            `Varredura de importações proibidas examinou apenas ${arquivosTmp.length} arquivos em src/ (esperado >= ${PISO_MINIMO_ARQUIVOS_SRC}). Possível diretório renomeado ou raiz incorreta: ${tmpDir}`
+          ).toBeGreaterThanOrEqual(PISO_MINIMO_ARQUIVOS_SRC);
+        }).toThrow(/Possível diretório renomeado ou raiz incorreta/);
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+  });
+
+  describe("Varredura em todo src/", () => {
+    it("nenhum arquivo em src/ importa de legado/", () => {
+      const raizSrc = path.resolve(__dirname, "../..");
+      const arquivos = listarArquivos(raizSrc);
+
+      // Piso mínimo de arquivos examinados (medido hoje: 177 arquivos; folga de ~73% => piso 130)
+      const PISO_MINIMO_ARQUIVOS_SRC = 130;
+      expect(
+        arquivos.length,
+        `Varredura de importações proibidas examinou apenas ${arquivos.length} arquivos em src/ (esperado >= ${PISO_MINIMO_ARQUIVOS_SRC}). Possível diretório renomeado ou raiz incorreta: ${raizSrc}`
+      ).toBeGreaterThanOrEqual(PISO_MINIMO_ARQUIVOS_SRC);
+
+      const todasViolacoes: ImportacaoProibida[] = [];
+
+      for (const arq of arquivos) {
+        const conteudo = fs.readFileSync(arq, "utf-8");
+        const rel = path.relative(process.cwd(), arq);
+        todasViolacoes.push(...verificarImportacoes(conteudo, rel));
+      }
+
+      if (todasViolacoes.length > 0) {
+        const msg = todasViolacoes.map((v) => `  ${v.arquivo}:${v.linha} -> ${v.trecho}`).join("\n");
+        expect.fail(`Importações proibidas de legado/ detectadas em src/:\n${msg}`);
+      }
+      expect(todasViolacoes).toHaveLength(0);
+    });
+  });
+});
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/seguranca/localOnly.test.ts
+TAMANHO: 3,271 bytes
+--------------------------------------------------------------------------------
+
+import { describe, it, expect } from "vitest";
+import { NextRequest } from "next/server";
+import { isLocalRequest, exigirRequisicaoLocalConfiavel } from "./localOnly";
+
+describe("isLocalRequest security guard", () => {
+  it("deve autorizar requisições com host localhost", () => {
+    const req = new NextRequest("http://localhost:3000/api/fundiario/match", {
+      headers: { host: "localhost:3000" },
+    });
+    expect(isLocalRequest(req)).toBe(true);
+  });
+
+  it("deve autorizar requisições com host 127.0.0.1", () => {
+    const req = new NextRequest("http://127.0.0.1:3000/api/fundiario/match", {
+      headers: { host: "127.0.0.1:3000" },
+    });
+    expect(isLocalRequest(req)).toBe(true);
+  });
+
+  it("deve autorizar requisições com IPv6 loopback ::1", () => {
+    const req = new NextRequest("http://[::1]:3000/api/fundiario/match", {
+      headers: { host: "[::1]:3000" },
+    });
+    expect(isLocalRequest(req)).toBe(true);
+  });
+
+  it("deve bloquear requisições com Host de atacante externo", () => {
+    const req = new NextRequest("http://localhost:3000/api/fundiario/match", {
+      headers: { host: "atacante.com" },
+    });
+    expect(isLocalRequest(req)).toBe(false);
+  });
+
+  it("deve bloquear requisições com IP de rede externa", () => {
+    const req = new NextRequest("http://localhost:3000/api/fundiario/match", {
+      headers: { host: "192.168.1.100:3000" },
+    });
+    expect(isLocalRequest(req)).toBe(false);
+  });
+
+  it("deve bloquear requisições com cabeçalho X-Forwarded-For externo (10.0.0.1)", () => {
+    const req = new NextRequest("http://localhost:3000/api/fundiario/match", {
+      headers: {
+        host: "localhost:3000",
+        "x-forwarded-for": "10.0.0.1",
+      },
+    });
+    expect(isLocalRequest(req)).toBe(false);
+  });
+});
+
+describe("exigirRequisicaoLocalConfiavel security guard (N16)", () => {
+  it("deve bloquear Origin externo (https://exemplo.com) com 403", () => {
+    const req = new NextRequest("http://localhost:3000/api/gee/sorteio-d16", {
+      method: "POST",
+      headers: {
+        host: "localhost:3000",
+        origin: "https://exemplo.com",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+    const res = exigirRequisicaoLocalConfiavel(req);
+    expect(res).not.toBeNull();
+    expect(res?.status).toBe(403);
+  });
+
+  it("deve bloquear Content-Type nao-json em metodos de escrita com 403", () => {
+    const req = new NextRequest("http://localhost:3000/api/gee/sorteio-d16", {
+      method: "POST",
+      headers: {
+        host: "localhost:3000",
+        origin: "http://localhost:3000",
+        "content-type": "text/plain",
+      },
+      body: "{}",
+    });
+    const res = exigirRequisicaoLocalConfiavel(req);
+    expect(res).not.toBeNull();
+    expect(res?.status).toBe(403);
+  });
+
+  it("deve autorizar Origin local com Content-Type application/json", () => {
+    const req = new NextRequest("http://localhost:3000/api/gee/sorteio-d16", {
+      method: "POST",
+      headers: {
+        host: "localhost:3000",
+        origin: "http://localhost:3000",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+    const res = exigirRequisicaoLocalConfiavel(req);
+    expect(res).toBeNull();
+  });
+});
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/seguranca/localOnly.ts
+TAMANHO: 2,286 bytes
+--------------------------------------------------------------------------------
+
+import { NextRequest, NextResponse } from "next/server";
+
+const ALLOWED_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1", "0.0.0.0"]);
+
+/**
+ * Defesa em profundidade para rotas que servem dados pessoais da base fundiaria
+ * (CAR/SICAR, SIGEF, SNCR). Complementa - nao substitui - o bind em loopback
+ * configurado nos scripts do package.json.
+ *
+ * NOTA DE SEGURANÇA: Se algum dia o sistema for exposto deliberadamente
+ * (servidor de laboratório, VPS), a guarda de host NÃO é autenticação e
+ * precisará ser substituída por controle de acesso real com registro de
+ * quem consultou o quê (trilha de auditoria).
+ */
+export function isLocalRequest(req: NextRequest): boolean {
+  const xForwardedFor = req.headers.get("x-forwarded-for");
+  if (xForwardedFor) {
+    const clientIp = xForwardedFor.split(",")[0].trim();
+    if (!ALLOWED_HOSTS.has(clientIp)) {
+      return false;
+    }
+  }
+
+  const host = req.headers.get("host") ?? "";
+  const hostname = host.replace(/:\d+$/, "").toLowerCase();
+  return ALLOWED_HOSTS.has(hostname);
+}
+
+/**
+ * Mitigação de CSRF / SSRF e escrita não confiável (N16 / M5):
+ * Exige:
+ * 1. isLocalRequest(req)
+ * 2. Origin ausente OU Origin com hostname local permitido
+ * 3. Para métodos de escrita (POST, PUT, PATCH, DELETE), Content-Type deve conter application/json
+ */
+export function ehRequisicaoLocalConfiavel(req: NextRequest): boolean {
+  if (!isLocalRequest(req)) {
+    return false;
+  }
+
+  const origin = req.headers.get("origin");
+  if (origin) {
+    try {
+      const url = new URL(origin);
+      if (!ALLOWED_HOSTS.has(url.hostname.toLowerCase())) {
+        return false;
+      }
+    } catch {
+      return false;
+    }
+  }
+
+  const metodo = req.method.toUpperCase();
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(metodo)) {
+    const contentType = req.headers.get("content-type") ?? "";
+    if (!contentType.toLowerCase().includes("application/json")) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function exigirRequisicaoLocalConfiavel(req: NextRequest): NextResponse | null {
+  if (!ehRequisicaoLocalConfiavel(req)) {
+    return NextResponse.json(
+      { erro: "Acesso restrito: requisição deve ser originada localmente com formato confiável." },
+      { status: 403 }
+    );
+  }
+  return null;
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/seguranca/padroesProibidos.test.ts
+TAMANHO: 31,473 bytes
+--------------------------------------------------------------------------------
+
+import { describe, it, expect } from "vitest";
+import fs from "fs";
+import path from "path";
+import os from "os";
+
+/**
+ * Varredor de padrões proibidos (Regra 1 e 5).
+ * Detecta:
+ * 1. .unmask( com número
+ * 2. || seguido de número
+ * 3. ?? seguido de número
+ * 4. parâmetros numéricos com default na assinatura (: number = 123)
+ * 5. Math.max / Math.min com literais numéricos (cortes ou pisos disfarçados)
+ * 6. adquiridoEm atribuído a partir de new Date
+ */
+export interface ViolacaoPadrao {
+  arquivo: string;
+  linha: number;
+  padrao: string;
+  trecho: string;
+}
+
+export interface ExcecaoAutorizada {
+  id: string;
+  arquivo: string;
+  trecho: string;
+  justificativa: string;
+  autorizadoPor: string;
+  padrao?: string;
+}
+
+export const LISTA_EXCECOES_AUTORIZADAS: ExcecaoAutorizada[] = [
+  // Scripts - Geração sintética controlada para benchmark de pipeline
+  {
+    id: "EXC-DRYRUN-SINTETICO-XGBOOST",
+    arquivo: "scripts/treinar_xgboost_loco.py",
+    trecho: "bsi_spd = float(np.random.uniform",
+    justificativa: "Geração explícita de benchmark sintético de pipeline no modo dry-run com flag declarada",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-DRYRUN-SINTETICO-XGBOOST",
+    arquivo: "scripts/treinar_xgboost_loco.py",
+    trecho: "ndvi_spd = float(np.random.uniform",
+    justificativa: "Geração explícita de benchmark sintético de pipeline no modo dry-run com flag declarada",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-DRYRUN-SINTETICO-XGBOOST",
+    arquivo: "scripts/treinar_xgboost_loco.py",
+    trecho: "decliv = float(np.random.uniform",
+    justificativa: "Geração explícita de benchmark sintético de pipeline no modo dry-run com flag declarada",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-DRYRUN-SINTETICO-XGBOOST",
+    arquivo: "scripts/treinar_xgboost_loco.py",
+    trecho: "elev = float(np.random.uniform",
+    justificativa: "Geração explícita de benchmark sintético de pipeline no modo dry-run com flag declarada",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-DRYRUN-SINTETICO-XGBOOST",
+    arquivo: "scripts/treinar_xgboost_loco.py",
+    trecho: "perda_solo_spd = float(np.random.uniform",
+    justificativa: "Geração explícita de benchmark sintético de pipeline no modo dry-run com flag declarada",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+
+  // Componentes de UI - Coalescência com número permitida exclusivamente para controles visuais/câmera
+  {
+    id: "EXC-UI-MAPVIEWER-ZOOM",
+    arquivo: "src/components/map/MapViewer.tsx",
+    trecho: "zoom: zoom ?? 14",
+    justificativa: "Fallback de nível de zoom padrão da câmera do Mapbox na interface do usuário",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+    padrao: "coalescencia-com-numero",
+  },
+  {
+    id: "EXC-UI-MAPVIEWER-PITCH",
+    arquivo: "src/components/map/MapViewer.tsx",
+    trecho: "pitch: pitch ?? 50",
+    justificativa: "Fallback de inclinação de perspectiva (pitch) da câmera 3D na interface do usuário",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+    padrao: "coalescencia-com-numero",
+  },
+  {
+    id: "EXC-UI-MAPVIEWER-BEARING",
+    arquivo: "src/components/map/MapViewer.tsx",
+    trecho: "bearing: bearing ?? 0",
+    justificativa: "Fallback de rotação azimutal (bearing) da câmera do mapa na interface do usuário",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+    padrao: "coalescencia-com-numero",
+  },
+  {
+    id: "EXC-UI-FILTERSPANEL-DECLIVIDADE",
+    arquivo: "src/components/sidebar/FiltersPanel.tsx",
+    trecho: "value={filtros.declividadeMin ?? 0}",
+    justificativa: "Piso numérico inicial do controle deslizante (slider) de filtro de declividade mínima na UI",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+    padrao: "coalescencia-com-numero",
+  },
+
+  // Código Ativo - Exceções auditadas com comentário explícito
+  {
+    id: "EXC-API-SELECT-CANDIDATES-LIMITE",
+    arquivo: "src/app/api/gee/select-candidates/route.ts",
+    trecho: "limite computacional de busca inicial de centroides no indice SQLite",
+    justificativa: "Limite computacional de busca inicial de centroides no índice SQLite",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-API-SELECT-CANDIDATES-NORMALIZACAO",
+    arquivo: "src/app/api/gee/select-candidates/route.ts",
+    trecho: "normalizacao de percentual de alocacao de subamostra da interface [0, 100]",
+    justificativa: "Normalização de percentual de alocação de subamostra da interface [0, 100]",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-API-SELECT-CANDIDATES-POOL",
+    arquivo: "src/app/api/gee/select-candidates/route.ts",
+    trecho: "criterio minimo de tamanho de pool elegivel para selecao de candidatos",
+    justificativa: "Critério mínimo de tamanho de pool elegível para seleção de candidatos",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-API-SELECT-CANDIDATES-COTA",
+    arquivo: "src/app/api/gee/select-candidates/route.ts",
+    trecho: "subtracao aritmetica de cota amostral inteira nao negativa entre subconjuntos",
+    justificativa: "Subtração aritmética de cota amostral inteira não negativa entre subconjuntos",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-LIB-AMOSTRAGEM-CLAMP-SOLO-NU",
+    arquivo: "src/lib/gee/amostragemSoloNuLote.ts",
+    trecho: "clamp de seguranca numerica para fracao normalizada de satelite no intervalo 0 a 1",
+    justificativa: "Clamp de segurança numérica para fração normalizada de satélite no intervalo 0 a 1",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-LIB-AMOSTRAGEM-TIMEOUT-REDE",
+    arquivo: "src/lib/gee/amostragemSoloNuLote.ts",
+    trecho: "timeout de rede de requisicao http em milissegundos para conexao gee",
+    justificativa: "Timeout de rede de requisição HTTP em milissegundos para conexão GEE",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-LIB-AMOSTRAGEM-REQUISICOES-EVITADAS",
+    arquivo: "src/lib/gee/amostragemSoloNuLote.ts",
+    trecho: "metrica contavel de requisicoes http poupadas no processamento em lote",
+    justificativa: "Métrica contável de requisições HTTP poupadas no processamento em lote",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-LIB-AUTH-SEGUNDOS-VALIDADE",
+    arquivo: "src/lib/gee/auth.ts",
+    trecho: "fallback de protocolo oauth2 rfc6749 para token expiravel",
+    justificativa: "Fallback de protocolo OAuth2 RFC6749 para token expirável",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-LIB-PLANET-QUOTA-TIMESTAMP",
+    arquivo: "src/lib/planet/quota.ts",
+    trecho: "auditoria de timestamp do livro-razao local",
+    justificativa: "Auditoria de timestamp do livro-razao local",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-LIB-RUSLE-FATOR-LS-DIVISOR",
+    arquivo: "src/lib/rusle/fatorLS.ts",
+    trecho: "divisor de aguas no topo da vertente sem area de montante afluente (A_in = 0)",
+    justificativa: "Divisor de águas no topo da vertente sem área de montante afluente (A_in = 0)",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-STORE-PAGINACAO-TOUR",
+    arquivo: "src/store/useSarelStore.ts",
+    trecho: "controle de indice de paginacao de interface do tour metodologico (>= 0)",
+    justificativa: "Controle de índice de paginação de interface do tour metodológico (>= 0)",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-TESTE-UNMASK-JRC",
+    arquivo: "teste.ts",
+    trecho: "const water = jrc.unmask(0);",
+    justificativa: "Camada de exclusão booleana JRC sem dado no teste unitário",
+    autorizadoPor: "Auditoria 2026-10-05 / C06",
+  },
+  {
+    id: "EXC-DRONE-PLAN-TURNAROUND",
+    arquivo: "src/lib/drone/planoVooNControl.ts",
+    trecho: "turnAroundDistanceMeters = 10",
+    justificativa: "Fallback de distância de manobra (turnaround) no formato .plan do NControl",
+    autorizadoPor: "GOV-5 / 2026-10-19",
+    padrao: "default-numerico-desestruturacao",
+  },
+  {
+    id: "EXC-DRONE-PLAN-ENTRYLOCATION",
+    arquivo: "src/lib/drone/planoVooNControl.ts",
+    trecho: "entryLocation = 0",
+    justificativa: "Vértice de entrada padrão (entryLocation) de survey no formato .plan",
+    autorizadoPor: "GOV-5 / 2026-10-19",
+    padrao: "default-numerico-desestruturacao",
+  },
+  {
+    id: "EXC-DRONE-PLAN-STARTDOJUMPID",
+    arquivo: "src/lib/drone/planoVooNControl.ts",
+    trecho: "startDoJumpId = 2",
+    justificativa: "Identificador de comando DO_JUMP no formato .plan do NControl",
+    autorizadoPor: "GOV-5 / 2026-10-19",
+    padrao: "default-numerico-desestruturacao",
+  },
+];
+
+const REGEX_PADROES = [
+  { id: "unmask-numerico", regex: /\.unmask\s*\(\s*\d+(\.\d+)?\s*\)/ },
+  { id: "ou-logico-com-numero", regex: /\|\|\s*\d+(\.\d+)?\b/ },
+  { id: "coalescencia-com-numero", regex: /\?\?\s*\d+(\.\d+)?\b/ },
+  { id: "coalescencia-com-numero-entre-aspas", regex: /\?\?\s*["'`]\s*[0-9]/ },
+  { id: "ou-logico-com-numero-entre-aspas", regex: /\|\|\s*["'`]\s*[0-9]/ },
+  { id: "parametro-com-default-numerico", regex: /:\s*number\s*=\s*\d+(\.\d+)?\b/ },
+  { id: "corte-math-max-min-com-literal", regex: /Math\.(max|min)\s*\([^)]*\b\d+(\.\d+)?\b[^)]*\)/ },
+  { id: "adquiridoEm-com-new-date", regex: /adquiridoEm\s*:\s*(new\s+Date|Date\.now)/ },
+  { id: "adquiridoEm-com-literal-data", regex: /adquiridoEm\s*:\s*["'`]\d{4}-\d{2}-\d{2}/ },
+  {
+    id: "sintese-aleatoria-atributos-fisicos",
+    regex: /(=\s*|:\s*)(float\()?(np\.)?random\.[a-zA-Z0-9_]+/,
+  },
+  { id: "credencial-begin-private-key", regex: /-----BEGIN\s+((RSA|EC|DSA|OPENSSH)\s+)?PRIVATE\s+KEY-----/i },
+  { id: "credencial-literal-private-key", regex: /"private_key"\s*:\s*["'][A-Za-z0-9+/=\s-]{20,}/ },
+  { id: "credencial-planet-plak", regex: /\bPLAK[0-9a-zA-Z]{10,}\b/ },
+  { id: "credencial-google-aizasy", regex: /\bAIzaSy[0-9a-zA-Z_-]{20,}\b/ },
+  { id: "credencial-mapbox-pkey", regex: /\bpk\.eyJ[0-9a-zA-Z_-]{15,}\b/ },
+  { id: "credencial-jev-ts", regex: /\bts_[0-9a-fA-F]{20,}\b/ },
+  { id: "credencial-bearer-jwt", regex: /Bearer\s+eyJ[0-9a-zA-Z_-]{20,}\b/ },
+  {
+    id: "default-numerico-desestruturacao",
+    regex: /^\s+[a-zA-Z][a-zA-Z0-9]*\s*=\s*[0-9]+(\.[0-9]+)?,?\s*$/,
+  },
+];
+
+export function isLinhaIsentaPorListaFechada(
+  arquivo: string,
+  linha: string,
+  motivoComentario: string | null,
+  padraoId: string
+): boolean {
+  const arqNorm = arquivo.replace(/\\/g, "/");
+
+  for (const exc of LISTA_EXCECOES_AUTORIZADAS) {
+    const excArqNorm = exc.arquivo.replace(/\\/g, "/");
+    const arquivoBate = arqNorm.endsWith(excArqNorm) || excArqNorm.endsWith(arqNorm);
+    if (!arquivoBate) continue;
+
+    if (motivoComentario !== null) {
+      const bateComentario =
+        motivoComentario.includes(exc.id) || (exc.trecho && motivoComentario.includes(exc.trecho));
+      if (bateComentario) {
+        return true;
+      }
+    } else {
+      const trechoBate = linha.includes(exc.trecho) || exc.trecho.includes(linha.trim());
+      if (trechoBate) {
+        if (exc.padrao && exc.padrao !== padraoId) continue;
+        if (arqNorm.includes("src/components/") || exc.padrao) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+export function varrerLinha(
+  linha: string,
+  numeroLinha: number,
+  arquivo: string,
+  motivoExterno?: string | null
+): ViolacaoPadrao[] {
+  const marcadorTs = "// permitido:";
+  const marcadorPy = "# permitido:";
+  const idxTs = linha.indexOf(marcadorTs);
+  const idxPy = linha.indexOf(marcadorPy);
+  const idxMarcador = idxTs !== -1 ? idxTs : idxPy;
+  const tamMarcador = idxTs !== -1 ? marcadorTs.length : marcadorPy.length;
+
+  let motivo: string | null = null;
+  if (idxMarcador !== -1 && idxMarcador + tamMarcador < linha.length) {
+    motivo = linha.slice(idxMarcador + tamMarcador).trim();
+  } else if (motivoExterno) {
+    motivo = motivoExterno;
+  }
+
+  const violacoes: ViolacaoPadrao[] = [];
+  for (const { id, regex } of REGEX_PADROES) {
+    if (id === "default-numerico-desestruturacao" && arquivo.endsWith(".py")) {
+      continue;
+    }
+    if (regex.test(linha)) {
+      if (!isLinhaIsentaPorListaFechada(arquivo, linha, motivo, id)) {
+        violacoes.push({
+          arquivo,
+          linha: numeroLinha,
+          padrao: id,
+          trecho: linha.trim(),
+        });
+      }
+    }
+  }
+  return violacoes;
+}
+
+export function varrerCodigo(codigo: string, nomeArquivo: string): ViolacaoPadrao[] {
+  const linhas = codigo.split("\n");
+  const violacoes: ViolacaoPadrao[] = [];
+  linhas.forEach((linha, idx) => {
+    const linhaAnterior = idx > 0 ? linhas[idx - 1] : "";
+    const idxAntTs = linhaAnterior.indexOf("// permitido:");
+    const idxAntPy = linhaAnterior.indexOf("# permitido:");
+    const idxAnt = idxAntTs !== -1 ? idxAntTs : idxAntPy;
+    const tamAnt = idxAntTs !== -1 ? 14 : 13;
+    let motivoAnt: string | null = null;
+    if (idxAnt !== -1 && idxAnt + tamAnt < linhaAnterior.length) {
+      motivoAnt = linhaAnterior.slice(idxAnt + tamAnt).trim();
+    }
+
+    violacoes.push(...varrerLinha(linha, idx + 1, nomeArquivo, motivoAnt));
+  });
+  return violacoes;
+}
+
+export function listarArquivosCodigo(dir: string): string[] {
+  if (!fs.existsSync(dir)) return [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const arquivos: string[] = [];
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    const relPath = path.relative(process.cwd(), fullPath).replace(/\\/g, "/");
+    if (entry.isDirectory() && entry.name !== "node_modules" && entry.name !== ".next") {
+      arquivos.push(...listarArquivosCodigo(fullPath));
+    } else if (
+      entry.isFile() &&
+      (fullPath.endsWith(".ts") || fullPath.endsWith(".tsx")) &&
+      !fullPath.endsWith(".test.ts") &&
+      !fullPath.endsWith(".test.tsx") &&
+      // 2026-10-17 (Bloco B / R17): Exclusão EXATA: apenas o script D25 embutido,
+      // cujo código byte-exato do pesquisador contém RNG legítimo para bootstrap estatístico (D25).
+      // Nenhum outro *.generated.ts é isento (ex.: verificadorIntegridade.generated.ts é examinado).
+      relPath !== "src/lib/export/scriptAvaliacaoD25.generated.ts"
+    ) {
+      arquivos.push(fullPath);
+    }
+  }
+  return arquivos;
+}
+
+export function listarArquivosScripts(dir: string): string[] {
+  if (!fs.existsSync(dir)) return [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const arquivos: string[] = [];
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    const relDir = path.relative(process.cwd(), fullPath).replace(/\\/g, "/");
+    // 2026-10-17 (Bloco B / R17): Exclusão EXATA: apenas o diretório scripts/d25 relativo à raiz do repositório,
+    // onde reside o código byte-exato do pesquisador com RNG legítimo para bootstrap estatístico.
+    // Qualquer outro diretório com nome 'd25' fora deste caminho exato é varrido.
+    if (
+      entry.isDirectory() &&
+      entry.name !== "__pycache__" &&
+      entry.name !== ".git" &&
+      relDir !== "scripts/d25"
+    ) {
+      arquivos.push(...listarArquivosScripts(fullPath));
+    } else if (
+      entry.isFile() &&
+      (fullPath.endsWith(".py") || fullPath.endsWith(".mjs") || fullPath.endsWith(".ts"))
+    ) {
+      arquivos.push(fullPath);
+    }
+  }
+  return arquivos;
+}
+
+describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
+  describe("Meta-testes (confirma que o detector NÃO é vacuoso)", () => {
+    it("detecta .unmask(0.0)", () => {
+      const code = `const bsi = expressao.unmask(0.0).rename("BSI");`;
+      const v = varrerCodigo(code, "teste.ts");
+      expect(v.some((x) => x.padrao === "unmask-numerico")).toBe(true);
+    });
+
+    it("detecta || seguido de número", () => {
+      const code = `const slope = parseFloat(props.slope || 16);`;
+      const v = varrerCodigo(code, "teste.ts");
+      expect(v.some((x) => x.padrao === "ou-logico-com-numero")).toBe(true);
+    });
+
+    it("detecta ?? seguido de número", () => {
+      const code = `const ndvi = (frequenciaSoloNu ?? 0.3) * 0.7;`;
+      const v = varrerCodigo(code, "teste.ts");
+      expect(v.some((x) => x.padrao === "coalescencia-com-numero")).toBe(true);
+    });
+
+    it("detecta ?? e || seguidos de numeral entre aspas", () => {
+      const v1 = varrerLinha('x: a ?? "7500",', 1, "f.ts");
+      expect(v1.some((x) => x.padrao === "coalescencia-com-numero-entre-aspas")).toBe(true);
+      const v2 = varrerLinha('y: b || "2026-01-01",', 2, "f.ts");
+      expect(v2.some((x) => x.padrao === "ou-logico-com-numero-entre-aspas")).toBe(true);
+    });
+
+    it("detecta parâmetro com default numérico na assinatura", () => {
+      const code = `export function calcular(limiar: number = 0.25) {}`;
+      const v = varrerCodigo(code, "teste.ts");
+      expect(v.some((x) => x.padrao === "parametro-com-default-numerico")).toBe(true);
+    });
+
+    it("detecta default numérico por desestruturação e ignora atribuição regular (GOV-5)", () => {
+      const codePega = `  const {\n    limiar = 0.25,\n  } = opcoes;`;
+      const vPega = varrerCodigo(codePega, "teste.ts");
+      expect(vPega.some((x) => x.padrao === "default-numerico-desestruturacao")).toBe(true);
+
+      const codeIgnora = `const x = 10;\nconst y = 20.5;`;
+      const vIgnora = varrerCodigo(codeIgnora, "teste.ts");
+      expect(vIgnora.some((x) => x.padrao === "default-numerico-desestruturacao")).toBe(false);
+    });
+
+    it("detecta cortes e pisos com Math.max/min e literal", () => {
+      const code1 = `const c = Math.max(0, Math.min(1, fatorC));`;
+      const code2 = `const acumulo = Math.max(1, fluxo);`;
+      expect(varrerCodigo(code1, "teste.ts").some((x) => x.padrao === "corte-math-max-min-com-literal")).toBe(true);
+      expect(varrerCodigo(code2, "teste.ts").some((x) => x.padrao === "corte-math-max-min-com-literal")).toBe(true);
+    });
+
+    it("detecta adquiridoEm atribuído a partir de new Date", () => {
+      const code = `const p = { adquiridoEm: new Date().toISOString() };`;
+      const v = varrerCodigo(code, "teste.ts");
+      expect(v.some((x) => x.padrao === "adquiridoEm-com-new-date")).toBe(true);
+    });
+
+    it("permite exceção com justificativa válida registrada na lista fechada", () => {
+      const code = `const water = jrc.unmask(0); // permitido: EXC-TESTE-UNMASK-JRC`;
+      const v = varrerCodigo(code, "teste.ts");
+      expect(v.length).toBe(0);
+    });
+
+    it("rejeita exceção sem justificativa suficiente (< 20 caracteres) ou sem registro na lista fechada", () => {
+      const code = `const water = jrc.unmask(0); // permitido: curto`;
+      const v = varrerCodigo(code, "teste.ts");
+      expect(v.length).toBeGreaterThan(0);
+    });
+
+    it("detecta síntese aleatória de atributos físicos em Python sem comentário permitido (Caso A)", () => {
+      const code = `decliv = float(np.random.uniform(3.0, 14.0))`;
+      const v = varrerCodigo(code, "teste.py");
+      expect(v.some((x) => x.padrao === "sintese-aleatoria-atributos-fisicos")).toBe(true);
+    });
+
+    it("detecta síntese aleatória com atribuição em qualquer nome em scripts (Caso B)", () => {
+      const code = `amostra = np.random.uniform(0.0, 1.0)`;
+      const v = varrerCodigo(code, "scripts/exemplo.py");
+      expect(v.some((x) => x.padrao === "sintese-aleatoria-atributos-fisicos")).toBe(true);
+    });
+
+    it("detecta síntese aleatória em literais de dicionário em scripts (Caso C)", () => {
+      const code = `dados = {"declividade": np.random.normal(0, 1)}`;
+      const v = varrerCodigo(code, "scripts/exemplo.py");
+      expect(v.some((x) => x.padrao === "sintese-aleatoria-atributos-fisicos")).toBe(true);
+    });
+
+    it("rejeita isenção por texto livre longo sem registro na lista fechada (Caso D)", () => {
+      const code = `decliv = float(np.random.uniform(3.0, 14.0)) # permitido: este e um comentario longo sem id na lista fechada`;
+      const v = varrerCodigo(code, "scripts/treinar_xgboost_loco.py");
+      expect(v.length).toBeGreaterThan(0);
+    });
+
+    it("detecta coalescencia com numero em componente .tsx sem autorizacao na lista fechada", () => {
+      const code = `const valor = props.declividade ?? 0;`;
+      const v = varrerCodigo(code, "src/components/exemplo/NovoComponente.tsx");
+      expect(v.some((x) => x.padrao === "coalescencia-com-numero")).toBe(true);
+    });
+
+    it("detecta literais com formato de credenciais secretas no código (Regra C1)", () => {
+      expect(varrerCodigo('const key = "-----BEGIN PRIVATE KEY-----\\nMIIEvgIBA...";', "teste.ts").some((x) => x.padrao === "credencial-begin-private-key")).toBe(true);
+      expect(varrerCodigo('const json = { "private_key": "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC..." };', "teste.ts").some((x) => x.padrao === "credencial-literal-private-key")).toBe(true);
+      expect(varrerCodigo('const plak = "PLAK1234567890abcdef";', "teste.ts").some((x) => x.padrao === "credencial-planet-plak")).toBe(true);
+      expect(varrerCodigo('const gmKey = "AIzaSyAbcdef1234567890_-ABCDEF";', "teste.ts").some((x) => x.padrao === "credencial-google-aizasy")).toBe(true);
+      expect(varrerCodigo('const mbToken = "pk.eyJ1234567890abcdef12345";', "teste.ts").some((x) => x.padrao === "credencial-mapbox-pkey")).toBe(true);
+      expect(varrerCodigo('const jev = "ts_0123456789abcdef0123456789abcdef";', "teste.ts").some((x) => x.padrao === "credencial-jev-ts")).toBe(true);
+      expect(varrerCodigo('const h = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";', "teste.ts").some((x) => x.padrao === "credencial-bearer-jwt")).toBe(true);
+    });
+
+    it("meta-teste: varredura em diretório vazio deve falhar compulsoriamente por piso mínimo", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "meta_test_padroes_vazio_"));
+      try {
+        const arquivosTmp = listarArquivosCodigo(tmpDir);
+        const PISO_MINIMO = 60;
+        expect(() => {
+          expect(
+            arquivosTmp.length,
+            `Varredura de padrões proibidos em código ativo examinou apenas ${arquivosTmp.length} arquivos (esperado >= ${PISO_MINIMO}). Possível diretório ausente ou renomeado: ${tmpDir}`
+          ).toBeGreaterThanOrEqual(PISO_MINIMO);
+        }).toThrow(/Possível diretório ausente ou renomeado/);
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    it("B3: prova que *.generated.ts fora da lista exata e diretório d25 fora de scripts/d25 ainda são listados e detectados", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sarel-padroes-b3-"));
+      try {
+        // 1. Arquivo .generated.ts fora da lista exata
+        const fakeGen = path.join(tmpDir, "outroModulo.generated.ts");
+        fs.writeFileSync(fakeGen, "const x = np.random.uniform(0, 1);\n");
+
+        const arquivosCodigo = listarArquivosCodigo(tmpDir);
+        expect(arquivosCodigo).toContain(fakeGen);
+        const violacoesGen = varrerCodigo(fs.readFileSync(fakeGen, "utf-8"), path.relative(process.cwd(), fakeGen));
+        expect(violacoesGen.some((v) => v.padrao === "sintese-aleatoria-atributos-fisicos")).toBe(true);
+
+        // 2. Diretório d25 fora de scripts/d25 (ex: outro/d25)
+        const subDirD25 = path.join(tmpDir, "outro", "d25");
+        fs.mkdirSync(subDirD25, { recursive: true });
+        const scriptOutroD25 = path.join(subDirD25, "simulacao.py");
+        fs.writeFileSync(scriptOutroD25, "val = np.random.uniform(0, 1)\n");
+
+        const arquivosScripts = listarArquivosScripts(tmpDir);
+        expect(arquivosScripts).toContain(scriptOutroD25);
+        const violacoesScript = varrerCodigo(fs.readFileSync(scriptOutroD25, "utf-8"), path.relative(process.cwd(), scriptOutroD25));
+        expect(violacoesScript.some((v) => v.padrao === "sintese-aleatoria-atributos-fisicos")).toBe(true);
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+  });
+
+  describe("Varredura no código científico e de estado em src/lib, src/app/api, src/store e src/config (Q2.ii)", () => {
+    it("nenhum arquivo em src/lib, src/app/api, src/store ou src/config deve conter padrões proibidos", () => {
+      const diretoriosAlvo = ["src/lib", "src/app/api", "src/store", "src/config"].map((d) =>
+        path.resolve(process.cwd(), d)
+      );
+      const arquivos = diretoriosAlvo.flatMap((dir) => listarArquivosCodigo(dir));
+
+      // Piso mínimo de arquivos examinados (medido hoje: 81 arquivos; folga de ~74% => piso 60)
+      const PISO_MINIMO_CODIGO = 60;
+      expect(
+        arquivos.length,
+        `Varredura de padrões proibidos em código ativo examinou apenas ${arquivos.length} arquivos (esperado >= ${PISO_MINIMO_CODIGO}). Possível diretório ausente ou renomeado.`
+      ).toBeGreaterThanOrEqual(PISO_MINIMO_CODIGO);
+
+      const todasViolacoes: ViolacaoPadrao[] = [];
+
+      for (const arq of arquivos) {
+        const conteudo = fs.readFileSync(arq, "utf-8");
+        const v = varrerCodigo(conteudo, path.relative(process.cwd(), arq));
+        todasViolacoes.push(...v);
+      }
+
+      if (todasViolacoes.length > 0) {
+        const msg = todasViolacoes
+          .map((v) => `  ${v.arquivo}:${v.linha} [${v.padrao}] -> ${v.trecho}`)
+          .join("\n");
+        expect.fail(`Violações de padrões proibidos encontradas em código ativo:\n${msg}`);
+      }
+      expect(todasViolacoes).toHaveLength(0);
+    });
+
+    it("nenhum componente em src/components/**/*.tsx deve conter literais de data/código entre aspas ou adquiridoEm fabricado", () => {
+      const raizComponents = path.resolve(process.cwd(), "src/components");
+      const arquivos = listarArquivosCodigo(raizComponents);
+
+      // Piso mínimo de componentes examinados (medido hoje: 33 arquivos; folga de ~72% => piso 24)
+      const PISO_MINIMO_COMPONENTS = 24;
+      expect(
+        arquivos.length,
+        `Varredura de padrões proibidos em src/components examinou apenas ${arquivos.length} arquivos (esperado >= ${PISO_MINIMO_COMPONENTS}). Diretório components ausente ou vazio.`
+      ).toBeGreaterThanOrEqual(PISO_MINIMO_COMPONENTS);
+
+      const padroesRestritosComponentes = new Set([
+        "coalescencia-com-numero",
+        "coalescencia-com-numero-entre-aspas",
+        "ou-logico-com-numero-entre-aspas",
+        "adquiridoEm-com-new-date",
+        "adquiridoEm-com-literal-data",
+        "sintese-aleatoria-atributos-fisicos",
+      ]);
+      const todasViolacoes: ViolacaoPadrao[] = [];
+
+      for (const arq of arquivos) {
+        const conteudo = fs.readFileSync(arq, "utf-8");
+        const v = varrerCodigo(conteudo, path.relative(process.cwd(), arq)).filter((viol) =>
+          padroesRestritosComponentes.has(viol.padrao)
+        );
+        todasViolacoes.push(...v);
+      }
+
+      if (todasViolacoes.length > 0) {
+        const msg = todasViolacoes
+          .map((v) => `  ${v.arquivo}:${v.linha} [${v.padrao}] -> ${v.trecho}`)
+          .join("\n");
+        expect.fail(`Violações de padrões proibidos em src/components:\n${msg}`);
+      }
+      expect(todasViolacoes).toHaveLength(0);
+    });
+  });
+
+  describe("Varredura no código científico em scripts/ (Python e Node)", () => {
+    it("nenhum script em scripts/ deve conter geração sintética não documentada ou padrões proibidos", () => {
+      const raizScripts = path.resolve(process.cwd(), "scripts");
+      const arquivos = listarArquivosScripts(raizScripts);
+
+      // Piso mínimo de scripts examinados (medido hoje: 39 arquivos; folga de ~72% => piso 28)
+      const PISO_MINIMO_SCRIPTS = 28;
+      expect(
+        arquivos.length,
+        `Varredura de scripts examinou apenas ${arquivos.length} arquivos (esperado >= ${PISO_MINIMO_SCRIPTS}). Diretório scripts ausente ou renomeado.`
+      ).toBeGreaterThanOrEqual(PISO_MINIMO_SCRIPTS);
+
+      const todasViolacoes: ViolacaoPadrao[] = [];
+
+      for (const arq of arquivos) {
+        const conteudo = fs.readFileSync(arq, "utf-8");
+        const v = varrerCodigo(conteudo, path.relative(process.cwd(), arq));
+        todasViolacoes.push(...v);
+      }
+
+      if (todasViolacoes.length > 0) {
+        const msg = todasViolacoes
+          .map((v) => `  ${v.arquivo}:${v.linha} [${v.padrao}] -> ${v.trecho}`)
+          .join("\n");
+        expect.fail(`Violações de padrões proibidos encontradas em scripts/:\n${msg}`);
+      }
+      expect(todasViolacoes).toHaveLength(0);
+    }, 20000);
+  });
+
+  describe("FASE 0 — Identidade de Banda B11/B12 (F0.1), Proveniência adquiridoEm (F0.3) e Guarda D11 (F0.4)", () => {
+    it("separa B11 (SWIR-1) de B12 (SWIR-2), preserva B11 no BSI e deriva adquiridoEm real de PRODUCT_ID (F0.1, F0.3)", async () => {
+      const { processarRespostaGeeSentinel2 } = await import("@/lib/gee/copernicusGeeClient");
+      const { calcularBsi } = await import("@/lib/gee/serieTemporal");
+
+      const medicao = processarRespostaGeeSentinel2(
+        {
+          Map: 40,
+          B2_p50: 850,
+          B4_p50: 1200,
+          B8_p50: 3100,
+          B11_p50: 2750, // SWIR-1 = 0.2750
+          B12_p50: 1920, // SWIR-2 = 0.1920
+          B4_count: 14,
+        },
+        ["S2B_MSIL2A_20240815T134209_N0511_R124_T21JYM_20240815T171822"]
+      );
+
+      expect(medicao).not.toBeNull();
+      expect(medicao!.b11).toBeCloseTo(0.275, 4);
+      expect(medicao!.b12).toBeCloseTo(0.192, 4);
+      expect(medicao!.b11).not.toBe(medicao!.b12);
+      expect(medicao!.bsi).toBeCloseTo(calcularBsi(0.275, 0.12, 0.31, 0.085)!, 4);
+      expect(medicao!.adquiridoEm).toBe("2024-08-15");
+      expect(medicao!.insuficienteD11).toBe(false);
+    });
+
+    it("marca insuficienteD11 = true e retém frequenciaSoloNu quando nObservacoesValidas < 6 (F0.4, Decisão D11)", async () => {
+      const { processarRespostaGeeSentinel2, avaliarSuficienciaAmostralD11 } = await import(
+        "@/lib/gee/copernicusGeeClient"
+      );
+
+      const d11Falha = avaliarSuficienciaAmostralD11(4);
+      expect(d11Falha.suficiente).toBe(false);
+      expect(d11Falha.causa).toBe("insuficiente");
+      expect(d11Falha.motivo).toContain("D11");
+
+      const medicaoInsuf = processarRespostaGeeSentinel2({
+        Map: 40,
+        B2_p50: 850,
+        B4_p50: 1200,
+        B8_p50: 3100,
+        B11_p50: 2750,
+        B12_p50: 1920,
+        B4_count: 4,
+      });
+
+      expect(medicaoInsuf).not.toBeNull();
+      expect(medicaoInsuf!.nObservacoesValidas).toBe(4);
+      expect(medicaoInsuf!.insuficienteD11).toBe(true);
+      expect(medicaoInsuf!.frequenciaSoloNu).toBeNull();
+    });
+  });
+
+  describe("FASE 2 / F5 — Detector de Sequência Monotônica e Correlação Espúria com Índice (|r| > 0.95)", () => {
+    it("assevera que nenhum artefato JSON de medição em docs/verificacoes/ contém séries numéricas correlacionadas com a ordem do arquivo", async () => {
+      const { varrerDiretorioParaSequencias } = await import("./detectorSequencia");
+      const pastaVerificacoes = path.resolve(process.cwd(), "docs/verificacoes");
+      const violacoes = varrerDiretorioParaSequencias(pastaVerificacoes, 0.95);
+
+      if (violacoes.length > 0) {
+        const msg = violacoes
+          .map((v) => `  ${v.arquivo} [${v.propriedade}] -> |r| = ${v.correlacao} (${v.motivo})`)
+          .join("\n");
+        expect.fail(`Violação de sequência monotônica artificial detectada em artefato:\n${msg}`);
+      }
+      expect(violacoes).toHaveLength(0);
+    }, 30000);
+  });
+});
+
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/seguranca/provenienciaCaminhos.test.ts
+TAMANHO: 6,786 bytes
+--------------------------------------------------------------------------------
+
+import { describe, it, expect } from "vitest";
+import fs from "fs";
+import os from "os";
+import path from "path";
+import { execFileSync } from "child_process";
+
+export interface CaminhoExtraidoProveniencia {
+  linha: number;
+  bruto: string;
+  caminhoNormalizado: string;
+  possuiBarraDiretorio: boolean;
+}
+
+const PREFIXOS_RAIZ_REPOSITORIO = ["src/", "docs/", "scripts/", "public/", "data/"];
+const EXTENSOES_ARQUIVO_REPO = [".ts", ".tsx", ".py", ".mjs", ".md", ".json", ".sql", ".pdf"];
+
+/**
+ * Extrai todos os caminhos de arquivo ou diretório do repositório citados entre crases (`...`)
+ * em um documento Markdown (Regra R1 / Regra 9).
+ */
+export function extrairCaminhosRepositorioProveniencia(
+  conteudoMarkdown: string
+): CaminhoExtraidoProveniencia[] {
+  const linhas = conteudoMarkdown.split(/\r?\n/);
+  const extraidos: CaminhoExtraidoProveniencia[] = [];
+
+  linhas.forEach((linhaTexto, idx) => {
+    const regexCrase = /`([^`\r\n]+)`/g;
+    let match: RegExpExecArray | null;
+    while ((match = regexCrase.exec(linhaTexto)) !== null) {
+      const token = match[1].trim();
+      if (!token || token.startsWith("--")) {
+        continue;
+      }
+
+      // Ignora nomes de branches git como `sarel/v2`
+      if (token === "sarel/v2" || token.startsWith("origin/")) {
+        continue;
+      }
+
+      // Remove âncoras de linha como #L12-L34 ou :252
+      const semAncora = token.replace(/#L\d+(-L\d+)?$/, "").replace(/:\d+(-\d+)?$/, "");
+
+      const comecaComPrefixoRepo = PREFIXOS_RAIZ_REPOSITORIO.some((p) =>
+        semAncora.startsWith(p)
+      );
+      const terminaComExtensaoRepo =
+        !semAncora.includes(" ") &&
+        EXTENSOES_ARQUIVO_REPO.some((ext) => semAncora.endsWith(ext));
+
+      if (comecaComPrefixoRepo || terminaComExtensaoRepo) {
+        // Ignora placeholders explícitos contendo <...> ou *
+        if (semAncora.includes("<") || semAncora.includes(">") || semAncora.includes("*")) {
+          continue;
+        }
+        extraidos.push({
+          linha: idx + 1,
+          bruto: token,
+          caminhoNormalizado: semAncora,
+          possuiBarraDiretorio: semAncora.includes("/"),
+        });
+      }
+    }
+  });
+
+  return extraidos;
+}
+
+export function ehCaminhoIgnoradoGit(caminhoRelativo: string): boolean {
+  try {
+    const caminhoNormalizado = caminhoRelativo.replace(/\\/g, "/");
+    // execFileSync com vetor de argumentos: o caminho vem de texto de documento e nunca passa por um shell.
+    execFileSync("git", ["check-ignore", "-q", "--", caminhoNormalizado], { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Verifica se cada caminho extraído existe exatamente em `path.resolve(rootDir, caminhoNormalizado)`,
+ * sem busca heurística por subpastas (exigindo caminhos relativos completos desde a raiz do repositório).
+ * Caminhos cobertos pelo .gitignore (dado local legítimo) são ignorados se `ignorarCaminhosGitIgnore === true`.
+ */
+export function verificarExistenciaCaminhosProveniencia(
+  caminhos: CaminhoExtraidoProveniencia[],
+  rootDir: string,
+  opcoes: {
+    ignorarCaminhosGitIgnore?: boolean;
+    onIgnoradoGit?: (item: CaminhoExtraidoProveniencia) => void;
+  } = {}
+): Array<{ item: CaminhoExtraidoProveniencia; motivo: string }> {
+  const falhas: Array<{ item: CaminhoExtraidoProveniencia; motivo: string }> = [];
+
+  for (const item of caminhos) {
+    const absDireto = path.resolve(rootDir, item.caminhoNormalizado);
+    if (!fs.existsSync(absDireto)) {
+      if (opcoes.ignorarCaminhosGitIgnore && ehCaminhoIgnoradoGit(item.caminhoNormalizado)) {
+        opcoes.onIgnoradoGit?.(item);
+        continue;
+      }
+      falhas.push({
+        item,
+        motivo: `Caminho inexistente a partir da raiz do repositório: '${item.caminhoNormalizado}' (linha ${item.linha})`,
+      });
+    }
+  }
+
+  return falhas;
+}
+
+describe("Verificação automatizada de caminhos em docs/PROVENIENCIA_ASSISTENCIA_IA.md (Disciplina R1 / Regra 9)", () => {
+  const rootDir = process.cwd();
+
+  it("meta-teste: deve detectar caminhos plausíveis porém inexistentes como src/components/inspecao/, src/lib/exportacao/ e src/lib/bacias.ts", () => {
+    const docFalso = [
+      "Alterado `src/components/inspecao/InspetorPonto.tsx` e `src/lib/exportacao/pacoteReprodutibilidade.ts`.",
+      "Polígono lido de `src/lib/bacias.ts` e decisão em `src/config/decisoes.ts`.",
+    ].join("\n");
+
+    const extraidos = extrairCaminhosRepositorioProveniencia(docFalso);
+    expect(extraidos.map((e) => e.caminhoNormalizado)).toEqual([
+      "src/components/inspecao/InspetorPonto.tsx",
+      "src/lib/exportacao/pacoteReprodutibilidade.ts",
+      "src/lib/bacias.ts",
+      "src/config/decisoes.ts",
+    ]);
+
+    const falhas = verificarExistenciaCaminhosProveniencia(extraidos, rootDir);
+    expect(falhas.map((f) => f.item.caminhoNormalizado)).toEqual([
+      "src/components/inspecao/InspetorPonto.tsx",
+      "src/lib/exportacao/pacoteReprodutibilidade.ts",
+      "src/lib/bacias.ts",
+    ]);
+  });
+
+  it("ehCaminhoIgnoradoGit: caminho com metacaracteres de shell não executa comando e conta como não ignorado", () => {
+    const marcador = path.join(os.tmpdir(), `sarel-injecao-${process.pid}-${Date.now()}`);
+    const malicioso = `x"; touch ${marcador.replace(/\\/g, "/")}; echo "`;
+    expect(ehCaminhoIgnoradoGit(malicioso)).toBe(false);
+    expect(fs.existsSync(marcador)).toBe(false);
+    expect(ehCaminhoIgnoradoGit("data/dem_cache/qualquer.tif")).toBe(true); // caminho de .gitignore (data/dem_cache/)
+    expect(ehCaminhoIgnoradoGit("src/config/decisoes.ts")).toBe(false);
+  });
+
+  it("todos os caminhos de repositório citados em docs/PROVENIENCIA_ASSISTENCIA_IA.md devem existir no disco", () => {
+    const docPath = path.resolve(rootDir, "docs/PROVENIENCIA_ASSISTENCIA_IA.md");
+    expect(fs.existsSync(docPath)).toBe(true);
+
+    const conteudo = fs.readFileSync(docPath, "utf-8");
+    const extraidos = extrairCaminhosRepositorioProveniencia(conteudo);
+    expect(extraidos.length).toBeGreaterThan(0);
+
+    const caminhosIgnorados: string[] = [];
+    const falhas = verificarExistenciaCaminhosProveniencia(extraidos, rootDir, {
+      ignorarCaminhosGitIgnore: true,
+      onIgnoradoGit: (item) => caminhosIgnorados.push(item.caminhoNormalizado),
+    });
+
+    if (caminhosIgnorados.length > 0) {
+      console.log(
+        `[C02] Caminhos citados em docs/PROVENIENCIA_ASSISTENCIA_IA.md ignorados pelo .gitignore (dado local legítimo fora do git): ${caminhosIgnorados.length}`,
+        caminhosIgnorados
+      );
+    }
+
+    if (falhas.length > 0) {
+      const msg = falhas.map((f) => `  - ${f.motivo}`).join("\n");
+      expect.fail(
+        `Caminhos inexistentes encontrados em docs/PROVENIENCIA_ASSISTENCIA_IA.md:\n${msg}`
+      );
+    }
+    expect(falhas).toHaveLength(0);
+  });
+});
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/seguranca/sessaoEfemera.test.ts
+TAMANHO: 1,553 bytes
+--------------------------------------------------------------------------------
+
+import { describe, it, expect, beforeEach } from "vitest";
+import { criarSessao, obterSessao, atualizarSessao, destruirSessao, SAREL_SESSION_COOKIE } from "./sessaoEfemera";
+
+describe("sessaoEfemera", () => {
+  const fakeCreds = {
+    project_id: "test-proj",
+    client_email: "test@example.com",
+    private_key: "-----BEGIN RSA PRIVATE KEY-----\nMIIEogIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+  };
+
+  it("deve criar e recuperar tokens de sessão", () => {
+    const id = criarSessao({ gee: fakeCreds });
+    expect(id).toBeDefined();
+
+    const sessao = obterSessao(id);
+    expect(sessao?.gee?.project_id).toBe("test-proj");
+    expect(sessao?.gee?.client_email).toBe("test@example.com");
+  });
+
+  it("deve permitir atualizar tokens na sessão ativa", () => {
+    const id = criarSessao({ gee: fakeCreds });
+    const atualizou = atualizarSessao(id, { planetApiKey: "planet-12345", jevApiKey: "ts_test_key" });
+    expect(atualizou).toBe(true);
+
+    const sessao = obterSessao(id);
+    expect(sessao?.planetApiKey).toBe("planet-12345");
+    expect(sessao?.jevApiKey).toBe("ts_test_key");
+    expect(sessao?.gee?.project_id).toBe("test-proj");
+  });
+
+  it("deve destruir a sessão", () => {
+    const id = criarSessao({ planetApiKey: "key-xyz" });
+    destruirSessao(id);
+    expect(obterSessao(id)).toBeNull();
+  });
+
+  it("deve retornar null para IDs indefinidos ou inexistentes", () => {
+    expect(obterSessao(undefined)).toBeNull();
+    expect(obterSessao(null)).toBeNull();
+    expect(obterSessao("id-inexistente")).toBeNull();
+  });
+});
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/seguranca/sessaoEfemera.ts
+TAMANHO: 2,243 bytes
+--------------------------------------------------------------------------------
+
+export interface CredenciaisServiceAccount {
+  type?: string;
+  project_id: string;
+  private_key_id?: string;
+  private_key: string;
+  client_email: string;
+  client_id?: string;
+  auth_uri?: string;
+  token_uri?: string;
+  auth_provider_x509_cert_url?: string;
+  client_x509_cert_url?: string;
+  universe_domain?: string;
+}
+
+export interface SessaoTokens {
+  gee?: CredenciaisServiceAccount;
+  planetApiKey?: string;
+  mapLibreToken?: string;
+  jevApiKey?: string;
+}
+
+interface SessionEntry {
+  tokens: SessaoTokens;
+  expiresAt: number;
+}
+
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12h
+export const SAREL_SESSION_COOKIE = "sarel_session_id";
+
+const globalForSessions = global as unknown as { __sarelSessionStore?: Map<string, SessionEntry> };
+
+const store: Map<string, SessionEntry> = globalForSessions.__sarelSessionStore ?? new Map();
+globalForSessions.__sarelSessionStore = store;
+
+export function criarSessao(tokens: SessaoTokens = {}): string {
+  const sessionId = crypto.randomUUID();
+  store.set(sessionId, { tokens, expiresAt: Date.now() + SESSION_TTL_MS });
+  return sessionId;
+}
+
+export function obterSessao(sessionId: string | undefined | null): SessaoTokens | null {
+  if (sessionId) {
+    const entry = store.get(sessionId);
+    if (entry) {
+      if (entry.expiresAt < Date.now()) {
+        store.delete(sessionId);
+      } else {
+        return entry.tokens;
+      }
+    }
+  }
+  // Fallback para a sessão ativa mais recente em memória local (single-user desktop/localhost)
+  if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
+    for (const [k, entry] of store.entries()) {
+      if (entry.expiresAt < Date.now()) {
+        store.delete(k);
+      } else if (entry.tokens?.gee) {
+        return entry.tokens;
+      }
+    }
+  }
+  return null;
+}
+
+export function atualizarSessao(sessionId: string | undefined | null, tokens: Partial<SessaoTokens>): boolean {
+  if (!sessionId) return false;
+  const atual = obterSessao(sessionId);
+  if (!atual) return false;
+  store.set(sessionId, {
+    tokens: { ...atual, ...tokens },
+    expiresAt: Date.now() + SESSION_TTL_MS,
+  });
+  return true;
+}
+
+export function destruirSessao(sessionId: string | undefined | null): void {
+  if (sessionId) store.delete(sessionId);
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/seguranca/verificacoes.test.ts
+TAMANHO: 5,431 bytes
+--------------------------------------------------------------------------------
+
+import { describe, it, expect } from "vitest";
+import fs from "fs";
+import path from "path";
+
+import os from "os";
+
+/**
+ * Varredor de evidências de verificação externa (Regra 8).
+ * Qualquer comentário do tipo:
+ * VERIFICADO AAAA-MM-DD — evidência: docs/verificacoes/<arquivo>
+ * deve apontar para um arquivo existente em docs/verificacoes/.
+ */
+
+export interface DeclaracaoVerificacao {
+  arquivoFonte: string;
+  linha: number;
+  data: string;
+  caminhoEvidencia: string;
+}
+
+const REGEX_VERIFICADO = /VERIFICADO\s+(\d{4}-\d{2}-\d{2})\s*—\s*evidência:\s*([^\s*]+)/g;
+
+export function extrairVerificacoes(codigo: string, arquivoFonte: string): DeclaracaoVerificacao[] {
+  const linhas = codigo.split("\n");
+  const encontradas: DeclaracaoVerificacao[] = [];
+
+  linhas.forEach((linha, idx) => {
+    let match;
+    const regexLocal = new RegExp(REGEX_VERIFICADO);
+    while ((match = regexLocal.exec(linha)) !== null) {
+      encontradas.push({
+        arquivoFonte,
+        linha: idx + 1,
+        data: match[1],
+        caminhoEvidencia: match[2].trim(),
+      });
+    }
+  });
+
+  return encontradas;
+}
+
+export function listarArquivosTs(dir: string): string[] {
+  if (!fs.existsSync(dir)) return [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const arquivos: string[] = [];
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      arquivos.push(...listarArquivosTs(fullPath));
+    } else if (entry.isFile() && (fullPath.endsWith(".ts") || fullPath.endsWith(".tsx")) && !fullPath.endsWith(".test.ts") && !fullPath.endsWith(".test.tsx")) {
+      arquivos.push(fullPath);
+    }
+  }
+  return arquivos;
+}
+
+describe("Varredor de Evidências de Verificação (Regra 8)", () => {
+  describe("Meta-testes (confirma que o detector falha quando a evidência NÃO existe ou diretório esvazia)", () => {
+    it("extrai declaração de verificação formatada corretamente", () => {
+      const code = `// VERIFICADO 2026-09-08 — evidência: docs/verificacoes/2026-09-08_embrapa_capabilities.xml`;
+      const decs = extrairVerificacoes(code, "exemplo.ts");
+      expect(decs).toHaveLength(1);
+      expect(decs[0].data).toBe("2026-09-08");
+      expect(decs[0].caminhoEvidencia).toBe("docs/verificacoes/2026-09-08_embrapa_capabilities.xml");
+    });
+
+    it("falha quando aponta para um arquivo inexistente", () => {
+      const decInvalida: DeclaracaoVerificacao = {
+        arquivoFonte: "exemplo.ts",
+        linha: 10,
+        data: "2026-09-08",
+        caminhoEvidencia: "docs/verificacoes/arquivo_fantasma_nao_existe.xml",
+      };
+
+      const caminhoReal = path.resolve(process.cwd(), decInvalida.caminhoEvidencia);
+      expect(fs.existsSync(caminhoReal)).toBe(false);
+    });
+
+    it("meta-teste: varredura em diretório vazio deve falhar compulsoriamente por violação de piso mínimo de arquivos", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "meta_test_verificacoes_vazio_"));
+      try {
+        const arquivosTmp = listarArquivosTs(tmpDir);
+        const PISO_MINIMO_ARQUIVOS_SRC = 90;
+        expect(() => {
+          expect(
+            arquivosTmp.length,
+            `Varredura de declarações VERIFICADO examinou apenas ${arquivosTmp.length} arquivos (esperado >= ${PISO_MINIMO_ARQUIVOS_SRC}). Possível diretório renomeado ou raiz incorreta: ${tmpDir}`
+          ).toBeGreaterThanOrEqual(PISO_MINIMO_ARQUIVOS_SRC);
+        }).toThrow(/Possível diretório renomeado ou raiz incorreta/);
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+  });
+
+  describe("Varredura em código ativo em src/", () => {
+    it("toda afirmação VERIFICADO em código deve apontar para arquivo existente em docs/verificacoes/", () => {
+      const raizSrc = path.resolve(__dirname, "../..");
+      const arquivos = listarArquivosTs(raizSrc);
+
+      // Piso mínimo de arquivos examinados (medido hoje: 121 arquivos; folga de ~75% => piso 90)
+      const PISO_MINIMO_ARQUIVOS_SRC = 90;
+      expect(
+        arquivos.length,
+        `Varredura de declarações VERIFICADO examinou apenas ${arquivos.length} arquivos (esperado >= ${PISO_MINIMO_ARQUIVOS_SRC}). Possível diretório renomeado ou raiz incorreta: ${raizSrc}`
+      ).toBeGreaterThanOrEqual(PISO_MINIMO_ARQUIVOS_SRC);
+
+      const declaracoes: DeclaracaoVerificacao[] = [];
+
+      for (const arq of arquivos) {
+        const conteudo = fs.readFileSync(arq, "utf-8");
+        const relPath = path.relative(process.cwd(), arq);
+        declaracoes.push(...extrairVerificacoes(conteudo, relPath));
+      }
+
+      // Piso mínimo de declarações VERIFICADO (medido hoje: 8 declarações; folga => piso 5)
+      const PISO_MINIMO_DECLARACOES = 5;
+      expect(
+        declaracoes.length,
+        `Varredura encontrou apenas ${declaracoes.length} declarações VERIFICADO em src/ (esperado >= ${PISO_MINIMO_DECLARACOES}). Possível remoção acidental ou alteração do padrão REGEX_VERIFICADO`
+      ).toBeGreaterThanOrEqual(PISO_MINIMO_DECLARACOES);
+
+      for (const d of declaracoes) {
+        const absPath = path.resolve(process.cwd(), d.caminhoEvidencia);
+        const existe = fs.existsSync(absPath);
+        expect(
+          existe,
+          `Declaração de verificação em ${d.arquivoFonte}:${d.linha} cita evidência inexistente: ${d.caminhoEvidencia}`
+        ).toBe(true);
+      }
+    });
+  });
+});

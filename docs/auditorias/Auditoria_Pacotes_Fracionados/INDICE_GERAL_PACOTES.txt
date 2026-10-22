@@ -1,0 +1,35 @@
+================================================================================
+ÍNDICE GERAL DE PACOTES FRACIONADOS PARA AUDITORIA EXTERNA
+Projeto SAREL v2 — PPGTCA 2026
+================================================================================
+
+Total de Pacotes Gerados: 25
+Limite Rígido de Tamanho: <= 90.000 bytes por arquivo
+
+Arquivo                                            | Tamanho      | Arquivos   | Status
+--------------------------------------------------------------------------------
+LOTE1_AUDITORIAS_E_DECISOES_PARTE1.txt             |   77.5 KB    | 1          | OK (<= 90 KB)
+LOTE1_AUDITORIAS_E_DECISOES_PARTE2.txt             |   80.8 KB    | 3          | OK (<= 90 KB)
+LOTE1_AUDITORIAS_E_DECISOES_PARTE3.txt             |   60.5 KB    | 3          | OK (<= 90 KB)
+LOTE1_AUDITORIAS_E_DECISOES_PARTE4.txt             |   27.7 KB    | 1          | OK (<= 90 KB)
+LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE1.txt  |   38.1 KB    | 14         | OK (<= 90 KB)
+LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE2.txt  |   61.6 KB    | 1          | OK (<= 90 KB)
+LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE3.txt  |   78.8 KB    | 7          | OK (<= 90 KB)
+LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE4.txt  |   85.9 KB    | 8          | OK (<= 90 KB)
+LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE5.txt  |   74.3 KB    | 12         | OK (<= 90 KB)
+LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE6.txt  |   50.3 KB    | 4          | OK (<= 90 KB)
+LOTE3_MOTORES_CIENTIFICOS_TS_PARTE1.txt            |   66.8 KB    | 7          | OK (<= 90 KB)
+LOTE3_MOTORES_CIENTIFICOS_TS_PARTE2.txt            |   86.2 KB    | 10         | OK (<= 90 KB)
+LOTE3_MOTORES_CIENTIFICOS_TS_PARTE3.txt            |   80.2 KB    | 8          | OK (<= 90 KB)
+LOTE3_MOTORES_CIENTIFICOS_TS_PARTE4.txt            |   34.6 KB    | 5          | OK (<= 90 KB)
+LOTE3_MOTORES_CIENTIFICOS_TS_PARTE5.txt            |   82.2 KB    | 3          | OK (<= 90 KB)
+LOTE3_MOTORES_CIENTIFICOS_TS_PARTE6.txt            |   80.5 KB    | 13         | OK (<= 90 KB)
+LOTE3_MOTORES_CIENTIFICOS_TS_PARTE7.txt            |   86.7 KB    | 3          | OK (<= 90 KB)
+LOTE3_MOTORES_CIENTIFICOS_TS_PARTE8.txt            |   62.8 KB    | 4          | OK (<= 90 KB)
+LOTE3_MOTORES_CIENTIFICOS_TS_PARTE9.txt            |   45.1 KB    | 3          | OK (<= 90 KB)
+LOTE4_API_STORE_E_COMPONENTES_CRITICOS_TSX_PARTE1.txt |   87.0 KB    | 10         | OK (<= 90 KB)
+LOTE4_API_STORE_E_COMPONENTES_CRITICOS_TSX_PARTE2.txt |   69.2 KB    | 8          | OK (<= 90 KB)
+LOTE4_API_STORE_E_COMPONENTES_CRITICOS_TSX_PARTE3.txt |   85.4 KB    | 4          | OK (<= 90 KB)
+LOTE5_PIPELINE_PYTHON_CIENTIFICO_PARTE1.txt        |   82.1 KB    | 4          | OK (<= 90 KB)
+LOTE5_PIPELINE_PYTHON_CIENTIFICO_PARTE2.txt        |   67.6 KB    | 5          | OK (<= 90 KB)
+LOTE5_PIPELINE_PYTHON_CIENTIFICO_PARTE3.txt        |   44.3 KB    | 2          | OK (<= 90 KB)

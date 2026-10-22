@@ -1,0 +1,2399 @@
+================================================================================
+PACOTE DE AUDITORIA EXTERNA — SAREL v2 (PPGTCA 2026)
+LOTE: LOTE3_MOTORES_CIENTIFICOS_TS | PARTE 6/9
+================================================================================
+Data de Geração: 21 de Outubro de 2026
+Limite por Arquivo: <= 90.000 bytes (Limite Rígido de Leitura)
+Total de Arquivos nesta parte: 13
+Arquivos contidos nesta parte:
+ - src/lib/fundiario/matcher.ts
+ - src/lib/fundiario/protecao.ts
+ - src/lib/fundiario/selecaoPontoElegivel.ts
+ - src/lib/rotulos/binarizacao.ts
+ - src/lib/rotulos/concordancia.ts
+ - src/lib/rotulos/ingestaoColetor.ts
+ - src/lib/rotulos/ingestaoDrone.ts
+ - src/lib/rotulos/ingestaoInterpretacao.ts
+ - src/lib/rotulos/ingestaoKobo.ts
+ - src/lib/rotulos/rotuloHumano.ts
+ - src/lib/rotulos/taxaErro.ts
+ - src/lib/padraoOuro/sitiosLocais.ts
+ - src/lib/padraoOuro/sitiosReferencia.ts
+================================================================================
+
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/fundiario/matcher.ts
+TAMANHO: 10,975 bytes
+--------------------------------------------------------------------------------
+
+import { execFile } from "child_process";
+import path from "path";
+import fs from "fs";
+import { ContextoFundiario, StatusFundiario } from "@/types/ponto";
+import { mascararDocumentoPessoal, validarMascaraTitularSncr } from "./protecao";
+import { dataCivilSaoPaulo } from "@/lib/tempo/datas";
+
+export interface RuralPropertyMatch {
+  status: StatusFundiario;
+  motivo?: string | null;
+  uf?: string;
+  municipio?: string;
+  carCode?: string;
+  propertyName?: string;
+  ownerName?: string;
+  incraRegistry?: string;
+  propertyAreaHa?: number | null;
+  ownerDocumentMasked?: string | null;
+  mensagem?: string;
+  dataConsulta?: string;
+  criterioAssociacao?: string;
+  sicarArquivoOrigem?: string;
+  sicarDataBase?: string;
+  sigefArquivoOrigem?: string;
+  sigefDataBase?: string;
+  sncrArquivoOrigem?: string;
+  sncrDataBase?: string;
+}
+
+/**
+ * Converte um resultado bruto de correspondência em um ContextoFundiario formal (SAREL).
+ * Garante que:
+ * - O status nunca seja colapsado (Invariante 5).
+ * - Documentos e titulares estejam sob proteção LGPD byte a byte.
+ * - Area nula nunca seja convertida em 0.
+ * - Motivo seja preenchido sempre que status != "encontrado".
+ */
+export function toContextoFundiario(
+  match: RuralPropertyMatch,
+  fallbackUf = "PR"
+): ContextoFundiario {
+  const status = match.status || "erro-na-consulta";
+  const motivo =
+    status === "encontrado"
+      ? null
+      : match.motivo || match.mensagem || `Status fundiário: ${status}`;
+
+  const area =
+    typeof match.propertyAreaHa === "number" && match.propertyAreaHa > 0
+      ? match.propertyAreaHa
+      : null;
+
+  return {
+    status,
+    motivo,
+    consultadoEm: match.dataConsulta || dataCivilSaoPaulo(),
+    criterioAssociacao: match.criterioAssociacao || null,
+    codigoCar: match.carCode || null,
+    titularMascarado: validarMascaraTitularSncr(match.ownerName),
+    documentoMascarado: mascararDocumentoPessoal(match.ownerDocumentMasked),
+    registroIncra: match.incraRegistry || null,
+    areaImovelHa: area,
+    bases: {
+      uf: match.uf || fallbackUf,
+      sicar: match.sicarArquivoOrigem,
+      sigef: match.sigefArquivoOrigem,
+      sncr: match.sncrArquivoOrigem,
+      sncrDataBase: match.sncrDataBase,
+    },
+  };
+}
+
+/**
+ * Executa o cruzamento espacial fundiário para um ponto geográfico.
+ * Retorna RuralPropertyMatch com status estrito:
+ * - "encontrado": polígono oficial intercepta a coordenada
+ * - "aproximado": associação por Bounding Box / centroide
+ * - "sem-correspondencia": consulta executada com sucesso, base cobre o local, mas não há imóvel
+ * - "base-nao-disponivel": base não instalada ou UF sem cobertura
+ * - "erro-na-consulta": falha técnica, timeout ou exceção no banco
+ */
+export async function matchRuralProperty(
+  latitude: number,
+  longitude: number,
+  ufOrDbPath?: string,
+  customDbPath?: string
+): Promise<RuralPropertyMatch> {
+  let uf: string | undefined;
+  let dbRelativePath = "data/fundiario_brasil.db";
+
+  if (ufOrDbPath) {
+    if (ufOrDbPath.endsWith(".db") || ufOrDbPath.includes("/") || ufOrDbPath.includes("\\")) {
+      dbRelativePath = ufOrDbPath;
+    } else {
+      uf = ufOrDbPath;
+      if (customDbPath) {
+        dbRelativePath = customDbPath;
+      }
+    }
+  }
+
+  // Validação de entrada
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
+    return {
+      status: "erro-na-consulta",
+      motivo: `Coordenadas inválidas: lat=${latitude}, lon=${longitude}`,
+      uf,
+    };
+  }
+
+  return new Promise((resolve) => {
+    try {
+      const projectRoot = process.cwd();
+      const scriptPath = path.join(projectRoot, "scripts", "spatial_owner_matcher.py");
+      const dbPath = path.isAbsolute(dbRelativePath)
+        ? dbRelativePath
+        : path.join(projectRoot, dbRelativePath);
+
+      if (!fs.existsSync(scriptPath)) {
+        return resolve({
+          status: "erro-na-consulta",
+          motivo: `Script de cruzamento não encontrado: ${scriptPath}`,
+          uf,
+        });
+      }
+
+      if (!fs.existsSync(dbPath)) {
+        return resolve({
+          status: "base-nao-disponivel",
+          motivo: `Base fundiária não encontrada em ${dbPath}`,
+          uf,
+        });
+      }
+
+      const pythonCmd = process.env.PYTHON_PATH || "python";
+      const args = [
+        scriptPath,
+        "--lat",
+        String(latitude),
+        "--lon",
+        String(longitude),
+        "--db",
+        dbPath,
+        ...(uf ? ["--uf", uf] : []),
+      ];
+
+      execFile(
+        pythonCmd,
+        args,
+        {
+          cwd: projectRoot,
+          timeout: 20000,
+          windowsHide: true,
+          env: {
+            ...process.env,
+            PYTHONIOENCODING: "utf-8",
+          },
+        },
+        (error, stdout, stderr) => {
+          if (error) {
+            return resolve({
+              status: "erro-na-consulta",
+              motivo: `Erro no subprocesso Python: ${error.message}${stderr ? " - " + stderr : ""}`,
+              uf,
+            });
+          }
+
+          try {
+            const trimmed = stdout.trim();
+            if (!trimmed) {
+              return resolve({
+                status: "erro-na-consulta",
+                motivo: "Subprocesso retornou saída vazia.",
+                uf,
+              });
+            }
+            const parsed = JSON.parse(trimmed);
+            if (!parsed || typeof parsed !== "object") {
+              return resolve({
+                status: "erro-na-consulta",
+                motivo: "Resposta inválida do subprocesso de consulta.",
+                uf,
+              });
+            }
+
+            const cleanResult: RuralPropertyMatch = {
+              status: parsed.status || "erro-na-consulta",
+              motivo: parsed.status !== "encontrado" ? (parsed.mensagem || parsed.motivo || null) : null,
+              uf: parsed.uf || uf,
+              municipio: parsed.municipio,
+              carCode: parsed.carCode,
+              propertyName: parsed.propertyName,
+              ownerName: parsed.ownerName,
+              incraRegistry: parsed.incraRegistry,
+              propertyAreaHa: typeof parsed.propertyAreaHa === "number" && parsed.propertyAreaHa > 0 ? parsed.propertyAreaHa : null,
+              ownerDocumentMasked: parsed.ownerDocumentMasked,
+              mensagem: parsed.mensagem,
+              dataConsulta: parsed.dataConsulta,
+              criterioAssociacao: parsed.criterioAssociacao,
+              sicarArquivoOrigem: parsed.sicarArquivoOrigem,
+              sicarDataBase: parsed.sicarDataBase,
+              sigefArquivoOrigem: parsed.sigefArquivoOrigem,
+              sigefDataBase: parsed.sigefDataBase,
+              sncrArquivoOrigem: parsed.sncrArquivoOrigem,
+              sncrDataBase: parsed.sncrDataBase,
+            };
+
+            return resolve(cleanResult);
+          } catch (parseErr) {
+            return resolve({
+              status: "erro-na-consulta",
+              motivo: `Falha ao interpretar JSON retornado: ${(parseErr as Error).message}`,
+              uf,
+            });
+          }
+        }
+      );
+    } catch (err) {
+      return resolve({
+        status: "erro-na-consulta",
+        motivo: `Exceção inesperada na chamada: ${(err as Error).message}`,
+        uf,
+      });
+    }
+  });
+}
+
+export interface BatchMatchItem {
+  id: string;
+  latitude: number;
+  longitude: number;
+  uf?: string;
+}
+
+/**
+ * Executa a consulta fundiária em lote para múltiplos pontos via Python/SQLite.
+ */
+export async function batchMatchRuralProperties(
+  items: BatchMatchItem[],
+  customDbPath?: string
+): Promise<Record<string, RuralPropertyMatch>> {
+  if (!items || items.length === 0) {
+    return {};
+  }
+
+  return new Promise((resolve) => {
+    try {
+      const projectRoot = process.cwd();
+      const scriptPath = path.join(projectRoot, "scripts", "spatial_owner_matcher.py");
+      const dbRelative = customDbPath || "data/fundiario_brasil.db";
+      const dbPath = path.isAbsolute(dbRelative)
+        ? dbRelative
+        : path.join(projectRoot, dbRelative);
+
+      if (!fs.existsSync(scriptPath) || !fs.existsSync(dbPath)) {
+        const statusFallback = !fs.existsSync(dbPath) ? "base-nao-disponivel" : "erro-na-consulta";
+        const res: Record<string, RuralPropertyMatch> = {};
+        for (const item of items) {
+          res[item.id] = {
+            status: statusFallback,
+            motivo: `Arquivo ${!fs.existsSync(dbPath) ? "de banco" : "de script"} não encontrado.`,
+            uf: item.uf,
+          };
+        }
+        return resolve(res);
+      }
+
+      const pythonCmd = process.env.PYTHON_PATH || "python";
+      const child = execFile(
+        pythonCmd,
+        [scriptPath, "--batch", "--db", dbPath],
+        {
+          cwd: projectRoot,
+          timeout: 120000,
+          maxBuffer: 10 * 1024 * 1024,
+          windowsHide: true,
+          env: {
+            ...process.env,
+            PYTHONIOENCODING: "utf-8",
+          },
+        },
+        (error, stdout, stderr) => {
+          if (error) {
+            const res: Record<string, RuralPropertyMatch> = {};
+            for (const item of items) {
+              res[item.id] = {
+                status: "erro-na-consulta",
+                motivo: `Erro subprocesso: ${error.message}${stderr ? " - " + stderr : ""}`,
+                uf: item.uf,
+              };
+            }
+            return resolve(res);
+          }
+
+          try {
+            const trimmed = stdout.trim();
+            if (!trimmed) {
+              const res: Record<string, RuralPropertyMatch> = {};
+              for (const item of items) {
+                res[item.id] = {
+                  status: "erro-na-consulta",
+                  motivo: "Saída vazia do subprocesso",
+                  uf: item.uf,
+                };
+              }
+              return resolve(res);
+            }
+            const parsed = JSON.parse(trimmed) as Record<string, RuralPropertyMatch>;
+            return resolve(parsed || {});
+          } catch (jsonErr) {
+            const res: Record<string, RuralPropertyMatch> = {};
+            for (const item of items) {
+              res[item.id] = {
+                status: "erro-na-consulta",
+                motivo: `Erro JSON parse: ${(jsonErr as Error).message}`,
+                uf: item.uf,
+              };
+            }
+            return resolve(res);
+          }
+        }
+      );
+
+      const payload = items.map((it) => ({
+        id: it.id,
+        lat: it.latitude,
+        lon: it.longitude,
+        uf: it.uf,
+      }));
+
+      if (child.stdin) {
+        child.stdin.write(JSON.stringify(payload));
+        child.stdin.end();
+      }
+    } catch (err) {
+      const res: Record<string, RuralPropertyMatch> = {};
+      for (const item of items) {
+        res[item.id] = {
+          status: "erro-na-consulta",
+          motivo: `Exceção batch: ${(err as Error).message}`,
+          uf: item.uf,
+        };
+      }
+      return resolve(res);
+    }
+  });
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/fundiario/protecao.ts
+TAMANHO: 2,361 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Proteção de Dados e Anonimização LGPD — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * Em estrita observância à Lei Geral de Proteção de Dados (Lei nº 13.709/2018):
+ * - Titulares do SNCR preservam a máscara oficial de auditoria byte a byte.
+ * - Documentos de identificação (CPF/CNPJ) NUNCA são expostos em claro.
+ * - Denominação de imóvel jamais é inventada quando ausente.
+ */
+
+/**
+ * Aplica máscara rígida em números de CPF ou CNPJ.
+ * Retorna null se documento for nulo ou vazio.
+ */
+export function mascararDocumentoPessoal(documento: string | null | undefined): string | null {
+  if (!documento || documento.trim().length === 0 || documento === "não consultado" || documento === "nao-consultado") {
+    return null;
+  }
+  const limpo = documento.replace(/\D/g, "");
+  if (limpo.length === 11) {
+    // CPF: ***.456.789-**
+    return `***.${limpo.slice(3, 6)}.${limpo.slice(6, 9)}-**`;
+  }
+  if (limpo.length === 14) {
+    // CNPJ: **.***.456/0001-**
+    return `**.***.${limpo.slice(5, 8)}/${limpo.slice(8, 12)}-**`;
+  }
+  // Se já for uma máscara (contendo '*')
+  if (documento.includes("*")) {
+    return documento.trim();
+  }
+  return "***.***.***-**";
+}
+
+/**
+ * Valida e preserva a máscara de titular do SNCR fornecida pelo INCRA byte a byte.
+ * Se o nome estiver em claro, mascara os sobrenomes com asteriscos.
+ * Retorna null se ausente.
+ */
+export function validarMascaraTitularSncr(titular: string | null | undefined): string | null {
+  if (!titular || titular.trim().length === 0 || titular === "não consultado" || titular === "nao-consultado") {
+    return null;
+  }
+  const trimmed = titular.trim();
+  if (trimmed.startsWith("NOME_EM_CLARO")) {
+    return `TITULAR ${"*".repeat(15)}`;
+  }
+  if (trimmed.includes("*")) {
+    return trimmed;
+  }
+  // Caso venha em claro acidentalmente, preserva primeiro nome e mascara o restante
+  const partes = trimmed.split(/\s+/);
+  if (partes.length <= 1) {
+    return `${partes[0].slice(0, 3)}*******`;
+  }
+  const primeiroNome = partes[0];
+  const restoTamanho = trimmed.length - primeiroNome.length - 1;
+  const tamanhoMascara = restoTamanho > 10 ? restoTamanho : 10;
+  return `${primeiroNome} ${"*".repeat(tamanhoMascara)}`;
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/fundiario/selecaoPontoElegivel.ts
+TAMANHO: 6,767 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Seleção de Ponto na Parte Elegível do Imóvel Rural — X3 (D16 / P07)
+ * SAREL v2.0 — PPGTCA 2026
+ * ============================================================================
+ *
+ * REGRAS METODOLÓGICAS:
+ * 1. O universo é o imóvel rural por necessidade de identificação de proprietário e
+ *    autorização de visita e sobrevoo (D16 / Y6).
+ * 2. O ponto amostral NÃO precisa coincidir com o centroide arbitrário do imóvel:
+ *    pode ser selecionado dentro da porção elegível do imóvel (declividade de 3 a 20%,
+ *    cobertura agrícola WorldCover 30/40 com concordância entre épocas, fora de água e urbano).
+ * 3. GUARDA ANTICIRCULARIDADE ESTRITA:
+ *    A escolha dentro do imóvel é estritamente estocástica entre as células elegíveis,
+ *    governada pelo PRNG determinístico da semente registrada (P07).
+ *    É expressamente proibido escolher ou influenciar a escolha por score de suscetibilidade,
+ *    JEV, severidade, prioridade ou qualquer indicador de detecção/suspeita de erosão (D16).
+ *    Qualquer tentativa de passar campos de predição/espectro proibidos dispara aborto imediato.
+ */
+
+import { CAMPOS_PROIBIDOS_MATRIZ_TREINO } from "@/lib/matriz/invariantes";
+import { criarPrng } from "@/lib/gee/estratificacao";
+
+const CAMPOS_PERMITIDOS_COORDENADA = new Set([
+  "latitude",
+  "longitude",
+  "codigoCar",
+  "declividadePct",
+  "classeWorldCover2020",
+  "classeWorldCover2021",
+  "kDefinido",
+  "foraAguaEUrbano",
+]);
+
+export const CAMPOS_PROIBIDOS_ANTICIRCULARIDADE = new Set<string>([
+  ...CAMPOS_PROIBIDOS_MATRIZ_TREINO.filter((c) => !CAMPOS_PERMITIDOS_COORDENADA.has(c)),
+  "scoreSuscetibilidade",
+  "scoreJev",
+  "laudoJev",
+  "severidade",
+  "scorePrioridade",
+  "classeAmostral",
+  "tipologia",
+  "fracaoErodida",
+  "fraçãoErodida",
+  "densidadeErosao",
+  "riscoErosao",
+]);
+
+export class ErroGuardaAnticircularidade extends Error {
+  public readonly campoDetectado: string;
+
+  constructor(campoDetectado: string, mensagem: string) {
+    super(`[GUARDA_ANTICIRCULARIDADE_VIOLADA:${campoDetectado}] ${mensagem}`);
+    this.name = "ErroGuardaAnticircularidade";
+    this.campoDetectado = campoDetectado;
+  }
+}
+
+export interface CelulaCandidataImovel {
+  latitude: number;
+  longitude: number;
+  declividadePct: number;
+  classeWorldCover2020?: number | null;
+  classeWorldCover2021?: number | null;
+  kDefinido?: boolean;
+  foraAguaEUrbano?: boolean;
+  [chave: string]: unknown;
+}
+
+export interface OpcoesSelecaoPontoElegivel {
+  semente: number;
+  declividadeMin?: number;
+  declividadeMax?: number;
+}
+
+/**
+ * Valida que o objeto avaliado não contém campos proibidos de predição/rastreio espectral.
+ * Lança ErroGuardaAnticircularidade caso qualquer campo proibido esteja presente.
+ */
+export function validarAusenciaCamposProibidos(registro: Record<string, unknown>): void {
+  for (const chave of Object.keys(registro)) {
+    if (CAMPOS_PROIBIDOS_ANTICIRCULARIDADE.has(chave) && registro[chave] !== undefined) {
+      throw new ErroGuardaAnticircularidade(
+        chave,
+        `Campo proibido '${chave}' detectado durante a seleção de ponto no imóvel. A escolha do ponto elegível jamais pode considerar suspeita de erosão (D16 / P07).`
+      );
+    }
+  }
+}
+
+/**
+ * Seleciona ao acaso determinístico (semente registrada P07) uma célula elegível dentro do imóvel rural.
+ * Garante que a escolha independa integralmente de suspeita de erosão (anticircularidade).
+ */
+export function selecionarPontoElegivelImovel(
+  celulas: CelulaCandidataImovel[],
+  opcoes: OpcoesSelecaoPontoElegivel
+): CelulaCandidataImovel | null {
+  const decMin = typeof opcoes.declividadeMin === "number" ? opcoes.declividadeMin : 3.0;
+  const decMax = typeof opcoes.declividadeMax === "number" ? opcoes.declividadeMax : 20.0;
+
+  // 1. Auditoria anticircularidade estrita sobre todas as células fornecidas
+  for (const c of celulas) {
+    validarAusenciaCamposProibidos(c);
+  }
+
+  // 2. Filtro estrito de elegibilidade física e biofísica de D07
+  const elegiveis = celulas.filter((c) => {
+    if (typeof c.declividadePct !== "number" || isNaN(c.declividadePct)) return false;
+    if (c.declividadePct < decMin || c.declividadePct > decMax) return false;
+
+    if (typeof c.classeWorldCover2020 === "number" && ![30, 40].includes(c.classeWorldCover2020)) {
+      return false;
+    }
+    if (typeof c.classeWorldCover2021 === "number" && ![30, 40].includes(c.classeWorldCover2021)) {
+      return false;
+    }
+    if (c.kDefinido === false) return false;
+    if (c.foraAguaEUrbano === false) return false;
+
+    return true;
+  });
+
+  if (elegiveis.length === 0) {
+    return null;
+  }
+
+  // 3. Ordenação canônica determinística independente da ordem de chegada
+  const ordenadas = [...elegiveis].sort((a, b) => {
+    if (a.latitude !== b.latitude) return a.latitude - b.latitude;
+    return a.longitude - b.longitude;
+  });
+
+  // 4. Sorteio aleatório uniforme com a semente registrada P07 (com warm-up para evitar viés de sementes pequenas no LCG)
+  const prng = criarPrng(opcoes.semente);
+  for (let w = 0; w < 3; w++) prng();
+  const indiceSorteado = Math.floor(prng() * ordenadas.length);
+
+  return ordenadas[indiceSorteado];
+}
+
+/**
+ * Gera uma grade de células candidatas no polígono/envelope do imóvel para permitir amostragem interna.
+ */
+export function gerarMalhaCelulasImovel(
+  imovel: {
+    latMin: number;
+    latMax: number;
+    lonMin: number;
+    lonMax: number;
+    lat: number;
+    lng: number;
+  },
+  amostradorTerreno?: (lat: number, lon: number) => { declividadePct: number; elevacaoMetros?: number }
+): CelulaCandidataImovel[] {
+  const dLat = imovel.latMax - imovel.latMin;
+  const dLon = imovel.lonMax - imovel.lonMin;
+
+  // Grade de 9 pontos (frações 0.25, 0.50, 0.75 em lat e lon cobrindo o interior do envelope)
+  const fracoes = [0.25, 0.5, 0.75];
+  const celulas: CelulaCandidataImovel[] = [];
+
+  for (const fLat of fracoes) {
+    for (const fLon of fracoes) {
+      const lat = Number((imovel.latMin + fLat * dLat).toFixed(6));
+      const lon = Number((imovel.lonMin + fLon * dLon).toFixed(6));
+      const terreno = amostradorTerreno ? amostradorTerreno(lat, lon) : { declividadePct: 0 };
+      celulas.push({
+        latitude: lat,
+        longitude: lon,
+        declividadePct: terreno.declividadePct,
+      });
+    }
+  }
+
+  // Inclui também o centroide como 10º candidato
+  const terrenoCentroide = amostradorTerreno
+    ? amostradorTerreno(imovel.lat, imovel.lng)
+    : { declividadePct: 0 };
+  celulas.push({
+    latitude: Number(imovel.lat.toFixed(6)),
+    longitude: Number(imovel.lng.toFixed(6)),
+    declividadePct: terrenoCentroide.declividadePct,
+  });
+
+  return celulas;
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/rotulos/binarizacao.ts
+TAMANHO: 2,114 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * Binarização canônica de rótulos conforme D26 e D03 (DEC-3c, DEC-4a).
+ * ÚNICA fonte de verdade para binarização em todo o repositório.
+ */
+
+export const LIMIAR_FRACAO_D26 = 0.25;
+
+export class ErroRotuloInvalido extends Error {
+  constructor(mensagem: string) {
+    super(mensagem);
+    this.name = "ErroRotuloInvalido";
+  }
+}
+
+/**
+ * Binariza fração erodida contínua [0, 1] de acordo com D26 (limiar >= 0.25 -> 1).
+ * Lança erro se o valor não for finito ou estiver fora do intervalo [0, 1].
+ */
+export function binarizarFracao(fracao: number): 0 | 1 {
+  if (typeof fracao !== "number" || !Number.isFinite(fracao) || isNaN(fracao)) {
+    throw new ErroRotuloInvalido(`Fração erodida não numérica ou não finita: ${fracao}`);
+  }
+  if (fracao < 0 || fracao > 1) {
+    throw new ErroRotuloInvalido(`Fração erodida fora do domínio [0, 1]: ${fracao}`);
+  }
+  return fracao >= LIMIAR_FRACAO_D26 ? 1 : 0;
+}
+
+/**
+ * Normaliza string removendo espaços externos e acentuação, e convertendo para minúsculas.
+ */
+function normalizarTexto(texto: string): string {
+  return texto
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+/**
+ * Binariza rótulo ordinal de acordo com o vocabulário canônico (D03 e DEC-3c).
+ * - "ausente" -> 0
+ * - "incipiente", "moderada", "severa" -> 1
+ * - Aliases legados exatos: "presente", "erosao", "erosão", "1" -> 1
+ * Qualquer outro texto (incluindo "controle", "spd", "0", "sem erosão", "indeterminado") lança ErroRotuloInvalido (DP-10).
+ */
+export function binarizarOrdinal(classe: string): 0 | 1 {
+  if (typeof classe !== "string") {
+    throw new ErroRotuloInvalido(`Classe de rótulo inválida: ${classe}`);
+  }
+
+  const norm = normalizarTexto(classe);
+
+  if (norm === "ausente") {
+    return 0;
+  }
+
+  if (
+    norm === "incipiente" ||
+    norm === "moderada" ||
+    norm === "severa" ||
+    norm === "presente" ||
+    norm === "erosao" ||
+    norm === "1"
+  ) {
+    return 1;
+  }
+
+  throw new ErroRotuloInvalido(
+    `Classe de rótulo '${classe}' não mapeável para alvo binário (DP-10/DEC-3)`
+  );
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/rotulos/concordancia.ts
+TAMANHO: 9,540 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Concordância Interobservador e Kappa de Cohen — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * FUNDAMENTAÇÃO CIENTÍFICA (PLANO V3, §12.2 E ACHADO S1-13):
+ * - Coeficiente Kappa de Cohen (1960) com patamares de Landis & Koch (1977).
+ * - Sem pares de observação -> Kappa ausente (null), NUNCA 0 (que afirmaria concordância pobre).
+ * - Se Pe = 1 (todas as observações idênticas na mesma classe) -> se Po = 1, Kappa = null (indefinido sem variância marginal).
+ * - Divergência sem desempate -> final: null; o ponto não entra na matriz de treino.
+ * - Consolidação não inventa confiança: se os observadores discordam na confiança, as origens mantêm cada qual a sua.
+ */
+
+import { ClasseRotulo, Rotulo, RotuloConsolidado } from "@/types/rotulo";
+
+export type GrauConcordancia =
+  | "pobre"
+  | "leve"
+  | "razoavel"
+  | "moderada"
+  | "substancial"
+  | "quase-perfeita"
+  | "indefinido";
+
+export interface ResultadoKappa {
+  kappa: number | null;
+  po: number | null;
+  pe: number | null;
+  grau: GrauConcordancia;
+  operacional: boolean;
+  intervaloConfianca95?: [number, number];
+  alertaBloqueante?: string;
+  matrizConfusao: Record<string, Record<string, number>>;
+  classes: string[];
+  nObservacoes: number;
+}
+
+export interface ParRotulo {
+  observador1: ClasseRotulo;
+  observador2: ClasseRotulo;
+}
+
+/**
+ * Classifica o Kappa segundo os patamares de Landis & Koch (1977).
+ */
+export function classificarLandisKoch(kappa: number | null): GrauConcordancia {
+  if (kappa === null) return "indefinido";
+  if (kappa < 0.0) return "pobre";
+  if (kappa <= 0.2) return "leve";
+  if (kappa <= 0.4) return "razoavel";
+  if (kappa <= 0.6) return "moderada";
+  if (kappa <= 0.8) return "substancial";
+  return "quase-perfeita";
+}
+
+/**
+ * Calcula o coeficiente Kappa de Cohen para pares de observações independentes.
+ */
+export function calcularKappaCohen(
+  pares: ParRotulo[],
+  classesPermitidas: string[]
+): ResultadoKappa {
+  const n = pares.length;
+
+  const matrizConfusao: Record<string, Record<string, number>> = {};
+  for (const c1 of classesPermitidas) {
+    matrizConfusao[c1] = {};
+    for (const c2 of classesPermitidas) {
+      matrizConfusao[c1][c2] = 0;
+    }
+  }
+
+  // Regra 2 & Achado S1-13: sem pares -> Kappa null, não 0
+  if (n === 0) {
+    return {
+      kappa: null,
+      po: null,
+      pe: null,
+      grau: "indefinido",
+      operacional: false,
+      alertaBloqueante: "Nenhum par de observações fornecido para medição de concordância.",
+      matrizConfusao,
+      classes: classesPermitidas,
+      nObservacoes: 0,
+    };
+  }
+
+  let concordanciasObservadas = 0;
+  for (const par of pares) {
+    if (!matrizConfusao[par.observador1]) {
+      matrizConfusao[par.observador1] = {};
+    }
+    const valAtual = matrizConfusao[par.observador1][par.observador2];
+    matrizConfusao[par.observador1][par.observador2] = typeof valAtual === "number" ? valAtual + 1 : 1;
+
+    if (par.observador1 === par.observador2) {
+      concordanciasObservadas++;
+    }
+  }
+
+  const po = concordanciasObservadas / n;
+
+  let pe = 0;
+  for (const c of classesPermitidas) {
+    let totalObs1 = 0;
+    let totalObs2 = 0;
+    for (const cOther of classesPermitidas) {
+      const v1 = matrizConfusao[c]?.[cOther];
+      if (typeof v1 === "number") totalObs1 += v1;
+      const v2 = matrizConfusao[cOther]?.[c];
+      if (typeof v2 === "number") totalObs2 += v2;
+    }
+    const prop1 = totalObs1 / n;
+    const prop2 = totalObs2 / n;
+    pe += prop1 * prop2;
+  }
+
+  // Se Pe = 1 (todas as observações na mesma categoria)
+  if (Math.abs(1 - pe) < 1e-9) {
+    return {
+      kappa: null,
+      po: Number(po.toFixed(4)),
+      pe: Number(pe.toFixed(4)),
+      grau: "indefinido",
+      operacional: false,
+      alertaBloqueante: "Concordância indeterminada: ausência de variabilidade marginal (todas as observações pertencem à mesma classe).",
+      matrizConfusao,
+      classes: classesPermitidas,
+      nObservacoes: n,
+    };
+  }
+
+  const kappa = (po - pe) / (1 - pe);
+  const grau = classificarLandisKoch(kappa);
+  const operacional = kappa >= 0.6;
+
+  // Cálculo do Erro-Padrão (SE) e Intervalo de Confiança de 95% (Cohen, 1960; Fleiss et al., 1969)
+  const varBruta = (po * (1 - po)) / (n * Math.pow(1 - pe, 2));
+  const seKappa = varBruta > 0 ? Math.sqrt(varBruta) : 0;
+  let ciInferior = Number((kappa - 1.96 * seKappa).toFixed(4));
+  if (ciInferior < -1) ciInferior = -1;
+  let ciSuperior = Number((kappa + 1.96 * seKappa).toFixed(4));
+  if (ciSuperior > 1) ciSuperior = 1;
+  const intervaloConfianca95: [number, number] = [ciInferior, ciSuperior];
+
+  let alertaBloqueante: string | undefined = undefined;
+  if (!operacional) {
+    alertaBloqueante = `ALERTA BLOQUEANTE: Índice Kappa de Cohen (${kappa.toFixed(3)}, IC 95% [${ciInferior.toFixed(2)}, ${ciSuperior.toFixed(2)}]) inferior a 0.60 (patamar mínimo para concordância substancial segundo Landis & Koch, 1977).`;
+  }
+
+  return {
+    kappa: Number(kappa.toFixed(4)),
+    po: Number(po.toFixed(4)),
+    pe: Number(pe.toFixed(4)),
+    grau,
+    operacional,
+    intervaloConfianca95,
+    alertaBloqueante,
+    matrizConfusao,
+    classes: classesPermitidas,
+    nObservacoes: n,
+  };
+}
+
+export const CLASSES_ROTULO_VALIDAS = new Set([
+  "erosao",
+  "erosão",
+  "presente",
+  "incipiente",
+  "moderada",
+  "severa",
+  "1",
+  "controle",
+  "ausente",
+  "spd",
+  "0",
+]);
+
+/**
+ * Validação estrita de rótulo (Regras 1, 2 e 4).
+ */
+export function validarRotulo(rotulo: Rotulo): { valido: boolean; motivo?: string } {
+  if (!rotulo.modalidade || !["interpretacao-visual", "campo", "drone"].includes(rotulo.modalidade)) {
+    return { valido: false, motivo: "Modalidade de rotulagem inválida ou não informada." };
+  }
+  if (!rotulo.observador || rotulo.observador.trim().length === 0) {
+    return { valido: false, motivo: "Identificação do observador é obrigatória." };
+  }
+  if (!rotulo.observadoEm || !/^\d{4}-\d{2}-\d{2}/.test(rotulo.observadoEm)) {
+    return { valido: false, motivo: "Data de observação (observadoEm) inválida. Esperado padrão YYYY-MM-DD." };
+  }
+  if (!rotulo.classe || rotulo.classe.trim().length === 0) {
+    return { valido: false, motivo: "Classe de rótulo vazia ou não informada." };
+  }
+  const classeNormalizada = rotulo.classe.trim().toLowerCase();
+  if (!CLASSES_ROTULO_VALIDAS.has(classeNormalizada)) {
+    return {
+      valido: false,
+      motivo: `Classe de rótulo '${rotulo.classe}' inválida ou sentinela não preenchida (Regra 4).`,
+    };
+  }
+  return { valido: true };
+}
+
+/**
+ * Resolve divergências entre observadores independentes.
+ * Se não houver consenso ou desempate válido -> final: null (não entra no treino).
+ */
+export function resolverDivergencia(
+  obs1: Rotulo,
+  obs2: Rotulo,
+  obs3?: Rotulo
+): RotuloConsolidado {
+  const v1 = validarRotulo(obs1);
+  if (!v1.valido) throw new Error(`Observador 1 inválido: ${v1.motivo}`);
+  const v2 = validarRotulo(obs2);
+  if (!v2.valido) throw new Error(`Observador 2 inválido: ${v2.motivo}`);
+
+  const origens = [obs1, obs2];
+  if (obs3) {
+    const v3 = validarRotulo(obs3);
+    if (!v3.valido) throw new Error(`Observador 3 (desempate) inválido: ${v3.motivo}`);
+    origens.push(obs3);
+  }
+
+  // Concordância direta entre obs1 e obs2
+  if (obs1.classe === obs2.classe) {
+    return {
+      final: {
+        classe: obs1.classe,
+        modalidade: obs1.modalidade,
+        observador: `${obs1.observador} + ${obs2.observador}`,
+        observadoEm: obs1.observadoEm,
+        cego: obs1.cego && obs2.cego,
+        // Não inventa confiança única se divergirem; preserva a informada se coincidirem
+        confianca: obs1.confianca === obs2.confianca ? obs1.confianca : undefined,
+        observacoes: [obs1.observacoes, obs2.observacoes].filter(Boolean).join(" | "),
+      },
+      origens,
+      kappa: null,
+      divergencia: "nenhuma",
+      papelConjunto: "treino",
+    };
+  }
+
+  // Discordância com desempate por terceiro
+  if (obs3) {
+    if (obs3.classe === obs1.classe) {
+      return {
+        final: {
+          classe: obs1.classe,
+          modalidade: obs1.modalidade,
+          observador: `${obs1.observador} (desempatado por ${obs3.observador})`,
+          observadoEm: obs1.observadoEm,
+          cego: obs1.cego && obs3.cego,
+          confianca: obs1.confianca,
+          observacoes: `[Desempate: ${obs3.observador} concordou com ${obs1.observador}] ${obs1.observacoes || ""}`.trim(),
+        },
+        origens,
+        kappa: null,
+        divergencia: "resolvida-por-terceiro",
+        papelConjunto: "treino",
+      };
+    }
+
+    if (obs3.classe === obs2.classe) {
+      return {
+        final: {
+          classe: obs2.classe,
+          modalidade: obs2.modalidade,
+          observador: `${obs2.observador} (desempatado por ${obs3.observador})`,
+          observadoEm: obs2.observadoEm,
+          cego: obs2.cego && obs3.cego,
+          confianca: obs2.confianca,
+          observacoes: `[Desempate: ${obs3.observador} concordou com ${obs2.observador}] ${obs2.observacoes || ""}`.trim(),
+        },
+        origens,
+        kappa: null,
+        divergencia: "resolvida-por-terceiro",
+        papelConjunto: "treino",
+      };
+    }
+  }
+
+  // Divergência pendente sem desempate -> final: null (não entra na matriz de treino)
+  return {
+    final: null,
+    origens,
+    kappa: null,
+    divergencia: "pendente",
+    papelConjunto: "treino",
+  };
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/rotulos/ingestaoColetor.ts
+TAMANHO: 10,698 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Ingestão de Arquivos do SAREL Coletor (Android GNSS / Fase B — D16)
+ * ============================================================================
+ *
+ * Módulo oficial de ingestão do SAREL Coletor (substitui o KoboCollect conforme D16 item 5).
+ * Processa o CSV de 28 colunas canônicas mais as métricas de qualidade posicional GNSS:
+ *
+ * 1. Tolerância Geodésica P03: 15 m nominal (1,5 pixel do Sentinel-2), aceito com ressalva
+ *    até 25 m quando houver obstáculo físico. Acima de 25 m é compulsoriamente rejeitado.
+ * 2. Média Estática GNSS: Avalia metodo_posicao ("media_estatica" vs "fix_unico"),
+ *    rejeita estritamente coordenadas simuladas (fix_simulado === true, Invariante 5 / P12).
+ * 3. Alvo Contínuo e Secundário (D26): Ingesta fracaoErodida [0, 1] e deriva alvoBinarioDerivado.
+ * 4. Blindagem Epistêmica: Rótulos ingeridos passam a compor a âncora de prevalência de campo
+ *    ou a massa de treino dependendo do selo do ponto.
+ */
+
+import { Rotulo } from "@/types/rotulo";
+import { binarizarFracao } from "./binarizacao";
+import { calcularDistanciaHaversineMetros, CoordenadaEsperada } from "./ingestaoKobo";
+
+export interface ItemColetorProcessado {
+  pontoCodigo: string;
+  rotulo: Rotulo;
+  distanciaGpsMetros: number;
+  qualidadeP03: "aceito" | "aceito_com_ressalva" | "rejeitado";
+  metodoPosicao: "media_estatica" | "fix_unico" | "desconhecido";
+  erroPadraoM?: number;
+  respostasBrutas: Record<string, unknown>;
+}
+
+export interface RegistroRejeitadoColetor {
+  registro: unknown;
+  motivo: string;
+}
+
+export interface ResultadoIngestaoColetor {
+  totalProcessados: number;
+  aceitos: ItemColetorProcessado[];
+  rejeitados: RegistroRejeitadoColetor[];
+  avisosQualidade: string[];
+}
+
+export const COLUNAS_CANONICAS_SAREL_COLETOR = [
+  "codigoPonto",
+  "classe",
+  "confianca",
+  "modalidade",
+  "observador",
+  "observadoEm",
+  "dataHoraCompleta",
+  "latitude",
+  "longitude",
+  "altitude",
+  "acuraciaGps",
+  "distanciaPlanejadaMetros",
+  "dentroToleranciaP03",
+  "cego",
+  "pedestais_raizes_expostas",
+  "exposicao_horizonte_b",
+  "espessura_horizonte_a_cm",
+  "crosta_selamento_superficial",
+  "microssulcos_iniciais",
+  "sedimentacao_sope",
+  "sistema_manejo",
+  "cobertura_vegetal_pct",
+  "presenca_terraco",
+  "estado_conservacao_terraco",
+  "sentido_plantio",
+  "observacoes",
+  "foto_nadir",
+  "foto_panoramica",
+] as const;
+
+/**
+ * Faz o parse e a validação completa de uma string CSV (ou array de objetos)
+ * originada do SAREL Coletor.
+ */
+export function ingestarSubmissoesSarelColetor(
+  conteudoOuRegistros: string | Record<string, unknown>[],
+  coordenadasEsperadas: Record<string, CoordenadaEsperada>
+): ResultadoIngestaoColetor {
+  const aceitos: ItemColetorProcessado[] = [];
+  const rejeitados: RegistroRejeitadoColetor[] = [];
+  const avisosQualidade: string[] = [];
+
+  let registros: Record<string, unknown>[] = [];
+
+  if (typeof conteudoOuRegistros === "string") {
+    const textoLimpo = conteudoOuRegistros.replace(/^\uFEFF/, "").trim();
+    if (!textoLimpo) {
+      return { totalProcessados: 0, aceitos, rejeitados, avisosQualidade };
+    }
+
+    const linhas = textoLimpo
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0 && !l.startsWith("#"));
+
+    if (linhas.length < 2) {
+      return {
+        totalProcessados: 0,
+        aceitos,
+        rejeitados: [{ registro: textoLimpo, motivo: "CSV sem linhas de dados ou cabeçalho ausente." }],
+        avisosQualidade,
+      };
+    }
+
+    // Detecta separador (; ou ,)
+    const primeiraLinha = linhas[0];
+    const separador = primeiraLinha.includes(";") ? ";" : ",";
+    const cabecalho = primeiraLinha.split(separador).map((c) => c.trim().replace(/^"|"$/g, ""));
+
+    for (let i = 1; i < linhas.length; i++) {
+      const valores = linhas[i].split(separador).map((v) => v.trim().replace(/^"|"$/g, ""));
+      const obj: Record<string, unknown> = {};
+      cabecalho.forEach((col, idx) => {
+        obj[col] = valores[idx] ?? "";
+      });
+      registros.push(obj);
+    }
+  } else if (Array.isArray(conteudoOuRegistros)) {
+    registros = conteudoOuRegistros;
+  }
+
+  for (let idx = 0; idx < registros.length; idx++) {
+    const reg = registros[idx];
+    const codigoPonto = String(reg.codigoPonto ?? reg.codigo ?? reg.idPonto ?? "").trim();
+
+    if (!codigoPonto) {
+      rejeitados.push({ registro: reg, motivo: "Campo obrigatório 'codigoPonto' ausente ou vazio." });
+      continue;
+    }
+
+    const esperada = coordenadasEsperadas[codigoPonto];
+    if (!esperada) {
+      rejeitados.push({
+        registro: reg,
+        motivo: `Ponto '${codigoPonto}' não cadastrado na malha amostral de referência do SAREL.`,
+      });
+      continue;
+    }
+
+    // Rejeição de Fix Simulado (P12 / Invariante 5)
+    if (reg.fix_simulado === true || reg.fix_simulado === "true" || reg.mock === true) {
+      rejeitados.push({
+        registro: reg,
+        motivo: `Coordenada GPS mockada ou simulada detectada (Invariante 5 / P12 proíbe posições não-físicas).`,
+      });
+      continue;
+    }
+
+    // Coordenadas coletadas
+    const latColetada = parseFloat(String(reg.latitude ?? "NaN"));
+    const lonColetada = parseFloat(String(reg.longitude ?? "NaN"));
+
+    if (isNaN(latColetada) || isNaN(lonColetada)) {
+      rejeitados.push({
+        registro: reg,
+        motivo: `Coordenadas geográficas inválidas ou não numéricas (lat: ${reg.latitude}, lon: ${reg.longitude}).`,
+      });
+      continue;
+    }
+
+    // Distância geodésica em relação ao ponto planejado
+    const distanciaCalculadaM = calcularDistanciaHaversineMetros(
+      esperada.latitude,
+      esperada.longitude,
+      latColetada,
+      lonColetada
+    );
+
+    // Avaliação do Critério P03: 15 m nominal, tolerância até 25 m
+    let qualidadeP03: "aceito" | "aceito_com_ressalva" | "rejeitado";
+    if (distanciaCalculadaM <= 15.0) {
+      qualidadeP03 = "aceito";
+    } else if (distanciaCalculadaM <= 25.0) {
+      qualidadeP03 = "aceito_com_ressalva";
+      avisosQualidade.push(
+        `Ponto ${codigoPonto}: desvio de ${distanciaCalculadaM.toFixed(1)} m excede o raio nominal (15 m), aceito sob ressalva (< 25 m).`
+      );
+    } else {
+      rejeitados.push({
+        registro: reg,
+        motivo: `Desvio geodésico excessivo (${distanciaCalculadaM.toFixed(1)} m > 25 m). Risco de contaminação de pixel adjacente.`,
+      });
+      continue;
+    }
+
+    // Classe de campo (D03)
+    const classeRaw = String(reg.classe ?? "").trim().toLowerCase();
+    const classeNormalizada =
+      classeRaw === "1" || classeRaw === "erosao" || classeRaw === "erosão"
+        ? "erosao"
+        : classeRaw === "0" || classeRaw === "controle"
+        ? "controle"
+        : "";
+
+    if (!classeNormalizada) {
+      rejeitados.push({
+        registro: reg,
+        motivo: `Classe observada inválida ('${reg.classe}'). Esperado 'erosao' ou 'controle'.`,
+      });
+      continue;
+    }
+
+    // Alvo contínuo D26 (fracaoErodida) e alvo binário derivado
+    let fracaoErodida: number | undefined = undefined;
+    if (reg.fracaoErodida !== undefined && reg.fracaoErodida !== "") {
+      const parsedFracao = parseFloat(String(reg.fracaoErodida));
+      if (isNaN(parsedFracao) || parsedFracao < 0 || parsedFracao > 1) {
+        rejeitados.push({
+          registro: reg,
+          motivo: `Fração erodida inválida ('${reg.fracaoErodida}'). Esperado valor contínuo em [0, 1].`,
+        });
+        continue;
+      }
+      fracaoErodida = Number(parsedFracao.toFixed(3));
+    }
+
+    const alvoBinarioDerivado: 0 | 1 =
+      fracaoErodida !== undefined
+        ? binarizarFracao(fracaoErodida)
+        : classeNormalizada === "erosao"
+        ? 1
+        : 0;
+
+    // Metadados periciais — Regras 1, 3 e C25 (proibido preenchimento por padrão)
+    const observador = String(reg.observador ?? "").trim();
+    if (!observador) {
+      rejeitados.push({
+        registro: reg,
+        motivo: `Observador pericial ausente no registro do ponto '${codigoPonto}'. Proibido preenchimento por padrão de sistema (C25).`,
+      });
+      continue;
+    }
+
+    const observadoEm = String(reg.observadoEm ?? "").trim();
+    if (!observadoEm) {
+      rejeitados.push({
+        registro: reg,
+        motivo: `Data de observação (observadoEm) ausente no registro do ponto '${codigoPonto}'. Proibido preenchimento por padrão de sistema (C25).`,
+      });
+      continue;
+    }
+
+    const confiancaRaw = String(reg.confianca ?? "").trim().toLowerCase();
+    if (confiancaRaw !== "alta" && confiancaRaw !== "media" && confiancaRaw !== "baixa") {
+      rejeitados.push({
+        registro: reg,
+        motivo: `Nível de confiança inválido ou ausente ('${reg.confianca}') no registro do ponto '${codigoPonto}'. Esperado: 'alta', 'media' ou 'baixa'.`,
+      });
+      continue;
+    }
+    const confianca: "alta" | "media" | "baixa" = confiancaRaw;
+
+    const cego = reg.cego === true || reg.cego === "true" || reg.cego === "1";
+
+    const rotulo: Rotulo = {
+      classe: classeNormalizada,
+      modalidade: "campo",
+      observador,
+      observadoEm,
+      confianca,
+      cego,
+      fracaoErodida,
+      alvoBinarioDerivado,
+      observacoes: reg.observacoes ? String(reg.observacoes).trim() : undefined,
+    };
+
+    const metodoPosicao =
+      reg.metodo_posicao === "media_estatica"
+        ? "media_estatica"
+        : reg.metodo_posicao === "fix_unico"
+        ? "fix_unico"
+        : "desconhecido";
+
+    const erroPadraoM =
+      reg.erro_padrao_m !== undefined && reg.erro_padrao_m !== ""
+        ? parseFloat(String(reg.erro_padrao_m))
+        : undefined;
+
+    aceitos.push({
+      pontoCodigo: codigoPonto,
+      rotulo,
+      distanciaGpsMetros: Number(distanciaCalculadaM.toFixed(2)),
+      qualidadeP03,
+      metodoPosicao,
+      erroPadraoM: erroPadraoM !== undefined && !isNaN(erroPadraoM) ? erroPadraoM : undefined,
+      respostasBrutas: reg,
+    });
+  }
+
+  return {
+    totalProcessados: registros.length,
+    aceitos,
+    rejeitados,
+    avisosQualidade,
+  };
+}
+
+/**
+ * Gera um template de CSV canônico do SAREL Coletor para importar pontos na campanha.
+ */
+export function gerarTemplateSarelColetorCsv(pontos: CoordenadaEsperada[]): string {
+  const colunas = COLUNAS_CANONICAS_SAREL_COLETOR.join(";");
+  const linhas = pontos.map((p) => {
+    // codigoPonto;classe;confianca;modalidade;observador;observadoEm;dataHoraCompleta;latitude;longitude;...
+    return `${p.codigo};;;campo;;;${new Date().toISOString()};${p.latitude.toFixed(6)};${p.longitude.toFixed(6)};;;;;true;;;;;;;;;;;;;`;
+  });
+  return "\uFEFF" + [colunas, ...linhas].join("\r\n");
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/rotulos/ingestaoDrone.ts
+TAMANHO: 7,617 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Ingestão de Validação por Drone — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * ESPECIFICAÇÃO MANDATÓRIA (PLANO V3, §12.1):
+ * - Dados de ortomosaicos de altíssima resolução por drone (Fase D).
+ * - Conjunto estritamente segregado como HELD-OUT (validação cega independente).
+ * - NUNCA misturado à matriz de treino do modelo supervisionado.
+ */
+
+import { MetadadosSensorDrone, Rotulo } from "@/types/rotulo";
+import { validarRotulo } from "./concordancia";
+
+export const METADADOS_PADRAO_SPECTRAL_2: MetadadosSensorDrone = {
+  tipoSensor: "multiespectral",
+  fabricanteVant: "Nuvem UAV",
+  modeloVant: "Spectral 2",
+  bandas: ["blue", "green", "red", "rededge", "nir"],
+  resolucaoGsdCm: 5.0,
+  georreferenciamento: "ppk-rtk",
+  calibracaoRadiometrica: true,
+};
+
+export interface ItemDroneProcessado {
+  codigoPonto: string;
+  rotulo: Rotulo;
+  resolucaoGsdCm?: number;
+  dataVoo?: string;
+  sensor?: string;
+  altitudeVooMetros?: number;
+  metadadosSensor?: MetadadosSensorDrone;
+  ndviMedioDrone?: number; // Média centimétrica no pixel orbital de 10m
+  ndreMedioDrone?: number; // Normalized Difference Red Edge
+  fracaoSoloNuEspectralPct?: number; // Fração de solo nu estimada por espectrometria de alta resolução
+  papelConjunto: "held-out"; // Inviolável
+}
+
+export interface ResultadoIngestaoDrone {
+  totalProcessados: number;
+  aceitos: ItemDroneProcessado[];
+  rejeitados: { registro: unknown; motivo: string }[];
+  avisosQualidade: string[];
+}
+
+export function ingestarValidacaoDrone(
+  entradas: Record<string, unknown>[]
+): ResultadoIngestaoDrone {
+  const aceitos: ItemDroneProcessado[] = [];
+  const rejeitados: { registro: unknown; motivo: string }[] = [];
+  const avisosQualidade: string[] = [];
+
+  for (const raw of entradas) {
+    const codigo = String(raw.codigoPonto || raw.codigo || raw.ponto_id || "").trim();
+    if (!codigo) {
+      rejeitados.push({ registro: raw, motivo: "Identificador 'codigoPonto' ausente." });
+      continue;
+    }
+
+    const classe = String(raw.classe || raw.erosao_observada || "").trim();
+    const observador = String(raw.observador || raw.piloto || raw.especialista || "").trim();
+    const observadoEm = String(raw.observadoEm || raw.data_voo || "").trim();
+
+    const rotulo: Rotulo = {
+      classe,
+      modalidade: "drone",
+      observador,
+      observadoEm,
+      cego: raw.cego === false ? false : true,
+      confianca: raw.confianca as "alta" | "media" | "baixa" | undefined,
+      observacoes: raw.observacoes ? String(raw.observacoes) : undefined,
+    };
+
+    const validacao = validarRotulo(rotulo);
+    if (!validacao.valido) {
+      rejeitados.push({ registro: raw, motivo: validacao.motivo || "Rótulo de drone inválido." });
+      continue;
+    }
+
+    const gsd = raw.resolucaoGsdCm !== undefined ? Number(raw.resolucaoGsdCm) : METADADOS_PADRAO_SPECTRAL_2.resolucaoGsdCm;
+
+    const metadadosSensor: MetadadosSensorDrone = {
+      tipoSensor: (raw.tipoSensor as "multiespectral" | "rgb") || METADADOS_PADRAO_SPECTRAL_2.tipoSensor,
+      fabricanteVant: String(raw.fabricanteVant || METADADOS_PADRAO_SPECTRAL_2.fabricanteVant),
+      modeloVant: String(raw.modeloVant || METADADOS_PADRAO_SPECTRAL_2.modeloVant),
+      bandas: Array.isArray(raw.bandas) ? (raw.bandas as MetadadosSensorDrone["bandas"]) : METADADOS_PADRAO_SPECTRAL_2.bandas,
+      resolucaoGsdCm: gsd,
+      georreferenciamento: (raw.georreferenciamento as "ppk-rtk" | "gnss-navegacao") || METADADOS_PADRAO_SPECTRAL_2.georreferenciamento,
+      calibracaoRadiometrica: raw.calibracaoRadiometrica !== undefined ? Boolean(raw.calibracaoRadiometrica) : METADADOS_PADRAO_SPECTRAL_2.calibracaoRadiometrica,
+    };
+
+    aceitos.push({
+      codigoPonto: codigo,
+      rotulo,
+      resolucaoGsdCm: gsd,
+      dataVoo: raw.dataVoo ? String(raw.dataVoo) : observadoEm,
+      sensor: raw.sensor ? String(raw.sensor) : `${metadadosSensor.modeloVant} (${metadadosSensor.tipoSensor})`,
+      altitudeVooMetros: raw.altitudeVooMetros !== undefined ? Number(raw.altitudeVooMetros) : undefined,
+      metadadosSensor,
+      ndviMedioDrone: raw.ndviMedioDrone !== undefined ? Number(raw.ndviMedioDrone) : undefined,
+      ndreMedioDrone: raw.ndreMedioDrone !== undefined ? Number(raw.ndreMedioDrone) : undefined,
+      fracaoSoloNuEspectralPct: raw.fracaoSoloNuEspectralPct !== undefined ? Number(raw.fracaoSoloNuEspectralPct) : undefined,
+      papelConjunto: "held-out",
+    });
+  }
+
+
+  return {
+    totalProcessados: entradas.length,
+    aceitos,
+    rejeitados,
+    avisosQualidade,
+  };
+}
+
+/**
+ * Guarda estrita de segregação espacial (D16 / D26 e Regra 4):
+ * Garante que um mesmo poligonoId NUNCA esteja simultaneamente nos conjuntos de treino e held-out.
+ * Mantém suporte a chamadas de guarda por modalidade/parâmetros de polígono.
+ */
+export function assegurarSegregacaoTreino(
+  param1: string | Array<{ poligonoId?: string | null; pontoId?: string; codigo?: string }>,
+  param2?: string | Array<{ poligonoId?: string | null; pontoId?: string; codigo?: string }>,
+  param3?: Set<string> | string[]
+): void {
+  // Chamada estrutural: assegurarSegregacaoTreino(linhasTreino, linhasHeldOut)
+  if (Array.isArray(param1) && Array.isArray(param2)) {
+    const obterRef = (l: any) => l.codigo || l.pontoId || l.id || "desconhecido";
+
+    const ehInvalido = (id?: string | null) =>
+      !id || typeof id !== "string" || id.trim() === "" || /indefinido/i.test(id);
+
+    const poligonosHeldOut = new Set<string>();
+    for (const linha of param2) {
+      const pid = linha.poligonoId;
+      if (ehInvalido(pid)) {
+        throw new Error(
+          `VIOLAÇÃO DE SEGREGAÇÃO (D16): Linha held-out '${obterRef(linha)}' com poligonoId ausente.`
+        );
+      }
+      poligonosHeldOut.add(pid!.trim());
+    }
+
+    for (const linha of param1) {
+      const pid = linha.poligonoId;
+      if (ehInvalido(pid)) {
+        throw new Error(
+          `VIOLAÇÃO DE SEGREGAÇÃO (D16): Linha de treino '${obterRef(linha)}' com poligonoId ausente.`
+        );
+      }
+      const idLimpo = pid!.trim();
+      if (poligonosHeldOut.has(idLimpo)) {
+        throw new Error(
+          `VIOLAÇÃO DE SEGREGAÇÃO (D16): O polígono '${idLimpo}' está presente simultaneamente nos conjuntos de treino e held-out.`
+        );
+      }
+    }
+    return;
+  }
+
+  // Chamada explícita de verificação: assegurarSegregacaoTreino(modalidade, poligonoId, poligonosHeldOut)
+  if (typeof param1 === "string" && typeof param2 === "string") {
+    if (!param2 || param2.trim() === "" || /indefinido/i.test(param2)) {
+      throw new Error("VIOLAÇÃO DE SEGREGAÇÃO (D16): poligonoId ausente.");
+    }
+    const heldOutSet = param3 instanceof Set ? param3 : new Set(param3 ?? []);
+    if (heldOutSet.has(param2)) {
+      throw new Error(
+        `VIOLAÇÃO DE SEGREGAÇÃO (D16): O polígono '${param2}' está presente simultaneamente nos conjuntos de treino e held-out.`
+      );
+    }
+    return;
+  }
+
+  // Chamada de guarda por modalidade (legado / pós-condição):
+  if (typeof param1 === "string") {
+    if (param1 === "drone") {
+      throw new Error(
+        "VIOLAÇÃO DA LEI FUNDAMENTAL (Regra 4 e §12.1): Observações da modalidade 'drone' são estritamente 'held-out' e nunca podem integrar a matriz de treino."
+      );
+    }
+    if (param1 === "campo") {
+      throw new Error(
+        "VIOLAÇÃO DE D16/D26: Observações da modalidade 'campo' nunca podem integrar a matriz de treino do modelo D26."
+      );
+    }
+  }
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/rotulos/ingestaoInterpretacao.ts
+TAMANHO: 4,559 bytes
+--------------------------------------------------------------------------------
+
+﻿/**
+ * ============================================================================
+ * Ingestão de Interpretação Visual — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * ESPECIFICAÇÃO (PLANO V3, §12.1):
+ * - Ingestão de fotointerpretação da Fase A com dois intérpretes independentes.
+ * - Consolidação estrita com cálculo de concordância Kappa de Cohen.
+ * - Divergências sem resolução ficam como 'pendente' com final: null (não entram no treino).
+ */
+
+import { Rotulo, RotuloConsolidado } from "@/types/rotulo";
+import {
+  calcularKappaCohen,
+  ParRotulo,
+  resolverDivergencia,
+  validarRotulo,
+  ResultadoKappa,
+} from "./concordancia";
+
+export interface ItemInterpretacaoVisual {
+  codigoPonto: string;
+  classe: string;
+  observador: string;
+  observadoEm: string;
+  cego?: boolean;
+  confianca?: "alta" | "media" | "baixa";
+  observacoes?: string;
+}
+
+export interface ResultadoIngestaoInterpretacao {
+  totalEntradas: number;
+  pontosProcessados: number;
+  consolidados: Record<string, RotuloConsolidado>;
+  pendenciasDivergencia: string[];
+  concordancia?: ResultadoKappa;
+  avisosQualidade: string[];
+  erros: string[];
+}
+
+export function ingestarInterpretacaoVisual(
+  itens: ItemInterpretacaoVisual[],
+  classesPermitidas: string[]
+): ResultadoIngestaoInterpretacao {
+  const avisosQualidade: string[] = [];
+  const erros: string[] = [];
+  const agrupadosPorPonto: Record<string, Rotulo[]> = {};
+
+  for (let idx = 0; idx < itens.length; idx++) {
+    const item = itens[idx];
+    const linha = idx + 1;
+
+    if (!item.codigoPonto || item.codigoPonto.trim().length === 0) {
+      erros.push(`Entrada #${linha}: 'codigoPonto' ausente.`);
+      continue;
+    }
+
+    const rotulo: Rotulo = {
+      classe: item.classe,
+      modalidade: "interpretacao-visual",
+      observador: item.observador,
+      observadoEm: item.observadoEm,
+      confianca: item.confianca,
+      observacoes: item.observacoes,
+      cego: item.cego ?? true,
+    };
+
+    const validacao = validarRotulo(rotulo);
+    if (!validacao.valido) {
+      erros.push(`Ponto ${item.codigoPonto} (entrada #${linha}): ${validacao.motivo}`);
+      continue;
+    }
+
+    if (!rotulo.cego) {
+      avisosQualidade.push(
+        `AVISO DE QUALIDADE: Rótulo do ponto ${item.codigoPonto} pelo intérprete '${rotulo.observador}' foi realizado em modo NÃO-CEGO (cego: false).`
+      );
+    }
+
+    if (!agrupadosPorPonto[item.codigoPonto]) {
+      agrupadosPorPonto[item.codigoPonto] = [];
+    }
+
+    // Evita duplicata do mesmo observador no mesmo ponto
+    const jaExiste = agrupadosPorPonto[item.codigoPonto].some(
+      (r) => r.observador.toLowerCase() === rotulo.observador.toLowerCase()
+    );
+    if (jaExiste) {
+      avisosQualidade.push(
+        `AVISO: Observador '${rotulo.observador}' duplicado no ponto ${item.codigoPonto}. Segunda entrada descartada.`
+      );
+      continue;
+    }
+
+    agrupadosPorPonto[item.codigoPonto].push(rotulo);
+  }
+
+  const consolidados: Record<string, RotuloConsolidado> = {};
+  const pendenciasDivergencia: string[] = [];
+  const paresKappa: ParRotulo[] = [];
+
+  for (const [codigo, obsList] of Object.entries(agrupadosPorPonto)) {
+    if (obsList.length === 1) {
+      // Ponto com apenas 1 observador
+      consolidados[codigo] = {
+        final: obsList[0],
+        origens: obsList,
+        kappa: null,
+        divergencia: "nenhuma",
+        papelConjunto: "treino",
+      };
+      avisosQualidade.push(`Ponto ${codigo} possui apenas 1 leitura de interpretação visual.`);
+    } else if (obsList.length === 2) {
+      paresKappa.push({ observador1: obsList[0].classe, observador2: obsList[1].classe });
+      const cons = resolverDivergencia(obsList[0], obsList[1]);
+      consolidados[codigo] = cons;
+      if (cons.divergencia === "pendente") {
+        pendenciasDivergencia.push(codigo);
+      }
+    } else if (obsList.length >= 3) {
+      paresKappa.push({ observador1: obsList[0].classe, observador2: obsList[1].classe });
+      const cons = resolverDivergencia(obsList[0], obsList[1], obsList[2]);
+      consolidados[codigo] = cons;
+      if (cons.divergencia === "pendente") {
+        pendenciasDivergencia.push(codigo);
+      }
+    }
+  }
+
+  const concordancia = paresKappa.length > 0 ? calcularKappaCohen(paresKappa, classesPermitidas) : undefined;
+
+  return {
+    totalEntradas: itens.length,
+    pontosProcessados: Object.keys(agrupadosPorPonto).length,
+    consolidados,
+    pendenciasDivergencia,
+    concordancia,
+    avisosQualidade,
+    erros,
+  };
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/rotulos/ingestaoKobo.ts
+TAMANHO: 7,184 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Ingestão de Formulários KoboToolbox de Campo — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * O QUÊ ESTE MÓDULO REALIZA:
+ * - Realiza a ingestão, validação geodésica e estruturação das respostas de campo
+ *   coletadas em dispositivos móveis via formulários KoboToolbox / ODK (Fase B).
+ * - Realiza o casamento biunívoco entre a coordenada GPS registrada in-situ pelo
+ *   aplicativo e a coordenada teórica planejada pelo SAREL na malha amostral.
+ * - Valida os metadados periciais: identificador do ponto, classe observada,
+ *   nome do avaliador, data/hora da inspeção e protocolo cego.
+ *
+ * POR QUÊ ESTE PROCEDIMENTO É EXIGIDO NA METODOLOGIA (SEÇÃO 3.3 & REGRA 4):
+ * 1. Tolerância Geodésica de Campo (Parâmetro P03 — 15 m nominal, tolerância até 25 m):
+ *    Na escala do pixel de 10 m do Sentinel-2 (área de 100 m²), o raio de casamento
+ *    geodésico P03 é fixado em 15 metros nominais (1,5 pixel) para preservar a integridade
+ *    da feição observada in-situ. Admite-se tolerância de até 25 m sob emissão de aviso
+ *    formal de qualidade quando obstáculos físicos (cercas, terraços ou carreadores)
+ *    impedirem o posicionamento exato. Desvios superiores a 25 m são rejeitados para
+ *    impedir a atribuição a pixels ou talhões adjacentes (Congalton & Green, 2019).
+ * 2. Inviolabilidade do Rótulo Humano (Regra 4 do SAREL):
+ *    A classe de campo ("erosao" vs "controle") constitui a verdade terrestre primária.
+ *    O sistema jamais pode alterar, imputar ou recalcular esse rótulo por heurísticas.
+ * 3. Base para Análise de Concordância Inter-Avaliadores:
+ *    A validação por protocolo cego com múltiplos técnicos avaliando os mesmos pontos
+ *    permite calcular o Coeficiente Kappa de Cohen de campo, demonstrando à banca
+ *    examinadora que o conceito de "erosão laminar ativa" é reprodutível entre peritos.
+ */
+
+import { Rotulo } from "@/types/rotulo";
+import { validarRotulo } from "./concordancia";
+
+export interface ItemKoboProcessado {
+  pontoCodigo: string;
+  rotulo: Rotulo;
+  distanciaGpsMetros?: number;
+  desvioAceitavel: boolean;
+  respostasBrutas: Record<string, unknown>;
+}
+
+export interface RegistroRejeitadoKobo {
+  registro: unknown;
+  motivo: string;
+}
+
+export interface ResultadoIngestaoKobo {
+  totalProcessados: number;
+  aceitos: ItemKoboProcessado[];
+  rejeitados: RegistroRejeitadoKobo[];
+  avisosQualidade: string[];
+}
+
+/**
+ * Distância Haversine em metros entre dois pontos geográficos.
+ */
+export function calcularDistanciaHaversineMetros(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371000;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+export interface CoordenadaEsperada {
+  codigo: string;
+  latitude: number;
+  longitude: number;
+}
+
+export const TOLERANCIA_GEODESICA_P03_NOMINAL_METROS = 15;
+export const TOLERANCIA_GEODESICA_P03_MAXIMA_METROS = 25;
+
+/**
+ * Ingere lote de submissões KoboToolbox validando raio de casamento P03.
+ * Tolerância P03 readequada: 15 m nominal (1,5 pixel Sentinel-2) com tolerância ampliada
+ * até 25 m sob aviso de qualidade; acima de 25 m o ponto é rejeitado (desvioAceitavel = false).
+ */
+export function ingestarSubmissoesKobo(
+  registros: Record<string, unknown>[],
+  coordenadasEsperadas: Record<string, CoordenadaEsperada>,
+  raioToleranciaMetros: number = TOLERANCIA_GEODESICA_P03_NOMINAL_METROS,
+  raioToleranciaMaximoMetros: number = TOLERANCIA_GEODESICA_P03_MAXIMA_METROS
+): ResultadoIngestaoKobo {
+  const aceitos: ItemKoboProcessado[] = [];
+  const rejeitados: RegistroRejeitadoKobo[] = [];
+  const avisosQualidade: string[] = [];
+
+  const limiarNominal = raioToleranciaMetros;
+  const limiarMaximo = Math.max(raioToleranciaMaximoMetros, limiarNominal);
+
+  for (const reg of registros) {
+    const codigo = String(reg.codigoPonto || reg.codigo || reg.ponto_id || "").trim();
+    if (!codigo) {
+      rejeitados.push({ registro: reg, motivo: "Identificador 'codigoPonto' ausente." });
+      continue;
+    }
+
+    const classe = String(reg.classe || reg.classe_erosao || "").trim();
+    if (!classe) {
+      rejeitados.push({
+        registro: reg,
+        motivo: `Ponto '${codigo}' sem classe de campo preenchida (linha de template não inspecionada in-situ — Regra 4).`,
+      });
+      continue;
+    }
+    const observador = String(reg.observador || reg.entrevistador || "").trim();
+    const observadoEm = String(reg.observadoEm || reg.data_observacao || "").trim();
+    const cego = reg.cego === false || String(reg.cego).trim().toLowerCase() === "false" ? false : true;
+
+    const rotulo: Rotulo = {
+      classe,
+      modalidade: "campo",
+      observador,
+      observadoEm,
+      cego,
+      confianca: reg.confianca ? (String(reg.confianca).trim() as "alta" | "media" | "baixa") : undefined,
+      observacoes: reg.observacoes ? String(reg.observacoes) : undefined,
+    };
+
+    const validacao = validarRotulo(rotulo);
+    if (!validacao.valido) {
+      rejeitados.push({ registro: reg, motivo: validacao.motivo || "Rótulo inválido." });
+      continue;
+    }
+
+    if (!cego) {
+      avisosQualidade.push(
+        `AVISO DE QUALIDADE: Ponto ${codigo} rotulado em campo em modo NÃO-CEGO (cego: false).`
+      );
+    }
+
+    let distanciaMetros: number | undefined = undefined;
+    let desvioAceitavel = true;
+
+    const geoArr = Array.isArray(reg._geolocation) ? (reg._geolocation as unknown[]) : null;
+    const latGps = Number(reg.latitude ?? geoArr?.[0]);
+    const lngGps = Number(reg.longitude ?? geoArr?.[1]);
+
+    if (!isNaN(latGps) && !isNaN(lngGps) && coordenadasEsperadas[codigo]) {
+      const esp = coordenadasEsperadas[codigo];
+      distanciaMetros = calcularDistanciaHaversineMetros(latGps, lngGps, esp.latitude, esp.longitude);
+      if (distanciaMetros > limiarMaximo) {
+        desvioAceitavel = false;
+        avisosQualidade.push(
+          `AVISO BLOQUEANTE: Ponto ${codigo} coletado a ${distanciaMetros.toFixed(1)} m da coordenada planejada (excede tolerância máxima P03 de ${limiarMaximo} m; nominal: ${limiarNominal} m).`
+        );
+      } else if (distanciaMetros > limiarNominal) {
+        desvioAceitavel = true;
+        avisosQualidade.push(
+          `AVISO DE QUALIDADE: Ponto ${codigo} coletado a ${distanciaMetros.toFixed(1)} m da coordenada planejada (tolerância nominal P03: ${limiarNominal} m; aceito sob tolerância ampliada de até ${limiarMaximo} m).`
+        );
+      }
+    }
+
+
+    aceitos.push({
+      pontoCodigo: codigo,
+      rotulo,
+      distanciaGpsMetros: distanciaMetros,
+      desvioAceitavel,
+      respostasBrutas: reg,
+    });
+  }
+
+  return {
+    totalProcessados: registros.length,
+    aceitos,
+    rejeitados,
+    avisosQualidade,
+  };
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/rotulos/rotuloHumano.ts
+TAMANHO: 2,084 bytes
+--------------------------------------------------------------------------------
+
+import type { ModalidadeRotulo, Rotulo } from "@/types/rotulo";
+import { binarizarFracao } from "./binarizacao";
+
+export interface InsumosRotuloHumano {
+  classe: string;
+  modalidade: ModalidadeRotulo;
+  observador: string;
+  observadoEm: string;
+  confianca: "alta" | "media" | "baixa";
+  modo: "inspecao" | "registro";
+  fracaoErodida: number;
+  observacoes?: string;
+}
+
+export type ResultadoValidacaoRotuloHumano =
+  | {
+      valido: true;
+      rotulo: Rotulo;
+    }
+  | {
+      valido: false;
+      motivo: string;
+    };
+
+/**
+ * Validação pericial estrita para gravação de rótulo humano (Inspetor / Protocolo Cego).
+ * Regras 1, 3 e C25: Nenhum campo de metadado (data da observação, observador) recebe
+ * valor padrão do sistema. Sem data de observação, a gravação é terminantemente recusada.
+ */
+export function validarEConstruirRotuloHumano(
+  insumos: InsumosRotuloHumano
+): ResultadoValidacaoRotuloHumano {
+  const observadoEm = insumos.observadoEm ? String(insumos.observadoEm).trim() : "";
+  if (!observadoEm) {
+    return {
+      valido: false,
+      motivo:
+        "Data da observação é obrigatória para registrar o laudo pericial (não pode ser preenchida por padrão — Regras 1 e 3 / C25).",
+    };
+  }
+
+  const observador = insumos.observador ? String(insumos.observador).trim() : "";
+  if (!observador) {
+    return {
+      valido: false,
+      motivo:
+        "Nome do observador pericial é obrigatório para gravação do rótulo (proibido valor-padrão de sistema — C25).",
+    };
+  }
+
+  const fracaoArmazenada = Number(insumos.fracaoErodida.toFixed(3));
+  const alvoBinarioDerivado: 0 | 1 = binarizarFracao(fracaoArmazenada);
+  const cegoDerivado = insumos.modo === "registro";
+
+  const rotulo: Rotulo = {
+    classe: insumos.classe,
+    modalidade: insumos.modalidade,
+    observador,
+    observadoEm,
+    cego: cegoDerivado,
+    confianca: insumos.confianca,
+    fracaoErodida: fracaoArmazenada,
+    alvoBinarioDerivado,
+    observacoes: insumos.observacoes?.trim() || undefined,
+  };
+
+  return {
+    valido: true,
+    rotulo,
+  };
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/rotulos/taxaErro.ts
+TAMANHO: 3,023 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Taxa de Erro da Interpretação Visual (A x B) — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * ESPECIFICAÇÃO CIENTÍFICA (PLANO V3, §12.3 E PLANEJAMENTO V3 §8, FASE C):
+ * Na subamostra que possui AMBOS os rótulos:
+ * - Fase A (fotointerpretação visual de imagem satélite)
+ * - Fase B (auditoria de verdade de campo)
+ *
+ * Calcula a matriz de confusão A x B e a taxa de erro por classe da fotointerpretação,
+ * permitindo a calibração de pesos amostrais ou ponderação na modelagem supervisionada.
+ * Apenas pontos com ambas as modalidades são computados.
+ */
+
+import { Rotulo } from "@/types/rotulo";
+
+export interface TaxaErroClasse {
+  classe: string;
+  totalAmostrasCampo: number;
+  acertosInterpretacao: number;
+  errosInterpretacao: number;
+  taxaErroPct: number; // (erros / total) * 100
+}
+
+export interface RelatorioTaxaErroInterpretacao {
+  totalPontosCruzados: number;
+  matrizConfusaoAxB: Record<string, Record<string, number>>; // [campo][interpretacao]
+  taxasPorClasse: Record<string, TaxaErroClasse>;
+  acuraciaGlobalPct: number;
+}
+
+/**
+ * Calcula a matriz de confusão e taxas de erro entre fotointerpretação (A) e campo (B).
+ */
+export function calcularTaxaErroInterpretacao(
+  pares: { pontoCodigo: string; rotuloCampo: Rotulo; rotuloInterpretacao: Rotulo }[],
+  classesPermitidas: string[]
+): RelatorioTaxaErroInterpretacao {
+  const matriz: Record<string, Record<string, number>> = {};
+  for (const cCampo of classesPermitidas) {
+    matriz[cCampo] = {};
+    for (const cInterp of classesPermitidas) {
+      matriz[cCampo][cInterp] = 0;
+    }
+  }
+
+  let totalAcertos = 0;
+
+  for (const par of pares) {
+    const cB = par.rotuloCampo.classe;
+    const cA = par.rotuloInterpretacao.classe;
+
+    if (!matriz[cB]) {
+      matriz[cB] = {};
+    }
+    const vAtual = matriz[cB][cA];
+    matriz[cB][cA] = typeof vAtual === "number" ? vAtual + 1 : 1;
+
+    if (cB === cA) {
+      totalAcertos++;
+    }
+  }
+
+  const taxasPorClasse: Record<string, TaxaErroClasse> = {};
+
+  for (const c of classesPermitidas) {
+    let totalCampo = 0;
+    let acertos = 0;
+
+    for (const cInterp of classesPermitidas) {
+      const v = matriz[c]?.[cInterp];
+      const qtd = typeof v === "number" ? v : 0;
+      totalCampo += qtd;
+      if (cInterp === c) {
+        acertos = qtd;
+      }
+    }
+
+    const erros = totalCampo - acertos;
+    const taxaPct = totalCampo > 0 ? Number(((erros / totalCampo) * 100).toFixed(2)) : 0;
+
+    taxasPorClasse[c] = {
+      classe: c,
+      totalAmostrasCampo: totalCampo,
+      acertosInterpretacao: acertos,
+      errosInterpretacao: erros,
+      taxaErroPct: taxaPct,
+    };
+  }
+
+  const n = pares.length;
+  const acuraciaGlobal = n > 0 ? Number(((totalAcertos / n) * 100).toFixed(2)) : 0;
+
+  return {
+    totalPontosCruzados: n,
+    matrizConfusaoAxB: matriz,
+    taxasPorClasse,
+    acuraciaGlobalPct: acuraciaGlobal,
+  };
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/padraoOuro/sitiosLocais.ts
+TAMANHO: 4,432 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Carregador de Sítios de Referência Locais (DEC-10, Opção C)
+ * ============================================================================
+ *
+ * Lê os dados confidenciais dos sítios de aferição (códigos CAR reais e geometrias)
+ * a partir de `data/sitios_referencia_local.json` (fora do versionamento Git).
+ *
+ * Integridade garantida por SHA-256 (via arquivo `.sha256` ou env SAREL_SITIOS_SHA256).
+ * Validação estrutural via Zod.
+ * Em caso de ausência ou falha de integridade, devolve estado "indisponivel" gracioso.
+ * NUNCA lança exceções não tratadas.
+ */
+
+import fs from "node:fs";
+import path from "node:path";
+import crypto from "node:crypto";
+import { z } from "zod";
+
+export interface SitioLocal {
+  id: string;
+  codigoCar: string;
+  nomeIdentificador?: string;
+  municipio?: string;
+  bbox?: [number, number, number, number];
+  geometry: {
+    type: "Polygon";
+    coordinates: number[][][];
+  };
+  [key: string]: unknown;
+}
+
+export interface ResultadoSitiosLocais {
+  estado: "disponivel" | "indisponivel";
+  causa?: string;
+  sitios: SitioLocal[];
+}
+
+const SitioLocalSchema = z
+  .object({
+    id: z.string().min(1),
+    codigoCar: z.string().min(1),
+    nomeIdentificador: z.string().optional(),
+    municipio: z.string().optional(),
+    bbox: z
+      .tuple([z.number(), z.number(), z.number(), z.number()])
+      .optional(),
+    geometry: z.object({
+      type: z.literal("Polygon"),
+      coordinates: z
+        .array(z.array(z.array(z.number())))
+        .refine(
+          (rings) =>
+            rings.length > 0 &&
+            rings[0].length >= 4 &&
+            rings[0].every((pt) => pt.length >= 2),
+          {
+            message:
+              "Polygon geometry deve ter anel exterior com pelo menos 4 pontos",
+          }
+        ),
+    }),
+  })
+  .passthrough();
+
+const ArquivoSitiosSchema = z
+  .object({
+    versao: z.number().optional(),
+    aviso: z.string().optional(),
+    gerado_em: z.string().optional(),
+    sitios: z.array(SitioLocalSchema).min(1),
+  })
+  .passthrough();
+
+export function carregarSitiosLocais(): ResultadoSitiosLocais {
+  try {
+    const dataDir =
+      process.env.SAREL_DATA_DIR || path.join(process.cwd(), "data");
+    const jsonPath = path.join(dataDir, "sitios_referencia_local.json");
+    const shaPath = jsonPath + ".sha256";
+
+    if (!fs.existsSync(jsonPath)) {
+      return {
+        estado: "indisponivel",
+        causa: "dado-local-ausente",
+        sitios: [],
+      };
+    }
+
+    let hashEsperado: string | null = null;
+    if (
+      process.env.SAREL_SITIOS_SHA256 &&
+      process.env.SAREL_SITIOS_SHA256.trim()
+    ) {
+      hashEsperado = process.env.SAREL_SITIOS_SHA256.trim()
+        .split(/\s+/)[0]
+        .toLowerCase();
+    } else if (fs.existsSync(shaPath)) {
+      const conteudoSha = fs.readFileSync(shaPath, "utf8").trim();
+      const primeiroToken = conteudoSha.split(/\s+/)[0];
+      if (primeiroToken) {
+        hashEsperado = primeiroToken.toLowerCase();
+      }
+    }
+
+    if (!hashEsperado) {
+      return {
+        estado: "indisponivel",
+        causa: "integridade",
+        sitios: [],
+      };
+    }
+
+    const fileBuffer = fs.readFileSync(jsonPath);
+    const hashReal = crypto
+      .createHash("sha256")
+      .update(fileBuffer)
+      .digest("hex")
+      .toLowerCase();
+
+    if (hashReal !== hashEsperado) {
+      return {
+        estado: "indisponivel",
+        causa: "integridade",
+        sitios: [],
+      };
+    }
+
+    if (process.env.SAREL_SITIOS_SHA256 && fs.existsSync(shaPath)) {
+      const shaDoArquivo = fs
+        .readFileSync(shaPath, "utf8")
+        .trim()
+        .split(/\s+/)[0]
+        .toLowerCase();
+      if (shaDoArquivo !== hashReal) {
+        return {
+          estado: "indisponivel",
+          causa: "integridade",
+          sitios: [],
+        };
+      }
+    }
+
+    const conteudoJson = fileBuffer.toString("utf8");
+    const parsed = JSON.parse(conteudoJson);
+
+    const validacao = ArquivoSitiosSchema.safeParse(parsed);
+    if (!validacao.success) {
+      return {
+        estado: "indisponivel",
+        causa: "integridade",
+        sitios: [],
+      };
+    }
+
+    return {
+      estado: "disponivel",
+      sitios: validacao.data.sitios as SitioLocal[],
+    };
+  } catch (_erro) {
+    return {
+      estado: "indisponivel",
+      causa: "integridade",
+      sitios: [],
+    };
+  }
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/padraoOuro/sitiosReferencia.ts
+TAMANHO: 7,145 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Sítios de Referência Padrão-Ouro (VANT/Drone) — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * O QUÊ ESTE MÓDULO DEFINE:
+ * - Cadastra os metadados metodológicos e instrumentais dos 4 sítios contínuos
+ *   de referência territorial (10 a 50 hectares cada) nos municípios de Céu Azul
+ *   e Medianeira (Bacia Hidrográfica do Paraná 3).
+ * - Apenas metadados não identificantes e identificadores opacos (CAR-OPACO-0n)
+ *   permanecem versionados no repositório Git.
+ * - Os dados cadastrais reais (código CAR completo, bounding boxes e perímetros
+ *   vetoriais) são estritamente locais, residindo em `data/sitios_referencia_local.json`
+ *   (fora do controle de versão, distribuídos via banco complementar Google Drive / Instalador).
+ *
+ * POR QUÊ POLÍGONOS CONTÍNUOS DE 10 A 50 HA FORAM ESCOLHIDOS (SEÇÃO 3.2):
+ * 1. Superação da Falácia da Microparcela:
+ *    Estudos clássicos de erosão frequentemente apoiam-se em parcelas experimentais
+ *    reduzidas (ex.: padrão Wischmeier de 22 x 4 m), que desconsideram o comportamento
+ *    real da enxurrada na escala da paisagem agrícola. Polígonos de 10 a 50 ha englobam
+ *    o comprimento de rampa real, a confluência de fluxos, terraços agrícolas e carreadores.
+ * 2. Captura da Catena Completa (Gradiente Topo-Sequencial):
+ *    A erosão laminar não é um evento pontual estático; ela é um processo dinâmico
+ *    que se intensifica no terço médio da rampa (8 a 18% de declividade) e desacelera
+ *    no sopé, gerando leques de deposição coluvial. Apenas áreas contínuas permitem
+ *    validar se a IA é capaz de distinguir o ponto de desprendimento do ponto de acúmulo.
+ * 3. Base Fundiária e Pericial Real:
+ *    Os dados cadastrais e espaciais reais de cada sítio ficam em arquivo local
+ *    (`data/sitios_referencia_local.json`), preservando a privacidade fundiária (LGPD)
+ *    enquanto asseguram a autenticidade pericial das missões de validação.
+ */
+
+export interface CompartimentoTopoSequencial {
+  nome: 'topo_estavel' | 'encosta_escoamento' | 'baixada_deposicao';
+  descricao: string;
+  declividadeTipicaPct: string;
+  processoPredominante: string;
+}
+
+export interface SitioPadraoOuro {
+  id: string;
+  identificadorOpaco: string;
+  nomeIdentificador: string;
+  municipio: 'Ceu Azul' | 'Medianeira';
+  baciaHidrografica: string;
+  areaHa: number;
+  altitudeMediaM: number;
+  resolucaoVantGsdCm: number;
+  resolucaoGradeSateliteM: number;
+  totalPixels10mEstimados: number;
+  papelConjunto: 'held-out';
+  vantModelo?: string;
+  fabricanteVant?: string;
+  sensorTipo?: string;
+  bandasMultiespectrais?: ("blue" | "green" | "red" | "rededge" | "nir")[];
+  georreferenciamento?: string;
+  calibracaoRadiometrica?: string;
+  compartimentos?: CompartimentoTopoSequencial[];
+  properties?: SitioPadraoOuro;
+}
+
+export type SitioPadraoOuroProperties = SitioPadraoOuro;
+
+export const COMPARTIMENTOS_PADRAO: CompartimentoTopoSequencial[] = [
+  {
+    nome: 'topo_estavel',
+    descricao: 'Divisor de águas com declividade suave, área de baixa energia erosiva e infiltração.',
+    declividadeTipicaPct: '2% a 6%',
+    processoPredominante: 'Infiltração e escoamento laminar incipiente',
+  },
+  {
+    nome: 'encosta_escoamento',
+    descricao: 'Meia encosta com aceleração do escoamento superficial concentrado e arraste de partículas.',
+    declividadeTipicaPct: '8% a 18%',
+    processoPredominante: 'Cisalhamento hidráulico e desprendimento por salpico/escoamento',
+  },
+  {
+    nome: 'baixada_deposicao',
+    descricao: 'Baixada e sopé de encosta com desaceleração do fluxo e acúmulo de sedimentos coluviais.',
+    declividadeTipicaPct: '1% a 5%',
+    processoPredominante: 'Sedimentação coluvial e convergência de umidade',
+  },
+];
+
+const SITIO_1_DADOS: SitioPadraoOuro = {
+  id: "sitio-ouro-01",
+  identificadorOpaco: "CAR-OPACO-01",
+  nomeIdentificador: "Sitio Alfa (Medianeira)",
+  municipio: "Medianeira",
+  baciaHidrografica: "Bacia Hidrográfica do Paraná 3",
+  areaHa: 49.94,
+  altitudeMediaM: 395,
+  resolucaoVantGsdCm: 7.5,
+  resolucaoGradeSateliteM: 10,
+  totalPixels10mEstimados: 4994,
+  papelConjunto: "held-out",
+  vantModelo: "Spectral 2 (Nuvem UAV)",
+  fabricanteVant: "Nuvem UAV",
+  sensorTipo: "Multiespectral 5 bandas (Azul, Verde, Vermelho, RedEdge, NIR)",
+  bandasMultiespectrais: ["blue", "green", "red", "rededge", "nir"],
+  georreferenciamento: "PPK/RTK centimétrico",
+  calibracaoRadiometrica: "Sensor DLS + Painel de Reflectância Difusa",
+};
+SITIO_1_DADOS.properties = SITIO_1_DADOS;
+
+const SITIO_2_DADOS: SitioPadraoOuro = {
+  id: "sitio-ouro-02",
+  identificadorOpaco: "CAR-OPACO-02",
+  nomeIdentificador: "Sitio Beta (Medianeira)",
+  municipio: "Medianeira",
+  baciaHidrografica: "Bacia Hidrográfica do Paraná 3",
+  areaHa: 49.54,
+  altitudeMediaM: 410,
+  resolucaoVantGsdCm: 7.5,
+  resolucaoGradeSateliteM: 10,
+  totalPixels10mEstimados: 4954,
+  papelConjunto: "held-out",
+  vantModelo: "Spectral 2 (Nuvem UAV)",
+  fabricanteVant: "Nuvem UAV",
+  sensorTipo: "Multiespectral 5 bandas (Azul, Verde, Vermelho, RedEdge, NIR)",
+  bandasMultiespectrais: ["blue", "green", "red", "rededge", "nir"],
+  georreferenciamento: "PPK/RTK centimétrico",
+  calibracaoRadiometrica: "Sensor DLS + Painel de Reflectância Difusa",
+};
+SITIO_2_DADOS.properties = SITIO_2_DADOS;
+
+const SITIO_3_DADOS: SitioPadraoOuro = {
+  id: "sitio-ouro-03",
+  identificadorOpaco: "CAR-OPACO-03",
+  nomeIdentificador: "Sitio Gama (Ceu Azul)",
+  municipio: "Ceu Azul",
+  baciaHidrografica: "Bacia Hidrográfica do Paraná 3",
+  areaHa: 49.54,
+  altitudeMediaM: 580,
+  resolucaoVantGsdCm: 7.5,
+  resolucaoGradeSateliteM: 10,
+  totalPixels10mEstimados: 4954,
+  papelConjunto: "held-out",
+  vantModelo: "Spectral 2 (Nuvem UAV)",
+  fabricanteVant: "Nuvem UAV",
+  sensorTipo: "Multiespectral 5 bandas (Azul, Verde, Vermelho, RedEdge, NIR)",
+  bandasMultiespectrais: ["blue", "green", "red", "rededge", "nir"],
+  georreferenciamento: "PPK/RTK centimétrico",
+  calibracaoRadiometrica: "Sensor DLS + Painel de Reflectância Difusa",
+};
+SITIO_3_DADOS.properties = SITIO_3_DADOS;
+
+const SITIO_4_DADOS: SitioPadraoOuro = {
+  id: "sitio-ouro-04",
+  identificadorOpaco: "CAR-OPACO-04",
+  nomeIdentificador: "Sitio Delta (Ceu Azul)",
+  municipio: "Ceu Azul",
+  baciaHidrografica: "Bacia Hidrográfica do Paraná 3",
+  areaHa: 49.54,
+  altitudeMediaM: 575,
+  resolucaoVantGsdCm: 7.5,
+  resolucaoGradeSateliteM: 10,
+  totalPixels10mEstimados: 4954,
+  papelConjunto: "held-out",
+  vantModelo: "Spectral 2 (Nuvem UAV)",
+  fabricanteVant: "Nuvem UAV",
+  sensorTipo: "Multiespectral 5 bandas (Azul, Verde, Vermelho, RedEdge, NIR)",
+  bandasMultiespectrais: ["blue", "green", "red", "rededge", "nir"],
+  georreferenciamento: "PPK/RTK centimétrico",
+  calibracaoRadiometrica: "Sensor DLS + Painel de Reflectância Difusa",
+};
+SITIO_4_DADOS.properties = SITIO_4_DADOS;
+
+export const SITIOS_PADRAO_OURO: SitioPadraoOuro[] = [
+  SITIO_1_DADOS,
+  SITIO_2_DADOS,
+  SITIO_3_DADOS,
+  SITIO_4_DADOS,
+];

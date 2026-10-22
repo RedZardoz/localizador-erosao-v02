@@ -1,0 +1,317 @@
+================================================================================
+PACOTE DE AUDITORIA EXTERNA — SAREL v2 (PPGTCA 2026)
+LOTE: LOTE1_AUDITORIAS_E_DECISOES | PARTE 4/4
+================================================================================
+Data de Geração: 21 de Outubro de 2026
+Limite por Arquivo: <= 90.000 bytes (Limite Rígido de Leitura)
+Total de Arquivos nesta parte: 1
+Arquivos contidos nesta parte:
+ - docs/planejamento/PLANEJAMENTO_SAREL_FUNCIONAL_2026-10-19.md
+================================================================================
+
+
+--------------------------------------------------------------------------------
+ARQUIVO: docs/planejamento/PLANEJAMENTO_SAREL_FUNCIONAL_2026-10-19.md
+TAMANHO: 27,527 bytes
+--------------------------------------------------------------------------------
+
+# Planejamento — tornar o SAREL funcional e útil para a pesquisa
+
+**Data:** 19 de outubro de 2026 · **revisto em 20/10/2026**
+**Base verificada:** branch `sarel/executor-2026-10-09`, commit `9a45ed9`
+**Para:** decisão do pesquisador, antes de olhar regras e decisões em detalhe
+
+> **O que mudou na revisão de 20/10:** as dependências foram instaladas e a suíte passou a ser executada (baseline: 663 testes). C28 saiu de inferência para medição. A separação de papéis e o log de recusas foram decididos e **implementados** (PL-11b). Nasceu a decisão **E-9** (limiar de alerta da taxa de recusa).
+
+---
+
+## Nota de método: o que eu verifiquei e o que não
+
+Tudo que este documento afirma sobre o estado atual foi conferido com `git grep`, `git log --all` nas 6 branches, leitura do código e inspeção dos artefatos.
+
+**Atualização de 20/10/2026:** as dependências foram instaladas e a suíte **passou a ser executada de verdade**. A versão anterior deste documento dizia que `npm test` e `npm run lint` não tinham sido rodados; isso não vale mais. Baseline medido: **typecheck limpo, 86 arquivos e 663 testes passando, varredor de padrões proibidos 23/23**. Duas consequências aparecem adiante: o bloco **C28** deixou de ser inferência e virou medição, e a tabela de fragilidades perdeu a ressalva correspondente.
+
+O que continua fora do meu alcance: **`data/`**, que fica fora do git, na sua máquina. Portanto, tudo que depende de dado real — se o sorteio D16 já foi selado, quantos rótulos de campo existem, se houve voo — é **pergunta para você**, não afirmação minha. Está marcado como tal.
+
+**Correção de um diagnóstico meu anterior.** Eu disse que "20 de 28 parâmetros não estão decididos, e isso é parte do retrabalho". Aquilo foi medido no merge antigo (`d2a7b5a`) e **está obsoleto**. No estado atual:
+
+| | Total | Decidida | Proposta | Pendente |
+|---|---|---|---|---|
+| Decisões `D01..D26` | 26 | **26** | 0 | 0 |
+| Parâmetros `P01..P24` | 16 | 4 | **11** | 1 |
+
+A frente metodológica fechou. O que resta aberto são **12 parâmetros operacionais**, e isso muda a ordem do plano: não há mais "esperar a pesquisa decidir" como causa do retrabalho.
+
+---
+
+## 1. Onde o SAREL está hoje
+
+### O que está sólido
+
+- **Arcabouço de integridade raro.** 9 Regras Invioláveis, 7 Invariantes, tipo `Proveniencia<T>`, varredor anti-mock com registro de exceções nomeadas, registro de decisões com mecanismo *fail-closed* (`exigirDecisao`), já usado em 7 arquivos de produção.
+- **Honestidade dos artefatos.** O relatório de modelagem com acurácia 1,0 e ROC-AUC 1,0 está preservado **e marcado**: o JSON traz `"dados_100pct_empiricos": false` e "Não utilizável na dissertação", e os 4 PNGs trazem selo vermelho `[AVISO: BENCHMARK DE INFRAESTRUTURA — DADOS NÃO EMPÍRICOS]` impresso na imagem. O desastre apontado pela auditoria de 13/09 foi contido, não varrido para baixo do tapete.
+- **Decisões fechadas e referenciadas.** As 26 decisões têm valor, justificativa, referência, autor e data. O Fator R chegou ao fator 9,81 conferido contra 12 pluviômetros do IAT; o LS foi lido no PDF primário de Desmet e Govers.
+
+### O que está frágil
+
+| Fragilidade | Evidência verificada |
+|---|---|
+| Nenhuma guarda roda sozinha | Não existe `.github/workflows/` nem hook de pre-commit. As travas só existem se alguém digitar `npm test` |
+| Parâmetro científico sem fonte única | Os limiares vivem duplicados em 14 arquivos de produção; `GraficoSerieTemporal.tsx` desenha a linha de solo exposto em `NDVI < 0.40` **atribuindo-a a D10**, que decidiu `0.25` |
+| Registro contradiz código | D01 registra `(1 - NDVI) / 2`; `fatorC.ts:68` calcula `((1-ndvi)/2) * (1+bsi)` e se declara autorizado por D01 |
+| Guarda que pode ser vácua | As duas implementações de Pearson devolvem `r = 0` quando a correlação é indefinida; uma delas alimenta o detector de correlação espúria, que dispara com módulo de r acima de 0,95 |
+| Trabalho espalhado | 39 commits em `claude/affectionate-galileo-8abtjo` que não estão na branch do executor, incluindo as regras **R16/R17** e um inventário consolidado de pendências. O PR #3, aberto, aponta para `sarel/v2`, que tem 144 commits contra 225 da branch do executor |
+| Execução não deixa rastro auditável | Não existe nenhum relatório de execução no repositório. Três prompts ainda dizem "Estado: NÃO EXECUTADO" com seus blocos já commitados |
+| Grupo 5 nunca executado | C28, C29 e C30 do prompt de correção de 05/10 não têm commit em nenhuma branch. C29 e C30 confirmados no código; **C28 confirmado por `npm run lint`**, que devolve exatamente os dois warnings descritos (`MapViewer.tsx:526` e `PointPopup.tsx:69`) |
+
+---
+
+## 2. O que falta para ser "útil para a pesquisa"
+
+A dissertação precisa de uma cadeia defensável:
+
+```
+desenho amostral  →  rótulo real  →  preditores sem vazamento
+   →  modelo com métrica crível  →  pacote de reprodutibilidade
+```
+
+O estado é assimétrico, e vale dizê-lo sem rodeio: **o software está muito à frente do dado.** Os elos 3 a 5 estão construídos em código, testados e governados. Os elos 1 e 2 — o sorteio efetivo e o rótulo humano — são o gargalo, e nenhum trabalho de engenharia os resolve.
+
+Daí a tese deste plano: **as medidas de governança não são o objetivo, são o que torna o resultado defensável quando o dado chegar.** Elas valem o esforço porque são baratas, de risco quase nulo, e porque executá-las depois do dado custa muito mais caro. Mas se forem tratadas como o trabalho principal, o SAREL fica cada vez mais bem governado e continua sem responder à pergunta da pesquisa.
+
+---
+
+## 3. Sequência de medidas
+
+Cada medida traz **descrição**, **impacto**, **custo** e **risco**. A ordem é de dependência, não de importância.
+
+### Fase 0 — Base verificável
+
+#### PL-1. Definir o tronco e consolidar as branches
+**Descrição.** Escolher qual branch é a linha oficial e trazer para ela o que estiver disperso. Hoje há 39 commits em `affectionate-galileo` fora da branch do executor, e um PR aberto apontando para uma branch defasada.
+**Impacto.** Alto e habilitante. Enquanto houver duas linhas vivas, qualquer medida abaixo pode ser aplicada na branch errada, e o retrabalho reaparece como conflito de merge. Também é o que decide se as regras **R16/R17** valem para o executor.
+**Custo.** Baixo se for só um merge de documentação; médio se houver conflito em `decisoes.ts`.
+**Risco.** Baixo. Nada se perde: as duas linhas estão publicadas.
+→ **Decisão E-1**
+
+#### PL-2. CI bloqueante e pre-commit (bloco GOV-6)
+**Descrição.** Um workflow que roda `typecheck`, `lint` e a suíte a cada push, e um hook de pre-commit que roda o varredor de padrões proibidos. Sem credencial, sem rede, sem `data/`.
+**Impacto.** **A medida de maior alavancagem do plano.** É o que converte as 9 Regras de texto em restrição efetiva, e move a detecção da violação do "auditoria três semanas depois" para "o commit não sai". Ataca a causa raiz do ciclo de ajuste e retroajuste.
+**Custo.** Baixo (algumas horas).
+**Risco.** Médio se feito antes do PL-6: um CI que fica vermelho no primeiro dia é um CI que alguém desliga. Por isso vem o varredor corrigido antes de torná-lo bloqueante.
+
+### Fase 1 — Parar a deriva de parâmetros
+
+#### PL-3. `CLAUDE.md` completo (bloco GOV-1)
+**Descrição.** As 9 Regras, os 7 Invariantes e o mapa "onde vivem os números", no único arquivo que toda sessão de assistente lê automaticamente. A seção de autorização de git já está lá.
+**Impacto.** Alto por unidade de esforço. Hoje cada sessão redescobre as regras em `docs/design.md` e chega a interpretações diferentes — é um motor direto do retroajuste quando o trabalho é feito por assistentes.
+**Custo.** Uma tarde. **Risco.** Nulo: não toca código.
+
+#### PL-4. Desambiguar D02 × D10 e corrigir a atribuição na tela (bloco GOV-2)
+**Descrição.** `NDVI < 0.40` (D02, triagem de candidatos) e `NDVI <= 0.25` (D10, solo descoberto do preditor Ê) são limiares de finalidades **distintas**. O gráfico mostra o valor de D02 com o crédito de D10. Corrigir rótulo e atribuição, **sem tocar nos números**.
+**Impacto.** Alto em credibilidade: é um erro visível em tela, do tipo que um examinador aponta na projeção.
+**Custo.** Baixo. **Risco.** Baixo, desde que a proibição de unificar 0.40 e 0.25 seja respeitada — unificá-los alteraria silenciosamente a triagem ou o preditor.
+
+#### PL-5. Fonte única de parâmetros, fase 1 (bloco GOV-3)
+**Descrição.** O registro passa a guardar **valor e operador de comparação** legíveis por máquina, e os módulos leem de lá. Refatoração estritamente preservadora: nenhum número muda.
+**Impacto.** Alto e estrutural. É o que impede que a próxima revisão de um limiar deixe um módulo para trás — exatamente o que aconteceu entre D10 e o gráfico. Registrar o operador importa: hoje D10 usa `<=` e a amostragem usa `<`.
+**Custo.** Médio. **Risco.** Baixo com o aceite exigido (tabela antes/depois com `valor_antigo == valor_novo` e suíte inteira verde).
+
+#### PL-6. Fechar as lacunas do varredor (bloco GOV-5)
+**Descrição.** A regex da Regra 1 só pega `: number = 123` e não pega default por desestruturação. Há 12 no código, sendo 5 parâmetros científicos numa rota de API.
+**Impacto.** Alto. Sem isso, a Regra 1 é mais estreita na prática do que no texto, e a suíte fica verde sobre violações.
+**Custo.** Baixo. **Risco.** Médio se a correção for ambiciosa demais: guarda com falso-positivo é guarda desligada. Precisão acima de cobertura, e dívida declarada por escrito.
+→ Revela a **Decisão E-5** (os cinco parâmetros não registrados)
+
+### Fase 2 — Fechar o que a banca ataca
+
+#### PL-7. Resolver a contradição do Fator C
+**Descrição.** Decidir se a metodologia é Durigon puro ou a híbrida `×(1+BSI)`, e alinhar registro, código e teste.
+**Impacto.** Alto. A híbrida **não é** Durigon — é formulação nova, e hoje o código a atribui a uma decisão que descreve outra coisa. Uma banca que abrir `fatorC.ts` ao lado de D01 encontra a divergência.
+**Custo.** Baixo em código; o custo real é de redação e validação se a híbrida for mantida.
+→ **Decisão E-2**
+
+#### PL-8. Executar o grupo 5 pendente (C28, C29, C30)
+**Descrição.** C28 (dois warnings de hooks), C29 (fonte do DEM rotulada com o CRS de projeção), C30 (Kappa em 3 arquivos, Pearson em 2, com contratos divergentes).
+**Impacto.** **A triagem original errou.** O prompt classificou C30 como "cosmético", mas as duas implementações de Pearson devolvem `r = 0` para correlação indefinida, e uma alimenta o detector de correlação espúria — que então reporta "nada suspeito" justamente quando não tem dado para julgar. O projeto já fixou a convenção oposta para Kappa, citando a Regra 2. Isto é Regra 1 dentro de uma guarda, não cosmética. C29 é proveniência. C28 é de fato cosmético, mas o aceite dele ("0 warnings") é pré-requisito de um CI com lint estrito.
+**Custo.** Baixo a médio. **Risco.** Baixo.
+→ **Decisão E-3**
+
+#### PL-9. Verificações V2–V13
+**Descrição.** Das 13 verificações previstas no prompt de 05/10, 11 não têm rastro em commit.
+**Impacto.** Médio e incerto — é a medida sobre a qual tenho menos convicção. Uma verificação pode ter sido rodada sem gerar commit, então "sem rastro" não prova "não feita". O valor aqui é tanto saber o resultado quanto **criar o rastro**.
+**Custo.** Médio. **Risco.** Baixo.
+→ **Decisão E-4**
+
+### Fase 3 — Ratificar o que está aberto
+
+#### PL-10. Os 12 parâmetros em aberto
+**Descrição.** P01, P04, P06, P08–P11, P20–P24 estão em `proposta` ou `pendente`. Seus valores existem **apenas na prosa** do campo `justificativa`, e por isso não podem ser lidos pelo acessor *fail-closed*, que só serve decisão `decidida`.
+**Impacto.** Alto e bloqueante para a fase 2 da fonte única. Enquanto forem "proposta", esses 12 números continuam vivendo hardcoded, fora de governança — é a mesma doença de D10, à espera.
+**Custo.** Depende do caminho escolhido.
+→ **Decisão E-6**
+
+### Fase 4 — O gargalo real: desenho e campanha
+
+#### PL-11. Sorteio D16 e campanha de campo
+**Descrição.** Executar o sorteio selado de polígonos, as missões de drone (held-out) e a ingestão de rótulos por Kobo e fotointerpretação com dois intérpretes e Kappa.
+**Impacto.** **Decisivo, e maior que o de todas as medidas anteriores somadas.** É o único caminho para um rótulo real, e portanto para qualquer métrica que possa entrar na dissertação. As fases 0 a 3 existem para que este resultado seja defensável.
+**Custo.** Alto — logística, voos, campo. Está fora do que software resolve.
+**Risco.** O selo do sorteio é **irreversível** por D23: o código recusa sobrescrever selo existente. Qualquer erro de parâmetro **antes** do sorteio fica congelado. É por isso que PL-10 vem antes: sortear com parâmetro não ratificado é o retroajuste mais caro possível.
+→ **Pergunta para você:** em que pé está? Não consigo ver `data/`.
+
+#### PL-11b. Separação de papéis e log de recusas — **IMPLEMENTADO em 20/10/2026**
+**Descrição.** Quem solicita as autorizações não é quem vai a campo nem quem voa. A equipe de campo recebe o que precisa para entrar legalmente, sem identificar o proprietário. As recusas são registradas por estrato, com motivo e data.
+**O que foi construído** (commits `87a8a8c` e `9a45ed9`): `src/lib/autorizacao/` com validação *fail-closed*, ingestão por planilha CSV, prestação de contas por estrato, e a separação entre o pseudônimo publicável e o vínculo nome+RA sob guarda K2. Modelos em `docs/modelos/`. 46 testes.
+**Impacto.** Torna o atrito **mensurável**. Sem isso, a recusa — que não é aleatória, e plausivelmente se concentra em área degradada — enviesaria a amostra visitada para a terra conservada, sem deixar rastro.
+**Propriedade de desenho que vale registrar:** o log **não contém nenhum dado pessoal** — chaveia por código cego e estrato. Pode ser publicado junto com a dissertação.
+**Ressalva que precisa ir ao texto, não ao apêndice:** a reposição no mesmo estrato preserva o N e **não** elimina o viés — o substituto vem de quem não recusa. A taxa de recusa por estrato é limitação declarada.
+→ Abre a **Decisão E-9**
+
+### Fase 5 — Resultado e defesa
+
+#### PL-12. Modelagem válida substituindo o dry-run
+**Descrição.** Com rótulo real, treinar e produzir métricas que possam ser citadas, preservando o artefato selado como registro histórico.
+**Impacto.** É o produto da pesquisa. **Custo.** Médio. **Risco.** Baixo se a guarda anti-sintético e o CI já estiverem de pé.
+
+#### PL-13. Pacote de reprodutibilidade para a banca
+**Descrição.** Fixar, por hash SHA-256, quais arquivos geraram quais resultados.
+**Impacto.** Médio-alto na defesa. Com a ressalva que já levantei sobre o relatório Zero Trust: **hash prova integridade, não veracidade**. Vale como reprodutibilidade — "este resultado veio deste arquivo" — e não como prova de que o dado é real. O que pega dado falso é estatística, e disso vocês já têm o Invariante 7.
+**Custo.** Baixo no escopo reduzido. → **Decisão E-7**
+
+---
+
+## 4. Decisões a tomar
+
+### E-1. Qual é o tronco de desenvolvimento?
+
+| Opção | Viabilidade | Impacto |
+|---|---|---|
+| **(a) `sarel/executor-2026-10-09` é o tronco; trazer os 39 commits de `affectionate-galileo` para ela** | Alta. São quase todos de documentação (apresentação, roteiros), com 3 de governança | Unifica a linha e traz R16/R17 e o inventário de pendências para onde o executor trabalha |
+| (b) Manter as duas linhas, cada uma com seu propósito | Alta no curto prazo | Garante divergência crescente de `decisoes.ts`, que as duas tocam |
+| (c) Mesclar o PR #3 primeiro | Média | PR #3 aponta para `sarel/v2`, que é **subconjunto** da branch do executor: mesclá-lo entrega menos do que já existe |
+
+**Minha opinião: (a).** É a única que não cria dívida. O PR #3 deveria ser fechado ou reapontado — mantê-lo aberto sobre uma branch defasada é um convite a alguém mesclar 81 commits a menos. E R16/R17 precisam entrar no bloco de regras antes de o executor rodar, ou meu prompt está incompleto.
+
+### E-2. Fator C: Durigon puro ou híbrida?
+
+| Opção | Viabilidade | Impacto |
+|---|---|---|
+| **(a) Manter a híbrida `((1-NDVI)/2)·(1+BSI)` e emendar D01 para descrevê-la como formulação própria** | Alta em código (uma emenda). Média no todo: exige redação e justificativa na dissertação | Preserva o argumento do paradoxo do SPD, que é bom e é seu. Mas transfere o ônus: formulação nova precisa de validação própria |
+| (b) Alinhar o código a Durigon puro | Alta | Fecha a contradição com o custo mais baixo, mas descarta a discriminação de palhada por BSI, que é uma contribuição real do trabalho |
+| (c) Manter as duas, uma como análise de sensibilidade | Média | Mais trabalho, e é o que mais se aproxima do padrão de um bom artigo |
+
+**Minha opinião: (a), com (c) como meta se o tempo permitir.** O argumento no cabeçalho de `fatorC.ts` é tecnicamente sólido: no SPD paranaense em entressafra, NDVI baixo com palhada íntegra faria Durigon superestimar o Fator C. Isso merece ser defendido como contribuição, não apagado. Mas aí **D01 precisa dizer isso**, e a referência não pode seguir sendo apenas Durigon 2014. Escolher (b) é mais barato hoje e mais pobre na defesa.
+
+### E-3. O grupo 5 pendente (C28, C29, C30)
+
+| Opção | Viabilidade | Impacto |
+|---|---|---|
+| **(a) Promover C30 a bloco do plano atual; C29 junto; C28 antes do CI com lint estrito** | Alta | Fecha uma guarda potencialmente vácua, que é risco científico, não cosmético |
+| (b) Manter os três como dívida nomeada no relatório final | Alta | Barato, mas deixa o detector de correlação espúria reportando `r = 0` sobre entrada degenerada |
+| (c) Só C30 agora, C28 e C29 depois | Alta | Meio-termo razoável |
+
+**Minha opinião: (a).** C30 foi mal triado na origem e é o único dos três com consequência científica. C28 custa quase nada e é pré-requisito de um CI com `--max-warnings 0`. C29 é proveniência, que é a Regra 3.
+
+**Evidência medida em 20/10/2026** (antes era leitura de código, agora é saída de comando):
+
+```
+./src/components/map/MapViewer.tsx
+526:6  Warning: React Hook useEffect has a missing dependency: 'credenciais.mapboxToken'
+./src/components/map/PointPopup.tsx
+69:6   Warning: React Hook useEffect has missing dependencies: 'atualizarPontoIndividual' and 'point'
+```
+
+São exatamente os dois warnings que C28 descreve. A âncora do `MapViewer` saiu de `:476` para `:526` — as linhas andaram, como a regra R3 do executor prevê.
+
+### E-4. As verificações V2–V13
+
+| Opção | Viabilidade | Impacto |
+|---|---|---|
+| (a) Rodar todas e arquivar a saída | Média (custo de execução) | Fecha a lacuna por completo |
+| **(b) Rodar as que sustentam decisão já tomada; declarar as demais como dívida** | Alta | Melhor relação custo-benefício |
+| (c) Declarar todas como dívida | Alta | Barato, mas 11 verificações sem rastro é o tipo de buraco que uma arguição encontra |
+
+**Minha opinião: (b)**, e com honestidade sobre minha incerteza: esta é a medida sobre a qual tenho menos base. Não sei quais V foram rodadas sem gerar commit. O primeiro passo é você me dizer, ou o executor conferir, antes de decidir o escopo.
+
+### E-5. Os cinco parâmetros científicos não registrados
+
+Em `select-candidates/route.ts` há `tamanhoAmostra = 50`, `raioThinningKm = 5.0`, `frequenciaSoloNuMin = 0.15`, `declividadeMin = 3.0`, `declividadeMax = 20.0` como defaults silenciosos. `3.0–20.0` parece ser o domínio de D07.
+
+> **CORREÇÃO DE 20/10/2026 — a colisão que eu apontei não existe.** A versão anterior deste documento dizia que `raioThinningKm = 5.0` colidia com P02. **Não colide**, e o erro foi meu: li o texto de P02 no merge antigo `d2a7b5a`, onde ela estava em `proposta` com "1 km herdado do Localizador". Na branch atual P02 está **decidida**, `valor: 1000` metros, e sua justificativa nomeia os dois números: 5.000 m é o **raio de partida** e 1.000 m é o **piso inviolável**. O código lê P02 por `exigirDecisao` e relaxa o raio iterativamente até a meta de pool, nunca abaixo do piso. Os dois números têm papéis distintos no mesmo mecanismo.
+>
+> Lição de método, não de conteúdo: a análise foi feita contra o commit errado. Toda análise deste projeto precisa declarar o commit em que foi medida — e esta declara (cabeçalho).
+
+**Achado que substitui a colisão falsa, e que me preocupa mais:** o laço de relaxamento é **global** — reduz o raio até a meta de pool **total** ser atingida. Mas os estratos têm concentrações geográficas diferentes. Se o relaxamento for puxado por estratos escassos, o espaçamento **realizado varia entre estratos**, e os pontos de estratos geograficamente concentrados ficam mais redundantes entre si. É independência espacial diferencial por estrato, sistemática e silenciosa. O código guarda `historicoRelaxamentoThinning` e o devolve na resposta, mas ele registra as **iterações de raio**, não o **espaçamento realizado por estrato**. Mesmo padrão do atrito de recusas: efeito diferencial que some se não for medido por estrato.
+
+**E uma medição que fecha duas coisas de uma vez:** `blocosEspaciais.ts` já implementa `calcularSemivariogramaEmpirico`, que estima o **alcance** do variograma sobre declividade e solo nu — a distância além da qual duas observações deixam de ser redundantes. Esse alcance responde empiricamente se 5 km compra algo sobre 1 km, **e** fecha P01, cuja aresta de 20 km é hoje contingência declarada (a função recua para o fallback quando `n < 15`). Rodar sobre o pool real custa quase nada: usa coordenadas que já existem.
+
+| Opção | Viabilidade | Impacto |
+|---|---|---|
+| **(a) Inventariar e você decide a que decisão cada um pertence** | Alta | Única opção honesta: criar registro é ato metodológico |
+| (b) O executor infere o vínculo | Alta | Exatamente o retroajuste que queremos parar |
+
+**Minha opinião: (a), e com prioridade** — mas a prioridade mudou de alvo. Não é mais "esclarecer a divergência de P02", que não existe. É **rodar o variograma antes do sorteio D16** e registrar o espaçamento realizado por estrato, porque o selo é irreversível e ambos entram no desenho amostral. Dos cinco números, `tamanhoAmostra`, `frequenciaSoloNuMin` e o par de declividade continuam sem vínculo declarado com decisão registrada, e isso é o que o executor deve inventariar.
+
+### E-6. Os 12 parâmetros em `proposta`/`pendente`
+
+| Opção | Viabilidade | Impacto |
+|---|---|---|
+| **(a) Ratificar em bloco os que já estão em uso estável, caso a caso os demais** | Alta | Desbloqueia a fase 2 da fonte única |
+| (b) Ratificar um a um, com referência para cada | Média (trabalhoso) | Mais rigoroso, e mais lento |
+| (c) Criar um acessor para valor "proposta", marcando proveniência como provisória | Alta | Permite governar sem ratificar, mas adia a decisão |
+
+**Minha opinião: (a) para os que entram no desenho amostral — P01 (bloco espacial) e P04 (buffers de exclusão) — antes do sorteio; (c) para os demais.** A distinção é o selo irreversível: o que entra no sorteio precisa estar ratificado antes; o que é limiar de exibição ou de janela temporal pode seguir provisório com proveniência honesta.
+
+### E-7. O manifesto SHA-256 do relatório Zero Trust
+
+| Opção | Viabilidade | Impacto |
+|---|---|---|
+| **(a) Adotar em escopo reduzido: só os insumos de ingestão e as planilhas de treino, posicionado como reprodutibilidade** | Alta | Fixa qual arquivo gerou qual resultado. Útil na arguição |
+| (b) Adotar a arquitetura completa do relatório | Baixa | Pressupõe projeto Python com `pyproject.toml`; o SAREL é Next.js/TypeScript com 17 scripts auxiliares |
+| (c) Não adotar | Alta | Mantém o que já existe, que para detectar dado falso é mais forte (Invariante 7) |
+
+**Minha opinião: (a).** Mas sem a retórica do relatório: não é "blindagem Zero-Trust", é rastreabilidade de insumo. O que teria pego a planilha de 150 focos com desvio padrão zero foi estatística, não hash — e isso vocês já têm.
+
+### E-9. Limiar de alerta da taxa de recusa entre estratos — **NOVA**
+
+O módulo de autorizações calcula `taxaRecusaMinima`, `taxaRecusaMaxima` e `amplitudeTaxaRecusa` entre os 18 estratos, e **para aí**. Não há limiar de alerta no código, de propósito: cravar um número seria a Regra 1 violada. Mas sem limiar, ninguém sabe quando olhar.
+
+| Opção | Viabilidade | Impacto |
+|---|---|---|
+| **(a) Fixar um limiar agora, como parâmetro P registrado, revisável** | Alta | Dá gatilho objetivo para reagir durante a campanha, quando ainda dá para reagir |
+| (b) Sem limiar; inspeção visual a cada lote | Alta | Barato, e depende de alguém lembrar de olhar no meio da logística de campo |
+| (c) Decidir depois das primeiras 20 respostas | Média | Decide com os dados à vista, o que enfraquece a defesa |
+
+**Minha opinião: (a).** Não tenho base empírica para sugerir o valor — não conheço taxa de recusa típica em pesquisa fundiária no Paraná, e inventá-la seria exatamente o que critiquei no relatório Zero Trust. O caminho honesto é você fixar um valor de partida declarado como provisório, registrá-lo como P, e revisá-lo quando houver dado. O que não se deve fazer é (c): escolher o limiar depois de ver a amplitude é escolher o limiar que não dispara.
+
+### E-8. O Stop hook global
+
+| Opção | Viabilidade | Impacto |
+|---|---|---|
+| **(a) Trocar os `exit 2` de arquivo não rastreado e mudança não commitada por `exit 0`** | Alta (uma linha cada) | O aviso continua, sem forçar a ação. Remove o conflito com a regra que você acabou de fixar |
+| (b) Manter como está | Alta | Em repositório sem o `CLAUDE.md` novo, o conflito volta |
+
+**Minha opinião: (a).** A regra no `CLAUDE.md` resolve o comportamento aqui, mas ela só vale neste repositório; o hook vale para todas as suas sessões. É configuração da sua conta, então não toco sem sua ordem.
+
+---
+
+## 5. Se eu tivesse que escolher três
+
+Se o tempo for curto e só couberem três medidas antes da campanha de campo:
+
+1. **PL-2 (CI bloqueante)** — é o que impede que todo o resto se desfaça silenciosamente.
+2. **PL-5 (fonte única)** — é o que impede a próxima revisão de limiar de deixar um módulo para trás.
+3. **E-5 + E-6 restrito ao desenho amostral** — porque o selo do sorteio é irreversível, e um parâmetro errado ali não tem conserto barato.
+
+O resto pode esperar. O que **não** pode esperar é a fase 4: nenhuma dessas medidas aproxima a pesquisa de um resultado, só protege o resultado quando ele vier.
+
+---
+
+## 6. O que preciso saber de você
+
+1. Em que pé está o sorteio D16 — já selado, ou ainda não?
+2. Houve voo de drone ou ingestão de rótulo real por Kobo?
+3. Quais das verificações V2–V13 você lembra de ter rodado?
+4. As regras R16 e R17 da branch `affectionate-galileo` valem para o executor?
+5. A prestação de contas das autorizações fica por planilha neste primeiro momento, ou entra na tela de campanha? (vira bloco no prompt do executor se for na tela)

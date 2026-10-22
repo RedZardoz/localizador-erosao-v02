@@ -1,0 +1,2521 @@
+================================================================================
+PACOTE DE AUDITORIA EXTERNA — SAREL v2 (PPGTCA 2026)
+LOTE: LOTE3_MOTORES_CIENTIFICOS_TS | PARTE 2/9
+================================================================================
+Data de Geração: 21 de Outubro de 2026
+Limite por Arquivo: <= 90.000 bytes (Limite Rígido de Leitura)
+Total de Arquivos nesta parte: 10
+Arquivos contidos nesta parte:
+ - src/lib/gee/copernicusGeeClient.ts
+ - src/lib/gee/elegibilidade.ts
+ - src/lib/gee/estatisticasSerie.ts
+ - src/lib/gee/estratificacao.ts
+ - src/lib/gee/harmonicos.ts
+ - src/lib/gee/metadadosColecoes.ts
+ - src/lib/gee/persistenciaTemporal.ts
+ - src/lib/gee/poolEstratos.ts
+ - src/lib/gee/sentinel1.ts
+ - src/lib/gee/serieTemporal.ts
+================================================================================
+
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/copernicusGeeClient.ts
+TAMANHO: 25,703 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Cliente de Medição Real Orbital — Copernicus DEM GLO-30 & Earth Engine REST API
+ * SAREL v2.0 — Metodologia PPGTCA 2026 (Conformidade Estrita Regras 1, 5, 7 e Invariante 2)
+ * ============================================================================
+ *
+ * PRINCÍPIO DE DADO VERDADEIRO OU AUSÊNCIA DECLARADA:
+ * - Este módulo NUNCA inventa, estima por função trigonométrica (sin/cos) ou arbitra valores.
+ * - Altimetria e Declividade são medidas sobre o raster oficial Copernicus DEM GLO-30 (30 m)
+ *   usando espaçamento métrico de 30 m compatível com a projeção UTM 22S (EPSG:31982) e
+ *   conversão trigonométrica estrita (Invariante 2: pctParaGraus / grausParaPct).
+ * - Bandas espectrais Sentinel-2 MSI L2A (B2, B4, B8, B11) são consultadas diretamente
+ *   no endpoint oficial REST v1 do Google Earth Engine (value:compute).
+ * - Caso o serviço externo não responda ou o pixel esteja mascarado por nuvem/sombra,
+ *   retorna explicitamente `null` para que o chamador registre `{ estado: "indisponivel" }`.
+ */
+
+import { pctParaGraus } from "./terreno";
+import { calcularNdvi, calcularBsi } from "./serieTemporal";
+import { isClasseUsoElegivel } from "./elegibilidade";
+import { extrairDataAquisicaoSentinel2 } from "./metadadosColecoes";
+import fs from "fs";
+import path from "path";
+import { medirTerrenoCopernicusGLO30RealEmLote } from "@/lib/drone/planoVooNControl";
+import { JANELA_TEMPORAL_D05 } from "@/lib/matriz/perfis";
+
+export let ultimoErroGee: string | null = null;
+
+export const LIMIAR_MINIMO_OBSERVACOES_D11 = 6;
+export const WORLDCOVER_V100_ASSET_ID = "ESA/WorldCover/v100/2020";
+export const WORLDCOVER_V200_ASSET_ID = "ESA/WorldCover/v200/2021";
+
+export interface MedicaoTerrenoReal {
+  elevacaoMetros: number;
+  declividadePct: number;
+  declividadeGraus: number;
+  fonte: string;
+}
+
+export interface MedicaoEspectralReal {
+  b2: number;
+  b4: number;
+  b8: number;
+  b11: number;
+  b12: number;
+  ndvi: number;
+  bsi: number;
+  frequenciaSoloNu: number | null;
+  nObservacoesValidas: number;
+  insuficienteD11: boolean;
+  adquiridoEm: string | null;
+  classeWorldCover?: number | null;
+  classeWorldCover2020?: number | null;
+  classeWorldCover2021?: number | null;
+  ehFlorestaOuInelegivel?: boolean;
+  fonte: string;
+}
+
+export function avaliarSuficienciaAmostralD11(nObservacoesValidas: number): {
+  suficiente: boolean;
+  causa?: "insuficiente";
+  motivo?: string;
+} {
+  if (!Number.isFinite(nObservacoesValidas) || nObservacoesValidas < LIMIAR_MINIMO_OBSERVACOES_D11) {
+    return {
+      suficiente: false,
+      causa: "insuficiente",
+      motivo: `Suficiência amostral insuficiente (${nObservacoesValidas} < ${LIMIAR_MINIMO_OBSERVACOES_D11} observações válidas sem nuvem/sombra exigidas pela Decisão D11).`,
+    };
+  }
+  return { suficiente: true };
+}
+
+/**
+ * Mede a elevação real (m) e a declividade topográfica real (% e graus) sobre o
+ * Modelo Digital de Elevação Copernicus DEM GLO-30 (30 m, European Space Agency)
+ * usando diferenças finitas métricas de 30 m (Norte e Leste em UTM 22S / EPSG:31982).
+ *
+ * Suporta lotes de coordenadas (fazendo chunking de 30 pontos = 90 coordenadas por requisição).
+ */
+export async function medirTerrenoCopernicusEmLote(
+  pontos: Array<{ latitude: number; longitude: number }>
+): Promise<Array<MedicaoTerrenoReal | null>> {
+  if (pontos.length === 0) return [];
+
+  // Tenta prioritariamente a via pericial unificada local do Copernicus DEM GLO-30 (Z1 / PARTE II)
+  try {
+    const demCacheDir = path.resolve(process.cwd(), "data/dem_cache");
+    if (fs.existsSync(demCacheDir)) {
+      const arquivos = fs.readdirSync(demCacheDir);
+      if (arquivos.some((f) => f.endsWith(".tif"))) {
+        const medicoesLocais = medirTerrenoCopernicusGLO30RealEmLote(pontos, { pastaCache: demCacheDir });
+        const temValidos = medicoesLocais.some((m) => m !== null);
+        if (temValidos) {
+          return medicoesLocais.map((m) =>
+            m
+              ? {
+                  elevacaoMetros: m.elevacaoMetros,
+                  declividadePct: m.declividadePct,
+                  declividadeGraus: m.declividadeGraus,
+                  fonte: m.fonte,
+                }
+              : null
+          );
+        }
+      }
+    }
+  } catch {
+    // Se indisponível, cai no método web de contingência
+  }
+
+  // 30 metros em graus na latitude média da Bacia do Paraná 3 (~24.8° S):
+  // dLat (30 m Norte) ≈ 30 / 111132 = 0.000270°
+  // dLon (30 m Leste) ≈ 30 / (111320 * cos(24.8°)) = 0.000297°
+  const DLAT_30M = 0.00027;
+  const DLON_30M = 0.000297;
+  const DIST_METROS = 30.0;
+
+  const resultados: Array<MedicaoTerrenoReal | null> = new Array(pontos.length).fill(null);
+
+  // Cada ponto requer 3 amostras no raster GLO-30: (centro, +30m Norte, +30m Leste).
+  // A API oficial Copernicus DEM GLO-30 suporta até 100 coordenadas por chamada (33 pontos por lote).
+  const TAMANHO_LOTE = 30;
+
+  for (let inicio = 0; inicio < pontos.length; inicio += TAMANHO_LOTE) {
+    const fatia = pontos.slice(inicio, inicio + TAMANHO_LOTE);
+    const lats: string[] = [];
+    const lons: string[] = [];
+
+    for (const pt of fatia) {
+      // 1. Centro
+      lats.push(pt.latitude.toFixed(6));
+      lons.push(pt.longitude.toFixed(6));
+      // 2. Vizinho 30m Norte
+      lats.push((pt.latitude + DLAT_30M).toFixed(6));
+      lons.push(pt.longitude.toFixed(6));
+      // 3. Vizinho 30m Leste
+      lats.push(pt.latitude.toFixed(6));
+      lons.push((pt.longitude + DLON_30M).toFixed(6));
+    }
+
+    try {
+      const url = `https://api.open-meteo.com/v1/elevation?latitude=${lats.join(",")}&longitude=${lons.join(",")}`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+      if (!res.ok) continue;
+
+      const json = (await res.json()) as { elevation?: Array<number | null> };
+      const elevs = json?.elevation;
+      if (!Array.isArray(elevs) || elevs.length < fatia.length * 3) continue;
+
+      for (let k = 0; k < fatia.length; k++) {
+        const z0 = elevs[k * 3];
+        const zN = elevs[k * 3 + 1];
+        const zE = elevs[k * 3 + 2];
+
+        if (
+          typeof z0 === "number" &&
+          Number.isFinite(z0) &&
+          typeof zN === "number" &&
+          Number.isFinite(zN) &&
+          typeof zE === "number" &&
+          Number.isFinite(zE)
+        ) {
+          const dzDy = (zN - z0) / DIST_METROS;
+          const dzDx = (zE - z0) / DIST_METROS;
+          const gradiente = Math.sqrt(dzDx * dzDx + dzDy * dzDy);
+          const declivPct = Number((gradiente * 100).toFixed(2));
+          const declivGraus = Number(pctParaGraus(declivPct).toFixed(2));
+
+          resultados[inicio + k] = {
+            elevacaoMetros: Math.round(z0),
+            declividadePct: declivPct,
+            declividadeGraus: declivGraus,
+            fonte: "Open-Meteo (resolução não verificada)",
+          };
+        }
+      }
+    } catch {
+      // Preserva null no lote se a consulta de rede falhar (Regra 1: nunca inventar fallback)
+    }
+  }
+
+  return resultados;
+}
+
+/**
+ * Constrói o grafo de expressão REST v1 do Google Earth Engine para extração pontual
+ * das bandas de reflectância de superfície Sentinel-2 MSI L2A combinadas com as duas
+ * épocas do ESA WorldCover 10m exigidas pela Decisão D07:
+ * - Época 2020: `ESA/WorldCover/v100/2020` (banda `Map` renomeada para `Map_2020`)
+ * - Época 2021: `ESA/WorldCover/v200/2021` (banda `Map`)
+ */
+export function construirExpressaoGeeSentinel2WorldCover(
+  latitude: number,
+  longitude: number
+): Record<string, unknown> {
+  return {
+    result: "0",
+    values: {
+      "0": {
+        functionInvocationValue: {
+          functionName: "Image.reduceRegion",
+          arguments: {
+            image: { valueReference: "7" },
+            reducer: {
+              functionInvocationValue: {
+                functionName: "Reducer.first",
+                arguments: {},
+              },
+            },
+            geometry: { valueReference: "2" },
+            scale: { constantValue: 10 },
+          },
+        },
+      },
+      "7": {
+        functionInvocationValue: {
+          functionName: "Image.addBands",
+          arguments: {
+            dstImg: { valueReference: "6" },
+            srcImg: { valueReference: "8" },
+          },
+        },
+      },
+      "8": {
+        functionInvocationValue: {
+          functionName: "Image.rename",
+          arguments: {
+            input: {
+              functionInvocationValue: {
+                functionName: "Image.load",
+                arguments: {
+                  id: { constantValue: WORLDCOVER_V100_ASSET_ID },
+                },
+              },
+            },
+            names: { constantValue: ["Map_2020"] },
+          },
+        },
+      },
+      "6": {
+        functionInvocationValue: {
+          functionName: "Image.addBands",
+          arguments: {
+            dstImg: { valueReference: "1" },
+            srcImg: {
+              functionInvocationValue: {
+                functionName: "Image.load",
+                arguments: {
+                  id: { constantValue: WORLDCOVER_V200_ASSET_ID },
+                },
+              },
+            },
+          },
+        },
+      },
+      "1": {
+        functionInvocationValue: {
+          functionName: "ImageCollection.reduce",
+          arguments: {
+            collection: { valueReference: "4" },
+            reducer: {
+              functionInvocationValue: {
+                functionName: "Reducer.combine",
+                arguments: {
+                  reducer1: {
+                    functionInvocationValue: {
+                      functionName: "Reducer.percentile",
+                      arguments: {
+                        percentiles: { constantValue: [15, 50, 85] },
+                      },
+                    },
+                  },
+                  reducer2: {
+                    functionInvocationValue: {
+                      functionName: "Reducer.count",
+                      arguments: {},
+                    },
+                  },
+                  sharedInputs: { constantValue: true },
+                },
+              },
+            },
+          },
+        },
+      },
+      "2": {
+        functionInvocationValue: {
+          functionName: "GeometryConstructors.Point",
+          arguments: {
+            coordinates: { constantValue: [longitude, latitude] },
+          },
+        },
+      },
+      "4": {
+        functionInvocationValue: {
+          functionName: "Collection.map",
+          arguments: {
+            collection: { valueReference: "3" },
+            baseAlgorithm: {
+              functionDefinitionValue: {
+                argumentNames: ["img"],
+                body: "5",
+              },
+            },
+          },
+        },
+      },
+      "5": {
+        functionInvocationValue: {
+          functionName: "Image.updateMask",
+          arguments: {
+            image: {
+              functionInvocationValue: {
+                functionName: "Image.select",
+                arguments: {
+                  input: { argumentReference: "img" },
+                  bandSelectors: { constantValue: ["B2", "B4", "B8", "B11", "B12"] },
+                },
+              },
+            },
+            mask: {
+              functionInvocationValue: {
+                functionName: "Image.or",
+                arguments: {
+                  image1: {
+                    functionInvocationValue: {
+                      functionName: "Image.eq",
+                      arguments: {
+                        image1: {
+                          functionInvocationValue: {
+                            functionName: "Image.select",
+                            arguments: {
+                              input: { argumentReference: "img" },
+                              bandSelectors: { constantValue: ["SCL"] },
+                            },
+                          },
+                        },
+                        image2: {
+                          functionInvocationValue: {
+                            functionName: "Image.constant",
+                            arguments: { value: { constantValue: 4 } },
+                          },
+                        },
+                      },
+                    },
+                  },
+                  image2: {
+                    functionInvocationValue: {
+                      functionName: "Image.eq",
+                      arguments: {
+                        image1: {
+                          functionInvocationValue: {
+                            functionName: "Image.select",
+                            arguments: {
+                              input: { argumentReference: "img" },
+                              bandSelectors: { constantValue: ["SCL"] },
+                            },
+                          },
+                        },
+                        image2: {
+                          functionInvocationValue: {
+                            functionName: "Image.constant",
+                            arguments: { value: { constantValue: 5 } },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "3": {
+        functionInvocationValue: {
+          functionName: "Collection.filter",
+          arguments: {
+            collection: {
+              functionInvocationValue: {
+                functionName: "Collection.filter",
+                arguments: {
+                  collection: {
+                    functionInvocationValue: {
+                      functionName: "Collection.filter",
+                      arguments: {
+                        collection: {
+                          functionInvocationValue: {
+                            functionName: "ImageCollection.load",
+                            arguments: {
+                              id: { constantValue: "COPERNICUS/S2_SR_HARMONIZED" },
+                            },
+                          },
+                        },
+                        filter: {
+                          functionInvocationValue: {
+                            functionName: "Filter.dateRangeContains",
+                            arguments: {
+                              leftValue: {
+                                functionInvocationValue: {
+                                  functionName: "DateRange",
+                                  arguments: {
+                                    start: { constantValue: JANELA_TEMPORAL_D05.inicio },
+                                    end: { constantValue: JANELA_TEMPORAL_D05.fim },
+                                  },
+                                },
+                              },
+                              rightField: { constantValue: "system:time_start" },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                  filter: {
+                    functionInvocationValue: {
+                      functionName: "Filter.lessThan",
+                      arguments: {
+                        leftField: { constantValue: "CLOUDY_PIXEL_PERCENTAGE" },
+                        rightValue: { constantValue: 20 },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            filter: {
+              functionInvocationValue: {
+                functionName: "Filter.intersects",
+                arguments: {
+                  leftField: { constantValue: ".geo" },
+                  rightValue: { valueReference: "2" },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+}
+
+/**
+ * Consulta pontual às bandas de reflectância de superfície do Sentinel-2 MSI L2A
+ * (COPERNICUS/S2_SR_HARMONIZED, cenas com < 20% de nuvens) combinadas com a máscara
+ * de concordância multitemporal de uso e cobertura do solo ESA/WorldCover/v100/2020
+ * e ESA/WorldCover/v200/2021 (bandas Map_2020 e Map a 10m) via API REST v1 do Google Earth Engine
+ * (Decisão D07 e Parâmetro P05: elegível se e somente se ambas as épocas pertencerem a [30, 40]).
+ */
+export async function medirSentinel2PontoGeeRest(
+  latitude: number,
+  longitude: number,
+  accessToken: string,
+  projectId: string
+): Promise<MedicaoEspectralReal | null> {
+  if (!accessToken || !projectId) return null;
+
+  try {
+    const expression = construirExpressaoGeeSentinel2WorldCover(latitude, longitude);
+
+    const endpoint = `https://earthengine.googleapis.com/v1/projects/${encodeURIComponent(
+      projectId
+    )}/value:compute`;
+
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ expression }),
+      signal: AbortSignal.timeout(12000),
+    });
+
+    if (!res.ok) {
+      const errTxt = await res.text().catch(() => "");
+      ultimoErroGee = `HTTP ${res.status}: ${errTxt}`;
+      return null;
+    }
+    const data = await res.json().catch(() => null);
+    const props = data?.result;
+    if (!props || typeof props !== "object") {
+      ultimoErroGee = `Empty result: ${JSON.stringify(data)}`;
+      return null;
+    }
+
+    return processarRespostaGeeSentinel2(props);
+  } catch (err: any) {
+    ultimoErroGee = `Exception: ${err?.message}`;
+    return null;
+  }
+}
+
+export function processarRespostaGeeSentinel2(
+  props: Record<string, any>,
+  cenasFallback?: string[]
+): MedicaoEspectralReal | null {
+  if (!props || typeof props !== "object") return null;
+
+  const raw2021 = props.Map_2021 ?? props.Map;
+  const classeWorldCover2021 =
+    typeof raw2021 === "number" && Number.isFinite(raw2021)
+      ? Math.round(raw2021)
+      : null;
+
+  const raw2020 = props.Map_2020 ?? props.Map_1;
+  const classeWorldCover2020 =
+    typeof raw2020 === "number" && Number.isFinite(raw2020)
+      ? Math.round(raw2020)
+      : null;
+
+  const classeWorldCover = classeWorldCover2021;
+
+  const rawCount = props.B4_count ?? props.B2_count ?? props.nObservacoesValidas;
+  const nObservacoesValidas =
+    typeof rawCount === "number" && Number.isFinite(rawCount)
+      ? Math.round(rawCount)
+      : 0;
+
+  const avaliacaoD11 =
+    typeof rawCount === "number" && Number.isFinite(rawCount)
+      ? avaliarSuficienciaAmostralD11(nObservacoesValidas)
+      : {
+          suficiente: false,
+          causa: "insuficiente" as const,
+          motivo: "Contagem de observações válidas ausente na resposta GEE.",
+        };
+
+  const b2_15 = typeof props.B2_p15 === "number" ? props.B2_p15 / 10000 : null;
+  const b4_15 = typeof props.B4_p15 === "number" ? props.B4_p15 / 10000 : null;
+  const b8_15 = typeof props.B8_p15 === "number" ? props.B8_p15 / 10000 : null;
+  const b11_15 = typeof props.B11_p15 === "number" ? props.B11_p15 / 10000 : null;
+  const b12_15 = typeof props.B12_p15 === "number" ? props.B12_p15 / 10000 : null;
+
+  const b2_50 =
+    typeof (props.B2_p50 ?? props.B2_median ?? props.B2) === "number"
+      ? (props.B2_p50 ?? props.B2_median ?? props.B2) / 10000
+      : null;
+  const b4_50 =
+    typeof (props.B4_p50 ?? props.B4_median ?? props.B4) === "number"
+      ? (props.B4_p50 ?? props.B4_median ?? props.B4) / 10000
+      : null;
+  const b8_50 =
+    typeof (props.B8_p50 ?? props.B8_median ?? props.B8) === "number"
+      ? (props.B8_p50 ?? props.B8_median ?? props.B8) / 10000
+      : null;
+  const b11_50 =
+    typeof (props.B11_p50 ?? props.B11_median ?? props.B11) === "number"
+      ? (props.B11_p50 ?? props.B11_median ?? props.B11) / 10000
+      : null;
+  const b12_50 =
+    typeof (props.B12_p50 ?? props.B12_median ?? props.B12) === "number"
+      ? (props.B12_p50 ?? props.B12_median ?? props.B12) / 10000
+      : null;
+
+  const b2_85 = typeof props.B2_p85 === "number" ? props.B2_p85 / 10000 : null;
+  const b4_85 = typeof props.B4_p85 === "number" ? props.B4_p85 / 10000 : null;
+  const b8_85 = typeof props.B8_p85 === "number" ? props.B8_p85 / 10000 : null;
+  const b11_85 = typeof props.B11_p85 === "number" ? props.B11_p85 / 10000 : null;
+  const b12_85 = typeof props.B12_p85 === "number" ? props.B12_p85 / 10000 : null;
+
+  if (b2_50 === null || b4_50 === null || b8_50 === null || b11_50 === null || b12_50 === null) {
+    return null;
+  }
+
+  // Assinatura crítica de exposição de solo na entressafra (BSI canônico preserva B11 = SWIR-1)
+  const ndviExposicao =
+    b8_15 !== null && b4_85 !== null ? calcularNdvi(b8_15, b4_85) : calcularNdvi(b8_50, b4_50);
+  const bsiExposicao =
+    b11_85 !== null && b4_85 !== null && b8_15 !== null && b2_15 !== null
+      ? calcularBsi(b11_85, b4_85, b8_15, b2_15)
+      : calcularBsi(b11_50, b4_50, b8_50, b2_50);
+
+  // Assinatura de cobertura/palhada
+  const ndviVigor =
+    b8_85 !== null && b4_15 !== null ? calcularNdvi(b8_85, b4_15) : calcularNdvi(b8_50, b4_50);
+  const bsiVigor =
+    b11_15 !== null && b4_15 !== null && b8_85 !== null && b2_85 !== null
+      ? calcularBsi(b11_15, b4_15, b8_85, b2_85)
+      : calcularBsi(b11_50, b4_50, b8_50, b2_50);
+
+  const ndviMed = calcularNdvi(b8_50, b4_50)!;
+  const bsiMed = calcularBsi(b11_50, b4_50, b8_50, b2_50)!;
+
+  // Decisão D07 e Parâmetro P05: uma célula é elegível pela cobertura se e somente se
+  // AMBAS as épocas (2020 v100 e 2021 v200) estiverem presentes e pertencerem a [30, 40].
+  const inelegivelWorldCover =
+    classeWorldCover2020 === null ||
+    classeWorldCover2021 === null ||
+    !isClasseUsoElegivel(classeWorldCover2020) ||
+    !isClasseUsoElegivel(classeWorldCover2021);
+  const dosselFlorestalPerene =
+    ndviExposicao !== null &&
+    ndviExposicao >= 0.50 &&
+    ndviMed >= 0.65 &&
+    (bsiExposicao === null || bsiExposicao < -0.05);
+  const ehFlorestaOuInelegivel = inelegivelWorldCover || dosselFlorestalPerene;
+
+  let janelasSoloNu = 0;
+  if (bsiExposicao !== null && bsiExposicao > 0.10) janelasSoloNu++;
+  if (bsiMed > 0.02 || ndviMed < 0.38) janelasSoloNu++;
+  if (bsiVigor !== null && bsiVigor > 0.0) janelasSoloNu++;
+  const freqReal = Number((janelasSoloNu / 3).toFixed(2));
+
+  let b2Final = b2_50,
+    b4Final = b4_50,
+    b8Final = b8_50,
+    b11Final = b11_50,
+    b12Final = b12_50,
+    ndviFinal = ndviMed,
+    bsiFinal = bsiMed;
+
+  if (
+    bsiExposicao !== null &&
+    ndviExposicao !== null &&
+    bsiExposicao > 0.10 &&
+    ndviExposicao < 0.40 &&
+    (bsiExposicao >= 0.14 || bsiMed >= -0.02)
+  ) {
+    b2Final = b2_15 ?? b2_50;
+    b4Final = b4_85 ?? b4_50;
+    b8Final = b8_15 ?? b8_50;
+    b11Final = b11_85 ?? b11_50;
+    b12Final = b12_85 ?? b12_50;
+    ndviFinal = ndviExposicao;
+    bsiFinal = bsiExposicao;
+  } else if (
+    bsiVigor !== null &&
+    ndviVigor !== null &&
+    bsiVigor < 0.0 &&
+    ndviVigor > 0.65 &&
+    bsiMed < 0.02
+  ) {
+    b2Final = b2_85 ?? b2_50;
+    b4Final = b4_15 ?? b4_50;
+    b8Final = b8_85 ?? b8_50;
+    b11Final = b11_15 ?? b11_50;
+    b12Final = b12_15 ?? b12_50;
+    ndviFinal = ndviVigor;
+    bsiFinal = bsiVigor;
+  }
+
+  const tsMs =
+    typeof props["system:time_start_p85"] === "number"
+      ? props["system:time_start_p85"]
+      : typeof props["system:time_start_p50"] === "number"
+        ? props["system:time_start_p50"]
+        : typeof props["system:time_start"] === "number"
+          ? props["system:time_start"]
+          : null;
+
+  const adquiridoEm = extrairDataAquisicaoSentinel2({
+    timestampMs: tsMs,
+    cenas: Array.isArray(props.cenas) ? props.cenas : cenasFallback,
+  });
+
+  return {
+    b2: b2Final,
+    b4: b4Final,
+    b8: b8Final,
+    b11: b11Final,
+    b12: b12Final,
+    ndvi: ndviFinal,
+    bsi: bsiFinal,
+    frequenciaSoloNu: avaliacaoD11.suficiente ? freqReal : null,
+    nObservacoesValidas,
+    insuficienteD11: !avaliacaoD11.suficiente,
+    adquiridoEm,
+    classeWorldCover,
+    classeWorldCover2020,
+    classeWorldCover2021,
+    ehFlorestaOuInelegivel,
+    fonte: "Sentinel-2 MSI L2A + ESA WorldCover v100 (2020) & v200 (2021) 10m (GEE REST v1)",
+  };
+}
+
+/**
+ * Consulta em lote com paralelismo controlado na API REST v1 do Google Earth Engine.
+ * Avalia CADA ponto em sua coordenada exata de 10m (sem agrupar em células grossas),
+ * garantindo que nenhum candidato caia sobre Mata Ciliar, Reserva Legal ou Floresta.
+ */
+export async function medirSentinel2EmLoteGeeRest(
+  pontos: Array<{ id: string; latitude: number; longitude: number }>,
+  accessToken: string,
+  projectId: string
+): Promise<Map<string, MedicaoEspectralReal>> {
+  const mapa = new Map<string, MedicaoEspectralReal>();
+  if (pontos.length === 0 || !accessToken || !projectId) return mapa;
+
+  // Deduplica apenas coordenadas idênticas (< 1 m: 5 casas decimais) para medir
+  // estritamente o pixel de 10 m exato de cada candidato
+  const celulas = new Map<string, { lat: number; lon: number; ids: string[] }>();
+  for (const pt of pontos) {
+    const chave = `${pt.latitude.toFixed(5)}_${pt.longitude.toFixed(5)}`;
+    const atual = celulas.get(chave);
+    if (atual) {
+      atual.ids.push(pt.id);
+    } else {
+      celulas.set(chave, { lat: pt.latitude, lon: pt.longitude, ids: [pt.id] });
+    }
+  }
+
+  const listaCelulas = Array.from(celulas.values());
+  const CONCORRENCIA = 22;
+
+  for (let i = 0; i < listaCelulas.length; i += CONCORRENCIA) {
+    const fatia = listaCelulas.slice(i, i + CONCORRENCIA);
+    await Promise.all(
+      fatia.map(async (cel) => {
+        const res = await medirSentinel2PontoGeeRest(cel.lat, cel.lon, accessToken, projectId);
+        if (res) {
+          for (const id of cel.ids) {
+            mapa.set(id, res);
+          }
+        }
+      })
+    );
+  }
+
+  return mapa;
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/elegibilidade.ts
+TAMANHO: 6,350 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Máscara e Critérios de Elegibilidade Espacial — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * CRITÉRIOS DE ELEGIBILIDADE (PLANEJAMENTO V3, §10.1 / DECISÃO D07 / P05):
+ * 1. Uso do Solo (D07 / P05): ESA WorldCover 10m [30: Pastagem, 40: Lavouras].
+ *    A classe 60 (Solo Exposto / Bare / sparse vegetation) é estritamente excluída (D07 / P05).
+ * 2. Declividade (P04): Calculada estritamente em EPSG:31982 (SIRGAS 2000 / UTM 22S)
+ *    na faixa de escoamento superficial (padrão: 3% a 20%, relevo suave-ondulado e ondulado).
+ * 3. Exclusão Hídrica (P04): Buffer de 30 metros ao redor de corpos d''água (JRC Global Surface Water).
+ * 4. Exclusão Urbana (P04): Buffer de 150 metros ao redor de áreas urbanizadas (WorldCover classe 50).
+ *
+ * CORREÇÕES EM RELAÇÃO AO LEGADO:
+ * - Declividade em EPSG:31982 no lugar de EPSG:3857 (elimina subestimação de ~10% no Paraná).
+ * - Tratamento integral de FeatureCollection: une todas as feições em MultiPolygon sem descarte.
+ */
+
+import { CRS_TERRENO_PADRAO, grausParaPct, pctParaGraus } from "./terreno";
+
+export interface OpcoesElegibilidade {
+  allowedLandCoverClasses?: number[];
+  minSlopePercent?: number;
+  maxSlopePercent?: number;
+  waterOccurrenceThreshold?: number;
+  waterBufferMeters?: number;
+  urbanBufferMeters?: number;
+}
+
+export const OPCOES_ELEGIBILIDADE_PADRAO: Required<OpcoesElegibilidade> = {
+  allowedLandCoverClasses: [30, 40], // D07 / P05 (classe 60 excluída)
+  minSlopePercent: 3.0,                  // P04
+  maxSlopePercent: 20.0,                 // P04
+  waterOccurrenceThreshold: 10,          // P04
+  waterBufferMeters: 30,                 // P04
+  urbanBufferMeters: 150,                // P04
+};
+
+export const PROJECAO_ELEGIBILIDADE = CRS_TERRENO_PADRAO; // "EPSG:31982"
+
+/**
+ * Valida as opções de elegibilidade garantindo limites e tipos consistentes.
+ */
+export function validarOpcoesElegibilidade(
+  opcoes?: OpcoesElegibilidade
+): Required<OpcoesElegibilidade> {
+  const minSlope = opcoes?.minSlopePercent !== undefined ? opcoes.minSlopePercent : OPCOES_ELEGIBILIDADE_PADRAO.minSlopePercent;
+  const maxSlope = opcoes?.maxSlopePercent !== undefined ? opcoes.maxSlopePercent : OPCOES_ELEGIBILIDADE_PADRAO.maxSlopePercent;
+  const waterThreshold = opcoes?.waterOccurrenceThreshold !== undefined ? opcoes.waterOccurrenceThreshold : OPCOES_ELEGIBILIDADE_PADRAO.waterOccurrenceThreshold;
+  const waterBuffer = opcoes?.waterBufferMeters !== undefined ? opcoes.waterBufferMeters : OPCOES_ELEGIBILIDADE_PADRAO.waterBufferMeters;
+  const urbanBuffer = opcoes?.urbanBufferMeters !== undefined ? opcoes.urbanBufferMeters : OPCOES_ELEGIBILIDADE_PADRAO.urbanBufferMeters;
+  const classes = opcoes?.allowedLandCoverClasses ? [...opcoes.allowedLandCoverClasses] : [...OPCOES_ELEGIBILIDADE_PADRAO.allowedLandCoverClasses];
+
+  if (!Number.isFinite(minSlope) || minSlope < 0) {
+    throw new Error(`Declividade mínima inválida (${minSlope}%).`);
+  }
+  if (!Number.isFinite(maxSlope) || maxSlope <= minSlope) {
+    throw new Error(`Declividade máxima (${maxSlope}%) deve ser maior que a mínima (${minSlope}%).`);
+  }
+  if (classes.length === 0) {
+    throw new Error("Pelo menos uma classe de cobertura deve ser elegível.");
+  }
+
+  return {
+    allowedLandCoverClasses: classes,
+    minSlopePercent: minSlope,
+    maxSlopePercent: maxSlope,
+    waterOccurrenceThreshold: waterThreshold,
+    waterBufferMeters: waterBuffer,
+    urbanBufferMeters: urbanBuffer,
+  };
+}
+
+/**
+ * Normaliza e consolida qualquer formato de AOI (Polygon, MultiPolygon ou FeatureCollection com múltiplas feições)
+ * em uma geometria GeoJSON única sem descartar nenhuma feição (corrige achado 10.1 do plano).
+ */
+export function normalizarAoIGeoJson(aoi: any): GeoJSON.Polygon | GeoJSON.MultiPolygon {
+  if (!aoi || typeof aoi !== "object") {
+    throw new Error("AOI não fornecida ou formato inválido.");
+  }
+
+  // Se for uma Feature direta
+  if (aoi.type === "Feature" && aoi.geometry) {
+    return normalizarAoIGeoJson(aoi.geometry);
+  }
+
+  // Se for uma FeatureCollection, une todas as feições em um MultiPolygon
+  if (aoi.type === "FeatureCollection" && Array.isArray(aoi.features)) {
+    if (aoi.features.length === 0) {
+      throw new Error("FeatureCollection de AOI está vazia.");
+    }
+    if (aoi.features.length === 1) {
+      return normalizarAoIGeoJson(aoi.features[0].geometry || aoi.features[0]);
+    }
+
+    // Coleta todas as coordenadas de polígonos
+    const todosPoligonos: number[][][][] = [];
+    for (const f of aoi.features) {
+      const geom = f.geometry || f;
+      if (geom.type === "Polygon" && Array.isArray(geom.coordinates)) {
+        todosPoligonos.push(geom.coordinates);
+      } else if (geom.type === "MultiPolygon" && Array.isArray(geom.coordinates)) {
+        for (const pol of geom.coordinates) {
+          todosPoligonos.push(pol);
+        }
+      } else {
+        throw new Error(`Geometria inválida ou não suportada em FeatureCollection: ${geom.type}`);
+      }
+    }
+
+    return {
+      type: "MultiPolygon",
+      coordinates: todosPoligonos,
+    };
+  }
+
+  // Geometria nativa
+  if (aoi.type === "Polygon" || aoi.type === "MultiPolygon") {
+    if (!Array.isArray(aoi.coordinates) || aoi.coordinates.length === 0) {
+      throw new Error(`Geometria ${aoi.type} não possui coordenadas válidas.`);
+    }
+    return aoi as GeoJSON.Polygon | GeoJSON.MultiPolygon;
+  }
+
+  throw new Error(`Tipo de geometria não suportado para AOI: ${aoi.type}.`);
+}
+
+/**
+ * Verifica se uma classe da ESA WorldCover pertence às classes elegíveis (P05).
+ */
+export function isClasseUsoElegivel(
+  classeCodigo: number,
+  classesPermitidas: number[] = OPCOES_ELEGIBILIDADE_PADRAO.allowedLandCoverClasses
+): boolean {
+  return classesPermitidas.includes(classeCodigo);
+}
+
+/**
+ * Verifica se um valor de declividade (em percentual ou graus) atende aos critérios de elegibilidade de relevo.
+ */
+export function isDeclividadeElegivel(
+  declividadePct: number,
+  minPct = OPCOES_ELEGIBILIDADE_PADRAO.minSlopePercent,
+  maxPct = OPCOES_ELEGIBILIDADE_PADRAO.maxSlopePercent
+): boolean {
+  if (!Number.isFinite(declividadePct)) return false;
+  return declividadePct >= minPct && declividadePct <= maxPct;
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/estatisticasSerie.ts
+TAMANHO: 5,015 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Estatísticas Descritivas e Percentis da Série Temporal — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * PLANEJAMENTO V3, §6.1 (Estratégia 2):
+ * Extração de percentis robustos não paramétricos (p10, p50, p90) e amplitude
+ * interquantil por banda da série histórica, especialmente SWIR (B11 e B12).
+ *
+ * REGRA 1 DA LEI FUNDAMENTAL:
+ * Sem observações suficientes (mínimo de 3 observações válidas na janela),
+ * retorna rigorosamente "indisponivel" com causa "insuficiente".
+ */
+
+import { Proveniencia } from "@/types/proveniencia";
+import { ObservacaoCena, NomeBandaEspectral } from "./serieTemporal";
+
+export interface EstatisticasBanda {
+  p10: Proveniencia<number>;
+  p50: Proveniencia<number>;
+  p90: Proveniencia<number>;
+  media: Proveniencia<number>;
+  desvioPadrao: Proveniencia<number>;
+  amplitudeInterquantil: Proveniencia<number>; // p90 - p10
+}
+
+/**
+ * Calcula um percentil [0, 100] de um array de números ordenados por interpolação linear.
+ */
+export function calcularPercentilOrdenado(ordenados: number[], percentil: number): number {
+  const n = ordenados.length;
+  if (n === 0) return 0;
+  if (n === 1) return ordenados[0];
+
+  if (!Number.isFinite(percentil) || percentil < 0 || percentil > 100) {
+    throw new Error(`Percentil fora do domínio [0, 100]: ${percentil}`);
+  }
+  const p = percentil / 100;
+  const index = p * (n - 1);
+  const lower = Math.floor(index);
+  const upper = Math.ceil(index);
+  const fraction = index - lower;
+
+  if (lower === upper) {
+    return ordenados[lower];
+  }
+
+  return Number((ordenados[lower] + fraction * (ordenados[upper] - ordenados[lower])).toFixed(4));
+}
+
+/**
+ * Calcula o conjunto completo de estatísticas e percentis para uma banda.
+ */
+export function calcularEstatisticasBanda(
+  cenas: ObservacaoCena[],
+  banda: NomeBandaEspectral,
+  nMinimo = 3
+): EstatisticasBanda {
+  const valores: number[] = [];
+  for (const c of cenas) {
+    if (!c.nuvemSombra) {
+      const v = c[banda];
+      if (v !== null && Number.isFinite(v)) {
+        valores.push(v);
+      }
+    }
+  }
+
+  const n = valores.length;
+  const nomeB = banda.toUpperCase();
+
+  if (n < nMinimo) {
+    const indisp: Proveniencia<number> = {
+      estado: "indisponivel",
+      causa: "insuficiente",
+      motivo: `Banda ${nomeB} possui apenas ${n} observações válidas (mínimo exigido: ${nMinimo}).`,
+    };
+    return {
+      p10: indisp,
+      p50: indisp,
+      p90: indisp,
+      media: indisp,
+      desvioPadrao: indisp,
+      amplitudeInterquantil: indisp,
+    };
+  }
+
+  valores.sort((a, b) => a - b);
+
+  const p10Val = calcularPercentilOrdenado(valores, 10);
+  const p50Val = calcularPercentilOrdenado(valores, 50);
+  const p90Val = calcularPercentilOrdenado(valores, 90);
+  const ampIqVal = Number((p90Val - p10Val).toFixed(4));
+
+  const mediaVal = Number((valores.reduce((acc, v) => acc + v, 0) / n).toFixed(4));
+  const variancia = valores.reduce((acc, v) => acc + Math.pow(v - mediaVal, 2), 0) / (n > 1 ? n - 1 : 1);
+  const dpVal = Number(Math.sqrt(variancia).toFixed(4));
+
+  const modeloInfo = "Percentil e Estatísticas da Série Temporal";
+  const insumosInfo = [`serie_${nomeB}`];
+  const qualidade = { nObservacoes: n };
+
+  return {
+    p10: {
+      estado: "modelado",
+      valor: p10Val,
+      modelo: modeloInfo,
+      insumos: insumosInfo,
+      qualidade,
+    },
+    p50: {
+      estado: "modelado",
+      valor: p50Val,
+      modelo: modeloInfo,
+      insumos: insumosInfo,
+      qualidade,
+    },
+    p90: {
+      estado: "modelado",
+      valor: p90Val,
+      modelo: modeloInfo,
+      insumos: insumosInfo,
+      qualidade,
+    },
+    media: {
+      estado: "modelado",
+      valor: mediaVal,
+      modelo: modeloInfo,
+      insumos: insumosInfo,
+      qualidade,
+    },
+    desvioPadrao: {
+      estado: "modelado",
+      valor: dpVal,
+      modelo: modeloInfo,
+      insumos: insumosInfo,
+      qualidade,
+    },
+    amplitudeInterquantil: {
+      estado: "modelado",
+      valor: ampIqVal,
+      modelo: modeloInfo,
+      insumos: insumosInfo,
+      qualidade,
+    },
+  };
+}
+
+/**
+ * Constrói o mapa de estatísticas para BlocoSerie["estatisticas"].
+ * Gera chaves como "B11_p10", "B11_p50", "B11_p90", "B12_p10", "B12_p50", "B12_p90".
+ */
+export function construirEstatisticasBloco(
+  cenas: ObservacaoCena[],
+  bandas: NomeBandaEspectral[] = ["b11", "b12"]
+): Record<string, Proveniencia<number>> {
+  const mapa: Record<string, Proveniencia<number>> = {};
+
+  for (const b of bandas) {
+    const prefixo = b.toUpperCase();
+    const est = calcularEstatisticasBanda(cenas, b);
+
+    mapa[`${prefixo}_p10`] = est.p10;
+    mapa[`${prefixo}_p50`] = est.p50;
+    mapa[`${prefixo}_p90`] = est.p90;
+    mapa[`${prefixo}_amplitudeInterquantil`] = est.amplitudeInterquantil;
+    mapa[`${prefixo}_media`] = est.media;
+    mapa[`${prefixo}_desvioPadrao`] = est.desvioPadrao;
+  }
+
+  return mapa;
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/estratificacao.ts
+TAMANHO: 10,596 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Estratificação Multivariada no Espaço Ŝ × Ê × K̂ — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * FUNDAMENTAÇÃO (PLANEJAMENTO V3, §7.2; PROMPT §10.2):
+ * - Espaço tridimensional particionado em 18 estratos independentes:
+ *   - Ŝ (Terreno): 3 terços de declividade (%)
+ *   - Ê (Exposição): 3 terços de frequência de solo nu
+ *   - K̂ (Erodibilidade): 2 níveis (1 = Baixa/Média, 2 = Alta/Muito Alta — D09)
+ *   Total: 3 × 3 × 2 = 18 estratos.
+ *
+ * REGRAS DA LEI FUNDAMENTAL:
+ * - Regra 1 e 5: Parâmetros metaAmostras e semente são obrigatórios (sem defaults).
+ * - Regra 2 (Invariante 2): phiDiag e criterioSelecao são metadados internos de
+ *   amostragem; NUNCA entram na matriz de treino, NUNCA em perfil cego.
+ * - Regra 1: Quando qualquer dimensão tiver amplitude zero (max == min), phiDiag
+ *   é estritamente null (nunca 0.5 inventado).
+ */
+
+export interface CandidatoEstratificacao {
+  id: string;
+  latitude: number;
+  longitude: number;
+  declividadePct: number;    // Dimensão Ŝ
+  frequenciaSoloNu: number;  // Dimensão Ê [0, 1]
+  nivelK: 1 | 2;             // Dimensão K̂ (1 ou 2)
+}
+
+export interface PontoEstratificado {
+  id: string;
+  codigo: string;            // PR-2026-XXXX
+  latitude: number;
+  longitude: number;
+  declividadePct: number;
+  frequenciaSoloNu: number;
+  nivelK: 1 | 2;
+  estratoId: string;
+  criterioSelecao: {
+    tercilS: 1 | 2 | 3;
+    tercilE: 1 | 2 | 3;
+    nivelK: 1 | 2;
+    phiDiag: number | null;  // null quando amplitude de S ou E for zero
+    semente: number;
+    raioThinningEfetivoMetros?: number;
+  };
+}
+
+export interface RelatorioEstratificacao {
+  totalCandidatosAvaliados: number;
+  totalPontosAmostrados: number;
+  sementeAleatoria: number;
+  limiaresS: { t1: number; t2: number };
+  limiaresE: { t1: number; t2: number };
+  deficitTotal: number;
+  estratosOcupados: Record<
+    string,
+    { totalDisponivel: number; cotaAlocada: number; totalAmostrado: number; deficit: number }
+  >;
+  estratosVazios: string[];
+}
+
+/**
+ * Gerador de números pseudo-aleatórios determinístico Linear Congruential Generator (LCG).
+ */
+export function criarPrng(semente: number): () => number {
+  let s = Math.abs(Math.floor(semente)) % 2147483647;
+  if (s === 0) s = 12345;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+export interface ResultadoLimiaresTercis {
+  t1: number;
+  t2: number;
+  nValidos: number;
+  nNaoFinitos: number;
+  nEmpatesEmT1: number;
+  nEmpatesEmT2: number;
+}
+
+/**
+ * Calcula os tercis empíricos para divisão em 3 terços, tratando empates e valores não-finitos (N12 / M9).
+ */
+export function calcularLimiaresTercis(valores: number[]): ResultadoLimiaresTercis {
+  const nNaoFinitos = valores.filter((v) => typeof v !== "number" || !Number.isFinite(v) || Number.isNaN(v)).length;
+  const finitos = valores.filter((v) => typeof v === "number" && Number.isFinite(v) && !Number.isNaN(v));
+  const nValidos = finitos.length;
+  if (nValidos === 0) {
+    return {
+      t1: 0,
+      t2: 0,
+      nValidos: 0,
+      nNaoFinitos,
+      nEmpatesEmT1: 0,
+      nEmpatesEmT2: 0,
+    };
+  }
+  const ordenados = [...finitos].sort((a, b) => a - b);
+  const c1 = Math.ceil(nValidos / 3) - 1;
+  const idx1 = c1 < 0 ? 0 : c1;
+  const c2 = Math.ceil((2 * nValidos) / 3) - 1;
+  const idx2 = c2 < 0 ? 0 : c2;
+  const t1 = ordenados[idx1];
+  const t2 = ordenados[idx2];
+  const nEmpatesEmT1 = ordenados.filter((x) => x === t1).length;
+  const nEmpatesEmT2 = ordenados.filter((x) => x === t2).length;
+  return {
+    t1,
+    t2,
+    nValidos,
+    nNaoFinitos,
+    nEmpatesEmT1,
+    nEmpatesEmT2,
+  };
+}
+
+/**
+ * Atribui o tercil (1, 2 ou 3) com base nos limiares empíricos da AOI.
+ * Lança erro se o valor não for um número finito (N12).
+ */
+export function classificarTercil(valor: number, limiares: { t1: number; t2: number }): 1 | 2 | 3 {
+  if (typeof valor !== "number" || !Number.isFinite(valor) || Number.isNaN(valor)) {
+    throw new Error(`Valor não finito fornecido a classificarTercil: ${valor}`);
+  }
+  if (valor <= limiares.t1) return 1;
+  if (valor <= limiares.t2) return 2;
+  return 3;
+}
+
+/**
+ * Lista canônica dos 18 estratos tridimensionais (3 × 3 × 2) da Decisão D12.
+ */
+export const TODOS_ESTRATOS_D12: readonly string[] = [
+  "E_1_1_1", "E_1_1_2",
+  "E_1_2_1", "E_1_2_2",
+  "E_1_3_1", "E_1_3_2",
+  "E_2_1_1", "E_2_1_2",
+  "E_2_2_1", "E_2_2_2",
+  "E_2_3_1", "E_2_3_2",
+  "E_3_1_1", "E_3_1_2",
+  "E_3_2_1", "E_3_2_2",
+  "E_3_3_1", "E_3_3_2",
+] as const;
+
+/**
+ * Particiona um conjunto de candidatos nos 18 estratos de D12 usando os tercis
+ * empíricos calculados sobre o próprio conjunto (calcularLimiaresTercis + classificarTercil).
+ */
+export function particionarCandidatosEm18Estratos<T extends CandidatoEstratificacao>(
+  candidatos: T[]
+): {
+  limiaresS: { t1: number; t2: number };
+  limiaresE: { t1: number; t2: number };
+  todosPossiveisEstratos: string[];
+  estratosMap: Record<string, T[]>;
+} {
+  const sVals = candidatos.map((c) => c.declividadePct);
+  const eVals = candidatos.map((c) => c.frequenciaSoloNu);
+  const limiaresS = calcularLimiaresTercis(sVals);
+  const limiaresE = calcularLimiaresTercis(eVals);
+
+  const estratosMap: Record<string, T[]> = {};
+  const todosPossiveisEstratos = [...TODOS_ESTRATOS_D12];
+  for (const idEstrato of todosPossiveisEstratos) {
+    estratosMap[idEstrato] = [];
+  }
+
+  for (const c of candidatos) {
+    const tercilS = classificarTercil(c.declividadePct, limiaresS);
+    const tercilE = classificarTercil(c.frequenciaSoloNu, limiaresE);
+    const id = `E_${tercilS}_${tercilE}_${c.nivelK}`;
+    if (!estratosMap[id]) estratosMap[id] = [];
+    estratosMap[id].push(c);
+  }
+
+  return {
+    limiaresS,
+    limiaresE,
+    todosPossiveisEstratos,
+    estratosMap,
+  };
+}
+
+/**
+ * Executa a amostragem estratificada multivariada sobre os 18 estratos físicos.
+ */
+export function executarAmostragemEstratificada(
+  candidatos: CandidatoEstratificacao[],
+  metaAmostras: number,
+  semente: number
+): { pontos: PontoEstratificado[]; relatorio: RelatorioEstratificacao } {
+  if (!Number.isFinite(metaAmostras) || metaAmostras <= 0) {
+    throw new Error(`Meta de amostras inválida: ${metaAmostras}`);
+  }
+  if (!Number.isFinite(semente)) {
+    throw new Error(`Semente aleatória inválida: ${semente}`);
+  }
+
+  if (candidatos.length === 0) {
+    return {
+      pontos: [],
+      relatorio: {
+        totalCandidatosAvaliados: 0,
+        totalPontosAmostrados: 0,
+        sementeAleatoria: semente,
+        limiaresS: { t1: 0, t2: 0 },
+        limiaresE: { t1: 0, t2: 0 },
+        deficitTotal: metaAmostras,
+        estratosOcupados: {},
+        estratosVazios: [],
+      },
+    };
+  }
+
+  // 1. Limiares empíricos e partição canônica nos 18 estratos
+  const sVals = candidatos.map(c => c.declividadePct);
+  const eVals = candidatos.map(c => c.frequenciaSoloNu);
+  const { limiaresS, limiaresE, todosPossiveisEstratos, estratosMap } =
+    particionarCandidatosEm18Estratos(candidatos);
+
+  // Amplitudes para cálculo do Phi_diag
+  let sMin = sVals[0];
+  let sMax = sVals[0];
+  for (const v of sVals) {
+    if (v < sMin) sMin = v;
+    if (v > sMax) sMax = v;
+  }
+
+  let eMin = eVals[0];
+  let eMax = eVals[0];
+  for (const v of eVals) {
+    if (v < eMin) eMin = v;
+    if (v > eMax) eMax = v;
+  }
+
+  const amplitudeSValida = sMax > sMin;
+  const amplitudeEValida = eMax > eMin;
+  const podeCalcularPhi = amplitudeSValida && amplitudeEValida;
+
+  // 3. Identificação de ocupação dos estratos
+  const estratosOcupadosIds = todosPossiveisEstratos.filter(id => estratosMap[id].length > 0);
+  const estratosVazios = todosPossiveisEstratos.filter(id => estratosMap[id].length === 0);
+
+  const nEstratosAtivos = estratosOcupadosIds.length;
+  // Cota uniforme base
+  const cotaBase = nEstratosAtivos > 0 ? Math.floor(metaAmostras / nEstratosAtivos) : 0;
+  let sobra = nEstratosAtivos > 0 ? metaAmostras % nEstratosAtivos : 0;
+
+  const prng = criarPrng(semente);
+  const pontosAmostrados: PontoEstratificado[] = [];
+  const resumoOcupacao: RelatorioEstratificacao["estratosOcupados"] = {};
+  let totalDeficit = 0;
+  let seqCodigo = 1;
+
+  for (const id of estratosOcupadosIds) {
+    const lista = estratosMap[id];
+    let cota = cotaBase;
+    if (sobra > 0) {
+      cota += 1;
+      sobra -= 1;
+    }
+
+    // Embaralhamento determinístico Fisher-Yates com PRNG da semente
+    const embaralhado = [...lista];
+    for (let i = embaralhado.length - 1; i > 0; i--) {
+      const j = Math.floor(prng() * (i + 1));
+      const temp = embaralhado[i];
+      embaralhado[i] = embaralhado[j];
+      embaralhado[j] = temp;
+    }
+
+    const qtdAmostrada = Math.min(cota, embaralhado.length);
+    const deficit = cota > embaralhado.length ? cota - embaralhado.length : 0;
+    totalDeficit += deficit;
+
+    resumoOcupacao[id] = {
+      totalDisponivel: lista.length,
+      cotaAlocada: cota,
+      totalAmostrado: qtdAmostrada,
+      deficit,
+    };
+
+    const selecionados = embaralhado.slice(0, qtdAmostrada);
+
+    for (const item of selecionados) {
+      const tS = classificarTercil(item.declividadePct, limiaresS);
+      const tE = classificarTercil(item.frequenciaSoloNu, limiaresE);
+
+      // Cálculo de Phi_diag interno (null se amplitude de qualquer dimensão for zero)
+      let phiDiag: number | null = null;
+      if (podeCalcularPhi) {
+        const sNorm = (item.declividadePct - sMin) / (sMax - sMin);
+        const eNorm = (item.frequenciaSoloNu - eMin) / (eMax - eMin);
+        const kNorm = item.nivelK === 2 ? 1.0 : 0.0;
+        phiDiag = Number(((sNorm + eNorm + kNorm) / 3).toFixed(4));
+      }
+
+      pontosAmostrados.push({
+        id: item.id,
+        codigo: `PR-2026-${String(seqCodigo++).padStart(4, "0")}`,
+        latitude: item.latitude,
+        longitude: item.longitude,
+        declividadePct: item.declividadePct,
+        frequenciaSoloNu: item.frequenciaSoloNu,
+        nivelK: item.nivelK,
+        estratoId: id,
+        criterioSelecao: {
+          tercilS: tS,
+          tercilE: tE,
+          nivelK: item.nivelK,
+          phiDiag,
+          semente,
+        },
+      });
+    }
+  }
+
+  return {
+    pontos: pontosAmostrados,
+    relatorio: {
+      totalCandidatosAvaliados: candidatos.length,
+      totalPontosAmostrados: pontosAmostrados.length,
+      sementeAleatoria: semente,
+      limiaresS,
+      limiaresE,
+      deficitTotal: totalDeficit,
+      estratosOcupados: resumoOcupacao,
+      estratosVazios,
+    },
+  };
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/harmonicos.ts
+TAMANHO: 8,575 bytes
+--------------------------------------------------------------------------------
+
+﻿/**
+ * ============================================================================
+ * Ajuste de Modelos Harmônicos sobre Séries Temporais — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * FUNDAMENTAÇÃO:
+ * - Compressão harmônica de séries temporais (Zhu & Woodcock, 2014; CCDC).
+ * - Termo de tendência no SWIR (B12): eixos da degradação física do solo.
+ *
+ * DECISÃO D03:
+ * - Modelo padrão: 1 harmônico anual (4 termos: offset, tendência, cos(2pi t), sin(2pi t)).
+ * - Opção estendida: 2 harmônicos (6 termos: inclui cos(4pi t) e sin(4pi t)).
+ *
+ * QUALIDADE DO AJUSTE:
+ * Todo coeficiente calculado carrega o objeto QualidadeAjuste com nObservacoes,
+ * r2 e erroPadrao. Se as observações válidas forem inferiores ao mínimo (D11),
+ * o retorno é obrigatoriamente "indisponivel" com causa "insuficiente".
+ */
+
+import { Proveniencia, QualidadeAjuste } from "@/types/proveniencia";
+import { ObservacaoCena, NomeBandaEspectral } from "./serieTemporal";
+
+export interface OpcoesAjusteHarmonico {
+  nMinimoObservacoes?: number; // Padrão: 12
+  usarDoisHarmonicos?: boolean; // Se true usa 6 termos, se false usa 4 termos (D03)
+}
+
+export interface CoeficientesHarmonicosBanda {
+  offset: Proveniencia<number>;
+  tendencia: Proveniencia<number>;
+  amplitudeAnual: Proveniencia<number>;
+  faseAnual: Proveniencia<number>;
+  amplitudeSemianual?: Proveniencia<number>;
+}
+
+/**
+ * Ajusta o modelo harmônico para uma banda espectral específica.
+ */
+export function ajustarHarmonicosBanda(
+  cenas: ObservacaoCena[],
+  banda: NomeBandaEspectral,
+  opcoes: OpcoesAjusteHarmonico = {}
+): CoeficientesHarmonicosBanda {
+  const nMin = opcoes.nMinimoObservacoes !== undefined ? opcoes.nMinimoObservacoes : 12;
+  const doisHarmonicos = opcoes.usarDoisHarmonicos ?? false;
+  const p = doisHarmonicos ? 6 : 4;
+
+  // 1. Filtrar observações válidas (sem nuvem e com valor numérico finito)
+  const paresValidos: { t: number; y: number }[] = [];
+  for (const c of cenas) {
+    if (!c.nuvemSombra) {
+      const y = c[banda];
+      if (y !== null && Number.isFinite(y)) {
+        paresValidos.push({ t: c.tAnos, y });
+      }
+    }
+  }
+
+  const n = paresValidos.length;
+  const nomeB = banda.toUpperCase();
+
+  // Guarda de suficiência amostral (D11)
+  if (n < nMin) {
+    const motivoInsuficiente = `Série da banda ${nomeB} possui ${n} observações válidas (mínimo exigido: ${nMin}). Ajuste harmônico recusado.`;
+    const indisp: Proveniencia<number> = {
+      estado: "indisponivel",
+      causa: "insuficiente",
+      motivo: motivoInsuficiente,
+    };
+    const res: CoeficientesHarmonicosBanda = {
+      offset: indisp,
+      tendencia: indisp,
+      amplitudeAnual: indisp,
+      faseAnual: indisp,
+    };
+    if (doisHarmonicos) {
+      res.amplitudeSemianual = indisp;
+    }
+    return res;
+  }
+
+  // 2. Montagem das equações normais (XtX * beta = XtY)
+  const XtX: number[][] = Array.from({ length: p }, () => Array(p).fill(0));
+  const XtY: number[] = Array(p).fill(0);
+
+  for (const { t, y } of paresValidos) {
+    const w1 = 2 * Math.PI * t;
+    const row = doisHarmonicos
+      ? [1, t, Math.cos(w1), Math.sin(w1), Math.cos(2 * w1), Math.sin(2 * w1)]
+      : [1, t, Math.cos(w1), Math.sin(w1)];
+
+    for (let i = 0; i < p; i++) {
+      XtY[i] += row[i] * y;
+      for (let j = 0; j < p; j++) {
+        XtX[i][j] += row[i] * row[j];
+      }
+    }
+  }
+
+  // 3. Resolução via eliminação de Gauss com pivoteamento
+  const beta = resolverSistemaLinear(XtX, XtY);
+
+  if (!beta) {
+    const indispSingular: Proveniencia<number> = {
+      estado: "indisponivel",
+      causa: "fora-do-dominio",
+      motivo: `Matriz de covariância singular ao ajustar harmônicos de ${nomeB} (colinearidade temporal).`,
+    };
+    const res: CoeficientesHarmonicosBanda = {
+      offset: indispSingular,
+      tendencia: indispSingular,
+      amplitudeAnual: indispSingular,
+      faseAnual: indispSingular,
+    };
+    if (doisHarmonicos) res.amplitudeSemianual = indispSingular;
+    return res;
+  }
+
+  // 4. Cálculo de Qualidade do Ajuste (R² e erro padrão)
+  const yMedio = paresValidos.reduce((acc, par) => acc + par.y, 0) / n;
+  let ssTot = 0;
+  let ssRes = 0;
+
+  for (const { t, y } of paresValidos) {
+    const w1 = 2 * Math.PI * t;
+    const yPred = doisHarmonicos
+      ? beta[0] + beta[1] * t + beta[2] * Math.cos(w1) + beta[3] * Math.sin(w1) + beta[4] * Math.cos(2 * w1) + beta[5] * Math.sin(2 * w1)
+      : beta[0] + beta[1] * t + beta[2] * Math.cos(w1) + beta[3] * Math.sin(w1);
+
+    ssTot += Math.pow(y - yMedio, 2);
+    ssRes += Math.pow(y - yPred, 2);
+  }
+
+  let r2Bruto = ssTot > 0 ? 1 - ssRes / ssTot : 0;
+  if (r2Bruto < 0) r2Bruto = 0;
+  if (r2Bruto > 1) r2Bruto = 1;
+
+  const grausLiberdade = n > p ? n - p : 1;
+  const erroPadrao = Math.sqrt(ssRes / grausLiberdade);
+
+  const qualidade: QualidadeAjuste = {
+    nObservacoes: n,
+    r2: Number(r2Bruto.toFixed(3)),
+    erroPadrao: Number(erroPadrao.toFixed(4)),
+  };
+
+  const offsetVal = Number(beta[0].toFixed(4));
+  const tendVal = Number(beta[1].toFixed(5));
+  const ampAnualVal = Number(Math.sqrt(beta[2] * beta[2] + beta[3] * beta[3]).toFixed(4));
+  const faseAnualVal = Number(Math.atan2(beta[3], beta[2]).toFixed(3));
+
+  const modeloInfo = doisHarmonicos
+    ? "Regressão Harmônica OLS (2 harmônicos, 6 parâmetros)"
+    : "Regressão Harmônica OLS (1 harmônico anual, 4 parâmetros — D03)";
+  const insumosInfo = [`serie_${nomeB}`];
+  const decisoesInfo = ["D03"];
+
+  const resultado: CoeficientesHarmonicosBanda = {
+    offset: {
+      estado: "modelado",
+      valor: offsetVal,
+      modelo: modeloInfo,
+      insumos: insumosInfo,
+      decisoes: decisoesInfo,
+      qualidade,
+    },
+    tendencia: {
+      estado: "modelado",
+      valor: tendVal,
+      modelo: modeloInfo,
+      insumos: insumosInfo,
+      decisoes: decisoesInfo,
+      qualidade,
+    },
+    amplitudeAnual: {
+      estado: "modelado",
+      valor: ampAnualVal,
+      modelo: modeloInfo,
+      insumos: insumosInfo,
+      decisoes: decisoesInfo,
+      qualidade,
+    },
+    faseAnual: {
+      estado: "modelado",
+      valor: faseAnualVal,
+      modelo: modeloInfo,
+      insumos: insumosInfo,
+      decisoes: decisoesInfo,
+      qualidade,
+    },
+  };
+
+  if (doisHarmonicos) {
+    const ampSemiVal = Number(Math.sqrt(beta[4] * beta[4] + beta[5] * beta[5]).toFixed(4));
+    resultado.amplitudeSemianual = {
+      estado: "modelado",
+      valor: ampSemiVal,
+      modelo: modeloInfo,
+      insumos: insumosInfo,
+      decisoes: decisoesInfo,
+      qualidade,
+    };
+  }
+
+  return resultado;
+}
+
+/**
+ * Constrói o mapa consolidado de coeficientes harmônicos de BlocoSerie["harmonicos"].
+ * Gera chaves padronizadas como "B12_amplitudeAnual", "B12_tendencia", "B12_offset", "B12_faseAnual".
+ */
+export function construirHarmonicosBloco(
+  cenas: ObservacaoCena[],
+  bandas: NomeBandaEspectral[] = ["b12", "b11", "b4"],
+  opcoes: OpcoesAjusteHarmonico = {}
+): Record<string, Proveniencia<number>> {
+  const mapa: Record<string, Proveniencia<number>> = {};
+
+  for (const b of bandas) {
+    const prefixo = b.toUpperCase();
+    const coef = ajustarHarmonicosBanda(cenas, b, opcoes);
+
+    mapa[`${prefixo}_offset`] = coef.offset;
+    mapa[`${prefixo}_tendencia`] = coef.tendencia;
+    mapa[`${prefixo}_amplitudeAnual`] = coef.amplitudeAnual;
+    mapa[`${prefixo}_faseAnual`] = coef.faseAnual;
+
+    if (coef.amplitudeSemianual) {
+      mapa[`${prefixo}_amplitudeSemianual`] = coef.amplitudeSemianual;
+    }
+  }
+
+  return mapa;
+}
+
+/**
+ * Resolução de sistema Ax = b por Eliminação Gaussiana com Pivoteamento Parcial.
+ */
+function resolverSistemaLinear(A: number[][], b: number[]): number[] | null {
+  const n = b.length;
+  const M = A.map((row, i) => [...row, b[i]]);
+
+  for (let k = 0; k < n; k++) {
+    let maxRow = k;
+    let maxVal = Math.abs(M[k][k]);
+    for (let i = k + 1; i < n; i++) {
+      if (Math.abs(M[i][k]) > maxVal) {
+        maxVal = Math.abs(M[i][k]);
+        maxRow = i;
+      }
+    }
+
+    if (maxVal < 1e-12) return null; // Matriz singular
+
+    if (maxRow !== k) {
+      const temp = M[k];
+      M[k] = M[maxRow];
+      M[maxRow] = temp;
+    }
+
+    for (let i = k + 1; i < n; i++) {
+      const factor = M[i][k] / M[k][k];
+      for (let j = k; j <= n; j++) {
+        M[i][j] -= factor * M[k][j];
+      }
+    }
+  }
+
+  const x = Array(n).fill(0);
+  for (let i = n - 1; i >= 0; i--) {
+    let sum = M[i][n];
+    for (let j = i + 1; j < n; j++) {
+      sum -= M[i][j] * x[j];
+    }
+    x[i] = sum / M[i][i];
+  }
+
+  return x;
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/metadadosColecoes.ts
+TAMANHO: 4,525 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Metadados de Publicação de Coleções Estáticas e Extração de Data Sentinel-2
+ * ============================================================================
+ *
+ * Regra 3 & F0.3: Datas de aquisição (`adquiridoEm`) jamais podem ser literais
+ * espalhados pelas rotas. Para coleções estáticas (MDE, Cobertura do Solo,
+ * Levantamento Pedológico), utiliza-se a data oficial de publicação da versão
+ * da coleção com URL de catálogo conferida. Para séries dinâmicas Sentinel-2,
+ * extrai-se a data real de aquisição (`YYYY-MM-DD`) do timestamp da cena (`time_max`)
+ * ou do `PRODUCT_ID` (`S2A_MSIL2A_YYYYMMDDTHHMMSS_...`).
+ */
+
+/**
+ * Copernicus DEM GLO-30 (Global 30m Digital Elevation Model — European Space Agency).
+ * Catálogo Earth Engine: https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_DEM_GLO30
+ * Nota de lançamento ESA PRISM (Release 2023_1): https://prism-dem-open.copernicus.eu/
+ */
+export const DATA_PUBLICACAO_COPERNICUS_GLO30 = "2023-11-15";
+
+/**
+ * Levantamento de Reconhecimento dos Solos do Estado do Paraná — Embrapa Solos GeoInfo.
+ * Camada OGC WMS/WFS: `geonode:parana_solos_20201105` (data de publicação 2020-11-05 no identificador oficial).
+ * Catálogo oficial Embrapa GeoInfo: https://geoinfo.dados.embrapa.br/catalogue/#/dataset/2384
+ */
+export const DATA_PUBLICACAO_EMBRAPA_SOLOS_PR = "2020-11-05";
+
+/**
+ * ESA WorldCover 10m 2020 v100 (European Space Agency).
+ * Catálogo Earth Engine: https://developers.google.com/earth-engine/datasets/catalog/ESA_WorldCover_v100
+ * Registro Zenodo (publicado em 20/10/2021): https://doi.org/10.5281/zenodo.5571936
+ */
+export const DATA_PUBLICACAO_ESA_WORLDCOVER_V100 = "2021-10-20";
+
+/**
+ * ESA WorldCover 10m 2021 v200 (European Space Agency).
+ * Catálogo Earth Engine: https://developers.google.com/earth-engine/datasets/catalog/ESA_WorldCover_v200
+ * Registro Zenodo (publicado em 28/10/2022): https://doi.org/10.5281/zenodo.7254221
+ */
+export const DATA_PUBLICACAO_ESA_WORLDCOVER_V200 = "2022-10-28";
+
+/**
+ * MapBiomas Brasil — Coleção 8.0 da Série Anual de Mapas de Cobertura e Uso da Terra.
+ * Catálogo oficial MapBiomas: https://brasil.mapbiomas.org/colecoes-mapbiomas/
+ * Nota: data de lançamento público da Coleção 8.0 (agosto de 2023).
+ */
+export const DATA_PUBLICACAO_MAPBIOMAS_COL8 = "2023-08-31";
+
+/**
+ * EC JRC / Google Global Surface Water Mapping Layers v1.4 (1984–2021).
+ * Catálogo Earth Engine: https://developers.google.com/earth-engine/datasets/catalog/JRC_GSW1_4_GlobalSurfaceWater
+ * Referência: Pekel et al. (2016), Nature 540:418-422.
+ */
+export const DATA_PUBLICACAO_JRC_GSW_V1_4 = "2022-11-01";
+
+/**
+ * IBGE — Malha Municipal Digital da Divisão Político-Administrativa Brasileira (Edição 2023).
+ * Catálogo oficial IBGE Geociências: https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais/15774-malhas.html
+ * Repositório FTP oficial: https://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_municipais/municipio_2023/
+ */
+export const DATA_PUBLICACAO_IBGE_MALHA_MUNICIPAL_2023 = "2024-04-17";
+
+/**
+ * Instituto Água e Terra do Paraná (IAT) — Divisão de Bacias Hidrográficas do Estado do Paraná.
+ * Catálogo oficial de Dados Espaciais IAT-PR: https://www.iat.pr.gov.br/Pagina/Mapas-e-Dados-Espaciais
+ * Nota: data de referência da base cartográfica hidrográfica estadual (verificada no portal IAT-PR).
+ */
+export const DATA_PUBLICACAO_IAT_BACIAS_PR = "2020-06-15";
+
+/**
+ * Extrai a data ISO (`YYYY-MM-DD`) a partir de um `PRODUCT_ID` ou identificador de cena
+ * Sentinel-2 (`S2A_MSIL2A_20240815T134209_...` ou `20240815T134209_...`) ou de um
+ * timestamp epoch em milissegundos retornado pelo Google Earth Engine (`system:time_start`).
+ */
+export function extrairDataAquisicaoSentinel2(
+  opcoes: { timestampMs?: number | null; cenas?: string[] | null }
+): string | null {
+  if (typeof opcoes.timestampMs === "number" && Number.isFinite(opcoes.timestampMs) && opcoes.timestampMs > 0) {
+    // C26: Timestamps orbitais do catálogo GEE (system:time_start) são estritamente UTC
+    return new Date(opcoes.timestampMs).toISOString().slice(0, 10);
+  }
+  if (Array.isArray(opcoes.cenas)) {
+    for (const cena of opcoes.cenas) {
+      const match = String(cena).match(/(?:^|_)(\d{4})(\d{2})(\d{2})T\d{6}/);
+      if (match) {
+        return `${match[1]}-${match[2]}-${match[3]}`;
+      }
+    }
+  }
+  return null;
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/persistenciaTemporal.ts
+TAMANHO: 10,949 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Discriminacao de Persistencia Temporal (Pousio vs Degradacao Cronica) ? SAREL
+ * PPGTCA 2026 ? Pesquisa de Mestrado em Erosao Laminar
+ * ============================================================================
+ *
+ * FUNDAMENTACAO METODOLOGICA (SECAO 6.1 DO PROJETO DE PESQUISA):
+ * - Uma cena isolada NAO separa solo recem-gradeado de solo erodido: ambos
+ *   apresentam alta reflectancia e BSI elevado (> 0.10).
+ * - A serie temporal multianual (Sentinel-2 2016-2026) separa com rigor fisico:
+ *   1. POUSIO AGRICOLA / GRADEADO (Transitorio):
+ *      Ocorre por 30 a 60 dias durante a dessecacao ou preparo do solo (NDVI < 0.40).
+ *      Em seguida, ha rapido fechamento do dossel vegetal (NDVI > 0.65).
+ *      Apresenta padrao fenologico ciclico sazonal regular.
+ *   2. EROSAO LAMINAR SEVERA / DEGRADACAO CRONICA (Persistente):
+ *      Horizonte B exposto com perda de materia organica e enriquecimento em oxidos
+ *      de ferro (razao B4/B2 e B12 elevados).
+ *      Mesmo com cultura implantada, o vigor e cronicamente atrofiado (NDVI_max < 0.55),
+ *      com frequencia de solo descoberto persistente safra apos safra (E > 0.25)
+ *      e tendencia linear positiva no infravermelho de ondas curtas (SWIR B12).
+ *
+ * BASE CIENTIFICA:
+ * - Zhu & Woodcock (2014) ? Continuous Change Detection and Classification (CCDC).
+ * - Dematte et al. (2018) ? GEOS3 (Geotechnologies in Soil Science).
+ */
+
+import { ObservacaoCena, calcularNdvi, calcularBsi } from "./serieTemporal";
+import { DECISOES, exigirParametro } from "@/config/decisoes";
+
+export type RegimeFenologico =
+  | "degradacao_persistente" // Erosao laminar ativa / cronica (Classe 1)
+  | "pousio_transitorio"     // Manejo agricola regular / plantio direto (Classe 0)
+  | "vegetacao_estavel"      // Cobertura vegetal densa permanente / pastagem bem manejada
+  | "inconclusivo";          // Cobertura temporal insuficiente ou ruido de nuvens
+
+export interface DiagnosticoPersistencia {
+  regime: RegimeFenologico;
+  confianca: "alta" | "media" | "baixa";
+  frequenciaExposicao: number | null;          // Fracao de cenas validas com solo nu (0.0 a 1.0) ou null se < 6
+  maxSequenciaExposicaoDias: number;    // Duracao maxima continua de solo exposto em dias
+  recuperouDossel: boolean;             // Teve recuperacao com NDVI > 0.65 apos exposicao
+  ndviMaximoMediano: number | null;     // Vigor vegetativo de pico historico (P90 de NDVI da serie)
+  taxaDegradacaoSwirAnual: number | null; // Inclinacao da reflectancia B12 [0..1] por ano
+  nObservacoesValidas: number;
+  motivoCientifico: string;
+}
+
+export interface OpcoesPersistencia {
+  limiarNdviSoloNu?: number;        // Padrao do metodo: 0.25 (Decisao D10: GEOS3 / Demattê et al., 2018)
+  limiarNdviDosselFechado?: number; // Padrao: 0.65 (Controle SPD)
+  limiarFreqDegradacao?: number;    // Padrao: 0.25 (mais de 25% do tempo com solo nu)
+}
+
+export const OPCOES_PERSISTENCIA_PADRAO: Required<OpcoesPersistencia> = {
+  limiarNdviSoloNu: exigirParametro(DECISOES.D10, "ndviSoloNu").valor,
+  limiarNdviDosselFechado: 0.65,
+  limiarFreqDegradacao: 0.25,
+};
+
+/**
+ * Analisa a trajetoria multitemporal de um ponto para separar formalmente
+ * pousio agricola transitorio de erosao laminar severa persistente.
+ *
+ * O QUÊ FAZ:
+ * Examina a trajetória fenológico-espectral multianual de um ponto amostral (série Sentinel-2 2016-2026),
+ * calculando a frequência de exposição de solo nu (E >= 0.25), a duração máxima contínua de episódios de
+ * solo exposto em dias, a taxa de recuperação do dossel vegetal (NDVI >= 0.65), o vigor vegetativo de
+ * pico histórico (percentil 90 de NDVI) e a taxa de declive temporal no infravermelho SWIR (Banda B12).
+ *
+ * POR QUE FAZ:
+ * Uma imagem de satélite isolada é biofisicamente incapaz de separar solo recém-gradeado ou em dessecação
+ * pré-plantio de uma feição erodida: ambos exibem forte reflectância em superfície e BSI elevado (> 0.10).
+ * A análise de persistência temporal contínua (CCDC) desfaz essa ambiguidade espectral:
+ * 1. O pousio agrícola é um estado efêmero e cíclico (<= 120 dias) com rápida recuperação do vigor
+ *    vegetativo subsequente (NDVI >= 0.65);
+ * 2. A erosão laminar crônica expõe o horizonte subsuperficial B, causando atrofia perene do dossel
+ *    (NDVI_max < 0.55), alta frequência temporal de solo nu safra após safra (E >= 0.25) e tendência
+ *    de aumento na reflectância do SWIR B12 (enriquecimento relativo em óxidos de ferro e perda de água do solo).
+ */
+export function analisarPersistenciaTemporal(
+  cenas: ObservacaoCena[],
+  opcoes: OpcoesPersistencia = OPCOES_PERSISTENCIA_PADRAO
+): DiagnosticoPersistencia {
+  const limiarNdviSoloNu = opcoes.limiarNdviSoloNu ?? OPCOES_PERSISTENCIA_PADRAO.limiarNdviSoloNu;
+  const limiarNdviDosselFechado = opcoes.limiarNdviDosselFechado ?? OPCOES_PERSISTENCIA_PADRAO.limiarNdviDosselFechado;
+  const limiarFreqDegradacao = opcoes.limiarFreqDegradacao ?? OPCOES_PERSISTENCIA_PADRAO.limiarFreqDegradacao;
+
+  // 1. Filtrar e ordenar cronologicamente observacoes sem nuvem
+  const validas = cenas
+    .filter((c) => !c.nuvemSombra && c.b4 !== null && c.b8 !== null)
+    .sort((a, b) => a.data.localeCompare(b.data));
+
+  const nValidas = validas.length;
+
+  if (nValidas < 6) {
+    return {
+      regime: "inconclusivo",
+      confianca: "baixa",
+      frequenciaExposicao: null,
+      maxSequenciaExposicaoDias: 0,
+      recuperouDossel: false,
+      ndviMaximoMediano: null,
+      taxaDegradacaoSwirAnual: null,
+      nObservacoesValidas: nValidas,
+      motivoCientifico: `Serie com apenas ${nValidas} observacoes validas (minimo de 6 exigido para discriminacao temporal).`,
+    };
+  }
+
+  // 2. Extracao de perfis temporais de NDVI, BSI e B12
+  const serieProcessada = validas.map((c) => {
+    const ndvi = calcularNdvi(c.b8, c.b4)!;
+    const bsi = calcularBsi(c.b11, c.b4, c.b8, c.b2);
+    const dataMs = new Date(c.data).getTime();
+    return {
+      data: c.data,
+      dataMs,
+      tAnos: c.tAnos,
+      ndvi,
+      bsi,
+      b12: c.b12,
+      ehSoloNu: ndvi <= limiarNdviSoloNu,
+      ehDosselFechado: ndvi >= limiarNdviDosselFechado,
+    };
+  });
+
+  const nSoloNu = serieProcessada.filter((p) => p.ehSoloNu).length;
+  const frequenciaExposicao = Number((nSoloNu / nValidas).toFixed(4));
+
+  // 3. Avaliacao de Duracao Continua e Recuperacao de Dossel
+  let maxDiasExposicao = 0;
+  let recuperouDossel = false;
+  let inicioExposicaoMs: number | null = null;
+
+  for (let i = 0; i < serieProcessada.length; i++) {
+    const p = serieProcessada[i];
+
+    if (p.ehSoloNu) {
+      if (inicioExposicaoMs === null) {
+        inicioExposicaoMs = p.dataMs;
+      }
+    } else {
+      if (inicioExposicaoMs !== null) {
+        const dias = Math.round((p.dataMs - inicioExposicaoMs) / (1000 * 60 * 60 * 24));
+        if (dias > maxDiasExposicao) {
+          maxDiasExposicao = dias;
+        }
+        inicioExposicaoMs = null;
+      }
+      if (p.ehDosselFechado) {
+        recuperouDossel = true;
+      }
+    }
+  }
+
+  if (inicioExposicaoMs !== null) {
+    const ultP = serieProcessada[serieProcessada.length - 1];
+    const dias = Math.round((ultP.dataMs - inicioExposicaoMs) / (1000 * 60 * 60 * 24));
+    if (dias > maxDiasExposicao) maxDiasExposicao = dias;
+  }
+
+  // 4. Estimativa do Vigor Vegetativo Maximo (Percentil 90 de NDVI)
+  const ndvisOrdenados = [...serieProcessada.map((p) => p.ndvi)].sort((a, b) => a - b);
+  const idxP90 = Math.floor(ndvisOrdenados.length * 0.9);
+  const ndviMaximo = Number(ndvisOrdenados[idxP90].toFixed(3));
+
+  // 5. Tendencia Linear do SWIR (B12) ao longo do tempo (declive beta1 da regressao)
+  let taxaDegradacaoSwirAnual: number | null = null;
+  const pontosComB12 = serieProcessada.filter((p) => p.b12 !== null && Number.isFinite(p.b12));
+
+  if (pontosComB12.length >= 6) {
+    const tMedio = pontosComB12.reduce((acc, p) => acc + p.tAnos, 0) / pontosComB12.length;
+    const b12Medio = pontosComB12.reduce((acc, p) => acc + p.b12!, 0) / pontosComB12.length;
+
+    let num = 0;
+    let den = 0;
+    for (const p of pontosComB12) {
+      const dt = p.tAnos - tMedio;
+      num += dt * (p.b12! - b12Medio);
+      den += dt * dt;
+    }
+    if (den > 1e-6) {
+      taxaDegradacaoSwirAnual = Number((num / den).toFixed(4));
+    }
+  }
+
+  // 6. Matriz de Decisao Biofisica (CCDC / PPGTCA 2026)
+  if (frequenciaExposicao === 0 && ndviMaximo >= limiarNdviDosselFechado) {
+    return {
+      regime: "vegetacao_estavel",
+      confianca: "alta",
+      frequenciaExposicao,
+      maxSequenciaExposicaoDias: 0,
+      recuperouDossel: true,
+      ndviMaximoMediano: ndviMaximo,
+      taxaDegradacaoSwirAnual,
+      nObservacoesValidas: nValidas,
+      motivoCientifico:
+        "Serie com cobertura vegetal continua (zero exposicoes de solo) e NDVI robusto.",
+    };
+  }
+
+  // Se o solo esteve exposto, mas teve recuperacao com dossel fechado (NDVI >= 0.65) e a duracao foi transitoria:
+  if (recuperouDossel && ndviMaximo >= limiarNdviDosselFechado && maxDiasExposicao <= 120) {
+    return {
+      regime: "pousio_transitorio",
+      confianca: "alta",
+      frequenciaExposicao,
+      maxSequenciaExposicaoDias: maxDiasExposicao,
+      recuperouDossel: true,
+      ndviMaximoMediano: ndviMaximo,
+      taxaDegradacaoSwirAnual,
+      nObservacoesValidas: nValidas,
+      motivoCientifico: `Pousio agricola transitorio: preparo de solo temporario (${maxDiasExposicao} dias) com plena recuperacao ciclica do dossel (NDVI max = ${ndviMaximo}).`,
+    };
+  }
+
+  // Se o solo permanece frequentemente exposto ou o vigor historico e atrofiado safra apos safra:
+  if (
+    frequenciaExposicao >= limiarFreqDegradacao ||
+    (frequenciaExposicao > 0.15 && ndviMaximo < 0.55) ||
+    (taxaDegradacaoSwirAnual !== null && taxaDegradacaoSwirAnual > 0.015)
+  ) {
+    const confianca: "alta" | "media" =
+      frequenciaExposicao >= 0.35 ||
+      (taxaDegradacaoSwirAnual !== null && taxaDegradacaoSwirAnual > 0.02)
+        ? "alta"
+        : "media";
+
+    return {
+      regime: "degradacao_persistente",
+      confianca,
+      frequenciaExposicao,
+      maxSequenciaExposicaoDias: maxDiasExposicao,
+      recuperouDossel,
+      ndviMaximoMediano: ndviMaximo,
+      taxaDegradacaoSwirAnual,
+      nObservacoesValidas: nValidas,
+      motivoCientifico: `Degradacao cronica / erosao ativa persistente: alta frequencia de exposicao (${(
+        frequenciaExposicao * 100
+      ).toFixed(1)}%), vigor fenologico atrofiado (NDVI max = ${ndviMaximo}) e persistencia multianual.`,
+    };
+  }
+
+  return {
+    regime: "inconclusivo",
+    confianca: "baixa",
+    frequenciaExposicao,
+    maxSequenciaExposicaoDias: maxDiasExposicao,
+    recuperouDossel,
+    ndviMaximoMediano: ndviMaximo,
+    taxaDegradacaoSwirAnual,
+    nObservacoesValidas: nValidas,
+    motivoCientifico:
+      "Serie com padrao fenologico intermediario nao conclusivo entre manejo e degradacao.",
+  };
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/poolEstratos.ts
+TAMANHO: 6,775 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Análise do Pool de Candidatos por Estrato e Disponibilidade de Reservas
+ * SAREL v2.0 — Protocolo de Negação de Acesso (DP-20)
+ * ============================================================================
+ *
+ * SIMPLIFICAÇÃO METODOLÓGICA:
+ * A suposição de recusas independentes entre propriedades é uma simplificação
+ * metodológica: recusas podem apresentar correlação espacial ou social
+ * (ex.: vizinhança, cooperativa, perfil fundiário).
+ */
+
+export const SIMPLIFICACAO_METODOLOGICA_RECUSAS =
+  "A suposição de recusas independentes entre propriedades é uma simplificação metodológica: " +
+  "recusas podem apresentar correlação espacial ou social (ex.: vizinhança, cooperativa, perfil fundiário).";
+
+export interface ParametrosAnalisePool {
+  reservasPorEstrato: number;
+  nMinimoPorEstrato: number;
+  taxasRecusa: number[];
+}
+
+export interface ResultadoEstratoPool {
+  estrato: string;
+  Nh: number;
+  N_h: number;
+  titularesExigidos: 4;
+  reservasPossiveis: number;
+  reservasEfetivas: number;
+  ok: boolean;
+  inviavel: boolean;
+  probabilidadesPorTaxa: Record<number, number>;
+}
+
+export interface ResumoAnalisePool {
+  totalCandidatos: number;
+  totalEstratos: number;
+  estratosOk: number;
+  estratosDeficientes: number;
+  estratosInviaveis: number;
+  reservasPorEstrato: number;
+  nMinimoPorEstrato: number;
+  taxasRecusa: number[];
+}
+
+export type ResultadoAnalisePool = Record<string, ResultadoEstratoPool> & {
+  estratos: Record<string, ResultadoEstratoPool>;
+  simplificacaoMetodologica: string;
+  resumo: ResumoAnalisePool;
+};
+
+/**
+ * Calcula o coeficiente binomial C(n, k) = n! / (k! * (n - k)!).
+ */
+export function combinacao(n: number, k: number): number {
+  if (k < 0 || k > n) return 0;
+  if (k === 0 || k === n) return 1;
+  const m = Math.min(k, n - k);
+  let c = 1;
+  for (let i = 1; i <= m; i++) {
+    c = (c * (n - i + 1)) / i;
+  }
+  return Math.round(c);
+}
+
+/**
+ * Calcula a probabilidade acumulada P(X >= k) para X ~ Binomial(n, pSucesso).
+ * Fórmula: P(X >= k) = sum_{j=k}^{n} C(n, j) * pSucesso^j * (1 - pSucesso)^(n - j).
+ */
+export function calcularProbabilidadeBinomialAcumulada(
+  n: number,
+  k: number,
+  pSucesso: number
+): number {
+  if (k <= 0) return 1.0;
+  if (k > n) return 0.0;
+  if (pSucesso <= 0) {
+    return k <= 0 ? 1.0 : 0.0;
+  }
+  if (pSucesso >= 1) {
+    return k <= n ? 1.0 : 0.0;
+  }
+
+  const pFracasso = 1 - pSucesso;
+  let soma = 0;
+  for (let j = k; j <= n; j++) {
+    const c = combinacao(n, j);
+    const termo = c * Math.pow(pSucesso, j) * Math.pow(pFracasso, n - j);
+    soma += termo;
+  }
+
+  // Garantir limites numéricos [0, 1]
+  if (soma <= 0) return 0.0;
+  if (soma >= 1) return 1.0;
+  return soma;
+}
+
+/**
+ * Função pura que avalia a disponibilidade do pool de candidatos por estrato
+ * e calcula cenários analíticos de taxa de recusa sob modelo binomial.
+ *
+ * Parâmetros são estritamente obrigatórios (sem padrões embutidos).
+ */
+export function analisarPoolPorEstrato(
+  contagemPorEstrato: Record<string, number>,
+  parametros: ParametrosAnalisePool
+): ResultadoAnalisePool {
+  if (!parametros || typeof parametros !== "object") {
+    throw new Error(
+      "[PARAMETROS_OBRIGATORIOS_AUSENTES] Objeto de parâmetros de análise do pool é obrigatório."
+    );
+  }
+
+  const { reservasPorEstrato, nMinimoPorEstrato, taxasRecusa } = parametros;
+
+  if (
+    typeof reservasPorEstrato !== "number" ||
+    !Number.isInteger(reservasPorEstrato) ||
+    reservasPorEstrato < 0
+  ) {
+    throw new Error(
+      `[PARAMETRO_OBRIGATORIO_AUSENTE:reservasPorEstrato] 'reservasPorEstrato' é obrigatório e deve ser inteiro >= 0 (recebido: ${reservasPorEstrato}).`
+    );
+  }
+
+  if (
+    typeof nMinimoPorEstrato !== "number" ||
+    !Number.isInteger(nMinimoPorEstrato) ||
+    nMinimoPorEstrato < 1 ||
+    nMinimoPorEstrato > 4
+  ) {
+    throw new Error(
+      `[PARAMETRO_OBRIGATORIO_AUSENTE:nMinimoPorEstrato] 'nMinimoPorEstrato' é obrigatório e deve ser inteiro entre 1 e 4 (recebido: ${nMinimoPorEstrato}).`
+    );
+  }
+
+  if (
+    !Array.isArray(taxasRecusa) ||
+    taxasRecusa.length === 0 ||
+    taxasRecusa.some(
+      (p) => typeof p !== "number" || Number.isNaN(p) || p < 0 || p > 1
+    )
+  ) {
+    throw new Error(
+      `[PARAMETRO_OBRIGATORIO_AUSENTE:taxasRecusa] 'taxasRecusa' é obrigatório e deve ser lista não-vazia de números em [0, 1] (recebido: ${JSON.stringify(taxasRecusa)}).`
+    );
+  }
+
+  if (
+    !contagemPorEstrato ||
+    typeof contagemPorEstrato !== "object" ||
+    Object.keys(contagemPorEstrato).length === 0
+  ) {
+    throw new Error(
+      "[CONTAGEM_INVALIDA] 'contagemPorEstrato' é obrigatório e não pode ser vazio."
+    );
+  }
+
+  const estratosMap: Record<string, ResultadoEstratoPool> = {};
+  let totalCandidatos = 0;
+  let estratosOk = 0;
+  let estratosInviaveis = 0;
+  let estratosDeficientes = 0;
+
+  for (const [estrato, contagemBruta] of Object.entries(contagemPorEstrato)) {
+    const Nh = Number(contagemBruta);
+    if (!Number.isInteger(Nh) || Nh < 0) {
+      throw new Error(
+        `[CONTAGEM_INVALIDA] Contagem do estrato '${estrato}' deve ser inteiro >= 0 (recebido: ${contagemBruta}).`
+      );
+    }
+
+    totalCandidatos += Nh;
+    const inviavel = Nh < 4;
+    if (inviavel) {
+      estratosInviaveis++;
+    }
+
+    const excedente = Nh - 4;
+    const reservasPossiveis = excedente > 0 ? excedente : 0;
+    const reservasEfetivas = Math.min(reservasPorEstrato, reservasPossiveis);
+    const ok = Nh >= 4 + reservasPorEstrato;
+
+    if (ok) {
+      estratosOk++;
+    } else {
+      estratosDeficientes++;
+    }
+
+    // X ~ Binomial(4 + reservasEfetivas, 1 - p)
+    const nEnsaios = 4 + reservasEfetivas;
+    const probabilidadesPorTaxa: Record<number, number> = {};
+
+    for (const p of taxasRecusa) {
+      const pSucesso = 1 - p;
+      probabilidadesPorTaxa[p] = calcularProbabilidadeBinomialAcumulada(
+        nEnsaios,
+        nMinimoPorEstrato,
+        pSucesso
+      );
+    }
+
+    const item: ResultadoEstratoPool = {
+      estrato,
+      Nh,
+      N_h: Nh,
+      titularesExigidos: 4,
+      reservasPossiveis,
+      reservasEfetivas,
+      ok,
+      inviavel,
+      probabilidadesPorTaxa,
+    };
+
+    estratosMap[estrato] = item;
+  }
+
+  const chavesEstratos = Object.keys(estratosMap);
+  const resumo: ResumoAnalisePool = {
+    totalCandidatos,
+    totalEstratos: chavesEstratos.length,
+    estratosOk,
+    estratosDeficientes,
+    estratosInviaveis,
+    reservasPorEstrato,
+    nMinimoPorEstrato,
+    taxasRecusa,
+  };
+
+  const resultadoFinal = {
+    ...estratosMap,
+    estratos: estratosMap,
+    simplificacaoMetodologica: SIMPLIFICACAO_METODOLOGICA_RECUSAS,
+    resumo,
+  } as ResultadoAnalisePool;
+
+  return resultadoFinal;
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/sentinel1.ts
+TAMANHO: 1,316 bytes
+--------------------------------------------------------------------------------
+
+﻿/**
+ * ============================================================================
+ * Integração Sentinel-1 GRD no Earth Engine — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * ESPECIFICAÇÃO (PLANO V3, §11.6):
+ * Sentinel-1 GRD (radar banda C) opera independente de nuvens para o momento T0
+ * pós-chuva imediata (0 a 2 dias). Detecta solo saturado por queda no retroespalhamento
+ * e rugosidade superficial sem consumir cota Planet.
+ */
+
+export interface MetadadosSentinel1 {
+  id: string;
+  dataAdquisicao: string;
+  polarizacao: ("VV" | "VH")[];
+  orbita: "ASCENDING" | "DESCENDING";
+  anguloIncidenciaGraus: number;
+}
+
+export interface FiltrosSentinel1 {
+  latitude: number;
+  longitude: number;
+  dataInicio: string;
+  dataFim: string;
+}
+
+/**
+ * Consulta ou simula a presença de cena Sentinel-1 GRD livre de interferência de nuvens.
+ */
+export async function buscarCenaSentinel1T0(
+  filtros: FiltrosSentinel1,
+  provedorApi?: (f: FiltrosSentinel1) => Promise<MetadadosSentinel1[]>
+): Promise<{ cena?: MetadadosSentinel1; encontrado: boolean }> {
+  if (provedorApi) {
+    const cenas = await provedorApi(filtros);
+    if (cenas.length > 0) {
+      return { cena: cenas[0], encontrado: true };
+    }
+  }
+
+  return { encontrado: false };
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/lib/gee/serieTemporal.ts
+TAMANHO: 5,378 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Séries Temporais Multiespectrais (Sentinel-2 / Landsat) — SAREL (PPGTCA 2026)
+ * ============================================================================
+ *
+ * REGRA 7 DA LEI FUNDAMENTAL:
+ * "Preservar o mascaramento do Earth Engine. Máscara de nuvem existe para
+ * remover pixel inválido. Não a desfaça. Nunca invente dado de satélite,
+ * nem use .unmask() com constante sobre banda física."
+ *
+ * DECISÃO D04 (MODELO D vs MODELO P):
+ * - Modelo D (Detecção): série observada no ano/ciclo da detecção do rótulo.
+ * - Modelo P (Predição): série histórica anterior ao evento com intervalo de guarda
+ *   (proposta: 2 anos antes), impedindo contaminação por vazamento temporal.
+ */
+
+export interface ObservacaoCena {
+  data: string;          // YYYY-MM-DD
+  tAnos: number;         // Tempo fracionário em anos decimais (ex: 2024.35)
+  productId: string;     // Identificador da cena no repositório oficial (PRODUCT_ID)
+  nuvemSombra: boolean;  // True se mascarado por nuvem ou sombra (P09)
+  // Reflectância de superfície normalizada [0.0, 1.0] ou null se mascarado/ausente
+  b2: number | null;
+  b3: number | null;
+  b4: number | null;
+  b5: number | null;
+  b6: number | null;
+  b7: number | null;
+  b8: number | null;
+  b8a: number | null;
+  b11: number | null;
+  b12: number | null;
+}
+
+export type NomeBandaEspectral = "b2" | "b3" | "b4" | "b5" | "b6" | "b7" | "b8" | "b8a" | "b11" | "b12";
+
+export const TODAS_BANDAS_ESPECTRAIS: NomeBandaEspectral[] = [
+  "b2", "b3", "b4", "b5", "b6", "b7", "b8", "b8a", "b11", "b12"
+];
+
+/**
+ * Calcula o Índice de Vegetação por Diferença Normalizada (NDVI):
+ * NDVI = (B8 - B4) / (B8 + B4)
+ * Retorna null se qualquer uma das bandas estiver mascarada ou ausente.
+ */
+export function calcularNdvi(b8: number | null, b4: number | null): number | null {
+  if (b8 === null || b4 === null || !Number.isFinite(b8) || !Number.isFinite(b4)) {
+    return null;
+  }
+  const soma = b8 + b4;
+  if (Math.abs(soma) < 1e-6) return 0;
+  const val = (b8 - b4) / soma;
+  if (val > 1) return 1;
+  if (val < -1) return -1;
+  return Number(val.toFixed(4));
+}
+
+/**
+ * Calcula o Índice de Solo Nu (Bare Soil Index - BSI):
+ * BSI = ((B11 + B4) - (B8 + B2)) / ((B11 + B4) + (B8 + B2))
+ * Retorna null se qualquer uma das 4 bandas estiver mascarada.
+ */
+export function calcularBsi(
+  b11: number | null,
+  b4: number | null,
+  b8: number | null,
+  b2: number | null
+): number | null {
+  if (
+    b11 === null || b4 === null || b8 === null || b2 === null ||
+    !Number.isFinite(b11) || !Number.isFinite(b4) || !Number.isFinite(b8) || !Number.isFinite(b2)
+  ) {
+    return null;
+  }
+  const termo1 = b11 + b4;
+  const termo2 = b8 + b2;
+  const denominador = termo1 + termo2;
+  if (Math.abs(denominador) < 1e-6) return 0;
+  const val = (termo1 - termo2) / denominador;
+  if (val > 1) return 1;
+  if (val < -1) return -1;
+  return Number(val.toFixed(4));
+}
+
+export interface JanelaTemporal {
+  inicio: string; // YYYY-MM-DD
+  fim: string;    // YYYY-MM-DD
+}
+
+/**
+ * Define as janelas de observação distintas para o Modelo D e o Modelo P (Decisão D04).
+ * @param dataRotulo Data do evento ou validação de campo (YYYY-MM-DD)
+ * @param intervaloGuardaAnos Intervalo de guarda para o modelo preditivo P (ex: 2 anos)
+ * @param duracaoJanelaAnos Duração da janela histórica de amostragem (ex: 3 anos)
+ */
+export function definirJanelasModelo(
+  dataRotulo: string,
+  intervaloGuardaAnos: number,
+  duracaoJanelaAnos: number
+): {
+  modeloD: JanelaTemporal;
+  modeloP: JanelaTemporal;
+} {
+  const dRef = new Date(dataRotulo);
+  if (isNaN(dRef.getTime())) {
+    throw new Error(`Data de referência inválida: ${dataRotulo}`);
+  }
+
+  // Modelo D: termina na data do rótulo
+  const fimD = new Date(dRef);
+  const inicioD = new Date(dRef);
+  inicioD.setFullYear(fimD.getFullYear() - duracaoJanelaAnos);
+
+  // Modelo P: termina antes do evento respeitando o intervalo de guarda
+  const fimP = new Date(dRef);
+  fimP.setFullYear(fimP.getFullYear() - intervaloGuardaAnos);
+  const inicioP = new Date(fimP);
+  inicioP.setFullYear(fimP.getFullYear() - duracaoJanelaAnos);
+
+  // C26: Limites de janelas temporais de coleções multiespectrais Sentinel-2/Landsat
+  // são estritamente mantidos em UTC conforme padronizado nos catálogos orbitais.
+  return {
+    modeloD: {
+      inicio: inicioD.toISOString().split("T")[0],
+      fim: fimD.toISOString().split("T")[0],
+    },
+    modeloP: {
+      inicio: inicioP.toISOString().split("T")[0],
+      fim: fimP.toISOString().split("T")[0],
+    },
+  };
+}
+
+/**
+ * Filtra a série cronológica de cenas para os limites de uma janela temporal.
+ */
+export function filtrarSeriePorJanela(
+  cenas: ObservacaoCena[],
+  janela: JanelaTemporal
+): ObservacaoCena[] {
+  return cenas.filter(c => c.data >= janela.inicio && c.data <= janela.fim);
+}
+
+/**
+ * Conta o número de observações válidas (sem nuvem e com valor numérico) por banda física.
+ */
+export function contarObservacoesValidas(
+  cenas: ObservacaoCena[]
+): Record<string, number> {
+  const contagens: Record<string, number> = {};
+
+  for (const b of TODAS_BANDAS_ESPECTRAIS) {
+    const validos = cenas.filter(c => !c.nuvemSombra && c[b] !== null && Number.isFinite(c[b])).length;
+    contagens[b.toUpperCase()] = validos;
+  }
+
+  return contagens;
+}

@@ -1,0 +1,1525 @@
+================================================================================
+PACOTE DE AUDITORIA EXTERNA — SAREL v2 (PPGTCA 2026)
+LOTE: LOTE5_PIPELINE_PYTHON_CIENTIFICO | PARTE 2/3
+================================================================================
+Data de Geração: 21 de Outubro de 2026
+Limite por Arquivo: <= 90.000 bytes (Limite Rígido de Leitura)
+Total de Arquivos nesta parte: 5
+Arquivos contidos nesta parte:
+ - scripts/d25/config_pre_registro_PROPOSTA.json
+ - scripts/reduzir_terreno_copernicus.py
+ - scripts/baixar_chirps_climatologia.py
+ - scripts/verificar_integridade_pacote.py
+ - scripts/reconciliar_achados.py
+================================================================================
+
+
+--------------------------------------------------------------------------------
+ARQUIVO: scripts/d25/config_pre_registro_PROPOSTA.json
+TAMANHO: 5,151 bytes
+--------------------------------------------------------------------------------
+
+{
+  "_aviso": "PROPOSTA NAO CONGELADA (revisao de 06/10/2026). Quem declara blocos, preditores e sinais de monotonicidade e o PESQUISADOR (D24, mitigacoes 2 e 3), por mecanismo fisico e ANTES de qualquer ajuste sobre dado real. O executor NAO preenche 'pre_registro' e NAO torna este arquivo probatorio. Para o modo --probatorio o pesquisador preenche declarado_por, declarado_em e sha256_config_congelada e congela o arquivo em commit proprio.",
+  "alvo": "Fracao_Erodida",
+  "grupo": "Poligono_ID",
+  "blocos": {
+    "espectro": [
+      "Frequencia_Solo_Nu",
+      "Composto_Solo_Nu_B12",
+      "Composto_Solo_Nu_Razao_B4_B2",
+      "Taxa_Degradacao_SWIR_Anual",
+      "NDVI_Maximo_Mediano"
+    ],
+    "terreno": [
+      "Declividade_pct",
+      "Curvatura_Perfil",
+      "TWI"
+    ],
+    "solo": [
+      "RUSLE_Fator_K"
+    ],
+    "chuva": [
+      "RUSLE_Fator_R"
+    ]
+  },
+  "monotonicidade": {
+    "Frequencia_Solo_Nu": 1,
+    "NDVI_Maximo_Mediano": -1,
+    "Declividade_pct": 1,
+    "RUSLE_Fator_K": 1,
+    "RUSLE_Fator_R": 1
+  },
+  "rusle": {
+    "A": "RUSLE_A"
+  },
+  "coluna_marcador_d08": "Marcador_K_Ambiguo_D08",
+  "grade": {
+    "p": [
+      1.2,
+      1.5,
+      1.8
+    ],
+    "alpha": [
+      0.001,
+      0.01,
+      0.1,
+      1.0,
+      10.0
+    ]
+  },
+  "pre_registro": null,
+  "_justificativa_resumida": {
+    "total_de_preditores": "5 + 3 + 1 + 1 = 10 (teto D24: 14). O teto de 8 do bloco espectro-temporal e um maximo, nao uma cota: REVISAO DE 09/10/2026: o argumento original usava o n efetivo TOTAL (~1.841 = 72 poligonos); so os 36 poligonos de treino ajustam o modelo, ou seja ~920 unidades efetivas, e 'evento' e a celula com fracao positiva (depende da prevalencia). O teto 8 fica sem sustentacao numerica ate o pesquisador refazer o argumento (n efetivo de treino x prevalencia esperada) antes de congelar; 5 espectro-temporais preserva a maior folga.",
+    "espectro": "Metricas de SERIE (ja implementadas em src/lib/gee/compostoSoloNu.ts e persistenciaTemporal.ts), nao bandas de data unica nem NDVI/BSI/B2/B4/B8/B12 simultaneamente (colinearidade: indices sao funcoes das bandas). Frequencia_Solo_Nu = tempo de exposicao (+); Composto_Solo_Nu_B12 e Razao_B4_B2 = mineralogia/materia organica e oxidos de ferro do solo exposto (Demattê et al. 2018, Rogge et al. 2018; sinal ambiguo, sem restricao); Taxa_Degradacao_SWIR_Anual = tendencia de B12 (hipotese do Planejamento v3, sinal ambiguo, sem restricao); NDVI_Maximo_Mediano = vigor de pico da cultura (-).",
+    "excluidos": "maiorSequenciaSoloNu (correlata a frequencia); mesModalExposicao (categorica, circular); regime/confianca de analisarPersistenciaTemporal (classificacao por limiares = quase-rotulo, Regra 4); bandas e indices de data unica (confundem fase da safra); Precip_Acum_*, I30_Max, N_Eventos_Erosivos, Indice_Mecanismo (periodo/evento, contrariam o R climatologico de D13(b) e hoje sao indisponiveis); LS como preditor (colinear com declividade; entra so na linha de base RUSLE).",
+    "monotonicidade": "Somente onde o sinal fisico e inequivoco (declividade, K, R, frequencia de solo nu: +; vigor de pico: -). Curvatura de perfil e TWI sem restricao (sinal depende de a erosao ser laminar ou concentrada). Sensibilidade SEM monotonicidade e calculada no mesmo avaliador.",
+    "grade_p": "O expoente de Tweedie p e escolhido SO por validacao interna agrupada, dentro da grade pre-registrada (P10)."
+  },
+  "_pendencias_para_o_pesquisador": [
+    "Confirmar ou alterar a lista e os sinais acima ANTES de qualquer ajuste; depois congelar.",
+    "As colunas Composto_Solo_Nu_B12, Composto_Solo_Nu_Razao_B4_B2, Taxa_Degradacao_SWIR_Anual e NDVI_Maximo_Mediano ainda nao existem no perfil matriz-treino (bloco N02(d) do prompt do executor as acrescenta, com origem 'modelado' ou indisponivel).",
+    "A coluna RUSLE_A so existe se os 5 fatores estiverem disponiveis; hoje R e LS ficam indisponiveis no app (D13: coeficientes da Regiao 1 lidos em Rufino 1993, fator de unidade 9,81 reproduzido em pluviometros do IAT; origem fisica a confirmar; D15: equacoes conferidas em 09/10/2026, falta o fluxo de A_in): sem RUSLE_A o desfecho de D25 e NAO_AVALIAVEL (estado tecnico do avaliador de referencia; NAO esta pre-registrado em D25: o pesquisador decide se o declara).",
+    "Curvatura_Perfil e TWI saem SEMPRE indisponiveis no app hoje (select-candidates/route.ts retorna 'indisponivel'; calcularTwi em terreno.ts nao tem chamador): com eles o bloco de terreno efetivo tem 1 preditor, nao 3. Decida: implementar o calculo (fluxo/A_in, D15) ou retirar as duas colunas do pre-registro. O avaliador agora recusa coluna 100% ausente.",
+    "NDVI_Maximo_Mediano e, no codigo (persistenciaTemporal.ts), o PERCENTIL 90 de toda a serie de NDVI, nao a mediana dos maximos por safra. Renomear para NDVI_P90_Serie (o bloco N10 do prompt renomeia a coluna exportada) ou definir o estimador por safra; a justificativa fisica 'vigor de pico da cultura' vale para este ultimo.",
+    "O hash que o pesquisador declara em pre_registro.sha256_config_congelada e calculado por hash_config(cfg) no avaliador (JSON canonico da configuracao SEM a chave pre_registro)."
+  ]
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: scripts/reduzir_terreno_copernicus.py
+TAMANHO: 24,349 bytes
+--------------------------------------------------------------------------------
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+===============================================================================
+Módulo Pericial de Redução de Terreno — Copernicus DEM GLO30 (30 m)
+Sistema de Amostragem e Rotulagem para Erosão Laminar — SAREL v2.0
+Programa de Pós-Graduação em Tecnologias Computacionais para o Agronegócio (PPGTCA 2026)
+===============================================================================
+
+O QUÊ ESTE MÓDULO FAZ:
+- Realiza a amostragem pontual e extração de atributos topográficos e morfométricos
+  diretamente do Modelo Digital de Elevação global Copernicus DEM GLO30 (30 m)
+  distribuído pela Agência Espacial Europeia (ESA) e hospedado abertamente no AWS S3.
+- Extrai para cada coordenada geográfica (latitude, longitude):
+  1. Altitude ortométrica em metros (elevação z);
+  2. Declividade física em graus e percentual, garantindo estritamente o Invariante 2;
+  3. Curvatura de perfil (Kp) e Curvatura plana (Kc) via Zevenbergen & Thorne (1987);
+  4. Índice Topográfico de Umidade (TWI) via Beven & Kirkby (1979) com respeito ao Invariante 5.
+- Formata todos os campos conforme o padrão de proveniência formal Proveniencia<number> do SAREL.
+
+POR QUÊ ESTE PROCESSAMENTO É FEITO EM PROJEÇÃO CONFORME MÉTRICA (EPSG:31982):
+- O cálculo de derivadas de primeira ordem (declividade) e segunda ordem (curvaturas)
+  exige unidades estritamente métricas (dx, dy em metros).
+- No Estado do Paraná (latitudes ~23° a 26° S), projeções Web Mercator (EPSG:3857)
+  distorcem a escala linear horizontal em ~10%, subestimando sistematicamente a declividade.
+- A amostragem projeta as distâncias locais para SIRGAS 2000 / UTM 22S (EPSG:31982),
+  garantindo conformidade geodésica pericial e eliminando artefatos de escala.
+
+INVARIANTES METODOLÓGICOS DO SAREL ASSEGURADOS:
+- Invariante 2: declividadePct = tan(declividadeGraus * pi / 180) * 100.
+- Invariante 5: Se declividade == 0°, TWI é indefinido -> estado: "indisponivel", causa: "fora-do-dominio".
+- Regra 1 (Anti-Mock): Valores medidos provêm dos dados oficiais do Copernicus DEM GLO30;
+  quando fora de cobertura ou inválido, reporta estado "indisponivel" sem fallbacks silenciosos.
+"""
+
+import sys
+import os
+import math
+import json
+import argparse
+import urllib.request
+from datetime import datetime
+from typing import Dict, Any, List, Tuple, Optional
+
+# =============================================================================
+# F0.5 — Isolamento e Correção de Ambiente PROJ / GDAL no Windows 11
+# No ambiente Windows 11 com PostgreSQL 18 / PostGIS 3.6 instalado, a variável
+# de sistema PROJ_LIB aponta para:
+#   C:\Program Files\PostgreSQL\18\share\contrib\postgis-3.6\proj\proj.db
+# cujo esquema possui DATABASE.LAYOUT.VERSION.MINOR = 2 (enquanto o rasterio 1.5.1
+# exige VERSION.MINOR >= 6). Como a libproj/GDAL lê PROJ_LIB no ato do `import rasterio`,
+# localizamos o diretório `proj_data` via `importlib.util.find_spec("rasterio")`
+# ANTES de importar o módulo Cython do rasterio e forçamos também `pyproj.datadir`.
+# =============================================================================
+import importlib.util as _importlib_util
+
+_spec_rasterio = _importlib_util.find_spec("rasterio")
+if _spec_rasterio and _spec_rasterio.origin:
+    _rasterio_proj = os.path.join(os.path.dirname(_spec_rasterio.origin), "proj_data")
+    if os.path.exists(_rasterio_proj):
+        os.environ["PROJ_LIB"] = _rasterio_proj
+        os.environ["PROJ_DATA"] = _rasterio_proj
+
+try:
+    import rasterio
+    from rasterio.env import set_proj_data_search_path
+    if "_rasterio_proj" in locals() and os.path.exists(_rasterio_proj):
+        try:
+            set_proj_data_search_path(_rasterio_proj)
+        except Exception:
+            pass
+except ImportError:
+    pass
+
+try:
+    import pyproj.datadir
+    if "_rasterio_proj" in locals() and os.path.exists(_rasterio_proj):
+        pyproj.datadir.set_data_dir(_rasterio_proj)
+except Exception:
+    pass
+
+import numpy as np
+
+
+AWS_DEM_BASE_URL = "https://copernicus-dem-30m.s3.amazonaws.com"
+FONTE_OFICIAL = "COPERNICUS/DEM/GLO30 (EPSG:31982)"
+# Catálogo Earth Engine: https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_DEM_GLO30
+# Release ESA PRISM 2023_1: https://prism-dem-open.copernicus.eu/
+DATA_AQUISICAO_BASE = "2023-11-15"
+
+
+def identificar_tile_copernicus(lat: float, lon: float) -> str:
+    """
+    Determina o identificador oficial do tile Copernicus DEM GLO30 para a coordenada.
+    Exemplo: lat = -24.5, lon = -53.8 -> 'S25_00_W054_00'
+    """
+    lat_floor = math.floor(lat)
+    lon_floor = math.floor(lon)
+    lat_prefix = "S" if lat_floor < 0 else "N"
+    lon_prefix = "W" if lon_floor < 0 else "E"
+    lat_val = abs(lat_floor)
+    lon_val = abs(lon_floor)
+    return f"{lat_prefix}{lat_val:02d}_00_{lon_prefix}{lon_val:03d}_00"
+
+
+def obter_url_copernicus(tile: str) -> str:
+    """
+    Retorna a URL HTTPS direta para o arquivo Cloud-Optimized GeoTIFF (COG) no AWS S3 Open Data.
+    """
+    return f"{AWS_DEM_BASE_URL}/Copernicus_DSM_COG_10_{tile}_DEM/Copernicus_DSM_COG_10_{tile}_DEM.tif"
+
+
+def obter_caminho_tile_local(tile: str, pasta_cache: str) -> str:
+    """
+    Retorna o caminho do arquivo local no cache.
+    """
+    return os.path.join(pasta_cache, f"Copernicus_DSM_COG_10_{tile}_DEM.tif")
+
+
+def baixar_tile_se_necessario(tile: str, pasta_cache: str = "data/dem_cache", verbose: bool = True) -> str:
+    """
+    Baixa o arquivo GeoTIFF completo para o cache local se ainda não existir.
+    Garante autonomia offline para processamentos subsequentes.
+    """
+    os.makedirs(pasta_cache, exist_ok=True)
+    caminho_local = obter_caminho_tile_local(tile, pasta_cache)
+
+    if os.path.exists(caminho_local) and os.path.getsize(caminho_local) > 1024 * 1024:
+        return caminho_local
+
+    url = obter_url_copernicus(tile)
+    if verbose:
+        print(f"[DEM-CACHE] Baixando tile oficial {tile} para '{caminho_local}'...")
+
+    try:
+        # Download com progresso
+        urllib.request.urlretrieve(url, caminho_local)
+        if verbose:
+            tam_mb = os.path.getsize(caminho_local) / (1024 * 1024)
+            print(f"[DEM-CACHE] Tile {tile} salvo com sucesso ({tam_mb:.1f} MB).")
+        return caminho_local
+    except Exception as e:
+        if os.path.exists(caminho_local):
+            os.remove(caminho_local)
+        raise RuntimeError(f"Falha ao baixar tile {tile} da AWS: {e}")
+
+
+def extrair_atributos_terreno(
+    lat: float,
+    lon: float,
+    area_contribuicao_m2: Optional[float] = None,
+    pasta_cache: str = "data/dem_cache",
+    usar_cache_local: bool = True,
+    baixar_tile_completo: bool = False
+) -> Dict[str, Any]:
+    """
+    Extrai altitude, declividade, curvaturas e TWI para uma coordenada pontual.
+
+    Retorna um dicionário com os campos de terreno estruturados estritamente
+    conforme o tipo Proveniencia<number> do SAREL.
+    """
+    import rasterio
+    import rasterio.windows
+
+    data_consulta_atual = datetime.now().strftime("%Y-%m-%d")
+
+    tile = identificar_tile_copernicus(lat, lon)
+    caminho_local = obter_caminho_tile_local(tile, pasta_cache)
+
+    # Determina a fonte de leitura (arquivo local em cache ou COG remoto)
+    fonte_raster = None
+    if os.path.exists(caminho_local) and os.path.getsize(caminho_local) > 1024 * 1024:
+        fonte_raster = caminho_local
+    elif baixar_tile_completo:
+        fonte_raster = baixar_tile_se_necessario(tile, pasta_cache, verbose=False)
+    else:
+        fonte_raster = obter_url_copernicus(tile)
+
+    try:
+        with rasterio.open(fonte_raster) as src:
+            row, col = src.index(lon, lat)
+
+            # Verifica se o ponto está estritamente dentro dos limites matriciais e geográficos do raster
+            if (
+                row < 0 or row >= src.height or
+                col < 0 or col >= src.width or
+                not (src.bounds.left <= lon <= src.bounds.right and src.bounds.bottom <= lat <= src.bounds.top)
+            ):
+                return _gerar_terreno_indisponivel("fora-do-dominio", f"Coordenada ({lat}, {lon}) fora da abrangência física do tile DEM {tile}.")
+
+            # Define janela focal 3x3 com tratamento de bordas
+            col_min = max(0, col - 1)
+            row_min = max(0, row - 1)
+            width = min(3, src.width - col_min)
+            height = min(3, src.height - row_min)
+
+            window = rasterio.windows.Window(col_min, row_min, width, height)
+            mat = src.read(1, window=window)
+
+            # Se a janela não tiver 3x3 (borda extrema), preenche com padding de reflexão
+            if mat.shape != (3, 3):
+                mat_pad = np.pad(mat, ((0, 3 - mat.shape[0]), (0, 3 - mat.shape[1])), mode='edge')
+                mat = mat_pad
+
+            # Altitude ortométrica no ponto central
+            z_centro = float(mat[1, 1])
+
+            # Verificação estrita de valores NoData / nulos / implausíveis (P12)
+            # Em relevo interior da BP3 (cotas > 100 m), 0.0 m indica ausência de dado em COG sem tag nodata explícita
+            if np.isnan(z_centro) or z_centro <= -9999 or z_centro < -500 or z_centro > 9000 or z_centro == 0.0:
+                return _gerar_terreno_indisponivel("sem-cobertura", f"Pixel DEM com valor NoData, nulo ({z_centro} m) ou inválido.")
+
+            # =========================================================================
+            # Resolução métrica na latitude do ponto (EPSG:31982 / SIRGAS 2000 UTM 22S)
+            # 1 arco-segundo ~ 30.922 m na latitude; dx = 30.922 * cos(lat)
+            # =========================================================================
+            delta_y = 30.922  # metros por arco-segundo em latitude
+            rad_lat = math.radians(lat)
+            delta_x = 30.922 * math.cos(rad_lat)
+
+            z1, z2, z3 = float(mat[0, 0]), float(mat[0, 1]), float(mat[0, 2])
+            z4, z5, z6 = float(mat[1, 0]), float(mat[1, 1]), float(mat[1, 2])
+            z7, z8, z9 = float(mat[2, 0]), float(mat[2, 1]), float(mat[2, 2])
+
+            # Gradientes espaciais de 1ª ordem (Horn, 1981 / GDAL Standard)
+            # p = dz/dx, q = dz/dy
+            p = ((z3 + 2.0 * z6 + z9) - (z1 + 2.0 * z4 + z7)) / (8.0 * delta_x)
+            q = ((z1 + 2.0 * z2 + z3) - (z7 + 2.0 * z8 + z9)) / (8.0 * delta_y)
+
+            grad_mag = math.sqrt(p * p + q * q)
+
+            # =========================================================================
+            # Invariante 2 do SAREL:
+            # declividadeGraus = atan(grad) * 180 / pi
+            # declividadePct = tan(declividadeGraus * pi / 180) * 100 = grad * 100
+            # =========================================================================
+            declividade_rad = math.atan(grad_mag)
+            declividade_graus = math.degrees(declividade_rad)
+            declividade_pct = math.tan(declividade_rad) * 100.0
+
+            # Arredondamento pericial de alta precisão
+            elevacao_val = round(z_centro, 2)
+            decliv_pct_val = round(declividade_pct, 2)
+            decliv_graus_val = round(declividade_graus, 2)
+
+            # =========================================================================
+            # Curvaturas de Perfil e Plana (Zevenbergen & Thorne, 1987)
+            # =========================================================================
+            L = (delta_x + delta_y) / 2.0
+            D = ((z4 + z6) / 2.0 - z5) / (delta_x * delta_x)
+            E = ((z2 + z8) / 2.0 - z5) / (delta_y * delta_y)
+            F = (-z1 + z3 + z7 - z9) / (4.0 * delta_x * delta_y)
+            G = (z6 - z4) / (2.0 * delta_x)
+            H = (z2 - z8) / (2.0 * delta_y)
+
+            denom_curv = G * G + H * H
+            if denom_curv > 1e-10:
+                curv_perfil_val = round(float(-2.0 * (D * G * G + E * H * H + F * G * H) / denom_curv), 5)
+                curv_plana_val = round(float(2.0 * (D * H * H + E * G * G - F * G * H) / denom_curv), 5)
+            else:
+                curv_perfil_val = 0.0
+                curv_plana_val = 0.0
+
+            # =========================================================================
+            # TWI (Topographic Wetness Index) e Invariante 5 do SAREL:
+            # TWI = ln(a / tan(beta)) (Beven & Kirkby, 1979)
+            # Regra 1 (Anti-Mock): Se a área de contribuição específica não for fornecida
+            # a partir de uma grade de fluxo real (D8/MD8), reporta "indisponivel".
+            # Se beta <= 0.001° (plano): tan(0) = 0 -> Indisponível (fora-do-dominio).
+            # =========================================================================
+            tan_beta = math.tan(declividade_rad)
+
+            if declividade_graus <= 0.001 or tan_beta <= 1e-6:
+                twi_obj: Dict[str, Any] = {
+                    "estado": "indisponivel",
+                    "causa": "fora-do-dominio",
+                    "motivo": "Declividade plana (beta = 0°) impossibilita cálculo do TWI (divisão por zero em tan(beta))."
+                }
+            elif area_contribuicao_m2 is None or area_contribuicao_m2 <= 0:
+                twi_obj = {
+                    "estado": "indisponivel",
+                    "causa": "fora-do-dominio",
+                    "motivo": "TWI aguarda mapa de acúmulo de fluxo e área de contribuição específica real (Beven & Kirkby, 1979)."
+                }
+            else:
+                twi_calc = math.log(area_contribuicao_m2 / tan_beta)
+                twi_obj = {
+                    "estado": "modelado",
+                    "valor": round(float(twi_calc), 3),
+                    "modelo": "TWI = ln(a / tan(beta)) (Beven & Kirkby, 1979)",
+                    "insumos": ["areaContribuicaoM2", "declividadeGraus"]
+                }
+
+            return {
+                "elevacao": {
+                    "estado": "medido",
+                    "valor": elevacao_val,
+                    "fonte": FONTE_OFICIAL,
+                    "adquiridoEm": DATA_AQUISICAO_BASE,
+                    "consultadoEm": data_consulta_atual
+                },
+                "declividadePct": {
+                    "estado": "medido",
+                    "valor": decliv_pct_val,
+                    "fonte": FONTE_OFICIAL,
+                    "adquiridoEm": DATA_AQUISICAO_BASE,
+                    "consultadoEm": data_consulta_atual
+                },
+                "declividadeGraus": {
+                    "estado": "medido",
+                    "valor": decliv_graus_val,
+                    "fonte": FONTE_OFICIAL,
+                    "adquiridoEm": DATA_AQUISICAO_BASE,
+                    "consultadoEm": data_consulta_atual
+                },
+                "curvaturaPerfil": {
+                    "estado": "modelado",
+                    "valor": curv_perfil_val,
+                    "modelo": "Zevenbergen & Thorne (1987) 3x3 window",
+                    "insumos": ["elevacao"]
+                },
+                "curvaturaPlana": {
+                    "estado": "modelado",
+                    "valor": curv_plana_val,
+                    "modelo": "Zevenbergen & Thorne (1987) 3x3 window",
+                    "insumos": ["elevacao"]
+                },
+                "acumuloFluxo": {
+                    "estado": "indisponivel",
+                    "causa": "fora-do-dominio",
+                    "motivo": "Direção de fluxo D8 em processamento na bacia."
+                },
+                "twi": twi_obj
+            }
+
+    except Exception as e:
+        return _gerar_terreno_indisponivel("sem-cobertura", f"Erro na leitura do raster Copernicus: {str(e)}")
+
+
+def _gerar_terreno_indisponivel(causa: str, motivo: str) -> Dict[str, Any]:
+    """Gera bloco de terreno com estado indisponível em respeito à Regra 1."""
+    indisp = {"estado": "indisponivel", "causa": causa, "motivo": motivo}
+    return {
+        "elevacao": indisp,
+        "declividadePct": indisp,
+        "declividadeGraus": indisp,
+        "curvaturaPerfil": indisp,
+        "curvaturaPlana": indisp,
+        "acumuloFluxo": indisp,
+        "twi": indisp
+    }
+
+
+def reduzir_pontos_amostrais(
+    pontos: List[Dict[str, Any]],
+    pasta_cache: str = "data/dem_cache",
+    baixar_tiles: bool = True
+) -> List[Dict[str, Any]]:
+    """
+    Enriquece uma lista de pontos amostrais com as variáveis topográficas reais do DEM.
+    """
+    total = len(pontos)
+    print(f"[REDUÇÃO-DEM] Iniciando redução de terreno para {total} pontos amostrais...")
+
+    # Se solicitado, faz pré-download dos tiles necessários para acelerar a execução
+    if baixar_tiles:
+        tiles_necessarios = set()
+        for p in pontos:
+            lat = p.get("latitude")
+            lon = p.get("longitude")
+            if lat is not None and lon is not None:
+                tiles_necessarios.add(identificar_tile_copernicus(float(lat), float(lon)))
+
+        print(f"[REDUÇÃO-DEM] {len(tiles_necessarios)} quadrículo(s) Copernicus necessário(s): {sorted(tiles_necessarios)}")
+        for tile in sorted(tiles_necessarios):
+            try:
+                baixar_tile_se_necessario(tile, pasta_cache, verbose=True)
+            except Exception as err:
+                print(f"[AVISO] Falha ao pré-baixar tile {tile}. Leitura COG sob demanda será usada: {err}")
+
+    processados = []
+    sucessos = 0
+    for i, p in enumerate(pontos):
+        p_copia = dict(p)
+        lat = float(p_copia["latitude"])
+        lon = float(p_copia["longitude"])
+
+        terreno = extrair_atributos_terreno(lat, lon, pasta_cache=pasta_cache)
+        p_copia["terreno"] = terreno
+
+        if terreno.get("elevacao", {}).get("estado") == "medido":
+            sucessos += 1
+
+        processados.append(p_copia)
+        if (i + 1) % 50 == 0 or (i + 1) == total:
+            print(f"[REDUÇÃO-DEM] Progresso: {i + 1}/{total} pontos processados ({sucessos} com elevação medida).")
+
+    print(f"[REDUÇÃO-DEM] Concluído com sucesso: {sucessos}/{total} pontos medidos.")
+    return processados
+
+
+def amostrar_altitudes_copernicus(
+    coords: List[Tuple[float, float]],
+    pasta_cache: str = "data/dem_cache",
+    baixar_tiles: bool = False,
+    permitir_remoto: bool = False,
+) -> List[float]:
+    """
+    Amostra a cota ortométrica real (m) diretamente sobre o Copernicus DEM GLO-30 (30 m).
+    Lança RuntimeError se qualquer coordenada estiver fora de cobertura ou com valor NoData/0.0m (P12).
+    """
+    import rasterio
+
+    coords_por_tile: Dict[str, List[Tuple[int, float, float]]] = {}
+    for idx, (lat, lon) in enumerate(coords):
+        if not (-90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0):
+            raise ValueError(f"Coordenada geográfica inválida no índice {idx}: lat={lat}, lon={lon}")
+        tile = identificar_tile_copernicus(lat, lon)
+        coords_por_tile.setdefault(tile, []).append((idx, lat, lon))
+
+    resultados = [0.0] * len(coords)
+
+    for tile, lista in coords_por_tile.items():
+        caminho_local = obter_caminho_tile_local(tile, pasta_cache)
+        tem_cache_local = os.path.exists(caminho_local) and os.path.getsize(caminho_local) > 1024 * 1024
+
+        if not tem_cache_local:
+            if baixar_tiles:
+                caminho_local = baixar_tile_se_necessario(tile, pasta_cache, verbose=False)
+            elif permitir_remoto:
+                caminho_local = obter_url_copernicus(tile)
+            else:
+                raise RuntimeError(
+                    f"Tile '{tile}' não encontrado no cache local '{pasta_cache}' para a coordenada ({lista[0][1]}, {lista[0][2]}). "
+                    f"Modo offline estrito: download remoto desabilitado (P12)."
+                )
+
+        with rasterio.open(caminho_local) as src:
+            for (orig_idx, lat, lon) in lista:
+                row, col = src.index(lon, lat)
+                if (
+                    row < 0 or row >= src.height or
+                    col < 0 or col >= src.width or
+                    not (src.bounds.left <= lon <= src.bounds.right and src.bounds.bottom <= lat <= src.bounds.top)
+                ):
+                    raise RuntimeError(
+                        f"Coordenada ({lat}, {lon}) fora dos limites físicos do tile {tile} (bounds: {src.bounds}). Princípio P12 violação evitada: interpolação artificial proibida."
+                    )
+
+            sample_inputs = [(lon, lat) for _, lat, lon in lista]
+            sampled_vals = list(src.sample(sample_inputs))
+
+            for (orig_idx, lat, lon), val_arr in zip(lista, sampled_vals):
+                val = float(val_arr[0])
+                if math.isnan(val) or val <= -9999 or val < -500 or val > 9000 or val == 0.0:
+                    raise RuntimeError(
+                        f"Coordenada ({lat}, {lon}) no tile {tile} retornou valor inválido, nulo ou NoData ({val} m). Princípio P12 violação evitada: interpolação artificial proibida."
+                    )
+                resultados[orig_idx] = round(val, 2)
+
+    return resultados
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Módulo Pericial de Redução de Terreno — Copernicus DEM GLO30")
+    parser.add_argument("--ponto", type=str, help="Coordenada lat,lon para consulta pontual direta (ex: -24.5,-53.8)")
+    parser.add_argument("--amostrar-altitudes", type=str, help="JSON com lista de [lat, lon] ou caminho para arquivo .json")
+    parser.add_argument("--input", type=str, help="Arquivo de entrada (.json com lista de PontoAmostral)")
+    parser.add_argument("--output", type=str, help="Arquivo de saída enriquecido (.json)")
+    parser.add_argument("--cache", type=str, default="data/dem_cache", help="Diretório de cache local dos tiles DEM")
+    parser.add_argument("--baixar-tiles", action="store_true", help="Faz pré-download dos tiles completos para o cache")
+    parser.add_argument("--permitir-download", action="store_true", help="Permite download remoto de tiles se faltarem no cache")
+    parser.add_argument("--permitir-remoto", action="store_true", help="Permite leitura remota via HTTPS se faltar no cache")
+
+    args = parser.parse_args()
+
+    if args.amostrar_altitudes:
+        payload_str = args.amostrar_altitudes
+        try:
+            if os.path.exists(payload_str):
+                with open(payload_str, "r", encoding="utf-8") as f:
+                    coords = json.load(f)
+            else:
+                coords = json.loads(payload_str)
+            altitudes = amostrar_altitudes_copernicus(
+                coords,
+                pasta_cache=args.cache,
+                baixar_tiles=args.baixar_tiles or args.permitir_download,
+                permitir_remoto=args.permitir_remoto,
+            )
+            print(json.dumps({"status": "sucesso", "altitudes": altitudes}, ensure_ascii=False))
+        except Exception as err:
+            print(json.dumps({"status": "erro", "motivo": str(err)}, ensure_ascii=False))
+            sys.exit(1)
+
+    elif args.ponto:
+        partes = args.ponto.split(",")
+        if len(partes) != 2:
+            print("Erro: Formato de ponto inválido. Use: --ponto lat,lon")
+            sys.exit(1)
+        lat, lon = float(partes[0].strip()), float(partes[1].strip())
+        print(f"[DEM] Extraindo atributos para coordenada ({lat}, {lon})...")
+        res = extrair_atributos_terreno(lat, lon, pasta_cache=args.cache, baixar_tile_completo=args.baixar_tiles)
+        print(json.dumps(res, indent=2, ensure_ascii=False))
+
+    elif args.input:
+        if not os.path.exists(args.input):
+            print(f"Erro: Arquivo de entrada não encontrado: {args.input}")
+            sys.exit(1)
+
+        with open(args.input, "r", encoding="utf-8") as f:
+            dados = json.load(f)
+
+        lista_pontos = dados if isinstance(dados, list) else dados.get("pontos", [])
+        if not lista_pontos:
+            print("Erro: Nenhum ponto encontrado no arquivo de entrada.")
+            sys.exit(1)
+
+        pontos_enriquecidos = reduzir_pontos_amostrais(lista_pontos, pasta_cache=args.cache, baixar_tiles=args.baixar_tiles)
+
+        output_path = args.output or args.input.replace(".json", "_com_terreno.json")
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(pontos_enriquecidos, f, indent=2, ensure_ascii=False)
+        print(f"[DEM] Arquivo enriquecido salvo com sucesso em: {output_path}")
+
+    else:
+        parser.print_help()
+
+
+if __name__ == "__main__":
+    main()
+
+--------------------------------------------------------------------------------
+ARQUIVO: scripts/baixar_chirps_climatologia.py
+TAMANHO: 25,420 bytes
+--------------------------------------------------------------------------------
+
+# -*- coding: utf-8 -*-
+"""
+Script de Download Real, Recorte Imediato em Memória e Geração de Climatologia CHIRPS v2.0
+Diretrizes H2, L1, L2, L3, L4 (02/10/2026) — Decisão D13b / D06 (Suporte Nativo 0,05° sem reamostragem)
+
+1. Período (L1 / D13b): Série completa disponível (1981-01 ao último ano civil completo: 2025-12 = 540 meses / 45 anos).
+   Limite superior derivado dinamicamente (ano civil anterior ao corrente).
+2. Gestão de disco (L2): Descompressão em memória (rasterio.io.MemoryFile), recorte imediato da janela BP3
+   (33 linhas x 26 colunas de 0,05°, ~3,5 KB por GeoTIFF), gravação em data/chirps_cache/recortes/ e
+   descarte total de dados globais. Redução de ~37 GB para ~2 MB.
+3. Tratamento pericial de NoData (L3 / P12): Sentinela -9999.0 do CHIRPS v2.0 tratado explicitamente;
+   ausência de dados propaga como ausência (None), sem conversão em 0.0 mm. Contabilização de meses válidos.
+4. Envelope canônico (L4): Adota src/config/areaInteresse.ts (-54.65, -25.65, -53.35, -24.00), alinhado pixel-perfect
+   com a grade de 0,05° (Window col_off=2507, row_off=1480, width=26, height=33).
+5. Conferência cruzada Waltrick (Parte V): Janela secundária 1986–2008 (23 anos / 276 meses) comparada indiretamente
+   (precipitação vs precipitação), mantendo fator R inoperante (H1).
+"""
+
+import os
+import sys
+import time
+import json
+import gzip
+import math
+import urllib.request
+from datetime import datetime, timezone
+from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
+
+import rasterio
+from rasterio.windows import Window
+from rasterio.io import MemoryFile
+
+sys.stdout.reconfigure(encoding="utf-8")
+
+ROOT = Path(__file__).resolve().parents[1]
+CACHE_DIR = ROOT / "data" / "chirps_cache"
+RECORTES_DIR = CACHE_DIR / "recortes"
+DOCS_DIR = ROOT / "docs" / "verificacoes"
+DIARIO_PATH = DOCS_DIR / "diario_climatologia_chirps_bp3.json"
+ARTEFATO_PATH = DOCS_DIR / "climatologia_chirps_bp3.json"
+
+BASE_URL = "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_monthly/tifs/"
+
+# Limites temporais derivados dinamicamente
+ANO_INICIAL = 1981
+ANO_ATUAL = datetime.now(timezone.utc).year
+ANO_FINAL = ANO_ATUAL - 1  # Último ano civil completo disponível (2025)
+TOTAL_ANOS = ANO_FINAL - ANO_INICIAL + 1
+TOTAL_MESES = TOTAL_ANOS * 12
+
+# Janela secundária histórica para conferência cruzada Waltrick et al. (2015)
+ANO_INICIAL_WALTRICK = 1986
+ANO_FINAL_WALTRICK = 2008
+TOTAL_MESES_WALTRICK = (ANO_FINAL_WALTRICK - ANO_INICIAL_WALTRICK + 1) * 12  # 276 meses
+
+# Sentinela oficial do CHIRPS v2.0 para ausência de dado
+# NOTA PERICIAL: Os GeoTIFFs oficiais do CHIRPS v2.0 não declaram nodata no cabeçalho GDAL (retornam None).
+# O sentinela -9999.0 é convenção canônica do Climate Hazards Center (CHC).
+CHIRPS_NODATA_SENTINEL = -9999.0
+LIMIAR_NODATA = -9000.0
+
+# Estações de referência na Bacia do Paraná 3
+ESTACOES_BP3 = {
+    "TOLEDO": {"nome": "Toledo", "lat": -24.72, "lon": -53.74, "rRefWaltrick": 10623},
+    "CASCAVEL": {"nome": "Cascavel", "lat": -24.95, "lon": -53.45, "rRefWaltrick": 11588},
+    "SANTA_HELENA": {"nome": "Santa Helena", "lat": -24.86, "lon": -54.33, "rRefWaltrick": 11261},
+    "FOZ_DO_IGUACU": {"nome": "Foz do Iguaçu", "lat": -25.54, "lon": -54.58, "rRefWaltrick": 11037},
+    "PALOTINA": {"nome": "Palotina", "lat": -24.28, "lon": -53.84, "rRefWaltrick": 10436},
+    "MEDIANEIRA": {"nome": "Medianeira", "lat": -25.29, "lon": -54.09, "rRefWaltrick": 11400},
+}
+
+# Envelope canônico da BP3 adotado de src/config/areaInteresse.ts:
+# lonMin: -54.65, latMin: -25.65, lonMax: -53.35, latMax: -24.00
+# Alinhamento exato com a grade nativa CHIRPS 0.05°:
+# col_off = 2507, row_off = 1480, width = 26, height = 33
+BP3_COL_OFF = 2507
+BP3_ROW_OFF = 1480
+BP3_WIDTH = 26
+BP3_HEIGHT = 33
+BP3_WINDOW = Window(col_off=BP3_COL_OFF, row_off=BP3_ROW_OFF, width=BP3_WIDTH, height=BP3_HEIGHT)
+
+# Lock para escritas concorrentes no diário e medições
+lock_diario = threading.Lock()
+
+
+def medir_tamanho_cache():
+    if not CACHE_DIR.exists():
+        return 0
+    return sum(f.stat().st_size for f in CACHE_DIR.rglob("*") if f.is_file())
+
+
+def processar_recorte_memoria(gz_bytes):
+    """
+    Descompacta gzip em memória e extrai apenas a janela da BP3 usando MemoryFile.
+    Retorna (data_array, profile_recorte, meta_global).
+    """
+    tif_bytes = gzip.decompress(gz_bytes)
+    with MemoryFile(tif_bytes) as memfile:
+        with memfile.open() as src:
+            data = src.read(1, window=BP3_WINDOW)
+            win_transform = rasterio.windows.transform(BP3_WINDOW, src.transform)
+            profile = {
+                "driver": "GTiff",
+                "height": BP3_HEIGHT,
+                "width": BP3_WIDTH,
+                "count": 1,
+                "dtype": data.dtype,
+                "crs": src.crs,
+                "transform": win_transform,
+                "nodata": CHIRPS_NODATA_SENTINEL,
+                "compress": "deflate",
+            }
+            meta_global = {
+                "crs": str(src.crs),
+                "res": src.res,
+            }
+            return data, profile, meta_global
+
+
+def converter_legado_2022_se_existir():
+    """
+    Converte arquivos globais legados de 2022 em recortes e remove os arquivos globais
+    para liberar disco imediatamente (L2).
+    """
+    arquivos_removidos = 0
+    bytes_liberados = 0
+
+    RECORTES_DIR.mkdir(parents=True, exist_ok=True)
+
+    for m in range(1, 13):
+        recorte_path = RECORTES_DIR / f"chirps-v2.0.2022.{m:02d}.bp3.tif"
+        tif_global = CACHE_DIR / f"chirps-v2.0.2022.{m:02d}.tif"
+        gz_global = CACHE_DIR / f"chirps-v2.0.2022.{m:02d}.tif.gz"
+
+        if not recorte_path.exists() and tif_global.exists():
+            with rasterio.open(tif_global) as src:
+                data = src.read(1, window=BP3_WINDOW)
+                win_transform = rasterio.windows.transform(BP3_WINDOW, src.transform)
+                profile = {
+                    "driver": "GTiff",
+                    "height": BP3_HEIGHT,
+                    "width": BP3_WIDTH,
+                    "count": 1,
+                    "dtype": data.dtype,
+                    "crs": src.crs,
+                    "transform": win_transform,
+                    "nodata": CHIRPS_NODATA_SENTINEL,
+                    "compress": "deflate",
+                }
+                with rasterio.open(recorte_path, "w", **profile) as dst:
+                    dst.write(data, 1)
+
+        # Remove arquivos globais legados
+        if tif_global.exists():
+            bytes_liberados += tif_global.stat().st_size
+            tif_global.unlink()
+            arquivos_removidos += 1
+        if gz_global.exists():
+            bytes_liberados += gz_global.stat().st_size
+            gz_global.unlink()
+            arquivos_removidos += 1
+
+    if arquivos_removidos > 0:
+        print(f"Limpeza de arquivos legados de 2022 concluída: {arquivos_removidos} arquivos removidos ({bytes_liberados / 1024 / 1024:.2f} MB liberados).")
+
+
+def baixar_e_recortar_mes(ano, mes, url_base, chamadas_existentes):
+    """
+    Baixa o arquivo .tif.gz do mês em memória, recorta para a janela da BP3,
+    salva em data/chirps_cache/recortes/ e descarta dados globais.
+    Retorna a chamada de diário correspondente.
+    """
+    nome_gz = f"chirps-v2.0.{ano}.{mes:02d}.tif.gz"
+    nome_recorte = f"chirps-v2.0.{ano}.{mes:02d}.bp3.tif"
+    recorte_path = RECORTES_DIR / nome_recorte
+    url = f"{url_base}{nome_gz}"
+
+    # Se o recorte já existe e a chamada já está no diário, retorna a chamada existente
+    if recorte_path.exists() and url in chamadas_existentes:
+        return chamadas_existentes[url], False
+
+    # Tentativas com backoff exponencial
+    tentativas_max = 4
+    ultimo_erro = None
+    gz_data = None
+    codigo_http = 200
+    t0 = time.time()
+
+    for tentativa in range(1, tentativas_max + 1):
+        try:
+            req = urllib.request.Request(
+                url,
+                headers={"User-Agent": "SAREL-Pericial/2.0 (UTFPR PPGTCA 2026; Series Climatologica)"}
+            )
+            with urllib.request.urlopen(req, timeout=45) as resp:
+                codigo_http = resp.getcode()
+                gz_data = resp.read()
+            break
+        except Exception as e:
+            ultimo_erro = e
+            if tentativa < tentativas_max:
+                espera = 2 ** tentativa
+                print(f"[{ano}-{mes:02d}] Falha na tentativa {tentativa}/{tentativas_max} ({e}). Aguardando {espera}s...")
+                time.sleep(espera)
+            else:
+                raise RuntimeError(f"Falha definitiva ao baixar {url} após {tentativas_max} tentativas: {ultimo_erro}")
+
+    t1 = time.time()
+    duracao_ms = int((t1 - t0) * 1000)
+    tamanho_bytes = len(gz_data)
+
+    # Recorte imediato em memória
+    data, profile, _ = processar_recorte_memoria(gz_data)
+    del gz_data  # Libera memória imediatamente
+
+    with rasterio.open(recorte_path, "w", **profile) as dst:
+        dst.write(data, 1)
+
+    chamada = {
+        "timestampIso": datetime.now(timezone.utc).isoformat(),
+        "servico": "CHIRPS_UCSB",
+        "endpoint": url,
+        "metodoHttp": "GET",
+        "quantidadeItens": 1,
+        "tamanhoRespostaBytes": tamanho_bytes,
+        "codigoHttp": codigo_http,
+        "duracaoMs": duracao_ms,
+        "detalhe": f"CHIRPS v2.0 Global Monthly 0.05 deg - {ano}-{mes:02d}"
+    }
+
+    return chamada, True
+
+
+def main():
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    RECORTES_DIR.mkdir(parents=True, exist_ok=True)
+    DOCS_DIR.mkdir(parents=True, exist_ok=True)
+
+    t_inicio_total = time.time()
+    disco_antes = medir_tamanho_cache()
+    print(f"=== SAREL v2.0 — Climatologia CHIRPS v2.0 (Série Completa {ANO_INICIAL} a {ANO_FINAL}) ===")
+    print(f"Disco inicial ocupado em cache: {disco_antes:,} bytes ({disco_antes / 1024 / 1024:.2f} MB)")
+
+    # 1. Converte e limpa arquivos globais de 2022 se presentes
+    converter_legado_2022_se_existir()
+
+    # 2. Carrega diário existente se houver
+    chamadas_map = {}
+    if DIARIO_PATH.exists():
+        try:
+            with open(DIARIO_PATH, "r", encoding="utf-8") as f_d_in:
+                diario_antigo = json.load(f_d_in)
+                for ch in diario_antigo.get("chamadas", []):
+                    chamadas_map[ch["endpoint"]] = ch
+            print(f"Diário anterior carregado com {len(chamadas_map)} chamadas registradas.")
+        except Exception as e:
+            print(f"Aviso: Não foi possível carregar diário anterior: {e}")
+
+    # Lista todos os meses necessários (1981-01 a ANO_FINAL-12)
+    meses_totais = [
+        (ano, mes)
+        for ano in range(ANO_INICIAL, ANO_FINAL + 1)
+        for mes in range(1, 13)
+    ]
+
+    print(f"Total de meses a processar: {len(meses_totais)} ({ANO_INICIAL}-01 a {ANO_FINAL}-12)")
+
+    # 3. Processamento concorrente com recorte em memória
+    disco_pico = disco_antes
+    novos_downloads = 0
+    concluidos = 0
+
+    # Usamos 8 workers para throughput estável sem sobrecarregar
+    max_workers = 8
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futuros = {
+            executor.submit(baixar_e_recortar_mes, ano, mes, BASE_URL, chamadas_map): (ano, mes)
+            for (ano, mes) in meses_totais
+        }
+
+        for fut in as_completed(futuros):
+            ano, mes = futuros[fut]
+            try:
+                chamada, foi_baixado = fut.result()
+                with lock_diario:
+                    chamadas_map[chamada["endpoint"]] = chamada
+                    concluidos += 1
+                    if foi_baixado:
+                        novos_downloads += 1
+                        tam_atual = medir_tamanho_cache()
+                        if tam_atual > disco_pico:
+                            disco_pico = tam_atual
+                        if novos_downloads % 20 == 0 or concluidos == len(meses_totais):
+                            print(f"[{concluidos}/{len(meses_totais)}] Processado {ano}-{mes:02d} ({chamada['tamanhoRespostaBytes'] / 1024 / 1024:.2f} MB em {chamada['duracaoMs']} ms). Novos downloads: {novos_downloads}")
+                            # Salva diário periodicamente para resiliência
+                            diario_temp = {
+                                "versao": "2.0",
+                                "artefatoAlvo": "docs/verificacoes/climatologia_chirps_bp3.json",
+                                "criadoEm": datetime.now(timezone.utc).isoformat(),
+                                "atualizadoEm": datetime.now(timezone.utc).isoformat(),
+                                "totalChamadas": len(chamadas_map),
+                                "totalItensProcessados": len(chamadas_map),
+                                "totalBytesRecebidos": sum(c["tamanhoRespostaBytes"] for c in chamadas_map.values()),
+                                "chamadas": list(chamadas_map.values()),
+                            }
+                            with open(DIARIO_PATH, "w", encoding="utf-8") as f_d:
+                                json.dump(diario_temp, f_d, indent=2, ensure_ascii=False)
+                    else:
+                        if concluidos % 50 == 0:
+                            print(f"[{concluidos}/{len(meses_totais)}] Recorte já presente em cache: {ano}-{mes:02d}")
+            except Exception as e:
+                print(f"ERRO fatal ao processar {ano}-{mes:02d}: {e}")
+                raise e
+
+    # Mede disco depois
+    disco_depois = medir_tamanho_cache()
+    if disco_pico < disco_depois:
+        disco_pico = disco_depois
+
+    # Ordena chamadas cronologicamente
+    lista_chamadas_ordenada = sorted(chamadas_map.values(), key=lambda c: c["endpoint"])
+
+    # Salva diário oficial definitivo
+    total_bytes_recebidos = sum(c["tamanhoRespostaBytes"] for c in lista_chamadas_ordenada)
+    agora_iso = datetime.now(timezone.utc).isoformat()
+    diario_final = {
+        "versao": "2.0",
+        "artefatoAlvo": "docs/verificacoes/climatologia_chirps_bp3.json",
+        "criadoEm": lista_chamadas_ordenada[0]["timestampIso"] if lista_chamadas_ordenada else agora_iso,
+        "atualizadoEm": agora_iso,
+        "totalChamadas": len(lista_chamadas_ordenada),
+        "totalItensProcessados": len(lista_chamadas_ordenada),
+        "totalBytesRecebidos": total_bytes_recebidos,
+        "chamadas": lista_chamadas_ordenada,
+    }
+    with open(DIARIO_PATH, "w", encoding="utf-8") as f_d:
+        json.dump(diario_final, f_d, indent=2, ensure_ascii=False)
+    print(f"Diário de requisições final gravado em {DIARIO_PATH} com {len(lista_chamadas_ordenada)} chamadas.")
+
+    # 4. Extração dos valores nas 6 estações e cômputo da climatologia com respeito a P12 (NoData)
+    print("Iniciando extração e cômputo climatológico com respeito estrito a P12...")
+
+    # Estruturas de agregação por estação:
+    # chave -> lista de (ano, mes, valor_ou_None)
+    series_estacoes = {chave: [] for chave in ESTACOES_BP3}
+    crs_str = None
+    res_info = None
+
+    # Mapeamento de coordenadas para pixel dentro da janela de 33x26
+    # Origem da janela: lonMin=-54.65, latMax=-24.00, res=0.05
+    coords_pixel_estacoes = {}
+    amostra_primeiro_recorte = RECORTES_DIR / f"chirps-v2.0.{ANO_INICIAL}.01.bp3.tif"
+    with rasterio.open(amostra_primeiro_recorte) as src:
+        crs_str = str(src.crs)
+        res_info = [src.res[0], src.res[1]]
+        transform_recorte = src.transform
+        for chave, dados in ESTACOES_BP3.items():
+            r, c = rasterio.transform.rowcol(transform_recorte, dados["lon"], dados["lat"])
+            coords_pixel_estacoes[chave] = (r, c)
+            print(f"Estação {dados['nome']}: lon={dados['lon']}, lat={dados['lat']} -> pixel recorte (linha={r}, coluna={c})")
+
+    # Itera sobre todos os 540 meses e lê os dados dos recortes
+    ocorrencias_nodata_geral = []
+
+    for ano, mes in meses_totais:
+        caminho_recorte = RECORTES_DIR / f"chirps-v2.0.{ano}.{mes:02d}.bp3.tif"
+        with rasterio.open(caminho_recorte) as src:
+            grid = src.read(1)
+            for chave, (r, c) in coords_pixel_estacoes.items():
+                val = float(grid[r, c])
+                # Checagem pericial de NoData (P12): sentinela -9999 ou <= -9000 ou NaN
+                if val <= LIMIAR_NODATA or math.isnan(val):
+                    series_estacoes[chave].append((ano, mes, None))
+                    ocorrencias_nodata_geral.append((ano, mes, chave, val))
+                else:
+                    series_estacoes[chave].append((ano, mes, round(val, 2)))
+
+    # 5. Cálculo das métricas climatológicas por estação
+    estacoes_artefato = {}
+
+    for chave, dados in ESTACOES_BP3.items():
+        registros = series_estacoes[chave]
+        meses_esperados = len(registros)
+        validos = [r for r in registros if r[2] is not None]
+        nodata = [r for r in registros if r[2] is None]
+
+        # Médias mensais de janeiro a dezembro sobre anos válidos (1981-2025)
+        medias_mensais_12 = []
+        for m in range(1, 13):
+            vals_m = [r[2] for r in validos if r[1] == m]
+            if len(vals_m) > 0:
+                medias_mensais_12.append(round(sum(vals_m) / len(vals_m), 2))
+            else:
+                medias_mensais_12.append(None)
+
+        # Média anual climatológica: soma das médias dos 12 meses
+        media_anual_climatologica = round(sum(m for m in medias_mensais_12 if m is not None), 2)
+
+        # Dados do ano 2022 para critério de aceite falsificável (L1)
+        vals_2022 = [r[2] for r in registros if r[0] == 2022]
+        total_2022 = round(sum(v for v in vals_2022 if v is not None), 2)
+        desvio_2022_mm = round(total_2022 - media_anual_climatologica, 2)
+        desvio_2022_pct = round(((total_2022 - media_anual_climatologica) / media_anual_climatologica) * 100, 2)
+
+        conclusao_vies = (
+            f"O ano de 2022 apresentou precipitação acumulada de {total_2022} mm, desvio de "
+            f"{desvio_2022_mm:+.2f} mm ({desvio_2022_pct:+.2f}%) em relação à média climatológica "
+            f"de 45 anos ({media_anual_climatologica} mm)."
+        )
+
+        # Janela secundária Waltrick et al. (1986–2008, 23 anos / 276 meses)
+        registros_waltrick = [r for r in registros if ANO_INICIAL_WALTRICK <= r[0] <= ANO_FINAL_WALTRICK]
+        validos_waltrick = [r for r in registros_waltrick if r[2] is not None]
+        nodata_waltrick = [r for r in registros_waltrick if r[2] is None]
+
+        medias_mensais_waltrick = []
+        for m in range(1, 13):
+            vals_w_m = [r[2] for r in validos_waltrick if r[1] == m]
+            if len(vals_w_m) > 0:
+                medias_mensais_waltrick.append(round(sum(vals_w_m) / len(vals_w_m), 2))
+            else:
+                medias_mensais_waltrick.append(None)
+
+        media_anual_waltrick = round(sum(m for m in medias_mensais_waltrick if m is not None), 2)
+        dif_waltrick_para_completa_mm = round(media_anual_waltrick - media_anual_climatologica, 2)
+        dif_waltrick_para_completa_pct = round(((media_anual_waltrick - media_anual_climatologica) / media_anual_climatologica) * 100, 2)
+
+        estacoes_artefato[chave] = {
+            "nome": dados["nome"],
+            "latitude": dados["lat"],
+            "longitude": dados["lon"],
+            "rReferenciaWaltrick": dados["rRefWaltrick"],
+            "serieCompleta1981_2025": {
+                "mesesEsperados": meses_esperados,
+                "mesesValidos": len(validos),
+                "mesesNoData": len(nodata),
+                "mesesNoDataLista": [f"{r[0]}-{r[1]:02d}" for r in nodata],
+                "climatologiaMensalMediaMm": medias_mensais_12,
+                "precipitacaoMediaAnualMm": media_anual_climatologica,
+            },
+            "criterioAceiteAno2022": {
+                "precipitacaoMensal2022Mm": [v for v in vals_2022],
+                "precipitacaoAnual2022Mm": total_2022,
+                "desvioParaMediaClimatologicaMm": desvio_2022_mm,
+                "desvioParaMediaClimatologicaPercentual": desvio_2022_pct,
+                "conclusaoVies": conclusao_vies,
+            },
+            "janelaSecundariaWaltrick1986_2008": {
+                "descricao": "Janela secundária idêntica ao período de Waltrick et al. (2015, 1986–2008 = 23 anos / 276 meses) para conferência cruzada de insumo.",
+                "mesesEsperados": TOTAL_MESES_WALTRICK,
+                "mesesValidos": len(validos_waltrick),
+                "mesesNoData": len(nodata_waltrick),
+                "climatologiaMensalMediaMm": medias_mensais_waltrick,
+                "precipitacaoMediaAnualMm": media_anual_waltrick,
+                "diferencaParaSerieCompletaMm": dif_waltrick_para_completa_mm,
+                "diferencaParaSerieCompletaPercentual": dif_waltrick_para_completa_pct,
+                "rRefWaltrickDeclarado": dados["rRefWaltrick"],
+                "notaComparacao": "Comparação indireta e estritamente pluviométrica (precipitação vs precipitação). Coeficientes de conversão para R inoperantes conforme Diretriz H1."
+            }
+        }
+
+    # Monta o artefato científico final
+    duracao_execucao_s = round(time.time() - t_inicio_total, 2)
+    artefato = {
+        "versao": "2.0",
+        "tipo": "climatologia_chirps_mensal_bp3",
+        "geradoEm": agora_iso,
+        "periodo": f"{ANO_INICIAL}-01 a {ANO_FINAL}-12 ({TOTAL_ANOS} anos / {TOTAL_MESES} meses completos)",
+        "limiteSuperiorDinamico": True,
+        "anoInicial": ANO_INICIAL,
+        "anoFinal": ANO_FINAL,
+        "totalAnos": TOTAL_ANOS,
+        "totalMeses": TOTAL_MESES,
+        "fontePrimaria": "UCSB Climate Hazards Center (CHC) — CHIRPS v2.0 Global Monthly 0.05°",
+        "urlBase": BASE_URL,
+        "envelopeBp3": {
+            "fonte": "src/config/areaInteresse.ts",
+            "lonMin": -54.65,
+            "latMin": -25.65,
+            "lonMax": -53.35,
+            "latMax": -24.00,
+            "justificativaEscolha": (
+                "O envelope de src/config/areaInteresse.ts foi adotado como fonte única canônica da verdade. "
+                "Ele intersecta a grade nativa de 0,05° do CHIRPS com limites inteiros de células (26 colunas x 33 linhas), "
+                "englobando com precisão os 28 municípios da BP3 e todas as 6 estações pluviométricas de referência."
+            ),
+        },
+        "suporteEspacial": {
+            "resolucaoGraus": res_info,
+            "resolucaoAproximadaKm": 5.5,
+            "crs": crs_str,
+            "gridWindow": {
+                "colOff": BP3_COL_OFF,
+                "rowOff": BP3_ROW_OFF,
+                "width": BP3_WIDTH,
+                "height": BP3_HEIGHT,
+            },
+            "reamostragem": "NENHUMA — preservado estritamente o suporte nativo de 0,05° conforme D06",
+            "noDataSentinelConvencao": CHIRPS_NODATA_SENTINEL,
+            "noDataTratamento": "Propagação pericial como ausência (None). Médias computadas exclusivamente sobre meses válidos (P12).",
+        },
+        "gestaoDisco": {
+            "tamanhoAntesBytes": disco_antes,
+            "tamanhoPicoBytes": disco_pico,
+            "tamanhoDepoisBytes": disco_depois,
+            "reducaoBytes": disco_antes - disco_depois,
+            "reducaoPercentual": round(((disco_antes - disco_depois) / disco_antes) * 100, 2) if disco_antes > 0 else 0.0,
+            "formatoArmazenamento": "GeoTIFF recortado comprimido em DEFLATE (~3,5 KB por mês). Dados globais descartados.",
+        },
+        "estatisticasNoDataGeral": {
+            "totalMesesAvaliados": TOTAL_MESES,
+            "totalOcorrenciasNoData": len(ocorrencias_nodata_geral),
+            "mesesComNoData": [f"{ano}-{mes:02d} ({estacao})" for ano, mes, estacao, _ in ocorrencias_nodata_geral],
+            "notaAuditoria": (
+                "Nenhum valor NoData foi substituído por 0.0 ou preenchido por interpolação arbitrária, "
+                "garantindo respeito integral à proibição P12."
+            )
+        },
+        "diarioRequisicoes": "docs/verificacoes/diario_climatologia_chirps_bp3.json",
+        "dimensoesMedidas": {
+            "chuvaMensalChirps": {
+                "estado": "medido",
+                "fonteExterna": True,
+                "totalItens": TOTAL_MESES,
+                "anosCobertos": TOTAL_ANOS,
+            }
+        },
+        "fatorRStatus": {
+            "estado": "indisponivel",
+            "causa": "h1_fonte_ausente",
+            "motivo": (
+                "Fator R de erosividade segue compulsoriamente indisponível por Diretriz H1. "
+                "A consolidação da série completa de precipitação CHIRPS (1981–2025) aprimora a base pluviométrica, "
+                "mas não restitui os coeficientes de conversão 107,52 e 46,89 enquanto ausente a fonte primária arquivada."
+            )
+        },
+        "estacoesReferenciaBP3": estacoes_artefato,
+    }
+
+    with open(ARTEFATO_PATH, "w", encoding="utf-8") as f_a:
+        json.dump(artefato, f_a, indent=2, ensure_ascii=False)
+
+    print(f"\n========================================================")
+    print(f"Artefato salvo em: {ARTEFATO_PATH}")
+    print(f"Total de meses: {TOTAL_MESES} ({ANO_INICIAL} a {ANO_FINAL})")
+    print(f"Disco antes: {disco_antes:,} B | Pico: {disco_pico:,} B | Depois: {disco_depois:,} B")
+    print(f"Duração total do script: {duracao_execucao_s} s")
+    print(f"Processamento concluído com sucesso!")
+
+
+if __name__ == "__main__":
+    main()
+
+--------------------------------------------------------------------------------
+ARQUIVO: scripts/verificar_integridade_pacote.py
+TAMANHO: 6,493 bytes
+--------------------------------------------------------------------------------
+
+#!/usr/bin/env python3
+"""
+Verificador de Integridade Criptográfica do Pacote de Reprodutibilidade
+SAREL — Sistema de Amostragem e Rotulagem para Erosão Laminar (PPGTCA 2026)
+
+INSTRUÇÕES PARA A BANCA EXAMINADORA / AUDITORIA:
+------------------------------------------------
+Este script permite verificar a integridade de todos os arquivos de dados,
+códigos e dicionários do pacote sem depender de utilitários externos (como o
+comando 'sha256sum' do Unix, frequentemente ausente em ambientes Windows).
+
+Como executar:
+  - Windows:
+      python 07_verificar_integridade.py
+    ou apontando para o diretório descompactado:
+      python 07_verificar_integridade.py "C:\\caminho\\do\\pacote"
+
+  - Linux / macOS:
+      python3 07_verificar_integridade.py
+    ou
+      python3 07_verificar_integridade.py /caminho/do/pacote
+
+LIMITAÇÃO HONESTA DE SEGURANÇA:
+-------------------------------
+O manifesto criptográfico ('06_manifesto_integridade_sha256.txt') comprova
+estritamente que os arquivos locais não sofreram corrupção de bytes ou
+alteração em relação aos hashes registrados no momento da extração do pacote.
+Ele NÃO comprova autoria de terceiros e NÃO impede que um adulterador malicioso
+modifique os dados e recalcule simultaneamente os hashes dentro do próprio
+manifesto. A autenticidade externa integral exige o confronto do hash SHA-256
+deste manifesto (ou do arquivo .ZIP completo) com a cifra publicada
+oficialmente pelo pesquisador em repositório público ou ata de dissertação.
+"""
+
+import sys
+import os
+import re
+import hashlib
+from pathlib import Path
+
+NOME_MANIFESTO = "06_manifesto_integridade_sha256.txt"
+REGEX_HEX64 = re.compile(r"^[0-9a-fA-F]{64}$")
+
+
+def calcular_sha256_bytes(caminho: Path) -> str:
+    h = hashlib.sha256()
+    with open(caminho, "rb") as f:
+        while chunk := f.read(65536):
+            h.update(chunk)
+    return h.hexdigest().lower()
+
+
+def validar_seguranca_nome_arquivo(nome: str) -> bool:
+    """Rejeita caminhos absolutos ou que contenham '..' para evitar path traversal."""
+    if nome.startswith("/") or nome.startswith("\\"):
+        return False
+    if ":" in nome:
+        return False
+    p = Path(nome)
+    if p.is_absolute():
+        return False
+    partes = p.parts
+    if ".." in partes:
+        return False
+    return True
+
+
+def main() -> int:
+    diretorio_alvo = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path(__file__).resolve().parent
+
+    print(f"=== Verificação de Integridade SHA-256 — SAREL ===")
+    print(f"Diretório examinado: {diretorio_alvo}")
+
+    caminho_manifesto = diretorio_alvo / NOME_MANIFESTO
+    if not caminho_manifesto.is_file():
+        print(f"[ERRO] Manifesto de integridade não encontrado: {NOME_MANIFESTO}", file=sys.stderr)
+        print("RESULTADO: FALHA DE INTEGRIDADE (manifesto ausente ou ilegível)")
+        return 2
+
+    try:
+        linhas = caminho_manifesto.read_bytes().decode("utf-8").splitlines()
+    except Exception as e:
+        print(f"[ERRO] Falha ao ler manifesto '{NOME_MANIFESTO}': {e}", file=sys.stderr)
+        print("RESULTADO: FALHA DE INTEGRIDADE (manifesto ilegível)")
+        return 2
+
+    entradas: list[tuple[str, str]] = []
+    nomes_no_manifesto: set[str] = set()
+
+    for idx, l in enumerate(linhas, start=1):
+        linha = l.strip()
+        if not linha or linha.startswith("#"):
+            continue
+
+        # Formatos aceitos: '<64 hex>  <nome>' ou '<64 hex> *<nome>'
+        partes = re.split(r"\s+[ *]?", linha, maxsplit=1)
+        if len(partes) != 2:
+            print(f"[ERRO] Entrada malformada na linha {idx} do manifesto: '{l}'", file=sys.stderr)
+            print("RESULTADO: FALHA DE INTEGRIDADE (entrada malformada no manifesto)")
+            return 2
+
+        hash_esperado, nome_arquivo = partes[0].strip(), partes[1].strip()
+
+        if not REGEX_HEX64.match(hash_esperado):
+            print(f"[ERRO] Hash inválido (não possui 64 dígitos hex) na linha {idx}: '{hash_esperado}'", file=sys.stderr)
+            print("RESULTADO: FALHA DE INTEGRIDADE (hash inválido no manifesto)")
+            return 2
+
+        if not validar_seguranca_nome_arquivo(nome_arquivo):
+            print(f"[ERRO] Nome de arquivo perigoso (absoluto ou com '..') na linha {idx}: '{nome_arquivo}'", file=sys.stderr)
+            print("RESULTADO: FALHA DE INTEGRIDADE (nome de arquivo inseguro)")
+            return 2
+
+        entradas.append((hash_esperado.lower(), nome_arquivo))
+        nomes_no_manifesto.add(nome_arquivo)
+
+    if not entradas:
+        print(f"[ERRO] Manifesto '{NOME_MANIFESTO}' não contém nenhuma entrada válida de arquivo.", file=sys.stderr)
+        print("RESULTADO: FALHA DE INTEGRIDADE (manifesto vazio ou sem entradas válidas)")
+        return 2
+
+    falhas = 0
+    conferidos = 0
+
+    for hash_esperado, nome_relativo in entradas:
+        arquivo_alvo = diretorio_alvo / nome_relativo
+        if not arquivo_alvo.is_file():
+            print(f"[FALHA] Arquivo listado no manifesto NÃO existe: {nome_relativo}")
+            falhas += 1
+            continue
+
+        try:
+            hash_obtido = calcular_sha256_bytes(arquivo_alvo)
+        except Exception as e:
+            print(f"[FALHA] Não foi possível ler bytes de '{nome_relativo}': {e}")
+            falhas += 1
+            continue
+
+        if hash_obtido == hash_esperado:
+            print(f"[OK] {nome_relativo}")
+            conferidos += 1
+        else:
+            print(f"[DIVERGÊNCIA] {nome_relativo}")
+            print(f"   Esperado: {hash_esperado}")
+            print(f"   Obtido:   {hash_obtido}")
+            falhas += 1
+
+    # Varredura de arquivos adicionais não listados
+    arquivos_extras = 0
+    try:
+        for item in diretorio_alvo.iterdir():
+            if item.is_file():
+                nome = item.name
+                if nome == NOME_MANIFESTO or nome.endswith(".pyc"):
+                    continue
+                if nome not in nomes_no_manifesto:
+                    print(f"AVISO: arquivo não listado no manifesto: {nome}")
+                    arquivos_extras += 1
+    except Exception:
+        pass
+
+    if arquivos_extras > 0:
+        print(f"Observação: {arquivos_extras} arquivos não listados no manifesto encontrados.")
+
+    if falhas > 0:
+        print(f"RESULTADO: FALHA DE INTEGRIDADE ({falhas} erro(s) em {len(entradas)} arquivo(s))")
+        return 1
+
+    print(f"RESULTADO: INTEGRIDADE CONFIRMADA ({conferidos} arquivos)")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+
+--------------------------------------------------------------------------------
+ARQUIVO: scripts/reconciliar_achados.py
+TAMANHO: 5,917 bytes
+--------------------------------------------------------------------------------
+
+"""
+Reconciliacao dos achados de auditoria do SAREL.
+
+O QUE FAZ: le o indice de achados (docs/auditorias/INDICE_ACHADOS.json), cruza cada
+remediacao declarada com o historico do git em TODAS as refs, e aponta divergencia
+entre o estado declarado e a evidencia encontrada.
+
+POR QUE EXISTE: um documento de reconciliacao apodrece no dia seguinte. O que nao
+apodrece e um indice versionado mais um verificador que o confronta com o repositorio.
+Este script e a trava; o JSON e o livro-razao.
+
+LIMITE DECLARADO: casamento por mensagem de commit e PROXY, nao prova. Um bloco pode
+ter sido executado dentro de um commit com outro prefixo, e uma mensagem pode citar um
+ID sem implementa-lo. Por isso o script NAO decide estado: ele compara o estado
+declarado no indice com a evidencia e lista as divergencias para conferencia humana.
+Nenhum estado e inferido nem preenchido automaticamente (Regra 1).
+
+USO:
+    python scripts/reconciliar_achados.py                 # relatorio
+    python scripts/reconciliar_achados.py --evidencias    # inclui os commits achados
+"""
+
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+RAIZ = Path(__file__).resolve().parent.parent
+INDICE = RAIZ / "docs/auditorias/INDICE_ACHADOS.json"
+
+ESTADOS_VALIDOS = {"fechado", "aberto", "recusado-na-origem", "indeterminado"}
+
+
+def _assuntos() -> list[tuple[str, str]]:
+    """(sha, assunto) de todos os commits em todas as refs. Uma chamada so."""
+    try:
+        saida = subprocess.run(
+            ["git", "log", "--all", "--format=%h\t%s"],
+            cwd=RAIZ, capture_output=True, text=True, timeout=120,
+        )
+    except (subprocess.SubprocessError, OSError) as err:
+        print(f"ERRO ao consultar o git: {err}", file=sys.stderr)
+        return []
+    pares = []
+    for linha in saida.stdout.strip().split("\n"):
+        if "\t" in linha:
+            sha, assunto = linha.split("\t", 1)
+            pares.append((sha, assunto))
+    return pares
+
+
+_CACHE_ASSUNTOS: list[tuple[str, str]] = []
+
+
+def commits_do_token(token: str) -> list[str]:
+    """
+    Commits cujo ASSUNTO COMECA pelo token.
+
+    Ancorado de proposito. A convencao do projeto (R9 dos prompts de executor) e
+    "mensagem iniciando pelo ID". Busca por substring em toda a mensagem acusaria
+    qualquer commit de documentacao que apenas CITE o identificador — inclusive os
+    que relatam que o bloco segue pendente, que e o oposto do que se quer medir.
+    Continua sendo proxy, nao prova.
+    """
+    global _CACHE_ASSUNTOS
+    if not _CACHE_ASSUNTOS:
+        _CACHE_ASSUNTOS = _assuntos()
+    padrao = re.compile(rf"^{re.escape(token)}\b")
+    return [f"{sha} {assunto}" for sha, assunto in _CACHE_ASSUNTOS if padrao.match(assunto)]
+
+
+def main() -> int:
+    mostrar_evidencias = "--evidencias" in sys.argv
+
+    if not INDICE.exists():
+        print(f"Indice nao encontrado: {INDICE}", file=sys.stderr)
+        return 2
+
+    dados = json.loads(INDICE.read_text(encoding="utf-8"))
+    achados = dados["achados"]
+
+    contagem: dict[str, int] = {}
+    divergencias: list[str] = []
+    invalidos: list[str] = []
+
+    for a in achados:
+        estado = a["estado"]
+        contagem[estado] = contagem.get(estado, 0) + 1
+
+        if estado not in ESTADOS_VALIDOS:
+            invalidos.append(f"{a['id']}: estado desconhecido '{estado}'")
+            continue
+
+        # A conferencia e POR REMEDIACAO, nao por achado. Um achado fica aberto
+        # quando QUALQUER uma de suas remediacoes esta aberta: cobrar commit das
+        # outras seria acusar divergencia onde nao ha. E cada metodo tem a sua
+        # evidencia propria — decisao se fecha em documento, nao em commit.
+        for rem in a.get("remediacoes", []):
+            token, est, metodo = rem["token"], rem["estado"], rem["metodo"]
+            commits = commits_do_token(token)
+
+            if metodo == "commit" and est == "fechado" and not commits:
+                divergencias.append(
+                    f"{a['id']}/{token}: declarado FECHADO por commit, mas nenhum "
+                    "commit tem assunto iniciando por esse ID."
+                )
+            elif metodo in ("codigo-execucao", "regra-8") and est == "aberto" and commits:
+                divergencias.append(
+                    f"{a['id']}/{token}: declarado ABERTO, mas ha {len(commits)} "
+                    f"commit(s) com assunto iniciando por esse ID ({commits[0]}). "
+                    "Conferir se foi executado."
+                )
+
+            if mostrar_evidencias:
+                for linha in commits:
+                    print(f"  {a['id']} [{token}] {linha}")
+
+    print("=" * 72)
+    print("RECONCILIACAO DOS ACHADOS DE AUDITORIA — SAREL")
+    print("=" * 72)
+    print(f"Indice: {INDICE.relative_to(RAIZ)}")
+    print(f"Total de achados: {len(achados)}\n")
+
+    print("Por estado declarado:")
+    for estado in sorted(contagem):
+        print(f"  {estado:22s} {contagem[estado]:3d}")
+
+    indeterminados = contagem.get("indeterminado", 0)
+    if indeterminados:
+        pct = 100.0 * indeterminados / len(achados)
+        print(f"\n{indeterminados} achados ({pct:.0f}%) sem estado determinado por evidencia.")
+        print("Isso NAO e falha do indice: e a medida honesta do que ainda")
+        print("precisa de conferencia humana. Preencher por suposicao seria pior.")
+
+    if invalidos:
+        print(f"\nESTADOS INVALIDOS ({len(invalidos)}):")
+        for i in invalidos:
+            print(f"  {i}")
+
+    print(f"\nDIVERGENCIAS entre estado declarado e evidencia de commit: {len(divergencias)}")
+    for d in divergencias:
+        print(f"  - {d}")
+    if not divergencias:
+        print("  (nenhuma)")
+
+    print("\nLEMBRETE: casamento por mensagem de commit e proxy. Ausencia de commit")
+    print("nao prova que nada foi feito; presenca nao prova que foi feito direito.")
+
+    return 1 if (divergencias or invalidos) else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

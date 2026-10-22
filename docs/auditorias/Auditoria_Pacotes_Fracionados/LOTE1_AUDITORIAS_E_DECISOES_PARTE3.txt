@@ -1,0 +1,1379 @@
+================================================================================
+PACOTE DE AUDITORIA EXTERNA — SAREL v2 (PPGTCA 2026)
+LOTE: LOTE1_AUDITORIAS_E_DECISOES | PARTE 3/4
+================================================================================
+Data de Geração: 21 de Outubro de 2026
+Limite por Arquivo: <= 90.000 bytes (Limite Rígido de Leitura)
+Total de Arquivos nesta parte: 3
+Arquivos contidos nesta parte:
+ - docs/auditorias/INDICE_ACHADOS.json
+ - docs/planejamento/DP24_REGISTRO_DOS_8_PARAMETROS_2026-10-20.md
+ - docs/planejamento/RELATO_GOVERNANCA_FONTE_UNICA_2026-10-19.md
+================================================================================
+
+
+--------------------------------------------------------------------------------
+ARQUIVO: docs/auditorias/INDICE_ACHADOS.json
+TAMANHO: 26,029 bytes
+--------------------------------------------------------------------------------
+
+{
+  "versao": "2.0.0",
+  "gerado_em": "2026-10-20",
+  "commit_base": "30681d0",
+  "escopo": "Serie A01..A54 das auditorias de 05/10/2026, a unica com IDs estaveis e mapeamento declarado para remediacao (C = correcao, DEC = decisao do pesquisador, V = verificacao). Relatorios de 07/09 a 01/10 e o Zero Trust de 19/10 NAO possuem IDs estaveis e ficam fora desta versao; entram quando receberem IDs.",
+  "limite_declarado": "Casamento por assunto de commit e proxy, nao prova: ausencia nao prova que nada foi feito, presenca nao prova que foi feito direito. Estado nao determinavel por evidencia fica 'indeterminado' e NUNCA e preenchido por suposicao (Regra 1).",
+  "criterios": {
+    "fechado": "metodo 'commit': ha commit cujo assunto inicia pelo ID. metodo 'documento': decisao declarada resolvida em documento datado.",
+    "aberto": "metodo 'codigo-execucao': pendencia confirmada por leitura de codigo ou saida de comando. metodo 'regra-8': verificacao sem arquivo de prova arquivado.",
+    "recusado-na-origem": "a propria auditoria refutou o achado; sem acao.",
+    "indeterminado": "nenhuma evidencia em nenhuma direcao; exige conferencia humana."
+  },
+  "achados": [
+    {
+      "id": "A01",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C01",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C01=fechado"
+    },
+    {
+      "id": "A02",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C02",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "V10",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C02=fechado; V10=aberto"
+    },
+    {
+      "id": "A03",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C28",
+          "estado": "aberto",
+          "metodo": "codigo-execucao",
+          "nota": "sem commit em nenhuma das 6 branches; pendencia confirmada no codigo em 20/10/2026"
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C28=aberto"
+    },
+    {
+      "id": "A04",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-1",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "DEC-1=indeterminado"
+    },
+    {
+      "id": "A05",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C12",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-12",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        },
+        {
+          "token": "V9",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C12=fechado; DEC-12=fechado; V9=aberto"
+    },
+    {
+      "id": "A06",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C06",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C06=fechado"
+    },
+    {
+      "id": "A07",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C17",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C17=fechado"
+    },
+    {
+      "id": "A08",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C18",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-13",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C18=fechado; DEC-13=fechado"
+    },
+    {
+      "id": "A09",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C19",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C19=fechado"
+    },
+    {
+      "id": "A10",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [],
+      "estado": "recusado-na-origem",
+      "evidencia": "Refutado pela propria auditoria (secao 8 do prompt de correcao de 05/10): sem acao."
+    },
+    {
+      "id": "A11",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C13",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-3",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "C13=fechado; DEC-3=indeterminado"
+    },
+    {
+      "id": "A12",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C14",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "C22",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C14=fechado; C22=fechado"
+    },
+    {
+      "id": "A13",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-2",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "DEC-2=indeterminado"
+    },
+    {
+      "id": "A14",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-7",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "DEC-7=fechado"
+    },
+    {
+      "id": "A15",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C07",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "V5",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C07=fechado; V5=aberto"
+    },
+    {
+      "id": "A16",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C08",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-9",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C08=fechado; DEC-9=fechado"
+    },
+    {
+      "id": "A17",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-8",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "DEC-8=indeterminado"
+    },
+    {
+      "id": "A18",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C23",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C23=fechado"
+    },
+    {
+      "id": "A19",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-10",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        },
+        {
+          "token": "V13",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "DEC-10=fechado; V13=aberto"
+    },
+    {
+      "id": "A20",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C05",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "V6",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C05=fechado; V6=aberto"
+    },
+    {
+      "id": "A21",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [],
+      "estado": "recusado-na-origem",
+      "evidencia": "Refutado pela propria auditoria (secao 8 do prompt de correcao de 05/10): sem acao."
+    },
+    {
+      "id": "A22",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-6",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "DEC-6=fechado"
+    },
+    {
+      "id": "A23",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C15",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C15=fechado"
+    },
+    {
+      "id": "A24",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C03",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C03=fechado"
+    },
+    {
+      "id": "A25",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-5",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "DEC-5=fechado"
+    },
+    {
+      "id": "A26",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C09",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-3",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "C09=fechado; DEC-3=indeterminado"
+    },
+    {
+      "id": "A27",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-4",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "DEC-4=indeterminado"
+    },
+    {
+      "id": "A28",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C04",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-15",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "C04=fechado; DEC-15=indeterminado"
+    },
+    {
+      "id": "A29",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-3",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        },
+        {
+          "token": "DEC-4",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "DEC-3=indeterminado; DEC-4=indeterminado"
+    },
+    {
+      "id": "A30",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-11",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "DEC-11=fechado"
+    },
+    {
+      "id": "A31",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C16",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C16=fechado"
+    },
+    {
+      "id": "A32",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C20",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C20=fechado"
+    },
+    {
+      "id": "A33",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C21",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "V4",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C21=fechado; V4=aberto"
+    },
+    {
+      "id": "A34",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C29",
+          "estado": "aberto",
+          "metodo": "codigo-execucao",
+          "nota": "sem commit em nenhuma das 6 branches; pendencia confirmada no codigo em 20/10/2026"
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C29=aberto"
+    },
+    {
+      "id": "A35",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C10",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-16",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        },
+        {
+          "token": "V11",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C10=fechado; DEC-16=fechado; V11=aberto"
+    },
+    {
+      "id": "A36",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C22",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C22=fechado"
+    },
+    {
+      "id": "A37",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-4",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        },
+        {
+          "token": "V8",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "DEC-4=indeterminado; V8=aberto"
+    },
+    {
+      "id": "A38",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C11",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "DEC-6",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        },
+        {
+          "token": "V12",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C11=fechado; DEC-6=fechado; V12=aberto"
+    },
+    {
+      "id": "A39",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C23",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C23=fechado"
+    },
+    {
+      "id": "A40",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C24",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C24=fechado"
+    },
+    {
+      "id": "A41",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C25",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        },
+        {
+          "token": "V7",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C25=fechado; V7=aberto"
+    },
+    {
+      "id": "A42",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C26",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C26=fechado"
+    },
+    {
+      "id": "A43",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C27",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C27=fechado"
+    },
+    {
+      "id": "A44",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "V1",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "V1=aberto"
+    },
+    {
+      "id": "A45",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-13",
+          "estado": "fechado",
+          "metodo": "documento",
+          "nota": "declarada resolvida na tabela de aceite de 06/10 do PROMPT_EXECUTOR_SAREL_2026-10-09"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "DEC-13=fechado"
+    },
+    {
+      "id": "A46",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "DEC-14",
+          "estado": "indeterminado",
+          "metodo": "nenhuma",
+          "nota": "nao consta da tabela de aceite de 06/10; exige conferencia do pesquisador"
+        }
+      ],
+      "estado": "indeterminado",
+      "evidencia": "DEC-14=indeterminado"
+    },
+    {
+      "id": "A47",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C30",
+          "estado": "aberto",
+          "metodo": "codigo-execucao",
+          "nota": "sem commit em nenhuma das 6 branches; pendencia confirmada no codigo em 20/10/2026"
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "C30=aberto"
+    },
+    {
+      "id": "A48",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "V2",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "V2=aberto"
+    },
+    {
+      "id": "A49",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "V3",
+          "estado": "aberto",
+          "metodo": "regra-8",
+          "nota": "sem commit e sem arquivo de prova em docs/verificacoes/ posterior a 05/10/2026 (a evidencia mais recente e de 02/10). Pela Regra 8, verificacao sem arquivo arquivado nao esta concluida."
+        }
+      ],
+      "estado": "aberto",
+      "evidencia": "V3=aberto"
+    },
+    {
+      "id": "A50",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [],
+      "estado": "recusado-na-origem",
+      "evidencia": "Refutado pela propria auditoria (secao 8 do prompt de correcao de 05/10): sem acao."
+    },
+    {
+      "id": "A51",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [],
+      "estado": "recusado-na-origem",
+      "evidencia": "Refutado pela propria auditoria (secao 8 do prompt de correcao de 05/10): sem acao."
+    },
+    {
+      "id": "A52",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [],
+      "estado": "recusado-na-origem",
+      "evidencia": "Refutado pela propria auditoria (secao 8 do prompt de correcao de 05/10): sem acao."
+    },
+    {
+      "id": "A53",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [],
+      "estado": "recusado-na-origem",
+      "evidencia": "Refutado pela propria auditoria (secao 8 do prompt de correcao de 05/10): sem acao."
+    },
+    {
+      "id": "A54",
+      "origem": "AUDITORIA_PARTE1/PARTE2_2026-10-05",
+      "remediacoes": [
+        {
+          "token": "C12",
+          "estado": "fechado",
+          "metodo": "commit",
+          "nota": "ha commit cujo assunto inicia pelo ID"
+        }
+      ],
+      "estado": "fechado",
+      "evidencia": "C12=fechado"
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: docs/planejamento/DP24_REGISTRO_DOS_8_PARAMETROS_2026-10-20.md
+TAMANHO: 12,448 bytes
+--------------------------------------------------------------------------------
+
+# DP-24 — registro dos 8 parâmetros: opções e recomendação
+
+**Data:** 20 de outubro de 2026
+**Commit-base da verificação:** `5ea1a65` (`sarel/executor-2026-10-09`), com dependências instaladas
+**Para:** decisão do pesquisador
+
+---
+
+## 1. O enquadramento mudou: não são 8 problemas iguais
+
+O detector do GOV-5 acusou 8 ocorrências e as classificou todas como "científico e não registrado". Ao ler o que cada número faz, **elas são três problemas diferentes**, e tratar os 8 do mesmo jeito criaria governança duplicada em metade deles.
+
+| Grupo | Quantos | Natureza |
+|---|---|---|
+| **A** — já decididos, falta valor legível por máquina | 3 | A decisão existe e fixa o número; o código não a lê |
+| **B** — entrada de operador via HTTP com preenchimento silencioso | 3 | Não é valor da metodologia: é escolha de campanha, com fallback silencioso |
+| **C** — parâmetro genuinamente não registrado | 2 | Nenhuma decisão cobre; precisa de registro novo |
+
+---
+
+## 2. Grupo A — a decisão já existe (3 números)
+
+Estes **não precisam de parâmetro P novo**. Precisam exatamente do que o GOV-3 fez com D02 e D10: campo `parametros` com valor e operador, e leitura por `exigirParametro`.
+
+### A.1 `intervaloGuardaMeses = 24` — `montagemTemporal.ts:109`
+
+**O que faz.** Intervalo de guarda entre a janela de preditores e a data do evento, para impedir vazamento temporal no Modelo P.
+
+**Já decidido em D04**, cujo valor diz: *"intervalo de guarda temporal estrito de 2 anos (24 meses) encerrado antes da data do evento para eliminar vazamento temporal"*.
+
+| Opção | Explicação |
+|---|---|
+| **(a) Acrescentar `parametros.intervaloGuardaMeses = 24` em D04 e ler por `exigirParametro`** | O número sai do código e passa a ter uma fonte só. Se D04 for revista, o código acompanha automaticamente — é exatamente o que falhou entre D10 e o gráfico |
+| (b) Criar um parâmetro P novo | Duplica governança: passariam a existir dois lugares decidindo a mesma coisa, e eles divergiriam na primeira revisão |
+| (c) Deixar como default | Mantém o vermelho e a violação da Regra 1 |
+
+**Recomendo (a).** É mecânico, de risco nulo, e o valor não muda.
+
+### A.2 e A.3 `declividadeMin = 3.0` e `declividadeMax = 20.0` — `route.ts:191-192`
+
+**O que faz.** Domínio de declividade dos candidatos elegíveis.
+
+**Já decidido em D07**: *"Domínio de validade: declividade 3 a 20%, WorldCover 30 e 40, concordância entre épocas"*.
+
+> ### Achado que surgiu desta análise: D07 está decidida e **não é imposta**
+>
+> `validarOpcoesElegibilidade` (`elegibilidade.ts:54-58`) só verifica `minSlope >= 0` e `maxSlope > minSlope`. **Uma requisição com `declividadeMin: 0` e `declividadeMax: 60` é aceita** — fora do domínio que D07 declarou. O default de 3.0/20.0 hoje é a *única* coisa que mantém o domínio, e um cliente que envie outros valores o contorna sem aviso.
+>
+> Isso é mais grave que o default em si: é uma decisão registrada que o sistema não faz valer.
+
+| Opção | Explicação |
+|---|---|
+| **(a) Registrar em D07 e fazer `validarOpcoesElegibilidade` recusar fora do domínio** | Fecha as duas coisas de uma vez: tira o default e passa a impor a decisão. Requisição fora de 3–20% é rejeitada com causa |
+| (b) Só registrar, sem impor | Tira o vermelho e deixa o buraco: continua possível pedir 0–60% |
+| (c) Registrar e permitir ultrapassar com justificativa explícita | Útil se houver análise de sensibilidade fora do domínio; exige decidir quem autoriza |
+
+**Recomendo (a)**, com uma ressalva: se você pretende rodar sensibilidade fora de 3–20%, (c) é a escolha certa, e aí precisa dizer quem pode autorizar e como fica registrado.
+
+---
+
+## 3. Grupo B — entrada de operador, não valor de metodologia (3 números)
+
+Os cinco de `route.ts` são campos do **corpo da requisição HTTP**, desestruturados de `body`. A interface já os fornece: `CandidateSelectionModal.tsx:47` tem `useState<number>(0.15)`. O default no servidor é o que acontece **quando o cliente omite o campo**.
+
+Isso muda o diagnóstico. O problema não é "a metodologia está escondida no código". É que **uma requisição incompleta é silenciosamente completada**, e nada registra que houve preenchimento. Em substância é a Regra 1: preenchimento arbitrário sem causa declarada.
+
+Para estes três, a correção mais fiel não é ler do registro — é **recusar a requisição incompleta**.
+
+### B.1 `tamanhoAmostra = 50` — `route.ts:188`
+
+**O que faz.** Escolha de campanha que escala todo o pipeline: `tamanhoAmostra * 25` (teto 10.000) define a busca de candidatos; `* 9` a meta de pool; `* 1,8` o teto; e entra no cálculo da proporção in loco.
+
+| Opção | Explicação |
+|---|---|
+| **(a) Tornar obrigatório: requisição sem o campo é recusada** | Nenhum número é inventado. Quem dispara a seleção declara o tamanho, sempre. É o fail-closed que o projeto já usa em `exigirDecisao` |
+| (b) Registrar como parâmetro P com valor 50 | Trata como constante metodológica o que é escolha por campanha. Engessa e provavelmente será ignorado |
+| (c) Manter o default, documentando-o | Mantém o preenchimento silencioso |
+
+**Recomendo (a).** É operador, não metodologia.
+
+### B.2 `raioThinningKm = 5.0` — `route.ts:189`
+
+**O que faz.** Raio **de partida** do thinning. O laço relaxa a partir dele até a meta de pool, nunca abaixo do piso de **1.000 m fixado por P02**.
+
+Este é o número sobre o qual eu me enganei antes: não colide com P02 — são papéis distintos. Mas P02 registra o piso, e **o raio de partida existe apenas na prosa da justificativa de P02**.
+
+| Opção | Explicação |
+|---|---|
+| **(a) Acrescentar `parametros.raioPartidaMetros = 5000` à própria P02** | Mantém piso e partida no mesmo lugar, lado a lado. Torna impossível confundir os dois de novo — que foi exatamente o meu erro |
+| (b) Criar P novo separado | Separa o que é um mecanismo só, e reabre a confusão |
+| (c) Tornar obrigatório na requisição, como B.1 | Defensável, mas aqui o número é metodológico: governa independência espacial, não logística de campanha |
+
+**Recomendo (a).** E lembro o que está pendente: o **variograma** responde empiricamente se 5 km compra algo sobre 1 km, e a mesma medição fecha P01. Vale rodar antes do sorteio D16, porque o selo é irreversível.
+
+### B.3 `frequenciaSoloNuMin = 0.15` — `route.ts:190`
+
+**O que faz.** Frequência mínima de solo descoberto (Ê) para um candidato ser elegível. É filtro de seleção, distinto de D10, que define **o que conta** como solo descoberto (`NDVI <= 0.25`). D10 define o critério; este número define quanto dele é preciso.
+
+O valor está duplicado: `route.ts:190` e `CandidateSelectionModal.tsx:47`.
+
+| Opção | Explicação |
+|---|---|
+| **(a) Registrar como parâmetro novo e a UI semear do registro** | Elimina a duplicação UI/servidor e dá rastreabilidade ao filtro, que influencia quem entra na amostra |
+| (b) Tornar obrigatório na requisição | Resolve o preenchimento silencioso, mas mantém as duas cópias e deixa a escolha sem registro |
+| (c) Vincular a D10 | Errado: D10 é o limiar de NDVI, este é a fração de tempo. Juntá-los repete a confusão D02×D10 |
+
+**Recomendo (a).** É um filtro que decide quem entra na amostra: merece registro, e a duplicação UI/servidor é dívida independente.
+
+---
+
+## 4. Grupo C — genuinamente sem registro (2 números)
+
+### C.1 `nMinimo = 3` — `estatisticasSerie.ts:57`
+
+**O que faz.** Mínimo de observações válidas para calcular percentis (p10, p50, p90) de uma banda. Abaixo disso devolve `indisponivel` com causa `"insuficiente"` — ou seja, o fail-closed está correto; só o número é que não tem origem declarada.
+
+**Não é D11.** D11 exige **6** observações, mas para outra coisa: suficiência da frequência de solo nu, imposta por `avaliarSuficienciaAmostralD11` em `amostragemSoloNuLote.ts:484`. São dois gates distintos.
+
+> **Questão metodológica, não só de registro:** p10 e p90 calculados sobre **n = 3** são essencialmente o mínimo e o máximo da amostra. O percentil existe, mas não significa o que o nome promete. Um examinador pode perguntar por que o preditor de percentil aceita 3 observações enquanto a metodologia exige 6 para frequência de solo nu.
+
+| Opção | Explicação |
+|---|---|
+| **(a) Registrar como P novo com valor a decidir, e alinhar com D11 se a resposta for 6** | Um único critério de suficiência temporal é mais fácil de defender que dois |
+| (b) Registrar mantendo 3, com justificativa de por que percentis toleram menos que a frequência | Defensável se houver razão; a razão precisa ser escrita |
+| (c) Registrar mantendo 3 sem justificativa | Tira o vermelho e deixa a pergunta de pé para a banca |
+
+**Recomendo (a) ou (b) — e esta é sua, não minha.** Não tenho base para dizer se 3 é suficiente para percentis nesta aplicação. O que posso afirmar é que **3 e 6 convivendo sem explicação é pergunta certa numa arguição**.
+
+### C.2 `duracaoJanelaAnos = 3` — `montagemTemporal.ts:110`
+
+**O que faz.** Comprimento da janela de preditores por ponto, em anos.
+
+Verifiquei: **nenhuma decisão cobre.** D05 fixa o sensor e o período da série (Sentinel-2 L2A, 2016–2026); D04 fixa a guarda de 24 meses; D11 fixa o mínimo de observações. O comprimento da janela não está em lugar nenhum.
+
+| Opção | Explicação |
+|---|---|
+| **(a) Registrar como P novo, com 3 anos e a justificativa que sustenta a escolha** | É um preditor estrutural: muda quantas observações entram em cada ponto e interage com D11 e com a guarda de D04 |
+| (b) Acrescentar a D04, junto da guarda | Guarda e janela são conceitos adjacentes, mas distintos: uma afasta do evento, a outra dimensiona a observação. Juntar repete a confusão D02×D10 |
+| (c) Deixar como default | Um dos números mais consequentes do desenho temporal fica sem origem declarada |
+
+**Recomendo (a).** Com um ponto a considerar: janela de 3 anos mais guarda de 2 anos exige **5 anos de série antes de cada evento**. Vale conferir se a série de 2016–2026 sustenta isso para todos os pontos, ou se alguns perdem janela — e, nesse caso, se a perda é homogênea entre estratos.
+
+---
+
+## 5. Resumo para decidir
+
+| # | Parâmetro | Onde | Recomendação |
+|---|---|---|---|
+| 1 | `intervaloGuardaMeses = 24` | D04 existente | Registrar em D04 |
+| 2 | `declividadeMin = 3.0` | D07 existente | Registrar em D07 **e impor** |
+| 3 | `declividadeMax = 20.0` | D07 existente | Registrar em D07 **e impor** |
+| 4 | `tamanhoAmostra = 50` | requisição | Tornar obrigatório |
+| 5 | `raioThinningKm = 5.0` | P02 existente | Registrar em P02 como raio de partida |
+| 6 | `frequenciaSoloNuMin = 0.15` | — | P novo + UI semeia do registro |
+| 7 | `nMinimo = 3` | — | P novo; **decidir se alinha com os 6 de D11** |
+| 8 | `duracaoJanelaAnos = 3` | — | P novo |
+
+**Só três exigem decisão metodológica sua:** o nº 7 (3 ou 6), o nº 2/3 (impor D07 estritamente ou permitir sensibilidade) e o nº 8 (confirmar os 3 anos e verificar se a série sustenta janela + guarda).
+
+Os demais são mecânicos: valor não muda, só passa a ter fonte única.
+
+**Parâmetros P novos necessários: três** (`frequenciaSoloNuMin`, `nMinimo`, `duracaoJanelaAnos`).
+
+### IDs livres — conferidos, não presumidos
+
+A v2 do prompt do executor já colidiu aqui, então verifiquei em vez de contar a partir do último. As chaves de `PARAMETROS` vão de P01 a P11 e de P20 a P24, mas **chave ausente não significa ID livre**:
+
+| ID | Situação |
+|---|---|
+| **P12** | **EM USO.** É "a proibição P12", citada em `sorteio-d16/route.ts:123`, em `PainelCriterioRefutacaoD25.tsx` e em D14 |
+| **P15** | **EM USO.** 10 referências vivas no código |
+| P13, P14, P16–P19 | Sem referência, mas ficam no vão deixado pela colisão anterior |
+| **P25, P26, P27** | **Livres e contíguos**, acima do maior existente (P24) |
+
+**Use P25, P26 e P27.** Reaproveitar número que já teve significado é como se cria a próxima colisão — e o custo de pular alguns IDs é zero.
+
+---
+
+## 6. O que decorre da sua decisão
+
+Decidido o DP-24, o **GOV-5b não deve ser executado**: registrar os 8 é mais limpo que criar 8 exceções para removê-las em seguida. A suíte volta ao verde pela via definitiva.
+
+Resta então **C28** — os dois warnings de lint — como único bloqueio do CI do GOV-6.
+
+--------------------------------------------------------------------------------
+ARQUIVO: docs/planejamento/RELATO_GOVERNANCA_FONTE_UNICA_2026-10-19.md
+TAMANHO: 22,023 bytes
+--------------------------------------------------------------------------------
+
+# Relatório de Execução — Governança e Fonte Única de Parâmetros
+
+**Data:** 20/10/2026  
+**Branch:** `sarel/executor-2026-10-09`  
+**Base inicial verificada:** `30681d0` (descendente de `9a45ed9` e `6af6dc8`)  
+**Status geral:** GOV-1, GOV-2 e GOV-3 concluídos e commitados localmente. GOV-4 relatado sem edições. GOV-5 e GOV-6 com artefatos preparados e paradas formais executadas nos portões previstos (DP-24 e C28).
+
+---
+
+## 1. Verificação de Baseline Inicial
+
+Antes de qualquer modificação, a suíte e ferramentas estáticas foram executadas em worktree limpo:
+
+| Comando | Resultado Medido na Sessão |
+|---|---|
+| `npm run typecheck` | Limpo (exit code 0) |
+| `npm test` | **86 arquivos, 663 testes passando** |
+| `npm test src/lib/seguranca/padroesProibidos.test.ts` | 23/23 testes passando |
+| `npm run lint` | **2 warnings** (`MapViewer.tsx:526:6`, `PointPopup.tsx:69:6` — bloco C28 pendente) |
+
+---
+
+## 2. Portões "Esperado Hoje"
+
+Todos os comandos `REPRODUZIR` foram executados na sessão antes de qualquer edição e confrontados com os valores esperados pelo prompt:
+
+| Bloco | Comando REPRODUZIR | Esperado | Medido | Status |
+|---|---|---|---|---|
+| **GOV-1** | `git ls-files CLAUDE.md AGENTS.md` | `CLAUDE.md` (1 linha) | `CLAUDE.md` (1 linha) | **Idêntico** |
+| **GOV-2** | `git grep -nE "D10\|0\.40\|0\.25" -- src/components/inspetor/GraficoSerieTemporal.tsx` | 4 linhas (30, 245, 321, 338) | 4 linhas (30, 245, 321, 338) | **Idêntico** |
+| **GOV-3** | `git grep -nE "NDVI_MAX: \|NDVI_MIN: \|BSI_MIN: \|BSI_MAX: \|limiarNdviSoloNu: \|limiarNdviSoloNu = \|limiarNdviDosselFechado: " -- src/lib src/app src/store src/config` | 11 linhas exatas | 11 linhas exatas | **Idêntico** |
+| **GOV-4** | Âncoras D01 em `decisoes.ts`, `decisoes.test.ts` e `fatorC.ts` | 3 linhas | 3 linhas | **Idêntico** (linhas 66, 9 e 68) |
+| **GOV-5** | `git grep -nE "^\s+[a-zA-Z][a-zA-Z0-9]*\s*=\s*[0-9]+(\.[0-9]+)?,?\s*$" -- "src/**/*.ts"` | 12 linhas | 12 linhas (11 após GOV-3) | **Idêntico** |
+| **GOV-6** | `git ls-files .github` e `git ls-files .husky .pre-commit-config.yaml` | 0 linhas | 0 linhas | **Idêntico** |
+
+---
+
+## 3. Bloco GOV-1 — CLAUDE.md na Raiz
+
+### REPRODUZIR
+```
+$ git ls-files CLAUDE.md AGENTS.md
+CLAUDE.md
+```
+
+### O que foi feito
+1. As Seções 1 ("Autorização de operações de git") e 2 ("O que o assistente não decide") foram **preservadas integralmente**, sem nenhuma alteração de caractere.
+2. A Seção 3 ("Seções a preencher") foi substituída por:
+   - **Seção 3 — Princípios Norteadores e as 9 Regras Invioláveis**: transcritas literalmente de `docs/design.md` §1.
+   - **Seção 4 — Invariantes do Sistema**: transcritos literalmente de `docs/design.md` §4 (Invariantes 1 a 7).
+   - **Seção 5 — Onde vivem os números**: tabela estruturada [Grandeza | Decisão | Arquivo que é a fonte | Como ler], preenchida a partir da refatoração de GOV-3.
+   - **Seção 6 — Antes de editar**: documentação dos comandos de checagem (`npm run typecheck`, `npm test`, `padroesProibidos`), da regra de leitura do registro de decisões e das guardas CI / pre-commit.
+
+### Aceite
+- Contagem total de linhas: **95 linhas** (critério: $\le 200$).
+- Contagem de "Regra": `git grep -c "Regra" CLAUDE.md` retornou **11**.
+- `git diff` do commit `b30126e` confirmou que as linhas 1 a 42 (Seções 1 e 2 do pesquisador) não foram tocadas.
+
+Commit: `b30126e GOV-1: documenta regras inviolaveis e invariantes na raiz`
+
+---
+
+## 4. Bloco GOV-2 — Desambiguação D02 × D10 e UI
+
+### REPRODUZIR
+```
+$ git grep -nE "D10|0\.40|0\.25" -- src/components/inspetor/GraficoSerieTemporal.tsx
+src/components/inspetor/GraficoSerieTemporal.tsx:30: *    - NDVI = 0.40 (Solo Exposto / Degradação - Decisão D10)
+src/components/inspetor/GraficoSerieTemporal.tsx:245:            <span>Solo Exposto (NDVI &lt; 0.40 · D10)</span>
+src/components/inspetor/GraficoSerieTemporal.tsx:321:            {/* Linha Biofísica: Limiar de Solo Exposto (NDVI = 0.40 - D10) */}
+src/components/inspetor/GraficoSerieTemporal.tsx:338:                Solo Exposto (NDVI &lt; 0.40 · D10)
+```
+
+### O que foi feito
+1. Nas 4 âncoras de `src/components/inspetor/GraficoSerieTemporal.tsx`, a atribuição errônea a D10 e o rótulo foram corrigidos para:
+   - Linha 30: `NDVI = 0.40 (Candidato Espectral / Triagem - Decisão D02)`
+   - Linha 245: `<span>Candidato Espectral (NDVI &lt; 0.40 · D02)</span>`
+   - Linha 321: `{/* Linha Biofísica: Limiar de Triagem de Candidato Espectral (NDVI = 0.40 - D02) */}`
+   - Linha 338: `Candidato Espectral (NDVI &lt; 0.40 · D02)`
+2. Em `src/lib/gee/amostragemBiofisica.ts:15`, a âncora de cabeçalho foi corrigida de `(SEÇÃO 3.1 & DECISÕES D02, D10)` para `(SEÇÃO 3.1 & DECISÃO D02)`.
+3. Todos os valores numéricos (`0.40` e `0.4`) permaneceram estritamente intactos (R7).
+4. A linha de D10 (`NDVI <= 0.25`) **não** foi adicionada ao gráfico, respeitando a prerrogativa metodológica do pesquisador (DP-22).
+5. **Relato sobre `persistenciaTemporal.test.ts:9`:** O teste instancia `const OPCOES_PADRAO: OpcoesPersistencia = { limiarNdviSoloNu: 0.40, ... }`. Trata-se de fixture de teste unitário onde o valor 0.40 (da triagem D02) foi adotado por engano ou como valor arbitrário para exercitar o cálculo do mecanismo de persistência de D10 (que por padrão utiliza 0.25). O valor foi preservado sem alteração (R7).
+
+### Aceite
+- `git grep -n "D10" -- src/components/inspetor/GraficoSerieTemporal.tsx` retornou vazio (código de saída 1).
+- Testes de componentes: 9 arquivos e 32 testes passando.
+- `git diff --stat`:
+  ```
+  src/components/inspetor/GraficoSerieTemporal.tsx | 8 ++++----
+  src/lib/gee/amostragemBiofisica.ts               | 2 +-
+  2 files changed, 5 insertions(+), 5 deletions(-)
+  ```
+  Nenhum dígito foi alterado.
+
+Commit: `48b27f7 GOV-2: desambigua D02 e D10 e corrige atribuicao de rotulo na UI`
+
+---
+
+## 5. Bloco GOV-3 — Fonte Única Legível por Máquina (Fase 1: Limiares Biofísicos)
+
+### REPRODUZIR
+```
+$ git grep -nE "NDVI_MAX: |NDVI_MIN: |BSI_MIN: |BSI_MAX: |limiarNdviSoloNu: |limiarNdviSoloNu = |limiarNdviDosselFechado: " -- src/lib src/app src/store src/config
+src/lib/gee/amostragemBiofisica.ts:37:    BSI_MIN: 0.10,
+src/lib/gee/amostragemBiofisica.ts:38:    NDVI_MAX: 0.40,
+src/lib/gee/amostragemBiofisica.ts:43:    BSI_MAX: 0.00,
+src/lib/gee/amostragemBiofisica.ts:44:    NDVI_MIN: 0.65,
+src/lib/gee/persistenciaTemporal.test.ts:9:  limiarNdviSoloNu: 0.40,
+src/lib/gee/persistenciaTemporal.test.ts:10:  limiarNdviDosselFechado: 0.65,
+src/lib/gee/persistenciaTemporal.ts:54:  limiarNdviSoloNu: 0.25,
+src/lib/gee/persistenciaTemporal.ts:55:  limiarNdviDosselFechado: 0.65,
+src/lib/gee/persistenciaTemporal.ts:83:  const limiarNdviSoloNu = opcoes.limiarNdviSoloNu ?? OPCOES_PERSISTENCIA_PADRAO.limiarNdviSoloNu;
+src/lib/matriz/montagemTemporal.ts:110:    limiarNdviSoloNu = 0.25,
+src/lib/matriz/montagemTemporal.ts:203:    limiarNdviDosselFechado: 0.65,
+```
+
+### O que foi feito
+1. Em `src/config/decisoes.ts`:
+   - Adicionado campo opcional `parametros` ao tipo `Decisao<T>` com `valor: number`, `operador: "<" | "<=" | ">" | ">="`, `finalidade: string` e `unidade?: string`.
+   - Adicionada classe de erro `ErroParametroAusente`.
+   - Adicionada função fail-closed `exigirParametro(d, chave)`. Lança `ErroDecisaoPendente` se `d.estado !== "decidida"` e `ErroParametroAusente` se a chave não existir.
+   - Preenchidos os parâmetros em D02 e D10 preservando todos os textos e campos existentes (R7, R8, R9).
+2. Refatoração dos consumidores:
+   - `CRITERIOS_ESPECTRAIS` (`amostragemBiofisica.ts:37-44`) lê `bsiMin`, `ndviMax`, `bsiMax`, `ndviMin` de `DECISOES.D02`.
+   - `OPCOES_PERSISTENCIA_PADRAO.limiarNdviSoloNu` (`persistenciaTemporal.ts:54`) lê `ndviSoloNu` de `DECISOES.D10`.
+   - Default de `limiarNdviSoloNu` em `montagemTemporal.ts:110` lê `ndviSoloNu` de `DECISOES.D10`.
+3. Criado `src/config/decisoes.parametros.test.ts` com 10 testes cobrindo recusa fail-closed e verificação de comportamento estrito de fronteira (fronteiras abertas `>` e `<` em D02 vs fronteira inclusiva `<=` em D10).
+4. Preenchida a tabela na seção 5 de `CLAUDE.md`.
+
+### Relato de Limiares Fora de Escopo
+- `src/lib/gee/persistenciaTemporal.ts:55` (`limiarNdviDosselFechado: 0.65`): Utilizado para avaliar se após um ciclo de solo exposto houve recuperação rápida da cobertura vegetal (vigor vegetativo do Sistema Plantio Direto), separando pousio temporário de erosão crônica.
+- `src/lib/matriz/montagemTemporal.ts:203` (`limiarNdviDosselFechado: 0.65`): Passado como opção para alimentar a chamada de `analisarPersistenciaTemporal`.  
+Ambos foram mantidos inalterados conforme R7 e R8 para decisão futura do pesquisador.
+
+### Aceite
+#### 1. Tabela Antes / Depois de Literais Movidos (Preservação de Valores - R7)
+| Arquivo : Linha | Chave no Registro | `valor_antigo` | `valor_novo` | Situação |
+|---|---|---|---|---|
+| `src/lib/gee/amostragemBiofisica.ts:37` | `D02.parametros.bsiMin` | `0.10` | `0.10` | Idêntico |
+| `src/lib/gee/amostragemBiofisica.ts:38` | `D02.parametros.ndviMax` | `0.40` | `0.40` | Idêntico |
+| `src/lib/gee/amostragemBiofisica.ts:43` | `D02.parametros.bsiMax` | `0.00` | `0.00` | Idêntico |
+| `src/lib/gee/amostragemBiofisica.ts:44` | `D02.parametros.ndviMin` | `0.65` | `0.65` | Idêntico |
+| `src/lib/gee/persistenciaTemporal.ts:54` | `D10.parametros.ndviSoloNu` | `0.25` | `0.25` | Idêntico |
+| `src/lib/matriz/montagemTemporal.ts:110` | `D10.parametros.ndviSoloNu` | `0.25` | `0.25` | Idêntico |
+
+#### 2. Execução da Suíte Inteira
+```
+ Test Files  87 passed (87)
+      Tests  673 passed (673)
+   Duration  10.78s
+```
+Baseline: 86 arquivos e 663 testes. Aumento de 1 arquivo de teste e 10 testes (todos novos de GOV-3). Nenhum teste perdido.
+
+#### 3. Varredura de Literais Removidos
+```
+$ git grep -nE "NDVI_MAX: 0|NDVI_MIN: 0|BSI_MIN: 0|BSI_MAX: 0" -- src/lib
+(zero ocorrências — saída vazia, exit code 1)
+```
+
+Commit: `dd5266a GOV-3: fonte unica de parametros legivel por maquina para D02 e D10`
+
+---
+
+## 6. Bloco GOV-4 — Contradição Metodológica D01 × Fator C (Somente Relato)
+
+### REPRODUZIR
+```
+$ git grep -n "valor: .(1 - NDVI) / 2." -- src/config/decisoes.ts
+src/config/decisoes.ts:66:    valor: "(1 - NDVI) / 2",
+
+$ git grep -n "expect(val).toBe" -- src/config/decisoes.test.ts
+src/config/decisoes.test.ts:9:    expect(val).toBe("(1 - NDVI) / 2");
+
+$ git grep -nE "const c = \(\(1 - ndvi\)" -- src/lib/rusle/fatorC.ts
+src/lib/rusle/fatorC.ts:68:  const c = ((1 - ndvi) / 2) * (1 + bsiNum);
+```
+
+### Análise da Contradição (DP-21)
+Existe uma contradição tripartite entre o registro de decisões, o teste e a implementação em produção:
+1. **Registro D01 (`decisoes.ts:66`):** Registra `valor: "(1 - NDVI) / 2"`, citando Durigon et al. (2014) com a justificativa de ser formulação regionalizada, sem parâmetros livres e sem cortes.
+2. **Teste unitário (`decisoes.test.ts:9`):** Assevera unicamente a igualdade da *string* do registro (`expect(val).toBe("(1 - NDVI) / 2")`).
+3. **Código de cálculo (`fatorC.ts:68`):** Calcula `const c = ((1 - ndvi) / 2) * (1 + bsiNum)`. Além disso, a função `obterFatorCComProveniencia` declara formalmente `decisoes: ["D01"]` no objeto de retorno mesmo quando calcula a variante híbrida modulada por BSI.
+
+A formulação híbrida multiplicativa **não é** Durigon et al. (2014). O próprio cabeçalho de `fatorC.ts` (linhas 13–35) argumenta extensamente contra a aplicação puramente linear de Durigon no Paraná devido ao "Paradoxo do Sistema Plantio Direto" (em que talhões com solo 100% coberto por palhada seca apresentam NDVI baixo, sendo falsamente penalizados pela fórmula clássica).
+
+### Saídas Metodológicas (Decisão Exclusiva do Pesquisador)
+- **Opção A (Emendar D01):** Registrar formalmente em D01 a formulação híbrida $C = \frac{1 - \text{NDVI}}{2} \cdot (1 + \text{BSI})$. Implica que essa formulação nova deve ser detalhada na dissertação como contribuição/adaptação metodológica do mestrado, com justificativa e análise de sensibilidade documentadas.
+- **Opção B (Alinhar o código a Durigon puro):** Alterar o código para calcular estritamente $(1 - \text{NDVI}) / 2$. Com isso, a argumentação do cabeçalho de `fatorC.ts` perde objeto e talhões em SPD na entressafra com palhada seca sofrerão superestimação teórica do Fator C.
+
+### Desdobramentos Dependentes (DP-23 e DP-25)
+- **DP-23:** Em `fatorC.ts:67`, `bsiNum = bsi !== undefined ? bsi : 0` faz com que, na ausência de BSI, a fórmula degenere silenciosamente em Durigon puro. Se a metodologia for a híbrida (Opção A), a ausência de BSI deveria tornar o Fator C `indisponivel` em vez de sofrer substituição silenciosa.
+- **DP-25:** Em `calcularFatorCVanDerKnijff`, para $\text{NDVI} \le 0$ o código retorna fixo `1.0`. Para $\text{NDVI} < 0$, a fórmula original resultaria em $C > 1.0$. O corte em 1.0 é um teto físico imposto pelo código. Deve ser formalizado como limite do modelo ou tratado como fora-do-domínio.
+
+`git diff` deste bloco: **Vazio** (nenhuma linha editada).
+
+---
+
+## 7. Bloco GOV-5 — Fechamento das Lacunas do Varredor de Padrões Proibidos
+
+### REPRODUZIR
+```
+$ git grep -nE "^\s+[a-zA-Z][a-zA-Z0-9]*\s*=\s*[0-9]+(\.[0-9]+)?,?\s*$" -- "src/**/*.ts"
+src/app/api/gee/select-candidates/route.ts:188:      tamanhoAmostra = 50,
+src/app/api/gee/select-candidates/route.ts:189:      raioThinningKm = 5.0,
+src/app/api/gee/select-candidates/route.ts:190:      frequenciaSoloNuMin = 0.15,
+src/app/api/gee/select-candidates/route.ts:191:      declividadeMin = 3.0,
+src/app/api/gee/select-candidates/route.ts:192:      declividadeMax = 20.0,
+src/lib/drone/planoVooNControl.ts:545:    turnAroundDistanceMeters = 10,
+src/lib/drone/planoVooNControl.ts:550:    entryLocation = 0,
+src/lib/drone/planoVooNControl.ts:553:    startDoJumpId = 2,
+src/lib/gee/estatisticasSerie.ts:57:  nMinimo = 3
+src/lib/matriz/montagemTemporal.ts:109:    intervaloGuardaMeses = 24,
+src/lib/matriz/montagemTemporal.ts:110:    duracaoJanelaAnos = 3,
+```
+*(Nota: a 12ª ocorrência de baseline, `montagemTemporal.ts:110: limiarNdviSoloNu = 0.25`, foi eliminada em GOV-3 pelo roteamento a `exigirParametro`).*
+
+### Classificação das 12 Ocorrências
+Conforme critérios estritos do prompt:
+- **(i) CIENTÍFICO E JÁ REGISTRADO:**
+  1. `src/lib/matriz/montagemTemporal.ts:110` (`limiarNdviSoloNu = 0.25`): **Classe (i)**. Roteado em GOV-3 via `exigirParametro(DECISOES.D10, "ndviSoloNu").valor`.
+
+- **(ii) CIENTÍFICO E NÃO REGISTRADO (DP-24 & Parada de Governança):**
+  2. `src/app/api/gee/select-candidates/route.ts:188` (`tamanhoAmostra = 50`): **Classe (ii)**. Tamanho amostral default de candidatos da rota API. Não há decisão que fixe 50 como valor normativo.
+  3. `src/app/api/gee/select-candidates/route.ts:189` (`raioThinningKm = 5.0`): **Classe (ii)**. Raio inicial de partida do relaxamento iterativo de thinning (P02 decide piso de 1.000 m e cita 5.000 m na justificativa; P02 está em estado "proposta").
+  4. `src/app/api/gee/select-candidates/route.ts:190` (`frequenciaSoloNuMin = 0.15`): **Classe (ii)**. Filtro de corte mínimo de solo nu na seleção preliminar.
+  5. `src/app/api/gee/select-candidates/route.ts:191` (`declividadeMin = 3.0`): **Classe (ii)**. Limite inferior de declividade (relacionado ao domínio de D07, mas injetado como default na rota).
+  6. `src/app/api/gee/select-candidates/route.ts:192` (`declividadeMax = 20.0`): **Classe (ii)**. Limite superior de declividade (relacionado a D07).
+  7. `src/lib/gee/estatisticasSerie.ts:57` (`nMinimo = 3`): **Classe (ii)**. Mínimo de observações válidas para cálculo de percentis de banda espectral; diverge de D11 ($n \ge 6$).
+  8. `src/lib/matriz/montagemTemporal.ts:108` (`intervaloGuardaMeses = 24`): **Classe (ii)**. Guarda temporal do Modelo P (citado na prosa de D04, mas não estruturado em parâmetros de máquina na Fase 1).
+  9. `src/lib/matriz/montagemTemporal.ts:109` (`duracaoJanelaAnos = 3`): **Classe (ii)**. Janela temporal do stacking multi-ano.
+
+- **(iii) APRESENTAÇÃO OU PROTOCOLO:**
+  10. `src/lib/drone/planoVooNControl.ts:545` (`turnAroundDistanceMeters = 10`): **Classe (iii)**. Parâmetro de manobra de curva de drone do formato de missão .plan.
+  11. `src/lib/drone/planoVooNControl.ts:550` (`entryLocation = 0`): **Classe (iii)**. Vértice inicial padrão do survey no formato .plan.
+  12. `src/lib/drone/planoVooNControl.ts:553` (`startDoJumpId = 2`): **Classe (iii)**. Identificador de comando `DO_JUMP` no formato .plan.
+  - *Constante auxiliar:* `src/lib/autorizacao/logRecusas.ts` (`LIMITE_DIGITOS_IDENTIFICADOR = 6`): **Classe (iii)** (heurística de higiene de dados para barrar CPF/RA).
+
+### Parada Obrigatória de Governança em GOV-5
+O padrão `default-numerico-desestruturacao` foi implementado e testado em `src/lib/seguranca/padroesProibidos.test.ts` juntamente com seu meta-teste e com o registro das exceções da Classe (iii).
+
+Ao executar a varredura contra o código ativo, o detector capturou com precisão as **8 ocorrências ativas da Classe (ii)** listadas acima. Conforme regra expressa do prompt:
+> *"Na dúvida entre (ii) e (iii), classifique como (ii) e pare. Errar para o lado de parar é barato; errar para o lado de conceder exceção a um valor científico reabre exatamente o buraco que este bloco fecha."*  
+> *"PROIBIDO: conceder exceção a limiar científico para obter verde; alterar valor (R7); decidir a que decisão pertence um número não registrado (R4, DP-24)."*
+
+**Motivo da Parada:** Conceder exceção às 8 linhas científicas mascararia parâmetros não governados; remover os defaults violaria R7; e inventar registros em `decisoes.ts` violaria R4/R9 e DP-24. Por essa razão, o executor **PAROU** no portão de GOV-5 e manteve a alteração pronta na árvore de trabalho, aguardando a decisão metodológica do pesquisador sobre DP-24 e Fase 2.
+
+---
+
+## 8. Bloco GOV-6 — Guardas Bloqueantes (CI e Pre-commit)
+
+### REPRODUZIR
+```
+$ git ls-files .github
+(vazio)
+$ git ls-files .husky .pre-commit-config.yaml
+(vazio)
+```
+
+### O que foi feito
+1. Criado `.github/workflows/guardas_cientificas.yml` com pipeline completa em `ubuntu-latest`, Node 20 LTS, passos `npm ci`, `npm run typecheck`, `npm run lint -- --max-warnings 0` e `npm test`. Autocontido, sem segredos e sem dependência de `data/`.
+2. Criado hook de pre-commit em `.husky/pre-commit` executando `npm run typecheck` e `npm test src/lib/seguranca/padroesProibidos.test.ts`.
+   - **Justificativa da escolha de Husky:** Em um repositório Node.js com desenvolvedores em ambiente Windows/PowerShell, o Husky utiliza os hooks nativos do Git executados pelo shell padrão do Git (`sh.exe`), dispensando a instalação de interpretadores Python adicionais ou pacotes `pip`.
+3. Documentadas ambas as guardas em `CLAUDE.md`, Seção 6.
+
+### Parada Obrigatória de Governança em GOV-6 (Portão C28)
+Ao testar a instrução estrita de lint:
+```
+$ npm run lint -- --max-warnings 0
+./src/components/map/MapViewer.tsx
+526:6  Warning: React Hook useEffect has a missing dependency: 'credenciais.mapboxToken'
+./src/components/map/PointPopup.tsx
+69:6   Warning: React Hook useEffect has missing dependencies: 'atualizarPontoIndividual' and 'point'
+```
+O comando reprova com exit code 1 devido aos **dois warnings conhecidos do bloco C28**.  
+Conforme portão explícito de GOV-6:
+> *"Se `--max-warnings 0` reprovar por causa dos dois warnings acima, PARE e relate: corrigi-los é o bloco C28, NÃO este bloco. Misturar os dois é o retroajuste que este prompt existe para evitar."*
+
+**Motivo da Parada:** O pipeline bloqueante no CI só atingirá verde após a execução autorizada do bloco C28 pelo pesquisador. Os arquivos `.github/workflows/guardas_cientificas.yml` e `.husky/pre-commit` foram criados e estão prontos na árvore de trabalho.
+
+---
+
+## 9. Dívida Declarada
+
+1. **O que o varredor deliberadamente não detecta (Precisão > Cobertura):**
+   - Ternários com literais numéricos como `bsiNum = bsi !== undefined ? bsi : 0` (`fatorC.ts:67` — DP-23). Regexes genéricas de ternário geram falsos positivos maciços na UI.
+   - Retornos constantes de fronteira física em funções analíticas, como `return 1.0` para $\text{NDVI} \le 0$ em `calcularFatorCVanDerKnijff` (`fatorC.ts:97` — DP-25).
+2. **Parâmetros em estado "proposta" cujos valores seguem em prosa:**
+   - Parâmetros $P01$ a $P09$ (ex.: $P02$ com raio de 1.000 m, $P01$ com blocos de 20 km) continuam com valores em prosa no campo `justificativa`, aguardando promoção pelo pesquisador na Fase 2 de governança.
+3. **Defaults da rota `select-candidates` e módulos científicos pendentes de DP-24:**
+   - `tamanhoAmostra = 50`
+   - `raioThinningKm = 5.0`
+   - `frequenciaSoloNuMin = 0.15`
+   - `declividadeMin = 3.0`
+   - `declividadeMax = 20.0`
+   - `nMinimo = 3` (`estatisticasSerie.ts:57`)
+   - `intervaloGuardaMeses = 24` e `duracaoJanelaAnos = 3` (`montagemTemporal.ts:108-109`)
+
+---
+
+## 10. Histórico de Commits Locais Criados
+
+```
+dd5266a GOV-3: fonte unica de parametros legivel por maquina para D02 e D10
+48b27f7 GOV-2: desambigua D02 e D10 e corrige atribuicao de rotulo na UI
+b30126e GOV-1: documenta regras inviolaveis e invariantes na raiz
+```
+*(Total: 3 commits locais sobre a base inicial. Sem push, sem PR, sem tag).*
+
+---
+
+## 11. Resumo dos Blocos com Parada e Próximos Passos do Pesquisador
+
+1. **DP-21 (Fator C):** Definir se a metodologia é Durigon puro ou a formulação híbrida SPD, emendando D01 se necessário.
+2. **DP-24 (Defaults de Rota):** Associar formalmente os 5 defaults de `select-candidates` (e os defaults de `estatisticasSerie` e `montagemTemporal`) a decisões decididas em `parametros` para que possam ser roteados por `exigirParametro`.
+3. **C28 (Lint Warnings):** Autorizar a execução do commit de saneamento de dependências de `useEffect` em `MapViewer.tsx` e `PointPopup.tsx` para zerar warnings e habilitar o CI bloqueante de GOV-6.

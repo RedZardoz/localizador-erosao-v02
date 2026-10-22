@@ -1,0 +1,1152 @@
+================================================================================
+PACOTE DE AUDITORIA EXTERNA — SAREL v2 (PPGTCA 2026)
+LOTE: LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS | PARTE 1/6
+================================================================================
+Data de Geração: 21 de Outubro de 2026
+Limite por Arquivo: <= 90.000 bytes (Limite Rígido de Leitura)
+Total de Arquivos nesta parte: 14
+Arquivos contidos nesta parte:
+ - package.json
+ - tsconfig.json
+ - .eslintrc.json
+ - .gitignore
+ - .husky/pre-commit
+ - src/types/jev.ts
+ - src/types/ponto.ts
+ - src/types/proveniencia.ts
+ - src/types/rotulo.ts
+ - src/types/ui.ts
+ - src/config/areaInteresse.test.ts
+ - src/config/areaInteresse.ts
+ - src/config/decisoes.parametros.test.ts
+ - src/config/decisoes.test.ts
+================================================================================
+
+
+--------------------------------------------------------------------------------
+ARQUIVO: package.json
+TAMANHO: 1,701 bytes
+--------------------------------------------------------------------------------
+
+{
+  "name": "sarel",
+  "version": "2.0.0",
+  "description": "Sistema de Amostragem e Rotulagem para Erosão Laminar — PPGTCA 2026",
+  "private": true,
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1",
+    "build": "next build",
+    "check:build": "node scripts/check-build-freshness.mjs",
+    "start": "next start -H 127.0.0.1",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:vivo": "vitest run --config vitest.vivo.config.mts",
+    "sortear:d16": "node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts",
+    "decisoes:md": "node scripts/gerar_decisoes_md.mjs --gerar",
+    "gerar:script-d25": "node scripts/gerar_script_pacote.mjs"
+  },
+  "dependencies": {
+    "@google/earthengine": "^1.7.41",
+    "@tmcw/togeojson": "^5.8.1",
+    "canvas-confetti": "^1.9.4",
+    "clsx": "^2.1.1",
+    "jspdf": "^4.2.1",
+    "jszip": "^3.10.1",
+    "lucide-react": "^0.454.0",
+    "maplibre-gl": "^4.7.1",
+    "next": "^14.2.35",
+    "papaparse": "^5.4.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.4",
+    "xmlhttprequest": "^1.8.0",
+    "zod": "^3.23.8",
+    "zustand": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/node": "^20.17.0",
+    "@types/papaparse": "^5.3.14",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^6.1.1",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.35",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.6.3",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.11"
+  }
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: tsconfig.json
+TAMANHO: 612 bytes
+--------------------------------------------------------------------------------
+
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", "legado"]
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: .eslintrc.json
+TAMANHO: 208 bytes
+--------------------------------------------------------------------------------
+
+{
+  "extends": "next/core-web-vitals",
+  "ignorePatterns": ["legado/"],
+  "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": ["**/legado/**", "legado/*"]
+      }
+    ]
+  }
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: .gitignore
+TAMANHO: 2,971 bytes
+--------------------------------------------------------------------------------
+
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Next.js build output
+/.next/
+/out/
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Production build artifacts
+/build
+/dist
+/runtime
+
+# Security & Credentials Protection (CRITICAL)
+.env
+.env*.local
+.env.production
+*.pem
+*.key
+*.p12
+*.pfx
+*credential*.json
+*credentials*.json
+*service-account*.json
+*service_account*.json
+*serviceaccount*.json
+*.sa.json
+gcp-key*.json
+google-key*.json
+minhas_chaves_locais/
+credentials/
+chaves/
+secrets/
+tokens/
+
+# Debug and Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.log
+
+# Vercel and Turbopack
+.vercel
+.turbo
+
+# IDE and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local research and scratch data
+/scratch/
+/tmp/
+Laudo_Auditoria_Erosao_*.pdf
+Tabela_Consolidada_*
+Tabela_Laudos_Erosao_*
+
+# Pastas de documentacao interna e apresentacoes locais (nao subir ao Github)
+Analises e Planos de Alteração da Versão Atual/
+
+# Bases de dados locais espaciais e arquivos brutos governamentais (arquivos pesados de download)
+Dados SICAR/
+Dados INCRA/
+Dados SIGEF/
+Dados SNCR/
+data/*.db
+data/*.db.*
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+data/*.bak
+*.bak
+data/shapes/
+data/sicar_cache/
+data/sigef_cache/
+data/dem_cache/
+data/chirps_cache/
+data/sitios_referencia_local.json*
+# Relacao local da equipe de autorizacoes (nome e RA dos bolsistas) — guarda K2
+data/equipe_local.json*
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+scripts/__pycache__/
+legado/**/__pycache__/
+
+# SAREL Local Ledgers
+data/planet/
+
+Descrição da versão atual/
+
+# Bibliografia pesada (PDFs brutos locais mantidos fora do git - Opção A)
+docs/Selecao Bibliografica/**/*.pdf
+
+# Dados brutos de VANT (Spectral 2 / MicaSense) — pesados, ficam fora do git.
+# Versiona-se apenas o manifesto, os logs de voo e os relatorios de processamento.
+data/drone/**/raw/
+data/drone/**/ortomosaico/
+data/drone/**/nuvem_pontos/
+*.tif
+*.tiff
+*.las
+*.laz
+*.obj
+*.ply
+# Excecoes: figuras pequenas de documentacao
+!docs/**/*.png
+
+# ============================================================================
+# Dados brutos de voo VANT — 40 GB fora do versionamento (medido em 2026-09-27)
+# ============================================================================
+# 'git add .' adicionaria 23 GB (19,7 GB .zip, 2,0 GB .mp4, 876 MB .jpg,
+# 235 MB .dat). Git preserva todo blob permanentemente: um unico commit
+# desses inutilizaria o repositorio de forma irreversivel.
+# Os dados ficam no disco e FORA do git. O que e probatorio e leve entra
+# versionado em docs/verificacoes/voo/ como manifesto e relatorio derivado.
+/Dados de voo/
+
+# ============================================================================
+# Selos de sorteio D16 — contêm tabela reversa de correspondência opaca (K2)
+# Jamais devem ser versionados sob pena de quebra irremediável do cegamento duplo.
+# ============================================================================
+docs/verificacoes/sorteio/
+
+--------------------------------------------------------------------------------
+ARQUIVO: .husky/pre-commit
+TAMANHO: 578 bytes
+--------------------------------------------------------------------------------
+
+#!/bin/sh
+# Hook de pre-commit do SAREL v2 (Governança GOV-6)
+# Executa typecheck estrito e a varredura de padrões proibidos (rápido e bloqueante).
+
+echo "[pre-commit] Executando verificação de tipos (tsc --noEmit)..."
+npm run typecheck || {
+  echo "[pre-commit] ERRO: Falha no typecheck estático. Commit abortado."
+  exit 1
+}
+
+echo "[pre-commit] Executando varredor de padrões proibidos..."
+npm test src/lib/seguranca/padroesProibidos.test.ts || {
+  echo "[pre-commit] ERRO: Violação de padrões proibidos detectada pelo varredor. Commit abortado."
+  exit 1
+}
+
+exit 0
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/types/jev.ts
+TAMANHO: 1,677 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Tipos e Primitivas da API Jev (TypeSafe AI / System One) — SAREL v2.0
+ * PPGTCA 2026 — Universidade Tecnológica Federal do Paraná (UTFPR)
+ * ============================================================================
+ *
+ * O Jev opera com 3 primitivas estruturadas estritamente tipadas:
+ * 1. Noul: Julgamento booleano calibrado (verdadeiro/falso com probabilidade)
+ * 2. Choice: Classificação discreta sobre taxonomia fechada
+ * 3. Score: Escala ordinal estruturada (0 a 4)
+ */
+
+export type MetodoAuditoria = "JEV_SYSTEM_ONE" | "HEURISTICA_LOCAL_SUSCETIBILIDADE";
+
+export type GrauSuscetibilidade = 0 | 1 | 2 | 3 | 4;
+
+export interface RespostaNoul {
+  result: boolean;
+  confidence: number; // 0.0 a 1.0
+  reasoning?: string;
+}
+
+export interface RespostaChoice {
+  choice: string;
+  confidence: number;
+}
+
+export interface RespostaScore {
+  score: GrauSuscetibilidade;
+  confidence?: number;
+}
+
+export interface LaudoAuditoriaPonto {
+  metodo: MetodoAuditoria;
+  pontoId: string;
+  codigo: string;
+  timestamp: string;
+  latenciaMs: number;
+  consistenciaFisica: {
+    valido: boolean;
+    confianca: number;
+    observacao: string;
+  };
+  scoreSuscetibilidade: {
+    grau: GrauSuscetibilidade;
+    rotulo: "Nula" | "Baixa" | "Moderada" | "Alta" | "Crítica";
+    descricao: string;
+  };
+  coberturaManejo: {
+    classe: string;
+    confianca: number;
+  };
+  detalhes: {
+    ndviObservado: number | null;
+    bsiObservado: number | null;
+    declividadePct: number | null;
+    ordemSolo: string | null;
+    erodibilidadeClasse: string | null;
+    motivoFallback?: string;
+  };
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/types/ponto.ts
+TAMANHO: 7,560 bytes
+--------------------------------------------------------------------------------
+
+import type { Proveniencia } from "./proveniencia";
+import type { RotuloConsolidado } from "./rotulo";
+
+export type StatusFundiario =
+  | "encontrado" | "aproximado" | "sem-correspondencia"
+  | "base-nao-disponivel" | "erro-na-consulta";
+
+export interface ContextoFundiario {          // acesso e autorizacao — NUNCA feature
+  status: StatusFundiario;
+  motivo: string | null;                      // obrigatorio quando status != "encontrado"
+  consultadoEm: string | null;
+  criterioAssociacao: string | null;
+  codigoCar: string | null;
+  titularMascarado: string | null;            // mascara do SNCR, byte a byte
+  documentoMascarado: string | null;          // CPF/CNPJ nunca aberto
+  registroIncra: string | null;
+  areaImovelHa: number | null;                // ausente = null, nunca 0
+  bases: { uf: string; sicar?: string; sigef?: string; sncr?: string; sncrDataBase?: string };
+  poligono?: GeoJSON.Polygon | GeoJSON.MultiPolygon;
+}
+
+export interface BlocoSerie {
+  sensores: string[];                                   // colecoes usadas
+  nObservacoesValidas: Record<string, number>;          // por banda
+  harmonicos: Record<string, Proveniencia<number>>;     // "B12_amplitudeAnual", "B12_tendencia", ...
+  estatisticas: Record<string, Proveniencia<number>>;   // "B11_p10", "B11_p50", "B11_p90", ...
+  frequenciaSoloNu: Proveniencia<number>;               // E^
+  maiorSequenciaSoloNu: Proveniencia<number>;
+  mesModalExposicao: Proveniencia<number>;
+  compostoSoloNu: Record<string, Proveniencia<number>>;
+  compostoSoloNuB12?: Proveniencia<number>;
+  compostoSoloNuRazaoB4B2?: Proveniencia<number>;
+  taxaDegradacaoSwirAnual?: Proveniencia<number>;
+  ndviP90Serie?: Proveniencia<number>;
+  persistenciaTemporal?: Proveniencia<number>;
+  tendenciaSenSlope?: Proveniencia<number>;
+  amplitudeSazonal?: Proveniencia<number>;
+}
+
+export interface BlocoChuva {
+  precipAcum30d: Proveniencia<number>;
+  precipAcum90d: Proveniencia<number>;
+  i30Max: Proveniencia<number>;
+  nEventosErosivos: Proveniencia<number>;     // depende de D13
+  indiceMecanismo: Proveniencia<number>;      // Sigma(erosividade_t * soloNu_t) — depende de D13 e D10
+}
+
+export interface BlocoTemporal {
+  janela: { inicio: string; fim: string };
+  serie: BlocoSerie;
+  chuva: BlocoChuva;
+  observacoes?: Array<{ data: string; ndvi: number | null; bsi: number | null }>;
+}
+
+export interface LinhaDeBaseRUSLE {
+  fatorR: Proveniencia<number>;
+  fatorK: Proveniencia<number>;
+  fatorLS: Proveniencia<number>;
+  fatorC: Proveniencia<number>;
+  fatorP: Proveniencia<number>;
+  perdaSolo: Proveniencia<number>;
+  memoriaCalculo: string | null;
+}
+
+export type ClasseAmostral = "erosao" | "controle" | "indefinido";
+
+export interface PontoAmostral {
+  id: string;                                 // estavel, gerado uma vez
+  codigo: string;                             // legivel: "PR-2026-0001"; nao repetir o id em outra coluna
+  latitude: number;                           // EPSG:4326
+  longitude: number;
+  origemSintetica: boolean;                   // obrigatorio
+  blocoEspacial: string | null;               // null ate o variograma (plano secao 3.7)
+  celulaId?: string;                          // identificador opaco da celula 10m (D16/D26)
+  poligonoId?: string;                        // identificador opaco do poligono do sorteio D16
+  classeAmostral?: ClasseAmostral;            // Classe biofísica amostral (Erosão / Controle / Indefinido)
+  espectral?: {
+    ndvi?: Proveniencia<number>;
+    bsi?: Proveniencia<number>;
+    b2?: Proveniencia<number>;
+    b4?: Proveniencia<number>;
+    b8?: Proveniencia<number>;
+    b11?: Proveniencia<number>;
+    b12?: Proveniencia<number>;
+  };
+
+  // Criterio interno de amostragem — NUNCA feature, NUNCA rotulo, NUNCA em perfil cego
+  estratoId: string;
+  criterioSelecao: {
+    tercilS: 1 | 2 | 3;
+    tercilE: 1 | 2 | 3;
+    nivelK: 1 | 2;
+    phiDiag: number | null;                   // null quando alguma dimensao tem amplitude zero
+    semente: number;
+    raioThinningEfetivoMetros?: number;
+    unidadeDeterminanteK2024?: {
+      codUm: string;
+      codUm2: string;
+      ogcFid: number | null;
+      erodUm: string;
+      kSolos: number | null;
+      kSolosBruto: number | null;
+      nivelK: 1 | 2 | null;
+    } | null;
+  };
+
+  localizacao: {
+    municipio: Proveniencia<string>;
+    codigoIbge: Proveniencia<string>;
+    bacia: Proveniencia<string>;
+  };
+
+  terreno: {
+    elevacao: Proveniencia<number>;
+    declividadePct: Proveniencia<number>;
+    declividadeGraus: Proveniencia<number>;
+    curvaturaPerfil: Proveniencia<number>;
+    curvaturaPlana: Proveniencia<number>;
+    acumuloFluxo: Proveniencia<number>;
+    twi: Proveniencia<number>;
+  };
+
+  solo: {
+    ordem: Proveniencia<string>;
+    subOrdem: Proveniencia<string>;
+    grandeGrupo: Proveniencia<string>;        // distrofico/eutrofico COMO LEVANTADO
+    tipoUnidade: Proveniencia<string>;        // simples | associacao
+    confiancaPedologica: "alta" | "media" | "indisponivel";
+    erodibilidadeClasse: Proveniencia<string>; // CATEGORICA
+    kAmbiguoAssociacao?: true | false | "indisponivel"; // D08 emendada / W1 e W3: três estados (true, false, "indisponivel")
+    kAmbiguoAssociacaoProveniencia?: Proveniencia<boolean>;
+    ramoAmbiguidadeD08?:
+      | "ramo-a-tabelado-multiplos-componentes"
+      | "ramo-b-indisponivel-generalizacao-1-componente"
+      | "unidade-simples-1-componente"
+      | "fora-do-dominio"
+      | "sem-camada-2024";
+    unidadeDeterminanteK2024?: {
+      codUm: string;
+      codUm2: string;
+      ogcFid: number | null;
+      erodUm: string;
+      kSolos: number | null;
+      kSolosBruto: number | null;
+      nivelK: 1 | 2 | null;
+    } | null;
+    correspondenciaCartas2024?: "correspondente" | "divergente" | "sem-camada-2024";
+    divergenciaEntreCartas2024?: boolean;
+    provenienciaK?:
+      | "tabelado"
+      | "indisponivel-ramo-b-generalizacao"
+      | "indisponivel-sem-camada-2024"
+      | "heuristica-fallback-nao-conferida"
+      | "divergencia-entre-cartas"
+      | "fora-do-dominio";
+    pontoEmFronteiraPedologica?: Proveniencia<boolean>;
+    fronteiraCompartilhadaExata?: boolean;
+    causaZeroFeicoes?:
+      | "fora-cobertura-camada-estadual"
+      | "dentro-cobertura-lacuna-ou-agua"
+      | "dentro-cobertura-categoria-nao-solo"
+      | "fronteira-compartilhada-exata"
+      | null;
+    totalFeicoesSoloRetornadas?: number;
+    indiceFeicaoSoloEscolhida?: number | null;
+    feicaoSoloEscolhidaId?: string | null;
+    viaFatorKD14?:
+      | "k_solos_camada_2024_tabelado"
+      | "fallback_faixa_classe_d14"
+      | "indisponivel_fora_do_dominio"
+      | "indisponivel_sem_cobertura"
+      | "indisponivel_fronteira_exata";
+  };
+
+  // Metadados de elegibilidade multitemporal ESA WorldCover (D07: 2020 v100 ∩ 2021 v200 em [30, 40])
+  classeWorldCover2020?: Proveniencia<number>;
+  classeWorldCover2021?: Proveniencia<number>;
+  // Espelho de conveniencia de solo.kAmbiguoAssociacao nos três estados (D08 / W3 — nunca entra na matriz X)
+  kAmbiguoAssociacao?: true | false | "indisponivel";
+
+  temporal: Partial<Record<"D" | "P", BlocoTemporal>>;  // uma janela por modelo (D04)
+
+  papelConjunto?: "treino" | "held-out" | "indisponivel"; // designação de D16 (do sorteio de polígonos)
+  rotulo?: RotuloConsolidado;                 // Fase 6 — sempre de observacao
+  fundiario?: ContextoFundiario;
+  linhaDeBase?: LinhaDeBaseRUSLE;             // Fase 8 — nunca em matriz
+  rastreio: { versaoMotor: string; cenas: string[]; calculadoEm: string };  // cenas = PRODUCT_ID
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/types/proveniencia.ts
+TAMANHO: 2,967 bytes
+--------------------------------------------------------------------------------
+
+export type CausaIndisponibilidade =
+  | "sem-cobertura"          // a fonte respondeu e não cobre o ponto
+  | "servico-indisponivel"   // não foi possível consultar
+  | "mascarado"              // pixel removido por máscara (nuvem, sombra)
+  | "insuficiente"           // há dado, mas abaixo do mínimo (ex.: D11)
+  | "fora-do-dominio"        // valor fora do domínio físico ou da fórmula
+  | "decisao-pendente"       // depende de decisão ainda não tomada
+  | "nao-calculado"          // etapa ainda não executada
+  | "data-da-fonte-desconhecida"; // data de aquisição da fonte não informada (DEC-9)
+
+export interface QualidadeAjuste {
+  nObservacoes: number;
+  r2?: number;
+  erroPadrao?: number;
+}
+
+export type Proveniencia<T> =
+  | { estado: "medido";       valor: T; fonte: string; adquiridoEm: string; consultadoEm: string; detalhe?: string }
+  | { estado: "modelado";     valor: T; modelo: string; insumos: string[]; decisoes?: string[]; qualidade?: QualidadeAjuste }
+  | { estado: "tabelado";     valor: T; tabela: string; chave: string; decisao?: string }
+  | { estado: "indisponivel"; causa: CausaIndisponibilidade; motivo: string };
+
+export function valorOuNulo<T>(p?: Proveniencia<T> | null): T | null {
+  return p && p.estado !== "indisponivel" ? p.valor : null;
+}
+
+export function ehMedido(p?: Proveniencia<unknown> | null): boolean {
+  return p?.estado === "medido";
+}
+
+export function medido<T>(
+  valor: T,
+  fonte: string,
+  adquiridoEm: string,
+  consultadoEm: string = new Date().toISOString(),
+  detalhe?: string
+): Proveniencia<T> {
+  return {
+    estado: "medido",
+    valor,
+    fonte,
+    adquiridoEm,
+    consultadoEm,
+    ...(detalhe ? { detalhe } : {}),
+  };
+}
+
+export function tabelado<T>(
+  valor: T,
+  tabela: string,
+  chave: string,
+  decisao?: string
+): Proveniencia<T> {
+  return {
+    estado: "tabelado",
+    valor,
+    tabela,
+    chave,
+    ...(decisao ? { decisao } : {}),
+  };
+}
+
+export function indisponivel<T = never>(
+  causa: CausaIndisponibilidade,
+  motivoOuPartes: string | string[]
+): Proveniencia<T> {
+  const motivo = Array.isArray(motivoOuPartes) ? motivoOuPartes.join(" — ") : motivoOuPartes;
+  return {
+    estado: "indisponivel",
+    causa,
+    motivo,
+  };
+}
+
+export function formatarDescricaoOrigem<T>(p?: Proveniencia<T> | null): string {
+  if (!p) return "indisponível — não informado";
+  switch (p.estado) {
+    case "medido":
+      return `medido (${p.fonte}, ${p.adquiridoEm}${p.detalhe ? ` - ${p.detalhe}` : ""})`;
+    case "modelado": {
+      const decStr = p.decisoes && p.decisoes.length > 0 ? ` [decisões: ${p.decisoes.join(", ")}]` : "";
+      return `modelado (${p.modelo}, insumos: ${p.insumos.join(", ")}${decStr})`;
+    }
+    case "tabelado": {
+      const decStr = p.decisao ? ` [decisão: ${p.decisao}]` : "";
+      return `tabelado (${p.tabela}, chave: ${p.chave}${decStr})`;
+    }
+    case "indisponivel":
+      return `indisponível — ${p.causa}: ${p.motivo}`;
+  }
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/types/rotulo.ts
+TAMANHO: 1,651 bytes
+--------------------------------------------------------------------------------
+
+// ClasseRotulo e criado SOMENTE depois da decisao D03 (Fase 0).
+export type ClasseRotulo = string;
+
+export type ModalidadeRotulo = "interpretacao-visual" | "campo" | "drone";
+
+export type BandaMultiespectral = "blue" | "green" | "red" | "rededge" | "nir";
+
+export interface MetadadosSensorDrone {
+  tipoSensor: "multiespectral" | "rgb";
+  fabricanteVant: "Nuvem UAV" | string;
+  modeloVant: "Spectral 2" | string;
+  bandas: BandaMultiespectral[];
+  resolucaoGsdCm: number;
+  georreferenciamento: "ppk-rtk" | "gnss-navegacao";
+  calibracaoRadiometrica: boolean; // DLS (sensor de irradiância solar) + painel de reflectância difusa
+}
+
+export interface Rotulo {
+  classe: ClasseRotulo;
+  modalidade: ModalidadeRotulo;
+  observador: string;
+  observadoEm: string;                        // AAAA-MM-DD
+  confianca?: "alta" | "media" | "baixa";
+  observacoes?: string;
+  cego: boolean;  // desconhecia predicao, score, estrato e rotulo de outra modalidade
+  fracaoErodida?: number;                     // D26: alvo contínuo [0, 1] (primário)
+  alvoBinarioDerivado?: 0 | 1;                // D26: secundário derivado via binarizarFracao (LIMIAR_FRACAO_D26)
+}
+
+export interface RotuloConsolidado {
+  final: Rotulo | null;                       // null enquanto a divergencia estiver pendente
+  origens: Rotulo[];                          // todas as observacoes independentes
+  kappa: number | null;                       // null sem pares ou quando indefinido
+  divergencia: "nenhuma" | "resolvida-por-terceiro" | "pendente" | "indisponivel";
+  papelConjunto: "treino" | "held-out" | "indisponivel";       // sob D16, vem do sorteio ou indisponivel
+}
+
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/types/ui.ts
+TAMANHO: 2,160 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Tipos de Interface de Usuário e Áreas Espaciais — SAREL v2 (PPGTCA 2026)
+ * ============================================================================
+ *
+ * REGRAS METODOLÓGICAS:
+ * - Regra 1: Dados geográficos e de auditoria são estritamente reais e verificáveis.
+ * - Regra 5: Zero dados sintéticos ou simulados em qualquer estrutura de dados.
+ */
+
+import type { PontoAmostral } from "./ponto";
+
+export type ModalType =
+  | "settings"
+  | "region"
+  | "candidates"
+  | "polygons"
+  | "data-manager"
+  | "diagnostics"
+  | "audit-dossier"
+  | "campanha"
+  | "matriz"
+  | "decisoes"
+  | "export"
+  | null;
+
+export type BasemapType =
+  | "google-earth"
+  | "google-hybrid"
+  | "satellite"
+  | "mapbox-hd"
+  | "topo"
+  | "dark"
+  | "hybrid"
+  | "voyager";
+
+export interface AreaEstudo {
+  id: string;
+  nome: string;
+  tipo: "estado" | "municipio" | "bacia" | "talhao" | "customizado";
+  codigoIbge?: string;
+  areaKm2?: number;
+  areaHa?: number;
+  perimetroM?: number;
+  geometry: GeoJSON.Polygon | GeoJSON.MultiPolygon;
+  ativa: boolean;
+  cor?: string;
+  categoria?: string;
+}
+
+export interface MapViewState {
+  basemap: BasemapType;
+  terreno3d: boolean;
+  exageracao3d: number;
+  mostrarBacias: boolean;
+  mostrarLimites: boolean;
+  mostrarSolosEmbrapa: boolean;
+  mostrarErodibilidade: boolean;
+  mostrarSitiosPadraoOuro?: boolean;
+  flyToTarget?: {
+    lat: number;
+    lng: number;
+    zoom?: number;
+    pitch?: number;
+    bearing?: number;
+  } | null;
+}
+
+export interface GcpCredentialsInfo {
+  type?: string;
+  project_id?: string;
+  private_key_id?: string;
+  client_email?: string;
+  client_id?: string;
+}
+
+export interface CredenciaisState {
+  geeSessionActive: boolean;
+  gcpCredentials: GcpCredentialsInfo | null;
+  mapboxToken: string;
+  googleMapsKey: string;
+  cartoApiKey: string;
+  planetApiKey: string;
+  embrapaToken: string;
+  jevApiKey: string;
+}
+
+export interface SystemLogEntry {
+  id: string;
+  timestamp: string;
+  severity: "info" | "warning" | "error";
+  component: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/config/areaInteresse.test.ts
+TAMANHO: 642 bytes
+--------------------------------------------------------------------------------
+
+import { describe, it, expect } from "vitest";
+import { AREA_INTERESSE_BP3, AREA_INTERESSE_PADRAO } from "./areaInteresse";
+
+describe("Configuração de Área de Interesse (J4)", () => {
+  it("contém parâmetros canônicos da BP3 e rotulagem explícita de estudo local", () => {
+    expect(AREA_INTERESSE_BP3.id).toBe("BP3");
+    expect(AREA_INTERESSE_BP3.totalMunicipios).toBe(28);
+    expect(AREA_INTERESSE_BP3.centro.lat).toBeCloseTo(-24.85);
+    expect(AREA_INTERESSE_BP3.centro.lng).toBeCloseTo(-54.05);
+    expect(AREA_INTERESSE_BP3.rotuloEstudo).toContain("BP3");
+    expect(AREA_INTERESSE_PADRAO).toBe(AREA_INTERESSE_BP3);
+  });
+});
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/config/areaInteresse.ts
+TAMANHO: 2,445 bytes
+--------------------------------------------------------------------------------
+
+/**
+ * ============================================================================
+ * Configuração Paramétrica de Área de Interesse e Separação de Parâmetros (J4)
+ * SAREL v2.0 — Disciplina Pericial PPGTCA 2026
+ * ============================================================================
+ *
+ * Separação formal entre:
+ * 1. O MÉTODO (Invariante): Validação por RUSLE, protocolo cego, amostragem balanceada
+ *    por matriz fatorial S^ x E^ x K^, restrições EPV >= 20, guarda anti-leakage de 2 anos.
+ * 2. OS PARÂMETROS DO ESTUDO: Recorte geográfico, limiares de tercil, cartas pedológicas locais,
+ *    e envelope de coordenadas da Bacia Hidrográfica do Rio Paraná 3 (BP3).
+ */
+
+export interface ParametrosAreaInteresse {
+  id: string;
+  nome: string;
+  sigla: string;
+  descricao: string;
+  rotuloEstudo: string; // Rótulo visual que explicita que o valor é específico deste estudo
+  centro: { lat: number; lng: number };
+  zoomPadrao: number;
+  pitchPadrao: number;
+  bearingPadrao: number;
+  envelope: {
+    latMin: number;
+    latMax: number;
+    lonMin: number;
+    lonMax: number;
+  };
+  totalMunicipios: number;
+  distorcaoProjecaoUtmMaxPct: number;
+  areaAproximadaKm2: number;
+  codigoBaciaIat: string;
+  municipioReferenciaVant: string;
+  coordenadasReferenciaDemonstracao: {
+    lat: number;
+    lng: number;
+  };
+}
+
+/**
+ * Instância Canônica do Estudo: Bacia do Rio Paraná 3 (BP3 - Oeste do Paraná)
+ */
+export const AREA_INTERESSE_BP3: ParametrosAreaInteresse = {
+  id: "BP3",
+  nome: "Bacia Hidrográfica do Rio Paraná 3",
+  sigla: "BP3",
+  descricao: "Bacia Hidrográfica do Rio Paraná 3 — Região Oeste do Paraná (Estudo PPGTCA 2026)",
+  rotuloEstudo: "Parâmetro específico desta bacia (BP3 / Oeste do Paraná)",
+  centro: { lat: -24.85, lng: -54.05 },
+  zoomPadrao: 8.1,
+  pitchPadrao: 35,
+  bearingPadrao: 0,
+  envelope: {
+    latMin: -25.65,
+    latMax: -24.00,
+    lonMin: -54.65,
+    lonMax: -53.35,
+  },
+  totalMunicipios: 28,
+  distorcaoProjecaoUtmMaxPct: 0.11, // Extremo oeste UTM 22S medido em 0,11% (< 0,5% tolerância D15)
+  areaAproximadaKm2: 8000,
+  codigoBaciaIat: "BP3",
+  municipioReferenciaVant: "Céu Azul / Medianeira",
+  coordenadasReferenciaDemonstracao: {
+    lat: -25.2985,
+    lng: -54.0208,
+  },
+};
+
+/**
+ * Área ativa configurada para a aplicação (BP3 como padrão canônico)
+ */
+export const AREA_INTERESSE_PADRAO: ParametrosAreaInteresse = AREA_INTERESSE_BP3;
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/config/decisoes.parametros.test.ts
+TAMANHO: 5,935 bytes
+--------------------------------------------------------------------------------
+
+import { describe, it, expect } from "vitest";
+import {
+  DECISOES,
+  exigirParametro,
+  ErroDecisaoPendente,
+  ErroParametroAusente,
+  Decisao,
+} from "./decisoes";
+import { classificarPontoEspectral, CRITERIOS_ESPECTRAIS } from "../lib/gee/amostragemBiofisica";
+import {
+  analisarPersistenciaTemporal,
+  OPCOES_PERSISTENCIA_PADRAO,
+} from "../lib/gee/persistenciaTemporal";
+import { ObservacaoCena } from "../lib/gee/serieTemporal";
+
+describe("Governança — Fonte Única de Parâmetros e Acessor fail-closed (GOV-3)", () => {
+  describe("Acessor exigirParametro", () => {
+    it("recusa decisão pendente ou proposta com ErroDecisaoPendente", () => {
+      const decisaoProposta: Decisao<unknown> = {
+        id: "P_TESTE",
+        titulo: "Parâmetro Proposto",
+        estado: "proposta",
+      };
+      expect(() => exigirParametro(decisaoProposta, "qualquer")).toThrow(
+        ErroDecisaoPendente
+      );
+
+      const decisaoPendente: Decisao<unknown> = {
+        id: "D_PEND",
+        titulo: "Parâmetro Pendente",
+        estado: "pendente",
+      };
+      expect(() => exigirParametro(decisaoPendente, "qualquer")).toThrow(
+        ErroDecisaoPendente
+      );
+    });
+
+    it("recusa chave inexistente em decisão decidida com ErroParametroAusente", () => {
+      expect(() => exigirParametro(DECISOES.D02, "chaveNaoExistente")).toThrow(
+        ErroParametroAusente
+      );
+      expect(() => exigirParametro(DECISOES.D10, "chaveNaoExistente")).toThrow(
+        ErroParametroAusente
+      );
+    });
+
+    it("retorna valor e operador exatos para D02 e D10", () => {
+      const bsiMin = exigirParametro(DECISOES.D02, "bsiMin");
+      expect(bsiMin.valor).toBe(0.10);
+      expect(bsiMin.operador).toBe(">");
+
+      const ndviMax = exigirParametro(DECISOES.D02, "ndviMax");
+      expect(ndviMax.valor).toBe(0.40);
+      expect(ndviMax.operador).toBe("<");
+
+      const bsiMax = exigirParametro(DECISOES.D02, "bsiMax");
+      expect(bsiMax.valor).toBe(0.00);
+      expect(bsiMax.operador).toBe("<");
+
+      const ndviMin = exigirParametro(DECISOES.D02, "ndviMin");
+      expect(ndviMin.valor).toBe(0.65);
+      expect(ndviMin.operador).toBe(">");
+
+      const ndviSoloNu = exigirParametro(DECISOES.D10, "ndviSoloNu");
+      expect(ndviSoloNu.valor).toBe(0.25);
+      expect(ndviSoloNu.operador).toBe("<=");
+    });
+  });
+
+  describe("Comportamento na fronteira — D02 (Triagem Espectral de Candidatos)", () => {
+    it("alimenta CRITERIOS_ESPECTRAIS a partir de exigirParametro sem divergência de valor", () => {
+      expect(CRITERIOS_ESPECTRAIS.EROSAO.BSI_MIN).toBe(0.10);
+      expect(CRITERIOS_ESPECTRAIS.EROSAO.NDVI_MAX).toBe(0.40);
+      expect(CRITERIOS_ESPECTRAIS.CONTROLE.BSI_MAX).toBe(0.00);
+      expect(CRITERIOS_ESPECTRAIS.CONTROLE.NDVI_MIN).toBe(0.65);
+    });
+
+    it("respeita operador estrito '>' em bsiMin: exatamente na fronteira (0.10) NÃO classifica como erosao", () => {
+      // bsi = 0.10 (na fronteira), ndvi = 0.35 (< 0.40)
+      expect(classificarPontoEspectral(0.10, 0.35)).toBe("indefinido");
+      // bsi = 0.1001 (> 0.10)
+      expect(classificarPontoEspectral(0.1001, 0.35)).toBe("erosao");
+    });
+
+    it("respeita operador estrito '<' em ndviMax: exatamente na fronteira (0.40) NÃO classifica como erosao", () => {
+      // bsi = 0.20 (> 0.10), ndvi = 0.40 (na fronteira)
+      expect(classificarPontoEspectral(0.20, 0.40)).toBe("indefinido");
+      // ndvi = 0.3999 (< 0.40)
+      expect(classificarPontoEspectral(0.20, 0.3999)).toBe("erosao");
+    });
+
+    it("respeita operador estrito '<' em bsiMax: exatamente na fronteira (0.00) NÃO classifica como controle", () => {
+      // bsi = 0.00 (na fronteira), ndvi = 0.70 (> 0.65)
+      expect(classificarPontoEspectral(0.00, 0.70)).toBe("indefinido");
+      // bsi = -0.0001 (< 0.00)
+      expect(classificarPontoEspectral(-0.0001, 0.70)).toBe("controle");
+    });
+
+    it("respeita operador estrito '>' em ndviMin: exatamente na fronteira (0.65) NÃO classifica como controle", () => {
+      // bsi = -0.10 (< 0.00), ndvi = 0.65 (na fronteira)
+      expect(classificarPontoEspectral(-0.10, 0.65)).toBe("indefinido");
+      // ndvi = 0.6501 (> 0.65)
+      expect(classificarPontoEspectral(-0.10, 0.6501)).toBe("controle");
+    });
+  });
+
+  describe("Comportamento na fronteira — D10 (Solo Descoberto do Preditor Ê)", () => {
+    function gerarCenasFronteira(ndviAlvo: number): ObservacaoCena[] {
+      // Gera 6 cenas (mínimo exigido por D11) com NDVI exato
+      // NDVI = (b8 - b4)/(b8 + b4) -> se b4 = 0.1, b8 = 0.1 * (1 + ndvi) / (1 - ndvi)
+      const b4 = 0.1;
+      const b8 = Number(((0.1 * (1 + ndviAlvo)) / (1 - ndviAlvo)).toFixed(6));
+      return Array.from({ length: 6 }, (_, i) => ({
+        data: `2024-0${i + 1}-15`,
+        tAnos: 2024 + i / 12,
+        productId: `CENA_FRONTEIRA_${i}`,
+        nuvemSombra: false,
+        b2: 0.05,
+        b3: null,
+        b4,
+        b5: null,
+        b6: null,
+        b7: null,
+        b8,
+        b8a: null,
+        b11: 0.15,
+        b12: 0.20,
+      }));
+    }
+
+    it("alimenta OPCOES_PERSISTENCIA_PADRAO a partir de D10 sem divergência de valor", () => {
+      expect(OPCOES_PERSISTENCIA_PADRAO.limiarNdviSoloNu).toBe(0.25);
+    });
+
+    it("respeita operador inclusivo '<=' em ndviSoloNu: exatamente na fronteira (0.25) CLASSIFICA como solo nu", () => {
+      // ndvi = 0.25: com <= 0.25, todas as 6 cenas devem ser classificadas como solo nu (frequência = 1.0)
+      const cenasFronteira = gerarCenasFronteira(0.25);
+      const diagFronteira = analisarPersistenciaTemporal(cenasFronteira);
+      expect(diagFronteira.frequenciaExposicao).toBe(1.0);
+
+      // ndvi = 0.2501 (> 0.25): com <= 0.25, nenhuma cena deve ser classificada como solo nu (frequência = 0.0)
+      const cenasAcima = gerarCenasFronteira(0.2501);
+      const diagAcima = analisarPersistenciaTemporal(cenasAcima);
+      expect(diagAcima.frequenciaExposicao).toBe(0.0);
+    });
+  });
+});
+
+--------------------------------------------------------------------------------
+ARQUIVO: src/config/decisoes.test.ts
+TAMANHO: 4,043 bytes
+--------------------------------------------------------------------------------
+
+import { describe, it, expect } from "vitest";
+import { DECISOES, PARAMETROS, exigirDecisao, ErroDecisaoPendente } from "./decisoes";
+import type { Decisao } from "./decisoes";
+
+describe("Registro de Decisões — Mecanismo e Integridade", () => {
+  it("D01 (Fator C) deve estar decidida e retornar a fórmula sem erros", () => {
+    expect(DECISOES.D01.estado).toBe("decidida");
+    const val = exigirDecisao(DECISOES.D01);
+    expect(val).toBe("(1 - NDVI) / 2");
+    expect(DECISOES.D01.decididoPor).toBeDefined();
+    expect(DECISOES.D01.decididoEm).toBeDefined();
+    expect(DECISOES.D01.referencia).toBeDefined();
+  });
+
+  it("Decisões formalizadas na metodologia devem estar decididas e retornar valor válido", () => {
+    // Todas as decisoes de DECISOES estao decididas desde 27/09/2026; a lista e
+    // derivada para que o teste acompanhe o registro sem numero magico.
+    const decididas = Object.keys(DECISOES);
+    for (const id of decididas) {
+      const d = DECISOES[id];
+      expect(d.estado).toBe("decidida");
+      expect(exigirDecisao(d)).toBeDefined();
+      expect(d.decididoPor).toBeDefined();
+      expect(d.decididoEm).toBeDefined();
+      expect(d.referencia).toBeDefined();
+    }
+  });
+
+  it("Decisões pendentes devem lançar ErroDecisaoPendente ao serem exigidas", () => {
+    const todas = Object.values(DECISOES);
+    const pendentes = todas.filter((d) => d.estado === "pendente");
+    const decididas = todas.filter((d) => d.estado === "decidida");
+
+    // A partição de DECISOES é binária: toda decisão está "decidida" ou "pendente".
+    // Asseverar a partição, e não uma contagem literal, evita que o registro de uma
+    // nova decisão quebre o teste sem que nenhuma invariante tenha sido violada.
+    expect(pendentes.length + decididas.length).toBe(todas.length);
+    // A guarda antivacuidade NAO pode depender de haver decisao pendente no projeto:
+    // em 27/09/2026 todas as decisoes de DECISOES passaram a "decidida", e uma guarda
+    // sobre pendentes.length se tornaria insatisfazivel justamente quando o registro
+    // esta completo. O detector e exercitado sobre decisoes sinteticas, de modo que o
+    // teste do MECANISMO fica independente do ESTADO do registro.
+    const sinteticaPendente: Decisao<string> = {
+      id: "DXX",
+      titulo: "Decisao sintetica pendente",
+      estado: "pendente",
+    };
+    expect(() => exigirDecisao(sinteticaPendente)).toThrow(ErroDecisaoPendente);
+
+    // Caso limite que importa tanto quanto o anterior: "decidida" com valor ausente
+    // tambem deve lancar, para que nenhum consumidor receba undefined como se fosse valor.
+    const sinteticaSemValor: Decisao<string> = {
+      id: "DYY",
+      titulo: "Decisao sintetica decidida sem valor",
+      estado: "decidida",
+    };
+    expect(() => exigirDecisao(sinteticaSemValor)).toThrow(ErroDecisaoPendente);
+    try {
+      exigirDecisao(sinteticaSemValor);
+    } catch (err) {
+      expect((err as ErroDecisaoPendente).decisaoId).toBe("DYY");
+    }
+
+    for (const d of pendentes) {
+      expect(d.estado).toBe("pendente");
+      expect(() => exigirDecisao(d)).toThrow(ErroDecisaoPendente);
+      try {
+        exigirDecisao(d);
+      } catch (err) {
+        expect(err).toBeInstanceOf(ErroDecisaoPendente);
+        expect((err as ErroDecisaoPendente).decisaoId).toBe(d.id);
+      }
+    }
+  });
+
+  it("Toda decisão com estado 'decidida' deve ter justificativa, referência e registro de autor/data", () => {
+    for (const d of Object.values(DECISOES)) {
+      if (d.estado === "decidida") {
+        expect(d.valor).toBeDefined();
+        expect(d.decididoPor).toBeDefined();
+        expect(d.decididoEm).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        expect(d.referencia || d.justificativa).toBeDefined();
+      }
+    }
+  });
+
+  it("Parâmetros operacionais devem ter IDs e estados válidos", () => {
+    expect(Object.keys(PARAMETROS).length).toBe(16);
+    for (const p of Object.values(PARAMETROS)) {
+      expect(["pendente", "proposta", "decidida"]).toContain(p.estado);
+    }
+  });
+});
