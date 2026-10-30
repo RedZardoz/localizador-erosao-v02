@@ -100,7 +100,7 @@ def build_docx():
     project_root = os.path.dirname(script_dir)
     out_dir = os.path.join(project_root, "docs", "BASES PARA A DISSERTAÇÃO")
     os.makedirs(out_dir, exist_ok=True)
-    docx_path = os.path.join(out_dir, "Metodologia_Integrada_Dissertacao_SAREL.docx")
+    docx_path = os.path.join(out_dir, "Metodologia_Integrada_Dissertacao_SAREL_Revisado.docx")
     
     doc = docx.Document()
     
@@ -351,7 +351,7 @@ def build_docx():
     add_bullet(
         "O uso do VANT resolve o maior gargalo histórico do sensoriamento remoto de erosão: a contaminação do rótulo por erro de agregação subpixel (point-to-pixel misalignment). "
         "Em levantamentos convencionais com GPS de navegação em ponto único (erro de 3 a 8 m), o ponto cai frequentemente na borda ou fora da célula de 10 m. "
-        "Com o ortomosaico de 4 cm do VANT Spectral 2 e precisão posicional CE90 de 1,47 m, cada célula orbital de 10 x 10 m (100 m²) contém cerca de 62.500 micropixels "
+        "Com o ortomosaico de GSD nominal de 4,0 cm (GSD médio medido de 3,8 cm) do VANT Spectral 2 e precisão posicional CE90 de 1,47 m, cada célula orbital de 10 x 10 m (100 m²) contém cerca de 69.252 micropixels medidos (~69.000; 62.500 no valor nominal de 4 cm) "
         "de observação contínua, permitindo calcular a fração erodida real com fidelidade matemática e sem ruído de borda.",
         bold_prefix="A Teoria da Escala em Sensoriamento Remoto e a Validade Ecológica (WOODCOCK; STRAHLER, 1987; ALVAREZ-VANHARD et al., 2021): "
     )
@@ -418,7 +418,7 @@ def build_docx():
         bold_prefix="Frequência Histórica de Solo Nu (Ê): "
     )
     add_bullet(
-        "2 níveis numéricos derivados da carta oficial de erodibilidade da Embrapa Solos (Doc. 246/2024; D14): Nível 1 = Baixa/Média erodibilidade (classes 1 a 3 do SiBCS, K <= 0,0285 Mg h MJ^-1 mm^-1; predomínio de Latossolos) e Nível 2 = Alta/Muito Alta erodibilidade (classes 4 e 5, K >= 0,0300 Mg h MJ^-1 mm^-1; predomínio de Nitossolos e Neossolos). Totalizando exatamente 3 × 3 × 2 = 18 estratos canônicos.",
+        "2 níveis numéricos derivados da carta oficial de erodibilidade da Embrapa Solos (Doc. 246/2024; D14): Nível 1 = Baixa/Média erodibilidade (classes 1 a 3 do SiBCS, K <= 0,0285 Mg h MJ⁻¹ mm⁻¹; predomínio de Latossolos) e Nível 2 = Alta/Muito Alta erodibilidade (classes 4 e 5, K >= 0,0300 Mg h MJ⁻¹ mm⁻¹; predomínio de Nitossolos e Neossolos). Totalizando exatamente 3 × 3 × 2 = 18 estratos canônicos.",
         bold_prefix="Erodibilidade Pedológica do Solo (K̂; Decisão D09): "
     )
     add_body(
@@ -470,7 +470,7 @@ def build_docx():
     add_h2("3.6 A Linha de Base Analítica RUSLE Parametrizada para o Paraná")
     add_body(
         "Como competidor de referência analítico, o SAREL implementa a Equação Universal de Perda de Solo Revisada (RUSLE; RENARD et al., 1997): "
-        "A = R · K · LS · C · P (perda anual estimada em Mg ha^-1 ano^-1), auditada e parametrizada com coeficientes científicos específicos do Paraná:"
+        "A = R · K · LS · C · P (perda anual estimada em Mg ha⁻¹ ano⁻¹), auditada e parametrizada com coeficientes científicos específicos do Paraná:"
     )
     add_bullet(
         "Calculado a partir de totais pluviométricos mensais do CHIRPS v2.0 (proveniência modelado, sucedâneo do EI30 com tolerância regional de +-10%), "
@@ -485,8 +485,8 @@ def build_docx():
     )
     add_bullet(
         "Extraído diretamente do campo numérico k_solos da camada GeoServer oficial da Embrapa Solos (Doc. 246/2024; proveniência tabelado), "
-        "que mapeia os solos brasileiros segundo o SiBCS. Na Bacia do Paraná III, os Latossolos Vermelhos apresentam erodibilidade K na faixa de 0,0130 a 0,0170 Mg h MJ^-1 mm^-1, "
-        "enquanto os Nitossolos Vermelhos variam entre 0,0240 e 0,0280 Mg h MJ^-1 mm^-1. Por D08, a heurística taxonômica foi aposentada, utilizando-se a proveniência oficial tabelada.",
+        "que mapeia os solos brasileiros segundo o SiBCS. Na Bacia do Paraná III, os Latossolos Vermelhos apresentam erodibilidade K na faixa de 0,0130 a 0,0170 Mg h MJ⁻¹ mm⁻¹, "
+        "enquanto os Nitossolos Vermelhos variam entre 0,0240 e 0,0280 Mg h MJ⁻¹ mm⁻¹. Por D08, a heurística taxonômica foi aposentada, utilizando-se a proveniência oficial tabelada.",
         bold_prefix="Fator K — Erodibilidade Pedológica do Solo (Decisão D14): "
     )
     add_bullet(
@@ -496,7 +496,7 @@ def build_docx():
         bold_prefix="Fator LS — Relação Comprimento e Grau de Declive Bidimensional (Decisão D15): "
     )
     add_bullet(
-        "Calculado dinamicamente para cada época a partir do NDVI orbital pela equação tropical calibrada para biomas brasileiros por Durigon et al. (2014): "
+        "Calculado dinamicamente para cada época a partir do NDVI orbital pela equação tropical calibrada para biomas brasileiros por Durigon et al. (2014, IJRS): "
         "C = (1 - NDVI) / 2. Sob o regime de Sistema Plantio Direto (SPD; Decisão D20), o índice é modulado pelo Bare Soil Index (BSI) "
         "segundo C_hibrido = ((1 - NDVI) / 2) · (1 + BSI), restrito ao domínio biofísico fechado [0, 1].",
         bold_prefix="Fator C — Uso e Manejo da Terra (Decisões D01 e D20): "
@@ -520,7 +520,7 @@ def build_docx():
         "de 50 m (que deflaciona os micropixels para unidades independentes), o SAREL estabelece tetos rígidos para impedir o sobreajuste e a pseudorreplicação estatística:",
         bold_prefix="Regime de Dados e Teto de Preditores por Bloco Físico (Decisão D24): "
     )
-    add_bullet("Teto de até 8 preditores (~1.845 unidades espacialmente independentes nos 72 polígonos; regime estatístico plenamente adequado).", bold_prefix="Bloco Espectro-Temporal (Sentinel-2): ")
+    add_bullet("Teto de até 8 preditores (~1.841 unidades espacialmente independentes nos 72 polígonos; regime estatístico plenamente adequado).", bold_prefix="Bloco Espectro-Temporal (Sentinel-2): ")
     add_bullet("Teto de até 4 preditores (~396 unidades independentes a 30 m; admitido por necessidade física com restrições de monotonicidade).", bold_prefix="Bloco de Terreno (Copernicus DEM 30 m): ")
     add_bullet("Teto de exatamente 1 preditor (a erodibilidade K oficial k_solos; ordem pedológica aposentada por D08).", bold_prefix="Bloco de Solo (Embrapa Solos): ")
     add_bullet("Teto de exatamente 1 preditor (o fator R de erosividade anual).", bold_prefix="Bloco de Chuva (CHIRPS Regional): ")
@@ -528,7 +528,7 @@ def build_docx():
     add_body(
         "Em conformidade com as diretrizes de reprodutibilidade em machine learning (PINEAU et al., 2021) e combate a vazamento de dados (PLOTON et al., 2020; KAPOOR; NARAYANAN, 2023), "
         "o treinamento adota Spatial Block Cross-Validation agrupada por polígono (GroupKFold). "
-        "A avaliação honesta final ocorre exclusivamente uma única vez sobre os 36 polígonos mantidos em held-out lacrado (cerca de 936 unidades efetivas independentes; D16). "
+        "A avaliação honesta final ocorre exclusivamente uma única vez sobre os 36 polígonos mantidos em held-out lacrado (cerca de 920 unidades efetivas independentes; D16). "
         "Em cumprimento ao pré-registro (NOSEK et al., 2018), fixam-se três desfechos epistemológicos formais avaliados sob correlação de postos de Spearman e Bootstrap agrupado (CAMERON; GELBACH; MILLER, 2008):\n"
         "1. Corroboração: rho_XGBoost >= 0,40 E Delta rho = (rho_XGBoost - rho_RUSLE) >= 0,10 com p < 0,05 (ganho substancial comprovado).\n"
         "2. Refutação: rho_XGBoost < 0,40 OU limite inferior do IC 95% de Delta rho <= 0 (modelo não supera o RUSLE ou não discrimina).\n"
@@ -597,7 +597,7 @@ def build_docx():
 
     # TABELA 2
     p_t2 = doc.add_paragraph()
-    r_t2 = p_t2.add_run("Tabela 2. Especificação do Vetor de Preditores, Resolução Nativa e Proveniência (Decisões D06, D21, D24)")
+    r_t2 = p_t2.add_run("Tabela 2. Pool de Candidatos de Preditores, Resolução Nativa e Proveniência (Decisões D06, D21, D24)")
     r_t2.bold = True
     r_t2.font.size = Pt(9.5)
     
@@ -620,8 +620,8 @@ def build_docx():
         r.font.color.rgb = RGBColor(255, 255, 255)
         
     rows_t2 = [
-        ("Espectro-Temporal (Máx. 8 variáveis)", "Bandas B2, B3, B4, B8, B11, B12; NDVI, BSI; Coeficientes harmônicos OLS (c0, c1, a1, b1); Frequência de solo nu (Ê).", "Sentinel-2 MSI L2A (BOA)", "10 m e 20 m", "[P-1] Medido"),
-        ("Morfometria Relevo (Máx. 4 variáveis)", "Declividade (3,0% a 20,0%), Orientação (Aspect), Curvatura de Perfil e Plano, Fator LS bidimensional.", "Copernicus DEM GLO-30 (D21)", "30 m nativo", "[P-2] Modelado"),
+        ("Espectro-Temporal (Pool candidato; teto final ≤ 8)", "Bandas B2, B3, B4, B8, B11, B12; NDVI, BSI; Coeficientes harmônicos OLS (c0, c1, a1, b1); Frequência de solo nu (Ê).", "Sentinel-2 MSI L2A (BOA)", "10 m e 20 m", "[P-1] Medido"),
+        ("Morfometria Relevo (Pool candidato; teto final ≤ 4)", "Declividade (3,0% a 20,0%), Orientação (Aspect), Curvatura de Perfil e Plano, Fator LS bidimensional.", "Copernicus DEM GLO-30 (D21)", "30 m nativo", "[P-2] Modelado"),
         ("Pedologia / Solo (Exatamente 1 variável)", "Erodibilidade K oficial (k_solos da carta Embrapa Solos Doc. 246/2024; D14; ordem pedológica aposentada por D08).", "Embrapa Solos (Doc. 246/2024)", "Polígono Cartográfico", "[P-3] Tabelado"),
         ("Climatologia / Chuva (Exatamente 1 variável)", "Fator R de erosividade anual da chuva (equação regional Rufino et al. / Waltrick et al. sobre CHIRPS mensal; D13).", "CHIRPS v2.0 + IAT-PR", "Grade Regional ~5 km", "[P-2] Modelado"),
         ("Alvo Supervisionado (Verdade de Campo / VANT)", "Fração contínua da área da célula de 10 m erodida (y_i in [0, 1]) por vetorização pericial de ortomosaico. Binário derivado: y_i >= 0,25.", "VANT Spectral 2 (Nuvem UAV)", "GSD ~3,8 cm (CE90 1,47 m)", "[P-1] Medido (Campo/Voo)")
@@ -687,7 +687,7 @@ def build_docx():
         ("D06", "Suporte Espacial Nativo", "Unidade de análise fixada na célula de 10 m do Sentinel-2; proibição de reamostragem espúria de insumos mais grossos."),
         ("D07", "Domínio de Validade Físico", "Declividade estritamente entre 3,0% e 20,0% (SiBCS); WorldCover classes 30 e 40 com concordância entre v100 e v200."),
         ("D08", "Associações de Solo", "Ambiguidade de K em unidades de associação resolvida na fonte oficial (Embrapa Solos 2024); heurística taxonômica aposentada."),
-        ("D09", "Corte Ordinal de K̂", "Partição em 2 níveis de K̂: Nível 1 (K <= 0,0285) e Nível 2 (K >= 0,0300 Mg h MJ^-1 mm^-1)."),
+        ("D09", "Corte Ordinal de K̂", "Partição em 2 níveis de K̂: Nível 1 (K <= 0,0285) e Nível 2 (K >= 0,0300 Mg h MJ⁻¹ mm⁻¹)."),
         ("D10", "Limiar de Solo Exposto", "NDVI <= 0,25 para classificação de solo nu em solos agrícolas tropicais (calibração GEOS3/ESALQ-USP)."),
         ("D11", "Cobertura Temporal Mínima", "Número mínimo de observações orbitais válidas para validação de métricas de série temporal decenal."),
         ("D12", "Estratificação Multivariada", "18 estratos canônicos pelo produto fatorial Ŝ (3 tercis) x Ê (3 tercis) x K̂ (2 níveis), com Spatial Thinning r >= 1,0 km."),
@@ -743,7 +743,7 @@ def build_docx():
         ("D17", "Alocação Cota PlanetScope", "Gestão racional de quotas PlanetScope entre download de mosaicos de evento e visualização de tiles."),
         ("D18", "Buffer PlanetScope", "Área de amortecimento padronizada ao redor dos sítios amostrais para contextualização de vizinhança."),
         ("D19", "Pares de Evento de Chuva", "Reescrita do evento de chuva extrema em escala de polígono para análise secundária de gatilhos hidrológicos."),
-        ("D20", "Fator C Híbrido SPD", "Equação de Durigon et al. (2014) modulada pelo BSI sob Sistema Plantio Direto: C = ((1 - NDVI)/2) * (1 + BSI)."),
+        ("D20", "Fator C Híbrido SPD", "Equação de Durigon et al. (2014, IJRS) modulada pelo BSI sob Sistema Plantio Direto: C = ((1 - NDVI)/2) * (1 + BSI)."),
         ("D21", "Modelo Digital Elevação", "Copernicus DEM GLO-30 (ESA) na resolução nativa de 30 m em projeção métrica conforme SIRGAS 2000 UTM 22S."),
         ("D22", "Fator P Estratificado", "Fator P fixado em 1,0 na escala de bacia; refinado por observação de práticas conservacionistas estratificadas por declividade em campo."),
         ("D23", "Regime Amostral com π_i", "Estratificação desproporcional com probabilidade de inclusão π_i registrada para viabilizar inferência de Olofsson et al. (2014)."),
@@ -853,8 +853,8 @@ def build_docx():
         "CAMERON, A. C.; GELBACH, J. B.; MILLER, D. L. Bootstrap-based improvements for inference with clustered errors. The Review of Economics and Statistics, Cambridge, v. 90, n. 3, p. 414-427, 2008. DOI: 10.1162/rest.90.3.414.",
         "CHEN, T.; GUESTRIN, C. XGBoost: A scalable tree boosting system. In: ACM SIGKDD INTERNATIONAL CONFERENCE ON KNOWLEDGE DISCOVERY AND DATA MINING, 22., 2016, San Francisco. Proceedings... New York: ACM, 2016. p. 785-794. DOI: 10.1145/2939672.2939785. [Arquivo local: `1603.02754v3.pdf`]",
         "DESMET, P. J. J.; GOVERS, G. A GIS procedure for automatically calculating the USLE LS factor on topographically complex landscape units. Journal of Soil and Water Conservation, Ankeny, v. 51, n. 5, p. 427-433, 1996. [Arquivo local: `desmet_govers_1996_jswc.pdf`]",
-        "DURIGON, C. A.; CARVALHO JÚNIOR, O. A. de; ANTUNES, M. A. H.; OLIVEIRA, S. N. de; MARTINS, E. S. Índices de vegetação derivados do sensor MODIS para o cálculo do fator C da Equação Universal de Perdas de Solo em biomas brasileiros. Revista Brasileira de Ciência do Solo, Viçosa, v. 38, n. 6, p. 1814-1824, 2014. DOI: 10.1590/S0100-06832014000600016.",
-        "EMBRAPA SOLOS. Sistema brasileiro de classificação de solos. 5. ed. Brasília, DF: Embrapa, 2018. 356 p. [SiBCS Oficial: Classes de Relevo Suave-Ondulado e Ondulado].",
+        "DURIGON, V. L.; CARVALHO, D. F.; ANTUNES, M. A. H.; OLIVEIRA, P. T. S.; FERNANDES, M. M. NDVI time series for monitoring RUSLE cover management factor in a tropical watershed. International Journal of Remote Sensing, London, v. 35, n. 2, p. 441-453, 2014. DOI: 10.1080/01431161.2013.871081. [Arquivo local: `Durigon_etal_2014.pdf`] DOI: 10.1590/S0100-06832014000600016.",
+        "SANTOS, H. G. dos; JACOMINE, P. K. T.; ANJOS, L. H. C. dos; OLIVEIRA, V. Á. de; LUMBRERAS, J. F.; COELHO, M. R. et al. Sistema brasileiro de classificação de solos. 5. ed. rev. e ampl. Brasília, DF: Embrapa Solos, 2018. 356 p. [SiBCS Oficial: Classes de Relevo Suave-Ondulado e Ondulado].",
         "EMBRAPA SOLOS. Fatores de erodibilidade (Fator K) para solos brasileiros segundo o Sistema Brasileiro de Classificação de Solos (SiBCS). Rio de Janeiro: Embrapa Solos, 2024. 42 p. (Documentos / Embrapa Solos, 246). [Arquivo local: `CNPS-DOC-246-2024.pdf`]",
         "KAPOOR, S.; NARAYANAN, A. Leakage and the reproducibility crisis in machine-learning-based science. Patterns (Cell Press), Cambridge, v. 4, n. 9, 100804, 2023. DOI: 10.1016/j.patter.2023.100804. [Arquivo local: `mmc2.pdf`]",
         "KRUG, E. T. S. Estimativa de perda de solo por erosão laminar em função de suas características e diferentes níveis de precipitação. 2024. 88 f. Dissertação (Mestrado em Tecnologias Computacionais para o Agronegócio) — Universidade Tecnológica Federal do Paraná, Câmpus Medianeira, 2024. (Orientador: Prof. Dr. Claudio Leones Bazzi). [Arquivo local: `estimativaerosaolaminar.pdf`]",

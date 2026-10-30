@@ -72,10 +72,10 @@ class SarelMasterCanvas(canvas.Canvas):
             self.saveState()
             page_w, page_h = A4
             
-            # Cabeçalho Superior (Margens laterais de 20 mm)
+            # Cabeçalho Superior (Margens laterais de 20 mm) — sem sobreposição
             self.setFont("Helvetica-Bold", 7.5)
             self.setFillColor(C_EMERALD_DARK)
-            self.drawString(20 * mm, page_h - 11 * mm, "PPGTCA / UTFPR — PROGRAMA DE PÓS-GRADUAÇÃO EM TECNOLOGIAS COMPUTACIONAIS PARA O AGRONEGÓCIO")
+            self.drawString(20 * mm, page_h - 11 * mm, "PPGTCA / UTFPR")
             self.setFont("Helvetica", 7.5)
             self.setFillColor(C_SLATE_MUTED)
             self.drawRightString(page_w - 20 * mm, page_h - 11 * mm, "METODOLOGIA INTEGRADA & GLOSSÁRIO • SAREL")
@@ -252,7 +252,8 @@ def build_pdf():
     project_root = os.path.dirname(script_dir)
     out_dir = os.path.join(project_root, "docs", "BASES PARA A DISSERTAÇÃO")
     os.makedirs(out_dir, exist_ok=True)
-    pdf_path = os.path.join(out_dir, "Metodologia_Integrada_Dissertacao_SAREL.pdf")
+    # Rota canônica definida conforme M10
+    pdf_path = os.path.join(out_dir, "Metodologia_Integrada_Dissertacao_SAREL_Revisado.pdf")
     alt_path = os.path.join(out_dir, "Metodologia_Integrada_Dissertacao_SAREL_Revisado.pdf")
     
     # Verifica se o arquivo principal está travado por leitor de PDF (ex: Acrobat / PDF Editor)
@@ -425,7 +426,8 @@ def build_pdf():
         "• <b>A Teoria da Escala em Sensoriamento Remoto e a Validade Ecológica (WOODCOCK; STRAHLER, 1987; ALVAREZ-VANHARD et al., 2021):</b><br/>"
         "O uso do VANT resolve o maior gargalo histórico do sensoriamento remoto de erosão: a contaminação do rótulo por erro de agregação subpixel (<i>point-to-pixel misalignment</i>). "
         "Em levantamentos convencionais com GPS de navegação em ponto único (erro de 3 a 8 m), o ponto cai frequentemente na borda ou fora da célula de 10 m. "
-        "Com o ortomosaico de 4 cm do VANT Spectral 2 e precisão posicional CE90 de 1,47 m, cada célula orbital de 10 x 10 m (100 m²) contém cerca de 62.500 micropixels "
+        "Com o ortomosaico de GSD nominal de projeto de 4,0 cm (GSD médio medido de 3,8 cm) do VANT Spectral 2 e precisão posicional CE90 de 1,47 m, "
+        "cada célula orbital de 10 x 10 m (100 m²) contém cerca de 69.252 micropixels medidos (~69.000; 62.500 no valor nominal de 4 cm) "
         "de observação contínua, permitindo calcular a fração erodida real com fidelidade matemática e sem ruído de borda.",
         styles["BulletText"]
     ))
@@ -493,7 +495,7 @@ def build_pdf():
     ))
     story.append(Paragraph("• <b>Declividade do Terreno (Ŝ):</b> 3 tercis empíricos de declividade derivados do Copernicus DEM 30 m (D21) dentro da faixa válida de 3,0% a 20,0% (Tercil Suave: 3,0% a &approx;7%; Tercil Médio: &approx;7% a &approx;13%; Tercil Forte: &approx;13% a 20,0%).", styles["BulletText"]))
     story.append(Paragraph("• <b>Frequência Histórica de Solo Nu (Ê):</b> 3 tercis empíricos da frequência decenal de exposição do solo no intervalo [0, 1], definida como a fração de cenas orbitais válidas com índice NDVI &le; 0,25 da série Sentinel-2 L2A (Decisão D10; calibrado pelo sistema GEOS3/GeoCiS/ESALQ-USP para solos agrícolas tropicais).", styles["BulletText"]))
-    story.append(Paragraph("• <b>Erodibilidade Pedológica do Solo (K̂; Decisão D09):</b> 2 níveis numéricos derivados da carta oficial de erodibilidade da Embrapa Solos (Doc. 246/2024; D14): Nível 1 = Baixa/Média erodibilidade (classes 1 a 3 do SiBCS, K &le; 0,0285 Mg h MJ^-1 mm^-1; predomínio de Latossolos) e Nível 2 = Alta/Muito Alta erodibilidade (classes 4 e 5, K &ge; 0,0300 Mg h MJ^-1 mm^-1; predomínio de Nitossolos e Neossolos). Totalizando exatamente 3 &times; 3 &times; 2 = 18 estratos canônicos.", styles["BulletText"]))
+    story.append(Paragraph("• <b>Erodibilidade Pedológica do Solo (K̂; Decisão D09):</b> 2 níveis numéricos derivados da carta oficial de erodibilidade da Embrapa Solos (Doc. 246/2024; D14): Nível 1 = Baixa/Média erodibilidade (classes 1 a 3 do SiBCS, K &le; 0,0285 Mg h MJ⁻¹ mm⁻¹; predomínio de Latossolos) e Nível 2 = Alta/Muito Alta erodibilidade (classes 4 e 5, K &ge; 0,0300 Mg h MJ⁻¹ mm⁻¹; predomínio de Nitossolos e Neossolos). Totalizando exatamente 3 &times; 3 &times; 2 = 18 estratos canônicos.", styles["BulletText"]))
     story.append(Paragraph(
         "Para neutralizar a dependência espacial dentro do mesmo estrato, aplica-se o algoritmo de <i>Spatial Thinning</i> geodésico determinístico "
         "(Fisher-Yates com semente fixa P01 e raio mínimo de exclusão euclidiana r &ge; 1,0 km; regra P02), garantindo a dispersão territorial da amostragem.",
@@ -586,7 +588,7 @@ def build_pdf():
     story.append(Paragraph("3.6 A Linha de Base Analítica RUSLE Parametrizada para o Paraná", styles["H2"]))
     story.append(Paragraph(
         "Como competidor de referência analítico, o SAREL implementa a <b>Equação Universal de Perda de Solo Revisada (RUSLE; RENARD et al., 1997)</b>: "
-        "<b>A = R · K · LS · C · P</b> (perda anual estimada em Mg ha^-1 ano^-1), auditada e parametrizada com coeficientes científicos específicos do Paraná:",
+        "<b>A = R · K · LS · C · P</b> (perda anual estimada em Mg ha⁻¹ ano⁻¹), auditada e parametrizada com coeficientes científicos específicos do Paraná:",
         styles["Body"]
     ))
     story.append(Paragraph(
@@ -618,8 +620,8 @@ def build_pdf():
     story.append(Paragraph(
         "• <b>Fator K — Erodibilidade Pedológica do Solo (Decisão D14):</b><br/>"
         "Extraído diretamente do campo numérico `k_solos` da camada GeoServer oficial da Embrapa Solos (Doc. 246/2024; proveniência `tabelado`), "
-        "que mapeia os solos brasileiros segundo o SiBCS. Na Bacia do Paraná III, os Latossolos Vermelhos apresentam erodibilidade K na faixa de 0,0130 a 0,0170 Mg h MJ^-1 mm^-1, "
-        "enquanto os Nitossolos Vermelhos variam entre 0,0240 e 0,0280 Mg h MJ^-1 mm^-1. Por D08, a heurística taxonômica foi aposentada, utilizando-se a proveniência oficial tabelada.",
+        "que mapeia os solos brasileiros segundo o SiBCS. Na Bacia do Paraná III, os Latossolos Vermelhos apresentam erodibilidade K na faixa de 0,0130 a 0,0170 Mg h MJ⁻¹ mm⁻¹, "
+        "enquanto os Nitossolos Vermelhos variam entre 0,0240 e 0,0280 Mg h MJ⁻¹ mm⁻¹. Por D08, a heurística taxonômica foi aposentada, utilizando-se a proveniência oficial tabelada.",
         styles["BulletText"]
     ))
     story.append(Paragraph(
@@ -631,7 +633,7 @@ def build_pdf():
     ))
     story.append(Paragraph(
         "• <b>Fator C — Uso e Manejo da Terra (Decisões D01 e D20):</b><br/>"
-        "Calculado dinamicamente para cada época a partir do NDVI orbital pela equação tropical calibrada para biomas brasileiros por <b>Durigon et al. (2014)</b>: "
+        "Calculado dinamicamente para cada época a partir do NDVI orbital pela equação tropical calibrada para biomas brasileiros por <b>Durigon et al. (2014, IJRS)</b>: "
         "<b>C = (1 - NDVI) / 2</b>. Sob o regime de Sistema Plantio Direto (SPD; Decisão D20), o índice é modulado pelo Bare Soil Index (BSI) "
         "segundo C_hibrido = ((1 - NDVI) / 2) · (1 + BSI), restrito ao domínio biofísico fechado [0, 1].",
         styles["BulletText"]
@@ -663,17 +665,28 @@ def build_pdf():
         "o SAREL estabelece tetos rígidos para impedir o sobreajuste e a pseudorreplicação estatística:",
         styles["Body"]
     ))
-    story.append(Paragraph("• <b>Bloco Espectro-Temporal (Sentinel-2):</b> Teto de até <b>8 preditores</b> (~1.845 unidades espacialmente independentes nos 72 polígonos; regime estatístico plenamente adequado).", styles["BulletText"]))
+    story.append(Paragraph(
+        "A deflação estatística por autocorrelação espacial adota a área do bloco circular de correlação "
+        "<i>A<sub>bloco</sub> = &pi; &middot; (a/2)&sup2;</i>. Com o alcance prático pré-registrado <i>a &approx; 50 m</i> (P01; ROBERTS et al., 2017), "
+        "cada bloco ocupa &approx; 1.963,5 m&sup2; (0,19635 ha). A área total amostrada de 72 polígonos de 5,02 ha (361,27 ha) rende "
+        "<i>n<sub>ef</sub> = 361,27 / 0,19635 &approx; 1.841 unidades espacialmente independentes</i>. Para o conjunto de teste lacrado de 36 polígonos held-out (180,63 ha), "
+        "resultam <i>n<sub>ef</sub> &approx; 920 unidades efetivas independentes</i> (D16, D24, D25). "
+        "Para o terreno (Copernicus DEM 30 m nativo), o alcance geomorfológico mais suave (&approx; 100 m) deflaciona a área para ~396 unidades independentes. "
+        "Dessa fundamentação derivam os tetos rígidos de D24:",
+        styles["Body"]
+    ))
+    story.append(Spacer(1, 0.8 * mm))
+    story.append(Paragraph("• <b>Bloco Espectro-Temporal (Sentinel-2):</b> Teto de até <b>8 preditores</b> (~1.841 unidades espacialmente independentes nos 72 polígonos; regime estatístico plenamente adequado).", styles["BulletText"]))
     story.append(Paragraph("• <b>Bloco de Terreno (Copernicus DEM 30 m):</b> Teto de até <b>4 preditores</b> (~396 unidades independentes a 30 m; admitido por necessidade física com restrições de monotonicidade).", styles["BulletText"]))
-    story.append(Paragraph("• <b>Bloco de Solo (Embrapa Solos):</b> Teto de exatamente <b>1 preditor</b> (a erodibilidade K oficial `k_solos`; ordem pedológica aposentada por D08).", styles["BulletText"]))
-    story.append(Paragraph("• <b>Bloco de Chuva (CHIRPS Regional):</b> Teto de exatamente <b>1 preditor</b> (o fator R de erosividade anual).", styles["BulletText"]))
+    story.append(Paragraph("• <b>Bloco de Solo (Embrapa Solos):</b> Teto de exatamente <b>1 preditor</b> (a erodibilidade K oficial `k_solos`; 72 unidades nominais, sem ganho efetivo intra-polígono).", styles["BulletText"]))
+    story.append(Paragraph("• <b>Bloco de Chuva (CHIRPS Regional):</b> Teto de exatamente <b>1 preditor</b> (o fator R de erosividade anual regionalizada).", styles["BulletText"]))
     story.append(Paragraph("• <b>Teto Total na Matriz Preditora:</b> <b>No máximo 14 variáveis preditoras</b> (8 + 4 + 1 + 1 = 14; Decisão D24), com restrições físicas de monotonicidade positiva (`monotone_constraints`) impostas para declividade, erodibilidade e solo exposto.", styles["BulletText"]))
     story.append(Spacer(1, 1.0 * mm))
     story.append(Paragraph(
         "<b>Prevenção de Vazamento Espacial e Critério Pré-Registrado de Falsificabilidade (D25):</b><br/>"
         "Em conformidade com as diretrizes de reprodutibilidade em machine learning (PINEAU et al., 2021) e combate a vazamento de dados (PLOTON et al., 2020; KAPOOR; NARAYANAN, 2023), "
         "o treinamento adota <i>Spatial Block Cross-Validation</i> agrupada por polígono (<i>GroupKFold</i>). "
-        "A avaliação honesta final ocorre <b>exclusivamente uma única vez sobre os 36 polígonos mantidos em *held-out* lacrado</b> (cerca de 936 unidades efetivas independentes; D16). "
+        "A avaliação honesta final ocorre <b>exclusivamente uma única vez sobre os 36 polígonos mantidos em *held-out* lacrado</b> (cerca de 920 unidades efetivas independentes; D16, D25). "
         "Em cumprimento ao pré-registro (NOSEK et al., 2018), fixam-se <b>três desfechos epistemológicos formais</b> avaliados sob correlação de postos de Spearman e Bootstrap agrupado (CAMERON; GELBACH; MILLER, 2008):<br/>"
         "1. <b>Corroboração:</b> rho_XGBoost &ge; 0,40 E Delta rho = (rho_XGBoost - rho_RUSLE) &ge; 0,10 com p &lt; 0,05 (ganho substancial comprovado).<br/>"
         "2. <b>Refutação:</b> rho_XGBoost &lt; 0,40 OU limite inferior do IC 95% de Delta rho &le; 0 (modelo não supera o RUSLE ou não discrimina).<br/>"
@@ -778,7 +791,7 @@ def build_pdf():
     story.append(Spacer(1, 1.2 * mm))
     
     tab2_elements = [
-        Paragraph("<b>Tabela 2.</b> Especificação do Vetor de Preditores, Resolução Nativa e Proveniência (Decisões D06, D21, D24)", styles["BodyBold"]),
+        Paragraph("<b>Tabela 2.</b> Pool de Candidatos de Preditores, Resolução Nativa e Proveniência (Decisões D06, D21, D24)", styles["BodyBold"]),
         Spacer(1, 0.8 * mm)
     ]
     pred_data = [
@@ -790,14 +803,14 @@ def build_pdf():
             Paragraph("<b>Selo Proveniência</b>", styles["TableHeader"])
         ],
         [
-            Paragraph("<b>Espectro-Temporal</b><br/>(Máx. 8 variáveis)", styles["TableCellBold"]),
+            Paragraph("<b>Espectro-Temporal</b><br/>(Pool candidato; teto final &le; 8)", styles["TableCellBold"]),
             Paragraph("Bandas B2, B3, B4, B8, B11, B12; NDVI, BSI; Coeficientes harmônicos OLS (c0, c1, a1, b1); Frequência de solo nu (E_hat).", styles["TableCell"]),
             Paragraph("Sentinel-2 MSI L2A (BOA)", styles["TableCell"]),
             Paragraph("10 m e 20 m", styles["TableCell"]),
             Paragraph("[P-1] Medido", styles["TableCell"])
         ],
         [
-            Paragraph("<b>Morfometria Relevo</b><br/>(Máx. 4 variáveis)", styles["TableCellBold"]),
+            Paragraph("<b>Morfometria Relevo</b><br/>(Pool candidato; teto final &le; 4)", styles["TableCellBold"]),
             Paragraph("Declividade (3,0% a 20,0%), Orientação (Aspect), Curvatura de Perfil e Plano, Fator LS bidimensional.", styles["TableCell"]),
             Paragraph("Copernicus DEM GLO-30 (D21)", styles["TableCell"]),
             Paragraph("30 m nativo", styles["TableCell"]),
@@ -834,6 +847,14 @@ def build_pdf():
         ('PADDING', (0,0), (-1,-1), 1.6),
     ]))
     tab2_elements.append(t_pred)
+    tab2_elements.append(Spacer(1, 1.2 * mm))
+    tab2_elements.append(Paragraph(
+        "<b>Regra Pré-Registrada de Seleção do Vetor Final (Decisão D24):</b> As variáveis da Tabela 2 constituem o <i>pool de candidatos pré-registrado</i>. "
+        "A fixação do vetor final respeitando estritamente os tetos de D24 (máx. 8 espectro-temporais e máx. 4 de relevo) ocorre por critério objetivo de "
+        "importância de permutação e ganho de informação avaliado <i>exclusivamente dentro das dobras de validação cruzada aninhada sobre o conjunto de treino</i> (GroupKFold por polígono), "
+        "sendo estritamente vedado inspecionar o held-out lacrado para seleção de variáveis, prevenindo flexibilidade analítica (NOSEK et al., 2018).",
+        styles["Body"]
+    ))
     story.append(KeepTogether(tab2_elements))
     
     # Quebra limpa para a Página 9: Glossário Normativo Parte I (Decisões D01 a D14)
@@ -855,7 +876,7 @@ def build_pdf():
     
     decisoes_d01_d14 = [
         [Paragraph("<b>Código</b>", styles["TableHeader"]), Paragraph("<b>Título &amp; Parâmetro</b>", styles["TableHeader"]), Paragraph("<b>Resumo Normativo e Função Metodológica no SAREL</b>", styles["TableHeader"])],
-        [Paragraph("<b>D01</b>", styles["GlossaryCode"]), Paragraph("Fator C Tropical", styles["TableCellBold"]), Paragraph("C = (1 - NDVI) / 2 (Durigon et al., 2014) mapeado dinamicamente a partir do NDVI da série Sentinel-2 L2A.", styles["TableCell"])],
+        [Paragraph("<b>D01</b>", styles["GlossaryCode"]), Paragraph("Fator C Tropical", styles["TableCellBold"]), Paragraph("C = (1 - NDVI) / 2 (Durigon et al., 2014, IJRS) mapeado dinamicamente a partir do NDVI da série Sentinel-2 L2A.", styles["TableCell"])],
         [Paragraph("<b>D02</b>", styles["GlossaryCode"]), Paragraph("Triagem de Candidatos", styles["TableCellBold"]), Paragraph("Critérios observacionais de presente/ausente e negativo explícito para triagem visual; não constitui rótulo de treino.", styles["TableCell"])],
         [Paragraph("<b>D03</b>", styles["GlossaryCode"]), Paragraph("Escala do Rótulo de Campo", styles["TableCellBold"]), Paragraph("Coleta ordinal com binarização declarada para compatibilidade de anotação presencial.", styles["TableCell"])],
         [Paragraph("<b>D04</b>", styles["GlossaryCode"]), Paragraph("Modelos D e P", styles["TableCellBold"]), Paragraph("Distinção formal entre Modelo D (detecção pós-evento) e Modelo P (predição prospectiva de suscetibilidade).", styles["TableCell"])],
@@ -863,11 +884,11 @@ def build_pdf():
         [Paragraph("<b>D06</b>", styles["GlossaryCode"]), Paragraph("Suporte Espacial Nativo", styles["TableCellBold"]), Paragraph("Unidade de análise fixada na célula de 10 m do Sentinel-2; proibição de reamostragem espúria de insumos mais grossos.", styles["TableCell"])],
         [Paragraph("<b>D07</b>", styles["GlossaryCode"]), Paragraph("Domínio de Validade Físico", styles["TableCellBold"]), Paragraph("Declividade estritamente entre 3,0% e 20,0% (SiBCS); WorldCover classes 30 e 40 com concordância entre v100 e v200.", styles["TableCell"])],
         [Paragraph("<b>D08</b>", styles["GlossaryCode"]), Paragraph("Associações de Solo", styles["TableCellBold"]), Paragraph("Ambiguidade de K em unidades de associação resolvida na fonte oficial (Embrapa Solos 2024); heurística taxonômica aposentada.", styles["TableCell"])],
-        [Paragraph("<b>D09</b>", styles["GlossaryCode"]), Paragraph("Corte Ordinal de K̂", styles["TableCellBold"]), Paragraph("Partição em 2 níveis de K̂: Nível 1 (K <= 0,0285) e Nível 2 (K >= 0,0300 Mg h MJ^-1 mm^-1).", styles["TableCell"])],
+        [Paragraph("<b>D09</b>", styles["GlossaryCode"]), Paragraph("Corte Ordinal de K̂", styles["TableCellBold"]), Paragraph("Partição em 2 níveis de K̂: Nível 1 (K <= 0,0285) e Nível 2 (K >= 0,0300 Mg h MJ⁻¹ mm⁻¹).", styles["TableCell"])],
         [Paragraph("<b>D10</b>", styles["GlossaryCode"]), Paragraph("Limiar de Solo Exposto", styles["TableCellBold"]), Paragraph("NDVI <= 0,25 para classificação de solo nu em solos agrícolas tropicais (calibração GEOS3/ESALQ-USP).", styles["TableCell"])],
         [Paragraph("<b>D11</b>", styles["GlossaryCode"]), Paragraph("Cobertura Temporal Mínima", styles["TableCellBold"]), Paragraph("Número mínimo de observações orbitais válidas para validação de métricas de série temporal decenal.", styles["TableCell"])],
         [Paragraph("<b>D12</b>", styles["GlossaryCode"]), Paragraph("Estratificação Multivariada", styles["TableCellBold"]), Paragraph("18 estratos canônicos pelo produto fatorial Ŝ (3 tercis) x Ê (3 tercis) x K̂ (2 níveis), com Spatial Thinning r >= 1,0 km.", styles["TableCell"])],
-        [Paragraph("<b>D13</b>", styles["GlossaryCode"]), Paragraph("Fator R Regionalizado", styles["TableCellBold"]), Paragraph("Equação regional do Paraná por Rufino et al. (1993) e Waltrick et al. (2010) sobre totais mensais CHIRPS v2.0.", styles["TableCell"])],
+        [Paragraph("<b>D13</b>", styles["GlossaryCode"]), Paragraph("Fator R Regionalizado", styles["TableCellBold"]), Paragraph("Equação da Região 1 do Paraná por Rufino et al. (1993) convertida ao SI por Waltrick (2010; 2015) via g=9,81 sobre CHIRPS v2.0.", styles["TableCell"])],
         [Paragraph("<b>D14</b>", styles["GlossaryCode"]), Paragraph("Fator K Numérico", styles["TableCellBold"]), Paragraph("Extraído diretamente do campo numérico k_solos da carta oficial da Embrapa Solos (Doc. 246/2024; proveniência tabelado).", styles["TableCell"])],
     ]
     t_d1 = Table(decisoes_d01_d14, colWidths=[16 * mm, 42 * mm, 112 * mm])
@@ -896,7 +917,7 @@ def build_pdf():
         [Paragraph("<b>D17</b>", styles["GlossaryCode"]), Paragraph("Alocação Cota PlanetScope", styles["TableCellBold"]), Paragraph("Gestão racional de quotas PlanetScope entre download de mosaicos de evento e visualização de tiles.", styles["TableCell"])],
         [Paragraph("<b>D18</b>", styles["GlossaryCode"]), Paragraph("Buffer PlanetScope", styles["TableCellBold"]), Paragraph("Área de amortecimento padronizada ao redor dos sítios amostrais para contextualização de vizinhança.", styles["TableCell"])],
         [Paragraph("<b>D19</b>", styles["GlossaryCode"]), Paragraph("Pares de Evento de Chuva", styles["TableCellBold"]), Paragraph("Reescrita do evento de chuva extrema em escala de polígono para análise secundária de gatilhos hidrológicos.", styles["TableCell"])],
-        [Paragraph("<b>D20</b>", styles["GlossaryCode"]), Paragraph("Fator C Híbrido SPD", styles["TableCellBold"]), Paragraph("Equação de Durigon et al. (2014) modulada pelo BSI sob Sistema Plantio Direto: C = ((1 - NDVI)/2) * (1 + BSI).", styles["TableCell"])],
+        [Paragraph("<b>D20</b>", styles["GlossaryCode"]), Paragraph("Fator C Híbrido SPD", styles["TableCellBold"]), Paragraph("Equação de Durigon et al. (2014, IJRS) modulada pelo BSI sob Sistema Plantio Direto: C = ((1 - NDVI)/2) * (1 + BSI).", styles["TableCell"])],
         [Paragraph("<b>D21</b>", styles["GlossaryCode"]), Paragraph("Modelo Digital Elevação", styles["TableCellBold"]), Paragraph("Copernicus DEM GLO-30 (ESA) na resolução nativa de 30 m em projeção métrica conforme SIRGAS 2000 UTM 22S.", styles["TableCell"])],
         [Paragraph("<b>D22</b>", styles["GlossaryCode"]), Paragraph("Fator P Estratificado", styles["TableCellBold"]), Paragraph("Fator P fixado em 1,0 na escala de bacia; refinado por observação de práticas conservacionistas estratificadas por declividade em campo.", styles["TableCell"])],
         [Paragraph("<b>D23</b>", styles["GlossaryCode"]), Paragraph("Regime Amostral com π_i", styles["TableCellBold"]), Paragraph("Estratificação desproporcional com probabilidade de inclusão π_i registrada para viabilizar inferência de Olofsson et al. (2014).", styles["TableCell"])],
@@ -971,8 +992,8 @@ def build_pdf():
         "CAMERON, A. C.; GELBACH, J. B.; MILLER, D. L. Bootstrap-based improvements for inference with clustered errors. <b>The Review of Economics and Statistics</b>, Cambridge, v. 90, n. 3, p. 414-427, 2008. DOI: 10.1162/rest.90.3.414.",
         "CHEN, T.; GUESTRIN, C. XGBoost: A scalable tree boosting system. In: ACM SIGKDD INTERNATIONAL CONFERENCE ON KNOWLEDGE DISCOVERY AND DATA MINING, 22., 2016, San Francisco. <b>Proceedings...</b> New York: ACM, 2016. p. 785-794. DOI: 10.1145/2939672.2939785. [Arquivo local: `1603.02754v3.pdf`]",
         "DESMET, P. J. J.; GOVERS, G. A GIS procedure for automatically calculating the USLE LS factor on topographically complex landscape units. <b>Journal of Soil and Water Conservation</b>, Ankeny, v. 51, n. 5, p. 427-433, 1996. [Arquivo local: `desmet_govers_1996_jswc.pdf`]",
-        "DURIGON, C. A.; CARVALHO JÚNIOR, O. A. de; ANTUNES, M. A. H.; OLIVEIRA, S. N. de; MARTINS, E. S. Índices de vegetação derivados do sensor MODIS para o cálculo do fator C da Equação Universal de Perdas de Solo em biomas brasileiros. <b>Revista Brasileira de Ciência do Solo</b>, Viçosa, v. 38, n. 6, p. 1814-1824, 2014. DOI: 10.1590/S0100-06832014000600016.",
-        "EMBRAPA SOLOS. <b>Sistema brasileiro de classificação de solos</b>. 5. ed. Brasília, DF: Embrapa, 2018. 356 p. [SiBCS Oficial: Classes de Relevo Suave-Ondulado e Ondulado].",
+        "DURIGON, V. L.; CARVALHO, D. F.; ANTUNES, M. A. H.; OLIVEIRA, P. T. S.; FERNANDES, M. M. NDVI time series for monitoring RUSLE cover management factor in a tropical watershed. <b>International Journal of Remote Sensing</b>, London, v. 35, n. 2, p. 441-453, 2014. DOI: 10.1080/01431161.2013.871081. [Arquivo local: `Durigon_etal_2014.pdf`]",
+        "SANTOS, H. G. dos; JACOMINE, P. K. T.; ANJOS, L. H. C. dos; OLIVEIRA, V. Á. de; LUMBRERAS, J. F.; COELHO, M. R. et al. <b>Sistema brasileiro de classificação de solos</b>. 5. ed. rev. e ampl. Brasília, DF: Embrapa Solos, 2018. 356 p. [SiBCS Oficial: Classes de Relevo Suave-Ondulado e Ondulado].",
         "EMBRAPA SOLOS. <b>Fatores de erodibilidade (Fator K) para solos brasileiros segundo o Sistema Brasileiro de Classificação de Solos (SiBCS)</b>. Rio de Janeiro: Embrapa Solos, 2024. 42 p. (Documentos / Embrapa Solos, 246). [Arquivo local: `CNPS-DOC-246-2024.pdf`]",
         "KAPOOR, S.; NARAYANAN, A. Leakage and the reproducibility crisis in machine-learning-based science. <b>Patterns (Cell Press)</b>, Cambridge, v. 4, n. 9, 100804, 2023. DOI: 10.1016/j.patter.2023.100804. [Arquivo local: `mmc2.pdf`]",
         "KRUG, E. T. S. <b>Estimativa de perda de solo por erosão laminar em função de suas características e diferentes níveis de precipitação</b>. 2024. 88 f. Dissertação (Mestrado em Tecnologias Computacionais para o Agronegócio) — Universidade Tecnológica Federal do Paraná, Câmpus Medianeira, 2024. (Orientador: Prof. Dr. Claudio Leones Bazzi). [Arquivo local: `estimativaerosaolaminar.pdf`]",
