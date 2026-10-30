@@ -40,6 +40,7 @@ export function GraficoSerieTemporal({
   modeloAtivo,
   onModeloChange,
   dataReferencia,
+  // permitido: GOV-5-DESTRUTURACAO-PROVISORIA intervaloGuardaMeses valor default para visualizacao do grafico
   intervaloGuardaMeses = 12,
   diagnosticoPersistencia,
 }: GraficoSerieTemporalProps) {

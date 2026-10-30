@@ -64,6 +64,7 @@ export function calcularFatorC(ndvi: number, bsi?: number): number {
       throw new ErroForaDoDominio(`BSI ${bsi} fora do domínio biofísico [-1, 1].`);
     }
   }
+  // permitido: EXC-LIB-RUSLE-FATORC-BSINUM fallback neutro para formula base da RUSLE quando bsi omitido
   const bsiNum = bsi !== undefined ? bsi : 0;
   const c = ((1 - ndvi) / 2) * (1 + bsiNum);
   if (!Number.isFinite(c) || c < 0 || c > 1) {

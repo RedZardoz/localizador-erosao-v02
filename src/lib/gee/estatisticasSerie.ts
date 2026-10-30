@@ -54,6 +54,7 @@ export function calcularPercentilOrdenado(ordenados: number[], percentil: number
 export function calcularEstatisticasBanda(
   cenas: ObservacaoCena[],
   banda: NomeBandaEspectral,
+  // permitido: GOV-5-DESTRUTURACAO-PROVISORIA nMinimo piso amostral minimo para calculo de estatisticas de banda
   nMinimo = 3
 ): EstatisticasBanda {
   const valores: number[] = [];

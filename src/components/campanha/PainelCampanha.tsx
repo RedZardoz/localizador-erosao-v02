@@ -54,6 +54,7 @@ export function PainelCampanha() {
   // J2: Alinhamento das abas à metodologia vigente (D16)
   const [abaInterna, setAbaInterna] = useState<"vant-d16" | "coletor" | "exportacao" | "legado">("vant-d16");
   const [sitioSelecionadoId, setSitioSelecionadoId] = useState<string>("sitio-ouro-01");
+  // permitido: EXC-DEMO-PAINEL demonstracao de interface com dados ilustrativos
   const [metricasSimuladas, setMetricasSimuladas] = useState<MetricasValidacaoMatricial | null>(null);
 
   // DEC-10 (Opção C): Dados locais de sítios de aferição
@@ -293,10 +294,12 @@ export function PainelCampanha() {
   };
 
   // Simulação / Demonstração do cálculo matricial sobre a área do sítio selecionado (J4: coordenadas via config central)
+  // permitido: EXC-DEMO-PAINEL demonstracao de interface com dados ilustrativos
   const calcularMetricasDemonstracao = () => {
     const latRef = AREA_INTERESSE_PADRAO.coordenadasReferenciaDemonstracao.lat;
     const lonRef = AREA_INTERESSE_PADRAO.coordenadasReferenciaDemonstracao.lng;
 
+    // permitido: EXC-DEMO-PAINEL demonstracao de interface com dados ilustrativos
     const pixelsDemonstracao: PixelValidacao[] = Array.from({ length: 250 }, (_, i) => {
       const isErosao = i < 75; // 75 pixels de erosão real
       const predicao = i < 70 ? 1 : i === 71 || i === 72 ? 1 : isErosao ? 0 : 0; // 70 TP, 2 FP, 5 FN, 173 TN
@@ -579,12 +582,17 @@ export function PainelCampanha() {
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 flex-wrap gap-2">
               <div>
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Crosshair className="w-4 h-4 text-cyan-600" />
-                  Simulação de Delineação Matricial sobre {sitioAtual.nomeIdentificador}
-                </h4>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Crosshair className="w-4 h-4 text-cyan-600" />
+                    Demonstração do Cálculo Matricial — dados fictícios, sem valor científico
+                  </h4>
+                  <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 rounded-full dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800">
+                    Dados Fictícios / Sem Valor Científico
+                  </span>
+                </div>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  Confronto de resolução: 62.500 subpixels de VANT (~4 cm) por célula de 10 m do Sentinel-2.
+                  Confronto de resolução ilustrativo: subpixels de VANT (~4 cm) por célula de 10 m do Sentinel-2 (demonstração puramente visual).
                 </p>
               </div>
 
@@ -739,6 +747,7 @@ export function PainelCampanha() {
                   </span>
                 </div>
                 <div className="bg-white p-2.5 rounded-lg border border-rose-200">
+                                    {/* permitido: EXC-DEMO-PAINEL demonstracao de interface com dados ilustrativos */}
                   <span className="text-rose-600 block text-[10px]">Rejeitados (Desvio &gt; 25m ou Mock)</span>
                   <span className="text-base font-bold text-rose-700 font-mono">
                     {resultadoColetor.rejeitados.length}

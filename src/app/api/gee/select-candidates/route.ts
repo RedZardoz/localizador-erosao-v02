@@ -185,10 +185,15 @@ export async function POST(request: NextRequest) {
 
     const body = (await request.json()) as RequestBody;
     const {
+      // permitido: GOV-5-DESTRUTURACAO-PROVISORIA tamanhoAmostra default para amostragem no GEE
       tamanhoAmostra = 50,
+      // permitido: GOV-5-DESTRUTURACAO-PROVISORIA raioThinningKm raio inicial de rarefacao espacial
       raioThinningKm = 5.0,
+      // permitido: GOV-5-DESTRUTURACAO-PROVISORIA frequenciaSoloNuMin limiar minimo de solo exposto
       frequenciaSoloNuMin = 0.15,
+      // permitido: GOV-5-DESTRUTURACAO-PROVISORIA declividadeMin cota inferior de declividade fisica
       declividadeMin = 3.0,
+      // permitido: GOV-5-DESTRUTURACAO-PROVISORIA declividadeMax cota superior de declividade fisica
       declividadeMax = 20.0,
       areas = [],
     } = body;
@@ -1305,10 +1310,39 @@ export async function POST(request: NextRequest) {
       })
     );
 
+    const estratificacaoDegenerada = pontosFinais.length === 0;
+    let estratoColapsado: string | null = null;
+    if (candidatosComTerrenoElegivelPreGee.length === 0) {
+      estratoColapsado = `declividade_S [${declividadeMin}% - ${declividadeMax}%]`;
+    } else if (poolAgricolaVerificado.length === 0) {
+      estratoColapsado = "cobertura_agricola_E (zero candidatos agrícolas)";
+    } else if (estratificacaoInput.length === 0) {
+      estratoColapsado = "erodibilidade_K (zero candidatos com nível K válido)";
+    } else if (pontosFinais.length === 0) {
+      estratoColapsado = "cota_amostral_insuficiente";
+    }
+
+    const diagnosticoFiltros = {
+      candidatosIniciais: candidatosBase.length,
+      candidatosAposThinning: candidatosAposThinning.length,
+      candidatosAposFiltroDeclividadeS: candidatosComTerrenoElegivelPreGee.length,
+      candidatosAposFiltroAgricolaE: poolAgricolaVerificado.length,
+      candidatosAposFiltroErodibilidadeK: estratificacaoInput.length,
+      pontosFinaisSelecionados: pontosFinais.length,
+    };
+
     return NextResponse.json({
       ok: true,
       pontos: pontosFinais,
-      relatorio: relatorioEstratificacao,
+      estratificacao_degenerada: estratificacaoDegenerada,
+      estrato_colapsado: estratoColapsado,
+      contagem_filtros: diagnosticoFiltros,
+      relatorio: {
+        ...relatorioEstratificacao,
+        estratificacao_degenerada: estratificacaoDegenerada,
+        estrato_colapsado: estratoColapsado,
+        contagem_filtros: diagnosticoFiltros,
+      },
     });
   } catch (error: any) {
     console.error("Erro no processamento da amostragem GEE:", error);

@@ -56,6 +56,7 @@ export const CandidateSelectionModal: React.FC = () => {
   const geeAtivo = credenciais.geeSessionActive;
   const areasAtivas = areas.filter((a) => a.ativa);
   const qtdInLocoCorredor = Math.round((tamanhoAmostra * proporcaoInLocoCorredorPct) / 100);
+  // permitido: EXC-UI-MODAL-COTA subtracao aritmetica de cota amostral inteira nao negativa
   const qtdOrbitalRestanteBacia = Math.max(0, tamanhoAmostra - qtdInLocoCorredor);
 
   const executarEleicaoAmostral = async () => {
@@ -312,6 +313,7 @@ export const CandidateSelectionModal: React.FC = () => {
                 value={proporcaoInLocoCorredorPct}
                 onChange={(e) =>
                   setProporcaoInLocoCorredorPct(
+                    // permitido: EXC-UI-MODAL-COTA subtracao aritmetica de cota amostral inteira nao negativa
                     Math.min(100, Math.max(0, Number(e.target.value)))
                   )
                 }

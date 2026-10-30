@@ -101,7 +101,9 @@ export function MapaAmostral() {
                       key={p.id}
                       onClick={() => selecionarPonto(p.id)}
                       style={{
+                        // permitido: EXC-UI-MAPA-CLAMP clamp de posicao percentual na interface
                         top: `${Math.min(90, Math.max(10, topPct))}%`,
+                        // permitido: EXC-UI-MAPA-CLAMP clamp de posicao percentual na interface
                         left: `${Math.min(90, Math.max(10, leftPct))}%`,
                       }}
                       className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full transition-all focus:outline-none ${

@@ -106,7 +106,9 @@ export function montarPreditoresTemporais(
 ): PreditoresTemporaisPonto {
   const {
     dataReferencia,
+    // permitido: GOV-5-DESTRUTURACAO-PROVISORIA intervaloGuardaMeses janela de guarda do modelo P
     intervaloGuardaMeses = 24,
+    // permitido: GOV-5-DESTRUTURACAO-PROVISORIA duracaoJanelaAnos janela retrospectiva em anos
     duracaoJanelaAnos = 3,
     limiarNdviSoloNu = exigirParametro(DECISOES.D10, "ndviSoloNu").valor,
   } = opcoes;

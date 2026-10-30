@@ -188,9 +188,11 @@ export const ApresentacaoSpotlight: React.FC<ApresentacaoSpotlightProps> = () =>
         <div
           className="absolute transition-all duration-300 pointer-events-auto"
           style={{
+            // permitido: EXC-UI-SPOTLIGHT-CLAMP clamp de coordenadas de tela para spotlight
             left: Math.max(16, Math.min(window.innerWidth - 320, rect.left + rect.width / 2 - 140)),
             top: indicadorAbaixo
               ? rect.bottom + 14
+              // permitido: EXC-UI-SPOTLIGHT-CLAMP clamp de coordenadas de tela para spotlight
               : Math.max(10, rect.top - 46),
           }}
         >

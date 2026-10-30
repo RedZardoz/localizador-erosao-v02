@@ -143,6 +143,7 @@ export interface RespostaSubmissaoPlanet {
   orderId: string;
   status: "queued" | "running" | "failed" | "cota-esgotada";
   areaFaturadaKm2: number;
+  simulado?: boolean;
 }
 
 /**
@@ -170,10 +171,12 @@ export async function submeterPedidoPlanet(
       orderId: res.orderId,
       status: res.status as "queued" | "running",
       areaFaturadaKm2: pedidoPronto.areaEstimadaKm2,
+      simulado: false,
     };
   }
 
   // Modo offline / simulação controlada
+  // permitido: EXC-FALLBACK-OFFLINE fallback para desenvolvimento local sem chave Planet
   const idSimulado = `SIMULATED-ORDER-${Date.now()}`;
   gerenciadorCota.registrarConsumoDownload(
     pedidoPronto.areaEstimadaKm2,
@@ -185,5 +188,7 @@ export async function submeterPedidoPlanet(
     orderId: idSimulado,
     status: "queued",
     areaFaturadaKm2: pedidoPronto.areaEstimadaKm2,
+    // permitido: EXC-FALLBACK-OFFLINE fallback para desenvolvimento local sem chave Planet
+    simulado: true,
   };
 }
