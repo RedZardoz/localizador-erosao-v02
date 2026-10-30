@@ -11,9 +11,16 @@ export interface ViolacaoInvariante {
   detalhes?: unknown;
 }
 
+export interface IsencaoInvariante {
+  invariante: number;
+  coluna: string;
+  motivo: string;
+}
+
 export interface ResultadoValidacaoInvariantes {
   valido: boolean;
   violacoes: ViolacaoInvariante[];
+  isencoes?: IsencaoInvariante[];
 }
 
 export const LISTA_NEGRA_LITERAIS_GEOGRAFICOS = [
@@ -320,18 +327,22 @@ export function validarInvariantesArtefato(artefato: ArtefatoProjetado): Resulta
     }
   }
 
+  const isencoes: IsencaoInvariante[] = [];
+
   // ==========================================================================
   // INVARIANTE 7: DETECTOR DE CONSTANTE DISFARÇADA
   // Nenhuma coluna numérica tem valor idêntico em 100% das linhas não vazias
   // quando há >= 21 valores não vazios.
   // Percorre TODAS as colunas numéricas do artefato projetado.
   // Valores vazios NÃO desativam o detector.
-  // Exceção: colunas tabeladas legítimas da RUSLE (ex.: RUSLE_Fator_P = 1.0)
+  // Exceção: colunas formalmente anotadas como "tabelado (" na coluna irmã <col>_Origem.
+  // Fallback: lista nominal de exceções prévias SOMENTE quando o perfil não projeta colunas de proveniência.
   // ==========================================================================
   for (const col of cabecalho) {
-    if ((COLUNAS_EXCECAO_CONSTANTE_TABELADA as readonly string[]).includes(col)) {
+    if (col.endsWith("_Origem") || col.endsWith("_origem")) {
       continue;
     }
+
     const valoresNaoVazios: number[] = [];
     for (const linha of linhas) {
       const v = linha[col];
@@ -344,6 +355,50 @@ export function validarInvariantesArtefato(artefato: ArtefatoProjetado): Resulta
       const primeiro = valoresNaoVazios[0];
       const todosIdenticos = valoresNaoVazios.every((v) => Math.abs(v - primeiro) < 1e-9);
       if (todosIdenticos) {
+        const colOrigem = cabecalho.find(
+          (c) => c.toLowerCase() === `${col}_origem`.toLowerCase()
+        );
+
+        if (colOrigem) {
+          const origensNaoVazias: string[] = [];
+          for (const linha of linhas) {
+            const v = linha[col];
+            if (v !== undefined && v !== null && v !== "" && typeof v === "number" && !isNaN(v)) {
+              const orig = String(linha[colOrigem] ?? "").trim();
+              if (orig !== "") {
+                origensNaoVazias.push(orig);
+              }
+            }
+          }
+
+          const todasTabeladas =
+            origensNaoVazias.length > 0 &&
+            origensNaoVazias.every((orig) => orig.toLowerCase().startsWith("tabelado ("));
+
+          if (todasTabeladas) {
+            isencoes.push({
+              invariante: 7,
+              coluna: col,
+              motivo: `Isenção do Invariante 7 concedida: coluna irmã '${colOrigem}' possui proveniência formalmente tabelada em todas as observações ('${origensNaoVazias[0]}').`,
+            });
+            continue;
+          }
+        } else {
+          const permitidasPerfil = obterColunasPermitidas(perfil);
+          const perfilProjetaOrigem = permitidasPerfil.some(
+            (c) => c.toLowerCase() === `${col}_origem`.toLowerCase()
+          );
+
+          if (!perfilProjetaOrigem && (COLUNAS_EXCECAO_CONSTANTE_TABELADA as readonly string[]).includes(col)) {
+            isencoes.push({
+              invariante: 7,
+              coluna: col,
+              motivo: `Isenção de fallback do Invariante 7 concedida: coluna '${col}' permitida no perfil '${perfil}' onde a proveniência não é projetada.`,
+            });
+            continue;
+          }
+        }
+
         violacoes.push({
           invariante: 7,
           nome: "Detector de Constante Disfarçada",
@@ -586,6 +641,7 @@ export function validarInvariantesArtefato(artefato: ArtefatoProjetado): Resulta
   return {
     valido: violacoes.length === 0,
     violacoes,
+    isencoes,
   };
 }
 

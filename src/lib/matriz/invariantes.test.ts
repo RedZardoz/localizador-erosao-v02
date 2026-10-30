@@ -138,21 +138,44 @@ describe("Invariantes de Exportação — Validações e Meta-Testes", () => {
       expect(res.violacoes.some((v) => v.invariante === 7)).toBe(true);
     });
 
-    it("permite RUSLE_Fator_P constante (1.0) por ser valor tabelado legítimo (Renard et al. 1997)", () => {
+    it("permite RUSLE_Fator_P constante (1.0) quando acompanhado de proveniência tabelada (Renard et al. 1997)", () => {
       const linhas = Array.from({ length: 25 }, (_, i) => ({
         Codigo: `PR-${String(i + 1).padStart(3, "0")}`,
         Declividade_pct: 5.0 + i * 0.5, // com variância natural
         RUSLE_Fator_P: 1.0,            // tabelado uniforme
+        RUSLE_Fator_P_Origem: "tabelado (Renard et al., 1997, práticas desconhecidas)",
       }));
 
       const artefato: ArtefatoProjetado = {
         perfil: "planilha",
-        cabecalho: ["Codigo", "Declividade_pct", "RUSLE_Fator_P"],
+        cabecalho: ["Codigo", "Declividade_pct", "RUSLE_Fator_P", "RUSLE_Fator_P_Origem"],
         linhas,
       };
 
       const res = validarInvariantesArtefato(artefato);
       expect(res.violacoes.some((v) => v.invariante === 7)).toBe(false);
+      expect(res.isencoes?.some((i) => i.coluna === "RUSLE_Fator_P")).toBe(true);
+    });
+
+    it("permite RUSLE_Fator_P constante (1.0) no perfil linha-de-base-rusle por fallback explícito sem coluna de origem projetada", () => {
+      const linhas = Array.from({ length: 25 }, (_, i) => ({
+        Celula_ID: `C-${i + 1}`,
+        RUSLE_Fator_R: 8000 + i * 10,
+        RUSLE_Fator_LS: 2.0 + i * 0.1,
+        RUSLE_Fator_C: 0.1 + i * 0.01,
+        RUSLE_Fator_P: 1.0,
+        RUSLE_A: 20.0 + i,
+      }));
+
+      const artefato: ArtefatoProjetado = {
+        perfil: "linha-de-base-rusle",
+        cabecalho: ["Celula_ID", "RUSLE_Fator_R", "RUSLE_Fator_LS", "RUSLE_Fator_C", "RUSLE_Fator_P", "RUSLE_A"],
+        linhas,
+      };
+
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.violacoes.some((v) => v.invariante === 7)).toBe(false);
+      expect(res.isencoes?.some((i) => i.coluna === "RUSLE_Fator_P")).toBe(true);
     });
   });
 
@@ -347,6 +370,52 @@ describe("Invariantes de Exportação — Validações e Meta-Testes", () => {
       };
       const res = validarInvariantesArtefato(artefato);
       expect(res.violacoes.some((v) => v.invariante === 6)).toBe(false);
+    });
+  });
+
+  describe("Invariante 7: Cruzamento de Proveniência Tabelada (Item 7)", () => {
+    it("bloqueia coluna RUSLE_Fator_P com _Origem não tabelada e variância zero", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "planilha",
+        cabecalho: ["Codigo", "RUSLE_Fator_P", "RUSLE_Fator_P_Origem"],
+        linhas: Array.from({ length: 25 }, () => ({
+          Codigo: "PR-001",
+          RUSLE_Fator_P: 1.0,
+          RUSLE_Fator_P_Origem: "modelado (arbitrário)",
+        })),
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.valido).toBe(false);
+      expect(res.violacoes.some((v) => v.invariante === 7)).toBe(true);
+    });
+
+    it("aprova coluna RUSLE_Fator_K com _Origem tabelada e variância zero", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "planilha",
+        cabecalho: ["Codigo", "RUSLE_Fator_K", "RUSLE_Fator_K_Origem"],
+        linhas: Array.from({ length: 25 }, () => ({
+          Codigo: "PR-001",
+          RUSLE_Fator_K: 0.015,
+          RUSLE_Fator_K_Origem: "tabelado (Doc 246 Embrapa Solos, 2024)",
+        })),
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.violacoes.some((v) => v.invariante === 7)).toBe(false);
+      expect(res.isencoes?.some((i) => i.coluna === "RUSLE_Fator_K" && i.invariante === 7)).toBe(true);
+    });
+
+    it("bloqueia coluna sem _Origem e variância zero (comportamento conservador padrão)", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "planilha",
+        cabecalho: ["Codigo", "Declividade_pct"],
+        linhas: Array.from({ length: 25 }, () => ({
+          Codigo: "PR-001",
+          Declividade_pct: 12.0,
+        })),
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.valido).toBe(false);
+      expect(res.violacoes.some((v) => v.invariante === 7)).toBe(true);
     });
   });
 
