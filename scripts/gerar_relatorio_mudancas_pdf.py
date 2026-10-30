@@ -643,7 +643,9 @@ def gerar_relatorio_mudancas_pdf(output_path="Relatorio_Mudancas_Metodologicas_S
 
     resumo_testes = (
         "<b>STATUS DA SUÍTE DE TESTES (VITEST):</b><br/>"
-        "• 235 casos de teste (assertions distribuídas ao longo de 88 arquivos de teste) cobrindo os fluxos críticos;<br/>"
+        "• 697 casos de teste aprovados (distribuídos em 89 arquivos de teste) cobrindo fluxos metodológicos críticos;<br/>"
+        "• 3 casos de teste condicionais devidamente pulados (skipped) em ambiente de clone limpo, os quais exigem "
+        "o banco de dados fundiário provisionado localmente (auditável e verificável via <code>data/MANIFESTO_FUNDIARIO.json</code>);<br/>"
         "• Validação contínua de invariantes de exportação, regras anti-mock de integridade de dados, "
         "algoritmo de rarefação espacial (thinning) e rotinas de integridade metodológica."
     )

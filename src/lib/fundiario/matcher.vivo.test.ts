@@ -8,17 +8,9 @@ import {
 
 describe("matchRuralProperty (Testes Vivos com SQLite local)", () => {
   const dbPath = path.resolve(process.cwd(), "data/fundiario_brasil.db");
+  const baseDisponivel = fs.existsSync(dbPath);
 
-  beforeAll(() => {
-    if (!fs.existsSync(dbPath)) {
-      throw new Error(`dado local ausente: ${dbPath}`);
-    }
-  });
-
-  it("deve encontrar uma propriedade rural oficial indexada no SQLite local", async () => {
-    if (!fs.existsSync(dbPath)) {
-      throw new Error(`dado local ausente: ${dbPath}`);
-    }
+  it.skipIf(!baseDisponivel)("deve encontrar uma propriedade rural oficial indexada no SQLite local", async () => {
     // Coordenada real em Boa Ventura de São Roque / PR
     const result = await matchRuralProperty(-24.85, -51.5);
 
@@ -31,10 +23,7 @@ describe("matchRuralProperty (Testes Vivos com SQLite local)", () => {
     expect(result.propertyAreaHa).toBeGreaterThan(0);
   }, 25000);
 
-  it("deve retornar status sem-correspondencia para coordenada fora de qualquer perímetro cadastrado", async () => {
-    if (!fs.existsSync(dbPath)) {
-      throw new Error(`dado local ausente: ${dbPath}`);
-    }
+  it.skipIf(!baseDisponivel)("deve retornar status sem-correspondencia para coordenada fora de qualquer perímetro cadastrado", async () => {
     const result = await matchRuralProperty(0.0, 0.0);
 
     expect(result).toBeDefined();
@@ -42,10 +31,7 @@ describe("matchRuralProperty (Testes Vivos com SQLite local)", () => {
     expect(result.carCode).toBeUndefined();
   }, 25000);
 
-  it("deve executar batchMatchRuralProperties em lote com integridade de status", async () => {
-    if (!fs.existsSync(dbPath)) {
-      throw new Error(`dado local ausente: ${dbPath}`);
-    }
+  it.skipIf(!baseDisponivel)("deve executar batchMatchRuralProperties em lote com integridade de status", async () => {
     const batchItems = [
       { id: "pt-1", latitude: -25.568434, longitude: -53.524454, uf: "PR" },
       { id: "pt-2", latitude: -24.85, longitude: -51.5, uf: "PR" },

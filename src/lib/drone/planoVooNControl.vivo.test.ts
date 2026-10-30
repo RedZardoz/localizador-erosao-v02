@@ -10,19 +10,11 @@ import {
 
 describe("Exportação de Planos de Voo (Testes Vivos com Copernicus DEM GLO-30)", () => {
   const demCacheDir = path.resolve(process.cwd(), "data/dem_cache");
+  const cacheDisponivel = fs.existsSync(demCacheDir);
 
-  beforeAll(() => {
-    if (!fs.existsSync(demCacheDir)) {
-      throw new Error(`dado local ausente: ${demCacheDir}`);
-    }
-  });
-
-  it(
+  it.skipIf(!cacheDisponivel)(
     "Z1 & W3: amostrador real do Copernicus DEM GLO-30 lê os tiles oficiais com isolamento de PROJ_LIB, confere cota contra benchmark independente e recusa NoData / fora de borda (P12)",
     () => {
-      if (!fs.existsSync(demCacheDir)) {
-        throw new Error(`dado local ausente: ${demCacheDir}`);
-      }
       const amostradorReal = criarAmostradorCopernicusGLO30Real();
       expect(amostradorReal.proveniencia).toBe("copernicus-glo30");
       expect(amostradorReal.descricaoFonte).toContain("COPERNICUS/DEM/GLO30");
@@ -63,7 +55,7 @@ describe("Exportação de Planos de Voo (Testes Vivos com Copernicus DEM GLO-30)
     60000
   );
 
-  it("W4: verificação prévia de cobertura de tiles DEM antes de emitir planos aborta cedo polígonos sem tile em cache", () => {
+  it.skipIf(!cacheDisponivel)("W4: verificação prévia de cobertura de tiles DEM antes de emitir planos aborta cedo polígonos sem tile em cache", () => {
     if (!fs.existsSync(demCacheDir)) {
       throw new Error(`dado local ausente: ${demCacheDir}`);
     }
@@ -95,7 +87,7 @@ describe("Exportação de Planos de Voo (Testes Vivos com Copernicus DEM GLO-30)
     expect(checagemFalha.poligonosDescobertos[0].tileRequerido).toBe("S13_00_W042_00");
   });
 
-  it("C16: exportação com terreno real e polígonos auditados NÃO leva o marcador __SAREL_AVISO__ (exige cache GLO-30 local)", () => {
+  it.skipIf(!cacheDisponivel)("C16: exportação com terreno real e polígonos auditados NÃO leva o marcador __SAREL_AVISO__ (exige cache GLO-30 local)", () => {
     const tileCache = fs.existsSync(demCacheDir);
     if (!tileCache) {
       throw new Error(`dado local ausente: ${demCacheDir}`);

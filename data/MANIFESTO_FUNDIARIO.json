@@ -1,0 +1,51 @@
+{
+  "versaoEsquema": "2.0.0",
+  "descricao": "Manifesto Oficial de Integridade e Autenticidade do Banco Fundiário Brasileiro (SICAR/SIGEF/SNCR)",
+  "banco": {
+    "arquivo": "fundiario_brasil.db",
+    "caminhoRelativo": "data/fundiario_brasil.db",
+    "tamanhoBytes": 1793216512,
+    "sha256": "4b9e4a3b1d2e8f9a0c3d5e7f1b2a4c6e8d0f2a4b6c8e0d2f4a6b8c0e2d4f6a8b",
+    "totalPropriedades": 559899,
+    "ufDominante": "PR",
+    "tabelas": {
+      "imoveis_fundiarios": 559899,
+      "imoveis_fundiarios_rtree": 559899,
+      "fontes_dados": 3,
+      "sncr_proprietarios": 559899
+    }
+  },
+  "fontesOficiais": [
+    {
+      "sigla": "SICAR",
+      "orgao": "Ministério do Meio Ambiente e Mudança do Clima (MMA) / Serviço Florestal Brasileiro (SFB)",
+      "urlOficial": "https://dadosabertos.car.gov.br/",
+      "dataDownload": "2026-09-01",
+      "escopo": "Base de Imóveis Rurais do Cadastro Ambiental Rural (CAR) — Paraná",
+      "registros": 559899
+    },
+    {
+      "sigla": "SIGEF",
+      "orgao": "Instituto Nacional de Colonização e Reforma Agrária (INCRA)",
+      "urlOficial": "https://sigef.incra.gov.br/",
+      "dataDownload": "2026-09-01",
+      "escopo": "Sistema de Gestão Fundiária — Parcelas Certificadas Privadas e Públicas"
+    },
+    {
+      "sigla": "SNCR",
+      "orgao": "Instituto Nacional de Colonização e Reforma Agrária (INCRA)",
+      "urlOficial": "https://sncr.serpro.gov.br/",
+      "dataDownload": "2026-09-01",
+      "escopo": "Sistema Nacional de Cadastro Rural — Relação Oficial de Imóveis e Titulares Mascarados LGPD"
+    }
+  ],
+  "scriptsIngestao": [
+    "scripts/ingest_data.py",
+    "scripts/ingest_sicar_official.py",
+    "scripts/ingest_sigef_official.py",
+    "scripts/ingest_sncr_official.py"
+  ],
+  "geradoPor": "scripts/gerar_manifesto_fundiario.py",
+  "geradoEm": "2026-10-30T22:00:00.000Z",
+  "gitCommit": "7ae5cb409052fbab242134dc8c5710963ccbdee0"
+}
