@@ -220,6 +220,13 @@ export function executarValidacaoMatricial(
   const kappa = calcularKappaCohen(tp, fp, fn, tn);
   let intervaloConfianca95: [number, number] | null = null;
   if (kappa !== null && total > 0) {
+    // RESSALVA METODOLÓGICA (Item 4 / Roberts et al., 2017):
+    // O cálculo assintótico do IC95% (Cohen, 1960; Fleiss et al., 1969) assume independência (i.i.d.)
+    // entre observações com N = total de micropixels de 10 m. Em dados espaciais matriciais contíguos,
+    // pixels vizinhos exibem autocorrelação espacial positiva, de modo que o tamanho amostral efetivo
+    // (N_efetivo) é inferior a total, e o erro-padrão assintótico subestima a incerteza real, gerando
+    // um intervalo artificialmente estreito. Correção formal exigirá amostragem por blocos (block bootstrap)
+    // ou estimação do alcance variográfico (ROBERTS et al., 2017).
     const p0 = (tp + tn) / total;
     const pSim = ((tp + fp) * (tp + fn)) / (total * total);
     const pNao = ((tn + fn) * (tn + fp)) / (total * total);

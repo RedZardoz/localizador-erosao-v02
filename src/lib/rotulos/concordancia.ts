@@ -13,6 +13,14 @@
 
 import { ClasseRotulo, Rotulo, RotuloConsolidado } from "@/types/rotulo";
 
+/**
+ * Limiar mínimo para concordância substancial segundo Landis & Koch (1977).
+ * Exigido tanto para a estimativa pontual quanto para o limite inferior do IC95% (portão duplo).
+ * Referência: LANDIS, J. R.; KOCH, G. G. The measurement of observer agreement for categorical data.
+ * Biometrics, v. 33, n. 1, p. 159-174, 1977.
+ */
+export const LIMIAR_KAPPA_SUBSTANCIAL = 0.61;
+
 export type GrauConcordancia =
   | "pobre"
   | "leve"
@@ -132,7 +140,6 @@ export function calcularKappaCohen(
 
   const kappa = (po - pe) / (1 - pe);
   const grau = classificarLandisKoch(kappa);
-  const operacional = kappa >= 0.6;
 
   // Cálculo do Erro-Padrão (SE) e Intervalo de Confiança de 95% (Cohen, 1960; Fleiss et al., 1969)
   const varBruta = (po * (1 - po)) / (n * Math.pow(1 - pe, 2));
@@ -143,9 +150,20 @@ export function calcularKappaCohen(
   if (ciSuperior > 1) ciSuperior = 1;
   const intervaloConfianca95: [number, number] = [ciInferior, ciSuperior];
 
+  // Portão Duplo: tanto a estimativa pontual quanto o limite inferior do IC95% devem satisfazer κ >= 0.61
+  const passouPontual = kappa >= LIMIAR_KAPPA_SUBSTANCIAL;
+  const passouCiInferior = ciInferior >= LIMIAR_KAPPA_SUBSTANCIAL;
+  const operacional = passouPontual && passouCiInferior;
+
   let alertaBloqueante: string | undefined = undefined;
   if (!operacional) {
-    alertaBloqueante = `ALERTA BLOQUEANTE: Índice Kappa de Cohen (${kappa.toFixed(3)}, IC 95% [${ciInferior.toFixed(2)}, ${ciSuperior.toFixed(2)}]) inferior a 0.60 (patamar mínimo para concordância substancial segundo Landis & Koch, 1977).`;
+    if (!passouPontual && !passouCiInferior) {
+      alertaBloqueante = `ALERTA BLOQUEANTE: Índice Kappa de Cohen pontual (${kappa.toFixed(3)}) e limite inferior do IC 95% (${ciInferior.toFixed(3)}) inferiores a ${LIMIAR_KAPPA_SUBSTANCIAL.toFixed(2)} (patamar mínimo para concordância substancial segundo Landis & Koch, 1977; IC 95% [${ciInferior.toFixed(2)}, ${ciSuperior.toFixed(2)}]).`;
+    } else if (!passouPontual) {
+      alertaBloqueante = `ALERTA BLOQUEANTE: Índice Kappa de Cohen pontual (${kappa.toFixed(3)}) inferior a ${LIMIAR_KAPPA_SUBSTANCIAL.toFixed(2)} (patamar mínimo para concordância substancial segundo Landis & Koch, 1977; IC 95% [${ciInferior.toFixed(2)}, ${ciSuperior.toFixed(2)}]).`;
+    } else {
+      alertaBloqueante = `ALERTA BLOQUEANTE: Limite inferior do IC 95% do Kappa de Cohen (${ciInferior.toFixed(3)}) inferior a ${LIMIAR_KAPPA_SUBSTANCIAL.toFixed(2)}, apesar de estimativa pontual satisfatória (${kappa.toFixed(3)} >= ${LIMIAR_KAPPA_SUBSTANCIAL.toFixed(2)}). Amostra insuficiente ou variabilidade excessiva para garantir concordância substancial estrita (IC 95% [${ciInferior.toFixed(2)}, ${ciSuperior.toFixed(2)}]; Landis & Koch, 1977).`;
+    }
   }
 
   return {

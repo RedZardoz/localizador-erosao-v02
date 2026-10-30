@@ -4,6 +4,7 @@ import {
   classificarLandisKoch,
   resolverDivergencia,
   validarRotulo,
+  LIMIAR_KAPPA_SUBSTANCIAL,
 } from "./concordancia";
 import { ingestarSubmissoesKobo } from "./ingestaoKobo";
 import { ingestarInterpretacaoVisual } from "./ingestaoInterpretacao";
@@ -73,7 +74,7 @@ describe("Rotulagem, Concordância e Matriz de Treino (Fase 6 — SAREL)", () =>
       expect(sup).toBeLessThanOrEqual(1.0);
     });
 
-    it("emite alerta bloqueante quando Kappa é inferior a 0.60", () => {
+    it("emite alerta bloqueante quando Kappa pontual é inferior a 0.61", () => {
       const pares = [
         { observador1: "ausente", observador2: "severa" },
         { observador1: "moderada", observador2: "ausente" },
@@ -82,6 +83,43 @@ describe("Rotulagem, Concordância e Matriz de Treino (Fase 6 — SAREL)", () =>
       const res = calcularKappaCohen(pares, CLASSES_4);
       expect(res.operacional).toBe(false);
       expect(res.alertaBloqueante).toContain("ALERTA BLOQUEANTE");
+      expect(res.alertaBloqueante).toContain("inferiores a 0.61");
+    });
+
+    it("bloqueia (operacional: false) quando Kappa pontual >= 0.61 mas IC95 inferior < 0.61 (portão duplo)", () => {
+      // 8 observações: 6 concordâncias, Kappa pontual ~0.6279 (>= 0.61), mas com N=8 o IC inferior é ~0.18 (< 0.61)
+      const pares = [
+        { observador1: "ausente", observador2: "ausente" },
+        { observador1: "ausente", observador2: "ausente" },
+        { observador1: "moderada", observador2: "moderada" },
+        { observador1: "moderada", observador2: "severa" },
+        { observador1: "severa", observador2: "severa" },
+        { observador1: "severa", observador2: "severa" },
+        { observador1: "ausente", observador2: "moderada" },
+        { observador1: "moderada", observador2: "moderada" },
+      ];
+      const res = calcularKappaCohen(pares, CLASSES_4);
+      expect(res.kappa).toBeGreaterThanOrEqual(LIMIAR_KAPPA_SUBSTANCIAL);
+      expect(res.intervaloConfianca95![0]).toBeLessThan(LIMIAR_KAPPA_SUBSTANCIAL);
+      expect(res.operacional).toBe(false);
+      expect(res.alertaBloqueante).toContain("Limite inferior do IC 95% do Kappa de Cohen");
+      expect(res.alertaBloqueante).toContain("inferior a 0.61");
+      expect(res.alertaBloqueante).toContain("apesar de estimativa pontual satisfatória");
+    });
+
+    it("aprova (operacional: true) quando tanto Kappa pontual quanto limite inferior do IC95 são >= 0.61", () => {
+      // Concordância total em amostra distribuída gera Kappa = 1.0 e IC95 = [1.0, 1.0]
+      const pares = [
+        { observador1: "ausente", observador2: "ausente" },
+        { observador1: "moderada", observador2: "moderada" },
+        { observador1: "severa", observador2: "severa" },
+        { observador1: "ausente", observador2: "ausente" },
+      ];
+      const res = calcularKappaCohen(pares, CLASSES_4);
+      expect(res.kappa).toBe(1.0);
+      expect(res.intervaloConfianca95![0]).toBe(1.0);
+      expect(res.operacional).toBe(true);
+      expect(res.alertaBloqueante).toBeUndefined();
     });
 
     it("resolve divergência marcando pendente quando não há consenso", () => {
