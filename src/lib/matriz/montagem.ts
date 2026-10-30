@@ -348,7 +348,7 @@ export function montarMatrizTreino(
   assegurarSegregacaoTreino(linhas, heldOutDrone);
 
   // Verificação de segurança: checar se algum campo proibido vazou
-  for (const l of linhas) {
+  for (const l of [...linhas, ...heldOutDrone]) {
     for (const proibido of CAMPOS_PROIBIDOS_MATRIZ_TREINO) {
       if (proibido in l) {
         throw new Error(

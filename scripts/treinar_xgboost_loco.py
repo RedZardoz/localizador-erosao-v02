@@ -28,7 +28,9 @@ Fundamentação Teórica e Metodológica (Seções 5 e 6 do Método):
    - regularização L1 / L2 (reg_alpha=0.1, reg_lambda=1.0)
 2. Abordagem de Fusão de Dados e Física Informada:
    - Preditores: Bandas Espectrais (B2, B4, B8, B12), NDVI, BSI, Declividade,
-     Elevação, Fator K, Fator R e Perda RUSLE estimada (A).
+     Elevação, Fator K, Fator R, Curvatura, TWI.
+   - Circularidade Proibida: Perda de solo (RUSLE A) é target proibido e linha de
+     base independente (Decisões D01, D04, D11). NUNCA pode ser preditora.
    - Alvo binário Y: 1 (Erosão Laminar) vs 0 (Controle / SPD).
 3. Validação Cruzada Espacial por Blocos (Spatial K-Fold LOCO, K=5):
    - Isolamento geográfico estrito pelas 6 macrobacias hidrográficas do Paraná (IAT).
@@ -44,6 +46,7 @@ import sys
 import argparse
 import hashlib
 import json
+import re
 import sqlite3
 import numpy as np
 import pandas as pd
@@ -391,8 +394,6 @@ def balancear_com_pontos_controle(
             decliv = float(np.random.uniform(3.0, 14.0))
             # permitido: EXC-DRYRUN-SINTETICO-XGBOOST geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
             elev = float(np.random.uniform(350, 750))
-            # permitido: EXC-DRYRUN-SINTETICO-XGBOOST geracao explicita de benchmark de pipeline quando solicitado via flag dry-run
-            perda_solo_spd = float(np.random.uniform(0.5, 4.5))
 
             registros_controle.append({
                 'Codigo': f"CTRL-DRYRUN-{idx+1:04d}",
@@ -403,7 +404,6 @@ def balancear_com_pontos_controle(
                 'elevacao_m': round(elev, 0),
                 'bsi': round(bsi_spd, 3),
                 'ndvi': round(ndvi_spd, 3),
-                'rusle_perda_solo': round(perda_solo_spd, 2),
                 'Tipologia_Feicao': 'Controle / SPD (Dry-Run)',
                 'Classe_Alvo_Binaria': 0,
             })
@@ -461,9 +461,6 @@ def preparar_matriz_preditores(
         'NDVI_Vigor_Vegetal': 'ndvi',
         'NDVI': 'ndvi',
         'ndvi': 'ndvi',
-        'Perda_Solo_t_ha_ano': 'rusle_perda_solo',
-        'RUSLE_Perda_Solo': 'rusle_perda_solo',
-        'perdaSoloRUSLE': 'rusle_perda_solo',
         'Fator_K_Erodibilidade': 'rusle_fator_k',
         'RUSLE_Fator_K': 'rusle_fator_k',
         'fatorK': 'rusle_fator_k',
@@ -636,7 +633,6 @@ def preparar_matriz_preditores(
         'twi',
         'rusle_fator_k',
         'rusle_fator_r',
-        'rusle_perda_solo',
     ]
 
     preditores_disponiveis = []
@@ -653,6 +649,20 @@ def preparar_matriz_preditores(
     for c in preditores_disponiveis:
         if isinstance(X[c], pd.DataFrame):
             X[c] = X[c].iloc[:, 0]
+
+    # Guarda dura de circularidade metodológica (Target Leakage - Decisões D01, D04, D11)
+    colunas_proibidas_regex = re.compile(r'(?i)(perda_solo|rusle_perda|rusle_a\b|fator_a\b)')
+    violacoes_circularidade = [
+        c for c in (list(X.columns) + preditores_disponiveis)
+        if colunas_proibidas_regex.search(c)
+    ]
+    if violacoes_circularidade:
+        raise RuntimeError(
+            f"VIOLAÇÃO DE CIRCULARIDADE (Target Leakage): As seguintes colunas de perda de solo foram detectadas "
+            f"como preditoras no treinamento do modelo: {sorted(list(set(violacoes_circularidade)))}. Conforme Decisões D01, D04 e D11, "
+            f"a perda de solo (RUSLE A) não pode ser feature preditora de erosão laminar sob hipótese alguma. "
+            f"A estimativa RUSLE atua unicamente como linha de base comparativa independente."
+        )
 
     print(f"[FEATURES] {len(preditores_disponiveis)} preditores físico-informados: {preditores_disponiveis}")
     print(f"[AMOSTRAS] Distribuição do Alvo: {dict(y_series.value_counts())} (0: Controle, 1: Erosão)")

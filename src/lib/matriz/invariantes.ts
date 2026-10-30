@@ -118,7 +118,12 @@ export const CAMPOS_PROIBIDOS_MATRIZ_TREINO = [
   "perdaSolo",
   "perdaSoloRUSLE",
   "RUSLE_Perda_Solo",
+  "RUSLE_Perda_Solo_t_ha_ano",
+  "RUSLE_Perda_Solo_t_ha_ano_Origem",
+  "perda_solo",
+  "rusle_perda_solo",
   "RUSLE_A",
+  "fatorA",
   "RUSLE_Fator_C",
   "RUSLE_Fator_P",
   "fatorC",
@@ -297,6 +302,21 @@ export function validarInvariantesArtefato(artefato: ArtefatoProjetado): Resulta
         mensagem: `A coluna interna '${col}' é terminantemente proibida em saídas exportadas.`,
         detalhes: { coluna: col },
       });
+    }
+  }
+
+  // Se o perfil for matriz-treino ou matriz-heldout, proibir estritamente qualquer campo de perda de solo (circularidade)
+  if (perfil === "matriz-treino" || perfil === "matriz-heldout") {
+    const REGEX_CIRCULARIDADE = /(perda_?solo|rusle_perda|rusle_a\b|fator_a\b)/i;
+    for (const col of cabecalho) {
+      if (REGEX_CIRCULARIDADE.test(col)) {
+        violacoes.push({
+          invariante: 2,
+          nome: "Circularidade Metodológica (Target Leakage)",
+          mensagem: `A coluna de perda de solo '${col}' é terminantemente proibida no perfil '${perfil}' (Decisões D01, D04, D11).`,
+          detalhes: { coluna: col, perfil },
+        });
+      }
     }
   }
 

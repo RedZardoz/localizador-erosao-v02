@@ -400,4 +400,23 @@ describe("Invariantes de Exportação — Validações e Meta-Testes", () => {
       }
     });
   });
+
+  describe("Anti-Circularidade da RUSLE na Matriz de Treino (Decisões D01, D04, D11)", () => {
+    it("bloqueia estritamente coluna de perda de solo no perfil matriz-treino", () => {
+      const artefato: ArtefatoProjetado = {
+        perfil: "matriz-treino",
+        cabecalho: ["Celula_ID", "Poligono_ID", "RUSLE_Perda_Solo_t_ha_ano"],
+        linhas: [{ Celula_ID: "C1", Poligono_ID: "P1", RUSLE_Perda_Solo_t_ha_ano: 12.5 } as any],
+      };
+      const res = validarInvariantesArtefato(artefato);
+      expect(res.valido).toBe(false);
+      expect(
+        res.violacoes.some(
+          (v) =>
+            v.nome === "Circularidade Metodológica (Target Leakage)" ||
+            v.nome === "Lista de Permissão do Perfil"
+        )
+      ).toBe(true);
+    });
+  });
 });
