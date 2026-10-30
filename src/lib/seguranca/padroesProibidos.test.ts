@@ -16,9 +16,8 @@ import {
   varrerPadroesProibidos,
 } from "./padroesProibidos";
 
+export type { ViolacaoPadrao, ExcecaoAutorizada };
 export {
-  ViolacaoPadrao,
-  ExcecaoAutorizada,
   LISTA_EXCECOES_AUTORIZADAS,
   isLinhaIsentaPorListaFechada,
   varrerLinha,
