@@ -253,30 +253,48 @@ def carregar_dados_reais(caminho_arquivo: str, exigir_alvo: bool = True) -> pd.D
     return df
 
 
-def auditar_variancia_preditores(X: pd.DataFrame) -> list[str]:
+def auditar_variancia_preditores(
+    X: pd.DataFrame,
+    preditores_tabelados: list[str] | None = None
+) -> list[str]:
     """
     Audita se alguma variável preditora possui variância zero ou nula.
 
     O QUÊ FAZ:
-    Examina a dispersão estatística (desvio padrão) de cada variável preditora físico-informada,
-    sinalizando colunas que contenham valores estáticos ou invariantes em todas as amostras.
+    Examina a dispersão estatística de cada variável preditora físico-informada.
+    Por padrão, se qualquer coluna tiver desvio padrão zero ou valores idênticos,
+    levanta RuntimeError bloqueante, a menos que a coluna conste formalmente
+    em preditores_tabelados declarados pelo pesquisador.
 
     POR QUE FAZ:
     Na modelagem biofísica por árvores de decisão (XGBoost), preditores com variância zero produzem
     separabilidade artificial espúria ou recebem importância nula incorreta. Preditores constantes
     são indicativos de datasets com valores preenchidos artificialmente (mock/congelados). A auditoria
-    preventiva assegura a validade físico-científica das inferências antes de prosseguir com o treinamento.
+    bloqueante assegura a validade físico-científica das inferências antes de prosseguir com o treinamento.
     """
+    tabelados_set = set(p.strip().lower() for p in (preditores_tabelados or []) if p.strip())
     alertas = []
     for c in X.columns:
         serie = X[c].dropna()
         if len(serie) > 0:
             std = float(serie.std())
-            if std == 0.0 or pd.isna(std):
-                alertas.append(
-                    f"Variável '{c}' possui desvio padrão ZERO (todos os {len(serie)} valores são idênticos a {serie.iloc[0]}). "
-                    f"Valores estáticos produzem artefatos de separabilidade artificial e invalidam inferências biofísicas."
-                )
+            is_constant = (std == 0.0 or pd.isna(std) or serie.nunique() <= 1)
+            if is_constant:
+                val_repr = serie.iloc[0]
+                if c.lower() in tabelados_set:
+                    alertas.append(
+                        f"Variável '{c}' possui desvio padrão ZERO (todos os {len(serie)} valores são idênticos a {val_repr}), "
+                        f"mas foi formalmente declarada como tabelada via '--preditores-tabelados'. "
+                        f"Selo probatório degradado para BENCHMARK_SEM_VALOR_PROBATORIO."
+                    )
+                else:
+                    raise RuntimeError(
+                        f"VIOLAÇÃO DE RIGOR METODOLÓGICO: A variável preditora '{c}' possui variância ZERO "
+                        f"(todos os {len(serie)} valores são idênticos a {val_repr}). "
+                        f"Valores estáticos produzem artefatos de separabilidade artificial e invalidam inferências biofísicas. "
+                        f"Remova o preditor da matriz ou declare-o formalmente via '--preditores-tabelados {c}' caso se trate "
+                        f"de premissa de literatura em recorte espacial homogêneo."
+                    )
     return alertas
 
 
@@ -425,7 +443,8 @@ def preparar_matriz_preditores(
     caminho_controles: str | None = None,
     permitir_dryrun_sintetico: bool = False,
     semente: int = 42,
-    origem_dados: str = "dataframe_memoria"
+    origem_dados: str = "dataframe_memoria",
+    preditores_tabelados: list[str] | None = None
 ) -> tuple[pd.DataFrame, pd.Series, pd.Series, list[str], bool, list[str]]:
     """
     Padroniza nomes de colunas, identifica a bacia real, audita variância e harmoniza a variável alvo Y.
@@ -672,7 +691,7 @@ def preparar_matriz_preditores(
         print(f"[MACROBACIAS] Distribuição por Bacia do Paraná: {dict(blocos.value_counts())}")
 
     # Auditoria de Variância dos Preditores
-    alertas_variancia = auditar_variancia_preditores(X)
+    alertas_variancia = auditar_variancia_preditores(X, preditores_tabelados=preditores_tabelados)
     if alertas_variancia:
         print("\n[AUDITORIA DE DADOS - ALERTAS DE RIGOR METODOLÓGICO]")
         for a in alertas_variancia:
@@ -848,6 +867,7 @@ def gerar_graficos_e_explicabilidade_shap(
     y_prob: np.ndarray,
     diretorio_saida: str,
     eh_dryrun: bool = False,
+    sem_valor_probatorio: bool = False,
     prefixo_arquivo: str = ""
 ) -> dict:
     """
@@ -879,8 +899,8 @@ def gerar_graficos_e_explicabilidade_shap(
     plt.figure(figsize=(10, 6))
     shap.summary_plot(shap_values, X_imputado, show=False)
     plt.title("Contribuição Marginal das Variáveis na Predição de Erosão Laminar (SHAP)", fontsize=12, pad=15)
-    if eh_dryrun:
-        plt.suptitle("[AVISO: BENCHMARK DE INFRAESTRUTURA - DADOS NÃO EMPÍRICOS]", color='#DC2626', fontsize=9, weight='bold')
+    if eh_dryrun or sem_valor_probatorio:
+        plt.suptitle("[AVISO: BENCHMARK SEM VALOR PROBATÓRIO - DADOS COM RESSALVA DE RIGOR]", color='#DC2626', fontsize=8.5, weight='bold')
     caminho_beeswarm = os.path.join(diretorio_saida, f"{prefixo_arquivo}shap_summary_beeswarm.png")
     plt.tight_layout()
     plt.savefig(caminho_beeswarm, dpi=300, bbox_inches='tight')
@@ -891,8 +911,8 @@ def gerar_graficos_e_explicabilidade_shap(
     plt.figure(figsize=(9, 5))
     shap.plots.bar(shap_values, show=False)
     plt.title("Ranking de Importância Global dos Preditores (|SHAP value| médio)", fontsize=12, pad=15)
-    if eh_dryrun:
-        plt.suptitle("[AVISO: BENCHMARK DE INFRAESTRUTURA - DADOS NÃO EMPÍRICOS]", color='#DC2626', fontsize=9, weight='bold')
+    if eh_dryrun or sem_valor_probatorio:
+        plt.suptitle("[AVISO: BENCHMARK SEM VALOR PROBATÓRIO - DADOS COM RESSALVA DE RIGOR]", color='#DC2626', fontsize=8.5, weight='bold')
     caminho_bar = os.path.join(diretorio_saida, f"{prefixo_arquivo}shap_feature_importance.png")
     plt.tight_layout()
     plt.savefig(caminho_bar, dpi=300, bbox_inches='tight')
@@ -911,8 +931,8 @@ def gerar_graficos_e_explicabilidade_shap(
     plt.xlabel('Taxa de Falsos Positivos (1 - Especificidade)', fontsize=11)
     plt.ylabel('Taxa de Verdadeiros Positivos (Sensibilidade)', fontsize=11)
     plt.title('Curva ROC — Validação Cruzada Espacial LOCO (K=5)', fontsize=12, pad=12)
-    if eh_dryrun:
-        plt.suptitle("[AVISO: BENCHMARK DE INFRAESTRUTURA - DADOS NÃO EMPÍRICOS]", color='#DC2626', fontsize=9, weight='bold')
+    if eh_dryrun or sem_valor_probatorio:
+        plt.suptitle("[AVISO: BENCHMARK SEM VALOR PROBATÓRIO - DADOS COM RESSALVA DE RIGOR]", color='#DC2626', fontsize=8.5, weight='bold')
     plt.legend(loc="lower right", frameon=True)
     plt.grid(True, linestyle=':', alpha=0.6)
     caminho_roc = os.path.join(diretorio_saida, f"{prefixo_arquivo}curva_roc_loco.png")
@@ -931,8 +951,8 @@ def gerar_graficos_e_explicabilidade_shap(
                 yticklabels=['Controle (0)', 'Erosão (1)'],
                 annot_kws={"size": 13, "weight": "bold"})
     plt.title('Matriz de Confusão Normalizada (LOCO)', fontsize=12, pad=12)
-    if eh_dryrun:
-        plt.suptitle("[AVISO: BENCHMARK DE INFRAESTRUTURA - DADOS NÃO EMPÍRICOS]", color='#DC2626', fontsize=9, weight='bold')
+    if eh_dryrun or sem_valor_probatorio:
+        plt.suptitle("[AVISO: BENCHMARK SEM VALOR PROBATÓRIO - DADOS COM RESSALVA DE RIGOR]", color='#DC2626', fontsize=8.5, weight='bold')
     plt.ylabel('Classe Real Observada', fontsize=11)
     plt.xlabel('Classe Predita pelo XGBoost', fontsize=11)
     caminho_cm = os.path.join(diretorio_saida, f"{prefixo_arquivo}matriz_confusao_loco.png")
@@ -967,6 +987,8 @@ def main():
     parser.add_argument('--permitir-dryrun-sintetico', '--dry-run', action='store_true',
                         dest='permitir_dryrun_sintetico', default=False,
                         help="Permite balanceamento sintético APENAS para benchmark de software (inválido para dissertação)")
+    parser.add_argument('--preditores-tabelados', type=str, default="",
+                        help="Lista separada por vírgula de preditores com variância constante declarada (ex: rusle_fator_k)")
     parser.add_argument('--saida', type=str, default=os.path.join("docs", "relatorios", "modelagem"),
                         help="Diretório de saída para os artefatos analíticos e gráficos")
     parser.add_argument('--k_blocos', type=int, default=5, help="Número de blocos/folds no Spatial K-Fold")
@@ -985,18 +1007,23 @@ def main():
         sys.exit(2)
 
     df = carregar_dados_reais(args.dados)
+    preditores_tabelados = [p.strip() for p in args.preditores_tabelados.split(',') if p.strip()]
     X, y, blocos, features, eh_dryrun, alertas_variancia = preparar_matriz_preditores(
         df,
         caminho_controles=args.controles,
         permitir_dryrun_sintetico=args.permitir_dryrun_sintetico,
         semente=args.semente,
-        origem_dados=os.path.basename(args.dados)
+        origem_dados=os.path.basename(args.dados),
+        preditores_tabelados=preditores_tabelados
     )
     resultado_cv = executar_spatial_kfold_loco(X, y, blocos, k_blocos=args.k_blocos, random_state=args.semente)
 
     diretorio_saida_efetivo = os.path.join(args.saida, "DRYRUN_SINTETICO")
     prefixo_arquivo = "DRYRUN_SINTETICO_"
     os.makedirs(diretorio_saida_efetivo, exist_ok=True)
+
+    sem_valor_probatorio = eh_modo_dryrun or bool(alertas_variancia)
+    natureza_execucao = "BENCHMARK_SEM_VALOR_PROBATORIO" if sem_valor_probatorio else "PROBATORIO_CIENTIFICO"
 
     resultado_shap = gerar_graficos_e_explicabilidade_shap(
         resultado_cv['modelo_final'],
@@ -1005,6 +1032,7 @@ def main():
         resultado_cv['y_prob'],
         diretorio_saida_efetivo,
         eh_dryrun=eh_modo_dryrun,
+        sem_valor_probatorio=sem_valor_probatorio,
         prefixo_arquivo=prefixo_arquivo
     )
 
@@ -1018,8 +1046,9 @@ def main():
         'total_amostras_avaliadas': len(y),
         'preditores_utilizados': features,
         'auditoria_cientifica': {
-            'dados_100pct_empiricos': not eh_modo_dryrun and len(alertas_variancia) == 0,
-            'natureza_execucao': 'BENCHMARK_INFRAESTRUTURA_DRY_RUN' if eh_modo_dryrun else 'PROBATORIO_CIENTIFICO',
+            'dados_100pct_empiricos': not sem_valor_probatorio,
+            'natureza_execucao': natureza_execucao,
+            'sem_valor_probatorio': sem_valor_probatorio,
             'alertas_rigor': alertas_variancia + (['Atributos da Classe 0 gerados artificialmente para dry-run. Não utilizável na dissertação.'] if eh_modo_dryrun else []),
         },
         'metricas_globais': resultado_cv['metricas'],
@@ -1034,6 +1063,10 @@ def main():
 
     caminho_json = os.path.join(diretorio_saida_efetivo, f"{prefixo_arquivo}relatorio_modelagem_xgboost_loco.json")
     with open(caminho_json, 'w', encoding='utf-8') as f:
+        json.dump(relatorio_final, f, indent=2, ensure_ascii=False)
+
+    caminho_metricas = os.path.join(diretorio_saida_efetivo, f"{prefixo_arquivo}metricas_cv_loco.json")
+    with open(caminho_metricas, 'w', encoding='utf-8') as f:
         json.dump(relatorio_final, f, indent=2, ensure_ascii=False)
 
     print(f"\n[SUCESSO] Relatório consolidado exportado para: {caminho_json}")
