@@ -31,6 +31,13 @@ export interface OpcoesExtracaoSoloExposto {
    * Em áreas sob Sistema Plantio Direto (SPD), palhada seca residual pode apresentar
    * NDVI baixo (< 0.25). A exigência opcional de BSI >= limiarMinBsi assegura que apenas
    * superfícies com assinatura mineral exposta sejam contabilizadas como solo nu (Ê).
+   *
+   * PONTO DE EXTENSÃO EXPERIMENTAL (Item 5 / Decisão D10):
+   * O pipeline padrão de extração de Ê opera estritamente conforme a Decisão D10 (limiar puro
+   * de NDVI <= 0.25), mantendo a integridade do pré-registro fatorial dos 18 estratos biofísicos.
+   * O parâmetro limiarMinBsi permanece implementado como ponto de extensão analítica experimental,
+   * coberto por testes unitários, e sua eventual ativação em produção dependerá de formalização
+   * de nova decisão metodológica (D27) e recálculo dos tercis amostrais pré-registrados.
    */
   limiarMinBsi?: number;
 }

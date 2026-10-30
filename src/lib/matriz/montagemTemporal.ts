@@ -24,7 +24,6 @@
 import { ObservacaoCena, calcularNdvi, calcularBsi, definirJanelasModelo, filtrarSeriePorJanela } from "../gee/serieTemporal";
 import { analisarPersistenciaTemporal, DiagnosticoPersistencia } from "../gee/persistenciaTemporal";
 import { ajustarHarmonicosBanda } from "../gee/harmonicos";
-import { extrairMetricasSoloExposto } from "../gee/compostoSoloNu";
 import { DECISOES, exigirParametro } from "@/config/decisoes";
 
 export interface PreditoresTemporaisPonto {
