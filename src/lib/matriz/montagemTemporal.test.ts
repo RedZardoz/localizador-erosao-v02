@@ -86,4 +86,32 @@ describe("Montagem de Preditores Multitemporais (Time-Series Stacking e Modelo D
     expect(resVazio.ndvi_p50).toBeNull();
     expect(resVazio.regimePersistencia).toBe("inconclusivo");
   });
+
+  it("aplica piso de DP-24 (Hyndman & Fan 1996): percentis de cauda nulos para n < 9 e calculados para n >= 9", () => {
+    // 8 cenas validas: n < 9 -> ndvi_p10 e ndvi_p90 devem ser null, ndvi_p50 preenchido
+    const cenas8: ObservacaoCena[] = [];
+    for (let i = 1; i <= 8; i++) {
+      const dataStr = `2026-0${i}-10`;
+      cenas8.push(criarCenaTemporal(dataStr, 2026 + i / 12, 0.40 + i * 0.02, 0.10));
+    }
+    const res8 = montarPreditoresTemporais(cenas8, "D", {
+      dataReferencia: "2026-08-30",
+      duracaoJanelaAnos: 1,
+    });
+    expect(res8.nObservacoesValidas).toBe(8);
+    expect(res8.ndvi_p10).toBeNull();
+    expect(res8.ndvi_p90).toBeNull();
+    expect(res8.ndvi_p50).not.toBeNull();
+
+    // 9 cenas validas: n >= 9 -> ndvi_p10 e ndvi_p90 calculados normalmente
+    const cenas9 = [...cenas8, criarCenaTemporal("2026-08-20", 2026.65, 0.60, 0.05)];
+    const res9 = montarPreditoresTemporais(cenas9, "D", {
+      dataReferencia: "2026-08-30",
+      duracaoJanelaAnos: 1,
+    });
+    expect(res9.nObservacoesValidas).toBe(9);
+    expect(res9.ndvi_p10).not.toBeNull();
+    expect(res9.ndvi_p90).not.toBeNull();
+    expect(res9.ndvi_p50).not.toBeNull();
+  });
 });

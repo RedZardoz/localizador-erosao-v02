@@ -26,6 +26,13 @@ import { analisarPersistenciaTemporal, DiagnosticoPersistencia } from "../gee/pe
 import { ajustarHarmonicosBanda } from "../gee/harmonicos";
 import { DECISOES, exigirParametro } from "@/config/decisoes";
 
+/**
+ * Piso mínimo de observações válidas para percentis de cauda (p10 e p90),
+ * conforme DP-24 e Hyndman & Fan (1996, Definição 6, The American Statistician 50(4):361-365).
+ * Para p = 0,10, Pr(X < X(1)) = 1/(n+1) <= 0,10 => n >= 9.
+ */
+export const N_MINIMO_PERCENTIS_CAUDA_DP24 = 9;
+
 export interface PreditoresTemporaisPonto {
   tipoModelo: "D" | "P";
   janelaInicio: string;
@@ -161,13 +168,15 @@ export function montarPreditoresTemporais(
     .filter((v): v is number => v !== null && Number.isFinite(v))
     .sort((a, b) => a - b);
 
+  // Percentis de cauda exigem n >= 9 por DP-24 / Hyndman & Fan (1996)
+  const temNValidasPercentisCauda = nValidas >= N_MINIMO_PERCENTIS_CAUDA_DP24;
   const p10Idx = Math.floor(nValidas * 0.1);
   const p50Idx = Math.floor(nValidas * 0.5);
   const p90Idx = Math.floor(nValidas * 0.9);
 
-  const ndvi_p10 = Number(ndvis[p10Idx].toFixed(4));
+  const ndvi_p10 = temNValidasPercentisCauda ? Number(ndvis[p10Idx].toFixed(4)) : null;
   const ndvi_p50 = Number(ndvis[p50Idx].toFixed(4));
-  const ndvi_p90 = Number(ndvis[p90Idx].toFixed(4));
+  const ndvi_p90 = temNValidasPercentisCauda ? Number(ndvis[p90Idx].toFixed(4)) : null;
   const bsi_p50 = bsis.length > 0 ? Number(bsis[Math.floor(bsis.length * 0.5)].toFixed(4)) : null;
 
   // Frequência de solo nu (E^) — Decisão D10: NDVI <= 0.25 (GEOS3 / Demattê et al., 2018)

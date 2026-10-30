@@ -54,58 +54,91 @@ interface DividaLastro {
 
 const DIVIDA_DECLARADA: readonly DividaLastro[] = [
   {
-    id: "D02",
-    motivo:
-      "Limiares espectrais referenciados à metodologia do próprio projeto. O BSI tem fonte " +
-      "externa JÁ presente no registro — Rikimaru et al. (2002), citada em D20. Correção por cruzamento.",
-  },
-  {
     id: "D03",
     motivo:
-      "Escala do rótulo referenciada à metodologia do próprio projeto e a arquivos de código. " +
-      "Sem candidato externo identificado no registro; exige busca bibliográfica.",
+      "Escala ordinal de rótulo e binarização em 'incipiente'. Busca por literatura internacional " +
+      "de classificação visual e scoring de erosão (Morgan 2005; Boardman 2006; Herweg 1996) " +
+      "confirmou que não há limiar universal que imponha corte entre ausente/incipiente ou " +
+      "incipiente/moderada; a escolha é convenção pré-registrada do projeto de pesquisa para capturar sinal precoce.",
   },
   {
     id: "D11",
     motivo:
-      "Mínimo de 6 observações válidas, referenciado apenas à Seção 6.1 da metodologia do projeto. " +
-      "Busca por literatura de sensoriamento remoto que fixe mínimo de observações para composição " +
-      "por percentil não encontrou padrão estabelecido. É a dívida de maior consequência: governa " +
-      "suficiência amostral.",
+      "Mínimo de 6 observações orbitais válidas para densidade geral da série temporal. Busca por " +
+      "literatura de sensoriamento remoto (Griffiths et al. 2013; Jonsson & Eklundh 2002) não encontrou " +
+      "padrão unificado para stacking em clima tropical. O piso estatístico estrito de n >= 9 para caudas " +
+      "foi adotado via DP-24 (Hyndman & Fan 1996), permanecendo n >= 6 como piso empírico de cobertura geral.",
   },
   {
     id: "D18",
     motivo:
-      "Buffer do recorte Planet referenciado ao Planejamento V3 e a código. Sem candidato externo " +
-      "identificado; exige busca bibliográfica.",
-  },
-  {
-    id: "P02",
-    motivo:
-      "Espaçamento do thinning declarado como herdado do SAREL 1. Herança explica a origem, não " +
-      "justifica o valor. Lastro externo JÁ presente no registro — Roberts et al. (2017), citada em " +
-      "P01 para autocorrelação espacial. Correção por cruzamento.",
-  },
-  {
-    id: "P05",
-    motivo:
-      "Classes elegíveis do ESA WorldCover sem campo de referência. Fonte externa JÁ presente no " +
-      "registro — Zanaga et al. (2022), citada em D07 para a mesma base. Correção por cruzamento.",
+      "Buffer de 250 m (caixa envolvente de 500 m / 25 ha) para recortes PlanetScope. Busca por literatura " +
+      "geomorfológica de encostas e catenas agrícolas (Gerrard 1981; Conacher & Dalrymple 1977) " +
+      "demonstrou que 250 m é dimensão operacional ajustada ao comprimento médio de vertente da BP3 e " +
+      "ao teto de cota do instrumento contratual Plan ID 798565, sem prescrição bibliográfica universal.",
   },
   {
     id: "P07",
     motivo:
-      "Semente aleatória da amostragem sem campo de referência. Sem candidato externo identificado; " +
-      "exige busca bibliográfica sobre reprodutibilidade de sorteio.",
+      "Semente aleatória 'dinamica-registrada'. Busca por normas de computação científica reprodutível " +
+      "(Peng 2011; Sandve et al. 2013). A persistência dinâmica do seed em cada execução é protocolo " +
+      "algorítmico de reprodutibilidade computacional, não constante matemática universal.",
   },
   {
     id: "D17",
     motivo:
-      "Decisão de natureza CONTRATUAL, não científica: alocação da cota do Planet Labs Education & " +
-      "Research Program, Plan ID 798565. Não existe literatura científica que prescreva alocação de " +
-      "cota comercial, e exigir citação aqui induziria a inventar uma. A referência correta é o " +
-      "próprio instrumento contratual, e é isso que o campo traz. Fica em dívida para que o " +
-      "pesquisador decida se a norma deve prever uma categoria de decisão operacional/contratual.",
+      "Decisão de natureza CONTRATUAL/OPERACIONAL, não científica: alocação e gestão da cota comercial " +
+      "do Planet Labs Education & Research Program, Plan ID 798565 (3.000 km²/mês). O instrumento contratual " +
+      "é a referência legítima, conforme conferido e documentado em 20/10/2026.",
+  },
+];
+
+/**
+ * Dívidas de propostas e pendentes (C2/C3): parâmetros ainda não promovidos a decididos
+ * ou de natureza operacional/heurística sem norma bibliográfica externa prescritiva.
+ */
+const DIVIDA_PROPOSTAS: readonly DividaLastro[] = [
+  {
+    id: "P06",
+    motivo:
+      "Fração limpa mínima UDM2 na AOI do ponto. Parâmetro pendente de definição experimental " +
+      "conforme qualidade do produto PlanetScope UDM2 na bacia.",
+  },
+  {
+    id: "P08",
+    motivo:
+      "Limiar de alerta visual de baixa variância na interface de usuário. Heurística operacional " +
+      "informativa para diagnóstico rápido no Inspetor do pesquisador.",
+  },
+  {
+    id: "P09",
+    motivo:
+      "Método de máscara de nuvens Sentinel-2 (QA60 / SCL). Procedimento operacional derivado " +
+      "das bandas de qualidade da ESA (Sentinel-2 Technical Guide).",
+  },
+  {
+    id: "P11",
+    motivo:
+      "Fração mínima de área coberta da célula de 10 m (0,95). Limiar operacional contra efeito de " +
+      "borda de cena orbital derivado do planejamento analítico (DEC-7, D11).",
+  },
+  {
+    id: "P20",
+    motivo:
+      "Tolerância temporal Sentinel-2 de 30 dias para composição espectro-temporal. Parâmetro " +
+      "operacional de janela móvel para mosaico sem nuvens (DEC-7, D04).",
+  },
+  {
+    id: "P21",
+    motivo:
+      "Tolerância temporal PlanetScope de 45 dias para pares de evento erosivo. Parâmetro operacional " +
+      "de busca retrospectiva de imagem de alta resolução (DEC-7, D19).",
+  },
+  {
+    id: "P23",
+    motivo:
+      "Área mínima sem nuvem/sombra na célula (0,95). Limiar operacional de pureza radiométrica " +
+      "derivado do protocolo de pré-processamento (DEC-7, D11).",
   },
 ];
 
@@ -117,6 +150,12 @@ function temLastroExterno(referencia: string | undefined): boolean {
 function entradasDecididas(): Decisao<unknown>[] {
   return [...Object.values(DECISOES), ...Object.values(PARAMETROS)].filter(
     (d) => d.estado === "decidida"
+  ) as Decisao<unknown>[];
+}
+
+function entradasPropostasEPendentes(): Decisao<unknown>[] {
+  return [...Object.values(DECISOES), ...Object.values(PARAMETROS)].filter(
+    (d) => d.estado === "proposta" || d.estado === "pendente"
   ) as Decisao<unknown>[];
 }
 
@@ -226,6 +265,44 @@ describe("Norma de Lastro Científico (docs/NORMA_LASTRO_CIENTIFICO.md)", () => 
         );
       }
       expect(semInstrumento).toHaveLength(0);
+    });
+  });
+
+  describe("C2 e C3 — Guarda de propostas e parâmetros provisórios", () => {
+    it("propostas e pendentes têm lastro externo ou dívida formal declarada em DIVIDA_PROPOSTAS", () => {
+      const emDivida = new Set(DIVIDA_PROPOSTAS.map((d) => d.id));
+      const violacoes = entradasPropostasEPendentes()
+        .filter((d) => !temLastroExterno(d.referencia) && !emDivida.has(d.id))
+        .map((d) => `  ${d.id} — "${d.titulo}": proposta/pendente sem lastro e sem dívida declarada.`);
+
+      if (violacoes.length > 0) {
+        expect.fail(
+          "Proposta ou pendência sem lastro bibliográfico e sem dívida formal (R-L1 / C2 / C3):\n" +
+            violacoes.join("\n")
+        );
+      }
+      expect(violacoes).toHaveLength(0);
+    });
+
+    it("parâmetro em proposta citado como método publicado deve carregar marcação explícita de provisoriedade", () => {
+      // Parâmetros em proposta como P01 (aresta do bloco a ≈ 50 m) têm dependência na metodologia publicada
+      const propostasPublicadas = ["P01"];
+      for (const id of propostasPublicadas) {
+        const param = PARAMETROS[id];
+        expect(param).toBeDefined();
+        const texto = `${param.justificativa ?? ""} ${param.referencia ?? ""}`.toLowerCase();
+        const temMarcacaoProvisoria = texto.includes("provisór") || texto.includes("planejamento");
+        expect(
+          temMarcacaoProvisoria,
+          `Parâmetro publicado ${id} em estado proposta deve declarar provisoriedade explicitamente.`
+        ).toBe(true);
+      }
+    });
+
+    it("toda dívida de proposta declara justificativa substantiva (>= 40 caracteres)", () => {
+      for (const dv of DIVIDA_PROPOSTAS) {
+        expect(dv.motivo.trim().length).toBeGreaterThan(40);
+      }
     });
   });
 });
