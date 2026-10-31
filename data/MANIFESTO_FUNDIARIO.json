@@ -5,7 +5,8 @@
     "arquivo": "fundiario_brasil.db",
     "caminhoRelativo": "data/fundiario_brasil.db",
     "tamanhoBytes": 1793216512,
-    "sha256": "4b9e4a3b1d2e8f9a0c3d5e7f1b2a4c6e8d0f2a4b6c8e0d2f4a6b8c0e2d4f6a8b",
+    "sha256": null,
+    "sha256Estado": "indisponivel",
     "totalPropriedades": 559899,
     "ufDominante": "PR",
     "tabelas": {
@@ -13,7 +14,8 @@
       "imoveis_fundiarios_rtree": 559899,
       "fontes_dados": 3,
       "sncr_proprietarios": 559899
-    }
+    },
+    "sha256Motivo": "Arquivo de banco SQLite local (1,79 GB) ausente no ambiente de execução. O hash será recalculado na presença física da base."
   },
   "fontesOficiais": [
     {
@@ -46,6 +48,6 @@
     "scripts/ingest_sncr_official.py"
   ],
   "geradoPor": "scripts/gerar_manifesto_fundiario.py",
-  "geradoEm": "2026-10-30T22:00:00.000Z",
-  "gitCommit": "7ae5cb409052fbab242134dc8c5710963ccbdee0"
+  "geradoEm": "2026-10-31T01:18:35.785430+00:00",
+  "gitCommit": "817abce60761550ebccbca3e5bed8341c1f9a111"
 }
