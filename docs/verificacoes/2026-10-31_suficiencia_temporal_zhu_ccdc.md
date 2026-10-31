@@ -1,12 +1,12 @@
 # Verificação na fonte primária — Suficiência Amostral para Modelos Harmônicos Temporais (CCDC / OLS)
 
 **Data:** 31 de outubro de 2026  
-**Fonte primária:** Zhu, Zhe; Woodcock, Curtis E. (2014). "Continuous change detection and classification of land cover using all available Landsat data." *Remote Sensing of Environment*, 144, 152–171. DOI: [10.1016/j.rse.2014.01.011](https://doi.org/10.1016/j.rse.2014.01.011).  
-**Obra primária integral consultada e arquivada:** Zhu, Zhe (2013). *Continuous Change Detection and Classification of Land Cover Using All Available Landsat Data*. Ph.D. Dissertation, Department of Earth and Environment, Graduate School of Arts and Sciences, Boston University, 178 p. (Dissertação base contendo o desenvolvimento formal integral do algoritmo CCDC e do artigo de 2014).  
-**Arquivo arquivado:** `docs/verificacoes/fontes/zhu2014/zhu_2013_dissertacao_ccdc_zhu_woodcock_2014.pdf`  
+**Fonte primária:** Zhu, Z. (2013), tese de doutorado, Boston University, Cap. 4, p. 121 (lida no primário); Zhu & Woodcock (2014), RSE 144:152-171 — não conferida no primário.  
+**Obra primária integral consultada e arquivada:** Zhu, Zhe (2013). *Continuous Change Detection and Classification of Land Cover Using All Available Landsat Data*. Ph.D. Dissertation, Department of Earth and Environment, Graduate School of Arts and Sciences, Boston University, 178 p. (Dissertação base contendo o desenvolvimento formal integral do algoritmo CCDC).  
+**Arquivo arquivado:** `docs/verificacoes/fontes/zhu2013/zhu_2013_tese_ccdc.pdf`  
 **SHA-256:** `4789edc19712c3bebf898002baf775c7fb07c628b76f58373f72897ee32ef173`  
-**Script de extração:** `docs/verificacoes/fontes/zhu2014/extrair_zhu_2014.py`  
-**Saída da extração:** `docs/verificacoes/fontes/zhu2014/saida_extracao_zhu_2014.txt`  
+**Script de extração:** `docs/verificacoes/fontes/zhu2013/extrair_zhu_2014.py`  
+**Saída da extração:** `docs/verificacoes/fontes/zhu2013/saida_extracao_zhu_2014.txt`  
 **Contexto:** Decisão D11, Decisão D05 e `src/lib/gee/harmonicos.ts:24,44` (`nMinimoObservacoes = 12`).
 
 ---
