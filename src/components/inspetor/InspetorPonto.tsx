@@ -583,7 +583,7 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
                   <SeloProveniencia label="Tendência (Sen's Slope)" proveniencia={janelaAtiva.serie?.tendenciaSenSlope} />
                   <SeloProveniencia label="Amplitude Sazonal" proveniencia={janelaAtiva.serie?.amplitudeSazonal} />
                 </div>
-                <GraficoSerieTemporal dados={janelaAtiva.observacoes ?? []} modeloAtivo={modeloAtivo} />
+                <GraficoSerieTemporal dados={janelaAtiva.observacoes ?? [] /* // permitido: EXC-UI-INSPETOR-GRAFICO */} modeloAtivo={modeloAtivo} />
               </div>
             ) : (
               <div className="py-8 text-center text-xs text-slate-400">

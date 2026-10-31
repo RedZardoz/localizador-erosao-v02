@@ -163,7 +163,7 @@ export function assegurarSegregacaoTreino(
     if (!param2 || param2.trim() === "" || /indefinido/i.test(param2)) {
       throw new Error("VIOLAÇÃO DE SEGREGAÇÃO (D16): poligonoId ausente.");
     }
-    const heldOutSet = param3 instanceof Set ? param3 : new Set(param3 ?? []);
+    const heldOutSet = param3 instanceof Set ? param3 : new Set(param3 ?? []); // permitido: EXC-ROTULOS-HELDOUT-SET
     if (heldOutSet.has(param2)) {
       throw new Error(
         `VIOLAÇÃO DE SEGREGAÇÃO (D16): O polígono '${param2}' está presente simultaneamente nos conjuntos de treino e held-out.`

@@ -1021,10 +1021,10 @@ def build_pdf():
         "RENARD, K. G.; FOSTER, G. R.; WEESIES, G. A.; MCCOOL, D. K.; YODER, D. C. <b>Predicting soil erosion by water: a guide to conservation planning with the Revised Universal Soil Loss Equation (RUSLE)</b>. Washington: USDA, 1997. 384 p. (Agriculture Handbook, 703). [Arquivo local: `ah_703.pdf`]",
         "ROBERTS, D. R. et al. Cross-validation strategies for data with temporal, spatial or phylogenetic structure. <b>Ecography</b>, Copenhagen, v. 40, n. 8, p. 913-929, 2017. DOI: 10.1111/ecog.02881. [Arquivo local: `Ecography - 2016 - Roberts...pdf`]",
         "RUFINO, R. L.; BISCAIA, R. C. M.; MERTEN, G. H. Determinação do potencial erosivo da chuva para o estado do Paraná, através de pluviometria: terceira aproximação. <b>Revista Brasileira de Ciência do Solo</b>, Campinas, v. 17, n. 3, p. 439-444, 1993. [Arquivo local: `rufino_biscaia_merten_1993...pdf`]",
-        "WALTRICK, P. C.; ROCHA, M. C.; MERTEN, G. H.; CUNHA, C. A. da. Estimativa da erosividade das chuvas no Estado do Paraná a partir de séries sintéticas e dados de satélite. <b>Revista Brasileira de Recursos Hídricos</b>, Porto Alegre, v. 15, n. 3, p. 115-125, 2010. [Arquivo local: `2010_04_20_waltrick.pdf`]",
+        "WALTRICK, P. C. et al. Estimativa do potencial erosivo das chuvas e sua distribuição espacial no Estado do Paraná. <b>Revista Brasileira de Ciência do Solo</b>, Viçosa, v. 39, n. 1, p. 256-267, 2015. DOI: 10.1590/01000683rbcs20140437. [Nota: coeficientes da Região 1 convertidos para o SI com g=9,81 conforme dissertação Waltrick, UFPR, 2010, Tabelas 1.1–1.8]",
         "WISCHMEIER, W. H.; SMITH, D. D. <b>Predicting rainfall erosion losses: a guide to conservation planning</b>. Washington: USDA, 1978. 58 p. (Agriculture Handbook, 537).",
         "WOODCOCK, C. E.; STRAHLER, A. H. The factor of scale in remote sensing. <b>Remote Sensing of Environment</b>, New York, v. 21, n. 3, p. 311-332, 1987. DOI: 10.1016/0034-4257(87)90015-0. [Arquivo local: `The_factor_of_scale_in_remote_sensing.pdf`]",
-        "ZHU, Z.; WOODCOCK, C. E. Continuous change detection and classification of land cover using all available Landsat data. <b>Remote Sensing of Environment</b>, New York, v. 144, p. 152-171, 2014. DOI: 10.1016/j.rse.2014.01.011."
+        "ZHU, Z.; WOODCOCK, C. E. Continuous change detection and classification of land cover using all available Landsat data. <b>Remote Sensing of Environment</b>, New York, v. 144, p. 152-171, 2014. DOI: 10.1016/j.rse.2014.01.011. [Nota: não conferida no primário]"
     ]
     
     for r in refs:

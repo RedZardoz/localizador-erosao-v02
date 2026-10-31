@@ -122,7 +122,37 @@ function executarCli(): void {
       process.exit(1);
     }
     const bruto = JSON.parse(fs.readFileSync(absPath, "utf-8"));
-    candidatos = Array.isArray(bruto) ? bruto : bruto.candidatos ?? [];
+    if (Array.isArray(bruto)) {
+      if (bruto.length === 0) {
+        console.error(
+          "[ERRO_ARQUIVO] A lista de candidatos está vazia (0 candidatos encontrados no array raiz)."
+        );
+        process.exit(1);
+      }
+      candidatos = bruto as CandidatoSorteioD16[];
+    } else if (typeof bruto === "object" && bruto !== null) {
+      const obj = bruto as Record<string, unknown>;
+      if (!("candidatos" in obj) || !Array.isArray(obj.candidatos)) {
+        const chaves = Object.keys(obj);
+        const listaChaves = chaves.length > 0 ? chaves.join(", ") : "(nenhuma chave)";
+        console.error(
+          `[ERRO_ARQUIVO] O arquivo JSON não contém uma lista de candidatos (esperado array na raiz ou propriedade 'candidatos' do tipo array). Chaves encontradas no objeto raiz: ${listaChaves}.`
+        );
+        process.exit(1);
+      }
+      if (obj.candidatos.length === 0) {
+        console.error(
+          "[ERRO_ARQUIVO] A lista de candidatos está vazia (0 candidatos encontrados na propriedade 'candidatos')."
+        );
+        process.exit(1);
+      }
+      candidatos = obj.candidatos as CandidatoSorteioD16[];
+    } else {
+      console.error(
+        `[ERRO_ARQUIVO] O conteúdo de ${absPath} não é um JSON válido de candidatos (esperado objeto com chave 'candidatos' ou array na raiz).`
+      );
+      process.exit(1);
+    }
     origemCandidatos = absPath;
     if (
       bruto?.origemSintetica === true ||

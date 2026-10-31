@@ -272,7 +272,7 @@ async function executarRemedicao() {
   if (fs.existsSync(cachePedologiaPath)) {
     try {
       const parsedCache = JSON.parse(fs.readFileSync(cachePedologiaPath, "utf8"));
-      const itensBrutos = parsedCache.itens ?? {};
+      const itensBrutos = parsedCache.itens ?? {}; // permitido: EXC-SCRIPT-CACHE-PEDOLOGIA
       cachePedologia = {};
       for (const [id, reg] of Object.entries(itensBrutos) as [string, any][]) {
         if (

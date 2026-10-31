@@ -14,6 +14,9 @@ import {
   listarArquivosCodigo,
   listarArquivosScripts,
   varrerPadroesProibidos,
+  varrerIntegridadeJson,
+  varrerIntegridadeJsonDiretorios,
+  listarArquivosJson,
 } from "./padroesProibidos";
 
 export type { ViolacaoPadrao, ExcecaoAutorizada };
@@ -80,6 +83,95 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
       expect(v.some((x) => x.padrao === "ou-logico-com-numero")).toBe(true);
     });
 
+    it("detecta coalescencia-com-colecao-vazia (?? [] e ?? {})", () => {
+      const codePos1 = "const c = bruto?.candidatos ?? [];";
+      const codePos2 = "const m = dados?.metricas ?? {};";
+      const v1 = varrerCodigo(codePos1, "teste.ts");
+      const v2 = varrerCodigo(codePos2, "teste.ts");
+      expect(v1.some((x) => x.padrao === "coalescencia-com-colecao-vazia")).toBe(true);
+      expect(v2.some((x) => x.padrao === "coalescencia-com-colecao-vazia")).toBe(true);
+
+      const codeNeg1 = "const c = Array.isArray(bruto) ? bruto : [];";
+      const codeNeg2 = "const m = dados ? dados.metricas : {};";
+      const vNeg1 = varrerCodigo(codeNeg1, "teste.ts");
+      const vNeg2 = varrerCodigo(codeNeg2, "teste.ts");
+      expect(vNeg1.some((x) => x.padrao === "coalescencia-com-colecao-vazia")).toBe(false);
+      expect(vNeg2.some((x) => x.padrao === "coalescencia-com-colecao-vazia")).toBe(false);
+    });
+
+    it("detecta literal-em-proveniencia-medida com selo medido e número cravado", () => {
+      const codePos1 = 'const p = { estado: "medido", valor: 0.0285 };';
+      const codePos2 = "const q = { estado: 'medido', extra: 'x', valor: -12.34 };";
+      const v1 = varrerCodigo(codePos1, "teste.ts");
+      const v2 = varrerCodigo(codePos2, "teste.ts");
+      expect(v1.some((x) => x.padrao === "literal-em-proveniencia-medida")).toBe(true);
+      expect(v2.some((x) => x.padrao === "literal-em-proveniencia-medida")).toBe(true);
+
+      const codeNeg1 = 'const p = { estado: "medido", valor: valorMedido };';
+      const codeNeg2 = 'const q = { estado: "indisponivel", motivo: "sem cobertura", valor: 0.0285 };';
+      const vNeg1 = varrerCodigo(codeNeg1, "teste.ts");
+      const vNeg2 = varrerCodigo(codeNeg2, "teste.ts");
+      expect(vNeg1.some((x) => x.padrao === "literal-em-proveniencia-medida")).toBe(false);
+      expect(vNeg2.some((x) => x.padrao === "literal-em-proveniencia-medida")).toBe(false);
+    });
+
+    it("detecta constante-cientifica-py em scripts Python (topo de módulo ou indentada)", () => {
+      const codePos1 = "declividade = 16.0";
+      const codePos2 = "    declividade = 16.0";
+      const codePos3 = "ndvi = 0.32";
+      const codePos4 = "fatorK = 0.0285";
+      const codePos5 = "erodibilidade = 0.030 # referencia";
+      const v1 = varrerCodigo(codePos1, "scripts/treinar.py");
+      const v2 = varrerCodigo(codePos2, "scripts/treinar.py");
+      const v3 = varrerCodigo(codePos3, "scripts/treinar.py");
+      const v4 = varrerCodigo(codePos4, "scripts/treinar.py");
+      const v5 = varrerCodigo(codePos5, "scripts/treinar.py");
+      expect(v1.some((x) => x.padrao === "constante-cientifica-py")).toBe(true);
+      expect(v2.some((x) => x.padrao === "constante-cientifica-py")).toBe(true);
+      expect(v3.some((x) => x.padrao === "constante-cientifica-py")).toBe(true);
+      expect(v4.some((x) => x.padrao === "constante-cientifica-py")).toBe(true);
+      expect(v5.some((x) => x.padrao === "constante-cientifica-py")).toBe(true);
+
+      const codeNeg1 = "declividade = calcular_declividade()";
+      const codeNeg2 = "x = 16.0";
+      const codeNeg3 = "valor = 0.32";
+      const vNeg1 = varrerCodigo(codeNeg1, "scripts/treinar.py");
+      const vNeg2 = varrerCodigo(codeNeg2, "scripts/treinar.py");
+      const vNeg3 = varrerCodigo(codeNeg3, "scripts/treinar.py");
+      expect(vNeg1.some((x) => x.padrao === "constante-cientifica-py")).toBe(false);
+      expect(vNeg2.some((x) => x.padrao === "constante-cientifica-py")).toBe(false);
+      expect(vNeg3.some((x) => x.padrao === "constante-cientifica-py")).toBe(false);
+    });
+
+    it("detecta hash-implausivel (fixture pericial) e timestamp-suspeito na varredura de JSON", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "meta_test_json_"));
+      try {
+        const fakeHashFile = path.join(tmpDir, "fake_hash.json");
+        fs.writeFileSync(
+          fakeHashFile,
+          JSON.stringify({
+            nome: "manifesto",
+            banco_sha256: "4b9e4a3b1d2e8f9a0c3d5e7f1b2a4c6e8d0f2a4b6c8e0d2f4a6b8c0e2d4f6a8b",
+          })
+        );
+        const vHash = varrerIntegridadeJson(fakeHashFile);
+        expect(vHash.some((x) => x.padrao === "hash-implausivel")).toBe(true);
+        expect(vHash[0].motivo).toContain("repete-se 3 ou mais vezes");
+
+        const suspTimeFile = path.join(tmpDir, "susp_time.json");
+        fs.writeFileSync(
+          suspTimeFile,
+          JSON.stringify({
+            nome: "relatorio",
+            geradoEm: "2026-10-31T14:00:00.000Z",
+          })
+        );
+        const vTime = varrerIntegridadeJson(suspTimeFile);
+        expect(vTime.some((x) => x.padrao === "timestamp-suspeito")).toBe(true);
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
     it("detecta ?? seguido de número", () => {
       const code = `const ndvi = (frequenciaSoloNu ?? 0.3) * 0.7;`;
       const v = varrerCodigo(code, "teste.ts");
@@ -372,6 +464,30 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
     });
   });
 
+  describe("Varredura de Integridade em Arquivos JSON (data/ e docs/) (Auditoria 2026-10-31)", () => {
+    it("assevera que nenhum JSON versionado em data/ e docs/ contém hash implausível ou timestamp suspeito", () => {
+      const arquivosData = listarArquivosJson(path.resolve(process.cwd(), "data"));
+      const arquivosDocs = listarArquivosJson(path.resolve(process.cwd(), "docs"));
+      const totalArquivos = arquivosData.length + arquivosDocs.length;
+
+      // Piso mínimo de integridade: pelo menos 20 JSONs devem ser examinados
+      const PISO_MINIMO_JSON = 20;
+      expect(
+        totalArquivos,
+        `Varredura de JSONs examinou apenas ${totalArquivos} arquivos (esperado >= ${PISO_MINIMO_JSON}).`
+      ).toBeGreaterThanOrEqual(PISO_MINIMO_JSON);
+
+      const violacoes = varrerIntegridadeJsonDiretorios(["data", "docs"]);
+
+      if (violacoes.length > 0) {
+        const msg = violacoes
+          .map((v) => `  ${v.arquivo} [${v.propriedade}] (${v.padrao}) -> ${v.motivo}`)
+          .join("\n");
+        expect.fail(`Violações de integridade encontradas em arquivos JSON versionados:\n${msg}`);
+      }
+      expect(violacoes).toHaveLength(0);
+    });
+  });
   describe("FASE 2 / F5 — Detector de Sequência Monotônica e Correlação Espúria com Índice (|r| > 0.95)", () => {
     it("assevera que nenhum artefato JSON de medição em docs/verificacoes/ contém séries numéricas correlacionadas com a ordem do arquivo", async () => {
       const { varrerDiretorioParaSequencias } = await import("./detectorSequencia");

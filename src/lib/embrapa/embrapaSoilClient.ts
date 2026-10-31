@@ -1154,7 +1154,7 @@ export async function diagnosticarFronteiraPedologicaBbox(
 
     for (const f of features) {
       const id = typeof f?.id === "string" ? f.id : "";
-      const props = (f?.properties ?? {}) as Record<string, unknown>;
+      const props = (f?.properties ?? {}) as Record<string, unknown>; // permitido: EXC-EMBRAPA-WFS-PROPS-BBOX
       if (id.startsWith("parana_solos_")) {
         feicoesSoloPrBbox.push(props);
       } else if (id.startsWith("bra_erodibilidade_2024")) {
@@ -1251,7 +1251,7 @@ export async function queryEmbrapaSoil(
 
   for (const f of features) {
     const id = typeof f?.id === "string" ? f.id : "";
-    const props = (f?.properties ?? {}) as Record<string, unknown>;
+    const props = (f?.properties ?? {}) as Record<string, unknown>; // permitido: EXC-EMBRAPA-WFS-PROPS-PONTO
 
     if (id.startsWith("parana_solos_")) {
       feicoesSoloPr.push({ id, props });
