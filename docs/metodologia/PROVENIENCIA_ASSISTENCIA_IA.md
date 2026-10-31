@@ -126,6 +126,6 @@ A partir da FASE 1 do programa de operacionalização, os commits de Antigravity
 
 Sugestão de formulação para a seção de declaração de ferramentas da dissertação:
 
-> O instrumento computacional foi desenvolvido com assistência de agentes de inteligência artificial em dois papéis distintos e declarados: implementação de código sob especificação (Antigravity, Advanced Agentic Pair Programmer) e auditoria de integridade científica com verificação independente (Claude Opus 5, Anthropic). Todas as decisões metodológicas foram tomadas e registradas pelo pesquisador, sem delegação, conforme o registro formal em `src/config/decisoes.ts`. A proveniência por commit está documentada em `docs/PROVENIENCIA_ASSISTENCIA_IA.md`.
+> O instrumento computacional foi desenvolvido com assistência de agentes de inteligência artificial em dois papéis distintos e declarados: implementação de código sob especificação (Antigravity, Advanced Agentic Pair Programmer) e auditoria de integridade científica com verificação independente (Claude Opus 5, Anthropic). Todas as decisões metodológicas foram tomadas e registradas pelo pesquisador, sem delegação, conforme o registro formal em `src/config/decisoes.ts`. A proveniência por commit está documentada em `docs/metodologia/PROVENIENCIA_ASSISTENCIA_IA.md`.
 
 O pesquisador é responsável integral pelo conteúdo científico, pelas decisões metodológicas e pelo resultado.

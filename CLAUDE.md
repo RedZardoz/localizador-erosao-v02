@@ -45,7 +45,7 @@ Metodologia, valor numérico de limiar científico, e promoção de decisão a `
 
 **Todo procedimento, limiar, parâmetro ou decisão metodológica precisa de lastro em bibliografia científica externa, verdadeira e verificável — e, onde não houver, isso deve estar escrito.**
 
-Norma completa, obrigatória para qualquer sessão: **`docs/NORMA_LASTRO_CIENTIFICO.md`**. Em resumo:
+Norma completa, obrigatória para qualquer sessão: **`docs/metodologia/NORMA_LASTRO_CIENTIFICO.md`**. Em resumo:
 
 - **R-L1** — Autorreferência não é lastro. Citar "Metodologia PPGTCA", "Planejamento V3", um caminho em `docs/`, uma linha de código, outra decisão do registro ou "herdado do SAREL 1" **não referencia nada**: apenas move a pergunta de lugar.
 - **R-L2** — Citação vinda de fonte secundária fica marcada como **não conferida** até alguém abrir o primário.

@@ -144,7 +144,7 @@ describe("Verificação automatizada de caminhos em docs/PROVENIENCIA_ASSISTENCI
   });
 
   it("todos os caminhos de repositório citados em docs/PROVENIENCIA_ASSISTENCIA_IA.md devem existir no disco", () => {
-    const docPath = path.resolve(rootDir, "docs/PROVENIENCIA_ASSISTENCIA_IA.md");
+    const docPath = path.resolve(rootDir, "docs/metodologia/PROVENIENCIA_ASSISTENCIA_IA.md");
     expect(fs.existsSync(docPath)).toBe(true);
 
     const conteudo = fs.readFileSync(docPath, "utf-8");
