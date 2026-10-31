@@ -151,7 +151,13 @@ Residuos:
  [-2.36  6.26]]
 ```
 
-### Execução da CLI Oficial de Verificação do Pool:
+### Execução da CLI Oficial de Verificação do Pool (com Parâmetros Declarados):
 ```bash
-node --import ./scripts/ts-loader.mjs scripts/verificar_pool_estratos.ts --candidatos docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json
+node --import ./scripts/ts-loader.mjs scripts/verificar_pool_estratos.ts \
+  --candidatos docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json \
+  --reservas 2 --n-minimo 4 --taxas 0.1,0.25
 ```
+
+> [!NOTE]
+> **Confirmação Metodológica:**
+> Como os parâmetros explicitamente declarados (`--reservas 2`, `--n-minimo 4`, `--taxas 0.1,0.25`) coincidem exatamente com as premissas assumidas na modelagem teórica da Seção 1 ($n_{\text{tit}} = 4$, $n_{\text{res}} = 2$, $p_{\text{rec}} \in \{0,10; 0,25\}$), os valores numéricos da tabela de ocupação, o balanço de vagas, as probabilidades de sucesso e a identificação dos estratos inviáveis mantêm-se rigorosamente idênticos. A integridade da auditoria do gargalo (`docs/auditorias/AUDITORIA_GARGALO_S1K2_2026-10-31.md`) permanece integralmente preservada.

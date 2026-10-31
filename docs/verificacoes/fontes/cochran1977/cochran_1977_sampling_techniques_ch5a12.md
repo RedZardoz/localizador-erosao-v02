@@ -1,12 +1,14 @@
-# Nota Técnica de Fonte Primária: Cochran (1977), Seção 5A.12 (Collapsed Strata)
+# Síntese Bibliográfica Não Conferida no Primário: Cochran (1977), Seção 5A.12 (Collapsed Strata)
 
 **Data de Elaboração:** 31 de outubro de 2026  
 **Identificador da Obra:** `cochran1977`  
+**Status de Conferência:** `NAO_CONFERIDO_NO_PRIMARIO` (Regras R-L1 e R-L4)  
+**Declaração de Origem da Síntese:** Obra consultada por meio de síntese da literatura secundária e sumários acadêmicos públicos sobre amostragem com estratos colapsados (*collapsed strata*). O exemplar primário (livro físico ou arquivo PDF integral com SHA-256 verificado) **NÃO** está depositado neste repositório. Em estrito cumprimento às Regras R-L1, R-L3 e R-L4 do projeto, este documento constitui exclusivamente síntese bibliográfica informativa e **NÃO** confere lastro primário auditado até que a fonte seja fisicamente obtida, arquivada em `docs/verificacoes/fontes/cochran1977/` com seu hash SHA-256 e conferida folha a folha no texto original.  
 **Referência Bibliográfica Completa:**  
 Cochran, William Gemmell (1977). *Sampling Techniques*. 3ª edição. John Wiley & Sons: New York, Chichester, Brisbane, Toronto, Singapore. 428 p. ISBN: 0-471-16240-X.  
 **Capítulo e Seção Analisados:** Capítulo 5A ("Further Aspects of Stratified Sampling"), Seção 5A.12 ("Estimation of Variance with One Unit per Stratum"), páginas 138–140.  
 **Citação Cruzada Original:** Hansen, Morris H.; Hurwitz, William N.; Madow, William G. (1953). *Sample Survey Methods and Theory*. John Wiley & Sons. (Obra pioneira que formulou o estimador citado por Cochran).  
-**Aplicação no Projeto SAREL:** Fundamentação amostral para tratamento de estratos biofísicos com carência ou déficit estrutural de unidades amostrais (Decisões D12, D16 e D23).
+**Aplicação no Projeto SAREL:** Hipótese de fundamentação amostral para eventual tratamento de estratos biofísicos com déficit estrutural de unidades amostrais (Saída 3 da auditoria de D12/D16). Por não estar conferida no primário, qualquer decisão de desenho apoiada nesta saída repousa provisoriamente sobre citação não conferida.
 
 ---
 
@@ -49,9 +51,13 @@ $$E[v_{cs}] \ge V(\hat{Y})$$
 
 ---
 
-## 4. Fronteira Epistemológica: O que a Fonte Sustenta e o que NÃO Sustenta (Regra R-L3)
+## 4. Fronteira Epistemológica: O que a Fonte Sustenta e o que NÃO Sustenta (Regras R-L1 e R-L3)
 
-### O que Cochran (1977, §5A.12) SUSTENTA:
+> [!WARNING]
+> **RESSALVA DE LASTRO (Regras R-L1 e R-L4):**
+> Esta delimitação de fronteira fundamenta-se na síntese bibliográfica da obra. Como Cochran (1977) **NÃO FOI CONFERIDO NO PRIMÁRIO** (ausência de PDF/exemplar físico arquivado com SHA-256), as asserções abaixo possuem caráter preliminar e devem ser homologadas perante o texto primário antes de suportar qualquer emenda oficial a D12/D16.
+
+### O que a síntese de Cochran (1977, §5A.12) SUSTENTA:
 - Sustenta formalmente o agrupamento de estratos adjacentes ou similares quando o desenho amostral enfrenta carência de unidades amostrais independentes por estrato.
 - Sustenta que a fusão de estratos permite calcular estimativas válidas e conservadoras da variância amostral, eliminando células com graus de liberdade nulos.
 - Sustenta o critério objetivo de parear estratos próximos na variável explicativa para controlar o viés da estimativa.

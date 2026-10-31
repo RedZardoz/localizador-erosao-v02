@@ -9,7 +9,7 @@
 - `docs/verificacoes/2026-09-30_remedicao_candidatos_bp3_d16.md` (remedição pericial P12)
 - `docs/auditorias/AUDITORIA_D11_2026-10-31.md` (§5.2, reiteração do déficit)
 - `docs/verificacoes/2026-10-31_ocupacao_estratos_d16.md` (tabela de ocupação e teste de dependência)
-- `docs/verificacoes/fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md` (lastro de Cochran 1977)
+- `docs/verificacoes/fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md` (síntese bibliográfica de Cochran 1977 — NÃO CONFERIDA NO PRIMÁRIO)
 
 ---
 
@@ -67,8 +67,8 @@ Conforme a Seção 3 das diretrizes de governança, examinam-se as quatro saída
 
 ---
 
-### Saída 3: Colapso de Estratos Adjacentes de Ê dentro de $S_1 \times \hat{K}_2$ (Cochran 1977, §5A.12) — RECOMENDADA
-- **Fundamentação e Lastro:** Cochran, W. G. (1977). *Sampling Techniques*, 3ª ed., Seção 5A.12 ("Estimation of Variance with One Unit per Stratum", pp. 138–140), com nota técnica e SHA-256 arquivados em `docs/verificacoes/fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md`.
+### Saída 3: Colapso de Estratos Adjacentes de Ê dentro de $S_1 \times \hat{K}_2$ (Cochran 1977, §5A.12 — NÃO CONFERIDO NO PRIMÁRIO) — RECOMENDADA
+- **Fundamentação e Lastro:** Cochran, W. G. (1977). *Sampling Techniques*, 3ª ed., Seção 5A.12 ("Estimation of Variance with One Unit per Stratum", pp. 138–140) — **NÃO CONFERIDA NO PRIMÁRIO** (Regras R-L1 e R-L4; síntese bibliográfica em `docs/verificacoes/fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md`, sem exemplar físico/PDF arquivado no repositório).
 - **Mecanismo:** Manter o fatorial $3 \times 3 \times 2$ nos domínios com candidatos suficientes (os 9 estratos de K̂1 e os 3 estratos de Ŝ3 × K̂2). No quadrante deficiente $S_1 \times \hat{K}_2$, colapsar os três tercis de frequência de solo nu ($E_{1,1,2}, E_{1,2,2}, E_{1,3,2}$) em um único macro-estrato colapsado **$E_{1,*,2}$**, que reúne os **9 candidatos** da bacia (7 candidatos pós-thinning de 1 km). Da mesma forma, em $S_2 \times \hat{K}_2$, colapsar $E_{2,2,2}$ e $E_{2,3,2}$ em $E_{2,2-3,2}$ (5 candidatos, 4 pós-thinning).
 - **Custo em Polígonos:** 14 a 16 estratos $\times$ 4 = **56 a 64 polígonos**.
 - **Custo em Estratos:** Redução de 18 para 15 ou 16 estratos.
@@ -79,7 +79,7 @@ Conforme a Seção 3 das diretrizes de governança, examinam-se as quatro saída
 ---
 
 ### Saída 4: Redução do Fatorial para Estratificação Condicional / Aninhada (*Split-Plot*)
-- **Fundamentação e Lastro:** Kish, L. (1965). *Survey Sampling*; Cochran, W. G. (1977), Cap. 5; teoria de amostragem em catenas geomorfológicas.
+- **Fundamentação e Lastro:** Kish, L. (1965). *Survey Sampling* — **NÃO CONFERIDA NO PRIMÁRIO**; Cochran, W. G. (1977), Cap. 5 — **NÃO CONFERIDA NO PRIMÁRIO** (Regras R-L1 e R-L4); teoria de amostragem em catenas geomorfológicas.
 - **Mecanismo:** Incorporar a catena no desenho amostral: K̂ só é variável de estratificação onde há variabilidade pedológica expressiva (Ŝ2 e Ŝ3). Em relevo suave (Ŝ1), K̂ é fixado em nível único (ou não-estratificado), gerando 3 estratos em Ŝ1 e 12 estratos em Ŝ2/Ŝ3 ($2 \times 3 \times 2$). Total: **15 estratos biofísicos**.
 - **Custo em Polígonos:** 15 estratos $\times$ 4 = **60 polígonos** (economia direta de 12 polígonos / 120 ha de levantamento de drone).
 - **Custo em Estratos:** 15 estratos.
@@ -99,7 +99,7 @@ Conforme a Seção 3 das diretrizes de governança, examinam-se as quatro saída
 | **Preserva Pré-Registro de D12?** | **SIM (100% intacto)** | NÃO (emenda D12) | NÃO (emenda D12) | NÃO (emenda D12) |
 | **Necessita Emenda a D16?** | SIM (alocação desigual) | SIM (redução de meta) | SIM (redução de meta) | SIM (redução de meta) |
 | **Reserva sob 25% de Recusa (DP-20)** | Inviável em 3 células | Robusta | **Robusta ($N_h \ge 7$)** | **Robusta ($N_h \ge 7$)** |
-| **Lastro Primário** | King & Zeng (2001); D23 | D07 (suporte comum) | **Cochran (1977, §5A.12)** | Kish (1965); Cochran (1977) |
+| **Lastro Bibliográfico** | King & Zeng (2001); D23 | D07 (suporte comum) | **Cochran (1977, §5A.12) [NÃO CONFERIDO NO PRIMÁRIO]** | Kish (1965); Cochran (1977) [NÃO CONFERIDOS NO PRIMÁRIO] |
 
 ---
 
@@ -118,6 +118,10 @@ Conforme os princípios de pré-registro de Nosek et al. (2018) (*Nature Human B
 ## 5. Recomendação Metodológica do Agente
 
 Recomenda-se formalmente a **Saída 3 (Colapso de Estratos Adjacentes via Cochran 1977, §5A.12)**, combinada com a declaração de fronteira de domínio de D07 (Saída 2):
+
+> [!WARNING]
+> **RESSALVA EXPRESSA DE LASTRO (Regras R-L1 e R-L4):**  
+> A recomendação da Saída 3 **repousa sobre citação metodológica de Cochran (1977, §5A.12) NÃO CONFERIDA NO PRIMÁRIO**. Não há exemplar físico ou PDF arquivado em `docs/verificacoes/fontes/cochran1977/` com SHA-256 no repositório. O pesquisador deve estar ciente de que, sob a Norma do projeto, a Saída 3 fundamenta-se provisoriamente em síntese bibliográfica secundária e exige conferência no primário antes de eventual positivação formal em D12/D16.
 
 1. **Motivo Central:** É a única abordagem que **preserva o rigor do protocolo de pareamento gêmeo de D16** (2 treino + 2 held-out em cada unidade analítica), eliminando o risco inaceitável de células vazias ou com apenas 1 polígono da Saída 1.
 2. **Reserva Operacional Segura:** Ao unificar os 9 candidatos de $S_1 \times \hat{K}_2$ no macro-estrato colapsado $E_{1,*,2}$, obtêm-se 7 candidatos pós-thinning para 4 vagas, conferindo probabilidade de sucesso superior a 90% sob o protocolo de negação de acesso DP-20.
@@ -170,5 +174,5 @@ Em estrito cumprimento à Seção 2 do `CLAUDE.md`, **o agente executor NÃO alt
 Submetem-se os números, a comprovação estatística e as quatro opções ao pesquisador para decisão soberana:
 - **Opção 1:** Amostragem Exaustiva ($\pi_i = 1$) via D23 — Mantém 18 estratos em D12, mas deixa $E_{1,1,2}$ sem dados ($N_h = 0$).
 - **Opção 2:** Declaração de Fora do Domínio de Validade (D07) — Exclui formalmente as combinações sem suporte físico na bacia.
-- **Opção 3 (Recomendada):** Colapso de Estratos Adjacentes via Cochran (1977, §5A.12) — Unifica células deficientes em macro-estratos com pareamento perfeito (2+2) e reserva sob recusa, totalizando 15 ou 16 estratos (60 ou 64 polígonos).
-- **Opção 4:** Fatorial Condicional / Aninhado — Estratifica K̂ apenas em Ŝ2 e Ŝ3, fixando Ŝ1 em 3 estratos (60 polígonos).
+- **Opção 3 (Recomendada):** Colapso de Estratos Adjacentes via Cochran (1977, §5A.12) [NÃO CONFERIDO NO PRIMÁRIO] — Unifica células deficientes em macro-estratos com pareamento perfeito (2+2) e reserva sob recusa, totalizando 15 ou 16 estratos (60 ou 64 polígonos). *Ressalva obrigatória: a recomendação repousa em citação pendente de conferência no primário.*
+- **Opção 4:** Fatorial Condicional / Aninhado [Kish 1965 / Cochran 1977 — NÃO CONFERIDOS NO PRIMÁRIO] — Estratifica K̂ apenas em Ŝ2 e Ŝ3, fixando Ŝ1 em 3 estratos (60 polígonos).

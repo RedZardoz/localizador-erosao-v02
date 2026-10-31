@@ -41,6 +41,90 @@ describe("scripts/verificar_pool_estratos.ts — CLI de Verificação do Pool po
     expect(arquivosDepois).toEqual(arquivosAntes);
   });
 
+  it("recusa execução sem --reservas (exit code != 0)", () => {
+    const arquivosAntes = listarArquivosSorteio();
+
+    const resultado = spawnSync(
+      process.execPath,
+      [
+        "--import",
+        "./scripts/ts-loader.mjs",
+        scriptPath,
+        "--candidatos",
+        "docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json",
+        "--n-minimo",
+        "4",
+        "--taxas",
+        "0.1,0.25",
+      ],
+      {
+        cwd: process.cwd(),
+        encoding: "utf-8",
+      }
+    );
+
+    const arquivosDepois = listarArquivosSorteio();
+    expect(resultado.status).not.toBe(0);
+    expect(resultado.stderr + resultado.stdout).toMatch(/--reservas/i);
+    expect(arquivosDepois).toEqual(arquivosAntes);
+  });
+
+  it("recusa execução sem --n-minimo (exit code != 0)", () => {
+    const arquivosAntes = listarArquivosSorteio();
+
+    const resultado = spawnSync(
+      process.execPath,
+      [
+        "--import",
+        "./scripts/ts-loader.mjs",
+        scriptPath,
+        "--candidatos",
+        "docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json",
+        "--reservas",
+        "2",
+        "--taxas",
+        "0.1,0.25",
+      ],
+      {
+        cwd: process.cwd(),
+        encoding: "utf-8",
+      }
+    );
+
+    const arquivosDepois = listarArquivosSorteio();
+    expect(resultado.status).not.toBe(0);
+    expect(resultado.stderr + resultado.stdout).toMatch(/--n-minimo/i);
+    expect(arquivosDepois).toEqual(arquivosAntes);
+  });
+
+  it("recusa execução sem --taxas (exit code != 0)", () => {
+    const arquivosAntes = listarArquivosSorteio();
+
+    const resultado = spawnSync(
+      process.execPath,
+      [
+        "--import",
+        "./scripts/ts-loader.mjs",
+        scriptPath,
+        "--candidatos",
+        "docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json",
+        "--reservas",
+        "2",
+        "--n-minimo",
+        "4",
+      ],
+      {
+        cwd: process.cwd(),
+        encoding: "utf-8",
+      }
+    );
+
+    const arquivosDepois = listarArquivosSorteio();
+    expect(resultado.status).not.toBe(0);
+    expect(resultado.stderr + resultado.stdout).toMatch(/--taxas/i);
+    expect(arquivosDepois).toEqual(arquivosAntes);
+  });
+
   it("recusa candidato sintético com a MESMA mensagem do sorteio D23", () => {
     const arquivosAntes = listarArquivosSorteio();
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sarel-pool-sint-"));
