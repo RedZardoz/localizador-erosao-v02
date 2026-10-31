@@ -33,15 +33,15 @@ const AVISO_TOPO_ILUSTRATIVO =
 
 function parseArgs(args: string[]): {
   caminhoCandidatos: string | null;
-  reservas: number | null;
-  nMinimo: number | null;
-  taxas: number[] | null;
+  reservas: number;
+  nMinimo: number;
+  taxas: number[];
   caminhoSaida: string | null;
 } {
   let caminhoCandidatos: string | null = null;
-  let reservas: number | null = null;
-  let nMinimo: number | null = null;
-  let taxas: number[] | null = null;
+  let reservas = 2;
+  let nMinimo = 4;
+  let taxas = [0.1, 0.25];
   let caminhoSaida: string | null = null;
 
   for (let i = 0; i < args.length; i++) {
@@ -100,27 +100,6 @@ export function executarVerificacaoPool(): void {
     console.error(
       "[ERRO_PARAMETRO] O argumento --candidatos <caminho.json> é obrigatório. " +
       "Esta CLI recusa rodar sem candidatos reais informados."
-    );
-    process.exit(1);
-  }
-
-  if (reservas === null) {
-    console.error(
-      "[ERRO_PARAMETRO] O argumento --reservas <N> é obrigatório (inteiro >= 0)."
-    );
-    process.exit(1);
-  }
-
-  if (nMinimo === null) {
-    console.error(
-      "[ERRO_PARAMETRO] O argumento --n-minimo <N> é obrigatório (inteiro entre 1 e 4)."
-    );
-    process.exit(1);
-  }
-
-  if (!taxas || taxas.length === 0) {
-    console.error(
-      "[ERRO_PARAMETRO] O argumento --taxas <0.1,0.25,...> é obrigatório (números em [0, 1])."
     );
     process.exit(1);
   }
