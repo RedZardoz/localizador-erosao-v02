@@ -691,7 +691,7 @@ def build_pdf():
         styles["Body"]
     ))
     story.append(Spacer(1, 0.8 * mm))
-    story.append(Paragraph("• <b>Bloco Espectro-Temporal (Sentinel-2):</b> Teto de até <b>8 preditores</b> (~1.841 unidades espacialmente independentes nos 72 polígonos; regime estatístico plenamente adequado).", styles["BulletText"]))
+    story.append(Paragraph(f"• <b>Bloco Espectro-Temporal (Sentinel-2):</b> Teto de até <b>8 preditores</b> (~{PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasTotal']} unidades espacialmente independentes nos 72 polígonos; regime estatístico plenamente adequado).", styles["BulletText"]))
     story.append(Paragraph(f"• <b>Bloco de Terreno (Copernicus DEM 30 m):</b> Teto de até <b>4 preditores</b> (~{PARAM_DEFLACAO['terreno']['unidadesEfetivasTotal']} unidades independentes a 30 m; admitido por necessidade física com restrições de monotonicidade).", styles["BulletText"]))
     story.append(Paragraph("• <b>Bloco de Solo (Embrapa Solos):</b> Teto de exatamente <b>1 preditor</b> (a erodibilidade K oficial `k_solos`; 72 unidades nominais, sem ganho efetivo intra-polígono).", styles["BulletText"]))
     story.append(Paragraph("• <b>Bloco de Chuva (CHIRPS Regional):</b> Teto de exatamente <b>1 preditor</b> (o fator R de erosividade anual regionalizada).", styles["BulletText"]))
@@ -701,7 +701,7 @@ def build_pdf():
         "<b>Prevenção de Vazamento Espacial e Critério Pré-Registrado de Falsificabilidade (D25):</b><br/>"
         "Em conformidade com as diretrizes de reprodutibilidade em machine learning (PINEAU et al., 2021) e combate a vazamento de dados (PLOTON et al., 2020; KAPOOR; NARAYANAN, 2023), "
         "o treinamento adota <i>Spatial Block Cross-Validation</i> agrupada por polígono (<i>GroupKFold</i>). "
-        "A avaliação honesta final ocorre <b>exclusivamente uma única vez sobre os 36 polígonos mantidos em *held-out* lacrado</b> (cerca de 920 unidades efetivas independentes; D16, D25). "
+        f"A avaliação honesta final ocorre <b>exclusivamente uma única vez sobre os 36 polígonos mantidos em *held-out* lacrado</b> (cerca de {PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasHeldOut']} unidades efetivas independentes; D16, D25). "
         "Em cumprimento ao pré-registro (NOSEK et al., 2018), fixam-se <b>três desfechos epistemológicos formais</b> avaliados sob correlação de postos de Spearman e Bootstrap agrupado (CAMERON; GELBACH; MILLER, 2008):<br/>"
         "1. <b>Corroboração:</b> rho_XGBoost &ge; 0,40 E Delta rho = (rho_XGBoost - rho_RUSLE) &ge; 0,10 com p &lt; 0,05 (ganho substancial comprovado).<br/>"
         "2. <b>Refutação:</b> rho_XGBoost &lt; 0,40 OU limite inferior do IC 95% de Delta rho &le; 0 (modelo não supera o RUSLE ou não discrimina).<br/>"

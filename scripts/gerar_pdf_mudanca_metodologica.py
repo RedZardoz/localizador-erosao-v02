@@ -10,6 +10,16 @@ Autor: Luís Alfredo Ferreira da Silva (RedZardoz)
 
 import os
 import sys
+import json
+
+def carregar_parametros_deflacao():
+    caminho = os.path.join(os.path.dirname(__file__), "..", "data", "PARAMETROS_DEFLACAO.json")
+    if not os.path.exists(caminho):
+        caminho = "data/PARAMETROS_DEFLACAO.json"
+    with open(caminho, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+PARAM_DEFLACAO = carregar_parametros_deflacao()
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import mm, cm
@@ -470,7 +480,7 @@ def build_pdf(pdf_path):
     story.append(Paragraph(
         "<b>Regra de van der Ploeg, Austin & Steyerberg (2014) — EPV $\\ge$ 20:</b><br/>"
         "Em modelos de aprendizado baseados em árvores (XGBoost), a razão de eventos por variável preditora (<i>Events Per Variable - EPV</i>) "
-        "deve ser rigorosamente superior a 20 para evitar superajuste e perda de calibração probabilística. Com ~1.841 unidades espacialmente independentes "
+        f"deve ser rigorosamente superior a 20 para evitar superajuste e perda de calibração probabilística. Com ~{PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasTotal']} unidades espacialmente independentes "
         "no conjunto de 72 polígonos e uma prevalência conservadora de 10% a 15% (~200 eventos positivos), o teto estatístico rigoroso "
         "impede ultrapassar 8 variáveis espectrais e 4 variáveis de terreno, blindando o modelo contra memorização espúria.",
         styles["Body"]

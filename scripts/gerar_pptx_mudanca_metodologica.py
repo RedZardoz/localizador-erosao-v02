@@ -10,6 +10,17 @@ Autor: Luís Alfredo Ferreira da Silva (RedZardoz)
 
 import os
 import sys
+import json
+
+def carregar_parametros_deflacao():
+    caminho = os.path.join(os.path.dirname(__file__), "..", "data", "PARAMETROS_DEFLACAO.json")
+    if not os.path.exists(caminho):
+        caminho = "data/PARAMETROS_DEFLACAO.json"
+    with open(caminho, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+PARAM_DEFLACAO = carregar_parametros_deflacao()
+UE_ESPECTRO_POL = f"{PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasPorPoligono']:.1f}".replace('.', ',')
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.enum.text import PP_ALIGN
@@ -510,7 +521,7 @@ def criar_apresentacao_mudanca_metodologica(caminho_pptx):
                  "   • Bloco Pedológico (Carta 1:250k): <b>~1 unidade efetiva</b> por polígono.",
                  "",
                  "► Total Populacional da Campanha:",
-                 "   • 72 polígonos x 25,6 unidades = <b>~1.841 unidades independentes</b> no conjunto todo."
+                 f"   • {PARAM_DEFLACAO['totalPoligonos']} polígonos x {UE_ESPECTRO_POL} unidades = <b>~{PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasTotal']} unidades independentes</b> no conjunto todo."
              ], C_CYAN_DARK, C_CYAN_BG)
 
     add_card(s8, Inches(6.8), Inches(1.4), Inches(5.8), Inches(5.4),
@@ -548,7 +559,7 @@ def criar_apresentacao_mudanca_metodologica(caminho_pptx):
                  "   • Para cada preditor inserido no modelo, exige-se no mínimo 20 eventos positivos independentes.",
                  "",
                  "► Orçamento Amostral da Pesquisa:",
-                 "   • Com ~1.841 unidades independentes e prevalência esperada de 10% a 15%:",
+                 f"   • Com ~{PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasTotal']} unidades independentes e prevalência esperada de 10% a 15%:",
                  "   • Número de positivos independentes esperados: <b>~200 eventos</b>.",
                  "   • Dividido por 2 (treino held-out 50/50): <b>~100 eventos de treino</b>.",
                  "",

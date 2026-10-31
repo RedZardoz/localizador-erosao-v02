@@ -55,7 +55,7 @@ class Estatistica(unittest.TestCase):
     def test_n_efetivo_reproduz_d24(self):
         self.assertAlmostEqual(m.n_efetivo(100000, 50), 50.93, places=2)         # ~51 por poligono de 10 ha (D24)
         n = m.n_efetivo(72 * 5.02 * 1e4, 50)
-        self.assertAlmostEqual(n, 1840.9, delta=0.5)                              # D24 vigente diz ~1.841 (diferenca < 0,1 %)
+        self.assertAlmostEqual(n, 1840.9, delta=0.5)                              # valor canonico em data/PARAMETROS_DEFLACAO.json (espectroTemporal.unidadesEfetivasTotal)
         self.assertLess(abs(n - 1845) / 1845, 0.01)
     def test_preditor_saida_do_rusle_proibido(self):
         for proibido in ("RUSLE_A", "RUSLE_Perda_Solo_t_ha_ano", "RUSLE_Fator_C", "RUSLE_Fator_P"):

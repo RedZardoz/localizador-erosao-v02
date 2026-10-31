@@ -100,7 +100,7 @@ describe("Fonte Única de Parâmetros e Deflação Espacial (GOV-3 / D16 / D24)"
     expect(exigirParametro(DECISOES.D24, "tetoTotal").valor).toBe(14);
   });
 
-  it("audita os scripts geradores de documentos e falha se houver cifras defasadas (1.845, 396 no terreno, ou 936 no held-out)", () => {
+  it("audita os geradores de documentos contra deriva: exige PARAM_DEFLACAO e proíbe literais derivados ou defasados", () => {
     const scriptsToCheck = [
       "scripts/gerar_pdf_metodologia_integrada.py",
       "scripts/gerar_docx_metodologia_integrada.py",
@@ -109,38 +109,97 @@ describe("Fonte Única de Parâmetros e Deflação Espacial (GOV-3 / D16 / D24)"
       "scripts/gerar_pptx_mudanca_metodologica.py",
     ];
 
+    // 1. Ler o JSON canônico
+    const jsonPath = path.join(process.cwd(), "data", "PARAMETROS_DEFLACAO.json");
+    const jsonRaw = fs.readFileSync(jsonPath, "utf-8");
+    const params = JSON.parse(jsonRaw);
+
+    // 2. Montar lista de proibições derivadas e históricas
+    interface Proibicao {
+      valor: string | number;
+      regex: RegExp;
+      motivo: string;
+    }
+
+    const proibicoes: Proibicao[] = [];
+
+    // Valores inteiros derivados (total e held-out de espectro-temporal e terreno)
+    const inteirosDerivados: Array<{ nome: string; val: number }> = [
+      { nome: "espectroTemporal.unidadesEfetivasTotal", val: params.espectroTemporal.unidadesEfetivasTotal },
+      { nome: "espectroTemporal.unidadesEfetivasHeldOut", val: params.espectroTemporal.unidadesEfetivasHeldOut },
+      { nome: "terreno.unidadesEfetivasTotal", val: params.terreno.unidadesEfetivasTotal },
+      { nome: "terreno.unidadesEfetivasHeldOut", val: params.terreno.unidadesEfetivasHeldOut },
+    ];
+
+    for (const item of inteirosDerivados) {
+      const formatadoMilhar = item.val.toLocaleString("pt-BR").replace(/\./g, "\\.");
+      const raw = item.val.toString();
+      // Ancorado com unidades: ~? 1.841 unidades ou \b920 unidades
+      const padrao = new RegExp(`(?:~\\s*|\\b)(?:${formatadoMilhar}|${raw})\\s+unidades`, "i");
+      proibicoes.push({
+        valor: item.val,
+        regex: padrao,
+        motivo: `valor derivado de ${item.nome} (${item.val}) deve ser interpolado via PARAM_DEFLACAO`,
+      });
+    }
+
+    // Unidades por polígono derivadas (ex: 25.57 -> 25,6 ou 6.39 -> 6,4)
+    const decimaisDerivados: Array<{ nome: string; val: number }> = [
+      { nome: "espectroTemporal.unidadesEfetivasPorPoligono", val: params.espectroTemporal.unidadesEfetivasPorPoligono },
+      { nome: "terreno.unidadesEfetivasPorPoligono", val: params.terreno.unidadesEfetivasPorPoligono },
+    ];
+
+    for (const item of decimaisDerivados) {
+      const arredondado = (Math.round(item.val * 10) / 10).toFixed(1);
+      const comVirgula = arredondado.replace(".", ",");
+      const padrao = new RegExp(`(?:~\\s*|\\b)(?:${comVirgula}|${arredondado})\\s+unidades`, "i");
+      proibicoes.push({
+        valor: comVirgula,
+        regex: padrao,
+        motivo: `valor derivado de ${item.nome} (~${comVirgula}) deve ser interpolado via PARAM_DEFLACAO`,
+      });
+    }
+
+    // 3. Lista negra de valores históricos superados
+    const valoresSuperados: Array<{ val: string; regex: RegExp }> = [
+      { val: "1.845", regex: /(?:~\s*|\b)1\.845(?:\s+unidades)?/i },
+      { val: "396", regex: /(?:~\s*|\b)396\s+unidades/i },
+      { val: "936", regex: /(?:~\s*|\b)936\s+unidades/i },
+      { val: "1.836", regex: /(?:~\s*|\b)1\.836(?:\s+unidades)?/i },
+      { val: "918", regex: /(?:~\s*|\b)918\s+unidades/i },
+    ];
+
+    for (const sup of valoresSuperados) {
+      proibicoes.push({
+        valor: sup.val,
+        regex: sup.regex,
+        motivo: `valor histórico defasado '${sup.val}' é estritamente proibido`,
+      });
+    }
+
+    // 4. Auditar cada gerador
     for (const relPath of scriptsToCheck) {
       const fullPath = path.join(process.cwd(), relPath);
       const text = fs.readFileSync(fullPath, "utf-8");
 
-      // Nenhum desses scripts pode trazer o valor defasado 1.845 no corpo do texto
+      // Verificação positiva firme: TODO gerador deve carregar PARAM_DEFLACAO
       expect(
-        text.includes("~1.845"),
-        `${relPath} contém '~1.845' obsoleto. Deve usar o valor derivado (~1.841).`
-      ).toBe(false);
+        text.includes("PARAM_DEFLACAO"),
+        `${relPath} não carrega a fonte canônica PARAM_DEFLACAO.`
+      ).toBe(true);
 
-      // Nenhum desses scripts pode trazer ~396 unidades independentes no bloco de terreno
-      expect(
-        text.includes("~396 unidades"),
-        `${relPath} contém '~396 unidades' obsoleto. Deve usar o valor derivado (~460).`
-      ).toBe(false);
-
-      // Nenhum desses scripts pode trazer 936 unidades no held-out
-      expect(
-        text.includes("936 unidades"),
-        `${relPath} contém '936 unidades' obsoleto. Deve usar 920 unidades.`
-      ).toBe(false);
-
-      // Os geradores principais devem referenciar o parâmetro canônico ou o valor 460
-      if (
-        relPath.includes("metodologia_integrada") ||
-        relPath.includes("especificacao_projeto")
-      ) {
-        expect(
-          text.includes("PARAM_DEFLACAO") || text.includes("460"),
-          `${relPath} não referencia PARAM_DEFLACAO nem 460.`
-        ).toBe(true);
-      }
+      // Verificação linha por linha com mensagem informativa
+      const lines = text.split(/\r?\n/);
+      lines.forEach((line, idx) => {
+        const lineNum = idx + 1;
+        for (const p of proibicoes) {
+          const match = p.regex.test(line);
+          expect(
+            match,
+            `Literal proibido detectado em ${relPath}:${lineNum}: '${line.trim()}'. Motivo: ${p.motivo}.`
+          ).toBe(false);
+        }
+      });
     }
   });
 });

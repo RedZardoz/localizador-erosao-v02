@@ -551,7 +551,7 @@ def build_docx():
     add_body(
         "Em conformidade com as diretrizes de reprodutibilidade em machine learning (PINEAU et al., 2021) e combate a vazamento de dados (PLOTON et al., 2020; KAPOOR; NARAYANAN, 2023), "
         "o treinamento adota Spatial Block Cross-Validation agrupada por polígono (GroupKFold). "
-        "A avaliação honesta final ocorre exclusivamente uma única vez sobre os 36 polígonos mantidos em held-out lacrado (cerca de 920 unidades efetivas independentes; D16). "
+        f"A avaliação honesta final ocorre exclusivamente uma única vez sobre os 36 polígonos mantidos em held-out lacrado (cerca de {PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasHeldOut']} unidades efetivas independentes; D16). "
         "Em cumprimento ao pré-registro (NOSEK et al., 2018), fixam-se três desfechos epistemológicos formais avaliados sob correlação de postos de Spearman e Bootstrap agrupado (CAMERON; GELBACH; MILLER, 2008):\n"
         "1. Corroboração: rho_XGBoost >= 0,40 E Delta rho = (rho_XGBoost - rho_RUSLE) >= 0,10 com p < 0,05 (ganho substancial comprovado).\n"
         "2. Refutação: rho_XGBoost < 0,40 OU limite inferior do IC 95% de Delta rho <= 0 (modelo não supera o RUSLE ou não discrimina).\n"
