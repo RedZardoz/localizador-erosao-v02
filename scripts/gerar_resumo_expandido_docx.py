@@ -12,7 +12,7 @@ LIMITES E DIRETRIZES TÉCNICAS:
   Objetivos, Metodologia, Resultados e Considerações Finais) deve conter NO MÁXIMO 500 palavras.
   A seção de Referências não é contabilizada.
 - Normas: Formatação científica em estrita observância à APA (7ª Edição).
-- Modelo Base: docs/Seminario prov/Modelo_resumo_SBPROPPG_26.docx (preserva banner/header).
+- Modelo Base: docs/submissoes/sbproppg_2026/Modelo_resumo_SBPROPPG_26.docx (preserva banner/header).
 """
 
 import os
@@ -25,8 +25,8 @@ from docx.oxml.ns import qn
 
 
 def criar_resumo_expandido():
-    caminho_modelo = os.path.join("docs", "Seminario prov", "Modelo_resumo_SBPROPPG_26.docx")
-    caminho_saida = os.path.join("docs", "Seminario prov", "Resumo_Expandido_SBPROPPG_26_Luis_Alfredo.docx")
+    caminho_modelo = os.path.join("docs", "submissoes", "sbproppg_2026", "Modelo_resumo_SBPROPPG_26.docx")
+    caminho_saida = os.path.join("docs", "submissoes", "sbproppg_2026", "Resumo_Expandido_SBPROPPG_26_Luis_Alfredo.docx")
 
     if not os.path.exists(caminho_modelo):
         raise FileNotFoundError(f"Arquivo modelo não encontrado: {caminho_modelo}")

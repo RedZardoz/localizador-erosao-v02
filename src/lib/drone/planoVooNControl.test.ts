@@ -31,7 +31,7 @@ describe("Exportação de Planos de Voo QGroundControl (.plan v1) para o NContro
   it("Y1 (Teste de Aceitação Falsificável Obrigatório): reproduz exatamente o survey #2 (Micasense Altum, angle 66) de MissaoCalculoMica.plan dentro de < 0,5 m e 1e-4 m", () => {
     const caminhoPlanExemplo = path.resolve(
       process.cwd(),
-      "docs/Plano de voo exemplo/MissaoCalculoMica.plan"
+      "docs/dados/planos_de_voo/MissaoCalculoMica.plan"
     );
     const conteudoBruto = fs.readFileSync(caminhoPlanExemplo, "utf8");
     const missaoExemplo = JSON.parse(conteudoBruto);

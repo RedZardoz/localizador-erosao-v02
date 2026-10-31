@@ -68,7 +68,7 @@ def main():
     saida_txt.append("\nTexto integral da Seção 4.3.2 (p. 121):")
     saida_txt.append(p121_txt)
 
-    caminho_saida = os.path.join(os.path.dirname(__file__), "saida_extracao_zhu_2014.txt")
+    caminho_saida = os.path.join(os.path.dirname(__file__), "saida_extracao_zhu_2013.txt")
     with open(caminho_saida, "w", encoding="utf-8") as f_out:
         f_out.write("\n".join(saida_txt))
 

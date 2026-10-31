@@ -51,7 +51,7 @@ Norma completa, obrigatória para qualquer sessão: **`docs/NORMA_LASTRO_CIENTIF
 - **R-L2** — Citação vinda de fonte secundária fica marcada como **não conferida** até alguém abrir o primário.
 - **R-L3** — Conferência no primário arquiva a fonte em `docs/verificacoes/fontes/` e gera verificação em `docs/verificacoes/`, **com uma seção dizendo o que a fonte NÃO sustenta**. Esticar citação verdadeira é a forma mais comum de corrompê-la.
 - **R-L4** — Sem fonte, registre **dívida declarada** com data; nunca deixe o campo vazio nem o preencha com documento interno. Decisão de natureza contratual ou operacional declara essa natureza e aponta o instrumento correto.
-- **R-L5** — Obra citada entra em `docs/Selecao Bibliografica/` com autor, ano, título e DOI.
+- **R-L5** — Obra citada entra em `docs/bibliografia/` com autor, ano, título e DOI.
 
 **Nunca invente, infira de memória ou extrapole uma referência.** É falta mais grave que a ausência, porque a ausência é visível e a invenção não. Na dúvida sobre se a fonte sustenta a afirmação, **ela não sustenta**.
 

@@ -280,7 +280,7 @@ def make_formula_card(titulo_formula, formula_str, explicacao_str, largura=174*m
         Spacer(1, 1.5*mm),
     ]
 
-    img_path = os.path.join("docs", "figuras_formulas", f"{img_nome}.png") if img_nome else None
+    img_path = os.path.join("docs", "figuras", "formulas", f"{img_nome}.png") if img_nome else None
     if img_path and os.path.exists(img_path):
         try:
             with PILImage.open(img_path) as im:
@@ -621,7 +621,7 @@ def construir_manual_pdf(caminho_saida):
     story.append(HRFlowable(width="100%", thickness=0.8, color=C_EMERALD_MID, spaceBefore=1*mm, spaceAfter=3*mm))
 
     # Síntese Visual: Quadro Completo das 12 Formulações Matemáticas Canônicas
-    quadro_path = os.path.join("docs", "figuras_formulas", "quadro_completo_formulas.png")
+    quadro_path = os.path.join("docs", "figuras", "formulas", "quadro_completo_formulas.png")
     if os.path.exists(quadro_path):
         story.append(Paragraph("<b>Síntese Visual das 12 Formulações Canônicas do SAREL:</b>", styles["SubSectionTitle"]))
         story.append(Spacer(1, 1.5*mm))

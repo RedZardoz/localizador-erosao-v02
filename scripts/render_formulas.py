@@ -18,7 +18,7 @@ from matplotlib import rcParams
 rcParams['mathtext.fontset'] = 'cm'  # Computer Modern (padrão LaTeX canônico)
 rcParams['font.family'] = 'serif'
 
-PASTA_SAIDA = "docs/figuras_formulas"
+PASTA_SAIDA = "docs/figuras/formulas"
 os.makedirs(PASTA_SAIDA, exist_ok=True)
 
 # Definição das 12 formulações individuais

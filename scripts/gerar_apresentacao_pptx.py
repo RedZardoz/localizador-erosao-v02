@@ -557,7 +557,7 @@ def criar_apresentacao(caminho_saida):
     add_footer(s10, 10)
 
     # Imagem do Quadro Completo em Alta Resolução (300 DPI)
-    quadro_path = os.path.join("docs", "figuras_formulas", "quadro_completo_formulas.png")
+    quadro_path = os.path.join("docs", "figuras", "formulas", "quadro_completo_formulas.png")
     if os.path.exists(quadro_path):
         s10.shapes.add_picture(quadro_path, Inches(0.95), Inches(1.35), width=Inches(11.433))
 
@@ -595,7 +595,7 @@ def criar_apresentacao(caminho_saida):
         p_t.font.size = Pt(11)
         p_t.font.color.rgb = C_NAVY_DARK
 
-        img_path = os.path.join("docs", "figuras_formulas", img_name)
+        img_path = os.path.join("docs", "figuras", "formulas", img_name)
         if os.path.exists(img_path):
             s11.shapes.add_picture(img_path, x + Inches(0.25), y + Inches(0.55), height=Inches(0.50))
 
@@ -641,7 +641,7 @@ def criar_apresentacao(caminho_saida):
         p_t.font.size = Pt(11)
         p_t.font.color.rgb = C_NAVY_DARK
 
-        img_path = os.path.join("docs", "figuras_formulas", img_name)
+        img_path = os.path.join("docs", "figuras", "formulas", img_name)
         if os.path.exists(img_path):
             s12.shapes.add_picture(img_path, x + Inches(0.25), y + Inches(0.55), height=Inches(0.50))
 
@@ -687,7 +687,7 @@ def criar_apresentacao(caminho_saida):
         p_t.font.size = Pt(11)
         p_t.font.color.rgb = C_NAVY_DARK
 
-        img_path = os.path.join("docs", "figuras_formulas", img_name)
+        img_path = os.path.join("docs", "figuras", "formulas", img_name)
         if os.path.exists(img_path):
             s13.shapes.add_picture(img_path, x + Inches(0.25), y + Inches(0.55), height=Inches(0.50))
 

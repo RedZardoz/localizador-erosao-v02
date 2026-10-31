@@ -52,8 +52,8 @@ from reportlab.pdfgen import canvas
 # Diretórios de trabalho
 DIRETORIO_RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIRETORIO_DOCS = os.path.join(DIRETORIO_RAIZ, "docs")
-DIRETORIO_IMAGES = os.path.join(DIRETORIO_DOCS, "images")
-DIRETORIO_FIGURAS = os.path.join(DIRETORIO_DOCS, "figuras_manual")
+DIRETORIO_IMAGES = os.path.join(DIRETORIO_DOCS, "figuras", "interface")
+DIRETORIO_FIGURAS = os.path.join(DIRETORIO_DOCS, "figuras", "manual")
 CAMINHO_PDF_FINAL = os.path.join(DIRETORIO_DOCS, "Manual_Instalacao_e_Operacao_SAREL.pdf")
 
 # Link oficial fornecido pelo usuário para download da base de dados completa

@@ -11,7 +11,7 @@ import csv, glob, os, re, sys
 import xlrd
 
 RAIZ = os.path.join(os.path.dirname(__file__), "..", "..")
-BASE = os.path.join(RAIZ, "docs", "pluviometria")
+BASE = os.path.join(RAIZ, "docs", "dados", "pluviometria")
 SAIDA = os.path.join(RAIZ, "docs", "verificacoes")
 MESES = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"]
 

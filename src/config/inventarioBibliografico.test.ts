@@ -9,7 +9,7 @@ import * as path from "node:path";
  * ============================================================================
  *
  * O QUÊ: confronta os campos `referencia` de DECISOES e PARAMETROS contra o
- * inventário bibliográfico em docs/Selecao Bibliografica/INVENTARIO_SELECAO_BIBLIOGRAFICA.md.
+ * inventário bibliográfico em docs/bibliografia/INVENTARIO_SELECAO_BIBLIOGRAFICA.md.
  *
  * POR QUÊ EXISTE: a regra R-L5 da norma (docs/NORMA_LASTRO_CIENTIFICO.md) exige que
  * toda obra citada esteja catalogada no inventário do acervo, com metadados (autor,
@@ -21,7 +21,7 @@ import * as path from "node:path";
 
 const CAMINHO_INVENTARIO = path.resolve(
   process.cwd(),
-  "docs/Selecao Bibliografica/INVENTARIO_SELECAO_BIBLIOGRAFICA.md"
+  "docs/bibliografia/INVENTARIO_SELECAO_BIBLIOGRAFICA.md"
 );
 
 describe("Trava da Norma R-L5 — Inventário Bibliográfico Formal", () => {
