@@ -12,6 +12,8 @@ export interface QualidadeAjuste {
   nObservacoes: number;
   r2?: number;
   erroPadrao?: number;
+  regime?: "padrao" | "fallback_janela_curta";
+  elegivelD12?: boolean;
 }
 
 export type Proveniencia<T> =
@@ -42,6 +44,23 @@ export function medido<T>(
     adquiridoEm,
     consultadoEm,
     ...(detalhe ? { detalhe } : {}),
+  };
+}
+
+export function modelado<T>(
+  valor: T,
+  modelo: string,
+  insumos: string[],
+  decisoes?: string[],
+  qualidade?: QualidadeAjuste
+): Proveniencia<T> {
+  return {
+    estado: "modelado",
+    valor,
+    modelo,
+    insumos,
+    ...(decisoes ? { decisoes } : {}),
+    ...(qualidade ? { qualidade } : {}),
   };
 }
 

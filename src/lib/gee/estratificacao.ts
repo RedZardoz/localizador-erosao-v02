@@ -18,6 +18,9 @@
  *   é estritamente null (nunca 0.5 inventado).
  */
 
+import type { Proveniencia } from "@/types/proveniencia";
+import { podeEntrarEstratificacaoD12 } from "@/lib/matriz/montagemTemporal";
+
 export interface CandidatoEstratificacao {
   id: string;
   latitude: number;
@@ -25,6 +28,7 @@ export interface CandidatoEstratificacao {
   declividadePct: number;    // Dimensão Ŝ
   frequenciaSoloNu: number;  // Dimensão Ê [0, 1]
   nivelK: 1 | 2;             // Dimensão K̂ (1 ou 2)
+  provenienciaE?: Proveniencia<number>; // Proveniência formal da dimensão Ê (D11.2 / D12)
 }
 
 export interface PontoEstratificado {
@@ -157,6 +161,18 @@ export function particionarCandidatosEm18Estratos<T extends CandidatoEstratifica
   todosPossiveisEstratos: string[];
   estratosMap: Record<string, T[]>;
 } {
+  // Guarda pré-registrada de governabilidade D11.2 / D12:
+  // Ê degradado sob fallback (SE ≈ 0,20) é EXPRESSAMENTE VEDADO de entrar nos tercis de D12
+  for (const c of candidatos) {
+    if (c.provenienciaE && !podeEntrarEstratificacaoD12(c.provenienciaE)) {
+      throw new Error(
+        `Candidato ${c.id} possui frequência de solo nu obtida sob regime inelegível para D12 ` +
+          `(fallback de janela curta ou suficiência insuficiente). Conforme D11.2 e D12, ` +
+          `apenas medições de Ê com suficiência plena (n >= 12, SE <= 0,144) podem participar da estratificação.`
+      );
+    }
+  }
+
   const sVals = candidatos.map((c) => c.declividadePct);
   const eVals = candidatos.map((c) => c.frequenciaSoloNu);
   const limiaresS = calcularLimiaresTercis(sVals);

@@ -148,4 +148,29 @@ describe("Amostragem Estratificada no Espaço Ŝ × Ê × K̂ (§10.6)", () => {
     expect(res.pontos.length).toBe(2);
     expect(res.relatorio.deficitTotal).toBeGreaterThan(0);
   });
+
+  it("conforme D11.2 e D12: lanca erro se candidato possuir provenienciaE sob regime de fallback de janela curta", async () => {
+    const { particionarCandidatosEm18Estratos } = await import("./estratificacao");
+    const candidatosComFallback: CandidatoEstratificacao[] = [
+      {
+        id: "c-fallback",
+        latitude: -25.0,
+        longitude: -50.0,
+        declividadePct: 5.0,
+        frequenciaSoloNu: 0.2,
+        nivelK: 1,
+        provenienciaE: {
+          estado: "modelado",
+          valor: 0.2,
+          modelo: "Proporção binomial sob fallback",
+          insumos: ["S2"],
+          qualidade: { nObservacoes: 8, regime: "fallback_janela_curta", elegivelD12: false },
+        },
+      },
+    ];
+
+    expect(() => particionarCandidatosEm18Estratos(candidatosComFallback)).toThrow(
+      /regime inelegível para D12/
+    );
+  });
 });

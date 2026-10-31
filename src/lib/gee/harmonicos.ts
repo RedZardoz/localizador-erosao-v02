@@ -20,9 +20,18 @@
 import { Proveniencia, QualidadeAjuste } from "@/types/proveniencia";
 import { ObservacaoCena, NomeBandaEspectral } from "./serieTemporal";
 
+/**
+ * Piso mínimo de observações válidas para ajuste harmônico multivariado OLS (B12 e B8),
+ * conforme Decisão D11.4 e regra de inicialização de Zhu (2013, tese, Cap. 4, p. 121;
+ * Zhu & Woodcock 2014 — não conferida no primário).
+ * Para o modelo canônico de 1 harmônico anual mais tendência e intercepto (p = 4),
+ * n = 12 assegura razão N/p = 12/4 = 3,0 e df = 12 - 4 = 8 graus de liberdade.
+ */
+export const N_MINIMO_OBSERVACOES_HARMONICOS_D11_4 = 12;
+
 export interface OpcoesAjusteHarmonico {
-  nMinimoObservacoes?: number; // Padrão: 12
-  usarDoisHarmonicos?: boolean; // Se true usa 6 termos, se false usa 4 termos (D03)
+  nMinimoObservacoes?: number; // Padrão: N_MINIMO_OBSERVACOES_HARMONICOS_D11_4 (12)
+  usarDoisHarmonicos?: boolean; // Se true usa 6 termos, se false usa 4 termos (D03/D11)
 }
 
 export interface CoeficientesHarmonicosBanda {
@@ -41,7 +50,7 @@ export function ajustarHarmonicosBanda(
   banda: NomeBandaEspectral,
   opcoes: OpcoesAjusteHarmonico = {}
 ): CoeficientesHarmonicosBanda {
-  const nMin = opcoes.nMinimoObservacoes !== undefined ? opcoes.nMinimoObservacoes : 12;
+  const nMin = opcoes.nMinimoObservacoes ?? N_MINIMO_OBSERVACOES_HARMONICOS_D11_4;
   const doisHarmonicos = opcoes.usarDoisHarmonicos ?? false;
   const p = doisHarmonicos ? 6 : 4;
 

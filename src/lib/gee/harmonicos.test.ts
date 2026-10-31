@@ -1,5 +1,9 @@
 ﻿import { describe, it, expect } from "vitest";
-import { ajustarHarmonicosBanda, construirHarmonicosBloco } from "./harmonicos";
+import {
+  ajustarHarmonicosBanda,
+  construirHarmonicosBloco,
+  N_MINIMO_OBSERVACOES_HARMONICOS_D11_4,
+} from "./harmonicos";
 import { ObservacaoCena } from "./serieTemporal";
 
 describe("Ajuste de Modelos Harmônicos (OLS)", () => {
@@ -52,11 +56,12 @@ describe("Ajuste de Modelos Harmônicos (OLS)", () => {
       });
     }
 
+    expect(N_MINIMO_OBSERVACOES_HARMONICOS_D11_4).toBe(12);
     const res = ajustarHarmonicosBanda(poucasCenas, "b12");
     expect(res.offset.estado).toBe("indisponivel");
     if (res.offset.estado === "indisponivel") {
       expect(res.offset.causa).toBe("insuficiente");
-      expect(res.offset.motivo).toContain("mínimo exigido: 12");
+      expect(res.offset.motivo).toContain(`mínimo exigido: ${N_MINIMO_OBSERVACOES_HARMONICOS_D11_4}`);
     }
     expect(res.amplitudeAnual.estado).toBe("indisponivel");
   });

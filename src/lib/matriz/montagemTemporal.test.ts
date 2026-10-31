@@ -114,4 +114,104 @@ describe("Montagem de Preditores Multitemporais (Time-Series Stacking e Modelo D
     expect(res9.ndvi_p90).not.toBeNull();
     expect(res9.ndvi_p50).not.toBeNull();
   });
+
+  describe("Pisos amostrais de D11.2 para Frequência de Solo Nu (Ê)", () => {
+    it("deve retornar frequenciaSoloNu como indisponivel quando nValidas < 6 (D11.1 / D11.2)", () => {
+      const cenas5: ObservacaoCena[] = [];
+      for (let i = 1; i <= 5; i++) {
+        cenas5.push(criarCenaTemporal(`2026-0${i}-10`, 2026 + i / 12, 0.20, 0.15));
+      }
+      const res5 = montarPreditoresTemporais(cenas5, "D", {
+        dataReferencia: "2026-05-30",
+        duracaoJanelaAnos: 1,
+      });
+      expect(res5.nObservacoesValidas).toBe(5);
+      expect(res5.frequenciaSoloNu.estado).toBe("indisponivel");
+      if (res5.frequenciaSoloNu.estado === "indisponivel") {
+        expect(res5.frequenciaSoloNu.causa).toBe("insuficiente");
+      }
+      expect(res5.frequenciaSoloNuValor).toBeNull();
+    });
+
+    it("recusa Ê (indisponivel) quando 6 <= n < 12 em janela plurianual (D11.2; SE > 0,144)", () => {
+      const cenas8: ObservacaoCena[] = [];
+      for (let i = 1; i <= 8; i++) {
+        cenas8.push(criarCenaTemporal(`2026-0${i}-10`, 2026 + i / 12, 0.20, 0.15));
+      }
+      // Janela de 1 ano (365 dias >= 120 dias)
+      const res8 = montarPreditoresTemporais(cenas8, "D", {
+        dataReferencia: "2026-08-30",
+        duracaoJanelaAnos: 1,
+      });
+      expect(res8.nObservacoesValidas).toBe(8);
+      expect(res8.frequenciaSoloNu.estado).toBe("indisponivel");
+      if (res8.frequenciaSoloNu.estado === "indisponivel") {
+        expect(res8.frequenciaSoloNu.causa).toBe("insuficiente");
+        expect(res8.frequenciaSoloNu.motivo).toContain("Agresti & Coull");
+      }
+      expect(res8.frequenciaSoloNuValor).toBeNull();
+    });
+
+    it("admite fallback de Ê com metadados de incerteza em janela sazonal curta (< 120 dias; D11.2)", () => {
+      // Cria 8 cenas concentradas em janela de 90 dias (01/01 a 31/03)
+      const cenasCurta: ObservacaoCena[] = [];
+      for (let i = 1; i <= 8; i++) {
+        const dia = String(i * 10).padStart(2, "0");
+        cenasCurta.push(criarCenaTemporal(`2026-01-${dia}`, 2026 + i / 36, 0.20, 0.15));
+      }
+      // duracaoJanelaAnos: 0.25 (91 dias < 120 dias)
+      const resFallback = montarPreditoresTemporais(cenasCurta, "D", {
+        dataReferencia: "2026-03-31",
+        duracaoJanelaAnos: 0.25,
+      });
+      expect(resFallback.nObservacoesValidas).toBe(8);
+      expect(resFallback.frequenciaSoloNu.estado).toBe("modelado");
+      if (resFallback.frequenciaSoloNu.estado === "modelado") {
+        expect(resFallback.frequenciaSoloNu.valor).toBe(1.0); // todas <= 0.25
+        expect(resFallback.frequenciaSoloNu.qualidade?.regime).toBe("fallback_janela_curta");
+        expect(resFallback.frequenciaSoloNu.qualidade?.erroPadrao).toBeCloseTo(0.1768, 3);
+        expect(resFallback.frequenciaSoloNu.qualidade?.elegivelD12).toBe(false);
+      }
+      expect(resFallback.frequenciaSoloNuValor).toBe(1.0);
+    });
+
+    it("calcula Ê sob regime padrão quando n >= 12 (D11.2; SE <= 0,144)", () => {
+      const cenas12: ObservacaoCena[] = [];
+      for (let i = 1; i <= 12; i++) {
+        const mes = String(i).padStart(2, "0");
+        cenas12.push(criarCenaTemporal(`2026-${mes}-15`, 2026 + i / 12, i <= 3 ? 0.20 : 0.60, 0.10));
+      }
+      const res12 = montarPreditoresTemporais(cenas12, "D", {
+        dataReferencia: "2026-12-31",
+        duracaoJanelaAnos: 1,
+      });
+      expect(res12.nObservacoesValidas).toBe(12);
+      expect(res12.frequenciaSoloNu.estado).toBe("modelado");
+      if (res12.frequenciaSoloNu.estado === "modelado") {
+        expect(res12.frequenciaSoloNu.valor).toBe(0.25); // 3 / 12 = 0.25
+        expect(res12.frequenciaSoloNu.qualidade?.regime).toBe("padrao");
+        expect(res12.frequenciaSoloNu.qualidade?.erroPadrao).toBeLessThanOrEqual(0.1444);
+        expect(res12.frequenciaSoloNu.qualidade?.elegivelD12).toBe(true);
+      }
+    });
+
+    it("avalia podeEntrarEstratificacaoD12 corretamente bloqueando fallback e liberando padrão", async () => {
+      const { podeEntrarEstratificacaoD12 } = await import("./montagemTemporal");
+      const provFallback: any = {
+        estado: "modelado",
+        valor: 0.3,
+        qualidade: { nObservacoes: 8, regime: "fallback_janela_curta", elegivelD12: false },
+      };
+      const provPadrao: any = {
+        estado: "modelado",
+        valor: 0.3,
+        qualidade: { nObservacoes: 14, regime: "padrao", elegivelD12: true },
+      };
+      const provIndisp: any = { estado: "indisponivel", causa: "insuficiente", motivo: "baixo" };
+
+      expect(podeEntrarEstratificacaoD12(provFallback)).toBe(false);
+      expect(podeEntrarEstratificacaoD12(provIndisp)).toBe(false);
+      expect(podeEntrarEstratificacaoD12(provPadrao)).toBe(true);
+    });
+  });
 });
