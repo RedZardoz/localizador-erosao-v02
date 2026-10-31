@@ -253,7 +253,7 @@ def build_callout(title, text, styles, bg_color=C_MINT_BG, border_color=C_EMERAL
     ]))
     return t
 
-def gerar_pdf_justificativa_jev(output_path="Justificativa_Uso_e_Alternativa_Jev_SAREL.pdf"):
+def gerar_pdf_justificativa_jev(output_path=os.path.join("docs", "metodologia", "Justificativa_Uso_e_Alternativa_Jev_SAREL.pdf")):
     doc = SimpleDocTemplate(
         output_path,
         pagesize=A4,

@@ -231,7 +231,7 @@ def callout_box(title, text, styles, bg_color=C_MINT_BG, border_color=C_EMERALD_
 # =============================================================================
 # CONSTRUÇÃO DO DOCUMENTO
 # =============================================================================
-def gerar_documento_field_collector_pdf(output_path="SAREL_Field_Collector_Especificacao_Tecnica.pdf"):
+def gerar_documento_field_collector_pdf(output_path=os.path.join("docs", "dissertacao", "SAREL_Field_Collector_Especificacao_Tecnica.pdf")):
     doc = SimpleDocTemplate(
         output_path,
         pagesize=A4,
@@ -544,5 +544,5 @@ def gerar_documento_field_collector_pdf(output_path="SAREL_Field_Collector_Espec
 
 
 if __name__ == "__main__":
-    caminho_pdf = os.path.join(os.getcwd(), "SAREL_Field_Collector_Especificacao_Tecnica.pdf")
+    caminho_pdf = os.path.join(os.getcwd(), "docs", "dissertacao", "SAREL_Field_Collector_Especificacao_Tecnica.pdf")
     gerar_documento_field_collector_pdf(caminho_pdf)

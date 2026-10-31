@@ -266,7 +266,7 @@ def callout_box(title, content, styles, bg_color=C_MINT_BG, border_color=C_EMERA
 # =============================================================================
 # CONSTRUÇÃO DO DOCUMENTO
 # =============================================================================
-def gerar_relatorio_mudancas_pdf(output_path="Relatorio_Mudancas_Metodologicas_SAREL_PPGTCA_2026.pdf"):
+def gerar_relatorio_mudancas_pdf(output_path=os.path.join("docs", "relatorios", "Relatorio_Mudancas_Metodologicas_SAREL_PPGTCA_2026.pdf")):
     doc = SimpleDocTemplate(
         output_path,
         pagesize=A4,
@@ -678,21 +678,17 @@ def gerar_relatorio_mudancas_pdf(output_path="Relatorio_Mudancas_Metodologicas_S
     
     docs_dir = os.path.join("docs", "relatorios")
     os.makedirs(docs_dir, exist_ok=True)
-    raiz_path = os.path.abspath("Relatorio_Mudancas_Metodologicas_SAREL_PPGTCA_2026.pdf")
     docs_path = os.path.abspath(os.path.join(docs_dir, "Relatorio_Mudancas_Metodologicas_SAREL_PPGTCA_2026.pdf"))
     
     abs_out = os.path.abspath(output_path)
     if abs_out != docs_path:
         shutil.copyfile(abs_out, docs_path)
-    if abs_out != raiz_path:
-        shutil.copyfile(abs_out, raiz_path)
 
     print(f"\n[SUCESSO] Relatório de Mudanças Metodológicas gerado com sucesso!")
-    print(f"Arquivo raiz: {raiz_path}")
     print(f"Arquivo docs: {docs_path}\n")
 
 if __name__ == "__main__":
-    out = "Relatorio_Mudancas_Metodologicas_SAREL_PPGTCA_2026.pdf"
+    out = os.path.join("docs", "relatorios", "Relatorio_Mudancas_Metodologicas_SAREL_PPGTCA_2026.pdf")
     if len(sys.argv) > 1:
         out = sys.argv[1]
     gerar_relatorio_mudancas_pdf(out)

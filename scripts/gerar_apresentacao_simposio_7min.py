@@ -560,6 +560,5 @@ def criar_apresentacao_simposio(output_paths):
 
 if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    out1 = os.path.join(base_dir, "docs", "Apresentacao_Simposio_7min_SAREL.pptx")
-    out2 = os.path.join(base_dir, "Apresentacao_Simposio_7min_SAREL.pptx")
-    criar_apresentacao_simposio([out1, out2])
+    out1 = os.path.join(base_dir, "docs", "apresentacoes", "Apresentacao_Simposio_7min_SAREL.pptx")
+    criar_apresentacao_simposio([out1])

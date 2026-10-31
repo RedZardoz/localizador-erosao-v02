@@ -878,10 +878,6 @@ def criar_apresentacao_mudanca_metodologica(caminho_pptx):
 
     prs.save(caminho_pptx)
     print(f"Apresentação PPTX gerada com sucesso: {caminho_pptx}")
-    caminho_metodologia = os.path.join("docs", "metodologia", "Mudanca_Radical_Metodologia_SAREL_v2.pptx")
-    if os.path.abspath(caminho_pptx) != os.path.abspath(caminho_metodologia):
-        prs.save(caminho_metodologia)
-        print(f"Apresentação PPTX espelhada com sucesso: {caminho_metodologia}")
 
 
 if __name__ == "__main__":

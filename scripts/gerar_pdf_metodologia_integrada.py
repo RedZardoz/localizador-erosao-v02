@@ -260,11 +260,11 @@ def get_custom_styles():
 def build_pdf():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
-    out_dir = os.path.join(project_root, "docs", "BASES PARA A DISSERTAÇÃO")
+    out_dir = os.path.join(project_root, "docs", "dissertacao")
     os.makedirs(out_dir, exist_ok=True)
     # Rota canônica definida conforme M10
-    pdf_path = os.path.join(out_dir, "Metodologia_Integrada_Dissertacao_SAREL_Revisado.pdf")
-    alt_path = os.path.join(out_dir, "Metodologia_Integrada_Dissertacao_SAREL_Revisado.pdf")
+    pdf_path = os.path.join(out_dir, "Metodologia_Integrada_Dissertacao_SAREL.pdf")
+    alt_path = os.path.join(out_dir, "Metodologia_Integrada_Dissertacao_SAREL.pdf")
     
     # Verifica se o arquivo principal está travado por leitor de PDF (ex: Acrobat / PDF Editor)
     target_path = pdf_path
@@ -997,7 +997,7 @@ def build_pdf():
     story.append(Paragraph("6. Referências Bibliográficas (Norma ABNT NBR 6023)", styles["H1"]))
     story.append(Paragraph(
         "<i>Todas as obras fundamentais abaixo estão arquivadas fisicamente na base bibliográfica local do repositório "
-        "(diretórios `docs/Selecao Bibliografica/Pesquisas Machine Learning/`, `docs/Selecao Bibliografica/Para Revisar/` e `docs/verificacoes/fontes/`).</i>",
+        "(diretórios `docs/bibliografia/pesquisas_machine_learning/`, `docs/bibliografia/para_revisar/` e `docs/verificacoes/fontes/`).</i>",
         styles["Body"]
     ))
     story.append(Spacer(1, 1.5 * mm))

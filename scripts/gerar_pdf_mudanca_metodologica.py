@@ -675,5 +675,5 @@ def build_pdf(pdf_path):
 
 
 if __name__ == "__main__":
-    caminho_saida = os.path.join("docs", "metodologia", "Mudanca_Radical_Metodologia_SAREL_v2.pdf")
+    caminho_saida = os.path.join("docs", "apresentacoes", "Mudanca_Radical_Metodologia_SAREL_v2.pdf")
     build_pdf(caminho_saida)

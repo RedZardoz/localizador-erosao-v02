@@ -241,7 +241,7 @@ def callout_box(title, text, styles, bg_color=C_MINT_BG, border_color=C_EMERALD_
 # =============================================================================
 # CONSTRUÇÃO DO DOCUMENTO
 # =============================================================================
-def gerar_documento_justificativa_pdf(output_path="Justificativa_Recorte_Espacial_Parana3_SAREL.pdf"):
+def gerar_documento_justificativa_pdf(output_path=os.path.join("docs", "metodologia", "Justificativa_Recorte_Espacial_Parana3_SAREL.pdf")):
     doc = SimpleDocTemplate(
         output_path,
         pagesize=A4,
@@ -554,5 +554,5 @@ def gerar_documento_justificativa_pdf(output_path="Justificativa_Recorte_Espacia
 
 
 if __name__ == "__main__":
-    caminho_pdf = os.path.join(os.getcwd(), "Justificativa_Recorte_Espacial_Parana3_SAREL.pdf")
+    caminho_pdf = os.path.join(os.getcwd(), "docs", "metodologia", "Justificativa_Recorte_Espacial_Parana3_SAREL.pdf")
     gerar_documento_justificativa_pdf(caminho_pdf)

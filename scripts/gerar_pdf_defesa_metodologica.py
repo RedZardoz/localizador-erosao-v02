@@ -241,7 +241,7 @@ def get_custom_styles():
 def build_pdf():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
-    out_dir = os.path.join(project_root, "docs", "BASES PARA A DISSERTAÇÃO")
+    out_dir = os.path.join(project_root, "docs", "dissertacao")
     os.makedirs(out_dir, exist_ok=True)
     pdf_path = os.path.join(out_dir, "Defesa_Metodologica_Replicabilidade_e_Vies_Espectral.pdf")
     
@@ -609,7 +609,7 @@ def build_pdf():
     story.append(Paragraph("5. Referências Bibliográficas (Norma ABNT NBR 6023)", styles["H1"]))
     story.append(Paragraph(
         "<i>Todas as obras fundamentais abaixo estão arquivadas fisicamente na base bibliográfica local do repositório "
-        "(diretórios `docs/Selecao Bibliografica/Pesquisas Machine Learning/`, `docs/Selecao Bibliografica/Para Revisar/` e `docs/verificacoes/fontes/`).</i>",
+        "(diretórios `docs/bibliografia/pesquisas_machine_learning/`, `docs/bibliografia/para_revisar/` e `docs/verificacoes/fontes/`).</i>",
         styles["Body"]
     ))
     story.append(Spacer(1, 2 * mm))

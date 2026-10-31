@@ -108,9 +108,9 @@ def make_callout_box(doc, title, formula, note=None, bg_color="F8FAFC", border_c
 def build_docx():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
-    out_dir = os.path.join(project_root, "docs", "BASES PARA A DISSERTAÇÃO")
+    out_dir = os.path.join(project_root, "docs", "dissertacao")
     os.makedirs(out_dir, exist_ok=True)
-    docx_path = os.path.join(out_dir, "Metodologia_Integrada_Dissertacao_SAREL_Revisado.docx")
+    docx_path = os.path.join(out_dir, "Metodologia_Integrada_Dissertacao_SAREL.docx")
     
     doc = docx.Document()
     
@@ -867,7 +867,7 @@ def build_docx():
     add_h1("6. Referências Bibliográficas (Norma ABNT NBR 6023)")
     add_body(
         "Todas as obras fundamentais abaixo estão arquivadas fisicamente na base bibliográfica local do repositório "
-        "(diretórios docs/Selecao Bibliografica/Pesquisas Machine Learning/, docs/Selecao Bibliografica/Para Revisar/ e docs/verificacoes/fontes/).",
+        "(diretórios docs/bibliografia/pesquisas_machine_learning/, docs/bibliografia/para_revisar/ e docs/verificacoes/fontes/).",
         bold_prefix="Nota sobre Proveniência Bibliográfica: "
     )
     
