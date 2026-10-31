@@ -1,0 +1,72 @@
+================================================================================
+EXTRAÇÃO PERICIAL: ZHU (2013/2014) — REGRAS DE SUFICIÊNCIA AMOSTRAL TEMPORAL
+Arquivo primário: ZheZhu.PHD.Resize.pdf
+SHA-256: 4789edc19712c3bebf898002baf775c7fb07c628b76f58373f72897ee32ef173
+Total de páginas: 178
+================================================================================
+
+--- CAPÍTULO 3 (CMFDA): SEÇÃO 3.3.2 (PÁGINAS 75-76) ---
+Contexto: Ajuste OLS de modelo harmônico bimodal com 7 parâmetros.
+Trecho fundamental (p. 76):
+  [p. 76] 7 parameters for each surface reflectance model. The last two parameters           are
+  [p. 76] second period of growth. The parameters           are used to capture the annual change
+  [p. 76] parameters          . The mean overall surface reflectance for the two years is
+  [p. 76] represented by   . To estimate these 7 parameters, at least 7 clear observations are
+  [p. 76] necessary in two years. To strengthen the robustness of the fitting, CMFDA only
+  [p. 76] the number of total parameters to be estimated, that is a total of 11 clear observations.
+  [p. 76] from Landsat 5 per year at this U.S. site, 11 clear observations in two years are easily
+
+Texto integral da Seção 3.3.2 (p. 76):
+59 
+ 
+T: Number of days per year (T = 365). 
+  : Overall surface reflectance. 
+     : Coefficients that capture the changes of surface reflectance for the ith year. 
+          : Coefficients that capture the bimodal variations of surface reflectance for 
+each year. 
+Two years (2001 and 2002) of Landsat ETM+ images (33 images) were used to 
+estimate the surface reflectance model for the Savannah River site. In this case, there are 
+7 parameters for each surface reflectance model. The last two parameters           are 
+used to capture the bimodal variations for each year, which mostly occurs in agricultural 
+areas due to an initial period of growth in the spring that is followed by plowing and a 
+second period of growth. The parameters           are used to capture the annual change 
+caused by phenology and BRDF effects. The inter-annual change is captured by the two 
+parameters          . The mean overall surface reflectance for the two years is 
+represented by   . To estimate these 7 parameters, at least 7 clear observations are 
+necessary in two years. To strengthen the robustness of the fitting, CMFDA only 
+estimates a pixel if the number of clear observation is more than one and a half times of 
+the number of total parameters to be estimated, that is a total of 11 clear observations. 
+Considering the 23 observations per year from Landsat 7 and 23 observations per year 
+from Landsat 5 per year at this U.S. site, 11 clear observations in two years are easily 
+obtained even though there were very few cloud free images. In fact, when only using the 
+ETM+ images, the highest number of cloudy observations at the pixel level is 28 (Figure 
+
+--- CAPÍTULO 4 (CCDC): SEÇÃO 4.3.2 (PÁGINAS 121-122) ---
+Contexto: Inicialização do modelo harmônico temporal (Zhu & Woodcock 2014, RSE 144:152-171).
+Trecho fundamental (p. 121):
+  [p. 121] Ideally, the more the parameters estimated, the more accurate the model will be.
+  [p. 121] However, when there are too many parameters to estimate, it may start to fit to noise. To
+  [p. 121] make the model robust to noise, the CCDC algorithm only uses two parameters to capture
+  [p. 121] the intra-annual change. Model initialization is started when the number of clear pixels is
+  [p. 121] equal to 12 and there is no land cover change during model initialization. Land cover
+  [p. 121] change happened within the time of model initialization can make estimated time series
+  [p. 121] the process of model initialization, the CCDC algorithm will remove the first clear
+
+Texto integral da Seção 4.3.2 (p. 121):
+104 
+ 
+ 
+Figure 4.4. Illustration of OLS fitting results by including different components of the 
+time series model. Figure 4.4a shows the results of only including a single constant 
+coefficient. Figure 4.4b shows the results of adding the inter-annual trend to the time 
+series model. Figure 4.4c shows the results of adding all three components. 
+Ideally, the more the parameters estimated, the more accurate the model will be. 
+However, when there are too many parameters to estimate, it may start to fit to noise. To 
+make the model robust to noise, the CCDC algorithm only uses two parameters to capture 
+the intra-annual change. Model initialization is started when the number of clear pixels is 
+equal to 12 and there is no land cover change during model initialization. Land cover 
+change happened within the time of model initialization can make estimated time series 
+model prediction biased. Therefore, if there is possible land cover change occurred during 
+the process of model initialization, the CCDC algorithm will remove the first clear 
+observation and add one more clear observation and this process will continue until no 
+c 

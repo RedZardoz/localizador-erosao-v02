@@ -64,10 +64,11 @@ const DIVIDA_DECLARADA: readonly DividaLastro[] = [
   {
     id: "D11",
     motivo:
-      "Mínimo de 6 observações orbitais válidas para densidade geral da série temporal. Busca por " +
-      "literatura de sensoriamento remoto (Griffiths et al. 2013; Jonsson & Eklundh 2002) não encontrou " +
-      "padrão unificado para stacking em clima tropical. O piso estatístico estrito de n >= 9 para caudas " +
-      "foi adotado via DP-24 (Hyndman & Fan 1996), permanecendo n >= 6 como piso empírico de cobertura geral.",
+      "Mínimo de 6 observações orbitais válidas auditado em 31/10/2026. Constatou-se decomposição em quatro estimandos: " +
+      "(1) admissão geral; (2) frequência de solo nu Ê, cuja precisão binomial (Agresti & Coull 1998; Brown et al. 2001) " +
+      "requer n >= 12 para SE <= 0,144 na BP3; (3) percentis de cauda, cobertos por DP-24 (Hyndman & Fan 1996, n >= 9); " +
+      "(4) ajuste harmônico OLS, onde Zhu & Woodcock (2014, CCDC p. 156 / Zhu 2013 p. 121) prescreve n >= 12 observações limpas " +
+      "para estabilidade. Dívida mantida pendente de decisão do pesquisador sobre emenda formal a D11/D12.",
   },
   {
     id: "D18",
