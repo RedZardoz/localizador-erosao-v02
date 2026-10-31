@@ -531,14 +531,16 @@ def build_pdf():
     story.append(Paragraph("3.4 Sensoriamento Orbital e Decomposição Harmônica Temporal OLS", styles["H2"]))
     story.append(Paragraph(
         "A partir da coleção decenal Sentinel-2 L2A (BOA Harmonized), aplicando a máscara de qualidade SCL para exclusão estrita de nuvens e sombras, "
-        "ajusta-se para cada pixel a <b>Decomposição Harmônica Multivariada por Mínimos Quadrados Ordinários (OLS)</b> (ZHU; WOODCOCK, 2014):",
+        "ajusta-se para cada pixel a <b>Decomposição Harmônica Multivariada por Mínimos Quadrados Ordinários (OLS)</b> com 1 harmônico anual "
+        "(p = 4 parâmetros: c0, c1, a1, b1), em estrita conformidade com Zhu (2013, p. 121; CCDC), que demonstra que restringir os termos sazonais "
+        "a dois parâmetros intra-anuais blinda o modelo contra sobreajuste ao ruído e garante razão de amostragem N/p &ge; 3,0 e df &ge; 8 para n &ge; 12:",
         styles["Body"]
     ))
     
     # CAIXA 1 CORRIGIDA: 1 COLUNA DE 170 mm E 2 LINHAS VERTICAIS (SEM ESTOURO DE MARGEM)
     f1_box = [
-        [Paragraph("<b>&rho;^(t) = c<sub>0</sub> + c<sub>1</sub>·t + &sum;<sub>i=1</sub><sup>2</sup> [ a<sub>i</sub>·cos(2&pi;·i·t / T) + b<sub>i</sub>·sin(2&pi;·i·t / T) ]</b>", styles["FormulaBox"])],
-        [Paragraph("onde t é o tempo decimal, T = 365,25 dias, c0 é a refletância média histórica, c1 a tendência decenal, e (ai, bi) são coeficientes harmônicos sazonais de 1º e 2º harmônicos.", styles["FormulaNote"])]
+        [Paragraph("<b>&rho;^(t) = c<sub>0</sub> + c<sub>1</sub>·t + a<sub>1</sub>·cos(2&pi;·t / T) + b<sub>1</sub>·sin(2&pi;·t / T)</b>", styles["FormulaBox"])],
+        [Paragraph("onde t é o tempo decimal, T = 365,25 dias, c0 é a refletância média histórica, c1 a tendência decenal, e (a1, b1) são coeficientes harmônicos sazonais de 1º harmônico anual (p = 4 parâmetros; D11.4).", styles["FormulaNote"])]
     ]
     t_f1 = Table(f1_box, colWidths=[170 * mm])
     t_f1.setStyle(TableStyle([

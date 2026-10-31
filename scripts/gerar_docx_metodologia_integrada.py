@@ -447,13 +447,15 @@ def build_docx():
     add_h2("3.4 Sensoriamento Orbital e Decomposição Harmônica Temporal OLS")
     add_body(
         "A partir da coleção decenal Sentinel-2 L2A (BOA Harmonized), aplicando a máscara de qualidade SCL para exclusão estrita de nuvens e sombras, "
-        "ajusta-se para cada pixel a Decomposição Harmônica Multivariada por Mínimos Quadrados Ordinários (OLS) (ZHU; WOODCOCK, 2014):"
+        "ajusta-se para cada pixel a Decomposição Harmônica Multivariada por Mínimos Quadrados Ordinários (OLS) com 1 harmônico anual "
+        "(p = 4 parâmetros: c₀, c₁, a₁, b₁), em estrita conformidade com Zhu (2013, p. 121; CCDC), que demonstra que restringir os termos sazonais "
+        "a dois parâmetros intra-anuais blinda o modelo contra sobreajuste ao ruído e garante razão de amostragem N/p ≥ 3,0 e df ≥ 8 para n ≥ 12:"
     )
     make_callout_box(
         doc,
-        title="Equação 1. Decomposição Harmônica Temporal OLS (Zhu & Woodcock, 2014)",
-        formula="ρ̂(t) = c₀ + c₁·t + ∑ᵢ₌₁² [ aᵢ·cos(2π·i·t / T) + bᵢ·sin(2π·i·t / T) ]",
-        note="onde t é o tempo decimal, T = 365,25 dias, c₀ é a refletância média histórica, c₁ a tendência decenal, e (aᵢ, bᵢ) são coeficientes harmônicos sazonais de 1º e 2º harmônicos."
+        title="Equação 1. Decomposição Harmônica Temporal OLS (Zhu, 2013; Zhu & Woodcock, 2014)",
+        formula="ρ̂(t) = c₀ + c₁·t + a₁·cos(2π·t / T) + b₁·sin(2π·t / T)",
+        note="onde t é o tempo decimal, T = 365,25 dias, c₀ é a refletância média histórica, c₁ a tendência decenal, e (a₁, b₁) são coeficientes harmônicos sazonais de 1º harmônico anual (p = 4 parâmetros; D11.4)."
     )
 
     add_h2("3.5 Sensoriamento Aerotransportado (VANT) e Definição do Alvo Contínuo (Decisões D16 e D26)")
