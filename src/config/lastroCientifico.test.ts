@@ -62,15 +62,6 @@ const DIVIDA_DECLARADA: readonly DividaLastro[] = [
       "incipiente/moderada; a escolha é convenção pré-registrada do projeto de pesquisa para capturar sinal precoce.",
   },
   {
-    id: "D11",
-    motivo:
-      "Mínimo de 6 observações orbitais válidas auditado em 31/10/2026. Constatou-se decomposição em quatro estimandos: " +
-      "(1) admissão geral; (2) frequência de solo nu Ê, cuja precisão binomial (Agresti & Coull 1998; Brown et al. 2001) " +
-      "requer n >= 12 para SE <= 0,144 na BP3; (3) percentis de cauda, cobertos por DP-24 (Hyndman & Fan 1996, n >= 9); " +
-      "(4) ajuste harmônico OLS, onde Zhu & Woodcock (2014, CCDC p. 156 / Zhu 2013 p. 121) prescreve n >= 12 observações limpas " +
-      "para estabilidade. Dívida mantida pendente de decisão do pesquisador sobre emenda formal a D11/D12.",
-  },
-  {
     id: "D18",
     motivo:
       "Buffer de 250 m (caixa envolvente de 500 m / 25 ha) para recortes PlanetScope. Busca por literatura " +
