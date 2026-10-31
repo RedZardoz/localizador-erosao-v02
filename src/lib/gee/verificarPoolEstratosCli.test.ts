@@ -125,6 +125,203 @@ describe("scripts/verificar_pool_estratos.ts — CLI de Verificação do Pool po
     expect(arquivosDepois).toEqual(arquivosAntes);
   });
 
+  it("recusa arquivo JSON sem lista de candidatos (objeto sem chave 'candidatos'), nomeando as chaves presentes", () => {
+    const arquivosAntes = listarArquivosSorteio();
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sarel-pool-sem-cand-"));
+    const tempFile = path.join(tempDir, "relatorio_agregado.json");
+
+    try {
+      fs.writeFileSync(
+        tempFile,
+        JSON.stringify({
+          dataRelatorio: "2026-10-31",
+          totalImoveis: 4679,
+          funilContagem: { etapa1: 100 },
+        })
+      );
+
+      const resultado = spawnSync(
+        process.execPath,
+        [
+          "--import",
+          "./scripts/ts-loader.mjs",
+          scriptPath,
+          "--candidatos",
+          tempFile,
+          "--reservas",
+          "2",
+          "--n-minimo",
+          "4",
+          "--taxas",
+          "0.1,0.25",
+        ],
+        {
+          cwd: process.cwd(),
+          encoding: "utf-8",
+        }
+      );
+
+      const arquivosDepois = listarArquivosSorteio();
+      expect(resultado.status).toBe(1);
+      const saidaCompleta = resultado.stderr + resultado.stdout;
+      expect(saidaCompleta).toContain("[ERRO_ARQUIVO]");
+      expect(saidaCompleta).toContain("O arquivo JSON não contém uma lista de candidatos");
+      expect(saidaCompleta).toContain("dataRelatorio, totalImoveis, funilContagem");
+      expect(arquivosDepois).toEqual(arquivosAntes);
+    } finally {
+      if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile);
+      if (fs.existsSync(tempDir)) fs.rmdirSync(tempDir);
+    }
+  });
+
+  it("recusa arquivo JSON com lista de candidatos vazia (array raiz vazio ou propriedade vazia)", () => {
+    const arquivosAntes = listarArquivosSorteio();
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sarel-pool-vazio-"));
+    const tempFileArray = path.join(tempDir, "array_vazio.json");
+    const tempFileObj = path.join(tempDir, "objeto_vazio.json");
+
+    try {
+      // 1. Array raiz vazio
+      fs.writeFileSync(tempFileArray, JSON.stringify([]));
+
+      const resArray = spawnSync(
+        process.execPath,
+        [
+          "--import",
+          "./scripts/ts-loader.mjs",
+          scriptPath,
+          "--candidatos",
+          tempFileArray,
+          "--reservas",
+          "2",
+          "--n-minimo",
+          "4",
+          "--taxas",
+          "0.1,0.25",
+        ],
+        {
+          cwd: process.cwd(),
+          encoding: "utf-8",
+        }
+      );
+
+      expect(resArray.status).toBe(1);
+      expect(resArray.stderr + resArray.stdout).toContain("[ERRO_ARQUIVO]");
+      expect(resArray.stderr + resArray.stdout).toContain("A lista de candidatos está vazia");
+
+      // 2. Objeto com propriedade candidatos vazia
+      fs.writeFileSync(tempFileObj, JSON.stringify({ candidatos: [] }));
+
+      const resObj = spawnSync(
+        process.execPath,
+        [
+          "--import",
+          "./scripts/ts-loader.mjs",
+          scriptPath,
+          "--candidatos",
+          tempFileObj,
+          "--reservas",
+          "2",
+          "--n-minimo",
+          "4",
+          "--taxas",
+          "0.1,0.25",
+        ],
+        {
+          cwd: process.cwd(),
+          encoding: "utf-8",
+        }
+      );
+
+      expect(resObj.status).toBe(1);
+      expect(resObj.stderr + resObj.stdout).toContain("[ERRO_ARQUIVO]");
+      expect(resObj.stderr + resObj.stdout).toContain("A lista de candidatos está vazia");
+
+      const arquivosDepois = listarArquivosSorteio();
+      expect(arquivosDepois).toEqual(arquivosAntes);
+    } finally {
+      if (fs.existsSync(tempFileArray)) fs.unlinkSync(tempFileArray);
+      if (fs.existsSync(tempFileObj)) fs.unlinkSync(tempFileObj);
+      if (fs.existsSync(tempDir)) fs.rmdirSync(tempDir);
+    }
+  });
+
+  it("aceita JSON contendo objeto com propriedade candidatos povoada e executa com sucesso", () => {
+    const arquivosAntes = listarArquivosSorteio();
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sarel-pool-obj-valido-"));
+    const tempFile = path.join(tempDir, "candidatos_objeto.json");
+
+    try {
+      const sTercis = [4.2, 9.5, 15.8];
+      const eTercis = [0.12, 0.38, 0.72];
+      const kNiveis: Array<1 | 2> = [1, 2];
+      const lista: Array<{
+        id: string;
+        latitude: number;
+        longitude: number;
+        declividadePct: number;
+        frequenciaSoloNu: number;
+        nivelK: 1 | 2;
+        classeWorldCover2020: number;
+        classeWorldCover2021: number;
+      }> = [];
+
+      let seq = 1;
+      for (let sIdx = 0; sIdx < sTercis.length; sIdx++) {
+        for (let eIdx = 0; eIdx < eTercis.length; eIdx++) {
+          for (const k of kNiveis) {
+            for (let i = 0; i < 6; i++) {
+              lista.push({
+                id: `PROP-OBJ-${String(seq).padStart(4, "0")}`,
+                latitude: -24.75 - seq * 0.001,
+                longitude: -53.78 - seq * 0.001,
+                declividadePct: Number((sTercis[sIdx] + i * 0.04 + (eIdx * 2 + k) * 0.001).toFixed(4)),
+                frequenciaSoloNu: Number((eTercis[eIdx] + i * 0.004 + (sIdx * 2 + k) * 0.0001).toFixed(4)),
+                nivelK: k,
+                classeWorldCover2020: 40,
+                classeWorldCover2021: 40,
+              });
+              seq++;
+            }
+          }
+        }
+      }
+
+      fs.writeFileSync(tempFile, JSON.stringify({ candidatos: lista }));
+
+      const resultado = spawnSync(
+        process.execPath,
+        [
+          "--import",
+          "./scripts/ts-loader.mjs",
+          scriptPath,
+          "--candidatos",
+          tempFile,
+          "--reservas",
+          "2",
+          "--n-minimo",
+          "4",
+          "--taxas",
+          "0.1,0.25",
+        ],
+        {
+          cwd: process.cwd(),
+          encoding: "utf-8",
+        }
+      );
+
+      const arquivosDepois = listarArquivosSorteio();
+      expect(resultado.status).toBe(0);
+      expect(resultado.stdout).toContain("SAREL v2.0 — VERIFICAÇÃO DO POOL DE CANDIDATOS POR ESTRATO");
+      expect(resultado.stdout).toContain("E_1_1_1");
+      expect(resultado.stdout).toContain("Total Candidatos = 108");
+      expect(arquivosDepois).toEqual(arquivosAntes);
+    } finally {
+      if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile);
+      if (fs.existsSync(tempDir)) fs.rmdirSync(tempDir);
+    }
+  });
+
   it("recusa candidato sintético com a MESMA mensagem do sorteio D23", () => {
     const arquivosAntes = listarArquivosSorteio();
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sarel-pool-sint-"));
