@@ -11,9 +11,10 @@ export interface Decisao<T> {
   decididoEm?: string;     // AAAA-MM-DD
   parametros?: Record<string, {
     valor: number;
-    operador: "<" | "<=" | ">" | ">=";
+    operador: "<" | "<=" | ">" | ">=" | "=" | "≈";
     finalidade: string;   // para que serve ESTE limiar, em uma linha
     unidade?: string;
+    status?: string;
   }>;
 }
 
@@ -47,7 +48,13 @@ export function exigirDecisao<T>(d: Decisao<T>): T {
 export function exigirParametro(
   d: Decisao<unknown>,
   chave: string
-): { valor: number; operador: "<" | "<=" | ">" | ">=" } {
+): {
+  valor: number;
+  operador: "<" | "<=" | ">" | ">=" | "=" | "≈";
+  finalidade: string;
+  unidade?: string;
+  status?: string;
+} {
   if (d.estado !== "decidida") {
     throw new ErroDecisaoPendente(d.id, d.titulo);
   }
@@ -268,7 +275,7 @@ export const DECISOES: Record<string, Decisao<any>> = {
     justificativa:
       "A formulação de Desmet & Govers é preferível à aproximação unidimensional por comprimento de rampa porque calcula área de contribuição específica por célula, o que é o que existe de fato numa vertente agrícola com convergência e divergência de fluxo; a aproximação por rampa exigiria segmentar a encosta manualmente, reintroduzindo a subjetividade que D06 eliminou. A obrigação de medir a distorção de projeção vem de erro cometido e documentado nesta pesquisa: a conversão de coordenadas da Missão 009 foi feita supondo zona 22S e devolveu posição litorânea, porque a missão está em 21S. O mesmo pressuposto tácito estava embutido no cálculo de declividade de toda a bacia. A distorção esperada é pequena — a algo como 3,6 graus do meridiano central o fator de escala fica na ordem de 1,002, e como o comprimento entra no LS com expoente inferior à unidade o erro propagado é menor ainda — mas 'esperada pequena' é exatamente o tipo de afirmação que esta pesquisa passou a exigir medida em lugar de suposta, e a tolerância de 0,5% existe para que a medição tenha critério de aceitação em vez de servir de justificativa retrospectiva. A escolha de m dependente da declividade, e não fixo, segue de que o domínio de validade de D07 cobre desde relevo suave ondulado até ondulado, faixa em que a razão entre erosão em sulcos e entre sulcos muda; fixar um único m otimizaria uma extremidade do domínio ao custo da outra. A ressalva de verificação é registrada porque este fator entra diretamente na linha de base de D25, e coeficiente citado de memória em decisão de governança seria o mesmo defeito de fabricação que a auditoria integral encontrou no pacote de reprodutibilidade.",
     referencia:
-      "Desmet, P. J. J. & Govers, G. (1996), Journal of Soil and Water Conservation 51(5):427-433; McCool, D. K. et al. (1989), Transactions of the ASAE (fator de declividade); Renard, K. G. et al. (1997), Agriculture Handbook 703 — patamares de m e forma de S NÃO conferidos nesta data; Copernicus DEM GLO-30 (ESA, 2022); D21 (GLO-30 a 30 m sem reamostragem); D06 (suporte nativo declarado); D07 (domínio de 3% a 20%); D24 (bloco de terreno, cerca de 396 unidades efetivas); D25 (linha de base RUSLE); docs/verificacoes/voo/cobertura_voos.geojson (erro de zona UTM documentado em 27/09/2026)",
+      "Desmet, P. J. J. & Govers, G. (1996), Journal of Soil and Water Conservation 51(5):427-433; McCool, D. K. et al. (1989), Transactions of the ASAE (fator de declividade); Renard, K. G. et al. (1997), Agriculture Handbook 703 — patamares de m e forma de S NÃO conferidos nesta data; Copernicus DEM GLO-30 (ESA, 2022); D21 (GLO-30 a 30 m sem reamostragem); D06 (suporte nativo declarado); D07 (domínio de 3% a 20%); D24 (bloco de terreno, cerca de 460 unidades efetivas vigentes); D25 (linha de base RUSLE); docs/verificacoes/voo/cobertura_voos.geojson (erro de zona UTM documentado em 27/09/2026)",
     decididoPor: "pesquisador",
     decididoEm: "2026-09-27",
   },
@@ -277,7 +284,7 @@ export const DECISOES: Record<string, Decisao<any>> = {
     titulo: "Campanha: polígonos de VANT como massa de treino e teste, campo como âncora e confirmação",
     estado: "decidida" as EstadoDecisao,
     valor:
-      "INVERSÃO DE PAPÉIS em relação à versão anterior desta decisão: o VANT deixa de ser exclusivamente held-out e passa a ser a MASSA DE TREINO e o TESTE INDEPENDENTE; o campo deixa de ser massa de treino e passa a ser ÂNCORA DE PREVALÊNCIA e CONFIRMAÇÃO PROSPECTIVA. (1) POLÍGONOS DE VANT — GEOMETRIA EMENDADA EM 29/09/2026: 72 polígonos de 5,02 ha, QUATRO POR ESTRATO sobre os 18 estratos de D12, sorteados probabilisticamente com pi_i registrado, jamais escolhidos por suspeita de erosão. FORMA: quadrado de cerca de 224 x 224 m, OU retângulo de mesma área com razão de aspecto até 1:2 — por exemplo 160 x 314 m — orientado preferencialmente no sentido do declive quando a geometria do imóvel permitir. DE CADA QUARTETO, DOIS polígonos vão para treino e DOIS para held-out, de modo que treino E teste tenham replicação DENTRO de cada estrato, o que a versão anterior, de um par por estrato, não permitia. Total de 361 ha, praticamente idêntico aos 360 ha da versão anterior, com produtividade medida de 2,3 ha/min a GSD de aproximadamente 4 cm — de modo que o tempo de MAPEAMENTO é o mesmo, cerca de 2,2 min de voo por polígono. Rende cerca de 1.845 unidades espacialmente independentes a alcance de 50 m, contra 1.836 da versão anterior, e cerca de 34.800 células de 10 m. POR QUE A ÁREA TOTAL É O QUE IMPORTA: as unidades espacialmente independentes resultam da área total dividida pelo alcance de autocorrelação de 50 m, e NÃO do tamanho de cada polígono. Encolher o polígono e aumentar o número na mesma área total preserva o regime de dados integralmente, e portanto preserva o teto de 8 preditores espectro-temporais fixado em D24 — que continua válido sem recálculo. O que muda é a logística, não a estatística. RAZÃO DA EMENDA, medida em 29/09/2026 sobre os 73.643 imóveis rurais do envelope da bacia em data/fundiario_brasil.db: exigir que o polígono caiba dentro de UM ÚNICO imóvel, o que a necessidade de autorização de sobrevoo impõe, tornava elegíveis apenas 43,4% dos imóveis a 10 ha em quadrado. A mediana de área dos imóveis da bacia é de 11,7 ha — padrão de minifúndio do oeste do Paraná — de modo que um polígono de 10 ha exigia praticamente o imóvel inteiro. A 5,02 ha em quadrado a elegibilidade sobe a 64,7%, e admitindo retângulo até 1:2 sobe a 71,8%. A fração EXCLUÍDA cai de 57% para 28%. VIÉS QUE A EMENDA REDUZ MAS NÃO ELIMINA, a declarar na dissertação: exigir que o polígono caiba num só imóvel ainda enviesa a amostra para os imóveis maiores, e tamanho de propriedade correlaciona com prática de manejo — terraceamento, rotação, mecanização — que é justamente o que os fatores C e P do RUSLE capturam. É viés sobre variável que importa ao desfecho, e permanece declarado. CUSTO ASSUMIDO: 72 autorizações de proprietário e 72 sítios a visitar, contra 36 da versão anterior. Registra-se também a correção de uma subestimação da versão anterior: a cifra de 3 jornadas de voo derivava da produtividade de MAPEAMENTO, mas uma campanha de sítios dispersos é dominada por deslocamento e montagem, não por bateria, de modo que o número de dias de campo é maior que 3 nas duas versões e maior com 72 que com 36. RESSALVA DE MÉTODO sobre a medição de elegibilidade: o teste aplicado foi de CAIXA ENVOLVENTE do imóvel, que é condição necessária e não suficiente — imóvel em faixa alongada ou em L pode ter envelope suficiente sem comportar o retângulo. Os percentuais são portanto limites SUPERIORES da elegibilidade real. (2) PONTOS DE CAMPO: 60 a 80 pontos dispersos pela bacia, FORA dos polígonos, sorteados com pi_i conhecido, coletados pelo SAREL Coletor em aparelho Android sob protocolo cego. Sua função NÃO é treinar, e sim estimar a prevalência real e calibrar a acurácia posicional efetiva. (3) CONFIRMAÇÃO PROSPECTIVA: após o treino, amostra sorteada das predições do modelo sobre a bacia, visitada em campo — teste prospectivo, cujo tamanho será fixado quando o modelo existir. (4) FOTOINTERPRETAÇÃO DA FASE A: APOSENTADA. (5) O instrumento de campo passa de KoboCollect para SAREL Coletor. " +
+      "INVERSÃO DE PAPÉIS em relação à versão anterior desta decisão: o VANT deixa de ser exclusivamente held-out e passa a ser a MASSA DE TREINO e o TESTE INDEPENDENTE; o campo deixa de ser massa de treino e passa a ser ÂNCORA DE PREVALÊNCIA e CONFIRMAÇÃO PROSPECTIVA. (1) POLÍGONOS DE VANT — GEOMETRIA EMENDADA EM 29/09/2026: 72 polígonos de 5,02 ha, QUATRO POR ESTRATO sobre os 18 estratos de D12, sorteados probabilisticamente com pi_i registrado, jamais escolhidos por suspeita de erosão. FORMA: quadrado de cerca de 224 x 224 m, OU retângulo de mesma área com razão de aspecto até 1:2 — por exemplo 160 x 314 m — orientado preferencialmente no sentido do declive quando a geometria do imóvel permitir. DE CADA QUARTETO, DOIS polígonos vão para treino e DOIS para held-out, de modo que treino E teste tenham replicação DENTRO de cada estrato, o que a versão anterior, de um par por estrato, não permitia. Total de 361 ha, praticamente idêntico aos 360 ha da versão anterior, com produtividade medida de 2,3 ha/min a GSD de aproximadamente 4 cm — de modo que o tempo de MAPEAMENTO é o mesmo, cerca de 2,2 min de voo por polígono. Rende cerca de 1.841 unidades espacialmente independentes vigentes a alcance de 50 m (histórico de emenda citava 1.845 e 1.836), e cerca de 34.800 células de 10 m. POR QUE A ÁREA TOTAL É O QUE IMPORTA: as unidades espacialmente independentes resultam da área total dividida pelo alcance de autocorrelação de 50 m, e NÃO do tamanho de cada polígono. Encolher o polígono e aumentar o número na mesma área total preserva o regime de dados integralmente, e portanto preserva o teto de 8 preditores espectro-temporais fixado em D24 — que continua válido sem recálculo. O que muda é a logística, não a estatística. RAZÃO DA EMENDA, medida em 29/09/2026 sobre os 73.643 imóveis rurais do envelope da bacia em data/fundiario_brasil.db: exigir que o polígono caiba dentro de UM ÚNICO imóvel, o que a necessidade de autorização de sobrevoo impõe, tornava elegíveis apenas 43,4% dos imóveis a 10 ha em quadrado. A mediana de área dos imóveis da bacia é de 11,7 ha — padrão de minifúndio do oeste do Paraná — de modo que um polígono de 10 ha exigia praticamente o imóvel inteiro. A 5,02 ha em quadrado a elegibilidade sobe a 64,7%, e admitindo retângulo até 1:2 sobe a 71,8%. A fração EXCLUÍDA cai de 57% para 28%. VIÉS QUE A EMENDA REDUZ MAS NÃO ELIMINA, a declarar na dissertação: exigir que o polígono caiba num só imóvel ainda enviesa a amostra para os imóveis maiores, e tamanho de propriedade correlaciona com prática de manejo — terraceamento, rotação, mecanização — que é justamente o que os fatores C e P do RUSLE capturam. É viés sobre variável que importa ao desfecho, e permanece declarado. CUSTO ASSUMIDO: 72 autorizações de proprietário e 72 sítios a visitar, contra 36 da versão anterior. Registra-se também a correção de uma subestimação da versão anterior: a cifra de 3 jornadas de voo derivava da produtividade de MAPEAMENTO, mas uma campanha de sítios dispersos é dominada por deslocamento e montagem, não por bateria, de modo que o número de dias de campo é maior que 3 nas duas versões e maior com 72 que com 36. RESSALVA DE MÉTODO sobre a medição de elegibilidade: o teste aplicado foi de CAIXA ENVOLVENTE do imóvel, que é condição necessária e não suficiente — imóvel em faixa alongada ou em L pode ter envelope suficiente sem comportar o retângulo. Os percentuais são portanto limites SUPERIORES da elegibilidade real. (2) PONTOS DE CAMPO: 60 a 80 pontos dispersos pela bacia, FORA dos polígonos, sorteados com pi_i conhecido, coletados pelo SAREL Coletor em aparelho Android sob protocolo cego. Sua função NÃO é treinar, e sim estimar a prevalência real e calibrar a acurácia posicional efetiva. (3) CONFIRMAÇÃO PROSPECTIVA: após o treino, amostra sorteada das predições do modelo sobre a bacia, visitada em campo — teste prospectivo, cujo tamanho será fixado quando o modelo existir. (4) FOTOINTERPRETAÇÃO DA FASE A: APOSENTADA. (5) O instrumento de campo passa de KoboCollect para SAREL Coletor. " +
       "EMENDA DE 06/10/2026 (proposta do assistente, aceita pelo pesquisador em conversa; pré-dados): a cifra \"cerca de 78 %\" de acerto de atribuição do rótulo à célula de 10 m, associada ao CE90 de 1,47 m, NÃO se reproduz pelo modelo declarado (erro gaussiano isotrópico por eixo, ponto verdadeiro uniforme na célula): para σ = 3, 5 e 8 m o modelo dá 57,9 %, 37,2 % e 19,6 % (idênticos a P03), mas CE90 = 1,47 m corresponde a σ = 1,47 / 2,146 = 0,685 m por eixo e dá 89,4 %; 78 % corresponde a σ ≈ 1,46 m. A cifra fica EM VERIFICAÇÃO e não deve ser citada como resultado. Será medido o erro conjunto rótulo→célula (VANT, Sentinel-2 e delineação) por comparação do ortomosaico das missões já voadas com o Sentinel-2 em feições identificáveis. A inversão de papéis de D16 permanece fundamentada qualitativamente (CE90 de 1,47 m do VANT contra 3 a 8 m do GNSS de frequência única) e o alvo contínuo por célula é pouco sensível ao erro de borda; o desenho não depende da cifra.",
     justificativa:
       "A inversão decorre de três medições feitas sobre as missões de VANT já executadas, registradas em docs/verificacoes/voo/cobertura_voos.geojson. Primeira, posição: a delineação sobre ortomosaico tem CE90 medido de 1,47 m, contra 3 a 8 m do GNSS de frequência única do aparelho de campo, o que eleva o acerto de atribuição ao pixel de 10 m de cerca de 37% para cerca de 78%. Segunda, volume: cada polígono de 10 ha rende cerca de 51 unidades espacialmente independentes, de modo que 36 polígonos entregam ordem de 1.800 — contra 200 positivos do desenho por pontos, o que retira o classificador do regime criticamente subdimensionado descrito em D24, ao menos para os preditores que variam dentro do talhão. Terceira, qualidade de rótulo: delinear sobre imagem de 4 cm é mais confiável que fotointerpretar a 10 m, e mais fiel ao fenômeno que a visita a um ponto, porque a erosão laminar é mancha contínua na vertente e não ocorrência pontual. A escolha de DOIS polígonos por estrato, e não um, resolve um problema que só apareceu no cálculo: com um por estrato, reservar cinco como held-out deixaria cinco estratos sem treino e treze sem teste, de modo que o conjunto de teste não cobriria o espaço de covariáveis. A duplicação custa uma jornada de voo adicional e entrega divisão treino/teste completa sobre os 18 estratos, além de permitir estimar variância entre paisagens do mesmo estrato. A aposentadoria da fotointerpretação segue do mesmo raciocínio: sua única vantagem remanescente era alcançar qualquer ponto da bacia sem voar até lá, mas a diversidade de covariáveis passa a ser garantida pelo próprio sorteio estratificado dos 36 polígonos; mantê-la custaria dois intérpretes e a maquinaria de concordância para injetar rótulo de qualidade inferior num conjunto que passou a ter rótulo centimétrico. GUARDA CONTRA CIRCULARIDADE: os polígonos são sorteados pelos estratos biofísicos, nunca pelo rastreio espectral de D02; voar onde o rastreio aponta erosão faria o modelo aprender a concordar com o rastreio em vez de detectar erosão, que é o defeito eliminado em 207dca2 reentrando por outra porta.",
@@ -285,6 +292,38 @@ export const DECISOES: Record<string, Decisao<any>> = {
       "van der Ploeg, T., Austin, P. C. & Steyerberg, E. W. (2014), BMC Med. Res. Methodol. 14:137 (regime de eventos por variável); [Método vs Calibração]: o desenho com 72 polígonos de 5,02 ha, o GSD ~3,8 cm e a âncora de prevalência de campo são calibrações empíricas e logísticas sobre a malha de minifúndios da BP3 (Metodologia PPGTCA 2026 §3.2-3.3, D12, D23, D26; cobertura_voos.geojson).",
     decididoPor: "pesquisador",
     decididoEm: "2026-09-27",
+    parametros: {
+      totalPoligonos: {
+        valor: 72,
+        operador: "=",
+        finalidade: "Total de polígonos sorteados na campanha VANT (D16)",
+        unidade: "poligonos",
+      },
+      areaPoligonoHa: {
+        valor: 5.02,
+        operador: "=",
+        finalidade: "Área nominal de cada polígono VANT retangular/quadrado",
+        unidade: "ha",
+      },
+      areaTotalHa: {
+        valor: 361.44,
+        operador: "=",
+        finalidade: "Área total da campanha VANT na Bacia do Paraná 3 (72 × 5,02 ha)",
+        unidade: "ha",
+      },
+      poligonosHeldOut: {
+        valor: 36,
+        operador: "=",
+        finalidade: "Número de polígonos mantidos estritamente em teste held-out lacrado",
+        unidade: "poligonos",
+      },
+      poligonosTreino: {
+        valor: 36,
+        operador: "=",
+        finalidade: "Número de polígonos mantidos em treino",
+        unidade: "poligonos",
+      },
+    },
   },
   D17: {
     id: "D17",
@@ -318,7 +357,7 @@ export const DECISOES: Record<string, Decisao<any>> = {
     titulo: "Pares de evento: reescrita do ponto para o polígono, análise secundária fora de D25",
     estado: "decidida" as EstadoDecisao,
     valor:
-      "REESCRITA PARA O DESENHO POR POLÍGONOS. A proposta original — 40 a 60 PONTOS amostrais pareados pré e pós evento erosivo — pressupunha o desenho por pontos e fica SUPERADA por D16, que reduziu os pontos de campo a 60 a 80 e mudou sua função para âncora de prevalência. UNIDADE DO PAREAMENTO: o POLÍGONO, não o ponto. Os 36 polígonos de D16, com erosão delineada a cerca de 4 cm, rendem cerca de 1.836 unidades efetivas por D24, contra 40 a 60 do desenho anterior. PROCEDIMENTO: (1) identificar eventos erosivos por IMERG sub-diário sobre a bacia, conforme a divisão de produtos de D13; (2) compor Sentinel-2 imediatamente antes e imediatamente depois do evento, sobre os mesmos polígonos; (3) analisar a RESPOSTA ESPECTRAL DIFERENCIAL por célula, condicionada à fração erodida delineada de D26. A análise é SECUNDÁRIA e exploratória: NÃO entra na matriz de treino, NÃO gera preditor, e NÃO participa de D25. Serve a uma pergunta distinta — se o sinal espectral responde a evento individual, e não apenas ao estado acumulado. REVISITA DE CAMPO: reservada a subconjunto pequeno de confirmação, e seu tamanho NÃO é fixado nesta data, deliberadamente, porque depende de quais polígonos o evento efetivamente cobrir e de sua magnitude — fixar número agora seria inventar um valor que nenhuma informação disponível sustenta. Será fixado quando um evento ocorrer dentro da janela de campanha, com o critério de seleção registrado antes da visita. CONDIÇÃO DE INEXISTÊNCIA: se nenhum evento erosivo de magnitude suficiente ocorrer na janela, a análise simplesmente NÃO é realizada e isso é reportado. Não há substituto, e a ausência não autoriza retroceder a eventos anteriores à delineação, porque o rótulo de fração erodida não existiria para eles.",
+      "REESCRITA PARA O DESENHO POR POLÍGONOS. A proposta original — 40 a 60 PONTOS amostrais pareados pré e pós evento erosivo — pressupunha o desenho por pontos e fica SUPERADA por D16, que reduziu os pontos de campo a 60 a 80 e mudou sua função para âncora de prevalência. UNIDADE DO PAREAMENTO: o POLÍGONO, não o ponto. Os 36 polígonos de D16, com erosão delineada a cerca de 4 cm, rendem cerca de 1.841 unidades efetivas vigentes por D24, contra 40 a 60 do desenho anterior. PROCEDIMENTO: (1) identificar eventos erosivos por IMERG sub-diário sobre a bacia, conforme a divisão de produtos de D13; (2) compor Sentinel-2 imediatamente antes e imediatamente depois do evento, sobre os mesmos polígonos; (3) analisar a RESPOSTA ESPECTRAL DIFERENCIAL por célula, condicionada à fração erodida delineada de D26. A análise é SECUNDÁRIA e exploratória: NÃO entra na matriz de treino, NÃO gera preditor, e NÃO participa de D25. Serve a uma pergunta distinta — se o sinal espectral responde a evento individual, e não apenas ao estado acumulado. REVISITA DE CAMPO: reservada a subconjunto pequeno de confirmação, e seu tamanho NÃO é fixado nesta data, deliberadamente, porque depende de quais polígonos o evento efetivamente cobrir e de sua magnitude — fixar número agora seria inventar um valor que nenhuma informação disponível sustenta. Será fixado quando um evento ocorrer dentro da janela de campanha, com o critério de seleção registrado antes da visita. CONDIÇÃO DE INEXISTÊNCIA: se nenhum evento erosivo de magnitude suficiente ocorrer na janela, a análise simplesmente NÃO é realizada e isso é reportado. Não há substituto, e a ausência não autoriza retroceder a eventos anteriores à delineação, porque o rótulo de fração erodida não existiria para eles.",
     justificativa:
       "Esta era a última decisão do registro que ainda pressupunha o desenho por pontos, e mantê-la criaria incoerência com D16, D23, D24 e D26: com 60 a 80 pontos de campo no total, dedicar 40 a 60 ao pareamento de evento consumiria quase toda a âncora de prevalência, que é a função pela qual os pontos foram preservados. A migração para o polígono segue o mesmo raciocínio que justificou a inversão de papéis: onde há delineação centimétrica há duas ordens de grandeza mais unidades, e a resposta espectral diferencial é justamente uma medida por célula, que o polígono fornece e o ponto não. Declarar a análise como secundária e fora de D25 é necessário para proteger o critério de refutação: admitir resposta a evento como preditor acrescentaria dimensionalidade ao bloco espectro-temporal, que já opera no teto de oito fixado em D24, e o faria depois do pré-registro. A recusa em fixar o número de revisitas agora é deliberada e coerente com a regra de não fabricação: o tamanho depende de informação que só existirá quando o evento ocorrer, e um número escrito hoje seria decoração de rigor. Pela mesma razão se registra de antemão a condição de inexistência, para que a ausência de evento não seja depois compensada por análise improvisada sobre eventos anteriores à delineação, para os quais não há rótulo.",
     referencia:
@@ -383,13 +422,95 @@ export const DECISOES: Record<string, Decisao<any>> = {
     estado: "decidida" as EstadoDecisao,
     valor:
       "CONSTATAÇÃO. O desenho por polígonos de D16 não elevou o regime de dados de modo uniforme: elevou-o de forma ASSIMÉTRICA POR BLOCO DE PREDITOR, porque cada bloco varia numa escala espacial diferente. As unidades efetivas por bloco, sobre 36 polígonos de 10 ha, são: (a) ESPECTRO-TEMPORAL (bandas do Sentinel-2, índices, métricas de série) — cerca de 1.836 unidades, porque o sinal varia de célula para célula e o alcance de autocorrelação adotado no planejamento é de 50 m, o que deflaciona as 1.000 células nominais de cada polígono para cerca de 51 efetivas; (b) TERRENO a 30 m (declividade, LS, curvatura, área de contribuição, índices topográficos) — cerca de 396 unidades, ou cerca de 11 efetivas por polígono, porque o terreno é suave e a célula de 30 m já agrega; (c) SOLO, isto é a erodibilidade K — cerca de 36 unidades, uma por polígono, porque cada polígono de 316 m de lado cai tipicamente dentro de uma única unidade de mapeamento pedológico; (d) CHUVA (I30, erosividade, contagem de eventos) — cerca de 36 unidades, uma por polígono, porque a grade de produto de chuva é de 5 a 10 km. NOTA DE 29/09/2026, após a emenda de geometria de D16: os polígonos passaram de 36 de 10 ha para 72 de 5,02 ha, mantendo a área total em cerca de 361 ha. As unidades efetivas resultam da ÁREA TOTAL dividida pelo alcance de autocorrelação, e NÃO do tamanho de cada polígono, de modo que o total passou de 1.836 para 1.845 e TODOS OS TETOS DESTA DECISÃO PERMANECEM VÁLIDOS SEM RECÁLCULO. Muda a contagem por polígono, de cerca de 51 para cerca de 26, e o número de polígonos held-out, de 18 para 36, o que ELEVA as unidades efetivas do held-out de cerca de 918 para cerca de 936. Os blocos de solo e de chuva passam de 36 para 72 unidades NOMINAIS, mas isso NÃO os retira do regime crítico: polígonos vizinhos compartilham unidade pedológica e célula de chuva, de modo que o ganho efetivo é menor que o nominal e os tetos de 1 preditor para solo e 1 para chuva PERMANECEM. TETO DE PREDITORES POR BLOCO, e não global: espectro-temporal ATÉ 8; terreno ATÉ 4; solo 1, a erodibilidade K; chuva 1. Total de ATÉ 14 preditores. QUATRO MITIGAÇÕES OBRIGATÓRIAS, todas exigíveis em revisão: (1) TRÊS COMPETIDORES comparados pela correlação de postos de Spearman de D26 — a linha de base RUSLE, uma regressão penalizada (logística para o alvo binário derivado, Tweedie penalizada para o alvo contínuo) e o XGBoost; nenhum deles é privilegiado a priori, e o resultado admissível inclui a regressão parcimoniosa vencer o ensemble. (2) RESTRIÇÕES DE MONOTONICIDADE FÍSICA sobre os preditores de sinal conhecido (parâmetro monotone_constraints no XGBoost), declaradas antes do ajuste; seu valor é máximo justamente nos blocos fracos, onde os dados não identificam a forma da relação e apenas o mecanismo físico a determina. (3) DIMENSIONALIDADE DECLARADA DE ANTEMÃO por mecanismo físico, nunca por seleção dirigida pelos dados sobre os mesmos dados de ajuste; selecionar preditores olhando o desempenho burla o teto e contamina a estimativa held-out. (4) VALIDAÇÃO CRUZADA ANINHADA E AGRUPADA POR POLÍGONO (GroupKFold sobre o identificador do polígono), com a estimativa honesta vinda exclusivamente dos 36 polígonos held-out de D16, que reúnem cerca de 936 unidades efetivas. (Valores corrigidos em 02/10/2026: a emenda de geometria de D16 levou os polígonos de 36 para 72 e o held-out de 18 para 36; o corpo desta decisão ainda trazia os números anteriores, em contradição com a própria nota acrescentada naquela emenda.) RESSALVA REGISTRADA sobre a mitigação (4): com dois polígonos por estrato e um de cada par no held-out, cada dobra interna da validação aninhada perde um estrato; isso degrada o ajuste de hiperparâmetros, mas NÃO contamina nem enviesa a estimativa final, que é calculada uma única vez sobre o held-out. DUAS RESSALVAS DE HONESTIDADE, a declarar como limitação na dissertação: PRIMEIRA, os tetos de terreno, solo e chuva EXCEDEM o que o critério de 200 observações por variável suportaria — a 1.836, 396 e 36 unidades efetivas, o critério admitiria 9, 1 e 0 preditores respectivamente, de modo que apenas o bloco espectro-temporal está dentro do regime; terreno, solo e chuva são admitidos por NECESSIDADE FÍSICA, porque o Invariante 1 exige os cinco fatores do RUSLE e a comparação com a linha de base ficaria impossível sem K, sem R e sem LS, e por serem os blocos em que a monotonicidade imposta reduz os graus de liberdade efetivos por preditor. São mínimos fisicamente mandatórios, não máximos estatisticamente suportados. SEGUNDA, o critério de observações por variável governa o alvo contínuo primário de D26; sob o alvo binário derivado a 25% o que governa é a contagem de células POSITIVAS, que é necessariamente menor e desconhecida antes da delineação. OBRIGAÇÃO DE RECONTAGEM: quando a delineação dos polígonos de treino existir, recontar as unidades efetivas de duas maneiras — o alcance de autocorrelação EMPÍRICO, por variograma sobre a fração erodida, substituindo o alcance de 50 m adotado no planejamento, e a contagem de positivos sob o limiar de 25% — e fazer valer o MENOR dos dois tetos assim obtidos. Se o alcance empírico exceder 50 m, os tetos caem e esta decisão deve ser emendada antes do ajuste, nunca depois de observados os resultados. " +
-      "EMENDA DE 06/10/2026 (proposta do assistente, aceita pelo pesquisador em conversa; pré-dados): as unidades efetivas do held-out resultam, pela fórmula do próprio D24, em cerca de 920 (e não 936); o total de 72 polígonos de 5,02 ha resulta em cerca de 1.841 (D24 diz 1.845; diferença inferior a 0,3 %, mantendo-se \"cerca de\"). Os tetos de preditores por bloco permanecem inalterados. O número de preditores do bloco espectro-temporal é um TETO, não uma cota: a declaração a priori (mitigação 3) usa 5 preditores espectro-temporais, 3 de terreno, 1 de solo e 1 de chuva (total 10). O expoente de Tweedie p é escolhido apenas por validação interna agrupada dentro da grade pré-registrada {1,2; 1,5; 1,8}.",
+      "EMENDA DE 06/10/2026 (proposta do assistente, aceita pelo pesquisador em conversa; pré-dados): as unidades efetivas do held-out resultam, pela fórmula do próprio D24, em cerca de 920 (e não 936); o total de 72 polígonos de 5,02 ha resulta em cerca de 1.841 (D24 diz 1.845; diferença inferior a 0,3 %, mantendo-se \"cerca de\"). Os tetos de preditores por bloco permanecem inalterados. O número de preditores do bloco espectro-temporal é um TETO, não uma cota: a declaração a priori (mitigação 3) usa 5 preditores espectro-temporais, 3 de terreno, 1 de solo e 1 de chuva (total 10). O expoente de Tweedie p é escolhido apenas por validação interna agrupada dentro da grade pré-registrada {1,2; 1,5; 1,8}. " +
+      "EMENDA DE 31/10/2026 (Reconciliação Dimensional e Parametrização Canônica GOV-3): " +
+      "VALORES VIGENTES CONSOLIDADOS (fonte única de parâmetros): " +
+      "(1) Área total D16 = 72 polígonos × 5,02 ha = 361,44 ha (held-out = 36 polígonos × 5,02 ha = 180,72 ha). " +
+      "(2) Fórmula de deflação: n_ef = A / (π · (a/2)²). " +
+      "(3) Bloco Espectro-Temporal (Sentinel-2): alcance de planejamento a ≈ 50 m (suporte ~1.963,5 m² = 0,19635 ha) " +
+      "rende VIGENTE n_ef = 1.841 unidades independentes totais e 920 unidades mantidas em teste held-out (teto: até 8 preditores). " +
+      "(4) Bloco de Terreno (Copernicus DEM 30 m): alcance de planejamento a ≈ 100 m (suporte ~7.854 m² = 0,7854 ha) " +
+      "rende VIGENTE n_ef = 460 unidades independentes totais e 230 unidades held-out (teto: até 4 preditores). " +
+      "A cifra histórica de 396 unidades decorria de cálculo defasado sem aplicação da fórmula dimensional com alcance de 100 m e fica superada por 460. " +
+      "(5) Provisoriedade declarada (R-L4): ambos os alcances (50 m e 100 m) são valores de planejamento pré-registrados (P01), " +
+      "a serem substituídos pelos alcances empíricos obtidos por variograma tão logo a delineação exista. " +
+      "(6) Os números históricos citados no texto anterior (1.836, 1.845, 918, 936 e 396) correspondem a estados pré-emenda preservados exclusivamente para histórico de auditoria.",
     justificativa:
       "van der Ploeg, Austin e Steyerberg (2014) mostram que métodos flexíveis — ensembles de árvores, redes neurais, máquinas de vetores de suporte — precisam de ordem de 200 eventos por variável para atingir desempenho estável, contra 10 a 20 do modelo de regressão clássico; abaixo disso o desempenho medido em amostra independente degrada de forma acentuada e errática. O desenho anterior por pontos, com cerca de 200 positivos totais, ficava de 5 a 15 vezes abaixo desse regime para qualquer número útil de preditores, e esse era o achado central desta decisão. O desenho por polígonos de D16 corrige o problema para o bloco espectro-temporal, que é precisamente onde o XGBoost tem algo a fazer que o RUSLE não faz — aprender forma não linear e interação a partir de sinal que varia dentro do talhão. Não corrige, e não poderia corrigir por voo algum, os blocos de solo e de chuva: são 36 valores porque existem 36 polígonos, e aumentar polígonos é a ÚNICA via de aumento, a um custo de voo que o projeto não suporta. Impor um teto global único seria errado nas duas direções: calibrado pelo bloco fraco, desperdiçaria a informação espectro-temporal efetivamente obtida; calibrado pelo bloco forte, admitiria oito preditores de chuva sobre 36 valores, o que produziria sobreajuste invisível na validação interna. O teto por bloco faz cada família de preditores responder ao seu próprio regime. As quatro mitigações atacam o que resta: a comparação com dois competidores mais parcimoniosos torna a hipótese refutável em vez de assumida, a monotonicidade repõe por física a informação que falta por amostra, a declaração prévia impede que o teto seja burlado por seleção, e o agrupamento por polígono impede que a pseudorreplicação dentro de polígono infle a estimativa — 36.000 células não são 36.000 observações, e tratar células vizinhas de um mesmo polígono como independentes seria o mesmo erro de pseudorreplicação já corrigido em outras partes do sistema. A honestidade sobre os tetos excedidos é deliberada: é preferível registrar que três dos quatro blocos operam fora do regime recomendado, com a razão física pela qual são mantidos, do que apresentar catorze preditores como se todos estivessem estatisticamente suportados.",
     referencia:
-      "van der Ploeg, T., Austin, P. C. & Steyerberg, E. W. (2014), BMC Medical Research Methodology 14:137; Riley, R. D. et al. (2019), Statistics in Medicine 38(7):1262-1275; Riley, R. D. et al. (2020), BMJ 368:m441; Roberts, D. R. et al. (2017), Ecography 40(8):913-929 (validação cruzada com estrutura espacial); Hanley, J. A. & McNeil, B. J. (1982), Radiology 143(1):29-36; D16 (36 polígonos, 1.836 unidades efetivas, alcance de 50 m); D12 (18 estratos); D26 (alvo contínuo e correlação de postos); D25 (critério de refutação)",
+      "van der Ploeg, T., Austin, P. C. & Steyerberg, E. W. (2014), BMC Medical Research Methodology 14:137; Riley, R. D. et al. (2019), Statistics in Medicine 38(7):1262-1275; Riley, R. D. et al. (2020), BMJ 368:m441; Roberts, D. R. et al. (2017), Ecography 40(8):913-929 (validação cruzada com estrutura espacial); Hanley, J. A. & McNeil, B. J. (1982), Radiology 143(1):29-36; D16 (72 polígonos, 1.841 unidades efetivas vigentes, alcance de 50 m); D12 (18 estratos); D26 (alvo contínuo e correlação de postos); D25 (critério de refutação)",
     decididoPor: "pesquisador",
     decididoEm: "2026-09-27",
+    parametros: {
+      alcanceEspectroTemporalMetros: {
+        valor: 50.0,
+        operador: "≈",
+        finalidade: "Alcance prático a de autocorrelação espectro-temporal (planejamento provisório, a substituir por variograma empírico)",
+        unidade: "m",
+        status: "planejamento_provisorio",
+      },
+      alcanceTerrenoMetros: {
+        valor: 100.0,
+        operador: "≈",
+        finalidade: "Alcance prático a de autocorrelação do terreno no Copernicus DEM 30 m (planejamento provisório, a substituir por variograma empírico)",
+        unidade: "m",
+        status: "planejamento_provisorio",
+      },
+      unidadesEfetivasEspectroTemporal: {
+        valor: 1841,
+        operador: "≈",
+        finalidade: "Unidades independentes no bloco espectro-temporal (A_total / (π · (a/2)²))",
+        unidade: "unidades",
+      },
+      unidadesEfetivasTerreno: {
+        valor: 460,
+        operador: "≈",
+        finalidade: "Unidades independentes no bloco de terreno (A_total / (π · (a/2)²))",
+        unidade: "unidades",
+      },
+      unidadesEfetivasHeldOut: {
+        valor: 920,
+        operador: "≈",
+        finalidade: "Unidades independentes no held-out espectro-temporal (36 polígonos, 180,72 ha)",
+        unidade: "unidades",
+      },
+      unidadesEfetivasHeldOutTerreno: {
+        valor: 230,
+        operador: "≈",
+        finalidade: "Unidades independentes no held-out do terreno (36 polígonos, 180,72 ha)",
+        unidade: "unidades",
+      },
+      tetoEspectroTemporal: {
+        valor: 8,
+        operador: "<=",
+        finalidade: "Teto de preditores no bloco espectro-temporal",
+        unidade: "preditores",
+      },
+      tetoTerreno: {
+        valor: 4,
+        operador: "<=",
+        finalidade: "Teto de preditores no bloco de terreno",
+        unidade: "preditores",
+      },
+      tetoSolo: {
+        valor: 1,
+        operador: "=",
+        finalidade: "Teto de preditores no bloco de solo (erodibilidade K)",
+        unidade: "preditores",
+      },
+      tetoChuva: {
+        valor: 1,
+        operador: "=",
+        finalidade: "Teto de preditores no bloco de chuva (erosividade R)",
+        unidade: "preditores",
+      },
+      tetoTotal: {
+        valor: 14,
+        operador: "<=",
+        finalidade: "Teto máximo global de preditores na matriz (8 + 4 + 1 + 1)",
+        unidade: "preditores",
+      },
+    },
   },
   D25: {
     id: "D25",

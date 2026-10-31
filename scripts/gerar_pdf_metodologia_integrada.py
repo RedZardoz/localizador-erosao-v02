@@ -13,6 +13,16 @@ Orientador: Prof. Dr. Claudio Leones Bazzi
 
 import os
 import sys
+import json
+
+def carregar_parametros_deflacao():
+    caminho = os.path.join(os.path.dirname(__file__), '..', 'data', 'PARAMETROS_DEFLACAO.json')
+    if not os.path.exists(caminho):
+        caminho = 'data/PARAMETROS_DEFLACAO.json'
+    with open(caminho, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+PARAM_DEFLACAO = carregar_parametros_deflacao()
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import mm
@@ -671,16 +681,18 @@ def build_pdf():
     story.append(Paragraph(
         "A deflação estatística por autocorrelação espacial adota a área do bloco circular de correlação "
         "<i>A<sub>bloco</sub> = &pi; &middot; (a/2)&sup2;</i>. Com o alcance prático pré-registrado <i>a &approx; 50 m</i> (P01; ROBERTS et al., 2017), "
-        "cada bloco ocupa &approx; 1.963,5 m&sup2; (0,19635 ha). A área total amostrada de 72 polígonos de 5,02 ha (361,27 ha) rende "
-        "<i>n<sub>ef</sub> = 361,27 / 0,19635 &approx; 1.841 unidades espacialmente independentes</i>. Para o conjunto de teste lacrado de 36 polígonos held-out (180,63 ha), "
-        "resultam <i>n<sub>ef</sub> &approx; 920 unidades efetivas independentes</i> (D16, D24, D25). "
-        "Para o terreno (Copernicus DEM 30 m nativo), o alcance geomorfológico mais suave (&approx; 100 m) deflaciona a área para ~396 unidades independentes. "
+        "cada bloco ocupa &approx; 1.963,5 m&sup2; (0,19635 ha). A área total amostrada de 72 polígonos de 5,02 ha (361,44 ha) rende "
+        f"<i>n<sub>ef</sub> = 361,44 / 0,19635 &approx; {PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasTotal']} unidades espacialmente independentes</i>. Para o conjunto de teste lacrado de 36 polígonos held-out (180,72 ha), "
+        f"resultam <i>n<sub>ef</sub> &approx; {PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasHeldOut']} unidades efetivas independentes</i> (D16, D24, D25). "
+        f"Para o terreno (Copernicus DEM 30 m nativo), o alcance geomorfológico mais suave (a &approx; 100 m) deflaciona a área para ~{PARAM_DEFLACAO['terreno']['unidadesEfetivasTotal']} unidades independentes "
+        f"(suporte de ~7.854 m&sup2;; ~{PARAM_DEFLACAO['terreno']['unidadesEfetivasHeldOut']} unidades mantidas em teste held-out). Ambos os alcances (50 m e 100 m) constituem valores provisórios de planejamento (P01), "
+        "a serem substituídos pelos variogramas empíricos correspondentes conforme exigido por D24 e pela Norma de Lastro Científico (R-L4). "
         "Dessa fundamentação derivam os tetos rígidos de D24:",
         styles["Body"]
     ))
     story.append(Spacer(1, 0.8 * mm))
     story.append(Paragraph("• <b>Bloco Espectro-Temporal (Sentinel-2):</b> Teto de até <b>8 preditores</b> (~1.841 unidades espacialmente independentes nos 72 polígonos; regime estatístico plenamente adequado).", styles["BulletText"]))
-    story.append(Paragraph("• <b>Bloco de Terreno (Copernicus DEM 30 m):</b> Teto de até <b>4 preditores</b> (~396 unidades independentes a 30 m; admitido por necessidade física com restrições de monotonicidade).", styles["BulletText"]))
+    story.append(Paragraph(f"• <b>Bloco de Terreno (Copernicus DEM 30 m):</b> Teto de até <b>4 preditores</b> (~{PARAM_DEFLACAO['terreno']['unidadesEfetivasTotal']} unidades independentes a 30 m; admitido por necessidade física com restrições de monotonicidade).", styles["BulletText"]))
     story.append(Paragraph("• <b>Bloco de Solo (Embrapa Solos):</b> Teto de exatamente <b>1 preditor</b> (a erodibilidade K oficial `k_solos`; 72 unidades nominais, sem ganho efetivo intra-polígono).", styles["BulletText"]))
     story.append(Paragraph("• <b>Bloco de Chuva (CHIRPS Regional):</b> Teto de exatamente <b>1 preditor</b> (o fator R de erosividade anual regionalizada).", styles["BulletText"]))
     story.append(Paragraph("• <b>Teto Total na Matriz Preditora:</b> <b>No máximo 14 variáveis preditoras</b> (8 + 4 + 1 + 1 = 14; Decisão D24), com restrições físicas de monotonicidade positiva (`monotone_constraints`) impostas para declividade, erodibilidade e solo exposto.", styles["BulletText"]))

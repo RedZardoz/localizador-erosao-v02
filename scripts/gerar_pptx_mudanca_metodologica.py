@@ -510,7 +510,7 @@ def criar_apresentacao_mudanca_metodologica(caminho_pptx):
                  "   • Bloco Pedológico (Carta 1:250k): <b>~1 unidade efetiva</b> por polígono.",
                  "",
                  "► Total Populacional da Campanha:",
-                 "   • 72 polígonos x 51 unidades = <b>~1.845 unidades independentes</b> no conjunto todo."
+                 "   • 72 polígonos x 25,6 unidades = <b>~1.841 unidades independentes</b> no conjunto todo."
              ], C_CYAN_DARK, C_CYAN_BG)
 
     add_card(s8, Inches(6.8), Inches(1.4), Inches(5.8), Inches(5.4),
@@ -548,7 +548,7 @@ def criar_apresentacao_mudanca_metodologica(caminho_pptx):
                  "   • Para cada preditor inserido no modelo, exige-se no mínimo 20 eventos positivos independentes.",
                  "",
                  "► Orçamento Amostral da Pesquisa:",
-                 "   • Com ~1.845 unidades independentes e prevalência esperada de 10% a 15%:",
+                 "   • Com ~1.841 unidades independentes e prevalência esperada de 10% a 15%:",
                  "   • Número de positivos independentes esperados: <b>~200 eventos</b>.",
                  "   • Dividido por 2 (treino held-out 50/50): <b>~100 eventos de treino</b>.",
                  "",

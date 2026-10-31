@@ -11,6 +11,16 @@ Orientador: Prof. Dr. Claudio Leones Bazzi
 
 import os
 import sys
+import json
+
+def carregar_parametros_deflacao():
+    caminho = os.path.join(os.path.dirname(__file__), "..", "data", "PARAMETROS_DEFLACAO.json")
+    if not os.path.exists(caminho):
+        caminho = "data/PARAMETROS_DEFLACAO.json"
+    with open(caminho, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+PARAM_DEFLACAO = carregar_parametros_deflacao()
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import mm
@@ -492,7 +502,7 @@ def build_pdf():
     story.append(Paragraph(
         "<b>Regime de Dados e Teto de Preditores por Bloco (Decisão D24):</b> Para evitar sobreajuste decorrente da assimetria de suporte "
         "espacial e unidades efetivas independentes a alcance de 50 m, o SAREL estabelece tetos rígidos por bloco físico: "
-        "<b>Bloco Espectro-Temporal:</b> máx. 8 preditores (~1.845 unidades efetivas); <b>Bloco de Terreno:</b> máx. 4 preditores (~396 unidades efetivas); "
+        f"<b>Bloco Espectro-Temporal:</b> máx. 8 preditores (~{PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasTotal']} unidades efetivas); <b>Bloco de Terreno:</b> máx. 4 preditores (~{PARAM_DEFLACAO['terreno']['unidadesEfetivasTotal']} unidades efetivas); "
         "<b>Bloco de Solo:</b> exatamente 1 preditor (a erodibilidade K oficial `k_solos`); e <b>Bloco de Chuva:</b> exatamente 1 preditor "
         "(o fator R de erosividade). <b>Totalizando no máximo 14 variáveis na matriz preditora (Decisão D24)</b>.",
         styles["Body"]

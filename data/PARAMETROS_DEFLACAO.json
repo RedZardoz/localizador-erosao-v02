@@ -1,0 +1,50 @@
+{
+  "versao": "2.0.0",
+  "descricao": "Fonte Única de Parâmetros Canônicos de Deflação Espacial e Amostragem VANT (GOV-3 / D16 / D24)",
+  "fonteDecisoes": {
+    "D16": "Campanha VANT (geometria de polígonos e partição treino/held-out)",
+    "D24": "Regime de dados e tetos de preditores por bloco físico"
+  },
+  "areaPoligonoHa": 5.02,
+  "totalPoligonos": 72,
+  "areaTotalHa": 361.44,
+  "poligonosHeldOut": 36,
+  "areaHeldOutHa": 180.72,
+  "poligonosTreino": 36,
+  "areaTreinoHa": 180.72,
+  "espectroTemporal": {
+    "bloco": "Espectro-Temporal (Sentinel-2)",
+    "alcanceMetros": 50.0,
+    "statusAlcance": "planejamento_provisorio_P01_substituir_por_variograma_empirico",
+    "raioMetros": 25.0,
+    "suporteM2": 1963.4954,
+    "suporteHa": 0.19635,
+    "unidadesEfetivasPorPoligono": 25.57,
+    "unidadesEfetivasTotal": 1841,
+    "unidadesEfetivasHeldOut": 920,
+    "tetoPreditores": 8
+  },
+  "terreno": {
+    "bloco": "Terreno (Copernicus DEM 30 m)",
+    "alcanceMetros": 100.0,
+    "statusAlcance": "planejamento_provisorio_P01_substituir_por_variograma_empirico",
+    "raioMetros": 50.0,
+    "suporteM2": 7853.9816,
+    "suporteHa": 0.7854,
+    "unidadesEfetivasPorPoligono": 6.39,
+    "unidadesEfetivasTotal": 460,
+    "unidadesEfetivasHeldOut": 230,
+    "tetoPreditores": 4
+  },
+  "solo": {
+    "bloco": "Solo (Embrapa Solos k_solos)",
+    "unidadesNominais": 72,
+    "tetoPreditores": 1
+  },
+  "chuva": {
+    "bloco": "Chuva (CHIRPS Regional fator R)",
+    "unidadesNominais": 72,
+    "tetoPreditores": 1
+  },
+  "tetoTotalMatriz": 14
+}

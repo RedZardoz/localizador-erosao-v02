@@ -470,7 +470,7 @@ def build_pdf(pdf_path):
     story.append(Paragraph(
         "<b>Regra de van der Ploeg, Austin & Steyerberg (2014) — EPV $\\ge$ 20:</b><br/>"
         "Em modelos de aprendizado baseados em árvores (XGBoost), a razão de eventos por variável preditora (<i>Events Per Variable - EPV</i>) "
-        "deve ser rigorosamente superior a 20 para evitar superajuste e perda de calibração probabilística. Com ~1.845 unidades espacialmente independentes "
+        "deve ser rigorosamente superior a 20 para evitar superajuste e perda de calibração probabilística. Com ~1.841 unidades espacialmente independentes "
         "no conjunto de 72 polígonos e uma prevalência conservadora de 10% a 15% (~200 eventos positivos), o teto estatístico rigoroso "
         "impede ultrapassar 8 variáveis espectrais e 4 variáveis de terreno, blindando o modelo contra memorização espúria.",
         styles["Body"]

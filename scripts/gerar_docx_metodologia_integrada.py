@@ -14,6 +14,16 @@ Orientador: Prof. Dr. Claudio Leones Bazzi
 import os
 import sys
 import docx
+import json
+
+def carregar_parametros_deflacao():
+    caminho = os.path.join(os.path.dirname(__file__), "..", "data", "PARAMETROS_DEFLACAO.json")
+    if not os.path.exists(caminho):
+        caminho = "data/PARAMETROS_DEFLACAO.json"
+    with open(caminho, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+PARAM_DEFLACAO = carregar_parametros_deflacao()
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
@@ -523,8 +533,18 @@ def build_docx():
         "de 50 m (que deflaciona os micropixels para unidades independentes), o SAREL estabelece tetos rígidos para impedir o sobreajuste e a pseudorreplicação estatística:",
         bold_prefix="Regime de Dados e Teto de Preditores por Bloco Físico (Decisão D24): "
     )
-    add_bullet("Teto de até 8 preditores (~1.841 unidades espacialmente independentes nos 72 polígonos; regime estatístico plenamente adequado).", bold_prefix="Bloco Espectro-Temporal (Sentinel-2): ")
-    add_bullet("Teto de até 4 preditores (~396 unidades independentes a 30 m; admitido por necessidade física com restrições de monotonicidade).", bold_prefix="Bloco de Terreno (Copernicus DEM 30 m): ")
+    add_body(
+        f"A deflação estatística por autocorrelação espacial adota a área do bloco circular de correlação A_bloco = π · (a/2)². "
+        f"Com o alcance prático pré-registrado a ≈ 50 m (P01; ROBERTS et al., 2017), cada bloco ocupa ≈ 1.963,5 m² (0,19635 ha). "
+        f"A área total amostrada de 72 polígonos de 5,02 ha (361,44 ha) rende n_ef = 361,44 / 0,19635 ≈ {PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasTotal']} unidades espacialmente independentes. "
+        f"Para o conjunto de teste lacrado de 36 polígonos held-out (180,72 ha), resultam n_ef ≈ {PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasHeldOut']} unidades efetivas independentes (D16, D24, D25). "
+        f"Para o terreno (Copernicus DEM 30 m nativo), o alcance geomorfológico mais suave (a ≈ 100 m) deflaciona a área para ~{PARAM_DEFLACAO['terreno']['unidadesEfetivasTotal']} unidades independentes "
+        f"(suporte de ~7.854 m²; ~{PARAM_DEFLACAO['terreno']['unidadesEfetivasHeldOut']} unidades no held-out). Ambos os alcances constituem valores provisórios de planejamento (P01), "
+        f"a serem substituídos por variograma empírico conforme D24 e R-L4.",
+        bold_prefix="Deflação Amostral por Autocorrelação Espacial: "
+    )
+    add_bullet(f"Teto de até 8 preditores (~{PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasTotal']} unidades espacialmente independentes nos 72 polígonos; regime estatístico plenamente adequado).", bold_prefix="Bloco Espectro-Temporal (Sentinel-2): ")
+    add_bullet(f"Teto de até 4 preditores (~{PARAM_DEFLACAO['terreno']['unidadesEfetivasTotal']} unidades independentes a 30 m; admitido por necessidade física com restrições de monotonicidade).", bold_prefix="Bloco de Terreno (Copernicus DEM 30 m): ")
     add_bullet("Teto de exatamente 1 preditor (a erodibilidade K oficial k_solos; ordem pedológica aposentada por D08).", bold_prefix="Bloco de Solo (Embrapa Solos): ")
     add_bullet("Teto de exatamente 1 preditor (o fator R de erosividade anual).", bold_prefix="Bloco de Chuva (CHIRPS Regional): ")
     add_bullet("No máximo 14 variáveis preditoras (8 + 4 + 1 + 1 = 14; Decisão D24), com restrições físicas de monotonicidade positiva (monotone_constraints) impostas para declividade, erodibilidade e solo exposto.", bold_prefix="Teto Total na Matriz Preditora: ")
