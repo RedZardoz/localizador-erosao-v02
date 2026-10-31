@@ -414,11 +414,11 @@ def build_docx():
         bold_prefix="Declividade do Terreno (Ŝ): "
     )
     add_bullet(
-        "3 tercis empíricos da frequência decenal de exposição do solo no intervalo [0, 1], definida como a fração de cenas orbitais válidas com índice NDVI <= 0,25 da série Sentinel-2 L2A (Decisão D10; calibrado pelo sistema GEOS3/GeoCiS/ESALQ-USP para solos agrícolas tropicais).",
-        bold_prefix="Frequência Histórica de Solo Nu (Ê): "
+        "3 tercis empíricos da frequência decenal de exposição do solo no intervalo [0, 1], definida como a fração de cenas orbitais válidas com índice NDVI <= 0,25 da série Sentinel-2 L2A (calibrado pelo sistema GEOS3/GeoCiS/ESALQ-USP para solos agrícolas tropicais). Limitação metodológica declarada: sob Sistema Plantio Direto (SPD) consolidado, resíduos densos de palhada podem ser espectralmente integrados a este limiar preliminar; a discriminação fina entre solo mineral estritamente exposto e palhada é desacoplada para o Fator C analítico (D20 via BSI) e para o pool de preditores candidatos do modelo preditivo (Tabela 2).",
+        bold_prefix="Frequência Histórica de Solo Nu (Ê; Decisão D10): "
     )
     add_bullet(
-        "2 níveis numéricos derivados da carta oficial de erodibilidade da Embrapa Solos (Doc. 246/2024; D14): Nível 1 = Baixa/Média erodibilidade (classes 1 a 3 do SiBCS, K <= 0,0285 Mg h MJ⁻¹ mm⁻¹; predomínio de Latossolos) e Nível 2 = Alta/Muito Alta erodibilidade (classes 4 e 5, K >= 0,0300 Mg h MJ⁻¹ mm⁻¹; predomínio de Nitossolos e Neossolos). Totalizando exatamente 3 × 3 × 2 = 18 estratos canônicos.",
+        "2 níveis numéricos derivados da carta oficial de erodibilidade da Embrapa Solos (Doc. 246/2024; D14): Nível 1 = Baixa/Média erodibilidade (classes 1 a 3 do SiBCS, K <= 0,0285 Mg h MJ⁻¹ mm⁻¹; compreendendo Latossolos e Nitossolos Vermelhos, que representam 82,4% dos polígonos mapeados na bacia) e Nível 2 = Alta/Muito Alta erodibilidade (classes 4 e 5, K >= 0,0300 Mg h MJ⁻¹ mm⁻¹; compreendendo Neossolos Regolíticos RLm e Argissolos Vermelho-Amarelos PVAe/PVe, que representam 17,6% da bacia e 23,7% da área elegível por declividade). Totalizando exatamente 3 × 3 × 2 = 18 estratos canônicos amostrados desproporcionalmente via pesos amostrais π_i (Decisão D23).",
         bold_prefix="Erodibilidade Pedológica do Solo (K̂; Decisão D09): "
     )
     add_body(
@@ -485,9 +485,12 @@ def build_docx():
     )
     add_bullet(
         "Extraído diretamente do campo numérico k_solos da camada GeoServer oficial da Embrapa Solos (Doc. 246/2024; proveniência tabelado), "
-        "que mapeia os solos brasileiros segundo o SiBCS. Na Bacia do Paraná III, os Latossolos Vermelhos apresentam erodibilidade K na faixa de 0,0130 a 0,0170 Mg h MJ⁻¹ mm⁻¹, "
-        "enquanto os Nitossolos Vermelhos variam entre 0,0240 e 0,0280 Mg h MJ⁻¹ mm⁻¹. Por D08, a heurística taxonômica foi aposentada, utilizando-se a proveniência oficial tabelada.",
-        bold_prefix="Fator K — Erodibilidade Pedológica do Solo (Decisão D14): "
+        "que mapeia os solos brasileiros segundo o SiBCS. Na Bacia do Paraná III, os Latossolos Vermelhos apresentam erodibilidade K na faixa de 0,0130 a 0,0170 Mg h MJ⁻¹ mm⁻¹ "
+        "e os Nitossolos Vermelhos variam entre 0,0240 e 0,0280 Mg h MJ⁻¹ mm⁻¹ (ambos alocados no Nível 1 de erodibilidade, K <= 0,0285). "
+        "O Nível 2 de erodibilidade (K >= 0,0300 Mg h MJ⁻¹ mm⁻¹) contempla os Neossolos Regolíticos distróficos e eutróficos (RLm2, RLm4; K entre 0,0315 e 0,0345) "
+        "e os Argissolos Vermelho-Amarelos (PVAe, PVe; K entre 0,0465 e 0,0525), perfazendo 17,6% da base cartográfica da bacia e 23,7% dos polígonos na janela de declividade de D07. "
+        "Por D08, a heurística taxonômica foi aposentada, utilizando-se estritamente a proveniência oficial tabelada, sendo a assimetria territorial balanceada pela amostragem estratificada desproporcional com pesos π_i (D23).",
+        bold_prefix="Fator K — Erodibilidade Pedológica do Solo (Decisões D14 e D09): "
     )
     add_bullet(
         "Calculado pelo algoritmo bidimensional de área de contribuição específica de Desmet e Govers (1996) sobre o Modelo Digital de Elevação "
@@ -687,8 +690,8 @@ def build_docx():
         ("D06", "Suporte Espacial Nativo", "Unidade de análise fixada na célula de 10 m do Sentinel-2; proibição de reamostragem espúria de insumos mais grossos."),
         ("D07", "Domínio de Validade Físico", "Declividade estritamente entre 3,0% e 20,0% (SiBCS); WorldCover classes 30 e 40 com concordância entre v100 e v200."),
         ("D08", "Associações de Solo", "Ambiguidade de K em unidades de associação resolvida na fonte oficial (Embrapa Solos 2024); heurística taxonômica aposentada."),
-        ("D09", "Corte Ordinal de K̂", "Partição em 2 níveis de K̂: Nível 1 (K <= 0,0285) e Nível 2 (K >= 0,0300 Mg h MJ⁻¹ mm⁻¹)."),
-        ("D10", "Limiar de Solo Exposto", "NDVI <= 0,25 para classificação de solo nu em solos agrícolas tropicais (calibração GEOS3/ESALQ-USP)."),
+        ("D09", "Corte Ordinal de K̂", "Partição em 2 níveis de K̂: Nível 1 (K <= 0,0285; Latossolos e Nitossolos) e Nível 2 (K >= 0,0300 Mg h MJ⁻¹ mm⁻¹; Neossolos Regolíticos RLm e Argissolos PV, 17,6% da BP3)."),
+        ("D10", "Limiar de Solo Exposto", "NDVI <= 0,25 para solo nu em solos agrícolas tropicais (calibração GEOS3); integra palhada residual em SPD no estrato Ê, refinada em C via BSI (D20)."),
         ("D11", "Cobertura Temporal Mínima", "Número mínimo de observações orbitais válidas para validação de métricas de série temporal decenal."),
         ("D12", "Estratificação Multivariada", "18 estratos canônicos pelo produto fatorial Ŝ (3 tercis) x Ê (3 tercis) x K̂ (2 níveis), com Spatial Thinning r >= 1,0 km."),
         ("D13", "Fator R Regionalizado", "Equação regional do Paraná por Rufino et al. (1993) e Waltrick et al. (2010) sobre totais mensais CHIRPS v2.0."),
