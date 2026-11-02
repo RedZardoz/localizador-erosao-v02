@@ -102,11 +102,13 @@ Tudo nesta fase precisa estar fechado **antes do primeiro dado de desfecho**. De
 
 | Item | O que fazer | Depende de |
 |---|---|---|
-| **A-05** | Adicionar aos perfis `matriz-treino`/`matriz-heldout`: `Estrato_ID`, `Pi_i`, `W_i`, `Incluida`, `Cobertura_Celula`, `Pixel_ID` (opaco), `Modelo`, `Data_Referencia`, `Fim_Janela`; popular do selo D16 e do CSV de D26 | B-01 (quantos estratos), B-02 (qual `pi_i`), B-03 (qual partição), B-04 (há coluna `Modelo`?) |
+| **A-05** | Adicionar aos perfis `matriz-treino`/`matriz-heldout`: `Estrato_ID`, `Pi_i`, `W_i`, `N_Candidatos_Estrato`, `Incluida`, `Cobertura_Celula`, `Area_Delineada_m2`, `Pixel_ID` (opaco), `Modelo`, `Data_Referencia`, `Fim_Janela`; popular do selo D16 e do CSV de D26 | **nenhum gate**, se o esquema validar estrutura e não cardinalidade — ver nota abaixo |
 | **C-02** | Esquema versionado com validação; a exportação falha se faltar chave do desenho | A-05 |
 | **C-07** | Dicionário de dados: coluna, unidade, suporte, origem, decisão | A-05 |
 
 Fecha de uma vez os três achados S1 que têm a mesma causa raiz (`V-01`, `V-03`, `T-02` — ver N-08).
+
+**Correção da dependência declarada na §5 desta primeira versão.** A proposta de 01/11 afirmava que `A-05` depende de `B-02`/`B-03`, e este planejamento repetiu. **Verificação de 02/11 mostra que a dependência é mais fraca do que isso para `A-05`:** o selo D16 já grava `estratoId`, `papelConjunto`, `pi_i`, `w_i` e `nCandidatosEstrato` por polígono (`sorteioPoligonos.ts:531-543`), de modo que os valores vêm do selo que o sorteio gravar, em qualquer cenário de `G-01`; e Zod 3.23.8 já é dependência. `A-05` é portanto **executável agora**, sob uma condição de desenho: o esquema valida **estrutura e proveniência, nunca cardinalidade** — nada de `18`, `72` ou `36` no código. O que permanece dependente de gate é `A-06` (exigir contagens no modo probatório, via `G-01`) e a exportação da segunda matriz (`G-04`).
 
 ---
 
@@ -228,7 +230,7 @@ Um prompt por bloco executável, emitido só quando seu insumo existe.
 | **P-L — Lastro** | L-01 a L-03 (obtenção), L-05 a L-10, N-13, N-14, especificação do competidor — [`prompts/PROMPT_EXECUTOR_LASTRO_2026-11-01.md`](prompts/PROMPT_EXECUTOR_LASTRO_2026-11-01.md) | **Emitido** |
 | **P-A — Decisões vigentes** | A-01 (D11.2), A-02 (P03), A-04 (D20), A-10 (CI e textos) | **Agora**; são decisões já tomadas e não implementadas |
 | **P-D — Material de decisão** | Opções para G-01 a G-15 quantificadas (N-03 a N-06, N-14); **não executa nada** — [`prompts/PROMPT_EXECUTOR_MATERIAL_DECISAO_2026-11-02.md`](prompts/PROMPT_EXECUTOR_MATERIAL_DECISAO_2026-11-02.md) | **Parte independente emitida**; o veredito de lastro de G-01/G-02/G-10 entra quando P-L voltar |
-| **P-M — Contrato de dados** | A-05, C-02, C-07 | Após G-01 a G-04 assinados |
+| **P-M — Contrato de dados** | A-05, C-02, C-07 — [`prompts/PROMPT_EXECUTOR_CONTRATO_MATRIZ_2026-11-02.md`](prompts/PROMPT_EXECUTOR_CONTRATO_MATRIZ_2026-11-02.md) | **Emitido**: `A-05` é executável já, desde que o esquema não hardcode cardinalidade (ver Fase 4) |
 | **P-V — Validação** | A-06, simulação de poder, sensibilidades pré-registradas | Após P-M e G-13 |
 | **P-C — Campanha** | A-11, âncora de D23, protocolo de não resposta | Após G-01, G-02, G-09 |
 | **P-R — Reporte** | Model card, TRIPOD+AI, PROBAST, dicionário | Após P-V |
