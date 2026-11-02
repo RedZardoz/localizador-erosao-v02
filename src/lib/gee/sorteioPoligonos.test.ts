@@ -5,7 +5,6 @@ import {
   CandidatoSorteioD16,
   ErroPreCondicaoSorteioD16,
   verificarPreCondicoesSorteioD16,
-  sortearPoligonosDroneD16,
   sortear72PoligonosD16,
 } from "./sorteioPoligonos";
 import { TODOS_ESTRATOS_D12 } from "./estratificacao";
@@ -55,7 +54,7 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
   it("deve recusar e nomear 'nenhum_selo_anterior' se um selo já existir (Idempotência D23)", () => {
     const pool = gerarPoolCandidatosElegiveis(3);
     expect(() =>
-      sortearPoligonosDroneD16(pool, {
+      sortear72PoligonosD16(pool, {
         semente: 20260928,
         gitCommit: "abc1234",
         sha256ConjuntoCandidatos: "deadbeef",
@@ -64,7 +63,7 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
     ).toThrowError(ErroPreCondicaoSorteioD16);
 
     try {
-      sortearPoligonosDroneD16(pool, {
+      sortear72PoligonosD16(pool, {
         semente: 20260928,
         gitCommit: "abc1234",
         sha256ConjuntoCandidatos: "deadbeef",
@@ -120,7 +119,7 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
     const relatorio = verificarPreCondicoesSorteioD16(pool);
     expect(relatorio.aprovado).toBe(true);
 
-    const selo = sortearPoligonosDroneD16(pool, {
+    const selo = sortear72PoligonosD16(pool, {
       semente: 42,
       gitCommit: "commit-w3",
       sha256ConjuntoCandidatos: "sha256-w3",
@@ -179,66 +178,24 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
     }
   });
 
-  it("deve sortear exatamente 36 polígonos (18 treino + 18 held-out, 1 par por estrato) com pi_i = 2 / N_h e ser invariante à ordem de entrada", () => {
-    const pool = gerarPoolCandidatosElegiveis(5); // N_h = 5 em cada um dos 18 estratos -> pi_i = 2/5 = 0.4
-    const invertido = [...pool].reverse();
-
-    const selo1 = sortearPoligonosDroneD16(pool, {
-      semente: 987654321,
-      gitCommit: "commit-teste",
-      sha256ConjuntoCandidatos: "sha256-teste",
-      geradoEm: "2026-09-28T14:30:00.000Z",
-    });
-
-    const selo2 = sortearPoligonosDroneD16(invertido, {
-      semente: 987654321,
-      gitCommit: "commit-teste",
-      sha256ConjuntoCandidatos: "sha256-teste",
-      geradoEm: "2026-09-28T14:30:00.000Z",
-    });
-
-    expect(selo1.poligonos).toHaveLength(36);
-    expect(selo1.totalTreino).toBe(18);
-    expect(selo1.totalHeldOut).toBe(18);
-    expect(selo1.areaTotalHectares).toBe(360);
-
-    // Verifica que o sorteio e a designação treino/held-out independem da ordem de entrada
-    expect(selo1.poligonos.map((p) => `${p.idCandidatoOrigem}:${p.papelConjunto}`)).toEqual(
-      selo2.poligonos.map((p) => `${p.idCandidatoOrigem}:${p.papelConjunto}`)
-    );
-
-    // Verifica que cada estrato possui exatamente 1 treino e 1 held-out e pi_i = 2 / N_h
-    for (const idEstrato of TODOS_ESTRATOS_D12) {
-      const doEstrato = selo1.poligonos.filter((p) => p.estratoId === idEstrato);
-      expect(doEstrato).toHaveLength(2);
-      const papeis = doEstrato.map((p) => p.papelConjunto).sort();
-      expect(papeis).toEqual(["held-out", "treino"]);
-      const nh = selo1.contagemCandidatosPorEstrato[idEstrato];
-      expect(nh).toBeGreaterThanOrEqual(2);
-      expect(doEstrato[0].nCandidatosEstrato).toBe(nh);
-      expect(doEstrato[0].pi_i).toBeCloseTo(2 / nh, 8);
-      expect(doEstrato[1].pi_i).toBeCloseTo(2 / nh, 8);
-    }
-  });
-
-  it("T3.1: deve garantir determinismo bit-a-bit sob a mesma semente (incluindo hashIntegridade) e sensibilidade à semente preservando a partição 18+18=36", () => {
+  it("T3.1: deve garantir determinismo bit-a-bit sob a mesma semente (incluindo hashIntegridade) e sensibilidade à semente preservando a partição 36+36=72", () => {
     const pool = gerarPoolCandidatosElegiveis(6);
 
-    const execucaoA = sortearPoligonosDroneD16(pool, {
+    const execucaoA = sortear72PoligonosD16(pool, {
       semente: 20260928,
       gitCommit: "commit-a",
       sha256ConjuntoCandidatos: "sha256-pool",
       geradoEm: "2026-09-28T15:00:00.000Z",
     });
 
-    const execucaoB = sortearPoligonosDroneD16(pool, {
+    const execucaoB = sortear72PoligonosD16(pool, {
       semente: 20260928,
       gitCommit: "commit-a",
       sha256ConjuntoCandidatos: "sha256-pool",
       geradoEm: "2026-09-28T15:00:00.000Z",
     });
 
-    const execucaoSementeDiferente = sortearPoligonosDroneD16(pool, {
+    const execucaoSementeDiferente = sortear72PoligonosD16(pool, {
       semente: 20260929,
       gitCommit: "commit-a",
       sha256ConjuntoCandidatos: "sha256-pool",
@@ -275,13 +232,18 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
     ).not.toEqual(
       execucaoA.poligonos.map((p) => `${p.idCandidatoOrigem}:${p.papelConjunto}`)
     );
-    expect(execucaoSementeDiferente.poligonos).toHaveLength(36);
-    expect(execucaoSementeDiferente.totalTreino).toBe(18);
-    expect(execucaoSementeDiferente.totalHeldOut).toBe(18);
+    expect(execucaoSementeDiferente.poligonos).toHaveLength(72);
+    expect(execucaoSementeDiferente.totalTreino).toBe(36);
+    expect(execucaoSementeDiferente.totalHeldOut).toBe(36);
     for (const idEstrato of TODOS_ESTRATOS_D12) {
-      const par = execucaoSementeDiferente.poligonos.filter((p) => p.estratoId === idEstrato);
-      expect(par).toHaveLength(2);
-      expect(par.map((p) => p.papelConjunto).sort()).toEqual(["held-out", "treino"]);
+      const quarteto = execucaoSementeDiferente.poligonos.filter((p) => p.estratoId === idEstrato);
+      expect(quarteto).toHaveLength(4);
+      expect(quarteto.map((p) => p.papelConjunto).sort()).toEqual([
+        "held-out",
+        "held-out",
+        "treino",
+        "treino",
+      ]);
     }
   });
 
@@ -318,7 +280,7 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
       }
     }
 
-    const selo = sortearPoligonosDroneD16(candidatosHeterogeneos, {
+    const selo = sortear72PoligonosD16(candidatosHeterogeneos, {
       semente: 20260928,
       gitCommit: "commit-ht",
       sha256ConjuntoCandidatos: "sha256-ht",
@@ -331,8 +293,8 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
     for (const p of selo.poligonos) {
       const nh = p.nCandidatosEstrato;
       expect(nh).toBeGreaterThanOrEqual(4);
-      expect(p.pi_i).toBeCloseTo(2 / nh, 8);
-      expect(p.w_i).toBeCloseTo(nh / 2, 8);
+      expect(p.pi_i).toBeCloseTo(4 / nh, 8);
+      expect(p.w_i).toBeCloseTo(nh / 4, 8);
       expect(p.pi_i * p.w_i).toBeCloseTo(1.0, 7);
     }
   });

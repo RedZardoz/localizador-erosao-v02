@@ -1,21 +1,29 @@
 /**
  * ============================================================================
- * Motor Determinístico de Sorteio dos 36 Polígonos de Drone (10 ha) — FASE A1
+ * Motor Determinístico de Sorteio dos 72 Polígonos de VANT (5,02 ha) — D16 emendada
  * SAREL v2.0 — Decisões D07, D08, D12, D16 e D23 (PPGTCA 2026)
  * ============================================================================
+ *
+ * ROTINA VIGENTE: `sortear72PoligonosD16`. É a única rotina de sorteio deste módulo.
+ * A rotina anterior (`sortearPoligonosDroneD16`, 36 polígonos de 10 ha com `pi_i = 2 / N_h`) foi
+ * REMOVIDA em 02/11/2026 (achado N-02): mantida como código exportado, ela podia selar uma
+ * probabilidade de inclusão incompatível com o desenho vigente, e o selo de D16 é irreversível por
+ * construção. Sua cobertura de teste — idempotência do selo, estados de `kAmbiguoAssociacao`,
+ * determinismo bit-a-bit e identidade de Horvitz-Thompson — foi portada para a rotina vigente.
  *
  * REGRAS E GARANTIAS METODOLÓGICAS:
  * 1. Reaproveita a partição canônica de `src/lib/gee/estratificacao.ts` (`particionarCandidatosEm18Estratos`
  *    e `criarPrng`), sem reimplementar tercis nem estratos.
- * 2. Sorteia exatamente 2 polígonos de 10 ha por estrato sobre os 18 estratos (3 × 3 × 2) de D12,
- *    totalizando 36 polígonos (360 ha).
- * 3. De cada par em um estrato `h` com `N_h` candidatos:
- *    - A probabilidade de inclusão de cada polígono sorteado é registrada exatamente como `pi_i = 2 / N_h` (D23).
- *    - Um polígono é designado para `"treino"` (18 polígonos) e o outro para `"held-out"` (18 polígonos),
- *      sendo essa designação ela própria sorteada com o PRNG da semente registrada, NUNCA pela ordem
- *      em que os candidatos apareceram.
- * 4. Verifica rigorosamente as 7 pré-condições antes de qualquer sorteio e recusa com erro tipado
- *    nomeando a pré-condição violada.
+ * 2. Sorteia exatamente 4 polígonos de 5,02 ha por estrato sobre os estratos de D12,
+ *    totalizando 72 polígonos quando há 18 estratos ocupados.
+ * 3. De cada quarteto em um estrato `h` com `N_h` candidatos:
+ *    - A probabilidade de inclusão de cada polígono sorteado é registrada exatamente como `pi_i = 4 / N_h`,
+ *      com peso de Horvitz-Thompson `w_i = N_h / 4`, tal que `pi_i * w_i = 1` (D23).
+ *    - `N_h` é contagem de CANDIDATOS do estrato, não de hectares: `pi_i` NÃO é peso de área (ver D-02).
+ *    - Dois polígonos são designados para `"treino"` e dois para `"held-out"`, sendo essa designação ela
+ *      própria sorteada com o PRNG da semente registrada, NUNCA pela ordem em que os candidatos apareceram.
+ * 4. Verifica rigorosamente as pré-condições antes de qualquer sorteio e recusa com erro tipado
+ *    nomeando a pré-condição violada, inclusive `N_h >= 4` em todos os estratos.
  * 5. Idempotência estrita (D23): se qualquer selo anterior existir, recusa imediatamente sem sobrescrever
  *    nem versionar (`_v2`), protegendo os `pi_i` já selados.
  */
@@ -99,226 +107,8 @@ export function gerarCodigoOpacoSorteio(): string {
 
 
 /**
- * @deprecated Desenho antigo (36 polígonos de 10 ha). O desenho vigente de D16 emendada é de 72 polígonos de 5,02 ha (usar `sortear72PoligonosD16`).
- * Mantido para compatibilidade e testes existentes.
- * Executa o sorteio determinístico dos 36 polígonos de 10 ha (2 por estrato sobre os 18 estratos de D12),
- * designando aleatoriamente 1 para treino e 1 para held-out em cada estrato com a semente registrada,
- * e registrando a probabilidade de inclusão exata `pi_i = 2 / N_h` (D23).
- */
-export function sortearPoligonosDroneD16(
-  candidatos: CandidatoSorteioD16[],
-  opcoes: {
-    semente: number;
-    gitCommit: string;
-    sha256ConjuntoCandidatos: string;
-    seloExistenteCaminho?: string | null;
-    geradoEm?: string;
-    geradorCodigoOpaco?: (idPoligono: string) => string;
-  }
-): SeloSorteioD16 {
-  const {
-    semente,
-    gitCommit,
-    sha256ConjuntoCandidatos,
-    seloExistenteCaminho = null,
-    geradoEm = new Date().toISOString(),
-    geradorCodigoOpaco,
-  } = opcoes;
-
-  if (!Number.isFinite(semente) || !Number.isInteger(semente) || semente <= 0) {
-    throw new Error(`Semente de sorteio inválida (${semente}). Deve ser inteiro positivo registrado (P07).`);
-  }
-
-  const possuiCandidatoSintetico = candidatos.some(
-    (c) =>
-      String(c.id).startsWith("DRY-CAND-") ||
-      c.isSynthetic === true ||
-      c.origemSintetica === true
-  );
-  if (possuiCandidatoSintetico) {
-    throw new Error(
-      "Recusa de sorteio D23 (T4.3): o selo de sorteio jamais pode ser gerado a partir de candidatos sintéticos/fabricados (DRY-CAND- / isSynthetic)."
-    );
-  }
-
-  // Verifica rigorosamente as 7 pré-condições (lança erro se qualquer uma falhar)
-  const relatorioPre = verificarPreCondicoesSorteioD16(candidatos, {
-    seloExistenteCaminho,
-    lancarErro: true,
-  });
-
-  const candidatosValidos = candidatos.filter(
-    (c): c is CandidatoSorteioD16 & { declividadePct: number; frequenciaSoloNu: number } =>
-      typeof c.declividadePct === "number" &&
-      Number.isFinite(c.declividadePct) &&
-      typeof c.frequenciaSoloNu === "number" &&
-      Number.isFinite(c.frequenciaSoloNu)
-  );
-  const { limiaresS, limiaresE, estratosMap } = particionarCandidatosEm18Estratos(candidatosValidos);
-  const prng = criarPrng(semente);
-
-  const poligonos: PoligonoSorteadoD16[] = [];
-  const tabelaCorrespondenciaOpaca: Record<string, string> = {};
-  let seqPoligono = 1;
-
-  for (const idEstrato of TODOS_ESTRATOS_D12) {
-    // Ordena inicialmente por ID apenas para garantir independência da ordem de chegada na rede,
-    // e em seguida aplica embaralhamento Fisher-Yates completo com a semente registrada
-    const poolEstrato = [...estratosMap[idEstrato]].sort((a, b) =>
-      String(a.id) < String(b.id) ? -1 : String(a.id) > String(b.id) ? 1 : 0
-    );
-    const nCandidatosEstrato = poolEstrato.length;
-
-    // Defesa em profundidade: guarda de sanidade no próprio sorteio
-    if (nCandidatosEstrato < 4) {
-      throw new Error(
-        `[SORTEIO_D16_INVALIDO] Estrato '${idEstrato}' possui apenas ${nCandidatosEstrato} candidato(s) (mínimo absoluto exigido: 4 conforme D16 emendada).`
-      );
-    }
-
-    for (let i = poolEstrato.length - 1; i > 0; i--) {
-      const j = Math.floor(prng() * (i + 1));
-      const temp = poolEstrato[i];
-      poolEstrato[i] = poolEstrato[j];
-      poolEstrato[j] = temp;
-    }
-
-    const parSorteado = [poolEstrato[0], poolEstrato[1]];
-
-    // A designação treino / held-out dentro do par é ela mesma sorteada com a semente registrada,
-    // NUNCA pela ordem em que os candidatos apareceram
-    const primeiroVaiParaTreino = prng() < 0.5;
-    const papeisPar: ["treino" | "held-out", "treino" | "held-out"] = primeiroVaiParaTreino
-      ? ["treino", "held-out"]
-      : ["held-out", "treino"];
-
-    // Probabilidade de inclusão exata em amostragem aleatória simples sem reposição de tamanho 2 no estrato h (D23)
-    // e peso de Horvitz-Thompson w_i = N_h / 2 tal que pi_i * w_i = 1
-    const pi_i = Number((2 / nCandidatosEstrato).toFixed(8));
-    const w_i = Number((nCandidatosEstrato / 2).toFixed(8));
-
-    if (pi_i <= 0 || pi_i > 1) {
-      throw new Error(
-        `[SORTEIO_D16_INVALIDO] Probabilidade de inclusão inválida pi_i=${pi_i} no estrato '${idEstrato}' (deve satisfazer 0 < pi_i <= 1).`
-      );
-    }
-
-    for (let idxPar = 0; idxPar < 2; idxPar++) {
-      const cand = parSorteado[idxPar];
-      const papelConjunto = papeisPar[idxPar];
-      const idPoligono = `D16-${String(seqPoligono).padStart(2, "0")}-${idEstrato}`;
-      seqPoligono++;
-
-      const codigoOpacoVant = geradorCodigoOpaco
-        ? geradorCodigoOpaco(idPoligono)
-        : gerarCodigoOpacoSorteio();
-      tabelaCorrespondenciaOpaca[idPoligono] = codigoOpacoVant;
-
-      poligonos.push({
-        idPoligono,
-        idCandidatoOrigem: cand.id,
-        codigoOpacoVant,
-        estratoId: idEstrato,
-        papelConjunto,
-        pi_i,
-        w_i,
-        nCandidatosEstrato,
-        centroide: {
-          latitude: cand.latitude,
-          longitude: cand.longitude,
-        },
-        areaHectares: 10,
-        geometria: construirPoligono10Ha(cand.latitude, cand.longitude),
-        declividadePct: cand.declividadePct as number,
-        frequenciaSoloNu: cand.frequenciaSoloNu as number,
-        nivelK: cand.nivelK,
-        kAmbiguoAssociacao: cand.kAmbiguoAssociacao as true | false | "indisponivel",
-        ...(cand.kAmbiguoAssociacaoProveniencia
-          ? { kAmbiguoAssociacaoProveniencia: cand.kAmbiguoAssociacaoProveniencia }
-          : {}),
-        unidadeDeterminanteK2024:
-          cand.unidadeDeterminanteK2024 !== undefined ? cand.unidadeDeterminanteK2024 : null,
-        classeWorldCover2020: cand.classeWorldCover2020 as number,
-        classeWorldCover2021: cand.classeWorldCover2021 as number,
-        pontoEmFronteiraPedologica:
-          cand.pontoEmFronteiraPedologica ??
-          indisponivel(
-            "nao-calculado",
-            "Diagnóstico de fronteira por bbox aguarda enriquecimento via diagnosticarFronteiraPoligonosSorteadosD16 (V2.1/V2.2)."
-          ),
-      });
-    }
-  }
-
-  // Hash determinístico estável sobre a lista ordenada de polígonos sorteados com seus pi_i e w_i
-  const stringCanonica = poligonos
-    .map(
-      (p) =>
-        `${p.idPoligono}|${p.idCandidatoOrigem}|${p.estratoId}|${p.papelConjunto}|${p.pi_i.toFixed(8)}|${p.w_i.toFixed(8)}`
-    )
-    .join(";");
-  let h1 = 0xdeadbeef ^ semente;
-  let h2 = 0x41c6ce57 ^ semente;
-  for (let i = 0; i < stringCanonica.length; i++) {
-    const ch = stringCanonica.charCodeAt(i);
-    h1 = Math.imul(h1 ^ ch, 2654435761);
-    h2 = Math.imul(h2 ^ ch, 1597334677);
-  }
-  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-  const hashIntegridade = `${(h1 >>> 0).toString(16).padStart(8, "0")}${(h2 >>> 0).toString(16).padStart(8, "0")}`;
-
-  return {
-    versaoEsquema: "1.2.0",
-    geradoEm,
-    semente,
-    politicaSemente: String(PARAMETROS.P07?.valor ?? "dinamica-registrada"),
-    gitCommit,
-    sha256ConjuntoCandidatos,
-    hashIntegridade,
-    totalCandidatosEntrada: candidatos.length,
-    totalPoligonosSorteados: 36,
-    totalTreino: 18,
-    totalHeldOut: 18,
-    areaTotalHectares: 360,
-    limiaresS: relatorioPre.limiaresS,
-    limiaresE: relatorioPre.limiaresE,
-    contagemCandidatosPorEstrato: relatorioPre.contagemCandidatosPorEstrato,
-    decisoesVigentes: {
-      D07: {
-        titulo: REGISTRO_DECISOES.D07.titulo,
-        status: REGISTRO_DECISOES.D07.estado,
-        decididaEm: REGISTRO_DECISOES.D07.decididoEm,
-      },
-      D08: {
-        titulo: REGISTRO_DECISOES.D08.titulo,
-        status: REGISTRO_DECISOES.D08.estado,
-        decididaEm: REGISTRO_DECISOES.D08.decididoEm,
-      },
-      D12: {
-        titulo: REGISTRO_DECISOES.D12.titulo,
-        status: REGISTRO_DECISOES.D12.estado,
-        decididaEm: REGISTRO_DECISOES.D12.decididoEm,
-      },
-      D16: {
-        titulo: REGISTRO_DECISOES.D16.titulo,
-        status: REGISTRO_DECISOES.D16.estado,
-        decididaEm: REGISTRO_DECISOES.D16.decididoEm,
-      },
-      D23: {
-        titulo: REGISTRO_DECISOES.D23.titulo,
-        status: REGISTRO_DECISOES.D23.estado,
-        decididaEm: REGISTRO_DECISOES.D23.decididoEm,
-      },
-    },
-    poligonos,
-    tabelaCorrespondenciaOpaca,
-  };
-}
-
-/**
  * Computa o marcador `pontoEmFronteiraPedologica` por consulta com bbox (`WMS GetFeatureInfo` ~110 m)
- * especificamente para os 36 polígonos sorteados (PARTE III / V2.2).
+ * especificamente para os polígonos sorteados por `sortear72PoligonosD16` (PARTE III / V2.2).
  */
 export async function diagnosticarFronteiraPoligonosSorteadosD16(
   poligonos: PoligonoSorteadoD16[],
