@@ -48,6 +48,96 @@ describe("C25 — Validação pericial estrita de rótulo humano (Inspetor)", ()
     }
   });
 
+  it("recusa gravação quando o nível de confiança não foi escolhido (sem default)", () => {
+    const res = validarEConstruirRotuloHumano({
+      classe: "erosao",
+      modalidade: "campo",
+      observador: "Dr. Pesquisador",
+      observadoEm: "2026-10-18",
+      confianca: "",
+      modo: "registro",
+      fracaoErodida: 0.35,
+    });
+
+    expect(res.valido).toBe(false);
+    if (!res.valido) {
+      expect(res.motivo).toContain("Nível de confiança");
+    }
+  });
+
+  describe("A-07a / Regra 1 — o alvo primário de D26 não tem valor padrão", () => {
+    it("recusa gravação quando a fração erodida está ausente, inclusive com classe 'erosao'", () => {
+      const res = validarEConstruirRotuloHumano({
+        classe: "erosao",
+        modalidade: "drone",
+        observador: "Dr. Pesquisador",
+        observadoEm: "2026-10-18",
+        confianca: "alta",
+        modo: "registro",
+        fracaoErodida: null,
+      });
+
+      expect(res.valido).toBe(false);
+      if (!res.valido) {
+        expect(res.motivo).toContain("Fração erodida da célula é obrigatória");
+      }
+    });
+
+    it("aceita fração 0 explicitamente informada, porque zero é observação e não ausência", () => {
+      const res = validarEConstruirRotuloHumano({
+        classe: "controle",
+        modalidade: "drone",
+        observador: "Dr. Pesquisador",
+        observadoEm: "2026-10-18",
+        confianca: "alta",
+        modo: "registro",
+        fracaoErodida: 0,
+      });
+
+      expect(res.valido).toBe(true);
+      if (res.valido) {
+        expect(res.rotulo.fracaoErodida).toBe(0);
+        expect(res.rotulo.alvoBinarioDerivado).toBe(0);
+      }
+    });
+
+    it("recusa fração fora do domínio [0, 1] em vez de cortar o valor (Regra 2)", () => {
+      for (const fora of [-0.01, 1.5]) {
+        const res = validarEConstruirRotuloHumano({
+          classe: "erosao",
+          modalidade: "drone",
+          observador: "Dr. Pesquisador",
+          observadoEm: "2026-10-18",
+          confianca: "alta",
+          modo: "registro",
+          fracaoErodida: fora,
+        });
+
+        expect(res.valido).toBe(false);
+        if (!res.valido) {
+          expect(res.motivo).toContain("fora do domínio");
+        }
+      }
+    });
+
+    it("recusa fração não numérica", () => {
+      const res = validarEConstruirRotuloHumano({
+        classe: "erosao",
+        modalidade: "drone",
+        observador: "Dr. Pesquisador",
+        observadoEm: "2026-10-18",
+        confianca: "alta",
+        modo: "registro",
+        fracaoErodida: Number.NaN,
+      });
+
+      expect(res.valido).toBe(false);
+      if (!res.valido) {
+        expect(res.motivo).toContain("não numérico");
+      }
+    });
+  });
+
   it("valida e constrói o rótulo pericial com sucesso quando data e observador são informados", () => {
     const resValido = validarEConstruirRotuloHumano({
       classe: "erosao",

@@ -33,12 +33,13 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
   const [auditando, setAuditando] = React.useState(false);
 
   // Campos do Laudo Pericial Humano (D26 / D03)
-  const [fracaoErodidaInput, setFracaoErodidaInput] = React.useState<number>(0.0);
+  // Regra 1 / C25: o alvo primário de D26 nasce SEM valor. Zero é observação, não ausência.
+  const [fracaoErodidaInput, setFracaoErodidaInput] = React.useState<number | null>(null);
   const [classeRotuloInput, setClasseRotuloInput] = React.useState<"erosao" | "controle">("erosao");
   const [modalidadeRotuloInput, setModalidadeRotuloInput] = React.useState<"campo" | "drone" | "interpretacao-visual">("campo");
-  const [observadorInput, setObservadorInput] = React.useState<string>("Pesquisador PPGTCA");
+  const [observadorInput, setObservadorInput] = React.useState<string>("");
   const [observadoEmInput, setObservadoEmInput] = React.useState<string>("");
-  const [confiancaInput, setConfiancaInput] = React.useState<"alta" | "media" | "baixa">("alta");
+  const [confiancaInput, setConfiancaInput] = React.useState<"alta" | "media" | "baixa" | "">("");
   const [observacoesInput, setObservacoesInput] = React.useState<string>("");
   const [erroValidacao, setErroValidacao] = React.useState<string | null>(null);
 
@@ -91,7 +92,7 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
     adicionarLog(
       "info",
       "Rotulagem-Humana",
-      `Rótulo pericial consolidado para ${ponto.codigo} [cego=${novoRotulo.cego}, data=${novoRotulo.observadoEm}, fração=${fracaoErodidaInput.toFixed(2)}, papel=${papelConjuntoDerivado}].`
+      `Rótulo pericial consolidado para ${ponto.codigo} [cego=${novoRotulo.cego}, data=${novoRotulo.observadoEm}, fração=${novoRotulo.fracaoErodida?.toFixed(3) ?? "indisponivel"}, papel=${papelConjuntoDerivado}].`
     );
   };
 
@@ -276,20 +277,27 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
                   Fração Erodida da Célula [0.00 a 1.00] (Tweedie):
                 </label>
                 <span className="font-mono font-bold text-base text-emerald-900 bg-white px-2 py-0.5 rounded border border-emerald-200">
-                  {fracaoErodidaInput.toFixed(2)} ({(fracaoErodidaInput * 100).toFixed(0)}% da célula de 10 m)
+                  {fracaoErodidaInput === null
+                    ? "— sem valor (obrigatório)"
+                    : `${fracaoErodidaInput.toFixed(2)} (${(fracaoErodidaInput * 100).toFixed(0)}% da célula de 10 m)`}
                 </span>
               </div>
               <p className="text-[11px] text-slate-600">
                 Área da célula de 10 m (100 m²) delineada como mancha ou sulco de erosão laminar sobre imagem de alta resolução (VANT ou campo).
               </p>
               <input
-                type="range"
-                min="0.0"
-                max="1.0"
-                step="0.01"
-                value={fracaoErodidaInput}
-                onChange={(e) => setFracaoErodidaInput(parseFloat(e.target.value))}
-                className="w-full cursor-pointer accent-emerald-600"
+                type="number"
+                min="0"
+                max="1"
+                step="0.001"
+                value={fracaoErodidaInput ?? ""}
+                onChange={(e) => {
+                  const bruto = e.target.value.trim();
+                  setFracaoErodidaInput(bruto === "" ? null : Number(bruto));
+                  if (erroValidacao) setErroValidacao(null);
+                }}
+                placeholder="Fração medida por delineação — sem valor padrão (Regra 1)"
+                className="w-full rounded-lg border border-emerald-300 bg-white px-3 py-2 font-mono text-sm text-emerald-950 shadow-xs focus:border-emerald-600 focus:outline-none"
               />
             </div>
 
@@ -305,14 +313,17 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
               </div>
               <span
                 className={`font-mono font-bold px-2 py-0.5 rounded text-xs ${
+                  fracaoErodidaInput !== null &&
                   binarizarFracao(Number(fracaoErodidaInput.toFixed(3))) === 1
                     ? "bg-rose-100 text-rose-800 border border-rose-200"
                     : "bg-emerald-100 text-emerald-800 border border-emerald-200"
                 }`}
               >
-                {binarizarFracao(Number(fracaoErodidaInput.toFixed(3))) === 1
-                  ? "1 — Positivo (≥ 25 m² erodidos)"
-                  : "0 — Negativo (< 25 m² erodidos)"}
+                {fracaoErodidaInput === null
+                  ? "— aguardando a fração observada"
+                  : binarizarFracao(Number(fracaoErodidaInput.toFixed(3))) === 1
+                    ? "1 — Positivo (≥ 25 m² erodidos)"
+                    : "0 — Negativo (< 25 m² erodidos)"}
               </span>
             </div>
 
@@ -376,9 +387,12 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
                 <label className="text-[11px] text-slate-600 block mb-1 font-semibold">Nível de Confiança:</label>
                 <select
                   value={confiancaInput}
-                  onChange={(e) => setConfiancaInput(e.target.value as "alta" | "media" | "baixa")}
+                  onChange={(e) =>
+                    setConfiancaInput(e.target.value as "alta" | "media" | "baixa" | "")
+                  }
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 shadow-xs focus:border-emerald-500 focus:outline-none"
                 >
+                  <option value="">— selecione (sem valor padrão)</option>
                   <option value="alta">Alta (Feição nítida / Posicionamento preciso)</option>
                   <option value="media">Média (Sinal moderado de escoamento)</option>
                   <option value="baixa">Baixa (Cobertura densa / Dúvida interpretativa)</option>
