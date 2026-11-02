@@ -503,5 +503,59 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
       expect(violacoes).toHaveLength(0);
     }, 30000);
   });
+
+  describe("A-03 / P07 — nenhuma semente de sorteio constante no codigo", () => {
+    /**
+     * P07 decidiu "dinamica-registrada": a reprodutibilidade exige que a semente seja REGISTRADA,
+     * nao que seja FIXA. Uma constante embutida torna todas as execucoes identicas e retira do
+     * sorteio o carater probabilistico que D23 descreve. Este teste impede a reincidencia, que
+     * ocorreu duas vezes: `const semente = 42` na rota de candidatos e um default `20260928` no CLI.
+     */
+    const ARQUIVOS_DE_SORTEIO = [
+      "src/app/api/gee/select-candidates/route.ts",
+      "scripts/sortear_poligonos_d16.ts",
+    ];
+
+    it("nao atribui semente a um literal numerico em nenhum arquivo que sorteia", () => {
+      const violacoes: string[] = [];
+      for (const rel of ARQUIVOS_DE_SORTEIO) {
+        const abs = path.resolve(process.cwd(), rel);
+        if (!fs.existsSync(abs)) {
+          expect.fail(`Arquivo de sorteio esperado nao existe: ${rel}`);
+        }
+        const conteudo = fs.readFileSync(abs, "utf-8");
+        conteudo.split("\n").forEach((linha, i) => {
+          const t = linha.trim();
+          if (t.startsWith("*") || t.startsWith("//") || t.startsWith("/*")) return;
+          if (/\b(const|let|var)\s+semente\w*\s*(:\s*number\s*)?=\s*\d/.test(linha)) {
+            violacoes.push(`${rel}:${i + 1} -> ${t}`);
+          }
+        });
+      }
+      if (violacoes.length > 0) {
+        expect.fail(
+          `Semente constante detectada (P07 exige semente dinamica e registrada):\n${violacoes.join("\n")}`
+        );
+      }
+      expect(violacoes).toHaveLength(0);
+    });
+
+    it("gera a semente por execucao e a registra, em vez de herdar constante", () => {
+      const rota = fs.readFileSync(
+        path.resolve(process.cwd(), "src/app/api/gee/select-candidates/route.ts"),
+        "utf-8"
+      );
+      expect(rota).toContain("randomInt");
+      expect(rota).toContain("semente_origem");
+
+      const cli = fs.readFileSync(
+        path.resolve(process.cwd(), "scripts/sortear_poligonos_d16.ts"),
+        "utf-8"
+      );
+      // O sorteio real e irreversivel: --confirmar sem --semente tem de falhar.
+      expect(cli).toContain("obrigatorio com --confirmar");
+      expect(cli).toContain("randomInt");
+    });
+  });
 });
 

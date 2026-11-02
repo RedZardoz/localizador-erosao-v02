@@ -92,8 +92,35 @@ function executarCli(): void {
   const caminhoCandidatos = idxCand >= 0 && args[idxCand + 1] ? args[idxCand + 1] : null;
 
   const idxSemente = args.indexOf("--semente");
-  const sementeArg =
-    idxSemente >= 0 && args[idxSemente + 1] ? Number(args[idxSemente + 1]) : 20260928;
+  const sementeInformada =
+    idxSemente >= 0 && args[idxSemente + 1] ? Number(args[idxSemente + 1]) : null;
+
+  // P07 ("dinamica-registrada"): nao existe semente padrao. O sorteio real e irreversivel, de modo
+  // que a semente tem de ser uma escolha explicita e registrada do pesquisador, nunca uma constante
+  // embutida no script. No dry-run, uma semente criptografica e gerada e impressa.
+  if (sementeInformada !== null && (!Number.isInteger(sementeInformada) || sementeInformada < 1)) {
+    console.error(
+      `[ERRO_PARAMETRO] --semente deve ser inteiro >= 1; recebido: ${args[idxSemente + 1]}`
+    );
+    process.exit(1);
+  }
+  if (flagConfirmar && sementeInformada === null) {
+    console.error(
+      "[ERRO_PARAMETRO] O argumento --semente <N> e obrigatorio com --confirmar: o sorteio de D16 e"
+    );
+    console.error(
+      "irreversivel e a semente precisa ser escolhida e registrada pelo pesquisador (P07), nao herdada"
+    );
+    console.error("de uma constante do script.");
+    process.exit(1);
+  }
+  const sementeArg: number =
+    sementeInformada !== null ? sementeInformada : crypto.randomInt(1, 2 ** 31 - 1);
+  if (sementeInformada === null) {
+    console.log(
+      `[P07] Semente nao informada: gerada para esta execucao de dry-run -> ${sementeArg} (registre-a para reproduzir).`
+    );
+  }
 
   const seloExistente = localizarSeloExistente();
 

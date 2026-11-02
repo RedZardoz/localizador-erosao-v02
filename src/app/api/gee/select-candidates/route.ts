@@ -32,6 +32,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import nodeCrypto from "node:crypto";
 import { execFile } from "child_process";
 import path from "path";
 import fs from "fs";
@@ -96,6 +97,12 @@ import { getGeoJsonBBox } from "@/lib/gee/aoiTiling";
 export const dynamic = "force-dynamic";
 
 interface RequestBody {
+  /**
+   * P07: semente do sorteio. A decisao e "dinamica-registrada", nao constante. Quando ausente, uma
+   * semente criptografica e gerada por execucao e REGISTRADA em criterioSelecao.semente de cada
+   * ponto e no relatorio. Informar a mesma semente reproduz a selecao; omitir produz selecao nova.
+   */
+  semente?: number;
   tamanhoAmostra: number;
   proporcaoInLocoCorredorPct?: number;
   raioThinningKm: number;
@@ -293,7 +300,33 @@ export async function POST(request: NextRequest) {
 
     // 4. Thinning Espacial Determinístico (P02) sobre os centroides reais SICAR/SNCR
     const dataConsultaAtual = dataCivilSaoPaulo();
-    const semente = 42;
+
+    // P07 ("dinamica-registrada"): a semente NAO e constante. Uma constante global torna toda
+    // execucao identica e retira do sorteio o carater probabilistico que D23 descreve; o que a
+    // reprodutibilidade exige e que a semente seja REGISTRADA, nao que seja fixa.
+    let semente: number;
+    let sementeOrigem: "informada" | "gerada";
+    if (body.semente === undefined || body.semente === null) {
+      semente = nodeCrypto.randomInt(1, 2 ** 31 - 1);
+      sementeOrigem = "gerada";
+    } else if (
+      typeof body.semente !== "number" ||
+      !Number.isInteger(body.semente) ||
+      body.semente < 1
+    ) {
+      return NextResponse.json(
+        {
+          ok: false,
+          erro: "SEMENTE_INVALIDA",
+          detalhe:
+            "A semente de P07 deve ser inteiro >= 1. Omita o campo para gerar e registrar uma semente nova.",
+        },
+        { status: 400 }
+      );
+    } else {
+      semente = body.semente;
+      sementeOrigem = "informada";
+    }
 
     const candidatosBase = listaParaAmostragem.map((im, i) => ({
       id: "cand-" + (i + 1),
@@ -1342,6 +1375,9 @@ export async function POST(request: NextRequest) {
         estratificacao_degenerada: estratificacaoDegenerada,
         estrato_colapsado: estratoColapsado,
         contagem_filtros: diagnosticoFiltros,
+        // P07: a semente efetiva acompanha o artefato, para que a execucao seja reproduzivel.
+        semente,
+        semente_origem: sementeOrigem,
       },
     });
   } catch (error: any) {
