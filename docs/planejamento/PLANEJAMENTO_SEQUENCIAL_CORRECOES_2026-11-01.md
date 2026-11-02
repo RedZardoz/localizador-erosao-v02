@@ -58,6 +58,7 @@ Esta fase existe porque dois gates e a interpretação do desfecho principal dep
 | **L-01** | Cochran (1977) §5A.12 | **B-01 opção 1** (colapsar estratos) | Só há síntese secundária autodeclarada `NAO_CONFERIDO_NO_PRIMARIO`, que diz exigir homologação no primário **antes** de emenda a D12/D16 |
 | **L-02** | Olofsson et al. (2014); King & Zeng (2001) | **B-02** (estimando), B-09 (âncora), regras de inferência de D23 | Não arquivadas |
 | **L-03** | Bertoni & Lombardi Neto | **B-10/B-11** (tabela de P de D22) | Não conferida; tabela de origem em saída de IA |
+| **L-10** | Roberts et al. (2017) para **P02** (thinning de 1 km) | **B-01**, via N-14 | Dívida quitada por cruzamento; a fonte trata de validação espacial, não prescreve 1 km para seleção de candidatos |
 
 **Entrega de cada item:** PDF ou exemplar arquivado em `docs/verificacoes/fontes/<id>/` com SHA-256, mais uma nota de conferência que declare **o que a fonte sustenta e o que não sustenta** — o formato que o arquivo de Cochran já adota corretamente, mudando apenas o status.
 
@@ -71,7 +72,7 @@ Nenhum item desta fase é executável por engenharia. A entrega da engenharia é
 
 | Gate | Pergunta | Insumo que falta |
 |---|---|---|
-| **B-01** | Como tratar 4 estratos com `N_h < 4`, um deles zero? | L-01 (para a opção 1); **N-05**: a alocação 4×18 é a melhor contra poder e custo de voo? |
+| **B-01** | Como tratar 4 estratos com `N_h < 4`, um deles zero? | L-01 (para a opção 1); **L-10** (lastro de P02); **N-05**: a alocação 4×18 é a melhor contra poder e custo de voo?; **N-14**: inviabilidade decomposta entre déficit estrutural e efeito do thinning |
 | **B-02** | O produto é área da BP3 ou desempenho na população de polígonos elegíveis? | L-02 |
 | **B-03** | O hold-out aleatório dentro do estrato sustenta generalização espacial? | — |
 | **B-04** | A dissertação alega predição prospectiva (P) ou só detecção (D)? | B-02 |
@@ -156,7 +157,8 @@ Sem isso, um resultado favorável ao XGBoost é ambíguo entre "o modelo é melh
 |---|---|
 | **L-05** | Reconstruir o inventário bibliográfico com caminho existente, DOI e status, nos dois sentidos; **estender** a trava de `lastroCientifico.test.ts` para verificar existência do caminho — a trava atual é um *ratchet* com 11 dívidas nomeadas e deve ser preservada, não substituída |
 | **L-06** | Quitar ou re-datar as 11 entradas de `DIVIDA_DECLARADA` |
-| **L-07** | Restringir Rikimaru (2002) ao índice BSI; declarar os cortes de D02 como convenção do projeto, com sensibilidade |
+| **L-07** | Restringir Rikimaru (2002) ao índice BSI; **reabrir a dívida de D02** (quitação indevida, N-13); declarar os cortes como convenção do projeto, com sensibilidade |
+| **L-10** | Auditar as três quitações por cruzamento (D02/Rikimaru, P05/Zanaga, P02/Roberts) pelo critério "qual frase exata a fonte sustenta"; emendar a norma para exigir essa frase (N-13) |
 | **L-08** | Propagar `pendenteVerificacao` do fator R ao tipo, à UI e ao CSV |
 | **L-09** | Registrar que Agresti & Coull (1998) e Brown et al. (2001) não estão arquivados, e que `SE ≤ 0,144` é auto-verificável por `0,5/√12 = 0,1443` |
 | **C-01** | Campo `estadoImplementacao` nas decisões |
@@ -222,8 +224,8 @@ Um prompt por bloco executável, emitido só quando seu insumo existe.
 
 | Prompt | Escopo | Emitir quando |
 |---|---|---|
-| **P-0 — Contenção** | A-07a, N-02, A-03, A-08, A-09 | **Agora**; não depende de nada |
-| **P-L — Lastro** | L-01, L-02, L-03 (obtenção e conferência), L-05 a L-09 | **Agora**, em paralelo |
+| **P-0 — Contenção** | A-07a, N-02, A-03, A-08, A-09 — [`prompts/PROMPT_EXECUTOR_CONTENCAO_2026-11-01.md`](prompts/PROMPT_EXECUTOR_CONTENCAO_2026-11-01.md) | **Emitido** |
+| **P-L — Lastro** | L-01 a L-03 (obtenção), L-05 a L-10, N-13, N-14, especificação do competidor — [`prompts/PROMPT_EXECUTOR_LASTRO_2026-11-01.md`](prompts/PROMPT_EXECUTOR_LASTRO_2026-11-01.md) | **Emitido** |
 | **P-A — Decisões vigentes** | A-01 (D11.2), A-02 (P03), A-04 (D20), A-10 (CI e textos) | **Agora**; são decisões já tomadas e não implementadas |
 | **P-D — Material de decisão** | Relatório de opções para G-01 a G-15, com N-04 e N-05 quantificados; **não executa nada** | Após P-L entregar L-01/L-02 |
 | **P-M — Contrato de dados** | A-05, C-02, C-07 | Após G-01 a G-04 assinados |

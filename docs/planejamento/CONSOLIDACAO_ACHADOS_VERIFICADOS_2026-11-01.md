@@ -71,7 +71,7 @@ A crítica é correta: `decisoes.ts:86` lista `referencia: "Rikimaru, T. et al. 
 
 **Mas a emenda de 06/10/2026 (`decisoes.ts:84`) já retirou esses limiares de todo papel científico:** declara-os "CRITÉRIO DE TRIAGEM DE CANDIDATOS e uma ajuda visual, NÃO um rótulo", e afirma que "não têm papel na seleção de polígonos nem no alvo do modelo (D26)". **Verificação independente:** busca por `0.10`, `0.40`, `0.65` e `D02` em `select-candidates/route.ts` e `estratificacao.ts` **não retorna ocorrência** — os cortes de fato não filtram o pool nem a estratificação.
 
-**Severidade: baixa.** É correção de referência, não de método. Não bloqueia nada e não precisa de gate: basta restringir a citação ao índice BSI e declarar os cortes como convenção do projeto.
+**Severidade cientifica: baixa. Severidade de governanca: alta** — ver N-13, descoberto depois desta avaliacao inicial. O impacto sobre o resultado continua baixo, porque os cortes nao entram no alvo nem na selecao. Mas a citacao de Rikimaru em D02 nao e um lapso remanescente: foi **acrescentada deliberadamente para quitar uma divida de lastro**, por orientacao da propria norma do projeto, e a divida consta como quitada. Isso muda a natureza da correcao, que deixa de ser cosmetica.
 
 ### R-03 — A trava de lastro **não** é vácua (proposta C-05 improcedente nesta parte)
 
@@ -103,6 +103,8 @@ Os três documentos recomendam, para o gate mais bloqueante do projeto (B-01, o 
 - *"devem ser homologadas perante o texto primário antes de suportar qualquer emenda oficial a D12/D16"*.
 
 Ou seja: o repositório **já diz** que esse lastro não autoriza a emenda a D12/D16, e os três documentos novos tratam-no como se autorizasse. É exatamente o regime de D22 (tabela de origem em IA) aplicado agora à decisão estrutural do desenho amostral — com o agravante de que D22 está explicitamente marcada como provisória e não implementada, enquanto B-01 seria executado.
+
+**Atribuição, para não tomar crédito indevido.** Isto **já havia sido estabelecido pelo projeto em 31/10/2026**. O prompt `docs/planejamento/prompts/PROMPT_EXECUTOR_CLI_POOL_E_LASTRO_COCHRAN_2026-10-31.md` identificou que `docs/verificacoes/fontes/cochran1977/` tinha nota sem PDF nem SHA-256, exigiu a escolha entre arquivar o primário ou declarar a síntese como não conferida, e instruiu textualmente: *"Se a opção for (b) e Cochran era o lastro da Saída 3 ... diga isso com todas as letras no relatório: a recomendação passa a repousar em citação não conferida, e o pesquisador precisa saber disso antes de decidir entre as quatro saídas."* O executor cumpriu, escolhendo (b). **O achado é novo apenas em relação aos três documentos de 01/11**, que recomendam a opção 1 de B-01 citando esse lastro como se conferido — ou seja, há regressão de um dia para o outro, não descoberta.
 
 **Consequência para o sequenciamento:** a conferência de Cochran no primário **precede** o gate B-01, que precede todo o resto. A validação bibliográfica não é a última fase do plano; é a primeira.
 
@@ -190,6 +192,45 @@ Elas sustentam, respectivamente: as regras de inferência de D23 e o gate B-02; 
 
 GAM/EBM, CatBoost, BART e stacking não aparecem na auditoria nem na proposta. Num projeto cujo risco diagnosticado é flexibilidade analítica, e cujo D24/D25 existem para fechá-la, é o item de menor valor e maior risco da lista. A recomendação do próprio prompt (bake-off secundário pré-registrado, sem trocar o primário) é razoável; o problema é a existência do item criar a tentação.
 
+### N-13 — Uma dívida de lastro foi falsamente quitada por esticamento de citação, e a trava não pega isso
+
+`docs/metodologia/NORMA_LASTRO_CIENTIFICO.md`, na seção *"Três das sete são baratas"*, orienta quitar três dívidas por **cruzamento** com fontes que o registro já possui:
+
+| Entrada | Fonte indicada pela norma | Sustenta o quê, de fato |
+|---|---|---|
+| **D02** (limiares de BSI) | Rikimaru et al. (2002), via D20 | **o índice BSI**, não os cortes `0,10 / 0,40 / 0,00 / 0,65` |
+| P05 (classes WorldCover) | Zanaga et al. (2022), via D07 | as classes são definidas pelo próprio produto — cruzamento plausível |
+| P02 (espaçamento do thinning de 1 km) | Roberts et al. (2017), via P01 | estratégias de validação com estrutura espacial; **não prescreve 1 km para seleção de candidatos** — a conferir |
+
+**A quitação de D02 já foi consumada.** `D02` não consta mais da lista `DIVIDA_DECLARADA` de `src/config/lastroCientifico.test.ts`, e `decisoes.ts:86` traz `referencia: "Rikimaru, T. et al. (2002); ..."`. A trava passa. Um leitor do registro vê os cortes como lastreados.
+
+**Por que a trava não pega.** Ela é, por desenho declarado, *"deliberadamente permissivo — a função desta trava é pegar a AUSÊNCIA de lastro, não julgar a qualidade da fonte"*. Está correta no seu escopo. O defeito não está na trava: está no mecanismo de **quitação por cruzamento**, que trata "a decisão tem uma fonte" como equivalente a "a fonte sustenta a decisão".
+
+**Por que isto importa mais do que o caso D02.** A própria R-L3 adverte: *"Esticar citação verdadeira é a forma mais comum de corrompê-la."* E a Seção 5 da norma: *"Na dúvida sobre se a fonte sustenta a afirmação, ela não sustenta."* O projeto produziu, na seção de exemplos da sua própria norma, uma instância do erro que a norma proíbe — e a consumou. É o cenário que a norma descreve como o pior: *"pior que a ausência, porque a ausência é visível e a invenção não."*
+
+**Medida:** auditar as três quitações por cruzamento pelo critério "a fonte sustenta exatamente qual afirmação?", reabrindo como dívida o que não passar; e acrescentar à norma a exigência de que toda quitação por cruzamento declare a frase que a fonte sustenta. Ver `L-07` e `L-10`.
+
+### N-14 — Parte da inviabilidade que B-01 precisa resolver é induzida pelo thinning de P02
+
+A tabela de ocupação de 31/10 (`docs/verificacoes/2026-10-31_ocupacao_estratos_d16.md`) traz `N_h` antes e depois do thinning de 1 km. Comparando as duas colunas no quadrante deficiente:
+
+| Estrato | Antes do thinning | Pós-thinning (1 km) | Efeito do thinning |
+|---|---|---|---|
+| `E_1_1_2` | 0 | 0 | nenhum — déficit estrutural |
+| `E_1_2_2` | **4** | **3** | **viável → inviável** |
+| `E_1_3_2` | 5 | 4 | perde a única reserva |
+| `E_2_2_2` | 3 | 2 | já inviável |
+| `E_2_3_2` | 2 | 2 | nenhum |
+
+**Sem o thinning, os estratos inviáveis seriam 3, não 4**, e `E_1_3_2` teria uma reserva. O thinning de 1 km (P02) é portanto **causa direta** de um dos quatro estratos inviáveis e da fragilidade de um quinto.
+
+Isso **não** é recomendação de afrouxar P02: o espaçamento existe para mitigar pseudorreplicação e tem custo científico se reduzido. O ponto é outro, e é duplo:
+
+1. **B-01 deve ser decidido sabendo disso.** O espaço de opções e o custo de cada uma mudam conforme P02 seja mantido, revisto ou declarado; nenhum dos três documentos de 01/11 apresenta a inviabilidade decomposta entre déficit estrutural e efeito de thinning.
+2. **P02 é uma das três quitações por cruzamento de N-13** — seu lastro indicado é Roberts et al. (2017), que trata de estratégias de validação com estrutura espacial e **não prescreve 1 km para seleção de candidatos**. Ou seja, um parâmetro que remove um estrato do desenho pode estar lastreado por esticamento de citação.
+
+**Medida:** decompor a inviabilidade na apresentação de `G-01` (déficit estrutural × efeito de P02) e auditar o lastro de P02 antes do gate. Ver `L-10` e `P-D`.
+
 ---
 
 ## 5. Erro formal na auditoria
@@ -217,7 +258,8 @@ Classes conforme a proposta: **A** = implementa decisão vigente ou corrige defe
 | L-04 | Decidir o tratamento do fator P na linha de base, dada a degradação declarada (manter 1,0 / tabela provisória marcada / declarar a comparação condicionada) | B | desfecho de D25 |
 | L-05 | Reconstruir o inventário bibliográfico com caminho existente, DOI e status de conferência, nos dois sentidos (obra→acervo e acervo→obra); **estender** a trava de `lastroCientifico.test.ts` para verificar existência do caminho | A+C | — |
 | L-06 | Quitar ou re-datar as 11 entradas de `DIVIDA_DECLARADA` | A/B | — |
-| L-07 | Restringir a citação de **Rikimaru (2002)** ao índice BSI; declarar os cortes de D02 como convenção do projeto | A | — |
+| L-07 | Restringir a citação de **Rikimaru (2002)** ao índice BSI; **reabrir a dívida de D02** como declarada (R-L4), por quitação indevida (N-13); declarar os cortes como convenção do projeto | A | — |
+| L-10 | Auditar as três quitações por cruzamento (D02/Rikimaru, P05/Zanaga, P02/Roberts) pelo critério "qual frase exata a fonte sustenta"; reabrir como dívida o que não passar; emendar a norma para exigir essa frase em toda quitação por cruzamento (N-13) | A+C | **G-01** via P02 (N-14) |
 | L-08 | Propagar a marca `pendenteVerificacao` do fator R ao tipo, à UI e ao CSV | A | — |
 | L-09 | Registrar que **Agresti & Coull (1998)** e **Brown et al. (2001)** não estão arquivados, e que o `SE ≤ 0,144` é auto-verificável por `0,5/√12` | A | — |
 
