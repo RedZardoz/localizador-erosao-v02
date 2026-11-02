@@ -275,9 +275,16 @@ export function obterFatorRComProveniencia(insumo?: InsumoFatorR | null): Proven
         "Rufino et al. (1993), Quadro 2, Região 1 (a=18,64, b=5,73)",
       ],
       decisoes: ["D13"],
-      tabela: "Rufino et al. (1993), Q2, Região 1, x 9,81 (unidade reproduzida em pluviômetros IAT)",
+      // L-08: a marca passou a ser campo do tipo. O duplo cast `as unknown as` que havia aqui
+      // silenciava o erro e matava a pendência: `tabela` nem pertence ao ramo "modelado".
       pendenteVerificacao: true,
-    } as unknown as Proveniencia<number>;
+      detalheVerificacao:
+        "Fator de escala 9,81 reproduzido nos dados (pluviômetros IAT 1986-2008 reproduzem " +
+        "Waltrick 2015, Quadro 1, a menos de 0,3% em 12 estações) e conferido em Waltrick (2010), " +
+        "que traz os coeficientes de Rufino já convertidos ao SI. A INTERPRETAÇÃO FÍSICA do fator " +
+        "como g (kgf·m -> J) permanece hipótese, não consta de fonte lida. A forma funcional e os " +
+        "coeficientes da equação regional seguem pendentes de conferência no primário (D13, R-L2).",
+    };
   } catch (err: any) {
     return {
       estado: "indisponivel",

@@ -76,11 +76,14 @@ export async function calcularSha256(conteudo: string): Promise<string> {
 function formatarLinhaCensoProveniencia(
   rotulo: string,
   pontos: PontoAmostral[],
-  extrator: (p: PontoAmostral) => { estado: string; causa?: string } | undefined,
+  extrator: (
+    p: PontoAmostral
+  ) => { estado: string; causa?: string; pendenteVerificacao?: boolean } | undefined,
   notaExtra?: string
 ): string {
   const total = pontos.length;
   let disponiveis = 0;
+  let pendentesVerificacao = 0;
   const contagensEstado: Record<string, number> = {};
   const contagensCausa: Record<string, number> = {};
 
@@ -94,10 +97,19 @@ function formatarLinhaCensoProveniencia(
       disponiveis += 1;
       if (!contagensEstado[prov.estado]) contagensEstado[prov.estado] = 0;
       contagensEstado[prov.estado] += 1;
+      // L-08: a pendência de verificação bibliográfica acompanha o censo. Antes ela morria no
+      // duplo cast de fatorR.ts e o leitor do CSV não tinha como saber que o fator não está
+      // conferido no primário (F-18 / R-L2).
+      if (prov.pendenteVerificacao === true) pendentesVerificacao += 1;
     }
   }
 
   const segmentos: string[] = [];
+  if (pendentesVerificacao > 0) {
+    segmentos.push(
+      `PENDENTE DE VERIFICACAO BIBLIOGRAFICA (R-L2)=${pendentesVerificacao}`
+    );
+  }
   for (const [est, qtd] of Object.entries(contagensEstado)) {
     segmentos.push(`${est}=${qtd}`);
   }

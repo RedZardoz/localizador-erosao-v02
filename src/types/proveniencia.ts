@@ -16,9 +16,19 @@ export interface QualidadeAjuste {
   elegivelD12?: boolean;
 }
 
+/**
+ * L-08 / F-18 — marca de pendência de verificação bibliográfica.
+ *
+ * Existe porque `fatorR.ts` a emitia com `as unknown as Proveniencia<number>`: o duplo cast
+ * silenciava o erro de tipo e a marca morria ali, sem chegar ao selo, à interface nem ao CSV.
+ * Uma pendência invisível não é pendência — é a incerteza apagada do artefato que a banca lê.
+ *
+ * Significado: o VALOR é utilizável e reproduzido nos dados, mas a forma funcional, os
+ * coeficientes ou a constante de escala ainda não foram conferidos na fonte primária (R-L2).
+ */
 export type Proveniencia<T> =
   | { estado: "medido";       valor: T; fonte: string; adquiridoEm: string; consultadoEm: string; detalhe?: string }
-  | { estado: "modelado";     valor: T; modelo: string; insumos: string[]; decisoes?: string[]; qualidade?: QualidadeAjuste }
+  | { estado: "modelado";     valor: T; modelo: string; insumos: string[]; decisoes?: string[]; qualidade?: QualidadeAjuste; pendenteVerificacao?: boolean; detalheVerificacao?: string }
   | { estado: "tabelado";     valor: T; tabela: string; chave: string; decisao?: string }
   | { estado: "indisponivel"; causa: CausaIndisponibilidade; motivo: string };
 

@@ -406,6 +406,40 @@ describe("Pacote de Reprodutibilidade da Dissertação (Research Compendium)", (
     expect(csv).toContain("RUSLE_Fator_R: 0/1 disponiveis");
   });
 
+  it("L-08: a marca de pendencia de verificacao bibliografica do fator R chega ao censo do CSV (F-18)", () => {
+    // Antes de L-08 a marca morria no `as unknown as Proveniencia<number>` de fatorR.ts: o campo
+    // nao existia no tipo, nada o transportava, e o leitor do CSV nao sabia que o fator nao esta
+    // conferido no primario.
+    const base = criarPontoTeste("1", -25.14, -53.84, "erosao");
+    const pontoPendente: PontoAmostral = {
+      ...base,
+      linhaDeBase: {
+        ...base.linhaDeBase!,
+        fatorR: {
+          estado: "modelado",
+          valor: 7200,
+          modelo: "Equacao Regional do Parana (Rufino et al., 1993) sobre CHIRPS Climatologico",
+          insumos: ["Rufino et al. (1993), Quadro 2, Regiao 1 (a=18,64, b=5,73)"],
+          decisoes: ["D13"],
+          pendenteVerificacao: true,
+          detalheVerificacao: "Forma funcional e coeficientes pendentes de conferencia no primario.",
+        },
+      },
+    };
+
+    const csv = gerarCsvMatrizTreinamento([pontoPendente], extrairMapaRotulos([pontoPendente]));
+
+    expect(csv).toContain("PENDENTE DE VERIFICACAO BIBLIOGRAFICA (R-L2)=1");
+    // O valor continua utilizavel: a pendencia qualifica, nao invalida.
+    expect(csv).toContain("RUSLE_Fator_R: 1/1 disponiveis");
+  });
+
+  it("L-08: proveniencia sem a marca nao gera o aviso de pendencia", () => {
+    const ponto = criarPontoTeste("1", -25.14, -53.84, "erosao");
+    const csv = gerarCsvMatrizTreinamento([ponto], extrairMapaRotulos([ponto]));
+    expect(csv).not.toContain("PENDENTE DE VERIFICACAO BIBLIOGRAFICA");
+  });
+
   it("A1: ponto sem rótulo em rotulosConsolidados não aparece nas linhas de dados do CSV e o censo registra a exclusão (Regra 4)", () => {
     const pontoSemRotulo: PontoAmostral = {
       ...criarPontoTeste("1", -25.14, -53.84, "erosao"),
