@@ -15,7 +15,7 @@
 
 **Limites declarados.**
 
-1. **A auditoria de 31/10 (`AUDITORIA_FUNCIONALIDADES_COERENCIA_E_LASTRO_2026-10-31.md`) não está em `f63d8a5` nem foi fornecida.** Os achados `F-01` a `F-20`, citados pela proposta na tabela de rastreabilidade, **não puderam ser verificados**. Tudo o que esta consolidação diz sobre eles vem da paráfrase feita pela proposta.
+1. **A auditoria de 31/10 foi localizada e lida em 02/11/2026**, em `origin/sarel/executor-2026-10-09`, commit `1a35f43`, posterior a `f63d8a5`. A primeira passagem desta consolidação a deu por indisponível porque verificou apenas o commit `f63d8a5` citado pelos documentos, e não a ponta da branch. **Erro de método desta consolidação, corrigido aqui.** Os dois commits posteriores (`1a35f43`, `8262ed9`) são exclusivamente documentais — 1.521 linhas de markdown, nenhuma linha de código —, de modo que todos os achados de código permanecem válidos na ponta da branch.
 2. **Não foram executados `npm run typecheck`, `lint` ou `test`.** O checkout não tem `node_modules` e a instalação não foi feita. A afirmação do prompt de que "typecheck passa e lint falha com 2 warnings" **não foi verificada**.
 3. **Nenhum dado de desfecho existe.** Nada aqui diz respeito a acurácia, prevalência ou superioridade reais.
 4. **Ausência de problema não é prova de correção.** Onde não há teste, a conclusão é "não verificado".
@@ -52,18 +52,21 @@ Todos os itens abaixo foram reproduzidos. A severidade é a do título da seçã
 
 Estes achados são reais, mas a severidade atribuída pela proposta não se sustenta à verificação.
 
-### R-01 — O fator 9,81 de D13 **não** é lastro pendente (proposta B-15 improcedente na parte principal)
+### R-01 — O fator 9,81 de D13: o valor está lastreado, a explicação física é hipótese declarada
 
 A proposta afirma: *"O R depende de 9,81 para reproduzir a escala; a origem física não está na fonte lida."*
 
-**Isso não se reproduz.** A emenda de D13 de 09/10/2026 (`decisoes.ts:260`) resolve a origem com rigor acima da média do projeto:
+**É preciso separar duas coisas que esta consolidação, na primeira passagem, fundiu indevidamente.**
 
-- demonstra que a equação impressa em Rufino et al. (1993) em kgf·m **não** reproduz a escala do R (a soma de 12 valores é no máximo `12a + bP`, limite excedido pelo Quadro 1 em seis das oito estações da Região 1);
-- localiza a fonte da conversão: Waltrick (2010, dissertação UFPR, PDF arquivado em `docs/verificacoes/fontes/waltrick2010/waltrick_2010.pdf`) declara as equações "convertidas para o SI" e traz Região 1 como `Y = 182,86 + 56,21·X`, que é exatamente `18,64 × 9,81` e `5,73 × 9,81`;
-- confirma em duas fontes independentes;
-- 9,81 é `g`, a conversão kgf·m → J. Não é parâmetro de calibração.
+**O valor está conferido em fonte primária.** A emenda de D13 de 09/10/2026 (`decisoes.ts:260`) demonstra que a equação impressa em Rufino et al. (1993) em kgf·m não reproduz a escala do R (a soma de 12 valores é no máximo `12a + bP`, limite excedido pelo Quadro 1 em seis das oito estações da Região 1), e localiza em Waltrick (2010, dissertação UFPR, arquivada em `docs/verificacoes/fontes/waltrick2010/`) as equações já "convertidas para o SI", com Região 1 = `Y = 182,86 + 56,21·X`, exatamente `18,64 × 9,81` e `5,73 × 9,81`.
 
-**O que resta válido de B-15:** apenas a propagação da marca. `pendenteVerificacao: true` existe em um único lugar (`fatorR.ts:279`) e, pela proposta, não está no tipo nem chega ao CSV. **Severidade: baixa, custo mínimo.** A parte principal do achado é improcedente e não deve consumir decisão do pesquisador.
+**A atribuição a `g` é hipótese, e o código declara isso.** `src/lib/rusle/fatorR.ts:89-91`:
+
+> *"REPRODUZIDO nos dados (pluviômetros IAT 1986-2008 reproduzem Waltrick 2015, Quadro 1, a <0,3% em 12 estações); origem física (g, kgf.m -> J) é hipótese, não consta de fonte lida."*
+
+Isto é um exemplo exemplar de honestidade de registro: distingue o que é reproduzido empiricamente do que é interpretação. **A avaliação anterior desta consolidação — de que B-15 seria "improcedente na parte principal" — era forte demais** e está retificada: o fator empírico está lastreado, a explicação física não, e F-18/B-15 procede quanto a esta segunda parte.
+
+**O que fazer:** não é decisão de gate. Declarar no `modelo` da proveniência que `9,81` é fator de conversão de escala reproduzido empiricamente, com a interpretação física como hipótese; e propagar a marca de pendência (L-08), hoje morta porque `pendenteVerificacao` **não existe no tipo** `Proveniencia<T>` (`src/types/proveniencia.ts:19-23`), de modo que `fatorR.ts:279` a emite e nada a transporta.
 
 ### R-02 — Rikimaru e os cortes de D02: válido como citação, de impacto científico baixo
 
@@ -73,19 +76,24 @@ A crítica é correta: `decisoes.ts:86` lista `referencia: "Rikimaru, T. et al. 
 
 **Severidade cientifica: baixa. Severidade de governanca: alta** — ver N-13, descoberto depois desta avaliacao inicial. O impacto sobre o resultado continua baixo, porque os cortes nao entram no alvo nem na selecao. Mas a citacao de Rikimaru em D02 nao e um lapso remanescente: foi **acrescentada deliberadamente para quitar uma divida de lastro**, por orientacao da propria norma do projeto, e a divida consta como quitada. Isso muda a natureza da correcao, que deixa de ser cosmetica.
 
-### R-03 — A trava de lastro **não** é vácua (proposta C-05 improcedente nesta parte)
+### R-03 — "As duas travas são vácuas": a crítica procede; a defesa anterior desta consolidação respondia a outra coisa
 
-A proposta afirma: *"as duas travas atuais são vácuas."*
+A primeira passagem contestou a afirmação da proposta alegando que `lastroCientifico.test.ts` é um *ratchet* com 11 dívidas nomeadas, e disse não ter localizado a segunda trava. **Com a auditoria de 31/10 em mãos (§6.5), as duas travas estão identificadas e a crítica procede:**
 
-`src/config/lastroCientifico.test.ts` é o oposto de vácua: é um *ratchet* com dívida nomeada. Reprova qualquer entrada nova com estado `decidida` sem marcador de fonte externa; passa hoje por causa de uma lista `DIVIDA_DECLARADA` de **11 entradas** (`D03`, `D18`, `P07`, `D17`, `P06`, `P08`, `P09`, `P11`, `P20`, `P21`, `P23`); e — o detalhe que a torna boa — **exige a remoção da entrada quando a dívida é quitada**, de modo que a lista não apodrece em silêncio. O próprio comentário documenta o motivo histórico: sete decisões chegaram a 20/10/2026 sem lastro externo.
+- `src/config/lastroCientifico.test.ts:33-41` — reconhece como lastro **qualquer texto** que contenha `(2014)`, `et al.`, um DOI ou um localizador de periódico. *"Não verifica se a obra existe, se está no acervo ou se sustenta a afirmação."*
+- `src/config/inventarioBibliografico.test.ts:54-56` — verifica apenas se o **ID da decisão** aparece em algum lugar do inventário. Como todos os IDs aparecem, **qualquer citação passa**. Não olha autor, título nem caminho.
 
-**Não localizei a segunda trava** a que a proposta se refere. A asserção fica como não reproduzida para esta trava, e o mecanismo existente deve ser **estendido**, não substituído (ver L-05).
+**O que permanece da objeção anterior:** o mecanismo de *ratchet* com dívida nomeada é bom e deve ser **preservado**. O que a auditoria critica não é o ratchet, mas o **critério sintático** de lastro — e está certa.
 
-### R-04 — "7 de 41 caminhos existentes": número não reproduzido
+**E isto fecha um ciclo:** o critério puramente sintático é exatamente o que permitiu a falsa quitação de D02 descrita em `N-13`. A auditoria de 31/10 previu o mecanismo do problema; `N-13` encontrou o caso consumado. O crédito da tese é dela.
 
-Extraindo do `INVENTARIO_SELECAO_BIBLIOGRAFICA.md` os caminhos sob `docs/verificacoes/fontes/`, obtêm-se 8 caminhos, dos quais **6 existem** em `f63d8a5`. O diretório de fontes contém **49 arquivos** arquivados (PDFs primários, scripts de extração e saídas), entre eles Renard 1997 (`ah_703.pdf`), Rufino 1993, Waltrick 2010 e 2015, Zhu 2013, Desmet & Govers 1996, Hyndman & Fan 1996, Schmidt 2019 e NEPAR 2011.
+### R-04 — "7 de 41 caminhos": o número é rastreável; esta consolidação mediu outra coisa
 
-A **direção** do achado é válida — a maioria das obras citadas no inventário não tem caminho rastreado, e o acervo arquivado é mais rico do que o inventário declara —, mas o número "7 de 41" não foi reproduzido e não deve ser citado. O defeito real é de **sincronia entre o inventário e o acervo**, em ambos os sentidos.
+A primeira passagem declarou o número não reproduzido. **Retificado.** A auditoria de 31/10 (§1.2, com o resultado do script de checagem em §6.5) é específica: *"Na matriz de cobertura, 41 linhas, apenas 16 apontam para arquivo, 7 existem, 9 estão quebradas e 25 não têm arquivo local."*
+
+A contagem desta consolidação — 8 caminhos citados, 6 existentes — resultou de extrair, por expressão regular, apenas os caminhos sob `docs/verificacoes/fontes/` presentes no `INVENTARIO_SELECAO_BIBLIOGRAFICA.md`. É **outra métrica**, não uma refutação. O número da auditoria pode e deve ser citado.
+
+Permanece válido o dado complementar: o acervo contém **49 arquivos** em `docs/verificacoes/fontes/`, com primários de Renard (1997), Rufino (1993), Waltrick (2010 e 2015), Zhu (2013), Desmet & Govers (1996), Hyndman & Fan (1996), Schmidt (2019) e NEPAR (2011) — de modo que o defeito é de **sincronia nos dois sentidos**: obras citadas sem caminho, e arquivos no acervo que o inventário não lista.
 
 ---
 
@@ -205,6 +213,8 @@ GAM/EBM, CatBoost, BART e stacking não aparecem na auditoria nem na proposta. N
 **A quitação de D02 já foi consumada.** `D02` não consta mais da lista `DIVIDA_DECLARADA` de `src/config/lastroCientifico.test.ts`, e `decisoes.ts:86` traz `referencia: "Rikimaru, T. et al. (2002); ..."`. A trava passa. Um leitor do registro vê os cortes como lastreados.
 
 **Por que a trava não pega.** Ela é, por desenho declarado, *"deliberadamente permissivo — a função desta trava é pegar a AUSÊNCIA de lastro, não julgar a qualidade da fonte"*. Está correta no seu escopo. O defeito não está na trava: está no mecanismo de **quitação por cruzamento**, que trata "a decisão tem uma fonte" como equivalente a "a fonte sustenta a decisão".
+
+**Crédito.** O **mecanismo** deste problema já havia sido diagnosticado pela auditoria de 31/10 (F-17, §6.5): a trava reconhece lastro por padrão sintático e *"não verifica se a obra existe, se está no acervo ou se sustenta a afirmação"*. A contribuição de `N-13` é o **caso consumado** — D02 quitada e fora da lista de dívidas — e a ligação com a seção *"Três das sete são baratas"* da Norma, que é o que produziu a quitação.
 
 **Por que isto importa mais do que o caso D02.** A própria R-L3 adverte: *"Esticar citação verdadeira é a forma mais comum de corrompê-la."* E a Seção 5 da norma: *"Na dúvida sobre se a fonte sustenta a afirmação, ela não sustenta."* O projeto produziu, na seção de exemplos da sua própria norma, uma instância do erro que a norma proíbe — e a consumou. É o cenário que a norma descreve como o pior: *"pior que a ausência, porque a ausência é visível e a invenção não."*
 

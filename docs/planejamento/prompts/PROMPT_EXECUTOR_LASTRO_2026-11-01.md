@@ -116,15 +116,19 @@ A Norma, na seção *"Três das sete são baratas"*, orienta quitar dívidas por
 
 ## 6. Item 4 — Inventário e trava (L-05)
 
-**Verificado:** o acervo `docs/verificacoes/fontes/` tem 49 arquivos, com PDFs primários de Renard (1997), Rufino (1993), Waltrick (2010 e 2015), Zhu (2013), Desmet & Govers (1996), Hyndman & Fan (1996), Schmidt (2019) e NEPAR (2011). Do `INVENTARIO_SELECAO_BIBLIOGRAFICA.md`, extraindo os caminhos sob `fontes/`, **6 de 8 existem**.
+**Dados de partida, da auditoria de 31/10 (§1.2 e §6.5):** na matriz de cobertura, **41 linhas; 16 apontam para arquivo; 7 existem; 9 estão quebradas; 25 não têm arquivo local**. Use esses números como referência e **confirme-os** com o script de checagem antes de reconstruir.
 
-A afirmação de 01/11 de que *"a matriz tem 7 de 41 caminhos existentes"* **não se reproduz** e não deve ser citada. O defeito real é de **sincronia nos dois sentidos**: obras citadas sem caminho rastreado, e arquivos no acervo que o inventário não lista.
+**Dado complementar verificado:** o acervo `docs/verificacoes/fontes/` tem **49 arquivos**, com primários de Renard (1997), Rufino (1993), Waltrick (2010 e 2015), Zhu (2013), Desmet & Govers (1996), Hyndman & Fan (1996), Schmidt (2019) e NEPAR (2011). O defeito é de **sincronia nos dois sentidos**: obras citadas sem caminho rastreado, e arquivos no acervo que o inventário não lista.
 
 **Faça:**
 
 1. Reconstruir o inventário com, por obra: autor, ano, título, DOI, caminho no acervo (se houver) e status de conferência (`conferido_no_primario` / `nao_conferido` / `divida_declarada`).
 2. Listar, em seção própria, os arquivos presentes no acervo que o inventário não referencia.
-3. **Estender** a trava de `src/config/lastroCientifico.test.ts` para verificar que todo caminho declarado no inventário **existe no disco**. Preserve o mecanismo de *ratchet* e a lista de dívida: ela está correta e deve ser mantida, não substituída. A trava atual pega ausência de lastro, não qualidade da fonte — e isso é intencional; não tente fazê-la julgar qualidade.
+3. **Estender as duas travas**, identificadas pela auditoria de 31/10 (§6.5):
+   - `src/config/lastroCientifico.test.ts:33-41` reconhece como lastro qualquer texto com marcador bibliográfico, sem verificar se a obra existe, está no acervo ou sustenta a afirmação. **Acrescente** a verificação de que o caminho declarado existe no disco. **Preserve o mecanismo de *ratchet* e a lista `DIVIDA_DECLARADA`** — estão corretos e não devem ser substituídos.
+   - `src/config/inventarioBibliografico.test.ts:54-56` verifica apenas se o **ID da decisão** aparece no inventário; como todos aparecem, qualquer citação passa. **Faça-a verificar autor, ano e caminho**, não o ID.
+
+   Nenhuma das duas deve tentar julgar se a fonte *sustenta* a afirmação — isso é leitura humana, e é o item 3 deste prompt.
 
 **Aceite:** o teste falha se um caminho do inventário não existir; passa no estado corrigido; a lista de dívida continua funcionando como antes.
 
@@ -132,8 +136,8 @@ A afirmação de 01/11 de que *"a matriz tem 7 de 41 caminhos existentes"* **nã
 
 ## 7. Item 5 — Marcas de pendência (L-08, L-09)
 
-1. **L-08 — fator R.** `src/lib/rusle/fatorR.ts:279` tem `pendenteVerificacao: true`, em um único lugar. Propagar ao tipo de proveniência, à exibição no Inspetor e ao CSV do pacote de reprodutibilidade, para que a pendência não seja invisível ao leitor da matriz.
-   **Não refaça o lastro do fator 9,81.** A emenda de D13 de 09/10/2026 já o resolve: é a conversão kgf·m → J via `g`, conferida em Waltrick (2010), que traz os coeficientes já convertidos (`18,64 × 9,81 = 182,86`; `5,73 × 9,81 = 56,21`). A pendência remanescente é da **forma funcional e dos coeficientes da equação regional**, não da constante.
+1. **L-08 — fator R.** `src/lib/rusle/fatorR.ts:279` emite `pendenteVerificacao: true`, mas **o campo não existe no tipo** `Proveniencia<T>` (`src/types/proveniencia.ts:19-23`): a marca morre no cast e nada a transporta (F-18). Acrescentar ao tipo e propagar ao tipo de proveniência, à exibição no Inspetor e ao CSV do pacote de reprodutibilidade, para que a pendência não seja invisível ao leitor da matriz.
+   **Sobre o fator 9,81, separe duas coisas.** O **valor** está conferido em primário: a emenda de D13 de 09/10/2026 mostra que Waltrick (2010) traz as equações de Rufino já convertidas (`18,64 × 9,81 = 182,86`; `5,73 × 9,81 = 56,21`), e `fatorR.ts:89-91` registra que os dados reproduzem Waltrick (2015) a menos de 0,3% em 12 estações. A **explicação física** — de que o fator é `g`, convertendo kgf·m em J — o próprio código declara como *"hipótese, não consta de fonte lida"*. Não refaça o primeiro; **para o segundo**, ou localize a fonte que sustente a conversão, ou mantenha a declaração de hipótese e faça-a chegar ao `modelo` da proveniência. Permanece pendente, à parte, a conferência da forma funcional e dos coeficientes da equação regional.
 2. **L-09 — `SE <= 0,144`.** Registrar na verificação de D11.2 que o valor é **auto-verificável por aritmética elementar** (`0,5/√12 = 0,1443`, o erro-padrão binomial máximo com n = 12), de modo que a indisponibilidade de Agresti & Coull (1998) e Brown et al. (2001) **não** compromete o número — compromete apenas a atribuição das propriedades intervalares a essas obras. Distinga as duas coisas.
 
 **Aceite:** a marca do fator R aparece no CSV e na UI; a verificação de D11.2 distingue o número auto-verificável da atribuição bibliográfica.

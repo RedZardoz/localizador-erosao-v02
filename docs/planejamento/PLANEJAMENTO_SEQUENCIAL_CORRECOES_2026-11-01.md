@@ -155,7 +155,7 @@ Sem isso, um resultado favorável ao XGBoost é ambíguo entre "o modelo é melh
 
 | Item | O que fazer |
 |---|---|
-| **L-05** | Reconstruir o inventário bibliográfico com caminho existente, DOI e status, nos dois sentidos; **estender** a trava de `lastroCientifico.test.ts` para verificar existência do caminho — a trava atual é um *ratchet* com 11 dívidas nomeadas e deve ser preservada, não substituída |
+| **L-05** | Reconstruir o inventário (41 linhas; 16 com caminho, 7 existem, 9 quebrados, 25 sem arquivo — auditoria 31/10 §6.5), nos dois sentidos; **estender as duas travas**: `lastroCientifico.test.ts` (critério sintático — acrescentar existência do caminho, preservando o *ratchet* e as 11 dívidas) e `inventarioBibliografico.test.ts` (hoje só confere o ID da decisão, logo qualquer citação passa) |
 | **L-06** | Quitar ou re-datar as 11 entradas de `DIVIDA_DECLARADA` |
 | **L-07** | Restringir Rikimaru (2002) ao índice BSI; **reabrir a dívida de D02** (quitação indevida, N-13); declarar os cortes como convenção do projeto, com sensibilidade |
 | **L-10** | Auditar as três quitações por cruzamento (D02/Rikimaru, P05/Zanaga, P02/Roberts) pelo critério "qual frase exata a fonte sustenta"; emendar a norma para exigir essa frase (N-13) |
