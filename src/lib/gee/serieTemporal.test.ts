@@ -8,6 +8,36 @@ import {
   ObservacaoCena,
 } from "./serieTemporal";
 
+describe("A-08 / Regras 1 e 2 — NDVI e BSI nao fabricam valor nem cortam dominio", () => {
+  it("retorna null, nao 0, quando o denominador do NDVI e nulo", () => {
+    // B8 == -B4 anula a soma: sem NDVI calculavel. Um 0 aqui seria indistinguivel de B8 == B4.
+    expect(calcularNdvi(0, 0)).toBeNull();
+    expect(calcularNdvi(0.2, -0.2)).toBeNull();
+  });
+
+  it("retorna null, nao 0, quando o denominador do BSI e nulo", () => {
+    expect(calcularBsi(0, 0, 0, 0)).toBeNull();
+    // (B11 + B4) == -(B8 + B2) anula o denominador.
+    expect(calcularBsi(0.3, 0.1, -0.3, -0.1)).toBeNull();
+  });
+
+  it("retorna null para NDVI fora do dominio [-1, 1], em vez de truncar", () => {
+    // Banda negativa (artefato de correcao atmosferica) empurra a razao fora do dominio fisico.
+    const fora = calcularNdvi(1, -3);
+    expect(fora).toBeNull();
+  });
+
+  it("retorna null para BSI fora do dominio [-1, 1], em vez de truncar", () => {
+    const fora = calcularBsi(1, 1, -3, 0);
+    expect(fora).toBeNull();
+  });
+
+  it("preserva o zero legitimo, quando B8 e B4 sao iguais e nao nulos", () => {
+    // Este e o caso que o retorno fabricado tornava ambiguo: NDVI 0 observado de verdade.
+    expect(calcularNdvi(0.25, 0.25)).toBe(0);
+  });
+});
+
 describe("Cálculo de Índices Espectrais (NDVI e BSI)", () => {
   it("deve calcular NDVI corretamente para bandas válidas", () => {
     // b8 = 0.4, b4 = 0.1 -> (0.4 - 0.1) / (0.4 + 0.1) = 0.3 / 0.5 = 0.6

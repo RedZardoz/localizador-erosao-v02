@@ -47,6 +47,62 @@ function criarPontoTeste(id: string, codigo: string): PontoAmostral {
   };
 }
 
+describe("A-08 / Regra 1 — ponto sem bloco espacial nao entra na matriz", () => {
+  function rotuloValido(): Record<string, RotuloConsolidado> {
+    return {
+      "PR-B01": {
+        final: {
+          classe: "erosao",
+          modalidade: "drone",
+          observador: "Obs1",
+          observadoEm: "2026-03-01",
+          cego: true,
+          fracaoErodida: 0.4,
+        },
+        origens: [],
+        kappa: null,
+        divergencia: "nenhuma",
+        papelConjunto: "treino",
+      },
+    };
+  }
+
+  it("recusa e registra exclusao quando blocoEspacial esta ausente, em vez de usar sentinela", () => {
+    const p = criarPontoTeste("pb1", "PR-B01");
+    p.poligonoId = "D16_E_1_1_1_Q01";
+    // @ts-expect-error: simula ponto cujo bloco espacial nao foi atribuido
+    p.blocoEspacial = undefined;
+
+    const res = montarMatrizTreino([p], rotuloValido());
+
+    expect(res.linhas).toHaveLength(0);
+    expect(res.exclusoes).toHaveLength(1);
+    expect(res.exclusoes[0].codigo).toBe("PR-B01");
+    expect(res.exclusoes[0].motivo).toContain("bloco espacial");
+  });
+
+  it("recusa blocoEspacial vazio ou so com espacos", () => {
+    for (const vazio of ["", "   "]) {
+      const p = criarPontoTeste("pb2", "PR-B01");
+      p.poligonoId = "D16_E_1_1_1_Q01";
+      p.blocoEspacial = vazio;
+      const res = montarMatrizTreino([p], rotuloValido());
+      expect(res.linhas).toHaveLength(0);
+      expect(res.exclusoes).toHaveLength(1);
+    }
+  });
+
+  it("nenhuma linha da matriz carrega o sentinela BLOCO_INDEFINIDO", () => {
+    const p = criarPontoTeste("pb3", "PR-B01");
+    p.poligonoId = "D16_E_1_1_1_Q01";
+    const res = montarMatrizTreino([p], rotuloValido());
+    for (const l of [...res.linhas, ...res.heldOutDrone]) {
+      expect(l.blocoEspacial).not.toBe("BLOCO_INDEFINIDO");
+      expect(l.blocoEspacial.trim()).not.toBe("");
+    }
+  });
+});
+
 describe("C09 — Validação Canônica de Rótulo e Recusa de Substring (A26 / DEC-3)", () => {
   it("binarizarOrdinal recusa 'Sem erosão' e 'indeterminado' lançando ErroRotuloInvalido", () => {
     expect(() => binarizarOrdinal("Sem erosão")).toThrow(ErroRotuloInvalido);

@@ -186,6 +186,91 @@ describe("Arquitetura Dual-Engine: Jev (System One) & Fallback Local RUSLE", () 
     });
   });
 
+  describe("A-09 — nenhum identificador nem localizador sai no payload externo", () => {
+    it("o corpo enviado ao servico externo nao contem latitude, longitude, municipio nem codigo", async () => {
+      const ponto = criarPontoMock();
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          answers: {
+            consistencia_fisica: { result: true, confidence: 0.96, reasoning: "coerente" },
+            suscetibilidade_erosao: { score: 3, reasoning: "declive e solo exposto" },
+            manejo_cobertura: { choice: "Solo Exposto Degradado", confidence: 0.9 },
+          },
+        }),
+      });
+      global.fetch = mockFetch as any;
+
+      await executarAuditoriaJev(ponto, "ts_chave_valida_teste_12345");
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const corpoEnviado: string = (mockFetch.mock.calls[0][1] as any).body;
+
+      // Coordenadas, em qualquer forma reconhecivel
+      expect(corpoEnviado).not.toContain("-25.2985");
+      expect(corpoEnviado).not.toContain("-54.0208");
+      expect(corpoEnviado).not.toContain("-25.29");
+      expect(corpoEnviado).not.toContain("-54.02");
+      expect(corpoEnviado.toLowerCase()).not.toContain("latitude");
+      expect(corpoEnviado.toLowerCase()).not.toContain("longitude");
+      expect(corpoEnviado.toLowerCase()).not.toContain("coordenada");
+      expect(corpoEnviado.toLowerCase()).not.toContain("wgs84");
+
+      // Identificadores do ponto
+      expect(corpoEnviado).not.toContain("PR-2026-0001");
+      expect(corpoEnviado).not.toContain("ponto-teste-1");
+
+      // O que DEVE continuar sendo enviado: o estado biofisico adimensional
+      expect(corpoEnviado.toLowerCase()).toContain("declividade");
+    });
+
+    it("o laudo declara a natureza heuristica da evidencia, em ambos os motores", async () => {
+      const ponto = criarPontoMock();
+
+      const laudoLocal = executarAuditoriaLocal(ponto, "sem chave");
+      expect(laudoLocal.naturezaEvidencia).toBe("heuristica-nao-rotulo");
+
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          answers: {
+            consistencia_fisica: { result: true, reasoning: "coerente" },
+            suscetibilidade_erosao: { score: 2, reasoning: "moderado" },
+            manejo_cobertura: { choice: "Preparo Reduzido / Vegetação em Desenvolvimento" },
+          },
+        }),
+      });
+      global.fetch = mockFetch as any;
+      const laudoExterno = await executarAuditoriaJev(ponto, "ts_chave_valida_teste_12345");
+      expect(laudoExterno.naturezaEvidencia).toBe("heuristica-nao-rotulo");
+    });
+
+    it("sem confianca reportada pelo servico, a confianca fica null em vez de 0,95 fabricado", async () => {
+      const ponto = criarPontoMock();
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          answers: {
+            // servico responde sem o campo `confidence`
+            consistencia_fisica: { result: true, reasoning: "coerente" },
+            suscetibilidade_erosao: { score: 1, reasoning: "baixo" },
+            manejo_cobertura: { choice: "Área de Preservação / Florestal" },
+          },
+        }),
+      });
+      global.fetch = mockFetch as any;
+
+      const laudo = await executarAuditoriaJev(ponto, "ts_chave_valida_teste_12345");
+      expect(laudo.consistenciaFisica.confianca).toBeNull();
+    });
+
+    it("a heuristica local nao atribui confianca numerica a cobertura", () => {
+      const laudo = executarAuditoriaLocal(criarPontoMock(), "sem chave");
+      expect(laudo.coberturaManejo.confianca).toBeNull();
+      expect(laudo.consistenciaFisica.confianca).toBeNull();
+    });
+  });
+
   describe("Isolamento Estrito do JEV em relação à Linha de Base RUSLE (Decisão D25)", () => {
     it("assevera que nenhum valor originado do JEV alcança montarLinhaDeBaseRUSLE ou perdaSolo", async () => {
       const { montarLinhaDeBaseRUSLE } = await import("@/lib/rusle/linhaDeBase");

@@ -31,6 +31,12 @@ export interface RespostaScore {
 }
 
 export interface LaudoAuditoriaPonto {
+  /**
+   * A-09 / Regra 4: o laudo e AUDITORIA HEURISTICA de apoio visual. Jamais rotulo, jamais alvo,
+   * jamais metrica. O campo existe para que nenhum consumidor possa alegar duvida sobre a natureza
+   * da evidencia: nem o motor externo nem a heuristica local produzem medida calibrada.
+   */
+  naturezaEvidencia: "heuristica-nao-rotulo";
   metodo: MetodoAuditoria;
   pontoId: string;
   codigo: string;
@@ -38,7 +44,12 @@ export interface LaudoAuditoriaPonto {
   latenciaMs: number;
   consistenciaFisica: {
     valido: boolean;
-    confianca: number;
+    /**
+     * A-08 / Regra 1: confianca REPORTADA pelo servico externo. `null` quando o servico nao a
+     * informa. Jamais preenchida por default: um numero fabricado com aparencia de probabilidade e
+     * pior que a ausencia, porque nao se distingue de uma medida calibrada.
+     */
+    confianca: number | null;
     observacao: string;
   };
   scoreSuscetibilidade: {
@@ -48,7 +59,8 @@ export interface LaudoAuditoriaPonto {
   };
   coberturaManejo: {
     classe: string;
-    confianca: number;
+    /** A-08 / Regra 1: ver `consistenciaFisica.confianca`. `null` quando nao reportada. */
+    confianca: number | null;
   };
   detalhes: {
     ndviObservado: number | null;

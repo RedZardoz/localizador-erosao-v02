@@ -308,7 +308,7 @@ export function extrairLinhasPorPerfil(
       Alvo_Binario_25: l.alvoBinario25 !== null ? l.alvoBinario25 : "",
       Rotulo_N_Observadores: l.rotuloNObservadores !== null ? l.rotuloNObservadores : "",
       Ponto_ID: l.pontoId,
-      Bloco_Espacial: l.blocoEspacial ?? "BLOCO_INDEFINIDO",
+      Bloco_Espacial: l.blocoEspacial,
       Elevacao_m: l.elevacao !== null ? l.elevacao : "",
       Declividade_pct: l.declividadePct !== null ? l.declividadePct : "",
       Declividade_graus: l.declividadeGraus !== null ? l.declividadeGraus : "",

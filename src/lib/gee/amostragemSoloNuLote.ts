@@ -494,14 +494,32 @@ export function processarRespostaGeeReduceRegions(
     if (rawSoloNu && typeof rawSoloNu === "object" && "estado" in rawSoloNu) {
       freqNuProv = rawSoloNu as Proveniencia<number>;
     } else if (typeof rawSoloNu === "number" && Number.isFinite(rawSoloNu) && avaliacaoD11.suficiente) {
-      const clamped = Number(Math.max(0, Math.min(1, rawSoloNu)).toFixed(4)); // permitido: clamp de seguranca numerica para fracao normalizada de satelite no intervalo 0 a 1
-      freqNuProv = medido(
-        clamped,
-        "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
-        INTERVALO_COMPOSICAO_D05,
-        new Date().toISOString(),
-        `reduceRegions first(solo_nu_mean), nObservacoes=${nObservacoes}`
-      );
+      // A-08 / Regra 2: o clamp [0, 1] que aqui existia foi removido. A frequencia de solo nu e a
+      // media de uma mascara binaria no GEE e pertence a [0, 1] por construcao; um valor fora disso
+      // denuncia erro de reducao, nao um numero a truncar. A Ficha Tecnica, Regra 2, e explicita:
+      // proibido clamping que "oculte anomalias radiometricas", e o remedio nomeado e o selo
+      // `fora-do-dominio`. Busca por lastro para a concessao `// permitido:` nao encontrou decisao
+      // em decisoes.ts nem verificacao em docs/ — apenas a propria regra que a proibia.
+      // Tolerancia apenas para ruido de ponto flutuante, nao para desvio cientifico.
+      const TOLERANCIA_FLUTUANTE = 1e-9;
+      if (rawSoloNu < -TOLERANCIA_FLUTUANTE || rawSoloNu > 1 + TOLERANCIA_FLUTUANTE) {
+        freqNuProv = indisponivel(
+          "fora-do-dominio",
+          `Frequencia de solo nu retornada pelo GEE fora do dominio [0, 1]: ${rawSoloNu}. ` +
+            "Media de mascara binaria nao pode sair desse intervalo; valor recusado em vez de truncado (Regra 2)."
+        );
+      } else {
+        // Sem corte: a verificacao de dominio acima ja recusou o que esta fora, e o arredondamento
+        // a 4 casas absorve o ruido de ponto flutuante sem esconder anomalia.
+        const dentroDoDominio = Number(rawSoloNu.toFixed(4));
+        freqNuProv = medido(
+          dentroDoDominio,
+          "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+          INTERVALO_COMPOSICAO_D05,
+          new Date().toISOString(),
+          `reduceRegions first(solo_nu_mean), nObservacoes=${nObservacoes}`
+        );
+      }
     } else {
       freqNuProv = indisponivel(
         "insuficiente",

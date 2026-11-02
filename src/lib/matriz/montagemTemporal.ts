@@ -246,12 +246,18 @@ export function montarPreditoresTemporais(
   }
 
   // Estatísticas agregadas de NDVI e BSI
-  const serieProcessada = validas.map((c) => ({
+  // A-08: `calcularNdvi` passou a devolver null com denominador nulo ou valor fora de [-1, 1]
+  // (Regras 1 e 2). A asserção não-nula anterior (`!`) injetaria null na série ordenada e
+  // contaminaria as estatísticas; a cena sem NDVI calculável é descartada com contagem própria.
+  const serieComNdviPossivel = validas.map((c) => ({
     data: c.data,
     dataMs: new Date(c.data).getTime(),
-    ndvi: calcularNdvi(c.b8, c.b4)!,
+    ndvi: calcularNdvi(c.b8, c.b4),
     bsi: calcularBsi(c.b11, c.b4, c.b8, c.b2),
   }));
+  const serieProcessada = serieComNdviPossivel.filter(
+    (p): p is typeof p & { ndvi: number } => p.ndvi !== null
+  );
 
   const ndvis = serieProcessada.map((p) => p.ndvi).sort((a, b) => a - b);
   const bsis = serieProcessada

@@ -44,19 +44,18 @@ export function executarAuditoriaLocal(
   }
 
   // 2. Classificação Estruturada da Cobertura de Solo (Taxonomia Fechada)
+  // A-08 / Regra 1: a heuristica local NAO tem confianca calibrada. Os valores 0,5 / 0,95 / 0,92 /
+  // 0,82 / 0,98 / 0,99 que aqui existiam eram numeros com aparencia de probabilidade e sem qualquer
+  // base empirica; o laudo e uma auditoria heuristica, nao uma estimativa probabilistica.
   let classeCobertura = "Indisponível / Não-Classificado";
-  let confiancaCobertura = 0.5;
 
   if (ndvi !== null && bsi !== null) {
     if (ndvi > 0.6 && bsi < 0.0) {
       classeCobertura = "Plantio Direto Consolidado / Cobertura Densa";
-      confiancaCobertura = 0.95;
     } else if (ndvi <= 0.25 && bsi > 0.1) {
       classeCobertura = "Solo Exposto Degradado";
-      confiancaCobertura = 0.92;
     } else {
       classeCobertura = "Preparo Reduzido / Vegetação em Desenvolvimento";
-      confiancaCobertura = 0.82;
     }
   }
 
@@ -116,6 +115,9 @@ export function executarAuditoriaLocal(
   const latenciaFinal = typeof latenciaInformada === "number" ? latenciaInformada : 1;
 
   return {
+
+    naturezaEvidencia: "heuristica-nao-rotulo",
+
     metodo: "HEURISTICA_LOCAL_SUSCETIBILIDADE",
     pontoId: ponto.id,
     codigo: ponto.codigo,
@@ -123,7 +125,7 @@ export function executarAuditoriaLocal(
     latenciaMs: latenciaFinal,
     consistenciaFisica: {
       valido,
-      confianca: valido ? 0.98 : 0.99,
+      confianca: null,
       observacao,
     },
     scoreSuscetibilidade: {
@@ -133,7 +135,7 @@ export function executarAuditoriaLocal(
     },
     coberturaManejo: {
       classe: classeCobertura,
-      confianca: confiancaCobertura,
+      confianca: null,
     },
     detalhes: {
       ndviObservado: ndvi,

@@ -48,17 +48,21 @@ export function calcularNdvi(b8: number | null, b4: number | null): number | nul
     return null;
   }
   const soma = b8 + b4;
-  if (Math.abs(soma) < 1e-6) return 0;
+  // Regra 1: denominador nulo nao produz NDVI 0. Um zero fabricado aqui seria indistinguivel de um
+  // NDVI 0 real (B8 == B4), e entraria na matriz como observacao. Ausencia permanece ausencia.
+  if (Math.abs(soma) < 1e-6) return null;
   const val = (b8 - b4) / soma;
-  if (val > 1) return 1;
-  if (val < -1) return -1;
+  // Regra 2: valor fora do dominio fisico [-1, 1] nao e cortado. NDVI fora dessa faixa indica banda
+  // invalida ou artefato de correcao atmosferica: e indisponibilidade tecnica, nao valor a truncar.
+  if (val > 1 || val < -1) return null;
   return Number(val.toFixed(4));
 }
 
 /**
  * Calcula o Índice de Solo Nu (Bare Soil Index - BSI):
  * BSI = ((B11 + B4) - (B8 + B2)) / ((B11 + B4) + (B8 + B2))
- * Retorna null se qualquer uma das 4 bandas estiver mascarada.
+ * Retorna null se qualquer uma das 4 bandas estiver mascarada, se o denominador for nulo
+ * (Regra 1) ou se o valor sair do dominio fisico [-1, 1] (Regra 2).
  */
 export function calcularBsi(
   b11: number | null,
@@ -75,10 +79,11 @@ export function calcularBsi(
   const termo1 = b11 + b4;
   const termo2 = b8 + b2;
   const denominador = termo1 + termo2;
-  if (Math.abs(denominador) < 1e-6) return 0;
+  // Regra 1: denominador nulo nao produz BSI 0 (ver calcularNdvi).
+  if (Math.abs(denominador) < 1e-6) return null;
   const val = (termo1 - termo2) / denominador;
-  if (val > 1) return 1;
-  if (val < -1) return -1;
+  // Regra 2: fora do dominio [-1, 1] e indisponibilidade tecnica, nao corte.
+  if (val > 1 || val < -1) return null;
   return Number(val.toFixed(4));
 }
 

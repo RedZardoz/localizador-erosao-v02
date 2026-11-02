@@ -57,12 +57,16 @@ export async function executarAuditoriaJev(
   const decliv = valorOuNulo(ponto.terreno?.declividadePct);
   const solo = valorOuNulo(ponto.solo?.ordem);
   const erod = valorOuNulo(ponto.solo?.erodibilidadeClasse);
-  const mun = valorOuNulo(ponto.localizacao?.municipio);
 
-  // 2. Montagem do estado biofísico real (sem dados sintéticos)
+  // 2. Montagem do estado biofísico real (sem dados sintéticos).
+  //
+  // A-09: NENHUM identificador nem localizador sai desta máquina. Latitude, longitude, município e
+  // código do ponto foram removidos do payload externo em 02/11/2026. O projeto trata coordenada
+  // como dado sensível — Invariante 2, cegamento de D16, LGPD —, e enviá-la a serviço de terceiro
+  // contradiz essa postura. O serviço recebe apenas o estado biofísico adimensional de que a
+  // auditoria heurística precisa: declividade, índices espectrais, classe de solo e erodibilidade.
   const estadoBiofisico = [
-    `Ponto Amostral: ${ponto.codigo} (${mun || "Paraná"})`,
-    `Coordenadas WGS84: Lat ${ponto.latitude.toFixed(5)}, Lon ${ponto.longitude.toFixed(5)}`,
+    "Amostra agrícola anônima e sem identificadores, por política do projeto",
     decliv !== null ? `Declividade MDE: ${decliv.toFixed(1)}%` : "Declividade: Não informada",
     ndvi !== null ? `NDVI Sentinel-2: ${ndvi.toFixed(3)}` : "NDVI: Não informado",
     bsi !== null ? `BSI Sentinel-2: ${bsi.toFixed(3)}` : "BSI: Não informado",
@@ -83,7 +87,7 @@ export async function executarAuditoriaJev(
         type: "score",
         scale: [0, 4],
         instructions:
-          "Qual o grau de suscetibilidade à erosão laminar desta coordenada de 0 (Nula) a 4 (Crítica) segundo a RUSLE?",
+          "Qual o grau de suscetibilidade à erosão laminar desta amostra de 0 (Nula) a 4 (Crítica) segundo a RUSLE?",
       },
       manejo_cobertura: {
         type: "choice",
@@ -141,8 +145,9 @@ export async function executarAuditoriaJev(
     const choiceAns = qAnswers.manejo_cobertura;
 
     const valido = typeof noulAns?.result === "boolean" ? noulAns.result : true;
+    // Regra 1: sem default. Se o servico nao reporta confianca, ela permanece ausente.
     const confiancaNoul =
-      typeof noulAns?.confidence === "number" ? noulAns.confidence : 0.95;
+      typeof noulAns?.confidence === "number" ? noulAns.confidence : null;
 
     let scoreGrau: GrauSuscetibilidade = 1;
     if (
@@ -163,6 +168,9 @@ export async function executarAuditoriaJev(
       typeof choiceAns?.confidence === "number" ? choiceAns.confidence : 0.9;
 
     return {
+
+      naturezaEvidencia: "heuristica-nao-rotulo",
+
       metodo: "JEV_SYSTEM_ONE",
       pontoId: ponto.id,
       codigo: ponto.codigo,

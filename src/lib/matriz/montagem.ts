@@ -194,6 +194,24 @@ export function montarMatrizTreino(
     const poligonoId = poligonoIdCandidato.trim();
     const papelConjunto: "treino" | "held-out" = rotuloCons.papelConjunto;
 
+    // A-08 / Regra 1: ponto sem bloco espacial NAO entra na matriz. O sentinela
+    // "BLOCO_INDEFINIDO" que aqui existia virava um grupo real no GroupKFold de D24, misturando
+    // pontos sem relacao espacial num mesmo agrupamento de validacao. Ausencia e exclusao, nao rotulo.
+    const blocoEspacialCandidato = ponto.blocoEspacial;
+    if (
+      !blocoEspacialCandidato ||
+      typeof blocoEspacialCandidato !== "string" ||
+      blocoEspacialCandidato.trim() === ""
+    ) {
+      exclusoes.push({
+        codigo: ponto.codigo,
+        motivo:
+          "Ponto sem bloco espacial definido: nao pode entrar na matriz, porque o bloco e a unidade de agrupamento da validacao (D24).",
+      });
+      continue;
+    }
+    const blocoEspacial = blocoEspacialCandidato.trim();
+
     // Binarização única e canônica (N02a e C09)
     let fracaoErodida: number | null = null;
     let alvoBinario25: 0 | 1 | null = null;
@@ -279,7 +297,7 @@ export function montarMatrizTreino(
       alvoBinario25,
       rotuloNObservadores,
 
-      blocoEspacial: ponto.blocoEspacial ?? "BLOCO_INDEFINIDO",
+      blocoEspacial,
 
       // Terreno
       elevacao: valorOuNulo(ponto.terreno?.elevacao),
@@ -339,7 +357,7 @@ export function montarMatrizTreino(
     const contagemClasse = distribuicaoClasses[rotulo.classe];
     distribuicaoClasses[rotulo.classe] = typeof contagemClasse === "number" ? contagemClasse + 1 : 1;
 
-    const idBloco = ponto.blocoEspacial ?? "BLOCO_INDEFINIDO";
+    const idBloco = blocoEspacial;
     const contagemBloco = distribuicaoBlocos[idBloco];
     distribuicaoBlocos[idBloco] = typeof contagemBloco === "number" ? contagemBloco + 1 : 1;
   }
