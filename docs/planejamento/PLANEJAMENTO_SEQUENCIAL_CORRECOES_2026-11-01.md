@@ -227,7 +227,7 @@ Um prompt por bloco executável, emitido só quando seu insumo existe.
 | **P-0 — Contenção** | A-07a, N-02, A-03, A-08, A-09 — [`prompts/PROMPT_EXECUTOR_CONTENCAO_2026-11-01.md`](prompts/PROMPT_EXECUTOR_CONTENCAO_2026-11-01.md) | **Emitido** |
 | **P-L — Lastro** | L-01 a L-03 (obtenção), L-05 a L-10, N-13, N-14, especificação do competidor — [`prompts/PROMPT_EXECUTOR_LASTRO_2026-11-01.md`](prompts/PROMPT_EXECUTOR_LASTRO_2026-11-01.md) | **Emitido** |
 | **P-A — Decisões vigentes** | A-01 (D11.2), A-02 (P03), A-04 (D20), A-10 (CI e textos) | **Agora**; são decisões já tomadas e não implementadas |
-| **P-D — Material de decisão** | Relatório de opções para G-01 a G-15, com N-04 e N-05 quantificados; **não executa nada** | Após P-L entregar L-01/L-02 |
+| **P-D — Material de decisão** | Opções para G-01 a G-15 quantificadas (N-03 a N-06, N-14); **não executa nada** — [`prompts/PROMPT_EXECUTOR_MATERIAL_DECISAO_2026-11-02.md`](prompts/PROMPT_EXECUTOR_MATERIAL_DECISAO_2026-11-02.md) | **Parte independente emitida**; o veredito de lastro de G-01/G-02/G-10 entra quando P-L voltar |
 | **P-M — Contrato de dados** | A-05, C-02, C-07 | Após G-01 a G-04 assinados |
 | **P-V — Validação** | A-06, simulação de poder, sensibilidades pré-registradas | Após P-M e G-13 |
 | **P-C — Campanha** | A-11, âncora de D23, protocolo de não resposta | Após G-01, G-02, G-09 |
