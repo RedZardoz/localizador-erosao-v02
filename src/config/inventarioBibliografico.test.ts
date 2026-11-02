@@ -88,4 +88,79 @@ describe("Trava da Norma R-L5 — Inventário Bibliográfico Formal", () => {
       expect(conteudo).toContain(arq);
     }
   });
+
+  /**
+   * L-05 / N-13 — a trava anterior verificava apenas se o ID da decisão aparecia em algum
+   * lugar do inventário. Como todos os IDs aparecem, qualquer citação passava: era o defeito
+   * que a auditoria de 31/10/2026 (§6.5) descreveu como "falsa sensação de cobertura".
+   *
+   * Estas duas asserções passam a confrontar o inventário com o ACERVO EM DISCO, nos dois
+   * sentidos. Nenhuma delas julga se a fonte sustenta a afirmação — isso é leitura humana,
+   * registrada em LASTRO_NAO_CONFERIDO e nas verificações de docs/verificacoes/.
+   */
+  describe("R-L3 / R-L5 — o inventário e o acervo em disco têm de concordar", () => {
+    const DIR_FONTES = path.resolve(process.cwd(), "docs/verificacoes/fontes");
+
+    function caminhosDeclaradosNoInventario(): string[] {
+      const conteudo = fs.readFileSync(CAMINHO_INVENTARIO, "utf-8");
+      const achados = conteudo.match(/docs\/verificacoes\/fontes\/[A-Za-z0-9_./-]+/g) ?? [];
+      return [...new Set(achados.map((c) => c.replace(/[.,;)`]+$/, "")))];
+    }
+
+    it("todo caminho de fonte declarado no inventário existe no disco", () => {
+      const quebrados = caminhosDeclaradosNoInventario().filter(
+        (rel) => !fs.existsSync(path.resolve(process.cwd(), rel))
+      );
+
+      if (quebrados.length > 0) {
+        expect.fail(
+          "Caminho de fonte declarado no inventário e inexistente no disco (R-L3):\n" +
+            quebrados.map((c) => `  ${c}`).join("\n") +
+            "\n\nOu arquive a obra no caminho declarado, ou corrija o inventário. Um caminho " +
+            "quebrado é pior que a ausência: ele afirma cobertura que não existe."
+        );
+      }
+      expect(quebrados).toHaveLength(0);
+    });
+
+    /**
+     * Pastas do acervo que NAO sao obras bibliograficas, e sim artefatos de verificacao
+     * produzidos pelo projeto (consultas WFS, medicoes, relatorios de correspondencia).
+     * Elas pertencem ao acervo de evidencia, nao ao inventario de obras.
+     */
+    const ARTEFATOS_NAO_BIBLIOGRAFICOS = new Set(["wfs_erodibilidade", "doc246"]);
+
+    it("toda obra arquivada no acervo tem o seu CAMINHO declarado no inventário", () => {
+      if (!fs.existsSync(DIR_FONTES)) return;
+
+      const conteudo = fs.readFileSync(CAMINHO_INVENTARIO, "utf-8");
+      const pastasComConteudo = fs
+        .readdirSync(DIR_FONTES, { withFileTypes: true })
+        .filter((d) => d.isDirectory())
+        .filter((d) => {
+          try {
+            return fs.readdirSync(path.join(DIR_FONTES, d.name)).some((f) => !f.startsWith("."));
+          } catch {
+            return false;
+          }
+        })
+        .map((d) => d.name)
+        .filter((nome) => !ARTEFATOS_NAO_BIBLIOGRAFICOS.has(nome));
+
+      // Exige o CAMINHO, não apenas o nome do autor: é o caminho que liga a citação ao arquivo.
+      const semCaminho = pastasComConteudo.filter(
+        (nome) => !conteudo.includes(`docs/verificacoes/fontes/${nome}/`)
+      );
+
+      if (semCaminho.length > 0) {
+        expect.fail(
+          "Obra arquivada no acervo sem caminho declarado no inventário (R-L3 / R-L5):\n" +
+            semCaminho.map((n) => `  docs/verificacoes/fontes/${n}/`).join("\n") +
+            "\n\nO acervo é mais rico que o inventário declara. Declare o caminho com autor, ano, " +
+            "título e decisão vinculada, ou o trabalho de conferência já feito fica invisível."
+        );
+      }
+      expect(semCaminho).toHaveLength(0);
+    });
+  });
 });

@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { DECISOES, PARAMETROS, Decisao } from "./decisoes";
 
 /**
@@ -51,6 +53,85 @@ interface DividaLastro {
   id: string;
   motivo: string;
 }
+
+/**
+ * ============================================================================
+ * L-05 / N-13 — Lastro citado, porém NÃO conferido no primário (R-L2 e R-L3)
+ * ============================================================================
+ *
+ * POR QUE ESTA SEGUNDA CATEGORIA EXISTE. `DIVIDA_DECLARADA` cobre a decisão SEM
+ * citação. Ela não consegue — por desenho — expressar o caso oposto e mais
+ * perigoso: a decisão COM citação cuja fonte não foi conferida, ou que não
+ * sustenta exatamente a afirmação que lastreia. Pior: o teste "dívida que já
+ * recebeu lastro externo deve ser REMOVIDA" PROÍBE registrar essas entradas em
+ * `DIVIDA_DECLARADA`, justamente porque elas têm marcador bibliográfico.
+ *
+ * O resultado era uma lacuna: a seção "Três das sete são baratas" da Norma
+ * orienta quitar dívidas por CRUZAMENTO com fontes que o registro já possui, e
+ * as três quitações assim feitas passaram a trava sem que ninguém verificasse se
+ * a fonte sustenta a frase. A R-L3 adverte exatamente contra isso: "esticar
+ * citação verdadeira é a forma mais comum de corrompê-la".
+ *
+ * REGRA DE PREENCHIMENTO. Cada entrada nomeia a obra, a AFIRMAÇÃO EXATA que
+ * precisa de lastro, e o que falta. A entrada sai da lista quando a obra for
+ * arquivada em `docs/verificacoes/fontes/<idAcervo>/` e a conferência declarar o
+ * que a fonte sustenta e o que não sustenta.
+ */
+interface LastroNaoConferido {
+  id: string;
+  obra: string;
+  /** A frase exata que a citação precisa sustentar. Sem isso, não há o que conferir. */
+  afirmacao: string;
+  pendencia: string;
+  /** Pasta esperada em docs/verificacoes/fontes/. A ausência dela é o que mantém a entrada viva. */
+  idAcervo: string;
+}
+
+const LASTRO_NAO_CONFERIDO: readonly LastroNaoConferido[] = [
+  {
+    id: "D02",
+    obra: "Rikimaru, A., Roy, P. S. & Miyatake, S. (2002), Tropical forest cover density mapping",
+    afirmacao:
+      "os cortes numéricos de triagem espectral BSI > 0,10, NDVI < 0,40, BSI < 0,00 e NDVI > 0,65",
+    pendencia:
+      "A obra desenvolve modelo de Forest Canopy Density sobre LANDSAT TM, com quatro fatores " +
+      "(vegetação, solo nu, térmico e sombra). Ela sustenta o ÍNDICE BSI, não cortes numéricos para " +
+      "erosão laminar, que são convenção deste projeto. A quitação de 20/10/2026 por cruzamento com " +
+      "D20 foi, portanto, esticamento de citação. Agravantes de identificação a conferir no primário: " +
+      "a referência do registro grafa 'Rikimaru, T.' e o registro bibliográfico localizado indica " +
+      "'A. Rikimaru'; e o veículo 'Tropical Ecology 43(1):39-47' não foi confirmado. Impacto " +
+      "científico baixo — a emenda de 06/10/2026 já retirou estes cortes do alvo e da seleção, o que " +
+      "foi verificado no código —, impacto de governança alto.",
+    idAcervo: "rikimaru2002",
+  },
+  {
+    id: "P05",
+    obra: "Zanaga, D. et al. (2022), ESA WorldCover",
+    afirmacao: "as classes 30 e 40 do produto WorldCover usadas como filtro de elegibilidade",
+    pendencia:
+      "Cruzamento plausível, porque as classes são definidas pelo próprio produto, mas a citação " +
+      "parece desalinhada da versão em uso: o código lê `classeWorldCover2020` e " +
+      "`classeWorldCover2021`, e a citação de 2022 corresponde ao produto v200 (ano 2021), enquanto " +
+      "o v100 (ano 2020) tem registro próprio, atribuído a Tsendbazar et al. Se as duas épocas são " +
+      "usadas, são necessárias as duas citações. A conferir no primário, com o manual do produto.",
+    idAcervo: "zanaga2022",
+  },
+  {
+    id: "P02",
+    obra: "Roberts, D. R. et al. (2017), Ecography 40(8):913-929",
+    afirmacao: "o piso de espaçamento de 1.000 m no thinning espacial de candidatos",
+    pendencia:
+      "A obra trata de ESTRATÉGIAS DE VALIDAÇÃO CRUZADA para dados com estrutura espacial, " +
+      "temporal, hierárquica ou filogenética, e conclui que validação por blocos supera a aleatória. " +
+      "Não prescreve distância de 1 km para SELEÇÃO de candidatos: são problemas distintos, e a " +
+      "distância de bloco de uma validação não é o espaçamento amostral de um sorteio. " +
+      "BLOQUEANTE PARA O GATE G-01: pela tabela de ocupação de 31/10/2026, o thinning de 1 km " +
+      "converte E_1_2_2 de 4 candidatos (viável) em 3 (inviável) e remove a única reserva de " +
+      "E_1_3_2 (5 para 4). Sem ele haveria 3 estratos inviáveis, não 4. Um parâmetro que remove um " +
+      "estrato do desenho não pode repousar em citação não conferida.",
+    idAcervo: "roberts2017",
+  },
+];
 
 const DIVIDA_DECLARADA: readonly DividaLastro[] = [
   {
@@ -294,6 +375,95 @@ describe("Norma de Lastro Científico (docs/NORMA_LASTRO_CIENTIFICO.md)", () => 
     it("toda dívida de proposta declara justificativa substantiva (>= 40 caracteres)", () => {
       for (const dv of DIVIDA_PROPOSTAS) {
         expect(dv.motivo.trim().length).toBeGreaterThan(40);
+      }
+    });
+  });
+
+  /**
+   * L-05 / N-13 — R-L2 e R-L3: a citação existe, a conferência não.
+   *
+   * Esta trava cobre a lacuna que permitiu as três quitações por cruzamento passarem:
+   * `temLastroExterno` é, por desenho declarado, permissivo — reconhece a PRESENÇA de
+   * marcador bibliográfico e não julga a qualidade da fonte. Isso está correto no seu
+   * escopo, e não deve ser alterado. O que faltava era a categoria que registra
+   * "citado, não conferido".
+   */
+  describe("R-L2 / R-L3 — lastro citado mas não conferido no primário", () => {
+    const DIR_FONTES = path.resolve(process.cwd(), "docs/verificacoes/fontes");
+
+    /**
+     * Pasta vazia NAO e acervo. Um diretorio criado por tentativa de download frustrada nao
+     * constitui fonte arquivada: a R-L3 exige o arquivo depositado.
+     */
+    function obraArquivada(idAcervo: string): boolean {
+      const dir = path.join(DIR_FONTES, idAcervo);
+      if (!fs.existsSync(dir)) return false;
+      try {
+        return fs.readdirSync(dir).some((f) => !f.startsWith("."));
+      } catch {
+        return false;
+      }
+    }
+
+    it("toda entrada nomeia obra, afirmação exata e pendência substantivas", () => {
+      for (const e of LASTRO_NAO_CONFERIDO) {
+        expect(e.obra.trim().length, `${e.id}: obra`).toBeGreaterThan(10);
+        expect(e.afirmacao.trim().length, `${e.id}: afirmação`).toBeGreaterThan(20);
+        expect(e.pendencia.trim().length, `${e.id}: pendência`).toBeGreaterThan(80);
+        expect(e.idAcervo.trim().length, `${e.id}: idAcervo`).toBeGreaterThan(3);
+      }
+    });
+
+    it("a entrada aponta para decisão ou parâmetro que existe no registro", () => {
+      const fantasmas = LASTRO_NAO_CONFERIDO.filter(
+        (e) => DECISOES[e.id] === undefined && PARAMETROS[e.id] === undefined
+      ).map((e) => `  ${e.id} — não existe em DECISOES nem em PARAMETROS.`);
+      expect(fantasmas).toHaveLength(0);
+    });
+
+    it("as duas categorias são disjuntas: sem citação versus citação não conferida", () => {
+      const emDivida = new Set(DIVIDA_DECLARADA.map((d) => d.id));
+      const duplicadas = LASTRO_NAO_CONFERIDO.filter((e) => emDivida.has(e.id)).map(
+        (e) =>
+          `  ${e.id} — está em DIVIDA_DECLARADA (sem citação) e em LASTRO_NAO_CONFERIDO (citada, não conferida). Escolha uma.`
+      );
+      if (duplicadas.length > 0) {
+        expect.fail("Entrada em duas categorias de lastro:\n" + duplicadas.join("\n"));
+      }
+      expect(duplicadas).toHaveLength(0);
+    });
+
+    /**
+     * Autodenúncia, no mesmo espírito de "a dívida declarada não apodrece": quando a obra
+     * finalmente for arquivada, esta entrada tem de ser revista — ou a conferência passa a
+     * existir e ela sai, ou o veredito é que a fonte não sustenta e a decisão muda.
+     */
+    it("entrada cuja obra JÁ foi arquivada no acervo deve ser revista e removida", () => {
+      const arquivadas = LASTRO_NAO_CONFERIDO.filter((e) => obraArquivada(e.idAcervo)).map(
+        (e) =>
+          `  ${e.id} — docs/verificacoes/fontes/${e.idAcervo}/ já existe: conclua a conferência, declare o que a fonte NÃO sustenta e remova esta entrada.`
+      );
+      if (arquivadas.length > 0) {
+        expect.fail(
+          "Lastro já arquivado e ainda listado como não conferido:\n" + arquivadas.join("\n")
+        );
+      }
+      expect(arquivadas).toHaveLength(0);
+    });
+
+    it("as três quitações por cruzamento de 20/10/2026 continuam declaradas enquanto não conferidas", () => {
+      // A seção "Três das sete são baratas" da Norma orientou quitar D02, P05 e P02 por
+      // cruzamento. Nenhuma das três obras está no acervo; nenhuma pode contar como conferida.
+      const ids = new Set(LASTRO_NAO_CONFERIDO.map((e) => e.id));
+      for (const id of ["D02", "P05", "P02"]) {
+        const temAcervo = LASTRO_NAO_CONFERIDO.some(
+          (e) => e.id === id && obraArquivada(e.idAcervo)
+        );
+        if (!temAcervo) {
+          expect(ids.has(id), `${id} foi quitado por cruzamento e sua obra não está arquivada`).toBe(
+            true
+          );
+        }
       }
     });
   });
