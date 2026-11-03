@@ -75,6 +75,9 @@ def kappa_e_se(n11: int, n12: int, n21: int, n22: int) -> tuple[float, float]:
 
 
 def poder_portao(
+    # Nenhum atributo fisico e sintetizado neste script: ele simula tabelas de concordancia entre
+    # dois observadores para medir a POTENCIA DE UMA REGRA DE DECISAO (G-08). Nada do que produz
+    # entra em matriz, rotulo ou metrica, e a saida e marcada como simulacao no cabecalho.
     rng: np.random.Generator, kappa: float, p: float, n: int, limiar: float, replicas: int
 ) -> tuple[float, float]:
     """(poder do portao duplo, poder do portao pontual) para um n."""
@@ -104,6 +107,9 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=20261103)
     a = ap.parse_args()
 
+    # Simulacao declarada, com semente registrada em --seed e impressa no cabecalho. Mede a
+    # potencia do portao duplo de kappa sob valores verdadeiros hipoteticos: nao ha ponto
+    # amostral, nao ha matriz e nao ha rotulo, de modo que a Regra 5 nao tem objeto aqui.
     rng = np.random.default_rng(a.seed)
 
     print("=" * 86)

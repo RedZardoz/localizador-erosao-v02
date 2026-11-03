@@ -231,7 +231,8 @@ Um prompt por bloco executável, emitido só quando seu insumo existe.
 | **P-A — Decisões vigentes** | A-01 (D11.2), A-02 (P03), A-04 (D20), A-10 (CI e textos) | **Agora**; são decisões já tomadas e não implementadas |
 | **P-D — Material de decisão** | Opções para G-01 a G-15 quantificadas (N-03 a N-06, N-14); **não executa nada** — [`prompts/PROMPT_EXECUTOR_MATERIAL_DECISAO_2026-11-02.md`](prompts/PROMPT_EXECUTOR_MATERIAL_DECISAO_2026-11-02.md) | **Parte independente emitida**; o veredito de lastro de G-01/G-02/G-10 entra quando P-L voltar |
 | **P-M — Contrato de dados** | A-05, C-02, C-07 — [`prompts/PROMPT_EXECUTOR_CONTRATO_MATRIZ_2026-11-02.md`](prompts/PROMPT_EXECUTOR_CONTRATO_MATRIZ_2026-11-02.md) | **Emitido**: `A-05` é executável já, desde que o esquema não hardcode cardinalidade (ver Fase 4) |
-| **P-V — Validação** | A-06, simulação de poder, sensibilidades pré-registradas | Após P-M e G-13 |
+| **P-S — Simulação de poder** | Execução oficial de `poder_d25.py` e fechamento de `G-13`, por outra mão — [`prompts/PROMPT_EXECUTOR_SIMULACAO_PODER_2026-11-03.md`](prompts/PROMPT_EXECUTOR_SIMULACAO_PODER_2026-11-03.md) | **Emitido** |
+| **P-V — Validação** | A-06, sensibilidades pré-registradas | Após P-M, P-S e G-13 |
 | **P-C — Campanha** | A-11, âncora de D23, protocolo de não resposta | Após G-01, G-02, G-09 |
 | **P-R — Reporte** | Model card, TRIPOD+AI, PROBAST, dicionário | Após P-V |
 
