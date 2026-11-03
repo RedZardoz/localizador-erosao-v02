@@ -5,6 +5,8 @@
 **Branch:** `correcoes/contencao-2026-11-02`, criada de `origin/sarel/executor-2026-10-09` (ponta, `8262ed9`)
 **Natureza:** implementação dos cinco itens de contenção. Nenhuma decisão metodológica foi tomada; nenhum valor de limiar científico foi alterado; `src/config/decisoes.ts` não foi tocado.
 
+> **Relatório consolidado em 03/11/2026.** Duas execuções independentes de `P-0` produziram relatórios separados: este, da execução de 02/11, e um segundo escrito por outro executor e commitado em `9cd8bd0` como `RELATORIO_CONTENCAO_2026-11-01.md`. Os dois descrevem o mesmo trabalho e **convergem em todas as conclusões**. Foram fundidos aqui, com a data de execução no nome conforme a convenção do projeto, e o duplicado foi removido. O que a segunda análise acrescentou está marcado ao longo do texto; a convergência na §4 é o dado mais relevante que ela produziu.
+
 ---
 
 ## 1. Baseline e estado final
@@ -17,6 +19,10 @@
 | `npx next lint --max-warnings 0` | 2 warnings | **2 warnings** (inalterado) |
 
 **Saldo de testes: +18**, sendo 19 acrescentados e 1 removido por redundância (ver item 2). Nenhum teste que passava deixou de passar.
+
+**Os 3 testes pulados são legítimos e condicionais** — detalhe que a segunda análise trouxe e que foi verificado em 03/11: estão todos em `src/lib/fundiario/matcher.test.ts`, no bloco *"testes condicionais ao provisionamento da base"*, e são pulados porque a base fundiária SQLite local não está provisionada neste ambiente. Não são testes desativados.
+
+**Atenção a uma confusão de fase, que a segunda análise registra e vale isolar.** O relatório de 03/11 cita *"94 arquivos, 794 passaram"* como estado da contenção. Esse é o estado da **branch inteira**, que inclui `P-L` (+9 testes) e `P-M` (+24). **A contenção isolada terminou em 93 arquivos e 761 testes**, e é esse o número que serve de referência para medir regressão em `P-0`. A segunda análise declara a mistura no seu próprio texto, de modo que não é erro — mas o número isolado é o que importa aqui.
 
 **Sobre o baseline citado em prompts anteriores.** O prompt de 31/10 registrava *"92 arquivos, 725 testes aprovados, 3 pulados"*. O baseline medido hoje é 93 arquivos e 743 testes: a suíte cresceu entre 31/10 e agora. O número antigo não deve ser usado como referência de regressão.
 
@@ -96,6 +102,19 @@ O prompt mandava **procurar lastro antes de alterar**. Busca feita em três fren
 
 **Nota sobre o próprio varredor.** A primeira versão desta correção deixou um `Math.min(1, Math.max(0, ...))` residual depois da verificação de domínio. **O varredor de padrões proibidos o detectou e reprovou a suíte** (`[corte-math-max-min-com-literal]`). Era desnecessário — o `toFixed(4)` já absorve o ruído — e foi removido. O varredor funcionou exatamente como projetado, inclusive contra quem o estava usando.
 
+#### Convergência independente, e é o achado mais sólido deste relatório
+
+A segunda execução de `P-0` percorreu esta mesma busca **sem acesso às conclusões da primeira**, e chegou ao mesmo resultado nas três frentes:
+
+| Frente | Primeira análise (02/11) | Segunda análise (03/11) |
+|---|---|---|
+| `src/config/decisoes.ts` | nenhuma decisão sobre clamp de solo nu | *"Nenhuma menção a corte ou clamp de frequência de solo nu"* |
+| `docs/` | a única menção a *clamp* é a Regra 2, que o **proíbe** e nomeia o selo `fora-do-dominio` | mesma citação literal da Regra 2 da Ficha Técnica |
+| histórico do git | `b7d5c59` (01/10/2026), commit de implementação | `b7d5c59`, *"commit de implementação/fix de interface, sem vínculo com decisão metodológica"* |
+| conclusão | aplicar a Regra 2: recusa com `fora-do-dominio`, tolerância `1e-9` | idêntica, inclusive a tolerância |
+
+Duas buscas independentes convergindo na mesma ausência de lastro vale mais que uma. **A concessão `// permitido:` daquele clamp não tinha fundamento, e isso agora está estabelecido por dupla verificação.**
+
 **Testes (5 em `serieTemporal.test.ts`, 7 → 12; 3 em `montagemRotulo.test.ts`, 4 → 7):** NDVI e BSI com denominador nulo retornam `null`; ambos retornam `null` fora de `[-1, 1]`; **o zero legítimo é preservado** (`calcularNdvi(0.25, 0.25) === 0`), que é o caso que o retorno fabricado tornava ambíguo; ponto sem bloco, com bloco vazio ou só espaços é excluído com motivo; nenhuma linha da matriz carrega o sentinela.
 
 ### Item 5 — JEV sem coordenadas e sem confiança fabricada (A-09) ✅
@@ -112,6 +131,23 @@ O código do ponto foi removido junto com as coordenadas porque permite reidenti
 
 ---
 
+## 2-A. Rastreabilidade achado → commit → teste (`C-06`)
+
+Estrutura que a segunda análise trouxe e que faltava a este relatório: cada correção ligada ao
+commit que a fez e ao teste que a sustenta. Os números de teste são os **acrescentados** por
+item, não o total do arquivo.
+
+| Item | Achado | Commit | Arquivo de teste | Testes novos | O que o teste assevera |
+|---|---|---|---|---:|---|
+| 1 | `A-07a` | `d2fd40e` | `src/lib/rotulos/rotuloHumano.test.ts` | +5 | fração ausente recusada mesmo com classe `"erosao"`; **fração 0 explícita aceita**, porque zero é observação; `-0,01` e `1,5` recusados sem truncar; `NaN` recusado; confiança vazia recusada |
+| 2 | `N-02` | `4afc4e4` | `src/lib/gee/sorteioPoligonos.test.ts` | 19 convertidos, −1 redundante | idempotência do selo, três estados de `kAmbiguoAssociacao`, determinismo bit-a-bit sob a mesma semente, identidade `pi_i × w_i = 1` com `N_h` heterogêneos — **todos agora na rotina vigente** |
+| 3 | `A-03` / `P07` | `d2fe5c2` | `src/lib/seguranca/padroesProibidos.test.ts` | +2 | nenhuma atribuição de semente a literal numérico nos dois arquivos de sorteio; a rota gera e registra a semente; o CLI recusa `--confirmar` sem `--semente` |
+| 4 | `A-08` | `3766ce4` | `src/lib/gee/serieTemporal.test.ts` | +5 | denominador nulo retorna `null` em NDVI e BSI; fora de `[-1,1]` retorna `null`; **o zero legítimo é preservado** (`calcularNdvi(0.25, 0.25) === 0`) |
+| 4 | `A-08` | `3766ce4` | `src/lib/matriz/montagemRotulo.test.ts` | +3 | ponto sem bloco, com bloco vazio ou só espaços é excluído com motivo; nenhuma linha carrega o sentinela |
+| 5 | `A-09` | `3766ce4` | `src/lib/jev/jevClient.test.ts` | +4 | o corpo enviado ao `fetch` não contém as coordenadas em nenhuma forma, nem `latitude`, `longitude`, `coordenada`, `wgs84`, nem código ou id — e **continua contendo** `declividade`, para o teste não passar por payload vazio; ambos os motores declaram `naturezaEvidencia`; sem `confidence` do serviço a confiança fica `null` |
+
+---
+
 ## 3. Para decisão do pesquisador — redação proposta para a emenda de D23
 
 Não alterei `decisoes.ts` (CLAUDE.md §2). O texto vigente de D23 (`:425`) diz:
@@ -123,6 +159,8 @@ O código vigente sorteia **72 polígonos de 5,02 ha, quatro por estrato**, com 
 > "A UNIDADE DE SORTEIO PRIMÁRIA É O POLÍGONO DE VANT, não o ponto: **72 polígonos de 5,02 ha, quatro por estrato** — dois de treino e dois de held-out — sobre os estratos de D12, conforme D16 emendada. Para cada estrato `h`, `pi_i = 4 / N_h` e `w_i = N_h / 4`, com `pi_i × w_i = 1`, e ambos registrados junto do sorteio. **`N_h` é contagem de CANDIDATOS do estrato, não de hectares: `pi_i` não é peso de área** (ver achado D-02)."
 
 A última frase é acréscimo sugerido, não correção de divergência: ela fecha a confusão de unidade que o achado D-02 descreve. **A decisão de incorporá-la é do pesquisador.**
+
+**A segunda análise propôs redação equivalente**, com a mesma ressalva de que `N_h` é contagem de candidatos e não de hectares. A convergência reforça a proposta, mas não a transforma em decisão: `decisoes.ts` segue intocado em ambas as execuções.
 
 ---
 
@@ -145,5 +183,7 @@ npx next lint --max-warnings 0                    → 2 warnings (pré-existente
 ```
 
 **Arquivos tocados:** 20 (14 de código, 6 de teste), 622 inserções, 346 remoções.
+
+**Verificação dupla.** A segunda execução mediu, de forma independente e no estado consolidado da branch: `typecheck` exit 0, 794 testes passando com 3 pulados, 34 no varredor. Os três números batem com a medição de 03/11 feita aqui. Nenhuma das duas execuções encontrou regressão.
 
 **Fim do relatório.** Nenhuma decisão, parâmetro científico ou norma foi alterado.
