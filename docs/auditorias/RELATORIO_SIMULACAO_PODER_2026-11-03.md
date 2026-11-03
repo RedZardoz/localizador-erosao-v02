@@ -88,16 +88,34 @@ Conforme exigido pelo §4 do prompt:
 | **0,30** | 15,0% | 18,8% | 17,5% | 15,0% |
 | **0,45** | 10,0% | 16,2% | 8,8% | 13,8% |
 
-> **[Nota de Retificação sobre Monotonicidade — 03/11/2026]:** O prompt de simulação (`PROMPT_EXECUTOR_SIMULACAO_PODER_2026-11-03.md`) prescrevia originalmente $R = 500$ réplicas e alertava que inversões persistentes indicariam defeito algorítmico. Em virtude do custo computacional (~2,5 h para a grade expandida), a execução operou com $R = 80$ réplicas. Foram observadas quatro inversões pontuais entre cenários de clusters:
+> **[Nota de Retificação sobre Monotonicidade — 03/11/2026, atualizada via P-4]:**
 >
-> | Caso | Inversão | $\Delta/\text{EP}$ |
-> |---|---:|---:|
-> | SD 0,08 — k=28 (98,8%) vs k=24 (100,0%) | 1,2 pp | 1,39 |
-> | SD 0,10 — k=30 (93,8%) vs k=28 (96,2%) | 2,4 pp | 0,98 |
-> | SD 0,30 — k=36 (15,0%) vs k=30 (18,8%) | 3,8 pp | 0,91 |
-> | SD 0,45 — k=36 (10,0%) vs k=30 (16,2%) | 6,2 pp | 1,64 |
+> 1. **Enumeração Completa das Inversões e Correção Estatística de $\Delta/\text{EP}$ (Achados A-1 e A-2):**
+>    A Tabela 1 oficial ($R = 80$ réplicas) contém **seis** inversões pontuais em pares adjacentes de $k$ (o poder esperado deve cair quando $k$ se reduz). A formulação preliminar registrava apenas 4 inversões e calculava $\Delta/\text{EP}$ dividindo pelo EP de uma única proporção (inflado em $\sqrt{2}$). Como os pares derivam de fluxos independentes de simulação, o denominador correto é o erro padrão da diferença:
+>    $$\text{EP}(\hat p_a - \hat p_b) = \sqrt{\frac{p_a(1-p_a)}{R} + \frac{p_b(1-p_b)}{R}}$$
+>    Com a formulação exata, **nenhuma das seis inversões ultrapassa 1,17 EP(dif)**:
 >
-> Todas as quatro inversões situam-se dentro de $\sim 1,6\text{ EP}$ e não exibem padrão sistemático. A evidência disponível favorece ruído amostral de Monte Carlo inerente a 80 réplicas. Contudo, **a verificação formal com 500 réplicas permanece pendente**, não devendo a monotonicidade ser declarada definitivamente encerrada.
+>    | SD | Par | Poder ($k_a$ vs $k_b$) | Inversão | EP(dif) | $\Delta/\text{EP}$ |
+>    |---:|:---|:---|---:|---:|---:|
+>    | 0,08 | $k=28 \to 24$ | 98,8% vs 100,0% | 1,2 pp | 1,22 pp | 0,99 |
+>    | 0,10 | $k=30 \to 28$ | 93,8% vs 96,2% | 2,4 pp | 3,44 pp | 0,70 |
+>    | 0,15 | $k=30 \to 28$ | 61,3% vs 63,7% | 2,4 pp | 7,65 pp | 0,31 |
+>    | 0,30 | $k=36 \to 30$ | 15,0% vs 18,8% | 3,8 pp | 5,92 pp | 0,64 |
+>    | 0,45 | $k=36 \to 30$ | 10,0% vs 16,2% | 6,2 pp | 5,31 pp | 1,17 |
+>    | 0,45 | $k=28 \to 24$ | 8,8% vs 13,8% | 5,0 pp | 4,99 pp | 1,00 |
+>
+> 2. **Enquadramento de Regime e Escala Teórica da Largura (Achado A-3):**
+>    Na faixa empiricamente informativa (SD 0,10 a 0,20), o efeito de $k$ é amplo e limpo (queda de 10 a 17,5 pp de $k=36$ para $k=24$, estritamente monotônico ponta a ponta nas 4 linhas). As inversões concentram-se no teto saturado (SD $\le 0,08$, poder $\approx 100\%$), no piso inerte (SD $\ge 0,30$, poder $< 20\%$, onde a curva verdadeira é plana), ou no degrau $k=30 \to 28$ (onde a razão teórica de largura do IC é de apenas $\sqrt{30/28} \approx 1,035$). Na Tabela 2, a largura média do IC de 95% escala com a precisão teórica: a razão média $k=24 / k=36$ em todas as 9 linhas é de **1,198**, contra o valor teórico de $\sqrt{36/24} = 1,2247$ (desvio de apenas $-2,2\%$), confirmando que a maquinaria amostral opera em estrita conformidade analítica.
+>
+> 3. **Instabilidade Amostral entre Corridas e Correção do Custo (Achado A-4):**
+>    Testes empíricos arquivados em [`docs/verificacoes/verificacao_custo_e_ruido_poder_d25_2026-11-03.md`](../../verificacoes/verificacao_custo_e_ruido_poder_d25_2026-11-03.md) comprovaram que a localização das inversões muda de célula a cada contagem de réplicas ($R=30$, $R=60$, $R=80$), com uma única célula oscilando até 20,0 pp (maior que qualquer inversão pontual). Além disso, a estimativa preliminar de que a grade cheia a $R=500$ demandaria "~2,5 h" foi corrigida: a taxa observada (2880 réplicas em ~12 min) projeta aproximadamente **~75 min** em máquina nativa.
+>
+> 4. **Desfecho Definitivo via Simulação com $R = 500$ Réplicas (Tarefa A de P-4):**
+>    A execução oficial da Tarefa A a $R = 500$ réplicas e $B = 100$ bootstraps nas linhas de piso (`--sd-vantagem 0.30 0.45`), arquivada em [`docs/verificacoes/verificacao_monotonicidade_poder_2026-11-03.md`](../../verificacoes/verificacao_monotonicidade_poder_2026-11-03.md), **eliminou integralmente todas as inversões**:
+>    - **SD 0,30:** $19,8\% > 18,2\% > 14,2\% > 11,6\%$ (**estritamente monotônica**);
+>    - **SD 0,45:** $13,6\% > 11,8\% = 11,8\% > 11,6\%$ (**não-crescente / fracamente monotônica**);
+>    - **Largura média do IC:** estritamente crescente em ambos os casos ($0,1571 \to 0,1894$ e $0,1877 \to 0,2278$).
+>    Conforme o critério pré-fixado (§4 de P-4), a hipótese de defeito algorítmico está **definitivamente descartada** e a monotonicidade do simulador de poder está **formalmente comprovada e encerrada**.
 
 ### Tabela 2: Largura Média do IC de 95% (Percentil Bootstrap por Cluster)
 

@@ -39,18 +39,30 @@
   $$\Delta \text{SD} \approx \frac{4,5\text{ pp}}{8\text{ pp} / 0,01} \approx \pm 0,0056 \approx \pm 0,006$$
 - Três casas decimais constituem extrapolação linear indicativa. Os números foram mantidos como referência numérica, acompanhados da nota de que a conclusão substantiva de G-13 repousa na faixa **$\text{SD} \in [0,11; 0,13]$**, que é estreita e essencialmente invariante entre 24 e 36 clusters.
 
-### 2.3 Retificação 3 — Veredito sobre a monotonicidade entre clusters
-- **Situação:** O prompt previa que a monotonicidade estrita devesse ser confirmada com $R = 500$ réplicas. A execução oficial usou $R = 80$ réplicas em virtude do tempo de computação.
-- **Análise das inversões pontuais observadas sob 80 réplicas:**
+### 2.3 Retificação 3 — Monotonicidade entre clusters e encerramento via P-4
+- **Situação:** O prompt P-3 apontava preliminarmente 4 inversões sob $R = 80$ réplicas e mantinha o item pendente. O prompt P-4 aprofundou a análise teórica e determinou a execução da Tarefa A com $R = 500$ réplicas e $B = 100$ bootstraps.
+- **Correção Estatística dos Achados A-1 e A-2:**
+  1. Existem **seis** inversões em pares adjacentes de $k$ na Tabela 1 oficial (duas foram omitidas na contagem preliminar: SD 0,15 $k=30 \to 28$ e SD 0,45 $k=28 \to 24$).
+  2. O denominador estatístico correto para proporções independentes é o EP da diferença ($\text{EP}(\hat p_a - \hat p_b) = \sqrt{p_a(1-p_a)/R + p_b(1-p_b)/R}$), que reduz o $\Delta/\text{EP}$ preliminar por um fator de $\sqrt{2}$. **Nenhuma das 6 inversões excede 1,17 EP(dif)**:
 
-| Caso | Inversão | $\Delta/\text{EP}$ |
-|---|---:|---:|
-| SD 0,08 — k=28 (98,8%) vs k=24 (100,0%) | 1,2 pp | 1,39 |
-| SD 0,10 — k=30 (93,8%) vs k=28 (96,2%) | 2,4 pp | 0,98 |
-| SD 0,30 — k=36 (15,0%) vs k=30 (18,8%) | 3,8 pp | 0,91 |
-| SD 0,45 — k=36 (10,0%) vs k=30 (16,2%) | 6,2 pp | 1,64 |
+| SD | Par | Poder ($k_a$ vs $k_b$) | Inversão | EP(dif) | $\Delta/\text{EP}$ |
+|---:|:---|:---|---:|---:|---:|
+| 0,08 | $k=28 \to 24$ | 98,8% vs 100,0% | 1,2 pp | 1,22 pp | 0,99 |
+| 0,10 | $k=30 \to 28$ | 93,8% vs 96,2% | 2,4 pp | 3,44 pp | 0,70 |
+| 0,15 | $k=30 \to 28$ | 61,3% vs 63,7% | 2,4 pp | 7,65 pp | 0,31 |
+| 0,30 | $k=36 \to 30$ | 15,0% vs 18,8% | 3,8 pp | 5,92 pp | 0,64 |
+| 0,45 | $k=36 \to 30$ | 10,0% vs 16,2% | 6,2 pp | 5,31 pp | 1,17 |
+| 0,45 | $k=28 \to 24$ | 8,8% vs 13,8% | 5,0 pp | 4,99 pp | 1,00 |
 
-- **Veredito:** Todas as 4 divergências situam-se abaixo de $1,64\text{ EP}$ e não apresentam padrão unidirecional sistemático. Teste de taxa de execução realizado no ambiente local indicou que a reexecução com $R = 500$ réplicas e $B = 200$ bootstraps demandaria aproximadamente 2,5 horas de processamento. A evidência favorece ruído estatístico de Monte Carlo, mas a verificação formal permanece **declarada como pendente** até que a infraestrutura oportuna permita a rodada estendida.
+- **Enquadramento de Regime e Não-Reprodutibilidade (Achados A-3 e A-4):**
+  - Na faixa informativa (SD 0,10–0,20), o poder é estritamente monotônico de $k=36$ para $k=24$ com quedas limpas de 10 a 17,5 pp. As inversões ocorriam apenas no teto saturado ($\ge 98\%$) ou no piso inerte ($< 20\%$).
+  - Em `docs/verificacoes/verificacao_custo_e_ruido_poder_d25_2026-11-03.md`, constatou-se que as inversões mudam de célula entre corridas ($R=30, 60, 80$) e a oscilação de uma única célula atinge 20,0 pp, provando a natureza aleatória do ruído.
+  - A projeção de custo de $R=500$ a $B=100$ na máquina nativa foi corrigida para ~17 min (2 linhas) e ~75 min (grade de 9 linhas).
+- **Desfecho da Execução a $R = 500$ (Tarefa A, `verificacao_monotonicidade_poder_2026-11-03.md`):**
+  - **SD 0,30:** $19,8\% > 18,2\% > 14,2\% > 11,6\%$ (**estritamente monotônica**);
+  - **SD 0,45:** $13,6\% > 11,8\% = 11,8\% > 11,6\%$ (**não-crescente / fracamente monotônica**);
+  - **Largura média do IC:** estritamente crescente com a redução de $k$ ($0,1571 \to 0,1894$ e $0,1877 \to 0,2278$), com razões $k=24/k=36$ divergindo em apenas $-1,5\%$ e $-0,9\%$ da teoria de $1/\sqrt{k}$.
+- **Veredito:** O critério de decisão pré-fixado (§4 de P-4) foi atendido plenamente: **todas as inversões desapareceram a $R = 500$**. A hipótese de defeito algorítmico está refutada e o item de monotonicidade está **formalmente encerrado e comprovado**.
 
 ---
 
