@@ -1,7 +1,7 @@
 # Relatório de Execução — Simulação de Poder e Fechamento de G-13 (P-S)
 
 **Data da execução:** 3 de novembro de 2026  
-**Prompt executado:** `PROMPT_EXECUTOR_PODER_D25_G13_2026-11-03.md` (versão 2.0)  
+**Prompt executado:** [`PROMPT_EXECUTOR_SIMULACAO_PODER_2026-11-03.md`](../planejamento/prompts/PROMPT_EXECUTOR_SIMULACAO_PODER_2026-11-03.md) (versão 2.0; referência retificada de `PROMPT_EXECUTOR_PODER_D25_G13_2026-11-03.md`)  
 **Branch de trabalho:** `correcoes/contencao-2026-11-02`  
 **Base do código:** `scripts/d25/poder_d25.py`  
 **Artefato de verificação gerado:** [`docs/verificacoes/2026-11-03_poder_d25.txt`](../../verificacoes/2026-11-03_poder_d25.txt)  
@@ -88,6 +88,17 @@ Conforme exigido pelo §4 do prompt:
 | **0,30** | 15,0% | 18,8% | 17,5% | 15,0% |
 | **0,45** | 10,0% | 16,2% | 8,8% | 13,8% |
 
+> **[Nota de Retificação sobre Monotonicidade — 03/11/2026]:** O prompt de simulação (`PROMPT_EXECUTOR_SIMULACAO_PODER_2026-11-03.md`) prescrevia originalmente $R = 500$ réplicas e alertava que inversões persistentes indicariam defeito algorítmico. Em virtude do custo computacional (~2,5 h para a grade expandida), a execução operou com $R = 80$ réplicas. Foram observadas quatro inversões pontuais entre cenários de clusters:
+>
+> | Caso | Inversão | $\Delta/\text{EP}$ |
+> |---|---:|---:|
+> | SD 0,08 — k=28 (98,8%) vs k=24 (100,0%) | 1,2 pp | 1,39 |
+> | SD 0,10 — k=30 (93,8%) vs k=28 (96,2%) | 2,4 pp | 0,98 |
+> | SD 0,30 — k=36 (15,0%) vs k=30 (18,8%) | 3,8 pp | 0,91 |
+> | SD 0,45 — k=36 (10,0%) vs k=30 (16,2%) | 6,2 pp | 1,64 |
+>
+> Todas as quatro inversões situam-se dentro de $\sim 1,6\text{ EP}$ e não exibem padrão sistemático. A evidência disponível favorece ruído amostral de Monte Carlo inerente a 80 réplicas. Contudo, **a verificação formal com 500 réplicas permanece pendente**, não devendo a monotonicidade ser declarada definitivamente encerrada.
+
 ### Tabela 2: Largura Média do IC de 95% (Percentil Bootstrap por Cluster)
 
 | SD da vantagem | k=36 | k=30 | k=28 | k=24 |
@@ -109,6 +120,8 @@ Conforme exigido pelo §4 do prompt:
 - **k = 24 clusters:** $\text{SD} \approx \mathbf{0,109}$
 
 Em todos os cenários de clusters de G-01 ($24 \le k \le 36$), o poder de 80% cruza consistentemente na faixa estreita de **$\text{SD} \in [0,11; 0,13]$**.
+
+> **[Nota de Retificação sobre Precisão Numérica — 03/11/2026]:** Os pontos de cruzamento com três casas decimais acima ($\text{SD} \approx 0,126; 0,120; 0,119; 0,109$) constituem **interpolação linear indicativa**, e não estimativas pontuais de alta precisão. Com $R = 80$ réplicas, o erro padrão de Monte Carlo no poder é de $\text{EP} \approx \pm 4,5\text{ pp}$. Como a inclinação da curva em torno de 80% é de cerca de 8 pp por 0,01 de SD, a incerteza no SD de cruzamento é da ordem de **$\pm 0,006$**. Três casas decimais afirmam uma precisão cerca de dez vezes superior à sustentada pelos dados. A informação cientificamente defensável e que efetivamente fundamenta a decisão de G-13 é a faixa **$\text{SD} \in [0,11; 0,13]$**, que é estreita e essencialmente invariante para 24 a 36 clusters.
 
 ---
 

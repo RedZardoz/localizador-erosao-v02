@@ -127,6 +127,13 @@ Leitura: o desenho é potente para uma vantagem consistente; é frágil para uma
 4. Validação espacial não resolvida. O held-out por polígono mede generalização para novos polígonos na mesma paisagem, não para novas regiões. Chamar de spatial CV é incorreto.
 5. Margem absoluta dependente da prevalência de zeros. G-12 mostra que 0,10 é 10,6% do espaço útil com 50% de zeros e 23,8% com 95%. A decisão está aberta e precisa vir antes do dado.
 6. Poder condicional. 36 clusters resolvem uma vantagem homogênea, não uma heterogênea; a simulação é possivelmente otimista porque gera scores i.i.d. em 502 células, enquanto D24 estima ~25,6 unidades efetivas.
+   > **[Nota de Retificação — 03/11/2026]:** A afirmação de que a simulação gera scores i.i.d. em 502 células e não modela as ~25,6 unidades efetivas de D24 descreve a **primeira versão preliminar** do simulador, mas **não se aplica à versão vigente utilizada na execução oficial**. O simulador `scripts/d25/poder_d25.py`:
+   > - Gera o alvo com efeito de polígono por deslocamento na escala logito (`gerar_alvo`, parâmetro `sd_poligono`);
+   > - Calibra a correlação intraclasse explicitamente pelas unidades efetivas de D24: `ICC_IMPLICITO = (502/25.6 - 1)/501 ≈ 0.0371`, constante nomeada no módulo;
+   > - Modela a vantagem do modelo como variável entre polígonos (`scores_competidores`, parâmetro `sd_vantagem`);
+   > - Imprime isso no cabeçalho de toda execução oficial (`docs/verificacoes/2026-11-03_poder_d25.txt`): `Efeito de poligono: SD 0.8 em logito | ICC implicito por D24: 0.0371 (~25.6 unidades efetivas/poligono)`.
+   >
+   > *Origem do mal-entendido:* O relatório de P-D documentou detalhadamente em seção própria o erro da versão inicial e sua correção. Uma leitura dessa documentação que não alcance os parágrafos subsequentes pode induzir à impressão de que o defeito persistia na versão de produção. A ressalva é legítima em razão da redação daquele relatório, mas o modelo computacional oficial já incorpora o efeito de agrupamento.
 7. Inferência de área não identificada. pi_i é de imóvel, não de hectare; área da BP3 exige outro desenho ou pesos de área.
 8. Treino sem pesos. A amostra é desproporcional; o modelo é ajustado sem sample_weight e a matriz não carrega pi_i. A relação aprendida é da amostra estratificada, não da população.
 
@@ -186,7 +193,8 @@ Para pior:
 
 - Não há dado de desfecho; os números de poder são simulações, não resultados.
 - A heterogeneidade da vantagem entre polígonos é desconhecida; o poder real depende dela e da autocorrelação espacial dos resíduos.
-- A simulação de G-13 modela o efeito de polígono no alvo, mas gera scores com ruído i.i.d. em 502 células; pode ser otimista em relação às ~25,6 unidades efetivas de D24.
+- A simulação de G-13 modela o efeito de polígono no alvo, mas gera scores com ruído i.i.d. em 502 células; pode ser otimista em relação às ~25,6 unidades efetivas de D24.  
+  *(Nota de retificação: ver esclarecimento na §6.2, item 6: a versão vigente do simulador já calibra o ICC em 0,0371 conforme D24 e varia a vantagem entre polígonos).*
 - Cochran 5A.12 não está conferido no primário; a recomendação de colapso depende dessa conferência.
 - A escolha de 12 x 6 não foi simulada; a avaliação é qualitativa: mantém 36 clusters, 3+3 por estrato e 361 ha, mas perde 6 estratos.
 - Não decido estratos, margem, kappa ou desenho; apresento o custo científico de cada opção.
