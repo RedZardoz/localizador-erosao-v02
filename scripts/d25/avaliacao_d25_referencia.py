@@ -29,6 +29,7 @@ import math
 import os
 import sys
 import time
+import warnings
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -174,25 +175,174 @@ def auditar_preditores(treino: pd.DataFrame, teste: pd.DataFrame, cols: list) ->
 
 
 def _so_incluidas(df: pd.DataFrame) -> pd.DataFrame:
-    """Se a matriz traz 'Incluida' (cobertura minima da celula no voo, P11), usa so as incluidas."""
+    """Se a matriz traz 'Incluida' (cobertura minima da celula no voo, P11), usa so as incluidas.
+
+    REGRA 1 / ACHADO S1-1 (AUDITORIA 2026-11-03):
+    Vazio NAO e false: celula vazia e ausencia de insumo, nao um valor booleano.
+    Antes de S1-1, uma coluna 'Incluida' presente e 100% vazia (como exportada antes do
+    processamento de D26) fazia com que toda celula fosse lida como False, esvaziando a matriz
+    para 0 linhas.
+    Tres estados sao distinguidos:
+    - Ausente: emite aviso e retorna df sem filtrar (no modo probatorio A-06 falhara).
+    - Presente e 100% vazia: emite aviso explicito de falta de insumo e nao filtra.
+    - Presente e parcialmente vazia: reporta contagem de vazias e decide apenas sobre as
+      preenchidas (mantem 'true', exclui 'false', e preserva vazias sem filtrar).
+    - Preenchida: filtra mantendo apenas as marcadas como verdadeiras.
+    """
     if "Incluida" not in df.columns:
+        warnings.warn(
+            "[AVISO S1-1] Coluna 'Incluida' ausente na matriz: filtro de cobertura minima (P11) nao aplicado.",
+            UserWarning,
+            stacklevel=2,
+        )
         return df
-    inc = df["Incluida"].map(lambda v: v is True or str(v).strip().lower() in ("true", "1", "1.0", "verdadeiro"))
+
+    def _classificar_incluida(v):
+        if pd.isna(v):
+            return "vazio"
+        if isinstance(v, (bool, np.bool_)):
+            return "true" if v else "false"
+        if isinstance(v, (int, float, np.integer, np.floating)):
+            if v == 1.0:
+                return "true"
+            if v == 0.0:
+                return "false"
+            return "vazio"
+        s = str(v).strip().lower()
+        if s in ("", "nan", "none", "null"):
+            return "vazio"
+        if s in ("true", "1", "1.0", "verdadeiro"):
+            return "true"
+        if s in ("false", "0", "0.0", "falso"):
+            return "false"
+        return "vazio"
+
+    classes = df["Incluida"].map(_classificar_incluida)
+    n_vazios = int((classes == "vazio").sum())
+    n_true = int((classes == "true").sum())
+    n_false = int((classes == "false").sum())
+    n_preenchidos = n_true + n_false
+
+    if n_preenchidos == 0:
+        warnings.warn(
+            "[AVISO S1-1] Coluna 'Incluida' presente mas 100 % vazia: filtro de cobertura minima (P11) "
+            "nao tem insumo e nao foi aplicado.",
+            UserWarning,
+            stacklevel=2,
+        )
+        return df
+
+    if n_vazios > 0:
+        warnings.warn(
+            f"[AVISO S1-1] Coluna 'Incluida' contem {n_vazios} linha(s) vazia(s) de {len(df)}. "
+            f"Filtro de cobertura aplicado apenas sobre as {n_preenchidos} linha(s) preenchidas; "
+            f"as {n_vazios} linha(s) sem 'Incluida' nao foram filtradas.",
+            UserWarning,
+            stacklevel=2,
+        )
+        inc = classes != "false"
+        return df[inc].reset_index(drop=True)
+
+    inc = classes == "true"
     return df[inc].reset_index(drop=True)
+
+
+def _extrair_pixels_validos(serie: pd.Series) -> set[str]:
+    """Descarta valores vazios ('', NaN, None, 'nan', 'none', 'null') antes de formar conjunto (S1-1)."""
+    validos = set()
+    for v in serie:
+        if pd.isna(v):
+            continue
+        s = str(v).strip()
+        if not s or s.lower() in ("nan", "none", "null"):
+            continue
+        validos.add(s)
+    return validos
 
 
 def _checar_pixels_disjuntos(treino: pd.DataFrame, teste: pd.DataFrame) -> None:
     """O mesmo pixel de 10 m nao pode estar em treino e held-out (poligonos vizinhos compartilham pixels
-    de borda). Usa a coluna opaca Pixel_ID; na falta dela, Grade_X/Grade_Y (so no CSV intermediario local)."""
-    if "Pixel_ID" in treino.columns:
-        k = lambda d: set(d["Pixel_ID"].astype(str))
-    elif {"Grade_X", "Grade_Y"} <= set(treino.columns):
-        k = lambda d: set(zip(d["Grade_X"].round(3), d["Grade_Y"].round(3)))
-    else:
+    de borda). Usa a coluna opaca Pixel_ID; na falta dela, Grade_X/Grade_Y (so no CSV intermediario local).
+
+    REGRA 1 / ACHADO S1-1 (AUDITORIA 2026-11-03):
+    Vazio NAO e valor de identidade: celula vazia ou NaN e ausencia de insumo, nao identificador.
+    Antes de S1-1, `astype(str)` transformava `""` em `""` e `NaN` em `"nan"`, populando ambos os
+    conjuntos com o mesmo sentinela de ausencia e acusando falso vazamento espacial de 1 pixel.
+    Valores vazios sao descartados antes de formar os conjuntos. Se qualquer conjunto ficar sem
+    pixels reais, nao ha checagem possivel — emite aviso e nao lanca erro (ausencia de insumo nao
+    e vazamento).
+    """
+    if "Pixel_ID" in treino.columns and "Pixel_ID" in teste.columns:
+        n_tot_tr = len(treino)
+        n_tot_te = len(teste)
+        px_treino = _extrair_pixels_validos(treino["Pixel_ID"])
+        px_teste = _extrair_pixels_validos(teste["Pixel_ID"])
+
+        vazios_tr = sum(
+            1 for v in treino["Pixel_ID"]
+            if pd.isna(v) or not str(v).strip() or str(v).strip().lower() in ("nan", "none", "null")
+        )
+        vazios_te = sum(
+            1 for v in teste["Pixel_ID"]
+            if pd.isna(v) or not str(v).strip() or str(v).strip().lower() in ("nan", "none", "null")
+        )
+
+        if not px_treino or not px_teste:
+            warnings.warn(
+                f"[AVISO S1-1] 'Pixel_ID' sem pixels validos preenchidos em treino ({len(px_treino)}/{n_tot_tr}) "
+                f"ou held-out ({len(px_teste)}/{n_tot_te}): checagem de vazamento espacial nao realizada "
+                "(ausencia de insumo nao e vazamento).",
+                UserWarning,
+                stacklevel=2,
+            )
+            return
+
+        if vazios_tr > 0 or vazios_te > 0:
+            warnings.warn(
+                f"[AVISO S1-1] 'Pixel_ID' contem valores vazios (treino: {vazios_tr}/{n_tot_tr}, held-out: {vazios_te}/{n_tot_te}). "
+                "Checagem de pixels disjuntos realizada apenas sobre os pixels preenchidos.",
+                UserWarning,
+                stacklevel=2,
+            )
+
+        comum = px_treino & px_teste
+        if comum:
+            raise ErroAvaliacao(f"{len(comum)} pixel(is) de 10 m em treino e held-out (vazamento espacial)")
         return
-    comum = k(treino) & k(teste)
-    if comum:
-        raise ErroAvaliacao(f"{len(comum)} pixel(is) de 10 m em treino e held-out (vazamento espacial)")
+
+    elif {"Grade_X", "Grade_Y"} <= set(treino.columns) and {"Grade_X", "Grade_Y"} <= set(teste.columns):
+        gx_tr = pd.to_numeric(treino["Grade_X"], errors="coerce")
+        gy_tr = pd.to_numeric(treino["Grade_Y"], errors="coerce")
+        m_tr = gx_tr.notna() & gy_tr.notna()
+        set_tr = set(zip(gx_tr[m_tr].round(3), gy_tr[m_tr].round(3)))
+
+        gx_te = pd.to_numeric(teste["Grade_X"], errors="coerce")
+        gy_te = pd.to_numeric(teste["Grade_Y"], errors="coerce")
+        m_te = gx_te.notna() & gy_te.notna()
+        set_te = set(zip(gx_te[m_te].round(3), gy_te[m_te].round(3)))
+
+        if not set_tr or not set_te:
+            warnings.warn(
+                "[AVISO S1-1] Grade_X/Grade_Y sem coordenadas validas em treino ou held-out: "
+                "checagem de vazamento espacial nao realizada.",
+                UserWarning,
+                stacklevel=2,
+            )
+            return
+
+        comum = set_tr & set_te
+        if comum:
+            raise ErroAvaliacao(f"{len(comum)} pixel(is) de 10 m em treino e held-out (vazamento espacial)")
+        return
+
+    else:
+        warnings.warn(
+            "[AVISO S1-1] Identificadores de pixel ('Pixel_ID' ou 'Grade_X'/'Grade_Y') ausentes: "
+            "checagem de vazamento espacial entre treino e held-out nao realizada.",
+            UserWarning,
+            stacklevel=2,
+        )
+        return
 
 
 # ---------------------------------------------------------------- bootstrap por poligono

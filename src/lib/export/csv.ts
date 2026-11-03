@@ -1,6 +1,6 @@
 import type { PontoAmostral } from "@/types/ponto";
 import type { RotuloConsolidado } from "@/types/rotulo";
-import { extrairLinhasPorPerfil, BLOCO_FUNDAMENTACAO_LGPD } from "./planilha";
+import { extrairLinhasPorPerfil, BLOCO_FUNDAMENTACAO_LGPD, type OpcoesExportacao } from "./planilha";
 import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
 import { assegurarInvariantesArtefato, ArtefatoProjetado } from "@/lib/matriz/invariantes";
 import type { PerfilExportacao } from "@/lib/matriz/perfis";
@@ -20,13 +20,14 @@ function escaparCsv(val: unknown): string {
 export function gerarCsvCientifico(
   pontos: PontoAmostral[],
   perfil: PerfilExportacao = "planilha",
-  rotulosConsolidados?: Record<string, RotuloConsolidado>
+  rotulosConsolidados?: Record<string, RotuloConsolidado>,
+  opcoes?: Pick<OpcoesExportacao, "seloD16" | "exigirDelineacaoD26">
 ): string {
   // 1. Guarda antissintético
   assegurarApenasPontosReais(pontos, "geração de arquivo CSV");
 
   // 2. Extração de dados projetados estritamente pelo perfil
-  const linhas = extrairLinhasPorPerfil(pontos, perfil, rotulosConsolidados);
+  const linhas = extrairLinhasPorPerfil(pontos, perfil, rotulosConsolidados, opcoes);
   const cabecalho = linhas.length > 0 ? Object.keys(linhas[0]) : [];
 
   // 3. Validação dos invariantes

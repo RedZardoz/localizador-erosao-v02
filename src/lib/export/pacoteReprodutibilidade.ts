@@ -27,6 +27,19 @@ import { valorOuNulo } from "@/types/proveniencia";
 import { SCRIPT_AVALIACAO_D25, REQUIREMENTS_D25 } from "./scriptAvaliacaoD25.generated";
 import { VERIFICADOR_INTEGRIDADE } from "./verificadorIntegridade.generated";
 
+export interface OpcoesPacoteReprodutibilidade {
+  seloD16?: {
+    poligonos: Array<{
+      idPoligono: string;
+      estratoId: string;
+      pi_i: number;
+      w_i: number;
+      nCandidatosEstrato: number;
+    }>;
+  };
+  exigirDelineacaoD26?: boolean;
+}
+
 export interface ArquivosPacoteReprodutibilidade {
   matrizTreinamentoCsv: string;
   validacaoDroneCsv: string;
@@ -131,9 +144,14 @@ function formatarLinhaCensoProveniencia(
  */
 export function gerarCsvMatrizTreinamento(
   pontos: PontoAmostral[],
-  rotulosConsolidados: Record<string, RotuloConsolidado>
+  rotulosConsolidados: Record<string, RotuloConsolidado>,
+  opcoes?: OpcoesPacoteReprodutibilidade
 ): string {
-  const resultadoMatriz = montarMatrizTreino(pontos, rotulosConsolidados, { modeloJanela: "D" });
+  const resultadoMatriz = montarMatrizTreino(pontos, rotulosConsolidados, {
+    modeloJanela: "D",
+    ...(opcoes?.seloD16 ? { seloD16: opcoes.seloD16 } : {}),
+    ...(opcoes?.exigirDelineacaoD26 !== undefined ? { exigirDelineacaoD26: opcoes.exigirDelineacaoD26 } : {}),
+  });
 
   // Pós-condição de segregação held-out (Decisão D16 e Regra 4):
   assegurarSegregacaoTreino(resultadoMatriz.linhas, resultadoMatriz.heldOutDrone);
@@ -260,7 +278,7 @@ export function gerarCsvMatrizTreinamento(
       Codigo_IBGE: valorOuNulo(p.localizacao?.codigoIbge) ?? "",
       Bacia_Hidrografica: valorOuNulo(p.localizacao?.bacia) ?? "",
       Bloco_Espacial: p.blocoEspacial ?? "",
-      Estrato_ID: p.estratoId,
+      Estrato_ID: linhaCanonica.estratoId ?? p.estratoId ?? "",
       Elevacao_m: valorOuNulo(p.terreno?.elevacao) ?? "",
       Declividade_pct: valorOuNulo(p.terreno?.declividadePct) ?? "",
       Declividade_graus: valorOuNulo(p.terreno?.declividadeGraus) ?? "",
@@ -700,14 +718,19 @@ export function gerarManifestoSha256(hashes: Record<string, string>): string {
  */
 export async function gerarConteudoPacoteReprodutibilidade(
   pontos: PontoAmostral[],
-  rotulosConsolidados: Record<string, RotuloConsolidado>
+  rotulosConsolidados: Record<string, RotuloConsolidado>,
+  opcoes?: OpcoesPacoteReprodutibilidade
 ): Promise<ArquivosPacoteReprodutibilidade> {
   // 1. Barreira antissintética obrigatória
   assegurarApenasPontosReais(pontos, "geração do pacote de reprodutibilidade da dissertação");
 
   // 2. Geração dos arquivos
-  const resultadoMatriz = montarMatrizTreino(pontos, rotulosConsolidados, { modeloJanela: "D" });
-  const f1_matrizTreino = gerarCsvMatrizTreinamento(pontos, rotulosConsolidados);
+  const resultadoMatriz = montarMatrizTreino(pontos, rotulosConsolidados, {
+    modeloJanela: "D",
+    ...(opcoes?.seloD16 ? { seloD16: opcoes.seloD16 } : {}),
+    ...(opcoes?.exigirDelineacaoD26 !== undefined ? { exigirDelineacaoD26: opcoes.exigirDelineacaoD26 } : {}),
+  });
+  const f1_matrizTreino = gerarCsvMatrizTreinamento(pontos, rotulosConsolidados, opcoes);
   const f2_validacaoDrone = gerarCsvValidacaoDroneHeldOut();
   const f3_confrontoRad = gerarCsvConfrontoRadiometrico();
   const f4_datasheet = gerarJsonDatasheetMetadados(
@@ -750,9 +773,10 @@ export async function gerarConteudoPacoteReprodutibilidade(
  */
 export async function gerarPacoteReprodutibilidadeZip(
   pontos: PontoAmostral[],
-  rotulosConsolidados: Record<string, RotuloConsolidado>
+  rotulosConsolidados: Record<string, RotuloConsolidado>,
+  opcoes?: OpcoesPacoteReprodutibilidade
 ): Promise<Blob> {
-  const arquivos = await gerarConteudoPacoteReprodutibilidade(pontos, rotulosConsolidados);
+  const arquivos = await gerarConteudoPacoteReprodutibilidade(pontos, rotulosConsolidados, opcoes);
   const zip = new JSZip();
 
   zip.file("01_matriz_preditores_treinamento_sarel.csv", arquivos.matrizTreinamentoCsv);

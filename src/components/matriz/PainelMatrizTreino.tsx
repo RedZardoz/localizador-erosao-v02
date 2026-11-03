@@ -3,6 +3,7 @@
 import React from "react";
 import { useSarelStore } from "@/store/useSarelStore";
 import { montarMatrizTreino } from "@/lib/matriz/montagem";
+import type { SeloSorteioD16 } from "@/lib/gee/sorteioPoligonosTipos";
 
 /**
  * Painel da Matriz de Treino — SAREL (§19 e §12.4)
@@ -15,14 +16,36 @@ import { montarMatrizTreino } from "@/lib/matriz/montagem";
  */
 export function PainelMatrizTreino() {
   const { pontos, rotulosConsolidados } = useSarelStore();
+  const [selo, setSelo] = React.useState<SeloSorteioD16 | null>(null);
+
+  // S1-1: busca o selo D16 existente pela rota canônica (mesmo mecanismo de PainelSorteioD16)
+  React.useEffect(() => {
+    let cancelado = false;
+    fetch("/api/gee/sorteio-d16")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelado) {
+          if (d?.seloExistenteCaminho && d.selo) {
+            setSelo(d.selo);
+          }
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   const resultadoMatriz = React.useMemo(() => {
     try {
-      return montarMatrizTreino(pontos, rotulosConsolidados, { modeloJanela: "D" });
+      return montarMatrizTreino(pontos, rotulosConsolidados, {
+        modeloJanela: "D",
+        ...(selo ? { seloD16: selo } : {}),
+      });
     } catch {
       return null;
     }
-  }, [pontos, rotulosConsolidados]);
+  }, [pontos, rotulosConsolidados, selo]);
 
   if (!resultadoMatriz || resultadoMatriz.totalAmostrasTreino === 0) {
     return (

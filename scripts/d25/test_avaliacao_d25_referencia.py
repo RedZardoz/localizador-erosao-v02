@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Testes da implementacao de referencia D25. TODO dado aqui e SINTETICO_TESTE_ENCANAMENTO:
 nenhum resultado e evidencia cientifica."""
-import json, math, os, tempfile, unittest
+import json, math, os, tempfile, unittest, warnings
 import numpy as np
 import pandas as pd
 import avaliacao_d25_referencia as m
@@ -285,6 +285,76 @@ class RevisaoDe09Out2026(unittest.TestCase):
         esperado = int(df["Incluida"].sum())
         self.assertEqual(len(m._so_incluidas(df)), esperado)
         self.assertEqual(len(m._so_incluidas(sintetico())), len(sintetico()))   # sem a coluna: nada muda
+
+
+
+class TestDistincaoVazioEValorS11(unittest.TestCase):
+    """Testes de aceite S1-1: vazio nao e false, vazio nao e identidade de pixel.
+    TODO dado aqui e SINTETICO_TESTE_ENCANAMENTO: nenhum resultado e evidencia cientifica.
+    """
+
+    def test_incluida_100pct_vazia_preserva_linhas_e_avisa(self):
+        # 1. Incluida 100% vazia -> _so_incluidas preserva as linhas e avisa; nao devolve zero.
+        df = sintetico().iloc[:10].copy()
+        df["Incluida"] = ""
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            res = m._so_incluidas(df)
+            self.assertEqual(len(res), 10)
+            self.assertTrue(any("100 % vazia" in str(item.message) or "100% vazia" in str(item.message) for item in w))
+
+    def test_incluida_parcialmente_vazia_opera_sobre_preenchidas(self):
+        # 2. Incluida parcialmente vazia -> opera sobre as preenchidas, reporta a contagem das vazias.
+        df = sintetico().iloc[:10].copy()
+        # 6 true, 2 false, 2 ""
+        df["Incluida"] = ["true"] * 6 + ["false"] * 2 + ["", ""]
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            res = m._so_incluidas(df)
+            # Mantem 6 true + 2 vazias = 8 linhas (apenas as 2 false sao descartadas)
+            self.assertEqual(len(res), 8)
+            self.assertTrue(any("2 linha(s) vazia(s)" in str(item.message) for item in w))
+
+    def test_pixel_id_100pct_vazio_nao_lanca_e_avisa(self):
+        # 3. Pixel_ID 100% vazio -> _checar_pixels_disjuntos nao lanca; avisa.
+        tr = sintetico().query("Papel_Conjunto == 'treino'").iloc[:6].copy()
+        te = sintetico().query("Papel_Conjunto == 'held-out'").iloc[:4].copy()
+        tr["Pixel_ID"] = ""
+        te["Pixel_ID"] = ""
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            m._checar_pixels_disjuntos(tr, te)
+            self.assertTrue(any("Pixel_ID" in str(item.message) for item in w))
+
+    def test_pixel_id_com_nan_em_todas_nao_lanca_e_avisa(self):
+        # 4. Pixel_ID com NaN em todas -> idem.
+        tr = sintetico().query("Papel_Conjunto == 'treino'").iloc[:6].copy()
+        te = sintetico().query("Papel_Conjunto == 'held-out'").iloc[:4].copy()
+        tr["Pixel_ID"] = np.nan
+        te["Pixel_ID"] = np.nan
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            m._checar_pixels_disjuntos(tr, te)
+            self.assertTrue(any("Pixel_ID" in str(item.message) for item in w))
+
+    def test_pixel_id_com_pixel_real_repetido_lanca_erro_avaliacao(self):
+        # 5. Pixel_ID com pixel real repetido entre treino e held-out -> lanca ErroAvaliacao.
+        tr = sintetico().query("Papel_Conjunto == 'treino'").iloc[:6].copy()
+        te = sintetico().query("Papel_Conjunto == 'held-out'").iloc[:4].copy()
+        tr["Pixel_ID"] = [f"px_real_{i}" for i in range(6)]
+        te["Pixel_ID"] = [f"px_real_{i+10}" for i in range(4)]
+        # Forca compartilhamento de 1 pixel real
+        te.iloc[0, te.columns.get_loc("Pixel_ID")] = "px_real_2"
+        with self.assertRaises(m.ErroAvaliacao) as ctx:
+            m._checar_pixels_disjuntos(tr, te)
+        self.assertIn("1 pixel(is) de 10 m em treino e held-out (vazamento espacial)", str(ctx.exception))
+
+    def test_incluida_com_valores_reais_mistos_filtra_corretamente(self):
+        # 6. Incluida com valores reais mistos ("true"/"false") -> filtra corretamente, como hoje.
+        df = sintetico().iloc[:10].copy()
+        df["Incluida"] = ["true"] * 6 + ["false"] * 4
+        res = m._so_incluidas(df)
+        self.assertEqual(len(res), 6)
 
 
 if __name__ == "__main__":

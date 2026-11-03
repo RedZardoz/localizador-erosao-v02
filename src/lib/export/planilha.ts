@@ -22,6 +22,23 @@ export interface OpcoesExportacao {
   filtrosAtivos?: string[];
   janelaTemporal?: { inicio: string; fim: string };
   responsavelEmissao?: string;
+
+  /**
+   * S1-1 / A-05 — repasse do selo D16 autoritativo para montagem da matriz.
+   * Quando ausente, colunas de desenho saem vazias (declarada ausencia).
+   */
+  seloD16?: {
+    poligonos: Array<{
+      idPoligono: string;
+      estratoId: string;
+      pi_i: number;
+      w_i: number;
+      nCandidatosEstrato: number;
+    }>;
+  };
+
+  /** S1-1 / A-05 — exige a delineacao de D26 em toda celula. */
+  exigirDelineacaoD26?: boolean;
 }
 
 /**
@@ -157,7 +174,8 @@ export function extrairLinhasAbaDados(pontos: PontoAmostral[]): Record<string, u
 export function extrairLinhasPorPerfil(
   pontos: PontoAmostral[],
   perfil: PerfilExportacao = "planilha",
-  rotulosConsolidados?: Record<string, RotuloConsolidado>
+  rotulosConsolidados?: Record<string, RotuloConsolidado>,
+  opcoes?: Pick<OpcoesExportacao, "seloD16" | "exigirDelineacaoD26">
 ): Record<string, unknown>[] {
   if (perfil === "planilha") {
     return extrairLinhasAbaDados(pontos);
@@ -288,7 +306,11 @@ export function extrairLinhasPorPerfil(
       );
     }
 
-    const resultadoMatriz = montarMatrizTreino(pontos, rotulosConsolidados, { modeloJanela: "D" });
+    const resultadoMatriz = montarMatrizTreino(pontos, rotulosConsolidados, {
+      modeloJanela: "D",
+      ...(opcoes?.seloD16 ? { seloD16: opcoes.seloD16 } : {}),
+      ...(opcoes?.exigirDelineacaoD26 !== undefined ? { exigirDelineacaoD26: opcoes.exigirDelineacaoD26 } : {}),
+    });
 
     const linhasFonte = perfil === "matriz-treino" ? resultadoMatriz.linhas : resultadoMatriz.heldOutDrone;
 
@@ -379,7 +401,7 @@ export async function gerarPlanilhaXLSX(pontos: PontoAmostral[], opcoes: OpcoesE
   const perfilAtivo = opcoes.perfil ?? "planilha";
 
   // 2. Extração e montagem da Aba 1 projetada pelo perfil
-  const linhasDados = extrairLinhasPorPerfil(pontos, perfilAtivo, opcoes.rotulosConsolidados);
+  const linhasDados = extrairLinhasPorPerfil(pontos, perfilAtivo, opcoes.rotulosConsolidados, opcoes);
   const cabecalho = linhasDados.length > 0 ? Object.keys(linhasDados[0]) : [];
 
   // 3. Validação de Invariantes sobre o artefato projetado
