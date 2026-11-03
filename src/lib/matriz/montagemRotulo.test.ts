@@ -47,6 +47,137 @@ function criarPontoTeste(id: string, codigo: string): PontoAmostral {
   };
 }
 
+describe("A-05 — chaves do desenho vindas do selo D16 e da delineacao de D26", () => {
+  function rotuloDrone(): Record<string, RotuloConsolidado> {
+    return {
+      "PR-C01": {
+        final: {
+          classe: "erosao",
+          modalidade: "drone",
+          observador: "Obs1",
+          observadoEm: "2026-03-01",
+          cego: true,
+          fracaoErodida: 0.4,
+        },
+        origens: [],
+        kappa: null,
+        divergencia: "nenhuma",
+        papelConjunto: "treino",
+      },
+    };
+  }
+
+  const SELO = {
+    poligonos: [
+      {
+        idPoligono: "D16_E_1_1_1_Q01",
+        estratoId: "E_1_1_1",
+        pi_i: 4 / 7,
+        w_i: 7 / 4,
+        nCandidatosEstrato: 7,
+      },
+    ],
+  };
+
+  it("popula Pi_i, W_i, N_Candidatos_Estrato e Estrato_ID a partir do selo, nao do ponto", () => {
+    const p = criarPontoTeste("pc1", "PR-C01");
+    p.poligonoId = "D16_E_1_1_1_Q01";
+    p.estratoId = "ESTRATO_DIVERGENTE_NO_PONTO";
+
+    const res = montarMatrizTreino([p], rotuloDrone(), { seloD16: SELO });
+
+    expect(res.linhas).toHaveLength(1);
+    const l = res.linhas[0];
+    expect(l.pi_i).toBeCloseTo(4 / 7, 10);
+    expect(l.w_i).toBeCloseTo(7 / 4, 10);
+    expect(l.nCandidatosEstrato).toBe(7);
+    // O selo e irreversivel e prevalece sobre o campo editavel do ponto (D23).
+    expect(l.estratoId).toBe("E_1_1_1");
+    expect(l.pi_i! * l.w_i!).toBeCloseTo(1, 10);
+  });
+
+  it("EXCLUI poligono ausente do selo, em vez de inventar pi_i (Regra 1)", () => {
+    const p = criarPontoTeste("pc2", "PR-C01");
+    p.poligonoId = "D16_POLIGONO_FORA_DO_SELO_Q09";
+
+    const res = montarMatrizTreino([p], rotuloDrone(), { seloD16: SELO });
+
+    expect(res.linhas).toHaveLength(0);
+    expect(res.heldOutDrone).toHaveLength(0);
+    expect(res.exclusoes).toHaveLength(1);
+    expect(res.exclusoes[0].motivo).toContain("não consta do selo D16");
+  });
+
+  it("sem selo, as chaves ficam ausentes em vez de preenchidas com zero", () => {
+    const p = criarPontoTeste("pc3", "PR-C01");
+    p.poligonoId = "D16_E_1_1_1_Q01";
+
+    const res = montarMatrizTreino([p], rotuloDrone());
+
+    expect(res.linhas).toHaveLength(1);
+    expect(res.linhas[0].pi_i).toBeNull();
+    expect(res.linhas[0].w_i).toBeNull();
+    expect(res.linhas[0].nCandidatosEstrato).toBeNull();
+  });
+
+  it("popula a delineacao de D26 e carrega Incluida como booleano", () => {
+    const p = criarPontoTeste("pc4", "PR-C01");
+    p.poligonoId = "D16_E_1_1_1_Q01";
+    p.delineacaoD26 = {
+      coberturaCelula: 0.97,
+      incluida: true,
+      areaDelineadaM2: 40,
+      pixelId: "px-opaco-xyz",
+    };
+
+    const res = montarMatrizTreino([p], rotuloDrone(), { seloD16: SELO });
+
+    const l = res.linhas[0];
+    expect(l.incluida).toBe(true);
+    expect(l.coberturaCelula).toBeCloseTo(0.97, 10);
+    expect(l.areaDelineadaM2).toBe(40);
+    expect(l.pixelId).toBe("px-opaco-xyz");
+  });
+
+  it("com exigirDelineacaoD26, celula sem correspondencia no CSV de D26 e excluida e contada", () => {
+    const comDelineacao = criarPontoTeste("pc5", "PR-C01");
+    comDelineacao.poligonoId = "D16_E_1_1_1_Q01";
+    comDelineacao.delineacaoD26 = {
+      coberturaCelula: 1,
+      incluida: true,
+      areaDelineadaM2: 10,
+      pixelId: "px-1",
+    };
+    const semDelineacao = criarPontoTeste("pc6", "PR-C01");
+    semDelineacao.poligonoId = "D16_E_1_1_1_Q01";
+
+    const res = montarMatrizTreino([comDelineacao, semDelineacao], rotuloDrone(), {
+      seloD16: SELO,
+      exigirDelineacaoD26: true,
+    });
+
+    expect(res.linhas).toHaveLength(1);
+    expect(res.exclusoes).toHaveLength(1);
+    expect(res.exclusoes[0].motivo).toContain("CSV de delineação de D26");
+  });
+
+  it("registra o modelo e a janela, e nao mistura D com P no mesmo artefato", () => {
+    const p = criarPontoTeste("pc7", "PR-C01");
+    p.poligonoId = "D16_E_1_1_1_Q01";
+
+    const resD = montarMatrizTreino([p], rotuloDrone(), { seloD16: SELO, modeloJanela: "D" });
+    expect(resD.linhas[0].modelo).toBe("D");
+    expect(new Set(resD.linhas.map((l) => l.modelo)).size).toBe(1);
+
+    // Data de referencia explicita prevalece sobre a data do rotulo.
+    const resData = montarMatrizTreino([p], rotuloDrone(), {
+      seloD16: SELO,
+      dataReferencia: "2026-01-15",
+    });
+    expect(resData.linhas[0].dataReferencia).toBe("2026-01-15");
+  });
+});
+
 describe("A-08 / Regra 1 — ponto sem bloco espacial nao entra na matriz", () => {
   function rotuloValido(): Record<string, RotuloConsolidado> {
     return {

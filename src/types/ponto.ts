@@ -180,6 +180,27 @@ export interface PontoAmostral {
 
   temporal: Partial<Record<"D" | "P", BlocoTemporal>>;  // uma janela por modelo (D04)
 
+  /**
+   * A-05 / T-02 — produto da rasterização da delineação de VANT (D26), por célula de 10 m.
+   *
+   * Vem do CSV de referência (`scripts/d25/fracao_erodida_celulas_referencia.py`), nunca de
+   * digitação. Sem estas chaves, duas guardas do avaliador D25 existem e nunca disparam:
+   * `_so_incluidas` (filtro de cobertura, P11) e `_checar_pixels_disjuntos` (vazamento de pixel
+   * de borda entre treino e held-out) retornam em silêncio quando as colunas faltam.
+   *
+   * `fracaoErodida` NÃO vive aqui: é o alvo e pertence ao rótulo humano (D26 / C25).
+   */
+  delineacaoD26?: {
+    /** Cobertura da célula pelo voo, em [0, 1]. Base do filtro P11, que é decisão pendente (G-06). */
+    coberturaCelula: number;
+    /** Resultado do filtro de cobertura aplicado na geração do CSV. Booleano, nunca 1/0 — ver Invariante 7. */
+    incluida: boolean;
+    /** Área delineada como erodida dentro da porção observada, em m². */
+    areaDelineadaM2: number;
+    /** Hash opaco do pixel de 10 m. Jamais derivável de coordenada (Invariante 2). */
+    pixelId: string;
+  };
+
   papelConjunto?: "treino" | "held-out" | "indisponivel"; // designação de D16 (do sorteio de polígonos)
   rotulo?: RotuloConsolidado;                 // Fase 6 — sempre de observacao
   fundiario?: ContextoFundiario;

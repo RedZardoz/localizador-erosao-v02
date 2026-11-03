@@ -27,7 +27,32 @@ export interface LinhaMatrizTreino {
   celulaId: string | null; // produtor pendente (DP-18)
   poligonoId: string;
   papelConjunto: "treino" | "held-out";
-  estratoId: string | null; // produtor pendente (DP-18)
+  estratoId: string | null; // populado de ponto.estratoId; a COLUNA passou a existir em A-05
+
+  /**
+   * A-05 — chaves de desenho vindas do selo D16, por junção em `poligonoId`.
+   *
+   * São `null` quando a montagem roda sem selo. Isso é estado declarado, não preenchimento: a
+   * exigência estrita destas chaves pertence ao modo probatório do D25 (A-06), não ao esquema.
+   *
+   * `pi_i` é probabilidade de inclusão do POLÍGONO no seu estrato, `n_h/N_h`, com `N_h` em número
+   * de CANDIDATOS — não em hectares. NÃO é peso de área (achado D-02).
+   */
+  pi_i: number | null;
+  w_i: number | null;
+  nCandidatosEstrato: number | null;
+
+  // A-05 / T-02 — cobertura e identidade de pixel, do CSV de D26
+  incluida: boolean | null;
+  coberturaCelula: number | null;
+  areaDelineadaM2: number | null;
+  pixelId: string | null;
+
+  // A-05 / V-01 — qual modelo e qual janela produziram esta linha
+  modelo: "D" | "P";
+  dataReferencia: string | null;
+  fimJanela: string | null;
+
   fracaoErodida: number | null;
   alvoBinario25: 0 | 1 | null;
   rotuloNObservadores: number | null;
@@ -102,6 +127,46 @@ export interface ResultadoMontagemMatriz {
 
 export interface OpcoesMontagemMatriz {
   modeloJanela?: "D" | "P"; // Janela Modelo D (detecção) vs Modelo P (predição com guarda temporal D04)
+
+  /**
+   * A-05 — selo de sorteio D16, fonte AUTORITATIVA de `Estrato_ID`, `Pi_i`, `W_i` e
+   * `N_Candidatos_Estrato`. A junção é por `idPoligono`.
+   *
+   * Por que junção e não campo do ponto: `pi_i` é produto do ato probabilístico e o selo é
+   * irreversível por construção (D23). Lê-lo do selo impede que um campo editável no ponto
+   * divirja da probabilidade efetivamente selada.
+   *
+   * Opcional porque nenhum voo foi selado ainda. Quando fornecido, polígono ausente do selo é
+   * EXCLUÍDO com motivo — não recebe `pi_i` inventado (Regra 1).
+   *
+   * NOTA DE DESENHO (A-05): nada aqui conhece o número de estratos, de polígonos ou de held-out.
+   * Essa cardinalidade é do selo e da verificação de A-06; o contrato valida estrutura, não contagem.
+   */
+  seloD16?: {
+    poligonos: Array<{
+      idPoligono: string;
+      estratoId: string;
+      pi_i: number;
+      w_i: number;
+      nCandidatosEstrato: number;
+    }>;
+  };
+
+  /** Data de referência do modelo (t0). Sem ela, deriva-se de `rotulo.observadoEm`. */
+  dataReferencia?: string;
+
+  /**
+   * A-05 / T-02 — exige a delineação de D26 em toda célula, excluindo as que não a têm.
+   *
+   * Default `false` porque nenhum voo foi selado: com `true` hoje, a matriz sairia vazia. A
+   * exigência estrita pertence ao modo probatório do D25 (A-06), que é onde a matriz incompleta
+   * tem de deixar de ser aceita. Aqui ela é opção declarada, para que a campanha possa ativá-la
+   * assim que o primeiro CSV de D26 existir.
+   *
+   * O filtro de COBERTURA (P11) não é aplicado nem aqui nem na exportação: `Incluida` viaja como
+   * coluna e o filtro é do D25, porque o limiar é decisão pendente (G-06).
+   */
+  exigirDelineacaoD26?: boolean;
 }
 
 export function montarMatrizTreino(
@@ -113,6 +178,11 @@ export function montarMatrizTreino(
   assegurarApenasPontosReais(pontos);
 
   const modeloJanela = opcoes.modeloJanela ?? "D";
+
+  // A-05: indice do selo D16 por idPoligono. Fonte autoritativa de pi_i, w_i e N_h.
+  const indiceSelo = opcoes.seloD16
+    ? new Map(opcoes.seloD16.poligonos.map((p) => [p.idPoligono, p]))
+    : null;
 
   const linhas: LinhaMatrizTreino[] = [];
   const chaves: ChaveCoordenadasPonto[] = [];
@@ -212,6 +282,18 @@ export function montarMatrizTreino(
     }
     const blocoEspacial = blocoEspacialCandidato.trim();
 
+    // A-05: junção com o selo D16. Quando o selo é fornecido, polígono ausente dele é EXCLUÍDO:
+    // uma linha sem pi_i não pode receber um valor inventado nem herdar o de outro estrato.
+    const registroSelo = indiceSelo ? indiceSelo.get(poligonoId) ?? null : null;
+    if (indiceSelo && !registroSelo) {
+      exclusoes.push({
+        codigo: ponto.codigo,
+        motivo: `Polígono '${poligonoId}' não consta do selo D16 fornecido: sem probabilidade de inclusão selada, a linha não entra na matriz (D23 / Regra 1).`,
+      });
+      continue;
+    }
+
+
     // Binarização única e canônica (N02a e C09)
     let fracaoErodida: number | null = null;
     let alvoBinario25: 0 | 1 | null = null;
@@ -248,6 +330,19 @@ export function montarMatrizTreino(
 
     const celulaId = ponto.celulaId ?? null;
     const estratoId = ponto.estratoId ?? null;
+    // A-05: quando o selo traz o estrato, ele prevalece sobre o campo do ponto, que é editável.
+    const estratoIdEfetivo = registroSelo ? registroSelo.estratoId : estratoId;
+    const delineacao = ponto.delineacaoD26 ?? null;
+    if (opcoes.exigirDelineacaoD26 && !delineacao) {
+      exclusoes.push({
+        codigo: ponto.codigo,
+        motivo:
+          "Célula sem correspondência no CSV de delineação de D26: sem cobertura e sem Pixel_ID, " +
+          "as guardas de cobertura e de pixel disjunto do D25 não têm insumo (T-02).",
+      });
+      continue;
+    }
+    const dataReferenciaEfetiva = opcoes.dataReferencia ?? rotulo.observadoEm ?? null;
 
     const rotuloNObservadores =
       rotuloCons.origens && rotuloCons.origens.length > 0
@@ -292,7 +387,23 @@ export function montarMatrizTreino(
       celulaId,
       poligonoId,
       papelConjunto,
-      estratoId,
+      estratoId: estratoIdEfetivo,
+
+      // A-05 — chaves do desenho (selo D16)
+      pi_i: registroSelo ? registroSelo.pi_i : null,
+      w_i: registroSelo ? registroSelo.w_i : null,
+      nCandidatosEstrato: registroSelo ? registroSelo.nCandidatosEstrato : null,
+
+      // A-05 / T-02 — cobertura e pixel (CSV de D26)
+      incluida: delineacao ? delineacao.incluida : null,
+      coberturaCelula: delineacao ? delineacao.coberturaCelula : null,
+      areaDelineadaM2: delineacao ? delineacao.areaDelineadaM2 : null,
+      pixelId: delineacao ? delineacao.pixelId : null,
+
+      // A-05 / V-01 — modelo e janela
+      modelo: modeloJanela,
+      dataReferencia: dataReferenciaEfetiva,
+      fimJanela: janelaTemporal?.janela?.fim ?? null,
       fracaoErodida,
       alvoBinario25,
       rotuloNObservadores,

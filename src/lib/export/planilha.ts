@@ -8,6 +8,7 @@ import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
 import { formatToDMS } from "./dms";
 import { generateXlsxBuffer, XlsxSheet, XlsxRowValue } from "./xlsxWriter";
 import { JANELA_TEMPORAL_D05, type PerfilExportacao } from "@/lib/matriz/perfis";
+import { validarEsquemaMatriz, ESQUEMA_MATRIZ_VERSAO } from "@/lib/matriz/esquema";
 import { validarMascaraTitularSncr, mascararDocumentoPessoal } from "@/lib/fundiario/protecao";
 
 export const BLOCO_FUNDAMENTACAO_LGPD =
@@ -304,6 +305,26 @@ export function extrairLinhasPorPerfil(
       Celula_ID: l.celulaId ?? "",
       Poligono_ID: l.poligonoId,
       Papel_Conjunto: l.papelConjunto,
+
+      // A-05 — chaves do desenho. Vazio significa AUSENTE (montagem sem selo D16), nunca zero.
+      Estrato_ID: l.estratoId ?? "",
+      Pi_i: l.pi_i !== null ? l.pi_i : "",
+      W_i: l.w_i !== null ? l.w_i : "",
+      N_Candidatos_Estrato: l.nCandidatosEstrato !== null ? l.nCandidatosEstrato : "",
+
+      // `Incluida` é exportada como TEXTO, não como 1/0, por causa do Invariante 7: após qualquer
+      // filtragem a montante toda linha valeria 1, e o detector de constante disfarçada bloquearia
+      // a exportação de uma coluna que é legitimamente uniforme. "true"/"false" também é o que o
+      // avaliador D25 já reconhece em `_so_incluidas`.
+      Incluida: l.incluida === null ? "" : l.incluida ? "true" : "false",
+      Cobertura_Celula: l.coberturaCelula !== null ? l.coberturaCelula : "",
+      Area_Delineada_m2: l.areaDelineadaM2 !== null ? l.areaDelineadaM2 : "",
+      Pixel_ID: l.pixelId ?? "",
+
+      Modelo: l.modelo,
+      Data_Referencia: l.dataReferencia ?? "",
+      Fim_Janela: l.fimJanela ?? "",
+
       Fracao_Erodida: l.fracaoErodida !== null ? l.fracaoErodida : "",
       Alvo_Binario_25: l.alvoBinario25 !== null ? l.alvoBinario25 : "",
       Rotulo_N_Observadores: l.rotuloNObservadores !== null ? l.rotuloNObservadores : "",
@@ -368,6 +389,11 @@ export async function gerarPlanilhaXLSX(pontos: PontoAmostral[], opcoes: OpcoesE
     linhas: linhasDados,
   };
   assegurarInvariantesArtefato(artefato);
+
+  // A-05 / C-02: contrato de esquema. Roda DEPOIS dos invariantes e antes de qualquer escrita —
+  // é o ponto em que o artefato deixa de ser estado interno e passa a ser evidência que alguém
+  // vai ler. Lança erro tipado; não avisa nem corrige (Regras 1 e 2).
+  validarEsquemaMatriz(perfilAtivo, linhasDados as Array<Record<string, unknown>>);
 
   // 4. Montagem das abas
   const rowsDados: XlsxRowValue[][] = [];
@@ -450,6 +476,9 @@ export function extrairMetadadosProcedencia(
   return [
     [{ value: "METADADO", bold: true }, { value: "VALOR / DESCRIÇÃO", bold: true }],
     ["Data e Hora de Emissão", new Date().toISOString()],
+    // A-05 / C-02: a versão do contrato acompanha o artefato, para que um consumidor saiba qual
+    // contrato está lendo sem ter de inspecionar o conjunto de colunas.
+    ["Versão do Esquema da Matriz", ESQUEMA_MATRIZ_VERSAO],
     ["Total de Pontos Amostrais", pontos.length],
     ["Perfil de Exportação", opcoes.perfil ?? "planilha"],
     ["Filtros Ativos", opcoes.filtrosAtivos ? opcoes.filtrosAtivos.join("; ") : "Nenhum filtro restritivo"],

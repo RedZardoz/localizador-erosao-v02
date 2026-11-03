@@ -146,6 +146,22 @@ export const PERFIS_EXPORTACAO: Record<PerfilExportacao, { descricao: string; co
       "Celula_ID",
       "Poligono_ID",
       "Papel_Conjunto",
+      // A-05 — chaves do desenho amostral (selo D16). Sem elas não há avaliação estratificada,
+      // inferência de D23 nem auditoria de pi_i (achados V-03 e D-02).
+      "Estrato_ID",
+      "Pi_i",
+      "W_i",
+      "N_Candidatos_Estrato",
+      // A-05 / T-02 — cobertura da célula e identidade de pixel (CSV de D26). Sem elas, as guardas
+      // `_so_incluidas` e `_checar_pixels_disjuntos` do avaliador D25 nunca disparam.
+      "Incluida",
+      "Cobertura_Celula",
+      "Area_Delineada_m2",
+      "Pixel_ID",
+      // A-05 / V-01 — qual modelo e qual janela produziram a linha (D de detecção, P de predição).
+      "Modelo",
+      "Data_Referencia",
+      "Fim_Janela",
       "Fracao_Erodida",
       "Alvo_Binario_25",
       "Rotulo_N_Observadores",
@@ -192,6 +208,22 @@ export const PERFIS_EXPORTACAO: Record<PerfilExportacao, { descricao: string; co
       "Celula_ID",
       "Poligono_ID",
       "Papel_Conjunto",
+      // A-05 — chaves do desenho amostral (selo D16). Sem elas não há avaliação estratificada,
+      // inferência de D23 nem auditoria de pi_i (achados V-03 e D-02).
+      "Estrato_ID",
+      "Pi_i",
+      "W_i",
+      "N_Candidatos_Estrato",
+      // A-05 / T-02 — cobertura da célula e identidade de pixel (CSV de D26). Sem elas, as guardas
+      // `_so_incluidas` e `_checar_pixels_disjuntos` do avaliador D25 nunca disparam.
+      "Incluida",
+      "Cobertura_Celula",
+      "Area_Delineada_m2",
+      "Pixel_ID",
+      // A-05 / V-01 — qual modelo e qual janela produziram a linha (D de detecção, P de predição).
+      "Modelo",
+      "Data_Referencia",
+      "Fim_Janela",
       "Fracao_Erodida",
       "Alvo_Binario_25",
       "Rotulo_N_Observadores",
