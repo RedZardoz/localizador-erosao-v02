@@ -232,7 +232,10 @@ Um prompt por bloco executável, emitido só quando seu insumo existe.
 | **P-D — Material de decisão** | Opções para G-01 a G-15 quantificadas (N-03 a N-06, N-14); **não executa nada** — [`prompts/PROMPT_EXECUTOR_MATERIAL_DECISAO_2026-11-02.md`](prompts/PROMPT_EXECUTOR_MATERIAL_DECISAO_2026-11-02.md) | **Parte independente emitida**; o veredito de lastro de G-01/G-02/G-10 entra quando P-L voltar |
 | **P-M — Contrato de dados** | A-05, C-02, C-07 — [`prompts/PROMPT_EXECUTOR_CONTRATO_MATRIZ_2026-11-02.md`](prompts/PROMPT_EXECUTOR_CONTRATO_MATRIZ_2026-11-02.md) | **Emitido**: `A-05` é executável já, desde que o esquema não hardcode cardinalidade (ver Fase 4) |
 | **P-S — Simulação de poder** | Execução oficial de `poder_d25.py` e fechamento de `G-13`, por outra mão — [`prompts/PROMPT_EXECUTOR_SIMULACAO_PODER_2026-11-03.md`](prompts/PROMPT_EXECUTOR_SIMULACAO_PODER_2026-11-03.md) | **Emitido** |
-| **P-V — Validação** | A-06, sensibilidades pré-registradas | Após P-M, P-S e G-13 |
+| **P-1 — Chaves vazias (S1-1)** | vazio não é `false`: integrar selo/delineação às rotas e corrigir a interpretação no D25 — [`prompts/PROMPT_EXECUTOR_CHAVES_VAZIAS_2026-11-03.md`](prompts/PROMPT_EXECUTOR_CHAVES_VAZIAS_2026-11-03.md) | **Emitido**; prioridade mais alta |
+| **P-2 — Cenário 12 × 6** | acrescentar o desenho que preserva polígonos, held-out e área do pré-registrado — [`prompts/PROMPT_EXECUTOR_CENARIO_12X6_2026-11-03.md`](prompts/PROMPT_EXECUTOR_CENARIO_12X6_2026-11-03.md) | **Emitido** |
+| **P-3 — Retificações** | três afirmações desatualizadas ou de precisão excessiva nas avaliações de 03/11 — [`prompts/PROMPT_EXECUTOR_RETIFICACAO_AVALIACOES_2026-11-03.md`](prompts/PROMPT_EXECUTOR_RETIFICACAO_AVALIACOES_2026-11-03.md) | **Emitido** |
+| **P-V — Validação** | A-06, sensibilidades pré-registradas | Após P-1, P-M, P-S e G-13 |
 | **P-C — Campanha** | A-11, âncora de D23, protocolo de não resposta | Após G-01, G-02, G-09 |
 | **P-R — Reporte** | Model card, TRIPOD+AI, PROBAST, dicionário | Após P-V |
 
