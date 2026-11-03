@@ -1,0 +1,48 @@
+    95%          0.4518      0.01239      0.02680         8.1      0.221
+
+Teto varia de 0.4518 a 0.9203  (razao 2.04x)
+SD da nula varia de 0.00960 a 0.01239  (razao 1.29x)
+
+Leitura: 0,10 expresso em desvios da nula e em fracao do teto NAO e constante entre
+prevalencias. A prevalencia de zeros so sera conhecida depois do primeiro voo.
+
+------------------------------------------------------------------------------------
+ITEM 4 / N-04 — PODER POR NUMERO DE CLUSTERS (diferenca verdadeira = 0,10)
+------------------------------------------------------------------------------------
+ clusterscenario G-01                             poder   IC medio   largura
+------------------------------------------------------------------------------
+Vantagem media verdadeira = 0,10. O poder depende criticamente de quanto essa
+vantagem VARIA entre poligonos, que e quantidade desconhecida antes do voo.
+
+ SD vantagem        k=36        k=30        k=28        k=24
+------------------------------------------------------------
+        0.05      100.0%      100.0%      100.0%      100.0%
+        0.15       71.7%       61.7%       61.7%       56.7%
+        0.30        8.3%       21.7%       13.3%       20.0%
+        0.45        6.7%       15.0%        6.7%       11.7%
+
+Largura media do IC de 95%:
+ SD vantagem        k=36        k=30        k=28        k=24
+------------------------------------------------------------
+        0.05      0.0391      0.0428      0.0459      0.0476
+        0.15      0.0989      0.1033      0.1068      0.1151
+        0.30      0.1574      0.1713      0.1808      0.1935
+        0.45      0.1914      0.1974      0.2132      0.2281
+
+Prevalencia de zeros usada: 85%. O poder tambem depende dela — Item 5.
+Poder = fracao de replicas em que o limite inferior do IC de 95% por cluster excede 0.
+
+Cenarios de G-01, por numero de clusters held-out:
+  k=36  pre-registrado, 18 estratos
+  k=30  Op.1 / Op.2 pura / Op.3-S1, 15 estratos
+  k=28  Op.1-v / Op.2+colapso, 14 estratos
+  k=24  Op.3 em S1 e S2, 12 estratos
+
+------------------------------------------------------------------------------------
+O que esta simulacao NAO faz
+------------------------------------------------------------------------------------
+- Nao usa dado real: nao existe desfecho neste projeto.
+- Nao modela autocorrelacao espacial ENTRE poligonos (V-02), so o agrupamento dentro.
+- Nao recomenda margem, metrica nem desenho. G-12 e G-13 sao do pesquisador.
+
+[exited with code 0]
