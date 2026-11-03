@@ -120,6 +120,58 @@ describe("Invariantes de Exportação — Validações e Meta-Testes", () => {
     });
   });
 
+  describe("A-05 / Invariante 7 — a coluna Incluida não pode colidir com o detector", () => {
+    /**
+     * O alerta que motivou este teste: se `Incluida` fosse exportada como 1/0, após qualquer
+     * filtragem a montante toda linha valeria 1 — coluna numérica constante com n >= 21 — e o
+     * detector de constante disfarçada BLOQUEARIA a exportação de uma coluna que é legitimamente
+     * uniforme. Por isso ela viaja como texto "true"/"false", que é também o que o avaliador D25
+     * já reconhece em `_so_incluidas`.
+     */
+    function linhasMatriz(n: number, over: Record<string, unknown> = {}) {
+      return Array.from({ length: n }, (_, i) => ({
+        Ponto_ID: `PT-${i}`,
+        Poligono_ID: `D16_E_1_1_1_Q0${(i % 4) + 1}`,
+        Estrato_ID: "E_1_1_1",
+        Incluida: "true",
+        Cobertura_Celula: 0.9 + (i % 10) / 100,
+        Fracao_Erodida: (i % 50) / 100,
+        ...over,
+      }));
+    }
+
+    it("permite Incluida uniformemente verdadeira em 25 linhas, porque é texto e não 1/0", () => {
+      const linhas = linhasMatriz(25);
+      const artefato: ArtefatoProjetado = {
+        perfil: "matriz-treino",
+        cabecalho: Object.keys(linhas[0]),
+        linhas,
+      };
+      expect(() => assegurarInvariantesArtefato(artefato)).not.toThrow();
+    });
+
+    it("mas bloqueia se alguém exportar Incluida como 1/0 constante (a colisão que o texto evita)", () => {
+      const linhas = linhasMatriz(25, { Incluida: 1 });
+      const artefato: ArtefatoProjetado = {
+        perfil: "matriz-treino",
+        cabecalho: Object.keys(linhas[0]),
+        linhas,
+      };
+      // Demonstra que a escolha do tipo não é estética: em numérico, o invariante reprova.
+      expect(() => assegurarInvariantesArtefato(artefato)).toThrow();
+    });
+
+    it("e continua bloqueando uma coluna numérica genuinamente constante na matriz", () => {
+      const linhas = linhasMatriz(25, { Cobertura_Celula: 1 });
+      const artefato: ArtefatoProjetado = {
+        perfil: "matriz-treino",
+        cabecalho: Object.keys(linhas[0]),
+        linhas,
+      };
+      expect(() => assegurarInvariantesArtefato(artefato)).toThrow();
+    });
+  });
+
   describe("Invariante 7: Detector de Constante Disfarçada e Exceção Tabelada", () => {
     it("bloqueia exportação quando coluna contínua possui 21 valores idênticos", () => {
       const linhas = Array.from({ length: 25 }, (_, i) => ({
