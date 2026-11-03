@@ -1,0 +1,77 @@
+====================================================================================
+SIMULACAO DE PODER E DE ESCALA DA MARGEM — D25
+NAO E RESULTADO CIENTIFICO: nao existe dado de desfecho neste projeto.
+====================================================================================
+Empates: ranks medios (scipy rankdata 'average'), o padrao de spearmanr.
+Celulas por poligono: 502 | margem pre-registrada: 0.1
+Monte Carlo: 80 replicas | bootstrap por cluster: 100
+Semente: 20261103 | Spearman do competidor: 0.45
+Efeito de poligono: SD 0.8 em logito | ICC implicito por D24: 0.0371 (~25.6 unidades efetivas/poligono)
+
+[conferencia] spearman() = 0.5002067215 | scipy.spearmanr = 0.5002067215 | diferenca = 1.11e-16
+[conferencia] diferenca_spearman() = 0.0991926591 | referencia = 0.0991926591 | diferenca = 0.00e+00
+
+------------------------------------------------------------------------------------
+ITEM 5 / N-03 — A MARGEM DE 0,10 TEM A MESMA ESCALA EM QUALQUER PREVALENCIA?
+------------------------------------------------------------------------------------
+  zeros   teto Spearman   SD da nula  |dif| 97,5%  0,10 em SD  0,10/teto
+------------------------------------------------------------------------
+    50%          0.9400      0.00806      0.01763        12.4      0.106
+    70%          0.8514      0.01075      0.02719         9.3      0.117
+    85%          0.6352      0.01169      0.02540         8.6      0.157
+    95%          0.4676      0.00989      0.01900        10.1      0.214
+
+Teto varia de 0.4676 a 0.9400  (razao 2.01x)
+SD da nula varia de 0.00806 a 0.01169  (razao 1.45x)
+
+Leitura: 0,10 expresso em desvios da nula e em fracao do teto NAO e constante entre
+prevalencias. A prevalencia de zeros so sera conhecida depois do primeiro voo.
+
+------------------------------------------------------------------------------------
+ITEM 4 / N-04 — PODER POR NUMERO DE CLUSTERS (diferenca verdadeira = 0,10)
+------------------------------------------------------------------------------------
+ clusterscenario G-01                             poder   IC medio   largura
+------------------------------------------------------------------------------
+Vantagem media verdadeira = 0.10. O poder depende criticamente de quanto essa
+vantagem VARIA entre poligonos, que e quantidade desconhecida antes do voo.
+
+ SD vantagem        k=36        k=30        k=28        k=24
+------------------------------------------------------------
+        0.02      100.0%      100.0%      100.0%      100.0%
+        0.05      100.0%      100.0%      100.0%      100.0%
+        0.08      100.0%      100.0%       98.8%      100.0%
+        0.10      100.0%       93.8%       96.2%       86.2%
+        0.12       82.5%       80.0%       78.8%       72.5%
+        0.15       70.0%       61.3%       63.7%       52.5%
+        0.20       32.5%       28.7%       25.0%       22.5%
+        0.30       15.0%       18.8%       17.5%       15.0%
+        0.45       10.0%       16.2%        8.8%       13.8%
+
+Largura media do IC de 95%:
+ SD vantagem        k=36        k=30        k=28        k=24
+------------------------------------------------------------
+        0.02      0.0281      0.0311      0.0315      0.0349
+        0.05      0.0390      0.0426      0.0451      0.0460
+        0.08      0.0548      0.0610      0.0605      0.0658
+        0.10      0.0668      0.0702      0.0722      0.0772
+        0.12      0.0783      0.0896      0.0864      0.0976
+        0.15      0.0967      0.1023      0.1094      0.1142
+        0.20      0.1214      0.1355      0.1394      0.1479
+        0.30      0.1538      0.1654      0.1734      0.1849
+        0.45      0.1922      0.2045      0.2174      0.2226
+
+Prevalencia de zeros usada: 85%. O poder tambem depende dela — Item 5.
+Poder = fracao de replicas em que o limite inferior do IC de 95% por cluster excede 0.
+
+Cenarios de G-01, por numero de clusters held-out:
+  k=36  pre-registrado, 18 estratos
+  k=30  Op.1 / Op.2 pura / Op.3-S1, 15 estratos
+  k=28  Op.1-v / Op.2+colapso, 14 estratos
+  k=24  Op.3 em S1 e S2, 12 estratos
+
+------------------------------------------------------------------------------------
+O que esta simulacao NAO faz
+------------------------------------------------------------------------------------
+- Nao usa dado real: nao existe desfecho neste projeto.
+- Nao modela autocorrelacao espacial ENTRE poligonos (V-02), so o agrupamento dentro.
+- Nao recomenda margem, metrica nem desenho. G-12 e G-13 sao do pesquisador.
