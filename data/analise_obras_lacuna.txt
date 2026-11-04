@@ -1,0 +1,195 @@
+Total de itens: 111
+
+=== OBRAS QUE TRATAM ESPECIFICAMENTE DE EROSÃO LAMINAR / INTERRILL / SHEET EROSION ===
+[009] Cat: Direta | Autores: Ferreira et al. (2022)
+   Título: Enhancing predictive modeling of interrill and rill erosion susceptibility using machine learning
+   Arquivo: Enhancing predictive modeling of interrill and rill erosion susceptibility.pdf
+   Eixo: Modelagem Preditiva com Machine Lea
+
+[024] Cat: Direta | Autores: Ramos et al. (2022)
+   Título: Previsão de classes de erosão laminar usando aprendizado de máquina e dados geoespaciais (XIII SBRH)
+   Arquivo: PREVISÃO DE CLASSES DE EROSÃO LAMINAR USANDO.pdf
+   Eixo: Modelagem Preditiva com Machine Lea
+
+[036] Cat: Relacionada | Autores: Da Silva et al. (2025)
+   Título: AVALIAÇÃO DA SUSCEPTIBILIDADE À EROSÃO LAMINAR NO ALTO BANABUIÚ (CE) POR MEIO DA COMPARTIMENTAÇÃO MORFOPEDOLÓGICA E ANÁLISE DE TOPOSSEQUÊNCIA
+   Arquivo: 13104+-+Avaliação+da+Susceptibilidade+à+Erosão+Laminar+no+Alto+Banabuiú+(CE).pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[038] Cat: Relacionada | Autores: Helfer et al. (2022)
+   Título: Modelagem e espacialização de perdas de solo por erosão laminar com EUPS e geotecnologias (XV SBRH)
+   Arquivo: 232.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[041] Cat: Relacionada | Autores: João Victor Freitas Silva (2023)
+   Título: Caminhos de Geografia Uberlândia-MG v. 24, n. 92 abr./2...
+   Arquivo: 63077+POTENCIAL+À+EROSÃO+LAMINAR+NA+BACIA+HIDROGRÁFICA+DO+RIBEIRÃO+DOURADINHO,+NO+TRIÂNGULO+MINEIRO_.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[044] Cat: Relacionada | Autores: Lupinacci et al. (2010)
+   Título: Análise da suscetibilidade à erosão laminar com base no método EUPS (Revista Brasileira de Geomorfologia 11(2))
+   Arquivo: admin,+Art.+5+-+Análise+da+Suscetibilidade+-+RBG+11+Nº+2.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[045] Cat: Relacionada | Autores: Guimarães et al. (2006)
+   Título: A avaliação qualitativa do potencial de erosão laminar em grandes áreas por meio da EUPS utilizando novas metodologias em SIG para os cálculos dos seus fatores (RBG, 7(2): 73-85)
+   Arquivo: admin,+RBG_Ano_7_n_2_2006_73_85.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[050] Cat: Relacionada | Autores: Ana Camino (2019)
+   Título: 2019
+   Arquivo: Carvalho_EstimativaDePerdaDeSoloPoErosaoLaminarEmLucena_2019.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[055] Cat: Relacionada | Autores: Elaine Eluizy Ribeiro Silva (2021)
+   Título: Modelagem de Perda de Solo por Erosão Laminar em Cenári...
+   Arquivo: dissertacao_elaine_final (2)_compressed.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[056] Cat: Relacionada | Autores: Petsch, Zucchi & Bravo (2012)
+   Título: Elaboração das cartas de suscetibilidade à erosão laminar com uso de geotecnologias
+   Arquivo: Elaboracao_das_Cartas_de_Suscetibilidade.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[058] Cat: Relacionada | Autores: Marina de Souza Muniz1, Júlio ... (2015)
+   Título: You are free: to copy, distribute and transmit the work...
+   Arquivo: Estudo_Da_Erosao_Laminar_Em_Municipio_PR.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[059] Cat: Relacionada | Autores: Breunig et al. (2011)
+   Título: Espacialização da perda de solos por erosão laminar na bacia do Ribeirão dos Apertados - PR (RA'E GA 23)
+   Arquivo: fabiobreunig,+20_Espacialização+da+perda+de+solos.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[063] Cat: Relacionada | Autores: Oliveira et al. (2013)
+   Título: Identificação de áreas críticas de erosão laminar por geoprocessamento (Revista Brasileira de Cartografia)
+   Arquivo: Identificacao_De_Areas_Criticas_De_Erosao Laminar.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[068] Cat: Relacionada | Autores: Silva & Lupinacci (2011)
+   Título: Mapeamento do potencial de erosão laminar na alta bacia do Rio Passa Cinco com técnicas de SIG
+   Arquivo: Mapeamento_do_potencial_de_erosao_lamina.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[073] Cat: Relacionada | Autores: João Cândido André da Silva Ne... (2022)
+   Título: Potencial à erosão laminar utilizando Sistema de Inform...
+   Arquivo: Potencial_a_erosao_laminar_utilizando_Si.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[083] Cat: Relacionada | Autores: Victoria (2004)
+   Título: UNIVERSIDADE FEDERAL DE GOIÁS
+   Arquivo: SUSCETIBILIDADE_RISCO_EROSAO_LAMINAR.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[085] Cat: Relacionada | Autores: Vale et al. (2011)
+   Título: Estimativa de perdas de solo por erosão laminar na bacia hidrográfica do Rio Pardo (RBEAA)
+   Arquivo: transferir.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[087] Cat: Relacionada | Autores: Albuquerque et al. (2020)
+   Título: Uso de técnicas de geoprocessamento e modelagem física na estimativa de erosão laminar
+   Arquivo: Uso_de_Tecnicas_de_Geoprocessamento.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[088] Cat: Relacionada | Autores: Laís (2016)
+   Título: Estimativa de Perda de Solos por Erosão Laminar
+   Arquivo: zeluiz,+02_Estimativa.pdf
+   Eixo: Modelagem Empírica (RUSLE/USLE) / S
+
+[089] Cat: Triagem | Autores: Guimarães et al. (2006)
+   Título: A avaliação qualitativa do potencial de erosão laminar em grandes áreas por meio da EUPS utilizando novas metodologias em SIG para os cálculos dos seus fatores (RBG, 7(2): 73-85)
+   Arquivo: admin,+RBG_Ano_7_n_2_2006_73_85.pdf
+   Eixo: Validação Regional / Estrutura Fund
+
+[094] Cat: Triagem | Autores: Workspace Studio Flows (2026)
+   Título: Daily research update: Laminar erosion and AI (Histórico de varredura automatizada de busca, Mai–Out 2026, 32 p.)
+   Arquivo: Busca por artigos FLOW.pdf
+   Eixo: Validação Regional / Estrutura Fund
+
+[095] Cat: Triagem | Autores: Elaine Eluizy Ribeiro Silva (2021)
+   Título: Modelagem de Perda de Solo por Erosão Laminar em Cenários Pré e Pós Cadastro Ambiental Rural no Município de Mineiros-GO (Dissertação de Mestrado, IF Goiás)
+   Arquivo: dissertacao_elaine_final (2).pdf
+   Eixo: Validação Regional / Estrutura Fund
+
+[097] Cat: Triagem | Autores: Bazzi et al. (2022)
+   Título: Estimating soil loss by laminar erosion using precision agriculture computational tools (Rev. Bras. Eng. Agríc. Ambient., DOI: 10.1590/1807-1929/agriambi.v26n12p907-914)
+   Arquivo: Estimativa da perda de solo por erosão laminar usando ferramentas computacionais na agricultura de precisão.pdf
+   Eixo: Validação Regional / Estrutura Fund
+
+[098] Cat: Triagem | Autores: Nascimento & Lupinacci (2016)
+   Título: Estimativa de Perda de Solos por Erosão Laminar na Bacia Hidrográfica do Córrego Baguaçu-SP (Revista do Depto de Geografia USP, DOI: 10.11606/rdg.v32i0.116568)
+   Arquivo: Estimativa de Perda de Solos por Erosão Laminar na Bacia Hidrográfica do Córrego.pdf
+   Eixo: Validação Regional / Estrutura Fund
+
+[099] Cat: Triagem | Autores: Evelin Tais Schlickmann Krug (2024)
+   Título: Estimativa de perda de solo por erosão laminar em função de suas características e diferentes níveis de precipitação (Dissertação PPGTCA, UTFPR Medianeira)
+   Arquivo: estimativaerosaolaminar.pdf
+   Eixo: Validação Regional / Estrutura Fund
+
+[100] Cat: Triagem | Autores: Jaqueline de Moura (2022)
+   Título: Validação do método de geoprocessamento na estimativa de perdas de solo por erosão laminar, em pequenas propriedades rurais, pela EUPS (Dissertação PPGEA, UTFPR Francisco Beltrão)
+   Arquivo: geoprocessamentoerosaosolovalidacao.pdf
+   Eixo: Validação Regional / Estrutura Fund
+
+[101] Cat: Triagem | Autores: Júlio Bandeira Guerra et al. (2006)
+   Título: Avaliação do potencial natural erosivo laminar com técnicas de geoprocessamento: o caso da microbacia do ribeirão Taquara-PR (IV SLGFA / INPE)
+   Arquivo: IV_SLGFA_1.pdf
+   Eixo: Validação Regional / Estrutura Fund
+
+[102] Cat: Triagem | Autores: Silva et al. (2022)
+   Título: Estimativa de perda de solos por erosão laminar em bacia hidrográfica (Nature and Conservation, DOI: 10.6008/CBPC2318-2881.2022.001.0007)
+   Arquivo: l+ARTIGO+7101+-+2023-03-09.pdf
+   Eixo: Validação Regional / Estrutura Fund
+
+[103] Cat: Triagem | Autores: Pinese Júnior, Cruz & Rodrigues (2008)
+   Título: Monitoramento de erosão laminar em diferentes usos da terra, Uberlândia – MG (Sociedade & Natureza, 20(2): 157-175)
+   Arquivo: Monitoramento de Erosão Laminar em Diferentes Usos da Terra.pdf
+   Eixo: Validação Regional / Estrutura Fund
+
+[105] Cat: Triagem | Autores: Luiz Henrique Pereira (2020)
+   Título: Caracterização da erosão hídrica laminar do solo em bacia hidrográfica com base na malha fundiária, por meio de sensoriamento remoto, geoprocessamento e modelagem (Dissertação, UNESP Rio Claro)
+   Arquivo: pereira_lh_me_rcla.pdf
+   Eixo: Validação Regional / Estrutura Fund
+
+[107] Cat: Triagem | Autores: Lucas Duarte Oliveira (2022)
+   Título: Modelagem por meio de inteligência geoespacial para estimar a erosão laminar na Bacia Hidrográfica do Córrego Grande (Estado de Goiás – Brasil) (TCC, IF Goiano)
+   Arquivo: TCC_Lucas Duarte Oliveira.pdf
+   Eixo: Validação Regional / Estrutura Fund
+
+
+=== OBRAS DIRETAS (PREDIÇÃO COM MACHINE LEARNING) ===
+[001] BEEI (2025) | Bulletin of Electrical Engineering and Informatics (10452-29467-1-PB.pdf)
+[002] Melek Işik, Mehmet Işik, Mert ... (2026) | Mapping Soil Erodibility Using Machine Learning and Rem... (agronomy-16-00294-v2.pdf)
+[003] Ahmed et al. (2026) | Spatiotemporal analysis of land degradation and soil erosion dynamics in the Chambal badlands using machine learning and geospatial techniques (Análise espaço_temporal da degradação usando aprendizado de máquina e técnicas geoespaciais..pdf)
+[004] Chowdhury & Saha (2025) | Assessing land degradation in lower gangetic west bengal using GIS-based soft computing and advanced machine learning algorithms (Avaliação da degradação do solo utilizando computação flexível baseada em SIG e algoritmos avançados de aprendizado de máquina.pdf)
+[005] Embrapa Solos (Geraldo et al. ... (2024) | Erodibilidade dos solos do Brasil: consolidação e valor... (CNPS-DOC-246-2024.pdf)
+[006] Lakhili et al. (2025) | Comparative evaluation of machine learning model and PAP/CAR approach for water erosion prediction in the Beht watershed, Morocco (Comparative-evaluation-of.pdf)
+[007] Arabameri et al. (2020) | Comparison of machine learning models for gully erosion susceptibility mapping (Comparison of machine learning models for gully erosion susceptibility mapping.pdf)
+[008] Almeida, Simões et al. (2025) | Detecção de feições erosivas em bacias hidrográficas por técnicas de sensoriamento remoto e classificação supervisionada com base em aprendizado de máquina (XXI SBSR) (Deteccao-de-feicoes-erosivas-em-bacias-hidrograficas-2025.pdf)
+[009] Ferreira et al. (2022) | Enhancing predictive modeling of interrill and rill erosion susceptibility using machine learning (Enhancing predictive modeling of interrill and rill erosion susceptibility.pdf)
+[010] Silva et al. (2025) | Aplicações de aprendizado de máquina para modelagem e mapeamento de suscetibilidade à erosão (XXI SBSR) (galoa-proceedings-sbsr-2025-aplicacoes-de-aprendizado-de-maquina-para-modelagem-e-mapeamento.pdf)
+[011] Gelete et al. (2024) | Integrated machine learning and geospatial analysis enhanced gully erosion susceptibility modeling in the Erer watershed in Eastern Ethiopia (Integrated machine learning and geospatial analysis enhanced gully erosion susceptibility modeling in the Erer watershed in East - Semantic Scholar.pdf)
+[012] Hamza Bouguerra, Salah Eddine ... (2023) | Integration of High-Accuracy Geospatial Data and Machin... (Integração de dados geoespaciais de alta precisão e abordagens de aprendizado de máquina.pdf)
+[013] Quyet Nguyen et al. (2023) | Mapping of soil erosion susceptibility using advanced machine learning models at Nghe An, Vietnam (jh0260072.pdf)
+[014] Olii et al. (2025) | Tree-based machine learning algorithms for soil erosion vulnerability (SEV) prediction in Saddang Watershed, south Sulawesi, Indonesia (jwc2025603.pdf)
+[015] Christos G. Karydas, Panos Pan... (2018) | The G2 erosion model: An algorithm for month-time step ... (Karydas_Panagos_2018_The_G2_erosion_model_month_time_step_assessments.pdf)
+[016] Kaufman et al. (2012) / Franchini et al. (2011) | Leakage in Data Mining / Rotação de Culturas e Guarda Temporal (ACM TKDD / Embrapa Soja) (Kaufman_2012_EmbrapaSoja_Fundamentacao_Guarda_Temporal_Data_Leakage.pdf)
+[017] Jorge da Paixão Marques Filho,... (2024) | Machine Learning Models for the Spatial Prediction of G... (land-13-01665-v2.pdf)
+[018] Tünde Takáts, László Pásztor, ... (2025) | Testing the Applicability and Transferability of Data-D... (land-14-00163-v3.pdf)
+[019] Marques Filho et al. (2024) | Machine Learning Models for the Spatial Prediction of Gully Erosion Susceptibility in the Piraí Drainage Basin (Land 13(10):1665) (Machine Learning Models for the Spatial Prediction of Gully Erosion Susceptibility in the Piraí Drainage Basin Paraíba Do Sul Middle Valley Southeast Brazil.pdf)
+[020] Baiddah et al. (2023) | Head-cut gully erosion susceptibility mapping in semi-arid region using machine learning methods: insight from the high atlas, Morocco (Mapeamento da suscetibilidade à erosão regressiva.pdf)
+[021] Oraegbu & Jolaiya (2024) | Mapping Soil Erosion Classes using Remote Sensing Data and Ensemble Models (Mapping Soil Erosion Classes using Remote Sensing Data and Ensemble Models.pdf)
+[022] Arabameri et al. (2021) | Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms (Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms - OPUS at UTS.pdf)
+[023] Arabameri et al. (2021) | Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms (Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms.pdf)
+[024] Ramos et al. (2022) | Previsão de classes de erosão laminar usando aprendizado de máquina e dados geoespaciais (XIII SBRH) (PREVISÃO DE CLASSES DE EROSÃO LAMINAR USANDO.pdf)
+[025] David R. Roberts, Volker Bahn,... (2017) | Cross-validation strategies for data with temporal, spa... (Roberts_2017_Cross_validation_strategies_spatial_temporal_structure.pdf)
+[026] José Lucas Safanelli, José Ale... (2021) | Fine scale soil mapping from earth observation data: th... (Safanelli_Dematte_2021_Fine_scale_soil_mapping_EO_data_GEOS3.pdf)
+[027] Rob J. Hyndman, Yanan Fan (1996) | Sample Quantiles in Statistical Packages (sample_quantiles.pdf)
+[028] Luiz Felipe de O. Ramos (2022) | Modelagem preditiva na suscetibilidade à erosão em bacias hidrográficas com algoritmos ensemble (SILVA_2025MODELAGEM_PREDITIVA_NA_SUSCETIBILIDADE_.pdf)
+[029] Bolsynbek et al. (2025) | Soil erosion analysis based on machine learning method (Soil erosion analysis based on machine learning method - Bulletin of Electrical Engineering and Informatics.pdf)
+[030] Ping Tu, Qianqian Zhou and Men... (2023) | Soil Erosion Type and Risk Identification from the Pers... (sustainability-15-01939-v2.pdf)
+[031] Yangfei Huang, Chenjian Zhong,... (2025) | The Spatiotemporal Evolution, Driving Mechanisms, and F... (The_Spatiotemporal_Evolution_Driving_Mechanisms_an.pdf)
+[032] Olii et al. (2025) | Tree-based machine learning algorithms for soil erosion vulnerability prediction in Saddang Watershed (J. Water & Climate Change) (Tree-based machine learning algorithms for soil erosion vulnerability prediction in Saddang Watershed-south Sulawesi-Indonesia _ Journal of Water and Clima Fixed.pdf)
+[033] Hasanuzzaman et al. (2024) | Utilizing Machine Learning Algorithms for the Development of Gully Erosion Susceptibility Maps: Evidence from the Chotanagpur Plateau Region, India (Utilizing Machine Learning Algorithms for the Development of Gully Erosion Susceptibility Maps - Semantic Scholar.pdf)
+[034] Anton Vrieling (2006) | Satellite remote sensing for water erosion assessment: ... (Vrieling_2006_Satellite_remote_sensing_water_erosion_review.pdf)
+[035] Carmen Patino-Alonso, Fernando... (2026) | Assessing the Spatial Transferability of Annual Soil Er... (water-18-02255.pdf)

@@ -1,0 +1,1112 @@
+[
+  {
+    "num": "001",
+    "cat": "Direta",
+    "fname": "10452-29467-1-PB.pdf",
+    "authors": "BEEI (2025)",
+    "title": "Bulletin of Electrical Engineering and Informatics",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "15",
+    "sha": "f6712f8f50d6b2f5..."
+  },
+  {
+    "num": "002",
+    "cat": "Direta",
+    "fname": "agronomy-16-00294-v2.pdf",
+    "authors": "Melek Işik, Mehmet Işik, Mert ... (2026)",
+    "title": "Mapping Soil Erodibility Using Machine Learning and Rem...",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "21",
+    "sha": "5a7cc612826ee4a4..."
+  },
+  {
+    "num": "003",
+    "cat": "Direta",
+    "fname": "Análise espaço_temporal da degradação usando aprendizado de máquina e técnicas geoespaciais..pdf",
+    "authors": "Ahmed et al. (2026)",
+    "title": "Spatiotemporal analysis of land degradation and soil erosion dynamics in the Chambal badlands using machine learning and geospatial techniques",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "39",
+    "sha": "1478d3f8c9fffd62..."
+  },
+  {
+    "num": "004",
+    "cat": "Direta",
+    "fname": "Avaliação da degradação do solo utilizando computação flexível baseada em SIG e algoritmos avançados de aprendizado de máquina.pdf",
+    "authors": "Chowdhury & Saha (2025)",
+    "title": "Assessing land degradation in lower gangetic west bengal using GIS-based soft computing and advanced machine learning algorithms",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "28",
+    "sha": "373509650679024f..."
+  },
+  {
+    "num": "005",
+    "cat": "Direta",
+    "fname": "CNPS-DOC-246-2024.pdf",
+    "authors": "Embrapa Solos (Geraldo et al. ... (2024)",
+    "title": "Erodibilidade dos solos do Brasil: consolidação e valor...",
+    "eixo": "Pedologia / Erodibilidade / Fator K",
+    "pages": "40",
+    "sha": "4256459f154c2fe2..."
+  },
+  {
+    "num": "006",
+    "cat": "Direta",
+    "fname": "Comparative-evaluation-of.pdf",
+    "authors": "Lakhili et al. (2025)",
+    "title": "Comparative evaluation of machine learning model and PAP/CAR approach for water erosion prediction in the Beht watershed, Morocco",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "17",
+    "sha": "8c19163797c1bfd2..."
+  },
+  {
+    "num": "007",
+    "cat": "Direta",
+    "fname": "Comparison of machine learning models for gully erosion susceptibility mapping.pdf",
+    "authors": "Arabameri et al. (2020)",
+    "title": "Comparison of machine learning models for gully erosion susceptibility mapping",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "13",
+    "sha": "21d90043305fb28b..."
+  },
+  {
+    "num": "008",
+    "cat": "Direta",
+    "fname": "Deteccao-de-feicoes-erosivas-em-bacias-hidrograficas-2025.pdf",
+    "authors": "Almeida, Simões et al. (2025)",
+    "title": "Detecção de feições erosivas em bacias hidrográficas por técnicas de sensoriamento remoto e classificação supervisionada com base em aprendizado de máquina (XXI SBSR)",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "4",
+    "sha": "793f8671dc7e732d..."
+  },
+  {
+    "num": "009",
+    "cat": "Direta",
+    "fname": "Enhancing predictive modeling of interrill and rill erosion susceptibility.pdf",
+    "authors": "Ferreira et al. (2022)",
+    "title": "Enhancing predictive modeling of interrill and rill erosion susceptibility using machine learning",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "1",
+    "sha": "e7a847f167c77678..."
+  },
+  {
+    "num": "010",
+    "cat": "Direta",
+    "fname": "galoa-proceedings-sbsr-2025-aplicacoes-de-aprendizado-de-maquina-para-modelagem-e-mapeamento.pdf",
+    "authors": "Silva et al. (2025)",
+    "title": "Aplicações de aprendizado de máquina para modelagem e mapeamento de suscetibilidade à erosão (XXI SBSR)",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "4",
+    "sha": "bff39bad01950d1b..."
+  },
+  {
+    "num": "011",
+    "cat": "Direta",
+    "fname": "Integrated machine learning and geospatial analysis enhanced gully erosion susceptibility modeling in the Erer watershed in East - Semantic Scholar.pdf",
+    "authors": "Gelete et al. (2024)",
+    "title": "Integrated machine learning and geospatial analysis enhanced gully erosion susceptibility modeling in the Erer watershed in Eastern Ethiopia",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "27",
+    "sha": "f6535d1bf8a52b18..."
+  },
+  {
+    "num": "012",
+    "cat": "Direta",
+    "fname": "Integração de dados geoespaciais de alta precisão e abordagens de aprendizado de máquina.pdf",
+    "authors": "Hamza Bouguerra, Salah Eddine ... (2023)",
+    "title": "Integration of High-Accuracy Geospatial Data and Machin...",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "23",
+    "sha": "0c6a4ff6d90afeb0..."
+  },
+  {
+    "num": "013",
+    "cat": "Direta",
+    "fname": "jh0260072.pdf",
+    "authors": "Quyet Nguyen et al. (2023)",
+    "title": "Mapping of soil erosion susceptibility using advanced machine learning models at Nghe An, Vietnam",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "16",
+    "sha": "40412123c7104c70..."
+  },
+  {
+    "num": "014",
+    "cat": "Direta",
+    "fname": "jwc2025603.pdf",
+    "authors": "Olii et al. (2025)",
+    "title": "Tree-based machine learning algorithms for soil erosion vulnerability (SEV) prediction in Saddang Watershed, south Sulawesi, Indonesia",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "18",
+    "sha": "fd6d5e2a8ae64fa0..."
+  },
+  {
+    "num": "015",
+    "cat": "Direta",
+    "fname": "Karydas_Panagos_2018_The_G2_erosion_model_month_time_step_assessments.pdf",
+    "authors": "Christos G. Karydas, Panos Pan... (2018)",
+    "title": "The G2 erosion model: An algorithm for month-time step ...",
+    "eixo": "Modelo Físico-Dinâmico G2 / Interaç",
+    "pages": "13",
+    "sha": "8c133b1e46049f37..."
+  },
+  {
+    "num": "016",
+    "cat": "Direta",
+    "fname": "Kaufman_2012_EmbrapaSoja_Fundamentacao_Guarda_Temporal_Data_Leakage.pdf",
+    "authors": "Kaufman et al. (2012) / Franchini et al. (2011)",
+    "title": "Leakage in Data Mining / Rotação de Culturas e Guarda Temporal (ACM TKDD / Embrapa Soja)",
+    "eixo": "Prevenção de Vazamento de Dados",
+    "pages": "1",
+    "sha": "1d20c09cf25e62d4..."
+  },
+  {
+    "num": "017",
+    "cat": "Direta",
+    "fname": "land-13-01665-v2.pdf",
+    "authors": "Jorge da Paixão Marques Filho,... (2024)",
+    "title": "Machine Learning Models for the Spatial Prediction of G...",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "21",
+    "sha": "708895d867f2111f..."
+  },
+  {
+    "num": "018",
+    "cat": "Direta",
+    "fname": "land-14-00163-v3.pdf",
+    "authors": "Tünde Takáts, László Pásztor, ... (2025)",
+    "title": "Testing the Applicability and Transferability of Data-D...",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "22",
+    "sha": "6969a67a1f2548b1..."
+  },
+  {
+    "num": "019",
+    "cat": "Direta",
+    "fname": "Machine Learning Models for the Spatial Prediction of Gully Erosion Susceptibility in the Piraí Drainage Basin Paraíba Do Sul Middle Valley Southeast Brazil.pdf",
+    "authors": "Marques Filho et al. (2024)",
+    "title": "Machine Learning Models for the Spatial Prediction of Gully Erosion Susceptibility in the Piraí Drainage Basin (Land 13(10):1665)",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "10",
+    "sha": "12a75e545762f439..."
+  },
+  {
+    "num": "020",
+    "cat": "Direta",
+    "fname": "Mapeamento da suscetibilidade à erosão regressiva.pdf",
+    "authors": "Baiddah et al. (2023)",
+    "title": "Head-cut gully erosion susceptibility mapping in semi-arid region using machine learning methods: insight from the high atlas, Morocco",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "19",
+    "sha": "6141f12f6f634966..."
+  },
+  {
+    "num": "021",
+    "cat": "Direta",
+    "fname": "Mapping Soil Erosion Classes using Remote Sensing Data and Ensemble Models.pdf",
+    "authors": "Oraegbu & Jolaiya (2024)",
+    "title": "Mapping Soil Erosion Classes using Remote Sensing Data and Ensemble Models",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "8",
+    "sha": "9c9385b72bcb3c2d..."
+  },
+  {
+    "num": "022",
+    "cat": "Direta",
+    "fname": "Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms - OPUS at UTS.pdf",
+    "authors": "Arabameri et al. (2021)",
+    "title": "Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "26",
+    "sha": "5746353481d371b1..."
+  },
+  {
+    "num": "023",
+    "cat": "Direta",
+    "fname": "Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms.pdf",
+    "authors": "Arabameri et al. (2021)",
+    "title": "Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "31",
+    "sha": "0ed2e9101d3e8b04..."
+  },
+  {
+    "num": "024",
+    "cat": "Direta",
+    "fname": "PREVISÃO DE CLASSES DE EROSÃO LAMINAR USANDO.pdf",
+    "authors": "Ramos et al. (2022)",
+    "title": "Previsão de classes de erosão laminar usando aprendizado de máquina e dados geoespaciais (XIII SBRH)",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "10",
+    "sha": "07bec135fecc5f94..."
+  },
+  {
+    "num": "025",
+    "cat": "Direta",
+    "fname": "Roberts_2017_Cross_validation_strategies_spatial_temporal_structure.pdf",
+    "authors": "David R. Roberts, Volker Bahn,... (2017)",
+    "title": "Cross-validation strategies for data with temporal, spa...",
+    "eixo": "Validação Cruzada Espacial (Spatial",
+    "pages": "56",
+    "sha": "14c31173f60c662d..."
+  },
+  {
+    "num": "026",
+    "cat": "Direta",
+    "fname": "Safanelli_Dematte_2021_Fine_scale_soil_mapping_EO_data_GEOS3.pdf",
+    "authors": "José Lucas Safanelli, José Ale... (2021)",
+    "title": "Fine scale soil mapping from earth observation data: th...",
+    "eixo": "Mapeamento Digital de Solos / GEOS3",
+    "pages": "20",
+    "sha": "1f05f84f32e3114a..."
+  },
+  {
+    "num": "027",
+    "cat": "Direta",
+    "fname": "sample_quantiles.pdf",
+    "authors": "Rob J. Hyndman, Yanan Fan (1996)",
+    "title": "Sample Quantiles in Statistical Packages",
+    "eixo": "Estatística Matemática / Definições",
+    "pages": "5",
+    "sha": "c3ae245d4fff1246..."
+  },
+  {
+    "num": "028",
+    "cat": "Direta",
+    "fname": "SILVA_2025MODELAGEM_PREDITIVA_NA_SUSCETIBILIDADE_.pdf",
+    "authors": "Luiz Felipe de O. Ramos (2022)",
+    "title": "Modelagem preditiva na suscetibilidade à erosão em bacias hidrográficas com algoritmos ensemble",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "10",
+    "sha": "08d3980581903af8..."
+  },
+  {
+    "num": "029",
+    "cat": "Direta",
+    "fname": "Soil erosion analysis based on machine learning method - Bulletin of Electrical Engineering and Informatics.pdf",
+    "authors": "Bolsynbek et al. (2025)",
+    "title": "Soil erosion analysis based on machine learning method",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "29",
+    "sha": "1935e4627d2e9af8..."
+  },
+  {
+    "num": "030",
+    "cat": "Direta",
+    "fname": "sustainability-15-01939-v2.pdf",
+    "authors": "Ping Tu, Qianqian Zhou and Men... (2023)",
+    "title": "Soil Erosion Type and Risk Identification from the Pers...",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "22",
+    "sha": "2b59609400e73164..."
+  },
+  {
+    "num": "031",
+    "cat": "Direta",
+    "fname": "The_Spatiotemporal_Evolution_Driving_Mechanisms_an.pdf",
+    "authors": "Yangfei Huang, Chenjian Zhong,... (2025)",
+    "title": "The Spatiotemporal Evolution, Driving Mechanisms, and F...",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "29",
+    "sha": "18795ba0db374f60..."
+  },
+  {
+    "num": "032",
+    "cat": "Direta",
+    "fname": "Tree-based machine learning algorithms for soil erosion vulnerability prediction in Saddang Watershed-south Sulawesi-Indonesia _ Journal of Water and Clima Fixed.pdf",
+    "authors": "Olii et al. (2025)",
+    "title": "Tree-based machine learning algorithms for soil erosion vulnerability prediction in Saddang Watershed (J. Water & Climate Change)",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "39",
+    "sha": "4847f2f3ba26ac7d..."
+  },
+  {
+    "num": "033",
+    "cat": "Direta",
+    "fname": "Utilizing Machine Learning Algorithms for the Development of Gully Erosion Susceptibility Maps - Semantic Scholar.pdf",
+    "authors": "Hasanuzzaman et al. (2024)",
+    "title": "Utilizing Machine Learning Algorithms for the Development of Gully Erosion Susceptibility Maps: Evidence from the Chotanagpur Plateau Region, India",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "26",
+    "sha": "f9a4d8d84f3188d1..."
+  },
+  {
+    "num": "034",
+    "cat": "Direta",
+    "fname": "Vrieling_2006_Satellite_remote_sensing_water_erosion_review.pdf",
+    "authors": "Anton Vrieling (2006)",
+    "title": "Satellite remote sensing for water erosion assessment: ...",
+    "eixo": "Sensoriamento Remoto Orbital / Prox",
+    "pages": "17",
+    "sha": "08e2c12310079953..."
+  },
+  {
+    "num": "035",
+    "cat": "Direta",
+    "fname": "water-18-02255.pdf",
+    "authors": "Carmen Patino-Alonso, Fernando... (2026)",
+    "title": "Assessing the Spatial Transferability of Annual Soil Er...",
+    "eixo": "Modelagem Preditiva com Machine Lea",
+    "pages": "23",
+    "sha": "b62a7d4136e40b9c..."
+  },
+  {
+    "num": "036",
+    "cat": "Relacionada",
+    "fname": "13104+-+Avaliação+da+Susceptibilidade+à+Erosão+Laminar+no+Alto+Banabuiú+(CE).pdf",
+    "authors": "Da Silva et al. (2025)",
+    "title": "AVALIAÇÃO DA SUSCEPTIBILIDADE À EROSÃO LAMINAR NO ALTO BANABUIÚ (CE) POR MEIO DA COMPARTIMENTAÇÃO MORFOPEDOLÓGICA E ANÁLISE DE TOPOSSEQUÊNCIA",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "23",
+    "sha": "f25b9f1c1cfd6bd0..."
+  },
+  {
+    "num": "037",
+    "cat": "Relacionada",
+    "fname": "13659-45240-1-SM.pdf",
+    "authors": "Thiago Neto (2022)",
+    "title": "eISSN: 2358-1778",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "22",
+    "sha": "7b9dd629f0f62d06..."
+  },
+  {
+    "num": "038",
+    "cat": "Relacionada",
+    "fname": "232.pdf",
+    "authors": "Helfer et al. (2022)",
+    "title": "Modelagem e espacialização de perdas de solo por erosão laminar com EUPS e geotecnologias (XV SBRH)",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "13",
+    "sha": "23cec88af24c0dc2..."
+  },
+  {
+    "num": "039",
+    "cat": "Relacionada",
+    "fname": "35cbe_149-154.pdf",
+    "authors": "Aline Bentes PINTO; Leonardo C... (2019)",
+    "title": "Utilização do mapeamento de suscetibilidade à erosão la...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "7",
+    "sha": "f39d9ab20efa6091..."
+  },
+  {
+    "num": "040",
+    "cat": "Relacionada",
+    "fname": "59130+Texto+do+artigo-263494-2-15-20210615.pdf",
+    "authors": "Letícia Bueno de Oliveira Roch... (2022)",
+    "title": "Caminhos de Geografia Uberlândia-MG v. 23, n. 87 jun./2...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "22",
+    "sha": "55d9eaf09a4db4df..."
+  },
+  {
+    "num": "041",
+    "cat": "Relacionada",
+    "fname": "63077+POTENCIAL+À+EROSÃO+LAMINAR+NA+BACIA+HIDROGRÁFICA+DO+RIBEIRÃO+DOURADINHO,+NO+TRIÂNGULO+MINEIRO_.pdf",
+    "authors": "João Victor Freitas Silva (2023)",
+    "title": "Caminhos de Geografia Uberlândia-MG v. 24, n. 92 abr./2...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "18",
+    "sha": "0ec6c453d556dc26..."
+  },
+  {
+    "num": "042",
+    "cat": "Relacionada",
+    "fname": "A study utilizing USLE and RUSLE.pdf",
+    "authors": "Ajay Kumar Taloor (2025)",
+    "title": "Geospatial assessment of soil erosion in the Basantar a...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "14",
+    "sha": "146e825ff97ec921..."
+  },
+  {
+    "num": "043",
+    "cat": "Relacionada",
+    "fname": "admin,+05-24-final.pdf",
+    "authors": "Vítor Pereira (2015)",
+    "title": "Jataí-GO",
+    "eixo": "n.24",
+    "pages": "Jan-Jun/2015",
+    "sha": "Modelagem Empírica (RUSLE/USLE) / S"
+  },
+  {
+    "num": "044",
+    "cat": "Relacionada",
+    "fname": "admin,+Art.+5+-+Análise+da+Suscetibilidade+-+RBG+11+Nº+2.pdf",
+    "authors": "Lupinacci et al. (2010)",
+    "title": "Análise da suscetibilidade à erosão laminar com base no método EUPS (Revista Brasileira de Geomorfologia 11(2))",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "10",
+    "sha": "4a24404a51f8bc5f..."
+  },
+  {
+    "num": "045",
+    "cat": "Relacionada",
+    "fname": "admin,+RBG_Ano_7_n_2_2006_73_85.pdf",
+    "authors": "Guimarães et al. (2006)",
+    "title": "A avaliação qualitativa do potencial de erosão laminar em grandes áreas por meio da EUPS utilizando novas metodologias em SIG para os cálculos dos seus fatores (RBG, 7(2): 73-85)",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "13",
+    "sha": "f3045e3d298a3a1e..."
+  },
+  {
+    "num": "046",
+    "cat": "Relacionada",
+    "fname": "Aplicação de Aprendizado Profundo e Análise Geoespacial.pdf",
+    "authors": "Mohammed Hlal, Bilal El Monhim... (2025)",
+    "title": "Application of Deep Learning and Geospatial Analysis in...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "23",
+    "sha": "2c290a45d2abbd90..."
+  },
+  {
+    "num": "047",
+    "cat": "Relacionada",
+    "fname": "Aplicação de Redes Neurais Convolucionais para Prever a Erosão do Solo.pdf",
+    "authors": "Chao Liu, Han Li, Jiuzhe Xu, W... (2023)",
+    "title": "Applying Convolutional Neural Network to Predict Soil E...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "21",
+    "sha": "64f16475d717dd65..."
+  },
+  {
+    "num": "048",
+    "cat": "Relacionada",
+    "fname": "Applied and Environmental Soil Science - 2021 - García - Geospatial Analysis of Soil Ero.pdf",
+    "authors": "García et al. (2021)",
+    "title": "Geospatial Analysis of Soil Erosion including Precipitation Scenarios in a Conservation Area of the Amazon Region in Peru",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "21",
+    "sha": "282f4aded1add0d4..."
+  },
+  {
+    "num": "049",
+    "cat": "Relacionada",
+    "fname": "ASSESSING OF SOIL EROSION RISK.pdf",
+    "authors": "Hadjimitsis et al. (2022)",
+    "title": "Assessing of soil erosion risk using satellite remote sensing and GIS integration (Book Chapter)",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "54",
+    "sha": "c97e4bf280f42e95..."
+  },
+  {
+    "num": "050",
+    "cat": "Relacionada",
+    "fname": "Carvalho_EstimativaDePerdaDeSoloPoErosaoLaminarEmLucena_2019.pdf",
+    "authors": "Ana Camino (2019)",
+    "title": "2019",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "12",
+    "sha": "01764f6d3eed05f1..."
+  },
+  {
+    "num": "051",
+    "cat": "Relacionada",
+    "fname": "CerriCarlosEduardoPellegrino.pdf",
+    "authors": "Carlos E. P. Cerri (1999)",
+    "title": "Mapeamento das áreas de risco de erosão do solo da bacia hidrográfica do Rio Piracicaba (Dissertação ESALQ-USP)",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "107",
+    "sha": "dfcba3289c267b3a..."
+  },
+  {
+    "num": "052",
+    "cat": "Relacionada",
+    "fname": "Comprehensive Review on Surface Soil.pdf",
+    "authors": "Mohit Kashyap (2022)",
+    "title": "Comprehensive Review on Surface Soil Erosion: Current A...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "22",
+    "sha": "073440078ec1af8a..."
+  },
+  {
+    "num": "053",
+    "cat": "Relacionada",
+    "fname": "contgeo,+27-V_SGFNE_LISBOA_ET_AL_EIXO_05.pdf",
+    "authors": "Melchior Nascimento (2024)",
+    "title": "PÁGINA 317",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "9",
+    "sha": "41c75ae7e976217e..."
+  },
+  {
+    "num": "054",
+    "cat": "Relacionada",
+    "fname": "Detecting_Analyzing_and_Predicting_Land_UseLand_Co.pdf",
+    "authors": "Salman A. H. Selmy, Dmitry E. ... (2023)",
+    "title": "Detecting, Analyzing, and Predicting Land Use/Land Cove...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "26",
+    "sha": "46e7d364124a5ec1..."
+  },
+  {
+    "num": "055",
+    "cat": "Relacionada",
+    "fname": "dissertacao_elaine_final (2)_compressed.pdf",
+    "authors": "Elaine Eluizy Ribeiro Silva (2021)",
+    "title": "Modelagem de Perda de Solo por Erosão Laminar em Cenári...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "75",
+    "sha": "52357fdf4a827255..."
+  },
+  {
+    "num": "056",
+    "cat": "Relacionada",
+    "fname": "Elaboracao_das_Cartas_de_Suscetibilidade.pdf",
+    "authors": "Petsch, Zucchi & Bravo (2012)",
+    "title": "Elaboração das cartas de suscetibilidade à erosão laminar com uso de geotecnologias",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "12",
+    "sha": "250874d39b919e13..."
+  },
+  {
+    "num": "057",
+    "cat": "Relacionada",
+    "fname": "Estrutura modular com IA funde imagens Sentinel para detecção robusta de deslizamentos de terra.pdf",
+    "authors": "Ioannis Nasios (2022)",
+    "title": "Multi-Modal Landslide Detection from Sentinel-1 SAR and...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "30",
+    "sha": "616d7bd2d96d003c..."
+  },
+  {
+    "num": "058",
+    "cat": "Relacionada",
+    "fname": "Estudo_Da_Erosao_Laminar_Em_Municipio_PR.pdf",
+    "authors": "Marina de Souza Muniz1, Júlio ... (2015)",
+    "title": "You are free: to copy, distribute and transmit the work...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "17",
+    "sha": "1e155a631d88dfc5..."
+  },
+  {
+    "num": "059",
+    "cat": "Relacionada",
+    "fname": "fabiobreunig,+20_Espacialização+da+perda+de+solos.pdf",
+    "authors": "Breunig et al. (2011)",
+    "title": "Espacialização da perda de solos por erosão laminar na bacia do Ribeirão dos Apertados - PR (RA'E GA 23)",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "21",
+    "sha": "e8446ef8d72fd3aa..."
+  },
+  {
+    "num": "060",
+    "cat": "Relacionada",
+    "fname": "geografar,+12106-39730-1-CE.pdf",
+    "authors": "sirtoli (2007)",
+    "title": "Curitiba, v.2, n.2, p.172-188, jul./dez. 2007 ISSN: 198...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "17",
+    "sha": "89a44c63ae5f5262..."
+  },
+  {
+    "num": "061",
+    "cat": "Relacionada",
+    "fname": "Geoprocessamento Aplicado na Caracterizacao de Bacias Hidrograficas Visando a sua Sustentbilidade.pdf",
+    "authors": "Sérgio Campos & Marcelo Campos (2021)",
+    "title": "Geoprocessamento aplicado na caracterização de bacias hidrográficas visando a sua sustentabilidade (UNESP)",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "182",
+    "sha": "99432c15d078cfc2..."
+  },
+  {
+    "num": "062",
+    "cat": "Relacionada",
+    "fname": "Geoprocessamento-Aplicada-no-Planejamento-de-Bacias-Hidrograficas-1.pdf",
+    "authors": "Flávia Luize Pereira de Souza (2019)",
+    "title": "Geoprocessamento Aplicado no",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "137",
+    "sha": "eab09f117b782c12..."
+  },
+  {
+    "num": "063",
+    "cat": "Relacionada",
+    "fname": "Identificacao_De_Areas_Criticas_De_Erosao Laminar.pdf",
+    "authors": "Oliveira et al. (2013)",
+    "title": "Identificação de áreas críticas de erosão laminar por geoprocessamento (Revista Brasileira de Cartografia)",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "14",
+    "sha": "af621a82ae27302f..."
+  },
+  {
+    "num": "064",
+    "cat": "Relacionada",
+    "fname": "Integrated image processing and machine learning framework.pdf",
+    "authors": "Shubham Kumar (2025)",
+    "title": "Integrated image processing and machine learning framew...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "13",
+    "sha": "cfcc560c9c0fe56d..."
+  },
+  {
+    "num": "065",
+    "cat": "Relacionada",
+    "fname": "Integrating_Remote_Sensing_GIS_and_AI_Technologies.pdf",
+    "authors": "Mondal et al. (2022)",
+    "title": "Integrating Remote Sensing, GIS and AI Technologies for Soil Erosion Hazard Mapping",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "21",
+    "sha": "d50af48a6c7a6fd8..."
+  },
+  {
+    "num": "066",
+    "cat": "Relacionada",
+    "fname": "LUZIANE-SANTOS-RIBEIRO.pdf",
+    "authors": "LUZIANE SANTOS RIBEIRO (2006)",
+    "title": "AN`LISE QUALITATIVA E QUANTITATIVA DE EROSˆO",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "158",
+    "sha": "7ab59e6777b99077..."
+  },
+  {
+    "num": "067",
+    "cat": "Relacionada",
+    "fname": "Mapeamento_da_vulnerabilidade_geoambient.pdf",
+    "authors": "Pereira et al. (2007)",
+    "title": "Mapeamento da vulnerabilidade geoambiental e perda de solos em bacias do Paraná",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "9",
+    "sha": "59721860f5d182bb..."
+  },
+  {
+    "num": "068",
+    "cat": "Relacionada",
+    "fname": "Mapeamento_do_potencial_de_erosao_lamina.pdf",
+    "authors": "Silva & Lupinacci (2011)",
+    "title": "Mapeamento do potencial de erosão laminar na alta bacia do Rio Passa Cinco com técnicas de SIG",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "10",
+    "sha": "068a338736355d05..."
+  },
+  {
+    "num": "069",
+    "cat": "Relacionada",
+    "fname": "Mapeamento_Por_Tecnicas_De_Geoprocessame.pdf",
+    "authors": "Santos et al. (2014)",
+    "title": "Mapeamento por técnicas de geoprocessamento da erosão do solo em bacias hidrográficas (XLIII Cong. Bras. Eng. Agríc.)",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "4",
+    "sha": "6ef05655c1f8cf4e..."
+  },
+  {
+    "num": "070",
+    "cat": "Relacionada",
+    "fname": "Modeling and Assessment of Land Degradation Vulnerability in Arid Ecosystem of Rajasthan Using Analytical Hierarchy Process and - Semantic Scholar.pdf",
+    "authors": "Meena et al. (2024)",
+    "title": "Modeling and assessment of land degradation vulnerability in arid ecosystem of Rajasthan using AHP and geospatial techniques",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "23",
+    "sha": "2440d176326517da..."
+  },
+  {
+    "num": "071",
+    "cat": "Relacionada",
+    "fname": "p103.pdf",
+    "authors": "Merten et al. (2016)",
+    "title": "Determinação do fator de comprimento e grau de declive (LS) em modelo digital de elevação (6º Simpósio de Geotecnologias)",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "10",
+    "sha": "f17ad0f6e65c102e..."
+  },
+  {
+    "num": "072",
+    "cat": "Relacionada",
+    "fname": "Pesquisa sobre a previsão da degradação irregular do solo.pdf",
+    "authors": "Zhao et al. (2022)",
+    "title": "Research on soil spotted degradation and erosion prediction using intelligent geospatial models",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "17",
+    "sha": "821e8f42c2ba8d19..."
+  },
+  {
+    "num": "073",
+    "cat": "Relacionada",
+    "fname": "Potencial_a_erosao_laminar_utilizando_Si.pdf",
+    "authors": "João Cândido André da Silva Ne... (2022)",
+    "title": "Potencial à erosão laminar utilizando Sistema de Inform...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "8",
+    "sha": "9bfa24eb708fb0be..."
+  },
+  {
+    "num": "074",
+    "cat": "Relacionada",
+    "fname": "ppggeografia_danielsantanalanza_dissertacaomestrado.pdf",
+    "authors": "Gui (2011)",
+    "title": "Universidade Federal de Minas Gerais",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "151",
+    "sha": "b066150828552e2a..."
+  },
+  {
+    "num": "075",
+    "cat": "Relacionada",
+    "fname": "Predicao_Da_Perda_De_Solo_Por_Erosao_Lam.pdf",
+    "authors": "Letícia Bueno de Oliveira Roch... (2022)",
+    "title": "Caminhos de Geografia Uberlândia-MG v. 23, n. 87 jun./2...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "22",
+    "sha": "25935d876bbe4928..."
+  },
+  {
+    "num": "076",
+    "cat": "Relacionada",
+    "fname": "PREMIO-MAPBIOMAS_VulnerabilidadeErosao_FINAL-Margareth-Simoes.pdf",
+    "authors": "Rodrigo Demonte (2019)",
+    "title": "Empresa Brasileira de Pesquisa Agropecuária",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "26",
+    "sha": "f7fd633d5f91bc1b..."
+  },
+  {
+    "num": "077",
+    "cat": "Relacionada",
+    "fname": "Real-time_soil_erosion_detection_using_satellite_i.pdf",
+    "authors": "Kumar et al. (2025)",
+    "title": "Real-time soil erosion detection using satellite imagery and tree-based machine learning",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "15",
+    "sha": "364601eb7b94ab74..."
+  },
+  {
+    "num": "078",
+    "cat": "Relacionada",
+    "fname": "Relatorio_Tecnico_Suscetibilidade.pdf",
+    "authors": "Rodrigo Demonte (2020)",
+    "title": "Nota Técnica",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "2",
+    "sha": "81fb2440c2707c4e..."
+  },
+  {
+    "num": "079",
+    "cat": "Relacionada",
+    "fname": "remotesensing-13-00155-v3.pdf",
+    "authors": "Dmitry I. Rukhovich, Polina V.... (2022)",
+    "title": "The Use of Deep Machine Learning for the Automated Sele...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "28",
+    "sha": "8217b6443cb2c65c..."
+  },
+  {
+    "num": "080",
+    "cat": "Relacionada",
+    "fname": "Research on Soil Erosion Based on Remote Sensing Technology.pdf",
+    "authors": "Jiaqi Wang, Jiuchun Yang, Zhi ... (2025)",
+    "title": "Research on Soil Erosion Based on Remote Sensing Techno...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "31",
+    "sha": "423279a4fa62aae1..."
+  },
+  {
+    "num": "081",
+    "cat": "Relacionada",
+    "fname": "salomao_fs_me_bauru.pdf",
+    "authors": "Fernanda Sota Salomão (2020)",
+    "title": "Mapeamento da perda de solo por erosão hídrica em bacia hidrográfica (Dissertação de Mestrado, UNESP Bauru)",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "177",
+    "sha": "5675f9b47e18d557..."
+  },
+  {
+    "num": "082",
+    "cat": "Relacionada",
+    "fname": "Spatiotemporal modeling of soil loss and sediment yield due to land use and land cover.pdf",
+    "authors": "Mersha et al. (2025)",
+    "title": "Spatiotemporal modeling of soil loss and sediment yield due to land use and land cover changes: implications for watershed management",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "26",
+    "sha": "f1558af8a36fb993..."
+  },
+  {
+    "num": "083",
+    "cat": "Relacionada",
+    "fname": "SUSCETIBILIDADE_RISCO_EROSAO_LAMINAR.pdf",
+    "authors": "Victoria (2004)",
+    "title": "UNIVERSIDADE FEDERAL DE GOIÁS",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "149",
+    "sha": "535838f7f03f2148..."
+  },
+  {
+    "num": "084",
+    "cat": "Relacionada",
+    "fname": "trabalho1_87.pdf",
+    "authors": "Raimundo Almir Costa Conceicao (2022)",
+    "title": "17º Congresso Brasileiro de Geologia de Engenharia e Am...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "14",
+    "sha": "2ee1e4965de4f80d..."
+  },
+  {
+    "num": "085",
+    "cat": "Relacionada",
+    "fname": "transferir.pdf",
+    "authors": "Vale et al. (2011)",
+    "title": "Estimativa de perdas de solo por erosão laminar na bacia hidrográfica do Rio Pardo (RBEAA)",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "10",
+    "sha": "eb9b9f16151d870b..."
+  },
+  {
+    "num": "086",
+    "cat": "Relacionada",
+    "fname": "USE+OF+REMOTE+SENSING+IN+EROSION+ANALYSIS+IN+THE+GENERAL+SAMPAIO+DAM+WATERSHED+-+CE.pdf",
+    "authors": "nadilly oliveira (2026)",
+    "title": "International Journal Semiarid –Vol. 9, n. 1. ISSN: 276...",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "14",
+    "sha": "2af345be91c403ff..."
+  },
+  {
+    "num": "087",
+    "cat": "Relacionada",
+    "fname": "Uso_de_Tecnicas_de_Geoprocessamento.pdf",
+    "authors": "Albuquerque et al. (2020)",
+    "title": "Uso de técnicas de geoprocessamento e modelagem física na estimativa de erosão laminar",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "15",
+    "sha": "1c000bd13c6032e6..."
+  },
+  {
+    "num": "088",
+    "cat": "Relacionada",
+    "fname": "zeluiz,+02_Estimativa.pdf",
+    "authors": "Laís (2016)",
+    "title": "Estimativa de Perda de Solos por Erosão Laminar",
+    "eixo": "Modelagem Empírica (RUSLE/USLE) / S",
+    "pages": "14",
+    "sha": "2d42f6c38e1cd7b9..."
+  },
+  {
+    "num": "089",
+    "cat": "Triagem",
+    "fname": "admin,+RBG_Ano_7_n_2_2006_73_85.pdf",
+    "authors": "Guimarães et al. (2006)",
+    "title": "A avaliação qualitativa do potencial de erosão laminar em grandes áreas por meio da EUPS utilizando novas metodologias em SIG para os cálculos dos seus fatores (RBG, 7(2): 73-85)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "13",
+    "sha": "f3045e3d298a3a1e..."
+  },
+  {
+    "num": "090",
+    "cat": "Triagem",
+    "fname": "agb_xxvi_4-00.pdf",
+    "authors": "Barros & Silva (2022)",
+    "title": "O uso do sensoriamento remoto aplicado na determinação e modelação das zonas de risco à erosão hídrica (Ciência Geográfica Bauru, XXVI(4): 1718-1733)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "16",
+    "sha": "f19567db2db8df0d..."
+  },
+  {
+    "num": "091",
+    "cat": "Triagem",
+    "fname": "AlissonA_Ribeiro_2026.pdf",
+    "authors": "Alison Antony Ribeiro (2026)",
+    "title": "Gestão hídrica e desenvolvimento rural sustentável: desenvolvimento de modelo de previsão de vazão e recarga hídrica subterrânea na Bacia Hidrográfica do Rio Paraná III (Tese de Doutorado, UNIOESTE)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "131",
+    "sha": "10df41566f6d6da0..."
+  },
+  {
+    "num": "092",
+    "cat": "Triagem",
+    "fname": "Analise_espaco-temporal_da_erosao_hidrica_por_meio.pdf",
+    "authors": "Nunes et al. (2025)",
+    "title": "Análise espaço-temporal da erosão hídrica por meio de modelagem e geotecnologias em bacias hidrográficas no Centro-Oeste do Brasil (RBGF, DOI: 10.26848/rbgf.v18.2.p1465-1492)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "28",
+    "sha": "af56c33162191200..."
+  },
+  {
+    "num": "093",
+    "cat": "Triagem",
+    "fname": "Bloco+1+-+3+-+Manoel+et+al+SENSORIAMENTO+REMOTO+E+MACHINE+LEARNING.pdf",
+    "authors": "Anselmo Manoel et al. (2023)",
+    "title": "Sensoriamento Remoto e Machine Learning Aplicados ao Mapeamento e Classificação do Uso e Cobertura da Terra (INPE / UFRN)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "23",
+    "sha": "e7df65fcccaf5ba7..."
+  },
+  {
+    "num": "094",
+    "cat": "Triagem",
+    "fname": "Busca por artigos FLOW.pdf",
+    "authors": "Workspace Studio Flows (2026)",
+    "title": "Daily research update: Laminar erosion and AI (Histórico de varredura automatizada de busca, Mai–Out 2026, 32 p.)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "32",
+    "sha": "70247fcbb0fbc218..."
+  },
+  {
+    "num": "095",
+    "cat": "Triagem",
+    "fname": "dissertacao_elaine_final (2).pdf",
+    "authors": "Elaine Eluizy Ribeiro Silva (2021)",
+    "title": "Modelagem de Perda de Solo por Erosão Laminar em Cenários Pré e Pós Cadastro Ambiental Rural no Município de Mineiros-GO (Dissertação de Mestrado, IF Goiás)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "75",
+    "sha": "30438ff83b7dbd28..."
+  },
+  {
+    "num": "096",
+    "cat": "Triagem",
+    "fname": "Erosodesoloemambienteamaznico.pdf",
+    "authors": "Elaine Lima da Fonseca (2024)",
+    "title": "Erosão de solo em ambiente amazônico: aplicações de modelagens preditivas (Livro Editora CRV, 156 p., ISBN/RG: 384762439)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "156",
+    "sha": "5f12ce3588b97e89..."
+  },
+  {
+    "num": "097",
+    "cat": "Triagem",
+    "fname": "Estimativa da perda de solo por erosão laminar usando ferramentas computacionais na agricultura de precisão.pdf",
+    "authors": "Bazzi et al. (2022)",
+    "title": "Estimating soil loss by laminar erosion using precision agriculture computational tools (Rev. Bras. Eng. Agríc. Ambient., DOI: 10.1590/1807-1929/agriambi.v26n12p907-914)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "8",
+    "sha": "64ae9bfa593f2721..."
+  },
+  {
+    "num": "098",
+    "cat": "Triagem",
+    "fname": "Estimativa de Perda de Solos por Erosão Laminar na Bacia Hidrográfica do Córrego.pdf",
+    "authors": "Nascimento & Lupinacci (2016)",
+    "title": "Estimativa de Perda de Solos por Erosão Laminar na Bacia Hidrográfica do Córrego Baguaçu-SP (Revista do Depto de Geografia USP, DOI: 10.11606/rdg.v32i0.116568)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "14",
+    "sha": "2d42f6c38e1cd7b9..."
+  },
+  {
+    "num": "099",
+    "cat": "Triagem",
+    "fname": "estimativaerosaolaminar.pdf",
+    "authors": "Evelin Tais Schlickmann Krug (2024)",
+    "title": "Estimativa de perda de solo por erosão laminar em função de suas características e diferentes níveis de precipitação (Dissertação PPGTCA, UTFPR Medianeira)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "88",
+    "sha": "77f0bcfbaca0b086..."
+  },
+  {
+    "num": "100",
+    "cat": "Triagem",
+    "fname": "geoprocessamentoerosaosolovalidacao.pdf",
+    "authors": "Jaqueline de Moura (2022)",
+    "title": "Validação do método de geoprocessamento na estimativa de perdas de solo por erosão laminar, em pequenas propriedades rurais, pela EUPS (Dissertação PPGEA, UTFPR Francisco Beltrão)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "184",
+    "sha": "e66a25cb1c454bc2..."
+  },
+  {
+    "num": "101",
+    "cat": "Triagem",
+    "fname": "IV_SLGFA_1.pdf",
+    "authors": "Júlio Bandeira Guerra et al. (2006)",
+    "title": "Avaliação do potencial natural erosivo laminar com técnicas de geoprocessamento: o caso da microbacia do ribeirão Taquara-PR (IV SLGFA / INPE)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "10",
+    "sha": "ea78a09a58b02f61..."
+  },
+  {
+    "num": "102",
+    "cat": "Triagem",
+    "fname": "l+ARTIGO+7101+-+2023-03-09.pdf",
+    "authors": "Silva et al. (2022)",
+    "title": "Estimativa de perda de solos por erosão laminar em bacia hidrográfica (Nature and Conservation, DOI: 10.6008/CBPC2318-2881.2022.001.0007)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "12",
+    "sha": "fdcda7a0710af48e..."
+  },
+  {
+    "num": "103",
+    "cat": "Triagem",
+    "fname": "Monitoramento de Erosão Laminar em Diferentes Usos da Terra.pdf",
+    "authors": "Pinese Júnior, Cruz & Rodrigues (2008)",
+    "title": "Monitoramento de erosão laminar em diferentes usos da terra, Uberlândia – MG (Sociedade & Natureza, 20(2): 157-175)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "19",
+    "sha": "0a12236c8646c0f1..."
+  },
+  {
+    "num": "104",
+    "cat": "Triagem",
+    "fname": "perdasolobaciahidrografica.pdf",
+    "authors": "Tailon Dal’ Maso Lucas (2024)",
+    "title": "Estimativa da perda de solo na Bacia Hidrográfica do Paraná III: influência de diferentes cenários de conservação do solo (Dissertação PPGTCA, UTFPR Medianeira)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "69",
+    "sha": "3484fca1086ab2e3..."
+  },
+  {
+    "num": "105",
+    "cat": "Triagem",
+    "fname": "pereira_lh_me_rcla.pdf",
+    "authors": "Luiz Henrique Pereira (2020)",
+    "title": "Caracterização da erosão hídrica laminar do solo em bacia hidrográfica com base na malha fundiária, por meio de sensoriamento remoto, geoprocessamento e modelagem (Dissertação, UNESP Rio Claro)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "125",
+    "sha": "4b59f4c94fa37fe4..."
+  },
+  {
+    "num": "106",
+    "cat": "Triagem",
+    "fname": "rgmf,+05+-+GUERRA,+A.+J.+T.;+JORGE,+M.+C.+O.;+RANGEL,+L.+A.;+BEZERRA,+J.+F.+R.;+LOUREIRO,+H.+A.+S.;+GARRITANO,+F.pdf",
+    "authors": "Guerra et al. (2021)",
+    "title": "Erosão dos solos, diferentes abordagens e técnicas aplicadas em voçorocas e erosão em trilhas (Rev. de Geomorfologia William Morris Davis, DOI: 10.48025/ISSN2675-6900.v2n2.2021.144)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "43",
+    "sha": "8deffc36d10a6ab4..."
+  },
+  {
+    "num": "107",
+    "cat": "Triagem",
+    "fname": "TCC_Lucas Duarte Oliveira.pdf",
+    "authors": "Lucas Duarte Oliveira (2022)",
+    "title": "Modelagem por meio de inteligência geoespacial para estimar a erosão laminar na Bacia Hidrográfica do Córrego Grande (Estado de Goiás – Brasil) (TCC, IF Goiano)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "46",
+    "sha": "8fc615b8d272fc7c..."
+  },
+  {
+    "num": "108",
+    "cat": "Triagem",
+    "fname": "Trabalho-Apa-RNCS-.pdf",
+    "authors": "Rego & Alves (2021)",
+    "title": "Sensoriamento Remoto aplicado à erosão do solo na porção sul da APA Litoral Norte, município de Mata de São João, Bahia (UFBA / RNCS)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "1",
+    "sha": "fdd21595a91654f9..."
+  },
+  {
+    "num": "109",
+    "cat": "Triagem",
+    "fname": "Técnicas de Sensoriamento Remoto.pdf",
+    "authors": "Tibcherani et al. (2025)",
+    "title": "Técnicas de Sensoriamento Remoto para Detecção de Feições Erosivas em Áreas Verdes Urbanas: Uma Revisão Crítica (Ed. Científica Digital, DOI: 10.37885/250920122)",
+    "eixo": "Validação Regional / Estrutura Fund",
+    "pages": "25",
+    "sha": "0fbf04fc6f2dde3c..."
+  },
+  {
+    "num": "110",
+    "cat": "Seminal",
+    "fname": "agisprocedureforautomaticallycalculatingtheUSLELSfactorontopographicallycom.pdf",
+    "authors": "Robert Hickey (2000)",
+    "title": "A GIS procedure for automatically calculating the USLE ...",
+    "eixo": "Topografia / MDE / Cálculo Automati",
+    "pages": "8",
+    "sha": "e3b45734da57316c..."
+  },
+  {
+    "num": "111",
+    "cat": "Seminal",
+    "fname": "Rufino, Biscaia e Merten (1993).pdf",
+    "authors": "R. L. Rufino, R. C. M. Biscaia... (1993)",
+    "title": "Determinação do potencial de erosão das chuvas do Estad...",
+    "eixo": "Fator R da USLE / Erosividade das C",
+    "pages": "6",
+    "sha": "149fb993bb1baef2..."
+  }
+]
