@@ -120,3 +120,7 @@ O critério de decisão estabelecia:
 ## 4. Conclusão
 
 A hipótese de defeito algorítmico no simulador `scripts/d25/poder_d25.py` está **definitivamente refutada**. As inversões observadas na Tabela 1 oficial com $R = 80$ réplicas decorriam exclusivamente do ruído de amostragem de Monte Carlo em regime de piso de poder ($\le 1,17\text{ EP}$ da diferença entre proporções independentes). O item de monotonicidade está formalmente encerrado e comprovado.
+
+> **[Nota de Retificação sobre o Alcance da Verificação — 04/11/2026, Tarefa C / P-6]:**
+> A conclusão acima delimitava-se estritamente às linhas de piso testadas nesta corrida (SD 0,30 e SD 0,45), que resolveram três das seis inversões catalogadas no Achado A-1. A declaração de encerramento formal do item para o simulador como um todo generalizou a partir de duas das nove linhas de SD, deixando sem verificação empírica a $R = 500$ as três inversões restantes (SD 0,08 em $k=28 \to 24$, SD 0,10 em $k=30 \to 28$ e SD 0,15 em $k=30 \to 28$). Para a verificação da grade completa e avaliação sistemática da monotonicidade em todos os pontos de operação, consulte a verificação da Tarefa C arquivada em [`docs/verificacoes/verificacao_grade_completa_poder_2026-11-04.md`](verificacao_grade_completa_poder_2026-11-04.md).
+
