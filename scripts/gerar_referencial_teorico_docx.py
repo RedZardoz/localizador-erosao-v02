@@ -2,7 +2,7 @@
 """
 Script de Geração do Documento Formal de Referencial Teórico (Revisão da Literatura)
 Projeto SAREL v2.0 - PPGTCA / UTFPR Medianeira (2026)
-Metodologia Real e Auditada: 111 Trabalhos Canônicos, Isento de Autorreferências (Regra R-L1).
+Metodologia Real e Auditada: 109 Trabalhos Canônicos, Isento de Autorreferências (Regra R-L1).
 """
 
 import os
@@ -154,7 +154,7 @@ def add_figure_with_caption(doc, image_path, caption_text, source_text="Fonte: O
         run_s.font.color.rgb = RGBColor(0x64, 0x74, 0x8B)
 
 def build_document():
-    print("Iniciando compilação do Referencial Teórico com 111 TRABALHOS CANÔNICOS (Isento de Autorreferência)...")
+    print("Iniciando compilação do Referencial Teórico com 109 TRABALHOS CANÔNICOS (Isento de Autorreferência)...")
     doc = docx.Document()
     
     # 1. Configuração de Margens ABNT (Sup 3cm, Esq 3cm, Inf 2cm, Dir 2cm)
@@ -224,7 +224,7 @@ def build_document():
     p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p_sub.paragraph_format.space_before = Pt(0)
     p_sub.paragraph_format.space_after = Pt(16)
-    r_sub = p_sub.add_run("Fundamentação Teórica, Metodologia de Curadoria Aberta e Inventário Analítico do Acervo Científico Auditado (111 Trabalhos Canônicos)\nProjeto SAREL v2.0: Localização e Predição de Erosão Laminar na Bacia Hidrográfica do Rio Paraná III por Sensoriamento Remoto Multifonte e Aprendizado de Máquina")
+    r_sub = p_sub.add_run("Fundamentação Teórica, Metodologia de Curadoria Aberta e Inventário Analítico do Acervo Científico Auditado (109 Trabalhos Canônicos)\nProjeto SAREL v2.0: Localização e Predição de Erosão Laminar na Bacia Hidrográfica do Rio Paraná III por Sensoriamento Remoto Multifonte e Aprendizado de Máquina")
     r_sub.font.name = "Calibri"
     r_sub.font.size = Pt(11)
     r_sub.italic = True
@@ -241,7 +241,7 @@ def build_document():
         ("Programa / Instituição:", "PPGTCA / Universidade Tecnológica Federal do Paraná (UTFPR) — Medianeira"),
         ("Título da Dissertação:", "Validação e Predição de Erosão Laminar usando Sensoriamento Remoto e Algoritmos de Gradiente Impulsionado (XGBoost)"),
         ("Linha de Pesquisa:", "Inteligência Geoespacial, Modelagem Física de Bacias e Conservação do Solo"),
-        ("Data de Consolidação / Versão:", "Novembro de 2026 — SAREL Versão 2.0 (Norma de Lastro R-L1 a R-L5 | 111 Trabalhos Canônicos)")
+        ("Data de Consolidação / Versão:", "Novembro de 2026 — SAREL Versão 2.0 (Norma de Lastro R-L1 a R-L5 | 109 Trabalhos Canônicos)")
     ]
     for idx, (label, val) in enumerate(meta_data):
         row = meta_table.rows[idx]
@@ -283,7 +283,7 @@ def build_document():
 
     add_callout(
         doc,
-        "A construção do presente referencial teórico adota como diretriz o modelo estruturado de revisão sistemática de literatura, adaptado a partir das fases canônicas propostas por Tranfield, Denyer e Smart (2003) e Ensslin et al. (2014) (ProKnow-C), garantindo transparência, repetibilidade em ambiente de código aberto e auditoria forense das 111 obras canônicas externas que compõem o acervo formal, com exclusão estrita de qualquer autorreferência a documentos internos do projeto.",
+        "A construção do presente referencial teórico adota como diretriz o modelo estruturado de revisão sistemática de literatura, adaptado a partir das fases canônicas propostas por Tranfield, Denyer e Smart (2003) e Ensslin et al. (2014) (ProKnow-C), garantindo transparência, repetibilidade em ambiente de código aberto e auditoria forense das 109 obras canônicas externas que compõem o acervo formal, com exclusão estrita de qualquer autorreferência a documentos internos do projeto.",
         title="DIRETRIZ DE ENQUADRAMENTO EPISTEMOLÓGICO",
         border_color="1B365D",
         bg_color="F0F4F8"
@@ -402,7 +402,7 @@ def build_document():
         ("Operadores Booleanos", "AND entre eixos conceituais distintos; OR entre sinônimos, variantes técnicas e expressões equivalentes nos campos de busca."),
         ("Campos de Consulta", "Título (Title), Resumo (Abstract) e Palavras-chave (Keywords) nos repositórios e bases consultadas."),
         ("Critérios de Inclusão", "Artigos revisados por pares que investigam modelagem preditiva de erosão hídrica, algoritmos supervisionados baseados em árvores, validação espacial, sensoriamento remoto óptico/altimétrico e estudos edafoclimáticos no bioma subtropical e no Paraná."),
-        ("Critérios de Exclusão", "Artigos puramente laboratoriais sob chuva simulada sem validação de escala; estudos exclusivos de voçorocas/ravinas (gullies) sem modelagem laminar; gravações em vídeo (.mkv), apresentações em slides (.pptx) ou notas técnicas preliminares (.docx); relatórios internos de auditoria do próprio projeto (vedação de autorreferência R-L1); blogs comerciais (ex: IBTopografia) sem revisão por pares."),
+        ("Critérios de Exclusão", "Artigos puramente laboratoriais sob chuva simulada sem validação de escala; estudos de feições lineares (voçorocas/ravinas) cujo aporte seja exclusivamente descritivo sem transferência metodológica de algoritmos de aprendizado de máquina ou validação espacial (obras de voçorocas são mantidas no acervo estritamente pelo mérito metodológico de modelagem preditiva, ensembles e validação honesta); gravações em vídeo (.mkv), apresentações em slides (.pptx) ou notas técnicas preliminares (.docx) sem dados empíricos primários; relatórios internos de auditoria do próprio projeto (vedação de autorreferência R-L1); blogs comerciais sem revisão por pares."),
         ("Idiomas Aceitos", "Inglês (para o estado da arte global em Machine Learning e sensores orbitais) e Português (para calibrações regionais de solo e chuva no Paraná)."),
         ("Tipos de Documento", "Artigos em periódicos científicos indexados, anais de congressos de excelência (SBSR, SBRH), teses e dissertações de programas de referência (PPGTCA/UTFPR, UNIOESTE, ESALQ-USP)."),
         ("Janela Temporal", "Histórico completo ('All Years') até 2026, com foco especial na produção recente (2021–2026) para métodos de inteligência artificial.")
@@ -444,7 +444,7 @@ def build_document():
     p_inv2.paragraph_format.line_spacing = 1.3
     p_inv2.paragraph_format.space_after = Pt(6)
     p_inv2.add_run(
-        "A verificação da ocorrência concomitante dos três eixos por meio do operador booleano 'AND' tríplice confirmou uma lacuna aguda na literatura: a conjunção de erosão laminar contínua, sensoriamento remoto multifonte e aprendizado de máquina supervisionado com validação espacial honesta apresenta escassez quase total de trabalhos publicados (0 a 1 trabalho aderente). A quase totalidade dos artigos com IA aborda apenas feições lineares agressivas (ravinas e voçorocas) ou emprega validação aleatória ingênua (standard k-fold) com severo vazamento espacial de dados. A Figura 2 ilustra a constatação formal dessa lacuna."
+        "A verificação da ocorrência concomitante dos três eixos por meio do operador booleano 'AND' tríplice confirmou uma lacuna aguda na literatura: a conjunção de erosão laminar contínua, sensoriamento remoto multifonte e aprendizado de máquina supervisionado com validação espacial honesta apresenta escassez quase total de trabalhos publicados (0 a 1 trabalho aderente). A quase totalidade dos artigos com IA aborda apenas feições lineares agressivas (ravinas e voçorocas) ou emprega validação aleatória ingênua (standard k-fold) com severo vazamento espacial de dados. A única exceção aderente identificada na literatura global recente corresponde ao estudo de Abdo et al. (2026), intitulado 'Enhancing predictive modeling of interrill and rill erosion susceptibility in the Eastern Mediterranean using stacking ensemble machine learning algorithms' (Soil & Tillage Research, DOI: 10.1016/j.still.2025.107053), o qual integra modelagem de erosão em entressulcos/sulcos e algoritmos de ensemble machine learning, catalogado e auditado no próprio acervo formal do projeto sob o Item nº 009. A Figura 2 ilustra a constatação formal dessa lacuna."
     )
 
     add_figure_with_caption(
@@ -503,7 +503,7 @@ def build_document():
     p_filt2.paragraph_format.line_spacing = 1.3
     p_filt2.paragraph_format.space_after = Pt(6)
     p_filt2.add_run(
-        "O processo de curadoria iniciou-se com a análise do histórico diário de varreduras automatizadas de busca (agente Workspace Studio Flows, abrangendo o período de 26/05/2026 a 19/10/2026 e consolidado em 32 páginas de registro de busca), combinado a consultas direcionadas nos repositórios institucionais abertos e bases científicas (SciELO, ScienceDirect, CAPES, RIUT/UTFPR, UNIOESTE e Embrapa). Esse levantamento preliminar resultou na ingestão de 122 itens brutos no manifesto inicial de seleção do projeto (manifesto_selecao.json)."
+        "O processo de curadoria iniciou-se com a análise do histórico diário de varreduras automatizadas de busca (agente Workspace Studio Flows, abrangendo o período de 26/05/2026 a 19/10/2026 e consolidado em 32 páginas de registro de busca), combinado a consultas direcionadas nos repositórios institucionais abertos e bases científicas (SciELO, ScienceDirect, CAPES, RIUT/UTFPR, UNIOESTE e Embrapa). Esse levantamento preliminar englobou um lote exploratório inicial de 122 itens brutos; registra-se com transparência metodológica que o arquivo versionado manifesto_selecao.json (com 53 registros) reflete uma etapa posterior da curadoria do fluxo de trabalho, de modo que o lote bruto preliminar de 122 itens não é integralmente reconstituível apenas pelo histórico do repositório git."
     )
 
     p_filt3 = doc.add_paragraph()
@@ -517,13 +517,13 @@ def build_document():
     p_filt4.paragraph_format.line_spacing = 1.3
     p_filt4.paragraph_format.space_after = Pt(6)
     p_filt4.add_run(
-        "Em estrita observância à regra R-L1 da Norma de Lastro Científico ('Autorreferência não é lastro'), documentos internos, relatórios preliminares ou notas técnicas de auditoria do próprio projeto foram rigorosamente expurgados do cômputo bibliográfico, assegurando que o acervo reflita exclusivamente literatura científica externa de autoridade reconhecida. Dessa forma, o acervo formal definitivo consolida-se em exatamente 111 trabalhos canônicos externos, integralmente arquivados em disco local com hashes criptográficos SHA-256 e categorizados em quatro grupos funcionais: (a) 35 Pesquisas Diretamente Relacionadas (Machine Learning, XGBoost, sensoriamento orbital e validação espacial); (b) 53 Pesquisas Relacionadas (modelagem física USLE/RUSLE, fatores R, K, LS, C, P e estudos de erosão); (c) 21 Obras de Contexto Regional e Triagem (dissertações do PPGTCA/UTFPR Medianeira, UNIOESTE/BP3, UNESP e malha fundiária do CAR); e (d) 2 Obras Seminais Fundacionais. O funil metodológico desse processo é detalhado na Figura 5."
+        "Em estrita observância à regra R-L1 da Norma de Lastro Científico ('Autorreferência não é lastro'), documentos internos, relatórios preliminares ou notas técnicas de auditoria do próprio projeto foram rigorosamente expurgados do cômputo bibliográfico, assegurando que o acervo reflita exclusivamente literatura científica externa de autoridade reconhecida. Dessa forma, o acervo formal definitivo consolida-se em exatamente 109 trabalhos canônicos externos, integralmente catalogados com hashes criptográficos SHA-256 e categorizados em quatro grupos funcionais: (a) 35 Pesquisas Diretamente Relacionadas (Machine Learning, XGBoost, sensoriamento orbital e validação espacial); (b) 53 Pesquisas Relacionadas (modelagem física USLE/RUSLE, fatores R, K, LS, C, P e estudos de erosão); (c) 19 Obras de Contexto Regional e Triagem (dissertações do PPGTCA/UTFPR Medianeira, UNIOESTE/BP3, UNESP e malha fundiária do CAR, após expurgo de 2 duplicatas byte-idênticas); e (d) 2 Obras Seminais Fundacionais. Registra-se para verificação independente que a totalidade dos arquivos físicos reside no acervo arquivado em disco local auditado do pesquisador (docs/bibliografia/), mantendo-se no repositório git as fontes primárias de verificação formal (docs/verificacoes/fontes/) e os metadados reprodutíveis. O funil metodológico desse processo é detalhado na Figura 5."
     )
 
     add_figure_with_caption(
         doc,
         "docs/dissertacao/figuras_referencial/figura_5_funil_filtragem.png",
-        "Figura 5 – Processo real de triagem, curadoria e auditoria do portfólio de 111 trabalhos canônicos.",
+        "Figura 5 – Processo real de triagem, curadoria e auditoria do portfólio de 109 trabalhos canônicos.",
         "Fonte: O autor (2026)."
     )
 
@@ -541,7 +541,7 @@ def build_document():
     p_struct.paragraph_format.line_spacing = 1.3
     p_struct.paragraph_format.space_after = Pt(6)
     p_struct.add_run(
-        "A partir da curadoria do acervo auditado de 111 trabalhos canônicos e da delimitação da lacuna científica, o referencial teórico da dissertação de mestrado estrutura-se em três grandes eixos temáticos complementares, seguidos por uma seção de síntese normativa e formalização das hipóteses de trabalho:"
+        "A partir da curadoria do acervo auditado de 109 trabalhos canônicos e da delimitação da lacuna científica, o referencial teórico da dissertação de mestrado estrutura-se em três grandes eixos temáticos complementares, seguidos por uma seção de síntese normativa e formalização das hipóteses de trabalho:"
     )
 
     # 3.1 EIXO I
@@ -797,11 +797,11 @@ def build_document():
         bg_color="F0FDFA"
     )
 
-    # 5. INVENTÁRIO DO ACERVO BIBLIOGRÁFICO AUDITADO (111 TRABALHOS CANÔNICOS)
+    # 5. INVENTÁRIO DO ACERVO BIBLIOGRÁFICO AUDITADO (109 TRABALHOS CANÔNICOS)
     h5 = doc.add_paragraph()
     h5.paragraph_format.space_before = Pt(14)
     h5.paragraph_format.space_after = Pt(6)
-    r_h5 = h5.add_run("5. INVENTÁRIO DO ACERVO BIBLIOGRÁFICO AUDITADO (111 TRABALHOS CANÔNICOS)")
+    r_h5 = h5.add_run("5. INVENTÁRIO DO ACERVO BIBLIOGRÁFICO AUDITADO (109 TRABALHOS CANÔNICOS)")
     r_h5.bold = True
     r_h5.font.name = "Calibri"
     r_h5.font.size = Pt(13)
@@ -811,11 +811,11 @@ def build_document():
     p_inv_intro.paragraph_format.line_spacing = 1.3
     p_inv_intro.paragraph_format.space_after = Pt(6)
     p_inv_intro.add_run(
-        "A Tabela 2 apresenta o inventário analítico integral das 111 obras canônicas que compõem o portfólio bibliográfico formal da pesquisa, auditado e catalogado em conformidade estrita com a regra R-L5 da Norma de Lastro Científico. Em observância mandatória à regra R-L1 ('Autorreferência não é lastro'), foram excluídos quaisquer documentos, relatórios ou manuais internos do próprio projeto, preservando com absoluta imparcialidade científica apenas publicações externas revisadas por pares, teses, dissertações e documentos técnicos oficiais de instituições de pesquisa reconhecidas (Embrapa, universidades e sociedades científicas). Todos os registros foram integralmente higienizados a partir da leitura da folha de rosto e consulta aos identificadores digitais canônicos (DOI / CrossRef), garantindo autores reais, anos exatos e títulos completos."
+        "A Tabela 2 apresenta o inventário analítico integral das 109 obras canônicas que compõem o portfólio bibliográfico formal da pesquisa, auditado e catalogado em conformidade estrita com a regra R-L5 da Norma de Lastro Científico. Em observância mandatória à regra R-L1 ('Autorreferência não é lastro'), foram excluídos quaisquer documentos, relatórios ou manuais internos do próprio projeto, preservando com absoluta imparcialidade científica apenas publicações externas revisadas por pares, teses, dissertações e documentos técnicos oficiais de instituições de pesquisa reconhecidas (Embrapa, universidades e sociedades científicas). Em cumprimento rigoroso ao princípio da verdade forense (R-L2 e R-L3), declara-se expressamente o grau de higienização do acervo: todos os 109 registros foram individualmente identificados por leitura direta dos arquivos digitais e indexados com hashes criptográficos SHA-256 de arquivo único, eliminando duplicatas físicas e títulos espúrios; todavia, a conferência exaustiva de folha de rosto e resolução sistemática de identificadores digitais permanentes (DOI / CrossRef) registro por registro permanece como dívida técnica documentada, datada de 04/11/2026, com os registros pendentes de conferência de DOI devidamente discriminados no relatório de auditoria."
     )
 
-    # Carregar acervo sanitizado com exatamente 111 obras canônicas
-    sanitized_path = "data/acervo_sanitizado_111.json"
+    # Carregar acervo sanitizado com exatamente 109 obras canônicas
+    sanitized_path = "data/acervo_sanitizado_109.json"
     with open(sanitized_path, "r", encoding="utf-8") as f:
         works = json.load(f)
         
@@ -851,7 +851,7 @@ def build_document():
     p_src_t2.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p_src_t2.paragraph_format.space_before = Pt(2)
     p_src_t2.paragraph_format.space_after = Pt(8)
-    r_st2 = p_src_t2.add_run("Tabela 2 – Inventário consolidado e higienizado das 111 obras canônicas externas arquivadas com integridade SHA-256.\nFonte: Acervo formal auditado em docs/bibliografia e docs/auditorias/externa_a/ (2026).")
+    r_st2 = p_src_t2.add_run("Tabela 2 – Inventário consolidado e higienizado das 109 obras canônicas externas arquivadas com integridade SHA-256.\nFonte: Acervo formal auditado em disco local (docs/bibliografia/) e fontes primárias em docs/verificacoes/fontes/ (2026).")
     r_st2.italic = True
     r_st2.font.name = "Calibri"
     r_st2.font.size = Pt(8.5)
@@ -868,6 +868,7 @@ def build_document():
     r_h6.font.color.rgb = COLOR_PRIMARY
 
     references = [
+        "ABDO, H. G. et al. Enhancing predictive modeling of interrill and rill erosion susceptibility in the Eastern Mediterranean using stacking ensemble machine learning algorithms. Soil and Tillage Research, v. 258, art. 107053, 2026. DOI: 10.1016/j.still.2025.107053.",
         "ALTMAN, D. G.; ROYSTON, P. The cost of dichotomising continuous variables. BMJ, v. 332, n. 7549, p. 1080, 2006. DOI: 10.1136/bmj.332.7549.1080.",
         "ALVAREZ-VANHARD, E. et al. UAV & satellite synergies for optical remote sensing applications in agriculture and forest: a review. Science of Remote Sensing, v. 3, p. 100019, 2021. DOI: 10.1016/j.srs.2021.100019.",
         "BAZZI, C. L. et al. Estimating soil loss by laminar erosion using precision agriculture computational tools. Revista Brasileira de Engenharia Agrícola e Ambiental, v. 26, n. 12, p. 907-914, 2022. DOI: 10.1590/1807-1929/agriambi.v26n12p907-914.",
@@ -918,16 +919,20 @@ def build_document():
         run_r.font.color.rgb = RGBColor(0x33, 0x41, 0x55)
 
     # SALVANDO OS DOCUMENTOS
-    target_path1 = "docs/dissertacao/Estrutura_Referencial_Teorico_Dissertacao_SAREL.docx"
-    target_path2 = "docs/bibliografia/Estrutura_Referencial_Teorico_SAREL.docx"
+    target_path1 = "docs/dissertacao/Estrutura_Referencial_Teorico_Luis_Alfredo_2858827.docx"
+    target_path2 = "docs/dissertacao/Estrutura_Referencial_Teorico_Dissertacao_SAREL.docx"
+    target_path3 = "docs/bibliografia/Estrutura_Referencial_Teorico_SAREL.docx"
     
     os.makedirs(os.path.dirname(target_path1), exist_ok=True)
     doc.save(target_path1)
     print(f"Documento retificado salvo em: {target_path1}")
     
-    os.makedirs(os.path.dirname(target_path2), exist_ok=True)
     shutil.copyfile(target_path1, target_path2)
     print(f"Cópia retificada salva em: {target_path2}")
+    
+    os.makedirs(os.path.dirname(target_path3), exist_ok=True)
+    shutil.copyfile(target_path1, target_path3)
+    print(f"Cópia retificada salva em: {target_path3}")
 
 if __name__ == "__main__":
     build_document()
