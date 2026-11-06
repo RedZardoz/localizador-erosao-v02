@@ -1,45 +1,31 @@
 /**
  * ============================================================================
  * Fator C de Uso e Manejo do Solo — SAREL (PPGTCA 2026)
+ * Decisão D01 — Durigon et al. (2014)
  * ============================================================================
  *
  * O QUÊ ESTE MÓDULO CALCULA:
  * - Calcula o Fator C da Equação Universal de Perda de Solo Revisada (RUSLE)
- *   utilizando a formulação híbrida multiplicativa:
- *   C = ((1 - NDVI) / 2) * (1 + BSI)
- * - Mapeia a suscetibilidade erosiva decorrente da cobertura do solo em escala contínua,
- *   integrando tanto o vigor vegetal verde quanto a presença de palhada residual seca.
+ *   utilizando estritamente o modelo de Durigon et al. (2014):
+ *   C = (1 - NDVI) / 2
+ * - Mapeia a atenuação das perdas de solo pela cobertura vegetal em escala contínua,
+ *   derivada da série temporal Sentinel-2 L2A.
  *
- * POR QUÊ ESTA EQUAÇÃO FOI ADOTADA NA PESQUISA (SEÇÃO 2.1 & DECISÃO D01):
- * 1. O Paradoxo do Sistema Plantio Direto (SPD):
- *    Modelos clássicos baseados puramente em NDVI (como Durigon et al., 2014) assumem
- *    que qualquer redução no vigor vegetativo implica exposição e perda de solo.
- *    Na entressafra paranaense, contudo, talhões em SPD de alta performance apresentam
- *    baixa biomassa verde fotossintética (NDVI baixo, ~0.20 a 0.35), mas permanecem
- *    com 100% da superfície protegida por espessa camada de palhada residual de milho,
- *    trigo ou aveia (3 a 6 t/ha de matéria seca).
- *    A fórmula puramente linear superestimaria o Fator C (C ~ 0.40), classificando
- *    falsamente uma área conservacionista como degradada.
- * 2. Discriminação Óptica pelo Bare Soil Index (BSI):
- *    A palhada residual de gramíneas possui alta reflectância no infravermelho de
- *    ondas curtas (SWIR B11/B12) e absorção diagnóstica de celulose/lignina,
- *    diferindo sensivelmente da curva espectral de latossolos ricos em óxidos de ferro.
- *    O BSI capta essa diferença: solo mineral exposto e lavado apresenta BSI > 0.10,
- *    enquanto solo coberto com palhada mantém BSI < 0.00.
- * 3. Síntese Biofísica Multiplicativa:
- *    A multiplicação por (1 + BSI) atua como um modulador físico sem parâmetros livres:
- *    - Se o solo estiver lavado e erodido (BSI > 0.10), o fator amplifica a perda de solo.
- *    - Se o solo estiver protegido por palhada (BSI < 0.00), o fator reduz o Fator C,
- *      reproduzindo com fidelidade a proteção mecânica contra o impacto das gotas de chuva
- *      (efeito splash) e a desaceleração do escoamento superficial laminar.
+ * FUNDAMENTAÇÃO METODOLÓGICA (DECISÃO D01):
+ * - Adotada pelo pesquisador em 2026-09-08 e reafirmada em 2026-11-06.
+ * - Validade regional para bacia hidrográfica tropical brasileira.
+ * - Formulação direta sem parâmetros livres e sem corte artificial.
+ * - Variantes exploratórias (ex.: modulação espectral por BSI ou formulação exponencial
+ *   de Van der Knijff et al., 2000) são mantidas estritamente como funções de
+ *   análise de sensibilidade fora do caminho analítico oficial (§12 e §18).
  *
  * Referências:
  * - Durigon, V. L. et al. (2014). NDVI time series for monitoring RUSLE cover
  *   management factor in a tropical watershed. Int. J. Remote Sensing, 35(2), 441-453.
- * - Metodologia PPGTCA 2026, Seção 2.1 e Tabela 1.
  */
 
-import { Proveniencia, valorOuNulo } from "@/types/proveniencia";
+import { Proveniencia } from "@/types/proveniencia";
+import { DECISOES, exigirDecisao, ErroDecisaoPendente } from "@/config/decisoes";
 
 export class ErroForaDoDominio extends Error {
   constructor(mensagem: string) {
@@ -49,37 +35,49 @@ export class ErroForaDoDominio extends Error {
 }
 
 /**
- * Calcula o Fator C a partir do NDVI e BSI pela formulação híbrida SPD.
+ * Calcula o Fator C a partir do NDVI pela formulação de Durigon et al. (2014): C = (1 - NDVI) / 2.
  *
- * O QUÊ: Retorna o valor numérico adimensional do Fator C [0 a 1].
- * POR QUÊ: Fornece um preditor físico-informado essencial para a matriz de treino
- * do XGBoost e para a estimativa teórica de perda de solo (Linha de Base RUSLE).
+ * O QUÊ: Retorna o valor numérico adimensional do Fator C em [0, 1].
+ * POR QUÊ: Fornece a linha de base física de cobertura do solo conforme a Decisão D01.
+ *
+ * AVALIAÇÃO DE DOMÍNIO DE C (§23.8):
+ * Com NDVI rigorosamente validado no domínio biofísico [-1, 1], a função linear C = (1 - NDVI) / 2
+ * mapeia bijectionalmente [-1, 1] no intervalo físico fechado [0, 1]:
+ *   NDVI = -1.0 -> C = 1.0 (exposição / suscetibilidade máxima)
+ *   NDVI =  0.0 -> C = 0.5 (solo desnudo de referência)
+ *   NDVI =  1.0 -> C = 0.0 (cobertura vegetal total)
+ * Portanto, para entradas válidas, C pertence a [0, 1] por construção matemática, não necessitando
+ * de cortes ou pisos em tempo de execução.
  */
-export function calcularFatorC(ndvi: number, bsi?: number): number {
+export function calcularFatorC(ndvi: number): number {
   if (!Number.isFinite(ndvi) || ndvi < -1 || ndvi > 1) {
     throw new ErroForaDoDominio(`NDVI ${ndvi} fora do domínio biofísico [-1, 1].`);
   }
-  if (bsi !== undefined) {
-    if (!Number.isFinite(bsi) || bsi < -1 || bsi > 1) {
-      throw new ErroForaDoDominio(`BSI ${bsi} fora do domínio biofísico [-1, 1].`);
-    }
-  }
-  // permitido: EXC-LIB-RUSLE-FATORC-BSINUM fallback neutro para formula base da RUSLE quando bsi omitido
-  const bsiNum = bsi !== undefined ? bsi : 0;
-  const c = ((1 - ndvi) / 2) * (1 + bsiNum);
-  if (!Number.isFinite(c) || c < 0 || c > 1) {
-    throw new ErroForaDoDominio(
-      `Fator C calculado (${c.toFixed(4)}) fora do domínio físico [0, 1] da RUSLE (Renard et al., 1997) para os insumos NDVI=${ndvi} e BSI=${bsiNum}.`
-    );
-  }
-  return c;
+
+  // Consulta mandatória ao Registro de Decisões (Decisão D01) (§8, Regra 9)
+  exigirDecisao(DECISOES.D01);
+
+  return (1 - ndvi) / 2;
 }
 
 /**
- * Formulação híbrida explícita adaptada ao Sistema Plantio Direto (SPD).
+ * Formulação exploratória para análise de sensibilidade com modulação espectral por BSI (NÃO integra o caminho analítico oficial).
  */
-export function calcularFatorCHibrido(ndvi: number, bsi: number): number {
-  return calcularFatorC(ndvi, bsi);
+export function calcularFatorCSensibilidadeBsi(ndvi: number, bsi: number): number {
+  if (!Number.isFinite(ndvi) || ndvi < -1 || ndvi > 1) {
+    throw new ErroForaDoDominio(`NDVI ${ndvi} fora do domínio biofísico [-1, 1].`);
+  }
+  if (!Number.isFinite(bsi) || bsi < -1 || bsi > 1) {
+    throw new ErroForaDoDominio(`BSI ${bsi} fora do domínio biofísico [-1, 1].`);
+  }
+
+  const c = ((1 - ndvi) / 2) * (1 + bsi);
+  if (!Number.isFinite(c) || c < 0 || c > 1) {
+    throw new ErroForaDoDominio(
+      `Fator C de sensibilidade (${c.toFixed(4)}) fora do domínio físico [0, 1] da RUSLE para os insumos NDVI=${ndvi} e BSI=${bsi}.`
+    );
+  }
+  return c;
 }
 
 /**
@@ -102,11 +100,10 @@ export function calcularFatorCVanDerKnijff(ndvi: number, alpha: number, beta: nu
 }
 
 /**
- * Encapsulador com Proveniência Científica para o Fator C (Decisão D01 / Método Mestrado 2026).
+ * Encapsulador com Proveniência Científica para o Fator C (Decisão D01 / Durigon et al., 2014).
  */
 export function obterFatorCComProveniencia(
-  ndviProveniencia: Proveniencia<number> | null | undefined,
-  bsiProveniencia?: Proveniencia<number> | null | undefined
+  ndviProveniencia: Proveniencia<number> | null | undefined
 ): Proveniencia<number> {
   if (!ndviProveniencia || ndviProveniencia.estado === "indisponivel") {
     return {
@@ -116,23 +113,23 @@ export function obterFatorCComProveniencia(
     };
   }
 
-  const bsiVal = valorOuNulo(bsiProveniencia);
-  const temBsi = bsiVal !== null && Number.isFinite(bsiVal);
-
   try {
-    const c = calcularFatorC(ndviProveniencia.valor, temBsi ? bsiVal : 0);
+    const c = calcularFatorC(ndviProveniencia.valor);
     return {
       estado: "modelado",
       valor: Number(c.toFixed(4)),
-      modelo: temBsi
-        ? "Híbrido SPD: C = ((1 - NDVI) / 2) * (1 + BSI) (Durigon et al., 2014 modulado por BSI)"
-        : "Durigon et al. (2014): C = (1 - NDVI) / 2",
-      insumos: temBsi
-        ? ["NDVI Sentinel-2 L2A", "BSI Sentinel-2 L2A"]
-        : ["NDVI Sentinel-2 L2A"],
+      modelo: "Durigon et al. (2014): C = (1 - NDVI) / 2",
+      insumos: ["NDVI Sentinel-2 L2A"],
       decisoes: ["D01"],
     };
   } catch (err: unknown) {
+    if (err instanceof ErroDecisaoPendente) {
+      return {
+        estado: "indisponivel",
+        causa: "decisao-pendente",
+        motivo: `Fator C aguarda definição metodológica da Decisão ${err.decisaoId}.`,
+      };
+    }
     const msg = err instanceof Error ? err.message : String(err);
     return {
       estado: "indisponivel",

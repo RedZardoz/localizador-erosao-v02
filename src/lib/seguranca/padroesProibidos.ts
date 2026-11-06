@@ -268,14 +268,6 @@ export const LISTA_EXCECOES_AUTORIZADAS: ExcecaoAutorizada[] = [
     autorizadoPor: "GOV-5 / 2026-10-19",
     padrao: "default-numerico-desestruturacao",
   },
-  {
-    id: "EXC-LIB-RUSLE-FATORC-BSINUM",
-    arquivo: "src/lib/rusle/fatorC.ts",
-    trecho: "const bsiNum = bsi !== undefined ? bsi : 0",
-    justificativa: "Fallback neutro para formula base da RUSLE quando bsi omitido",
-    autorizadoPor: "Auditoria 2026-10-30",
-    padrao: "preditor-cientifico-de-limiar-ou-zero",
-  },
   // Exceções de Coalescência com Coleção Vazia (Portões e Paridade 2026-10-31)
   {
     id: "EXC-UI-INSPETOR-GRAFICO",

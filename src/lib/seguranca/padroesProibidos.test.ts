@@ -310,15 +310,15 @@ describe("Varredor de Padrões Proibidos (Regra 1 e 5)", () => {
     });
   });
 
-  describe("Varredura no código em src/lib, src/app/api, src/store, src/config e src/components (Q2.ii e Item 3c)", () => {
-    it("nenhum arquivo em src/lib, src/app/api, src/store, src/config ou src/components deve conter padrões proibidos", () => {
-      const diretoriosAlvo = ["src/lib", "src/app/api", "src/store", "src/config", "src/components"].map((d) =>
+  describe("Varredura no código em src/lib, src/app, src/store, src/config, src/components e src/types (Q2.ii, Item 3c e Fechamento de Furo 2026-11-06)", () => {
+    it("nenhum arquivo em src/lib, src/app, src/store, src/config, src/components ou src/types deve conter padrões proibidos", () => {
+      const diretoriosAlvo = ["src/lib", "src/app", "src/store", "src/config", "src/components", "src/types"].map((d) =>
         path.resolve(process.cwd(), d)
       );
-      const arquivos = diretoriosAlvo.flatMap((dir) => listarArquivosCodigo(dir));
+      const arquivos = Array.from(new Set(diretoriosAlvo.flatMap((dir) => listarArquivosCodigo(dir))));
 
-      // Piso mínimo de arquivos examinados (medido hoje: > 115 arquivos => piso 85)
-      const PISO_MINIMO_CODIGO = 85;
+      // Piso mínimo de arquivos examinados (medido hoje: 139 arquivos => piso 105)
+      const PISO_MINIMO_CODIGO = 105;
       expect(
         arquivos.length,
         `Varredura de padrões proibidos em código ativo examinou apenas ${arquivos.length} arquivos (esperado >= ${PISO_MINIMO_CODIGO}). Possível diretório ausente ou renomeado.`

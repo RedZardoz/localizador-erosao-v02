@@ -1,13 +1,16 @@
 import { describe, it, expect } from "vitest";
+import fs from "fs";
+import path from "path";
 import {
   calcularFatorC,
+  calcularFatorCSensibilidadeBsi,
   calcularFatorCVanDerKnijff,
   obterFatorCComProveniencia,
   ErroForaDoDominio,
 } from "./fatorC";
 import { montarLinhaDeBaseRUSLE, obterFatorPPadrao } from "./linhaDeBase";
 import { validarInvariantesArtefato, ArtefatoProjetado } from "../matriz/invariantes";
-import { REGISTRO_DECISOES } from "@/config/decisoes";
+import { REGISTRO_DECISOES, DECISOES, ErroDecisaoPendente } from "@/config/decisoes";
 
 describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
   describe("14.1 Fator C (Durigon et al., 2014)", () => {
@@ -39,23 +42,29 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
       expect(() => calcularFatorC(Infinity)).toThrow(ErroForaDoDominio);
     });
 
-    it("calcula a formulação híbrida SPD modulada por BSI: C = ((1 - NDVI)/2) * (1 + BSI)", () => {
-      // Caso base (sem BSI ou BSI = 0): reduz a Durigon
-      expect(calcularFatorC(0.2, 0)).toBeCloseTo(0.4, 6);
-
-      // Solo exposto lavado (BSI positivo = 0.5): fator C aumenta
-      expect(calcularFatorC(0.2, 0.5)).toBeCloseTo(0.6, 6);
-
-      // Solo protegido com palhada (BSI negativo = -0.2): fator C diminui
-      expect(calcularFatorC(0.7, -0.2)).toBeCloseTo(0.12, 6);
+    it("exige que a decisão D01 esteja decidida no Registro de Decisões (§8)", () => {
+      const estadoOriginal = DECISOES.D01.estado;
+      try {
+        DECISOES.D01.estado = "pendente";
+        expect(() => calcularFatorC(0.4)).toThrow(ErroDecisaoPendente);
+        const resp = obterFatorCComProveniencia({
+          estado: "medido",
+          valor: 0.4,
+          fonte: "Sentinel-2 L2A",
+          adquiridoEm: "2026-05-10T12:00:00Z",
+          consultadoEm: "2026-09-10T21:00:00Z",
+        });
+        expect(resp.estado).toBe("indisponivel");
+        if (resp.estado === "indisponivel") {
+          expect(resp.causa).toBe("decisao-pendente");
+          expect(resp.motivo).toContain("D01");
+        }
+      } finally {
+        DECISOES.D01.estado = estadoOriginal;
+      }
     });
 
-    it("BSI fora do domínio [-1, 1] lança erro em vez de corte silencioso", () => {
-      expect(() => calcularFatorC(0.4, 1.5)).toThrow(ErroForaDoDominio);
-      expect(() => calcularFatorC(0.4, -1.2)).toThrow(ErroForaDoDominio);
-    });
-
-    it("encapsula proveniência corretamente e trata fora-do-dominio sem quebrar", () => {
+    it("encapsula proveniência corretamente com modelo puro Durigon et al. (2014) e trata fora-do-dominio sem quebrar", () => {
       const respValida = obterFatorCComProveniencia({
         estado: "medido",
         valor: 0.4,
@@ -67,6 +76,10 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
       if (respValida.estado === "modelado") {
         expect(respValida.valor).toBe(0.3);
         expect(respValida.decisoes).toContain("D01");
+        expect(respValida.modelo).toBe("Durigon et al. (2014): C = (1 - NDVI) / 2");
+        expect(respValida.modelo).not.toContain("Híbrido");
+        expect(respValida.modelo).not.toContain("(1 + BSI)");
+        expect(respValida.insumos).toEqual(["NDVI Sentinel-2 L2A"]);
       }
 
       const respFora = obterFatorCComProveniencia({
@@ -85,64 +98,74 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
       expect(respIndisp.estado).toBe("indisponivel");
     });
 
-    it("rejeita saída híbrida C > 1 (ex.: NDVI = -1.0, BSI = 1.0 -> C = 2.0) devolvendo indisponivel com causa fora-do-dominio (F0.2, Regra 2)", () => {
-      expect(() => calcularFatorC(-1.0, 1.0)).toThrow(ErroForaDoDominio);
+    it("garante que obterFatorCComProveniencia e calcularFatorC possuem aridade 1 (não admitem segundo argumento)", () => {
+      expect(obterFatorCComProveniencia.length).toBe(1);
+      expect(calcularFatorC.length).toBe(1);
+    });
+  });
 
-      const resForaDominio = obterFatorCComProveniencia(
-        {
-          estado: "medido",
-          valor: -1.0,
-          fonte: "Sentinel-2 L2A",
-          adquiridoEm: "2026-05-10",
-          consultadoEm: "2026-09-10",
-        },
-        {
-          estado: "medido",
-          valor: 1.0,
-          fonte: "Sentinel-2 L2A",
-          adquiridoEm: "2026-05-10",
-          consultadoEm: "2026-09-10",
-        }
-      );
-      expect(resForaDominio.estado).toBe("indisponivel");
-      if (resForaDominio.estado === "indisponivel") {
-        expect(resForaDominio.causa).toBe("fora-do-dominio");
-        expect(resForaDominio.motivo).toContain("NDVI=-1");
-        expect(resForaDominio.motivo).toContain("BSI=1");
-        expect(resForaDominio.motivo).toContain("2.0000");
-      }
+  describe("Análise de Sensibilidade — Modulação por BSI (exploratória)", () => {
+    it("calcula a formulação de sensibilidade modulada por BSI: C = ((1 - NDVI)/2) * (1 + BSI)", () => {
+      // Caso base (BSI = 0): reduz a Durigon
+      expect(calcularFatorCSensibilidadeBsi(0.2, 0)).toBeCloseTo(0.4, 6);
+
+      // Solo exposto lavado (BSI positivo = 0.5): fator C aumenta
+      expect(calcularFatorCSensibilidadeBsi(0.2, 0.5)).toBeCloseTo(0.6, 6);
+
+      // Solo protegido com palhada (BSI negativo = -0.2): fator C diminui
+      expect(calcularFatorCSensibilidadeBsi(0.7, -0.2)).toBeCloseTo(0.12, 6);
     });
 
-    it("exercita o caminho híbrido ativo com BSI presente em ao menos três pontos do domínio físico [0, 1] (F0.2)", () => {
-      const casos: Array<{ ndvi: number; bsi: number; esperado: number }> = [
-        { ndvi: 0.10, bsi: 0.50, esperado: 0.6750 },
-        { ndvi: 0.30, bsi: -0.20, esperado: 0.2800 }, // palhada senescente (NDVI baixo, BSI negativo)
-        { ndvi: 0.20, bsi: 0.25, esperado: 0.5000 },  // solo mineral exposto (NDVI baixo, BSI positivo)
-      ];
+    it("BSI fora do domínio [-1, 1] lança erro em vez de corte silencioso na análise de sensibilidade", () => {
+      expect(() => calcularFatorCSensibilidadeBsi(0.4, 1.5)).toThrow(ErroForaDoDominio);
+      expect(() => calcularFatorCSensibilidadeBsi(0.4, -1.2)).toThrow(ErroForaDoDominio);
+    });
 
-      for (const caso of casos) {
-        const res = obterFatorCComProveniencia(
-          {
-            estado: "medido",
-            valor: caso.ndvi,
-            fonte: "Sentinel-2 L2A",
-            adquiridoEm: "2026-05-10",
-            consultadoEm: "2026-09-10",
-          },
-          {
-            estado: "medido",
-            valor: caso.bsi,
-            fonte: "Sentinel-2 L2A",
-            adquiridoEm: "2026-05-10",
-            consultadoEm: "2026-09-10",
+    it("rejeita saída de sensibilidade C > 1 (ex.: NDVI = -1.0, BSI = 1.0 -> C = 2.0) lançando ErroForaDoDominio", () => {
+      expect(() => calcularFatorCSensibilidadeBsi(-1.0, 1.0)).toThrow(ErroForaDoDominio);
+    });
+  });
+
+  describe("Guarda de isolamento metodológico (§18) — sensibilidade fora do caminho analítico", () => {
+    it("nenhum módulo em src/ (exceto fatorC.ts e testes) importa ou chama calcularFatorCSensibilidadeBsi nem calcularFatorCHibrido", () => {
+      function listarArquivosTs(dir: string): string[] {
+        let arqs: string[] = [];
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+          const full = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            arqs = arqs.concat(listarArquivosTs(full));
+          } else if (
+            (full.endsWith(".ts") || full.endsWith(".tsx")) &&
+            !full.endsWith(".test.ts") &&
+            !full.endsWith(".test.tsx") &&
+            !full.replace(/\\/g, "/").endsWith("src/lib/rusle/fatorC.ts")
+          ) {
+            arqs.push(full);
           }
-        );
-        expect(res.estado).toBe("modelado");
-        if (res.estado === "modelado") {
-          expect(res.valor).toBeCloseTo(caso.esperado, 4);
-          expect(res.insumos).toEqual(["NDVI Sentinel-2 L2A", "BSI Sentinel-2 L2A"]);
+        }
+        return arqs;
+      }
+
+      const arquivos = listarArquivosTs(path.resolve(process.cwd(), "src"));
+      const violacoes = [];
+
+      for (const arq of arquivos) {
+        const c = fs.readFileSync(arq, "utf8");
+        const rel = path.relative(process.cwd(), arq).replace(/\\/g, "/");
+        if (c.includes("calcularFatorCSensibilidadeBsi")) {
+          violacoes.push(`${rel}: referência a calcularFatorCSensibilidadeBsi no caminho analítico de produção`);
+        }
+        if (c.includes("calcularFatorCHibrido")) {
+          violacoes.push(`${rel}: referência ao legado calcularFatorCHibrido`);
         }
       }
+
+      expect(violacoes).toHaveLength(0);
+    });
+
+    it("meta-teste: a guarda detecta violação se um trecho de código chamar a função de sensibilidade", () => {
+      const codigoInvasivo = 'import { calcularFatorCSensibilidadeBsi } from "@/lib/rusle/fatorC"; const x = calcularFatorCSensibilidadeBsi(0.2, 0.1);';
+      expect(codigoInvasivo.includes("calcularFatorCSensibilidadeBsi")).toBe(true);
     });
   });
 
