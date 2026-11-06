@@ -1,7 +1,7 @@
 # Registro de Decisões Metodológicas — SAREL
 
 **Espelho legível e auditável de `src/config/decisoes.ts`.**  
-Gerado automaticamente via `npm run decisoes:md` em 2026-10-31.
+Gerado automaticamente via `npm run decisoes:md` em 2026-11-06.
 
 > **Regra 9 do SAREL (Governança Metodológica):**  
 > Todo parâmetro metodológico tem dono e registro. Decisão pendente gera estado `indisponivel` com causa `"decisao-pendente"` e o respectivo ID. **Somente o pesquisador tem autoridade para mudar uma decisão para `"decidida"`.**

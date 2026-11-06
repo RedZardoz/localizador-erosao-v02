@@ -9,17 +9,7 @@
 
 ## 1. Princípios Norteadores e a Lei Fundamental
 
-O SAREL foi projetado para eliminar qualquer risco de viés de modelagem, vazamento de rótulo ou fabricação de parâmetros. Toda a arquitetura do sistema é governada por **9 Regras Invioláveis**:
-
-1. **Regra 1 — Sem Valores Fabricados:** Variáveis sem resposta da fonte permanecem estritamente como `indisponivel` acompanhadas de causa e motivo formal. É terminantemente proibido o uso de números mágicos (`|| 16`, `?? 0.035`) ou preenchimentos arbitrários.
-2. **Regra 2 — Sem Cortes Silenciosos:** Proibição de pisos ou limites artificiais (`Math.max`, `Math.min`). Valores fora do domínio físico ou biofísico disparam exceções explícitas ou causam indisponibilidade técnica (`fora-do-dominio`).
-3. **Regra 3 — Rastreabilidade e Proveniência:** Todas as grandezas científicas são encapsuladas no tipo discriminado `Proveniencia<T>` (`medido`, `modelado`, `tabelado`, `indisponivel`).
-4. **Regra 4 — Nada Calculado Vira Rótulo:** Modelos matemáticos (como RUSLE ou índices empíricos) jamais atuam como gabarito supervisionado. O rótulo da erosão provém unicamente da observação primária humana (campo, fotointerpretação PlanetScope, ortomosaicos de drone).
-5. **Regra 5 — Guarda Antissintético Universal:** O sistema valida continuamente e de forma recursiva que nenhum ponto amostral possua a flag `origemSintetica: true`.
-6. **Regra 6 — Segregação Cega de Exportação:** As equipes de interpretação, campo e modelagem recebem artefatos estritamente cegos projetados por listas de permissão (Invariante 2). Coordenadas não entram na matriz de treino tabular para evitar que o algoritmo aprenda localização espacial em vez de processo físico.
-7. **Regra 7 — Preservação de Máscaras:** Nuvem, sombra de nuvem e dados inválidos de sensoriamento remoto são preservados como máscaras reais e desenhados como descontinuidades nos gráficos temporais.
-8. **Regra 8 — Evidência de Verificação:** Comentários com asserções de verificação exigem arquivo físico de prova arquivado em `docs/verificacoes/`.
-9. **Regra 9 — Preservação do Histórico:** Mudanças arquiteturais mantêm rastreabilidade Git intacta, com o código histórico isolado na tag `legado-pre-sarel`.
+O SAREL foi projetado para eliminar qualquer risco de viés de modelagem, vazamento de rótulo ou fabricação de parâmetros. Toda a arquitetura do sistema é governada pelas **9 Regras Invioláveis da Lei Fundamental**, definidas na íntegra em [`docs/planejamento/PROMPT_RECONSTRUCAO_SAREL_2026-09-10.md`](../planejamento/PROMPT_RECONSTRUCAO_SAREL_2026-09-10.md) (Parte II).
 
 ---
 

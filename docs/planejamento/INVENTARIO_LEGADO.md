@@ -2,7 +2,7 @@
 
 **Última atualização:** 10/09/2026 (Fase 9 — Encerramento)  
 **Contagem:** 97 arquivos em `legado/localizador/src/` · 88+ arquivos em `legado/sarel1/`  
-**Status do Legado:** **100% RESOLVIDO**. Pasta `legado/` removida do repositório em conformidade com o plano (§15). Todo o histórico prévio permanece preservado de forma perpétua e imutável na tag `legado-pre-sarel`.
+**Status do Legado:** **100% RESOLVIDO**. As pastas de quarentena temporária `legado/localizador/` e `legado/sarel1/` foram removidas do repositório no commit `67d8750a1d6eab0a35d047e189d09771e6625525`. Seu conteúdo integral permanece preservado no histórico Git no commit imediatamente anterior `a8431620d6ba05769b05747418fd23d576dab74f`, e o estado original pré-reconstrução na tag local `legado-pre-sarel` (`5d33d188bbc830e7f95984d708de424c99a5e03d`). O diretório `legado/` atual no disco mantém apenas documentação histórica e artefatos em `legado/pre_sarel/` (8 arquivos versionados), `legado/documentacao_pre_v2/` e `legado/versoes_anteriores/`.
 
 ---
 
@@ -258,4 +258,5 @@ Todos os componentes restantes foram inteiramente absorvidos ou descartados:
 |---|---|---|---|
 | Localizador (`legado/localizador/src/`) | 97 | 100% resolvido | Reescrito / Adaptado em `src/` ou Descartado |
 | SAREL 1 (`legado/sarel1/`) | 88+ | 100% resolvido | Absorvido em `src/` ou Descartado (código falso eliminado) |
-| Pasta `legado/` | — | **Removida (`git rm -r`)** | Preservada na tag imutável `legado-pre-sarel` |
+| Quarentena `legado/localizador/` e `sarel1/` | — | **Removida (`git rm -r`)** | Preservadas no commit `a8431620d6ba05769b05747418fd23d576dab74f` |
+| Artefatos históricos (`legado/pre_sarel/`) | 8 arquivos | **Preservado** | Mantido em `legado/pre_sarel/` para registro da pesquisa |

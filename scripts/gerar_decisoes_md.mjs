@@ -6,11 +6,64 @@ import { DECISOES, PARAMETROS } from "../src/config/decisoes.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
-const ARQUIVO_MD = path.join(ROOT, "docs", "planejamento", "DECISOES.md");
+export const ARQUIVO_MD = path.join(ROOT, "docs", "planejamento", "DECISOES.md");
+export const ARQUIVO_NOTAS = path.join(ROOT, "docs", "planejamento", "decisoes-notas.md");
 
 const args = process.argv.slice(2);
 const modoVerificar = args.includes("--verificar");
 const modoGerar = args.includes("--gerar");
+
+/**
+ * Extrai notas longas por ID de decisão de docs/planejamento/decisoes-notas.md
+ */
+export function carregarNotasDecisoes(caminhoNotas = ARQUIVO_NOTAS) {
+  const notas = new Map();
+  if (!fs.existsSync(caminhoNotas)) return notas;
+  const conteudo = fs.readFileSync(caminhoNotas, "utf8");
+  const secoes = conteudo.split(/^##\s+/m);
+  for (const secao of secoes) {
+    const linhas = secao.trim().split(/\r?\n/);
+    const titulo = linhas[0]?.trim();
+    const match = titulo?.match(/^([DP]\d{2})/);
+    if (match) {
+      const id = match[1];
+      const corpo = linhas.slice(1).join("\n").trim();
+      if (corpo) notas.set(id, corpo);
+    }
+  }
+  return notas;
+}
+
+/**
+ * Compara dois textos markdown normalizando quebras de linha
+ */
+export function compararEspelho(mdGerado, mdDisco) {
+  const normGerado = mdGerado.replace(/\r\n/g, "\n").trim();
+  const normDisco = mdDisco.replace(/\r\n/g, "\n").trim();
+
+  if (normGerado === normDisco) {
+    return { identicos: true, diferencas: [] };
+  }
+
+  const linhasGerado = normGerado.split("\n");
+  const linhasDisco = normDisco.split("\n");
+  const diferencas = [];
+
+  const maxLinhas = Math.max(linhasGerado.length, linhasDisco.length);
+  for (let i = 0; i < maxLinhas; i++) {
+    const lG = linhasGerado[i];
+    const lD = linhasDisco[i];
+    if (lG !== lD) {
+      diferencas.push(`Linha ${i + 1}: gerado='${lG ?? "<fim>"}' vs disco='${lD ?? "<fim>"}'`);
+      if (diferencas.length >= 10) {
+        diferencas.push(`... e mais ${maxLinhas - i - 1} linhas divergentes.`);
+        break;
+      }
+    }
+  }
+
+  return { identicos: false, diferencas };
+}
 
 /**
  * Extrai mapa de id -> estado do arquivo DECISOES.md existente.
@@ -112,7 +165,25 @@ function formatarValorDetalhe(valor) {
   return String(valor).replace(/\r?\n/g, "<br/>").replace(/\|/g, "\\|");
 }
 
-export function gerarMarkdownDecisoes() {
+export function gerarMarkdownDecisoes(opcoes = {}) {
+  const {
+    dataGeracao = null,
+    caminhoNotas = ARQUIVO_NOTAS,
+  } = opcoes;
+
+  let dataFinal = dataGeracao;
+  if (!dataFinal) {
+    if (fs.existsSync(ARQUIVO_MD)) {
+      const mdExistente = fs.readFileSync(ARQUIVO_MD, "utf8");
+      const match = mdExistente.match(/Gerado automaticamente via `npm run decisoes:md` em (\d{4}-\d{2}-\d{2})\./);
+      if (match) dataFinal = match[1];
+    }
+    if (!dataFinal) {
+      dataFinal = new Date().toISOString().slice(0, 10);
+    }
+  }
+
+  const notas = carregarNotasDecisoes(caminhoNotas);
   const listaDecisoes = Object.values(DECISOES).sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
   const listaParametros = Object.values(PARAMETROS).sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
 
@@ -121,7 +192,7 @@ export function gerarMarkdownDecisoes() {
   partes.push("# Registro de Decisões Metodológicas — SAREL");
   partes.push("");
   partes.push("**Espelho legível e auditável de `src/config/decisoes.ts`.**  ");
-  partes.push(`Gerado automaticamente via \`npm run decisoes:md\` em ${new Date().toISOString().slice(0, 10)}.`);
+  partes.push(`Gerado automaticamente via \`npm run decisoes:md\` em ${dataFinal}.`);
   partes.push("");
   partes.push("> **Regra 9 do SAREL (Governança Metodológica):**  ");
   partes.push("> Todo parâmetro metodológico tem dono e registro. Decisão pendente gera estado `indisponivel` com causa `\"decisao-pendente\"` e o respectivo ID. **Somente o pesquisador tem autoridade para mudar uma decisão para `\"decidida\"`.**");
@@ -172,6 +243,9 @@ export function gerarMarkdownDecisoes() {
     if (d.justificativa) {
       partes.push(`| **Justificativa** | ${d.justificativa.replace(/\r?\n/g, "<br/>").replace(/\|/g, "\\|")} |`);
     }
+    if (notas.has(d.id)) {
+      partes.push(`| **Notas** | ${notas.get(d.id).replace(/\r?\n/g, "<br/>").replace(/\|/g, "\\|")} |`);
+    }
     partes.push(`| **Decidido por** | ${d.decididoPor || "—"} |`);
     partes.push(`| **Decidido em** | ${d.decididoEm || "—"} |`);
     partes.push("");
@@ -196,6 +270,9 @@ export function gerarMarkdownDecisoes() {
     }
     if (p.justificativa) {
       partes.push(`| **Justificativa** | ${p.justificativa.replace(/\r?\n/g, "<br/>").replace(/\|/g, "\\|")} |`);
+    }
+    if (notas.has(p.id)) {
+      partes.push(`| **Notas** | ${notas.get(p.id).replace(/\r?\n/g, "<br/>").replace(/\|/g, "\\|")} |`);
     }
     partes.push(`| **Decidido por** | ${p.decididoPor || "—"} |`);
     partes.push(`| **Decidido em** | ${p.decididoEm || "—"} |`);
@@ -269,7 +346,8 @@ function executarCli() {
   }
 
   if (modoGerar) {
-    const novoConteudo = gerarMarkdownDecisoes();
+    const dataHoje = new Date().toISOString().slice(0, 10);
+    const novoConteudo = gerarMarkdownDecisoes({ dataGeracao: dataHoje });
     fs.writeFileSync(ARQUIVO_MD, novoConteudo, "utf8");
     console.log(`DECISOES.md gerado com sucesso a partir de src/config/decisoes.ts (${mapaTs.size} itens).`);
     process.exit(0);

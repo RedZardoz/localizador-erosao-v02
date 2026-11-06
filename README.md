@@ -70,14 +70,31 @@ Para instalar o sistema em máquinas de pesquisadores, avaliadores ou técnicos 
 ### Opção 2: Instalação via Git / Ambiente de Desenvolvimento
 
 #### Pré-requisitos
-- Node.js $\ge 18.17.0$ e `npm`
-- Python $\ge 3.10$ (`pip install -r requirements.txt`)
+- **Node.js:** $\ge 18.17.0$ e `npm`
+- **Python:** $\ge 3.10$
+- **Dependências Python:** instaladas via `pip install -r requirements.txt`
+- **Base Fundiária Local (`data/fundiario_brasil.db`):** Banco de dados SQLite local (~1,67 GB, não versionado no Git). O arquivo deve ser posicionado em `data/fundiario_brasil.db`. Caso o banco não esteja presente, o sistema opera de forma segura e degradada, emitindo estritamente o status `"base-nao-disponivel"` nas consultas fundiárias — garantindo pelas Regras 1 e 2 e pelo Invariante 5 que falha de infraestrutura jamais seja colapsada em `"sem-correspondencia"`.
 
 #### Instalação
 ```bash
 npm install
 pip install -r requirements.txt
 ```
+
+#### Scripts em Lote do Windows (`.bat` na raiz)
+A raiz do repositório disponibiliza scripts para inicialização e manutenção rápida no Windows:
+- **`Iniciar_Localizador_Erosao.bat`:** Inicializador principal do sistema. Executa diagnóstico de ambiente (Node.js, Python e presença de `data/fundiario_brasil.db`), inicia o servidor Next.js em `127.0.0.1:3000` e abre o navegador automaticamente quando o serviço estiver pronto.
+- **`Instalar_Atalho_Windows.bat`:** Cria atalhos oficiais do SAREL na Área de Trabalho e no Menu Iniciar do Windows via PowerShell.
+- **`Desinstalar_Atalho_Windows.bat`:** Remove os atalhos instalados no sistema.
+- **`Gerar_Pacote_Portatil.bat`:** Empacota a distribuição portátil (`dist\SAREL_Instalador_Portatil`) com runtimes embutidos e compila o `Instalador_SAREL.exe`.
+- **`Gerar_Zip_Banco_GoogleDrive.bat`:** Compacta `data\fundiario_brasil.db` e os caches do SICAR em arquivo ZIP para sincronização com o Google Drive oficial.
+
+#### Papel do Diretório `scripts/`
+O diretório `scripts/` organiza utilitários científicos e de infraestrutura do projeto:
+- **Ingestão e casamento fundiário:** Scripts Python (`ingest_sicar_official.py`, `ingest_sigef_official.py`, `ingest_sncr_official.py`, `spatial_owner_matcher.py`, `query_real_properties.py`) que consolidam dados públicos fundiários no SQLite local `data/fundiario_brasil.db`.
+- **Geradores de relatórios e documentação:** Scripts que compilam manuais, apresentações e o espelho de decisões (`gerar_manual_pdf.py`, `gerar_compendio_metodologico_pdf.py`, `gerar_apresentacao_pdf.py`, `gerar_relatorio_mudancas_pdf.py`, `gerar_decisoes_md.mjs`).
+- **Modelagem externa (XGBoost):** Rotinas de calibração e treinamento externo fora do fluxo web (`treinar_xgboost_loco.py`, subdiretório `scripts/d25/` para inferência sob o critério pré-registrado D25).
+- **Verificação e integridade:** Scripts de auditoria hermética (`scripts/verificacao/` e `verificar_integridade_pacote.py`).
 
 #### Disciplina dos "Três Verdes"
 O projeto adota verificação contínua automatizada:
@@ -94,7 +111,7 @@ npm run test:vivo
 # SAREL_REGERAR_VOO=1 npm run test
 
 # 2. Verificação estrita de tipagem TypeScript
-npm run typecheck
+npx tsc --noEmit
 
 # 3. Linter sem advertências
 npm run lint
@@ -110,5 +127,5 @@ Dê duplo clique em **`Iniciar_Localizador_Erosao.bat`** (ou execute `npm run de
 
 ## Preservação Histórica
 
-O código legado original do Localizador e protótipos prévios encontram-se permanentemente arquivados e congelados no diretório `legado/` (commit inicial `0078da4`).
+O código legado original pré-reconstrução encontra-se congelado na tag Git local `legado-pre-sarel` (commit `5d33d188bbc830e7f95984d708de424c99a5e03d`). As pastas de quarentena intermediárias (`legado/localizador/` e `legado/sarel1/`) foram 100% resolvidas e removidas no commit `67d8750a1d6eab0a35d047e189d09771e6625525`, permanecendo acessíveis no commit imediatamente anterior `a8431620d6ba05769b05747418fd23d576dab74f`. O diretório `legado/` atual no disco preserva artefatos de rascunho em `legado/pre_sarel/`, documentação em `legado/documentacao_pre_v2/` e versões históricas em `legado/versoes_anteriores/`.
 A documentação metodológica, relatórios de auditoria e históricos de planejamento estão organizados no diretório `docs/`.
