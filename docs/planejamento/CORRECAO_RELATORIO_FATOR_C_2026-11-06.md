@@ -68,64 +68,74 @@ linha	id	titulo
 MAIOR_ID_D_NO_REGISTRO	D26
 
 OCORRENCIAS_NO_RESTO_DO_REPOSITORIO
-docs/auditorias/AUDITORIA_D11_2026-10-31.md	13
-docs/auditorias/AUDITORIA_REFERENCIAS_2026-10-20.md	54
-docs/auditorias/AUDITORIA_REFERENCIAS_2026-10-20.md	55
-docs/auditorias/AUDITORIA_REFERENCIAS_2026-10-20.md	56
-docs/auditorias/AUDITORIA_REFERENCIAS_2026-10-30.md	30
-docs/auditorias/AUDITORIA_REFERENCIAS_2026-10-30.md	108
-docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	2566
-docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	5712
-docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	5713
-docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	5714
-docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10090
-docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10103
-docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10129
-docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10142
-docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10155
-docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10207
-docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10272
-docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10442
-docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	52018
-docs/auditorias/pacotes_fracionados/LOTE1_AUDITORIAS_E_DECISOES_PARTE2.txt	840
-docs/auditorias/pacotes_fracionados/LOTE1_AUDITORIAS_E_DECISOES_PARTE2.txt	841
-docs/auditorias/pacotes_fracionados/LOTE1_AUDITORIAS_E_DECISOES_PARTE2.txt	842
-docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE2.txt	96
-docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE2.txt	131
-docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE2.txt	154
-docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE2.txt	168
-docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE2.txt	181
-docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE2.txt	233
-docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE3.txt	34
-docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE3.txt	204
-docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE3.txt	551
-docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE4.txt	232
-docs/auditorias/pacotes_fracionados/LOTE3_MOTORES_CIENTIFICOS_TS_PARTE2.txt	30
-docs/auditorias/pacotes_fracionados/LOTE3_MOTORES_CIENTIFICOS_TS_PARTE3.txt	1400
-docs/auditorias/pacotes_fracionados/LOTE4_API_STORE_E_COMPONENTES_CRITICOS_TSX_PARTE1.txt	776
-docs/auditorias/pacotes_fracionados/LOTE4_API_STORE_E_COMPONENTES_CRITICOS_TSX_PARTE2.txt	28
-docs/auditorias/pacotes_fracionados/LOTE5_PIPELINE_PYTHON_CIENTIFICO_PARTE1.txt	55
-docs/metodologia/NORMA_LASTRO_CIENTIFICO.md	18
-docs/planejamento/DECISOES.md	77
-docs/planejamento/DECISOES.md	89
-docs/planejamento/DECISOES.md	102
-docs/planejamento/DECISOES.md	128
-docs/planejamento/DECISOES.md	141
-docs/planejamento/DECISOES.md	154
-docs/planejamento/DECISOES.md	271
-docs/planejamento/DECISOES.md	441
-docs/planejamento/decisoes-notas.md	31
-docs/planejamento/prompts/PROMPT_EXECUTOR_CORRECOES_METODOLOGICAS_2026-10-30.md	443
-docs/planejamento/prompts/PROMPT_EXECUTOR_D11_SUFICIENCIA_TEMPORAL_2026-10-31.md	18
-scripts/remedir_candidatos_bp3_d16.ts	99
-scripts/treinar_xgboost_loco.py	17
-src/app/api/gee/select-candidates/route.ts	4
-src/app/api/jev/auditar/route.ts	4
-src/config/lastroCientifico.test.ts	250
-src/config/tourMetodologico.ts	208
-src/lib/gee/amostragemBiofisica.test.ts	7
-src/lib/gee/copernicusGeeClient.ts	4
-src/lib/jev/fallbackLocal.ts	4
+escopo	arquivo	linha
+A_CODIGO	scripts/auditoria/mapear_citacao_metodologia.mjs	4
+A_CODIGO	scripts/remedir_candidatos_bp3_d16.ts	99
+A_CODIGO	scripts/treinar_xgboost_loco.py	17
+A_CODIGO	src/app/api/gee/select-candidates/route.ts	4
+A_CODIGO	src/app/api/jev/auditar/route.ts	4
+A_CODIGO	src/config/lastroCientifico.test.ts	250
+A_CODIGO	src/config/tourMetodologico.ts	208
+A_CODIGO	src/lib/gee/amostragemBiofisica.test.ts	7
+A_CODIGO	src/lib/gee/copernicusGeeClient.ts	4
+A_CODIGO	src/lib/jev/fallbackLocal.ts	4
+B_DOCUMENTACAO_ATIVA	docs/metodologia/NORMA_LASTRO_CIENTIFICO.md	18
+B_DOCUMENTACAO_ATIVA	docs/planejamento/CORRECAO_RELATORIO_FATOR_C_2026-11-06.md	142
+B_DOCUMENTACAO_ATIVA	docs/planejamento/CORRECAO_RELATORIO_FATOR_C_2026-11-06.md	165
+B_DOCUMENTACAO_ATIVA	docs/planejamento/decisoes-notas.md	31
+B_DOCUMENTACAO_ATIVA	docs/planejamento/DECISOES.md	77
+B_DOCUMENTACAO_ATIVA	docs/planejamento/DECISOES.md	89
+B_DOCUMENTACAO_ATIVA	docs/planejamento/DECISOES.md	102
+B_DOCUMENTACAO_ATIVA	docs/planejamento/DECISOES.md	128
+B_DOCUMENTACAO_ATIVA	docs/planejamento/DECISOES.md	141
+B_DOCUMENTACAO_ATIVA	docs/planejamento/DECISOES.md	154
+B_DOCUMENTACAO_ATIVA	docs/planejamento/DECISOES.md	271
+B_DOCUMENTACAO_ATIVA	docs/planejamento/DECISOES.md	441
+C_TEXTO_ARQUIVADO	docs/auditorias/AUDITORIA_D11_2026-10-31.md	13
+C_TEXTO_ARQUIVADO	docs/auditorias/AUDITORIA_REFERENCIAS_2026-10-20.md	54
+C_TEXTO_ARQUIVADO	docs/auditorias/AUDITORIA_REFERENCIAS_2026-10-20.md	55
+C_TEXTO_ARQUIVADO	docs/auditorias/AUDITORIA_REFERENCIAS_2026-10-20.md	56
+C_TEXTO_ARQUIVADO	docs/auditorias/AUDITORIA_REFERENCIAS_2026-10-30.md	30
+C_TEXTO_ARQUIVADO	docs/auditorias/AUDITORIA_REFERENCIAS_2026-10-30.md	108
+C_TEXTO_ARQUIVADO	docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	2566
+C_TEXTO_ARQUIVADO	docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	5712
+C_TEXTO_ARQUIVADO	docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	5713
+C_TEXTO_ARQUIVADO	docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	5714
+C_TEXTO_ARQUIVADO	docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10090
+C_TEXTO_ARQUIVADO	docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10103
+C_TEXTO_ARQUIVADO	docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10129
+C_TEXTO_ARQUIVADO	docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10142
+C_TEXTO_ARQUIVADO	docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10155
+C_TEXTO_ARQUIVADO	docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10207
+C_TEXTO_ARQUIVADO	docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10272
+C_TEXTO_ARQUIVADO	docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	10442
+C_TEXTO_ARQUIVADO	docs/auditorias/externa_a/CONTEXTO_ESTRUTURA_E_CODIGOS_SAREL.txt	52018
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE1_AUDITORIAS_E_DECISOES_PARTE2.txt	840
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE1_AUDITORIAS_E_DECISOES_PARTE2.txt	841
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE1_AUDITORIAS_E_DECISOES_PARTE2.txt	842
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE2.txt	96
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE2.txt	131
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE2.txt	154
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE2.txt	168
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE2.txt	181
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE2.txt	233
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE3.txt	34
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE3.txt	204
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE3.txt	551
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE2_SEGURANCA_TIPOS_E_INVARIANTES_TS_PARTE4.txt	232
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE3_MOTORES_CIENTIFICOS_TS_PARTE2.txt	30
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE3_MOTORES_CIENTIFICOS_TS_PARTE3.txt	1400
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE4_API_STORE_E_COMPONENTES_CRITICOS_TSX_PARTE1.txt	776
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE4_API_STORE_E_COMPONENTES_CRITICOS_TSX_PARTE2.txt	28
+C_TEXTO_ARQUIVADO	docs/auditorias/pacotes_fracionados/LOTE5_PIPELINE_PYTHON_CIENTIFICO_PARTE1.txt	55
+C_TEXTO_ARQUIVADO	docs/planejamento/prompts/PROMPT_EXECUTOR_CORRECOES_METODOLOGICAS_2026-10-30.md	443
+C_TEXTO_ARQUIVADO	docs/planejamento/prompts/PROMPT_EXECUTOR_D11_SUFICIENCIA_TEMPORAL_2026-10-31.md	18
+
+RESUMO_POR_ESCOPO
+escopo	ocorrencias	arquivos
+A_CODIGO	10	10
+B_DOCUMENTACAO_ATIVA	12	4
+C_TEXTO_ARQUIVADO	39	15
 ```
 
 ## 3. Afirmações do Relatório Original Refutadas pela Medição
@@ -138,9 +148,9 @@ src/lib/jev/fallbackLocal.ts	4
 - A afirmação de que a linha 158 de `src/config/decisoes.ts` tem título "Buffer de Borda" é REFUTADA pela saída de C2, linha 6 de OCORRENCIAS_EM_decisoes.ts (`158	D06	Unidade de predição: pixel 10m calibrado por VANT Multiespectral`).
 - A afirmação de que a linha 171 de `src/config/decisoes.ts` tem título "Composição Temporal" é REFUTADA pela saída de C2, linha 7 de OCORRENCIAS_EM_decisoes.ts (`171	D07	Domínio de validade: declividade 3 a 20%, WorldCover 30 e 40, concordância entre épocas`).
 - A afirmação de que a linha 306 de `src/config/decisoes.ts` tem título "Amostragem Estratificada" é REFUTADA pela saída de C2, linha 8 de OCORRENCIAS_EM_decisoes.ts (`306	D16	Campanha: polígonos de VANT como massa de treino e teste, campo como âncora e confirmação`).
-- A afirmação de que a linha 589 de `src/config/decisoes.ts` corresponde a D29 ("Threshold de Solo Exposto") é REFUTADA pela saída de C2, linha 9 de OCORRENCIAS_EM_decisoes.ts (`589	P03	Critério de casamento geodésico de campo com o ponto planejado`) e pela linha `MAIOR_ID_D_NO_REGISTRO	D26`.
+- A afirmação de que a linha 589 de `src/config/decisoes.ts` corresponde a D29 ("Threshold de Solo Exposto") é REFUTADA pela saída de C2: a linha 589 de `src/config/decisoes.ts` pertence a P03 ("Critério de casamento geodésico de campo com o ponto planejado"), não a D26 e não a D29. D29 não existe: MAIOR_ID_D_NO_REGISTRO é D26.
 - A afirmação de que a string "Metodologia PPGTCA 2026" ocorre em `src/app/api/sitios-referencia/route.ts` na linha 4 é REFUTADA pela saída de C2 (o arquivo não consta em OCORRENCIAS_NO_RESTO_DO_REPOSITORIO).
-- A afirmação de que havia 10 ocorrências da string no repositório é REFUTADA pela saída de C2 (há 7 ocorrências em `src/config/decisoes.ts` e 58 ocorrências em OCORRENCIAS_NO_RESTO_DO_REPOSITORIO, totalizando 65 ocorrências em 28 arquivos únicos sob `src`, `scripts` e `docs`).
+- A afirmação de que havia 10 ocorrências da string no repositório é REFUTADA pela saída de C2: o total de ocorrências de "Metodologia PPGTCA 2026" se desagrega em 7 no Registro de Decisões (`src/config/decisoes.ts`), mais os totais de A_CODIGO (10 ocorrências em 10 arquivos), B_DOCUMENTACAO_ATIVA (12 ocorrências em 4 arquivos) e C_TEXTO_ARQUIVADO (39 ocorrências em 15 arquivos) que a saída imprimir. O conjunto ACIONÁVEL para substituição por referência externa conferida são as 7 do Registro mais as de A_CODIGO; as de C_TEXTO_ARQUIVADO são registro histórico de auditorias anteriores e reescrevê-las falsificaria o registro.
 
 ## 4. Respostas em Prosa (Derivadas Exclusivamente das Saídas)
 
@@ -162,6 +172,6 @@ src/lib/jev/fallbackLocal.ts	4
   * extração defensiva em propriedades GeoJSON de serviços WFS, conjunto held-out e cache vazio de script (linhas 34 a 37 da saída).
 
 ### Respostas relativas à Tarefa C2
-- Total de ocorrências de "Metodologia PPGTCA 2026": 65 ocorrências distribuídas em 28 arquivos únicos (7 ocorrências em `src/config/decisoes.ts` e 58 ocorrências nos demais arquivos listados em `OCORRENCIAS_NO_RESTO_DO_REPOSITORIO`).
-- O identificador "D29" não aparece em nenhuma linha da saída de C2; a saída registra explicitamente `MAIOR_ID_D_NO_REGISTRO	D26`, e a linha 589 de `src/config/decisoes.ts` corresponde a P03.
+- Total de ocorrências de "Metodologia PPGTCA 2026": 68 ocorrências no total (7 em `src/config/decisoes.ts`, 10 em `A_CODIGO`, 12 em `B_DOCUMENTACAO_ATIVA` e 39 em `C_TEXTO_ARQUIVADO`). O conjunto acionável é de 17 ocorrências (7 em `decisoes.ts` + 10 em `A_CODIGO`).
+- O identificador "D29" não aparece em nenhuma linha da saída de C2; a saída registra expressamente `MAIOR_ID_D_NO_REGISTRO	D26`, e a linha 589 de `src/config/decisoes.ts` corresponde a P03.
 - O caminho "src/app/api/sitios-referencia/route.ts" não aparece em nenhuma linha da saída de C2.
