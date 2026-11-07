@@ -33,7 +33,6 @@ function linhaValida(over: Record<string, unknown> = {}): Record<string, unknown
     Cobertura_Celula: 1,
     Area_Delineada_m2: 42.5,
     Fracao_Erodida: 0.425,
-    Alvo_Binario_25: 1,
     ...over,
   };
 }
@@ -70,6 +69,10 @@ describe("Contrato de esquema da matriz (A-05 / C-02)", () => {
           `coluna ${coluna} deveria ser obrigatória`
         ).toThrow(ErroEsquemaMatriz);
       }
+    });
+
+    it("D26: contrato da matriz NÃO contém Alvo_Binario_25 (decisão de 06/11/2026)", () => {
+      expect(COLUNAS_OBRIGATORIAS_MATRIZ).not.toContain("Alvo_Binario_25");
     });
 
     it("as onze colunas de A-05 estão no contrato", () => {

@@ -8,6 +8,109 @@ export type PerfilExportacao =
   | "linha-de-base-rusle"
   | "geojson-pontos";
 
+export interface DeclaracaoAlvo {
+  coluna: string;
+  papel: "primario" | "secundario" | "escala_origem";
+  decisaoId: string;
+  descricao: string;
+}
+
+/**
+ * Declaração formal e explícita dos alvos da modelagem matricial supervisionada (PPGTCA 2026).
+ * Cada entrada vincula o papel do alvo à respectiva decisão metodológica que o pré-registra.
+ */
+export const DECLARACAO_ALVOS_MATRIZ: readonly DeclaracaoAlvo[] = [
+  {
+    coluna: "Fracao_Erodida",
+    papel: "primario",
+    decisaoId: "D26",
+    descricao: "Alvo primário contínuo em [0, 1] sob D26 (reg:tweedie)",
+  },
+  {
+    coluna: "Classe_Alvo_Binaria",
+    papel: "secundario",
+    decisaoId: "D03",
+    descricao: "Desfecho secundário binário de classificação supervisionada sob D03",
+  },
+  {
+    coluna: "Rotulo_Classe",
+    papel: "escala_origem",
+    decisaoId: "D03",
+    descricao: "Escala ordinal de origem do rótulo sob D03 (base da análise de sensibilidade pré-registrada)",
+  },
+] as const;
+
+export const COLUNAS_ALVO_MATRIZ: readonly string[] = DECLARACAO_ALVOS_MATRIZ.map((a) => a.coluna);
+
+export interface DeclaracaoChave {
+  coluna: string;
+  categoria:
+    | "identificador"
+    | "desenho_amostral"
+    | "geometria_celula"
+    | "modelo_janela"
+    | "metadado_rotulo";
+  descricao: string;
+}
+
+export const DECLARACAO_CHAVES_MATRIZ: readonly DeclaracaoChave[] = [
+  {
+    coluna: "Celula_ID",
+    categoria: "identificador",
+    descricao: "Identificador opaco da célula de 10 m (D06/D16/D26)",
+  },
+  {
+    coluna: "Poligono_ID",
+    categoria: "identificador",
+    descricao: "Unidade de agrupamento/cluster do desenho (D24 mitigação 4; D25 bootstrap)",
+  },
+  {
+    coluna: "Pixel_ID",
+    categoria: "identificador",
+    descricao: "Identificador opaco do pixel Sentinel-2 para checagem de pixels disjuntos (D26)",
+  },
+  {
+    coluna: "Papel_Conjunto",
+    categoria: "desenho_amostral",
+    descricao: "Partição de modelagem ('treino' | 'held-out')",
+  },
+  {
+    coluna: "Estrato_ID",
+    categoria: "desenho_amostral",
+    descricao: "Identificador do estrato biofísico de D12",
+  },
+  {
+    coluna: "Incluida",
+    categoria: "geometria_celula",
+    descricao: "Filtro de cobertura mínima da célula no voo (P11 / guarda D25)",
+  },
+  {
+    coluna: "Cobertura_Celula",
+    categoria: "geometria_celula",
+    descricao: "Fração de cobertura da célula pelo voo em [0, 1] (D26)",
+  },
+  {
+    coluna: "Area_Delineada_m2",
+    categoria: "geometria_celula",
+    descricao: "Área delineada da feição dentro da célula em m² (D26)",
+  },
+  {
+    coluna: "Rotulo_Modalidade",
+    categoria: "metadado_rotulo",
+    descricao: "Modalidade de observação ('satelite' | 'drone')",
+  },
+  {
+    coluna: "Rotulo_N_Observadores",
+    categoria: "metadado_rotulo",
+    descricao: "Número de observadores independentes que rotularam a feição",
+  },
+] as const;
+
+export const COLUNAS_CHAVE_MATRIZ: readonly string[] = DECLARACAO_CHAVES_MATRIZ.map(
+  (c) => c.coluna
+);
+
+
 export const JANELA_TEMPORAL_D05 = {
   inicio: "2016-01-01",
   fim: "2026-06-30",
@@ -63,6 +166,10 @@ export const PERFIS_EXPORTACAO: Record<PerfilExportacao, { descricao: string; co
       "Unidade_Determinante_K_2024_ErodUm",
       "Frequencia_Solo_Nu",
       "Frequencia_Solo_Nu_Origem",
+      "NDVI",
+      "NDVI_Origem",
+      "BSI",
+      "BSI_Origem",
       "Precip_Acum_30d_mm",
       "Precip_Acum_30d_mm_Origem",
       "Precip_Acum_90d_mm",
@@ -163,7 +270,6 @@ export const PERFIS_EXPORTACAO: Record<PerfilExportacao, { descricao: string; co
       "Data_Referencia",
       "Fim_Janela",
       "Fracao_Erodida",
-      "Alvo_Binario_25",
       "Rotulo_N_Observadores",
       "Ponto_ID",
       "Bloco_Espacial",
@@ -179,19 +285,12 @@ export const PERFIS_EXPORTACAO: Record<PerfilExportacao, { descricao: string; co
       "Grande_Grupo_Solo",
       "Erodibilidade_Classe",
       "Frequencia_Solo_Nu",
-      "Banda_B2",
-      "Banda_B4",
-      "Banda_B8",
-      "Banda_B12",
-      "NDVI",
-      "BSI",
       "Composto_Solo_Nu_B12",
       "Composto_Solo_Nu_Razao_B4_B2",
       "Taxa_Degradacao_SWIR_Anual",
       "NDVI_P90_Serie",
       "RUSLE_Fator_K",
       "RUSLE_Fator_R",
-      "RUSLE_Fator_LS",
       "Precip_Acum_30d_mm",
       "Precip_Acum_90d_mm",
       "I30_Max_mm_h",
@@ -225,7 +324,6 @@ export const PERFIS_EXPORTACAO: Record<PerfilExportacao, { descricao: string; co
       "Data_Referencia",
       "Fim_Janela",
       "Fracao_Erodida",
-      "Alvo_Binario_25",
       "Rotulo_N_Observadores",
       "Ponto_ID",
       "Bloco_Espacial",
@@ -241,19 +339,12 @@ export const PERFIS_EXPORTACAO: Record<PerfilExportacao, { descricao: string; co
       "Grande_Grupo_Solo",
       "Erodibilidade_Classe",
       "Frequencia_Solo_Nu",
-      "Banda_B2",
-      "Banda_B4",
-      "Banda_B8",
-      "Banda_B12",
-      "NDVI",
-      "BSI",
       "Composto_Solo_Nu_B12",
       "Composto_Solo_Nu_Razao_B4_B2",
       "Taxa_Degradacao_SWIR_Anual",
       "NDVI_P90_Serie",
       "RUSLE_Fator_K",
       "RUSLE_Fator_R",
-      "RUSLE_Fator_LS",
       "Precip_Acum_30d_mm",
       "Precip_Acum_90d_mm",
       "I30_Max_mm_h",

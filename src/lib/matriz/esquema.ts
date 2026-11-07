@@ -100,7 +100,6 @@ const COLUNAS_CONTRATO = {
 
   // Alvo
   Fracao_Erodida: numeroOuVazio((n) => n >= 0 && n <= 1, "fração erodida em [0, 1]"),
-  Alvo_Binario_25: z.union([vazio, z.literal(0), z.literal(1)]),
 } as const;
 
 export const COLUNAS_OBRIGATORIAS_MATRIZ: readonly string[] = Object.keys(COLUNAS_CONTRATO);

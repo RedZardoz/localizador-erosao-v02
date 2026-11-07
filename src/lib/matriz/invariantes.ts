@@ -227,6 +227,12 @@ export function derivarCamposNaoMedidos(ponto: PontoAmostral): string[] {
     testar("twi", ponto.terreno.twi);
   }
 
+  // Espectral (NDVI e BSI)
+  if (ponto.espectral) {
+    testar("NDVI", ponto.espectral.ndvi);
+    testar("BSI", ponto.espectral.bsi);
+  }
+
   // Solo
   if (!ponto.solo) {
     campos.push("solo");
@@ -475,6 +481,8 @@ export function validarInvariantesArtefato(artefato: ArtefatoProjetado): Resulta
       "Acumulo_Fluxo_Origem",
       "TWI_Origem",
       "Frequencia_Solo_Nu_Origem",
+      "NDVI_Origem",
+      "BSI_Origem",
       "Precip_Acum_30d_mm_Origem",
       "Precip_Acum_90d_mm_Origem",
       "I30_Max_mm_h_Origem",
