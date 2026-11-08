@@ -349,14 +349,17 @@ export function consolidarInspecaoPonto(
       D: point.temporal?.D
         ? {
             ...point.temporal.D,
+            observacoes: medicaoS2?.observacoes ?? point.temporal.D.observacoes,
             serie: {
               ...point.temporal.D.serie,
               nObservacoesValidas: medicaoS2
                 ? {
                     ...point.temporal.D.serie.nObservacoesValidas,
-                    B4: medicaoS2.nObservacoesValidas,
-                    B11: medicaoS2.nObservacoesValidas,
-                    B12: medicaoS2.nObservacoesValidas,
+                    B2: medicaoS2.nObservacoesValidasPorBanda?.B2 ?? medicaoS2.nObservacoesValidas,
+                    B4: medicaoS2.nObservacoesValidasPorBanda?.B4 ?? medicaoS2.nObservacoesValidas,
+                    B8: medicaoS2.nObservacoesValidasPorBanda?.B8 ?? medicaoS2.nObservacoesValidas,
+                    B11: medicaoS2.nObservacoesValidasPorBanda?.B11 ?? medicaoS2.nObservacoesValidas,
+                    B12: medicaoS2.nObservacoesValidasPorBanda?.B12 ?? medicaoS2.nObservacoesValidas,
                   }
                 : point.temporal.D.serie.nObservacoesValidas,
               estatisticas: {

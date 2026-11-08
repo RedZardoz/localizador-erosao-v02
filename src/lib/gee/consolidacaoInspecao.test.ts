@@ -215,4 +215,51 @@ describe("C24 — Consolidação da inspeção pontual registrando falhas sem en
     expect((resultado.ponto.espectral?.bsi as any)?.causa).toBe("fora-do-dominio");
     expect(resultado.ponto.classeAmostral).toBe("indefinido");
   });
+
+  it("integra a série temporal e contagem por banda em temporal.D.observacoes e nObservacoesValidas", () => {
+    const pontoOriginal = criarPontoBase();
+    const observacoesMock = [
+      { data: "2021-03-10", ndvi: 0.65, bsi: -0.1 },
+      { data: "2021-03-15", ndvi: null, bsi: null },
+      { data: "2021-03-20", ndvi: 0.45, bsi: 0.05 },
+    ];
+
+    const resultado = consolidarInspecaoPonto({
+      point: pontoOriginal,
+      gee: {
+        medicaoS2: {
+          b2: 0.07,
+          b4: 0.10,
+          b8: 0.26,
+          b11: 0.21,
+          b12: 0.14,
+          ndvi: 0.44,
+          bsi: 0.02,
+          frequenciaSoloNu: 0.33,
+          nObservacoesValidas: 18,
+          nObservacoesValidasPorBanda: {
+            B2: 18,
+            B4: 18,
+            B8: 18,
+            B11: 17,
+            B12: 16,
+          },
+          observacoes: observacoesMock,
+          insuficienteD11: false,
+          adquiridoEm: "2024-05-15",
+          fonte: "Sentinel-2 MSI L2A",
+        },
+      },
+      dataConsultaAtual: "2026-10-17",
+    });
+
+    expect(resultado.ponto.temporal?.D?.observacoes).toEqual(observacoesMock);
+    expect(resultado.ponto.temporal?.D?.serie.nObservacoesValidas).toEqual({
+      B2: 18,
+      B4: 18,
+      B8: 18,
+      B11: 17,
+      B12: 16,
+    });
+  });
 });

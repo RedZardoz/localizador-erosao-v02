@@ -88,7 +88,8 @@ export async function POST(request: NextRequest) {
           latitude,
           longitude,
           geeTokenRes.token.accessToken,
-          sessao.gee.project_id
+          sessao.gee.project_id,
+          { incluirSerie: true }
         );
       } catch (err) {
         erroGee = err;

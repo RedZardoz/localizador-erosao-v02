@@ -37,6 +37,34 @@ export interface MedicaoTerrenoReal {
   fonte: string;
 }
 
+export interface ObservacaoSerieTemporal {
+  data: string; // YYYY-MM-DD (Regra 3: data da cena)
+  ndvi: number | null;
+  bsi: number | null;
+}
+
+export interface EntradaObservacaoCenaBruta {
+  data?: string;
+  timestampMs?: number | null;
+  cenas?: string[];
+  id?: string;
+  b2?: number | null;
+  b4?: number | null;
+  b8?: number | null;
+  b11?: number | null;
+  b12?: number | null;
+  ndvi?: number | null;
+  bsi?: number | null;
+  [key: string]: any;
+}
+
+export interface ResultadoProcessamentoSerie {
+  observacoes: ObservacaoSerieTemporal[];
+  nObservacoesValidasPorBanda: Record<string, number>;
+  nObservacoesValidas: number;
+  insuficienteD11: boolean;
+}
+
 export interface MedicaoEspectralReal {
   b2: number;
   b4: number;
@@ -54,6 +82,9 @@ export interface MedicaoEspectralReal {
   classeWorldCover2021?: number | null;
   ehFlorestaOuInelegivel?: boolean;
   fonte: string;
+  observacoes?: ObservacaoSerieTemporal[];
+  nObservacoesValidasPorBanda?: Record<string, number>;
+  cenas?: string[];
 }
 
 export function avaliarSuficienciaAmostralD11(nObservacoesValidas: number): {
@@ -442,6 +473,189 @@ export function construirExpressaoGeeSentinel2WorldCover(
 }
 
 /**
+ * Constrói o grafo de expressão AST do Earth Engine REST v1 para extração
+ * pontual da SÉRIE TEMPORAL completa de reflectância Sentinel-2 MSI L2A
+ * na janela temporal D05 (2016-01-01 a 2026-06-30).
+ *
+ * Utiliza ImageCollection.getRegion a 10m de resolução, preservando
+ * estritamente a máscara SCL (classes 4 e 5) e descartando nuvens/sombras
+ * SEM substituição artificial (Regra 7: sem .unmask() com constante).
+ */
+export function construirExpressaoGeeSerieSentinel2(
+  latitude: number,
+  longitude: number
+): Record<string, unknown> {
+  return {
+    result: "0",
+    values: {
+      "0": {
+        functionInvocationValue: {
+          functionName: "ImageCollection.getRegion",
+          arguments: {
+            collection: { valueReference: "4" },
+            geometry: { valueReference: "2" },
+            scale: { constantValue: 10 },
+          },
+        },
+      },
+      "2": {
+        functionInvocationValue: {
+          functionName: "GeometryConstructors.Point",
+          arguments: {
+            coordinates: { constantValue: [longitude, latitude] },
+          },
+        },
+      },
+      "4": {
+        functionInvocationValue: {
+          functionName: "Collection.map",
+          arguments: {
+            collection: { valueReference: "3" },
+            baseAlgorithm: {
+              functionDefinitionValue: {
+                argumentNames: ["img"],
+                body: "5",
+              },
+            },
+          },
+        },
+      },
+      "5": {
+        functionInvocationValue: {
+          functionName: "Image.updateMask",
+          arguments: {
+            image: {
+              functionInvocationValue: {
+                functionName: "Image.select",
+                arguments: {
+                  input: { argumentReference: "img" },
+                  bandSelectors: { constantValue: ["B2", "B4", "B8", "B11", "B12"] },
+                },
+              },
+            },
+            mask: {
+              functionInvocationValue: {
+                functionName: "Image.or",
+                arguments: {
+                  image1: {
+                    functionInvocationValue: {
+                      functionName: "Image.eq",
+                      arguments: {
+                        image1: {
+                          functionInvocationValue: {
+                            functionName: "Image.select",
+                            arguments: {
+                              input: { argumentReference: "img" },
+                              bandSelectors: { constantValue: ["SCL"] },
+                            },
+                          },
+                        },
+                        image2: {
+                          functionInvocationValue: {
+                            functionName: "Image.constant",
+                            arguments: { value: { constantValue: 4 } },
+                          },
+                        },
+                      },
+                    },
+                  },
+                  image2: {
+                    functionInvocationValue: {
+                      functionName: "Image.eq",
+                      arguments: {
+                        image1: {
+                          functionInvocationValue: {
+                            functionName: "Image.select",
+                            arguments: {
+                              input: { argumentReference: "img" },
+                              bandSelectors: { constantValue: ["SCL"] },
+                            },
+                          },
+                        },
+                        image2: {
+                          functionInvocationValue: {
+                            functionName: "Image.constant",
+                            arguments: { value: { constantValue: 5 } },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "3": {
+        functionInvocationValue: {
+          functionName: "Collection.filter",
+          arguments: {
+            collection: {
+              functionInvocationValue: {
+                functionName: "Collection.filter",
+                arguments: {
+                  collection: {
+                    functionInvocationValue: {
+                      functionName: "Collection.filter",
+                      arguments: {
+                        collection: {
+                          functionInvocationValue: {
+                            functionName: "ImageCollection.load",
+                            arguments: {
+                              id: { constantValue: "COPERNICUS/S2_SR_HARMONIZED" },
+                            },
+                          },
+                        },
+                        filter: {
+                          functionInvocationValue: {
+                            functionName: "Filter.dateRangeContains",
+                            arguments: {
+                              leftValue: {
+                                functionInvocationValue: {
+                                  functionName: "DateRange",
+                                  arguments: {
+                                    start: { constantValue: JANELA_TEMPORAL_D05.inicio },
+                                    end: { constantValue: JANELA_TEMPORAL_D05.fim },
+                                  },
+                                },
+                              },
+                              rightField: { constantValue: "system:time_start" },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                  filter: {
+                    functionInvocationValue: {
+                      functionName: "Filter.lessThan",
+                      arguments: {
+                        leftField: { constantValue: "CLOUDY_PIXEL_PERCENTAGE" },
+                        rightValue: { constantValue: 20 },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            filter: {
+              functionInvocationValue: {
+                functionName: "Filter.intersects",
+                arguments: {
+                  leftField: { constantValue: ".geo" },
+                  rightValue: { valueReference: "2" },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+}
+
+/**
  * Consulta pontual às bandas de reflectância de superfície do Sentinel-2 MSI L2A
  * (COPERNICUS/S2_SR_HARMONIZED, cenas com < 20% de nuvens) combinadas com a máscara
  * de concordância multitemporal de uso e cobertura do solo ESA/WorldCover/v100/2020
@@ -452,7 +666,8 @@ export async function medirSentinel2PontoGeeRest(
   latitude: number,
   longitude: number,
   accessToken: string,
-  projectId: string
+  projectId: string,
+  opcoes?: { incluirSerie?: boolean }
 ): Promise<MedicaoEspectralReal | null> {
   if (!accessToken || !projectId) return null;
 
@@ -485,13 +700,250 @@ export async function medirSentinel2PontoGeeRest(
       return null;
     }
 
-    return processarRespostaGeeSentinel2(props);
+    const medicao = processarRespostaGeeSentinel2(props);
+    if (!medicao) return null;
+
+    if (opcoes?.incluirSerie) {
+      const serie = await medirSerieSentinel2PontoGeeRest(latitude, longitude, accessToken, projectId);
+      if (serie) {
+        medicao.observacoes = serie.observacoes;
+        medicao.nObservacoesValidasPorBanda = serie.nObservacoesValidasPorBanda;
+      }
+    }
+
+    return medicao;
   } catch (err: any) {
     ultimoErroGee = `Exception: ${err?.message}`;
     return null;
   }
 }
 
+/**
+ * Consulta a série temporal multianual completa do Sentinel-2 MSI L2A para um ponto
+ * na janela temporal D05 (2016-01-01 a 2026-06-30) via GEE REST v1 (value:compute).
+ * Retorna as observações válidas preservando lacunas (sem interpolação) e contagem por banda.
+ */
+export async function medirSerieSentinel2PontoGeeRest(
+  latitude: number,
+  longitude: number,
+  accessToken: string,
+  projectId: string
+): Promise<ResultadoProcessamentoSerie | null> {
+  if (!accessToken || !projectId) return null;
+
+  try {
+    const expression = construirExpressaoGeeSerieSentinel2(latitude, longitude);
+
+    const endpoint = `https://earthengine.googleapis.com/v1/projects/${encodeURIComponent(
+      projectId
+    )}/value:compute`;
+
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ expression }),
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (!res.ok) {
+      const errTxt = await res.text().catch(() => "");
+      ultimoErroGee = `HTTP ${res.status}: ${errTxt}`;
+      return null;
+    }
+    const data = await res.json().catch(() => null);
+    const result = data?.result;
+    if (!result) {
+      ultimoErroGee = `Empty result: ${JSON.stringify(data)}`;
+      return null;
+    }
+
+    return processarObservacoesSerie(result);
+  } catch (err: any) {
+    ultimoErroGee = `Exception: ${err?.message}`;
+    return null;
+  }
+}
+
+/**
+ * Processa observações multi-temporais do Sentinel-2 MSI L2A em conformidade com:
+ * - Regra 7: NENHUM .unmask() com constante em bandas físicas (pixel sem dado permanece null).
+ * - §11: NENHUMA interpolação sobre lacunas temporais (descontinuidade real preservada).
+ * - Regra 3: Data da cena extraída estritamente dos metadados orbitais (extrairDataAquisicaoSentinel2).
+ * - D11: Avaliação de suficiência amostral (LIMIAR_MINIMO_OBSERVACOES_D11 = 6).
+ */
+export function processarObservacoesSerie(dadosBrutos: any): ResultadoProcessamentoSerie {
+  const observacoes: ObservacaoSerieTemporal[] = [];
+  const contagemPorBanda: Record<string, number> = {
+    B2: 0,
+    B4: 0,
+    B8: 0,
+    B11: 0,
+    B12: 0,
+  };
+
+  if (!dadosBrutos) {
+    return {
+      observacoes: [],
+      nObservacoesValidasPorBanda: contagemPorBanda,
+      nObservacoesValidas: 0,
+      insuficienteD11: true,
+    };
+  }
+
+  if (Array.isArray(dadosBrutos) && dadosBrutos.length > 0 && Array.isArray(dadosBrutos[0])) {
+    const cabecalho = dadosBrutos[0].map((h: any) => String(h).toLowerCase());
+    const idxId = cabecalho.indexOf("id");
+    const idxTime = cabecalho.indexOf("time");
+    const idxB2 = cabecalho.indexOf("b2");
+    const idxB4 = cabecalho.indexOf("b4");
+    const idxB8 = cabecalho.indexOf("b8");
+    const idxB11 = cabecalho.indexOf("b11");
+    const idxB12 = cabecalho.indexOf("b12");
+
+    for (let r = 1; r < dadosBrutos.length; r++) {
+      const row = dadosBrutos[r];
+      if (!Array.isArray(row)) continue;
+
+      const idVal = idxId >= 0 ? String(row[idxId]) : null;
+      const timeVal = idxTime >= 0 ? row[idxTime] : null;
+
+      const dataAquisicao = extrairDataAquisicaoSentinel2({
+        timestampMs: typeof timeVal === "number" ? timeVal : null,
+        cenas: idVal ? [idVal] : null,
+      });
+
+      if (!dataAquisicao) continue;
+
+      const extrairBanda = (idx: number, nomeBanda: string): number | null => {
+        if (idx < 0) return null;
+        const v = row[idx];
+        if (typeof v === "number" && Number.isFinite(v)) {
+          contagemPorBanda[nomeBanda]++;
+          return v > 1 ? v / 10000 : v;
+        }
+        return null;
+      };
+
+      const b2 = extrairBanda(idxB2, "B2");
+      const b4 = extrairBanda(idxB4, "B4");
+      const b8 = extrairBanda(idxB8, "B8");
+      const b11 = extrairBanda(idxB11, "B11");
+      const b12 = extrairBanda(idxB12, "B12");
+
+      const ndvi = b8 !== null && b4 !== null ? calcularNdvi(b8, b4) : null;
+      const bsi =
+        b11 !== null && b4 !== null && b8 !== null && b2 !== null
+          ? calcularBsi(b11, b4, b8, b2)
+          : null;
+
+      observacoes.push({
+        data: dataAquisicao,
+        ndvi,
+        bsi,
+      });
+    }
+  } else {
+    const listaItens: any[] = Array.isArray(dadosBrutos)
+      ? dadosBrutos
+      : Array.isArray(dadosBrutos.features)
+        ? dadosBrutos.features
+        : Array.isArray(dadosBrutos.observacoes)
+          ? dadosBrutos.observacoes
+          : [];
+
+    for (const item of listaItens) {
+      if (!item || typeof item !== "object") continue;
+      const props = item.properties ?? item;
+
+      let dataAquisicao: string | null = null;
+      if (typeof props.data === "string" && /^\d{4}-\d{2}-\d{2}/.test(props.data)) {
+        dataAquisicao = props.data.slice(0, 10);
+      } else {
+        const ts =
+          typeof props["system:time_start"] === "number"
+            ? props["system:time_start"]
+            : typeof props.time === "number"
+              ? props.time
+              : typeof props.timestampMs === "number"
+                ? props.timestampMs
+                : null;
+        const cenas = props.cenas ?? (props.id ? [props.id] : null);
+        dataAquisicao = extrairDataAquisicaoSentinel2({ timestampMs: ts, cenas });
+      }
+
+      if (!dataAquisicao) continue;
+
+      const extrairBandaObj = (chaves: string[], nomeBanda: string): number | null => {
+        for (const k of chaves) {
+          const v = props[k];
+          if (typeof v === "number" && Number.isFinite(v)) {
+            contagemPorBanda[nomeBanda]++;
+            return v > 1 ? v / 10000 : v;
+          }
+        }
+        return null;
+      };
+
+      const b2 = extrairBandaObj(["B2", "b2"], "B2");
+      const b4 = extrairBandaObj(["B4", "b4"], "B4");
+      const b8 = extrairBandaObj(["B8", "b8"], "B8");
+      const b11 = extrairBandaObj(["B11", "b11"], "B11");
+      const b12 = extrairBandaObj(["B12", "b12"], "B12");
+
+      let ndvi: number | null = null;
+      if (typeof props.ndvi === "number" && Number.isFinite(props.ndvi)) {
+        ndvi = props.ndvi;
+      } else if (b8 !== null && b4 !== null) {
+        ndvi = calcularNdvi(b8, b4);
+      }
+
+      let bsi: number | null = null;
+      if (typeof props.bsi === "number" && Number.isFinite(props.bsi)) {
+        bsi = props.bsi;
+      } else if (b11 !== null && b4 !== null && b8 !== null && b2 !== null) {
+        bsi = calcularBsi(b11, b4, b8, b2);
+      }
+
+      observacoes.push({
+        data: dataAquisicao,
+        ndvi,
+        bsi,
+      });
+    }
+  }
+
+  observacoes.sort((a, b) => a.data.localeCompare(b.data));
+
+  const mapaPorData = new Map<string, ObservacaoSerieTemporal>();
+  for (const obs of observacoes) {
+    const existente = mapaPorData.get(obs.data);
+    if (!existente) {
+      mapaPorData.set(obs.data, obs);
+    } else {
+      if (existente.ndvi === null && obs.ndvi !== null) {
+        mapaPorData.set(obs.data, obs);
+      }
+    }
+  }
+
+  const observacoesDeduplicadas = Array.from(mapaPorData.values());
+
+  const nObservacoesValidas = observacoesDeduplicadas.filter(
+    (o) => o.ndvi !== null && Number.isFinite(o.ndvi)
+  ).length;
+
+  const avaliacaoD11 = avaliarSuficienciaAmostralD11(nObservacoesValidas);
+
+  return {
+    observacoes: observacoesDeduplicadas,
+    nObservacoesValidasPorBanda: contagemPorBanda,
+    nObservacoesValidas,
+    insuficienteD11: !avaliacaoD11.suficiente,
+  };
+}
 export function processarRespostaGeeSentinel2(
   props: Record<string, any>,
   cenasFallback?: string[]
@@ -655,6 +1107,22 @@ export function processarRespostaGeeSentinel2(
     cenas: Array.isArray(props.cenas) ? props.cenas : cenasFallback,
   });
 
+  let observacoes: ObservacaoSerieTemporal[] | undefined = undefined;
+  let nObservacoesValidasPorBanda: Record<string, number> = {
+    B2: nObservacoesValidas,
+    B4: nObservacoesValidas,
+    B8: nObservacoesValidas,
+    B11: nObservacoesValidas,
+    B12: nObservacoesValidas,
+  };
+
+  const dadosSerie = props.series ?? props.observacoes ?? props.features;
+  if (dadosSerie) {
+    const resSerie = processarObservacoesSerie(dadosSerie);
+    observacoes = resSerie.observacoes;
+    nObservacoesValidasPorBanda = resSerie.nObservacoesValidasPorBanda;
+  }
+
   return {
     b2: b2Final,
     b4: b4Final,
@@ -672,6 +1140,9 @@ export function processarRespostaGeeSentinel2(
     classeWorldCover2021,
     ehFlorestaOuInelegivel,
     fonte: "Sentinel-2 MSI L2A + ESA WorldCover v100 (2020) & v200 (2021) 10m (GEE REST v1)",
+    observacoes,
+    nObservacoesValidasPorBanda,
+    cenas: Array.isArray(props.cenas) ? props.cenas : cenasFallback,
   };
 }
 
@@ -683,7 +1154,8 @@ export function processarRespostaGeeSentinel2(
 export async function medirSentinel2EmLoteGeeRest(
   pontos: Array<{ id: string; latitude: number; longitude: number }>,
   accessToken: string,
-  projectId: string
+  projectId: string,
+  opcoes?: { incluirSerie?: boolean }
 ): Promise<Map<string, MedicaoEspectralReal>> {
   const mapa = new Map<string, MedicaoEspectralReal>();
   if (pontos.length === 0 || !accessToken || !projectId) return mapa;
@@ -708,7 +1180,50 @@ export async function medirSentinel2EmLoteGeeRest(
     const fatia = listaCelulas.slice(i, i + CONCORRENCIA);
     await Promise.all(
       fatia.map(async (cel) => {
-        const res = await medirSentinel2PontoGeeRest(cel.lat, cel.lon, accessToken, projectId);
+        const res = await medirSentinel2PontoGeeRest(cel.lat, cel.lon, accessToken, projectId, opcoes);
+        if (res) {
+          for (const id of cel.ids) {
+            mapa.set(id, res);
+          }
+        }
+      })
+    );
+  }
+
+  return mapa;
+}
+
+/**
+ * Consulta a série temporal multianual em lote com paralelismo controlado na API REST v1 do GEE.
+ * Deduplica coordenadas idênticas e preserva medição pontual de 10m.
+ */
+export async function medirSerieSentinel2EmLoteGeeRest(
+  pontos: Array<{ id: string; latitude: number; longitude: number }>,
+  accessToken: string,
+  projectId: string
+): Promise<Map<string, ResultadoProcessamentoSerie>> {
+  const mapa = new Map<string, ResultadoProcessamentoSerie>();
+  if (pontos.length === 0 || !accessToken || !projectId) return mapa;
+
+  const celulas = new Map<string, { lat: number; lon: number; ids: string[] }>();
+  for (const pt of pontos) {
+    const chave = `${pt.latitude.toFixed(5)}_${pt.longitude.toFixed(5)}`;
+    const atual = celulas.get(chave);
+    if (atual) {
+      atual.ids.push(pt.id);
+    } else {
+      celulas.set(chave, { lat: pt.latitude, lon: pt.longitude, ids: [pt.id] });
+    }
+  }
+
+  const listaCelulas = Array.from(celulas.values());
+  const CONCORRENCIA = 15;
+
+  for (let i = 0; i < listaCelulas.length; i += CONCORRENCIA) {
+    const fatia = listaCelulas.slice(i, i + CONCORRENCIA);
+    await Promise.all(
+      fatia.map(async (cel) => {
+        const res = await medirSerieSentinel2PontoGeeRest(cel.lat, cel.lon, accessToken, projectId);
         if (res) {
           for (const id of cel.ids) {
             mapa.set(id, res);

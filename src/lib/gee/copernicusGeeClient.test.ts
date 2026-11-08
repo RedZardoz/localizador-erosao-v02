@@ -3,8 +3,13 @@ import {
   WORLDCOVER_V100_ASSET_ID,
   WORLDCOVER_V200_ASSET_ID,
   construirExpressaoGeeSentinel2WorldCover,
+  construirExpressaoGeeSerieSentinel2,
   processarRespostaGeeSentinel2,
+  processarObservacoesSerie,
   medirSentinel2PontoGeeRest,
+  medirSerieSentinel2PontoGeeRest,
+  medirSerieSentinel2EmLoteGeeRest,
+  LIMIAR_MINIMO_OBSERVACOES_D11,
 } from "./copernicusGeeClient";
 
 function criarPayloadSentinel2Base(
@@ -178,6 +183,68 @@ describe("Cliente GEE Sentinel-2 e Concordância Multitemporal ESA WorldCover (D
     expect(res).not.toBeNull();
     expect(res!.insuficienteD11).toBe(true);
     expect(res!.frequenciaSoloNu).toBeNull();
+  });
+
+  it("deve construir a expressão de série temporal com ImageCollection.getRegion e sem .unmask (Regra 7, D05)", () => {
+    const expr = construirExpressaoGeeSerieSentinel2(-24.85, -54.05) as {
+      result: string;
+      values: Record<string, any>;
+    };
+
+    expect(expr.result).toBe("0");
+    expect(expr.values["0"].functionInvocationValue.functionName).toBe("ImageCollection.getRegion");
+    expect(expr.values["0"].functionInvocationValue.arguments.scale.constantValue).toBe(10);
+    expect(expr.values["2"].functionInvocationValue.arguments.coordinates.constantValue).toEqual([-54.05, -24.85]);
+
+    // Verifica que NENHUM nó na árvore usa unmask (Regra 7: sem .unmask() com constante)
+    const rawJson = JSON.stringify(expr);
+    expect(rawJson).not.toContain("unmask");
+    expect(rawJson).not.toContain("Image.unmask");
+  });
+
+  it("processarObservacoesSerie deve converter tabela getRegion preservando datas reais e lacunas como null (§11, Regra 3)", () => {
+    const tabelaGetRegion = [
+      ["id", "longitude", "latitude", "time", "B2", "B4", "B8", "B11", "B12"],
+      ["COPERNICUS/S2_SR_HARMONIZED/20210310T133222", -54.05, -24.85, 1615383142000, 350, 500, 2500, 1500, 900],
+      ["COPERNICUS/S2_SR_HARMONIZED/20210315T133222", -54.05, -24.85, 1615815142000, null, null, null, null, null], // cena com nuvem/máscara
+      ["COPERNICUS/S2_SR_HARMONIZED/20210320T133222", -54.05, -24.85, 1616247142000, 400, 600, 3000, 1600, 1000],
+    ];
+
+    const resultado = processarObservacoesSerie(tabelaGetRegion);
+    expect(resultado.observacoes).toHaveLength(3);
+    expect(resultado.observacoes[0].data).toBe("2021-03-10");
+    expect(resultado.observacoes[0].ndvi).toBeCloseTo((0.25 - 0.05) / (0.25 + 0.05), 3);
+    expect(resultado.observacoes[0].bsi).not.toBeNull();
+
+    // Descontinuidade real preservada (§11)
+    expect(resultado.observacoes[1].data).toBe("2021-03-15");
+    expect(resultado.observacoes[1].ndvi).toBeNull();
+    expect(resultado.observacoes[1].bsi).toBeNull();
+
+    expect(resultado.observacoes[2].data).toBe("2021-03-20");
+    expect(resultado.observacoes[2].ndvi).not.toBeNull();
+
+    // Contagem por banda e D11
+    expect(resultado.nObservacoesValidasPorBanda.B4).toBe(2);
+    expect(resultado.nObservacoesValidasPorBanda.B8).toBe(2);
+    expect(resultado.nObservacoesValidas).toBe(2);
+    expect(resultado.insuficienteD11).toBe(true); // 2 < 6
+  });
+
+  it("processarObservacoesSerie atinge suficiência amostral quando observações válidas >= LIMIAR_MINIMO_OBSERVACOES_D11 (6)", () => {
+    const tabelaGetRegion = [
+      ["id", "longitude", "latitude", "time", "B2", "B4", "B8", "B11", "B12"],
+      ["20200101T100000", -54.05, -24.85, 1577880000000, 300, 500, 2000, 1200, 800],
+      ["20200201T100000", -54.05, -24.85, 1580558400000, 300, 500, 2000, 1200, 800],
+      ["20200301T100000", -54.05, -24.85, 1583064000000, 300, 500, 2000, 1200, 800],
+      ["20200401T100000", -54.05, -24.85, 1585742400000, 300, 500, 2000, 1200, 800],
+      ["20200501T100000", -54.05, -24.85, 1588334400000, 300, 500, 2000, 1200, 800],
+      ["20200601T100000", -54.05, -24.85, 1591012800000, 300, 500, 2000, 1200, 800],
+    ];
+
+    const resultado = processarObservacoesSerie(tabelaGetRegion);
+    expect(resultado.nObservacoesValidas).toBe(6);
+    expect(resultado.insuficienteD11).toBe(false);
   });
 });
 
