@@ -4,6 +4,7 @@ import path from "node:path";
 import os from "node:os";
 import {
   gravarEvidenciaGeeSerieS2,
+  gravarEvidenciaLoteGeeSerieS2,
   sanitizarRespostaBrutaGee,
   assegurarAusenciaTotalCredenciais,
 } from "./gravadorEvidenciaGee";
@@ -135,5 +136,100 @@ describe("Gravador de Evidências da Regra 8 para Google Earth Engine", () => {
         diretorioDestino: path.resolve(process.cwd(), "scripts/auditoria"),
       });
     }).toThrow(/Destino proibido.*É VEDADO gravar evidências em src\/ ou em scripts\//);
+  });
+
+  describe("Gravação de Evidência em Lote (Regra 8)", () => {
+    it("grava arquivo de lote com N pontos, custo medido cronometrado e cabeçalho de proveniência", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sarel_lote_test_"));
+
+      try {
+        const pontosMock = [
+          {
+            id: "PT_01",
+            coordenadas: { latitude: -24.85, longitude: -54.05 },
+            nObservacoesValidasPorBanda: { B2: 25, B4: 25, B8: 25, B11: 25, B12: 25 },
+            nObservacoesValidas: 25,
+            insuficienteD11: false,
+            observacoes: [
+              { data: "2020-03-15", ndvi: 0.62, bsi: -0.05 },
+              { data: "2020-04-10", ndvi: 0.58, bsi: -0.02 },
+            ],
+          },
+          {
+            id: "PT_02",
+            coordenadas: { latitude: -24.95, longitude: -54.15 },
+            nObservacoesValidasPorBanda: { B2: 4, B4: 4, B8: 4, B11: 4, B12: 4 },
+            nObservacoesValidas: 4,
+            insuficienteD11: true,
+            observacoes: [
+              { data: "2021-02-11", ndvi: 0.40, bsi: 0.12 },
+            ],
+          },
+        ];
+
+        const custoMedidoMock = {
+          requisicoesEmitidas: 2,
+          tempoTotalMs: 1450,
+          tempoPorPontoMs: 725,
+        };
+
+        const resultado = gravarEvidenciaLoteGeeSerieS2({
+          pontos: pontosMock,
+          custoMedido: custoMedidoMock,
+          operacao: "teste_lote",
+          dataConsulta: "2026-11-08",
+          diretorioDestino: tmpDir,
+        });
+
+        expect(resultado.sucesso).toBe(true);
+        expect(resultado.nomeArquivo).toBe("2026-11-08_gee_serie_s2_teste_lote.json");
+        expect(resultado.numeroPontos).toBe(2);
+        expect(resultado.custoMedido).toEqual(custoMedidoMock);
+
+        const gravado = JSON.parse(fs.readFileSync(resultado.caminhoAbsoluto, "utf8"));
+        expect(gravado.tipo).toBe("REGRA_8_EVIDENCIA_GEE_LOTE");
+        expect(gravado.colecao).toBe("COPERNICUS/S2_SR_HARMONIZED");
+        expect(gravado.numeroPontos).toBe(2);
+        expect(gravado.custoMedido).toEqual(custoMedidoMock);
+        expect(gravado.pontos).toHaveLength(2);
+        expect(gravado.pontos[0].id).toBe("PT_01");
+        expect(gravado.pontos[0].nObservacoesValidas).toBe(25);
+        expect(gravado.pontos[1].insuficienteD11).toBe(true);
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    it("elimina tokens e campos sensíveis em lote", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sarel_lote_sanitizacao_"));
+
+      try {
+        const pontosComVazamento = [
+          {
+            id: "PT_01",
+            coordenadas: { latitude: -24.85, longitude: -54.05 },
+            access_token: "ya29.vazamento_proibido",
+            nObservacoesValidasPorBanda: { B2: 10 },
+            nObservacoesValidas: 10,
+            insuficienteD11: false,
+            observacoes: [],
+          },
+        ];
+
+        const resultado = gravarEvidenciaLoteGeeSerieS2({
+          pontos: pontosComVazamento as any,
+          custoMedido: { requisicoesEmitidas: 1, tempoTotalMs: 100, tempoPorPontoMs: 100 },
+          operacao: "teste_sanitizacao_lote",
+          dataConsulta: "2026-11-08",
+          diretorioDestino: tmpDir,
+        });
+
+        const conteudoRaw = fs.readFileSync(resultado.caminhoAbsoluto, "utf8");
+        expect(conteudoRaw).not.toContain("access_token");
+        expect(conteudoRaw).not.toContain("ya29.vazamento_proibido");
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
   });
 });

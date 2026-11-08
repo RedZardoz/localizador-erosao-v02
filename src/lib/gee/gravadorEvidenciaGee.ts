@@ -43,6 +43,45 @@ export interface ResultadoGravacaoEvidenciaGee {
   totalObservacoes?: number;
 }
 
+export interface PontoEvidenciaLote {
+  id?: string;
+  coordenadas: {
+    latitude: number;
+    longitude: number;
+  };
+  observacoes: Array<unknown>;
+  nObservacoesValidasPorBanda: Record<string, number>;
+  nObservacoesValidas: number;
+  insuficienteD11: boolean;
+}
+
+export interface CustoMedidoExecucao {
+  requisicoesEmitidas: number;
+  tempoTotalMs: number;
+  tempoPorPontoMs: number;
+}
+
+export interface ParametrosGravacaoEvidenciaLoteGee {
+  pontos: PontoEvidenciaLote[];
+  custoMedido: CustoMedidoExecucao;
+  operacao?: string; // padrão: "serie_s2_lote"
+  colecao?: string; // padrão: "COPERNICUS/S2_SR_HARMONIZED"
+  janelaTemporal?: { inicio: string; fim: string };
+  dataConsulta?: string; // data em YYYY-MM-DD ou ISO
+  diretorioDestino?: string; // default: docs/verificacoes
+}
+
+export interface ResultadoGravacaoEvidenciaLoteGee {
+  sucesso: true;
+  nomeArquivo: string;
+  caminhoRelativo: string;
+  caminhoAbsoluto: string;
+  hashSha256Resposta: string;
+  dataVerificacao: string;
+  numeroPontos: number;
+  custoMedido: CustoMedidoExecucao;
+}
+
 const CHAVES_SENSIVEIS_PROIBIDAS = [
   "token",
   "access_token",
@@ -253,5 +292,124 @@ export function gravarEvidenciaGeeSerieS2(
     hashSha256Resposta: hashSha256,
     dataVerificacao: dataHoje,
     totalObservacoes: totalObs,
+  };
+}
+
+/**
+ * Grava a evidência de medição de série temporal em lote da Regra 8
+ * em docs/verificacoes/AAAA-MM-DD_gee_serie_s2_<operacao>.json
+ * de forma explícita e sob demanda para múltiplos pontos amostrais.
+ */
+export function gravarEvidenciaLoteGeeSerieS2(
+  params: ParametrosGravacaoEvidenciaLoteGee
+): ResultadoGravacaoEvidenciaLoteGee {
+  const { pontos, custoMedido } = params;
+
+  if (!Array.isArray(pontos) || pontos.length === 0) {
+    throw new Error("Lista de pontos vazia ou inválida para gravação de evidência em lote.");
+  }
+
+  for (let i = 0; i < pontos.length; i++) {
+    const p = pontos[i];
+    if (
+      !p.coordenadas ||
+      typeof p.coordenadas.latitude !== "number" ||
+      typeof p.coordenadas.longitude !== "number" ||
+      !Number.isFinite(p.coordenadas.latitude) ||
+      !Number.isFinite(p.coordenadas.longitude)
+    ) {
+      throw new Error(`Coordenadas inválidas para o ponto no índice ${i}.`);
+    }
+  }
+
+  if (
+    !custoMedido ||
+    typeof custoMedido.requisicoesEmitidas !== "number" ||
+    typeof custoMedido.tempoTotalMs !== "number" ||
+    typeof custoMedido.tempoPorPontoMs !== "number" ||
+    !Number.isFinite(custoMedido.requisicoesEmitidas) ||
+    !Number.isFinite(custoMedido.tempoTotalMs) ||
+    !Number.isFinite(custoMedido.tempoPorPontoMs)
+  ) {
+    throw new Error("Custo medido inválido ou ausente para gravação de evidência.");
+  }
+
+  const operacaoBruta = params.operacao || "serie_s2_lote";
+  const operacao = operacaoBruta.replace(/[^a-zA-Z0-9_-]/g, "_").toLowerCase();
+
+  const dataHoje = params.dataConsulta
+    ? params.dataConsulta.slice(0, 10)
+    : dataCivilSaoPaulo();
+
+  const nomeArquivo = `${dataHoje}_gee_serie_s2_${operacao}.json`;
+
+  const pastaBaseDocs = path.resolve(process.cwd(), "docs", "verificacoes");
+  const pastaDestino = params.diretorioDestino
+    ? path.resolve(params.diretorioDestino)
+    : pastaBaseDocs;
+
+  const caminhoNormalizado = pastaDestino.replace(/\\/g, "/");
+  if (caminhoNormalizado.includes("/src/") || caminhoNormalizado.includes("/scripts/")) {
+    throw new Error(`Destino proibido: ${pastaDestino}. É VEDADO gravar evidências em src/ ou em scripts/.`);
+  }
+
+  if (!fs.existsSync(pastaDestino)) {
+    fs.mkdirSync(pastaDestino, { recursive: true });
+  }
+
+  const caminhoAbsoluto = path.join(pastaDestino, nomeArquivo);
+
+  // 1. Sanitização profunda de credenciais e dados pessoais em cada ponto
+  const pontosSanitizados = sanitizarRespostaBrutaGee(pontos) as PontoEvidenciaLote[];
+
+  // 2. Hash SHA-256 do payload sanitizado
+  const stringResposta = JSON.stringify(pontosSanitizados);
+  const hashSha256 = crypto.createHash("sha256").update(stringResposta).digest("hex");
+
+  // 3. Montagem do documento de lote
+  const documentoEvidencia = {
+    tipo: "REGRA_8_EVIDENCIA_GEE_LOTE" as const,
+    fonte: "Google Earth Engine REST API v1 (value:compute)",
+    colecao: params.colecao || COLECAO_SENTINEL2_PADRAO,
+    janelaTemporal: params.janelaTemporal || {
+      inicio: JANELA_TEMPORAL_D05.inicio,
+      fim: JANELA_TEMPORAL_D05.fim,
+    },
+    numeroPontos: pontos.length,
+    operacao,
+    dataConsulta: params.dataConsulta || new Date().toISOString(),
+    dataVerificacao: dataHoje,
+    custoMedido: {
+      requisicoesEmitidas: custoMedido.requisicoesEmitidas,
+      tempoTotalMs: custoMedido.tempoTotalMs,
+      tempoPorPontoMs: custoMedido.tempoPorPontoMs,
+    },
+    hashSha256Resposta: hashSha256,
+    pontos: pontosSanitizados,
+  };
+
+  const jsonFinal = JSON.stringify(documentoEvidencia, null, 2);
+
+  // 4. Verificação de segurança estrita (garante ausência total de chaves ou tokens)
+  assegurarAusenciaTotalCredenciais(jsonFinal);
+
+  // 5. Escrita atômica em disco
+  fs.writeFileSync(caminhoAbsoluto, jsonFinal, "utf8");
+
+  const caminhoRelativo = path.relative(process.cwd(), caminhoAbsoluto).replace(/\\/g, "/");
+
+  return {
+    sucesso: true,
+    nomeArquivo,
+    caminhoRelativo,
+    caminhoAbsoluto,
+    hashSha256Resposta: hashSha256,
+    dataVerificacao: dataHoje,
+    numeroPontos: pontos.length,
+    custoMedido: {
+      requisicoesEmitidas: custoMedido.requisicoesEmitidas,
+      tempoTotalMs: custoMedido.tempoTotalMs,
+      tempoPorPontoMs: custoMedido.tempoPorPontoMs,
+    },
   };
 }
