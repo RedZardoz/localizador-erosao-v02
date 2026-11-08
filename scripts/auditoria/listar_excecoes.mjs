@@ -29,6 +29,7 @@ function tagDe(e) {
   return e.padrao === "" ? SEM_TAG : e.padrao;
 }
 
+console.log("FONTE_DOS_DADOS\tsrc/lib/seguranca/padroesProibidos.ts");
 console.log("TOTAL_DE_EXCECOES\t" + out.length);
 console.log(["#", "linha", "id", "arquivo", "padrao", "trecho", "justificativa", "autorizadoPor"].join("\t"));
 out.forEach((e, k) =>

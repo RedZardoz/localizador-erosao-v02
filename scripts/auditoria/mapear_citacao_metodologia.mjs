@@ -10,6 +10,7 @@ const t = bruto.split("\n");
 const titulos = new Map();
 let idAtual = "(fora de entrada)";
 
+console.log("FONTE_DOS_DADOS\tsrc/config/decisoes.ts");
 console.log("OCORRENCIAS_EM_decisoes.ts");
 console.log(["linha", "id", "titulo"].join("\t"));
 

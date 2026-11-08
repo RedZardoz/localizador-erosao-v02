@@ -75,6 +75,7 @@ if (matchProibidos) {
   for (const it of itens) proibidosAlvoEChaves.add(it);
 }
 
+console.log("FONTE_DOS_DADOS\t" + [ARQ_PERFIS, ARQ_CONFIG, ARQ_AVALIADOR].join("\t"));
 console.log("PERFIS_E_CONTAGENS");
 console.log(["perfil", "n_colunas"].join("\t"));
 for (const [nome, cols] of perfis) console.log([nome, cols.length].join("\t"));
