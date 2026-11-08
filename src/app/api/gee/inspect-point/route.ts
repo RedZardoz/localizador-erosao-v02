@@ -11,6 +11,7 @@ import { queryEmbrapaSoil } from "@/lib/embrapa/embrapaSoilClient";
 import { matchRuralProperty } from "@/lib/fundiario/matcher";
 import { consolidarInspecaoPonto } from "@/lib/gee/consolidacaoInspecao";
 import { dataCivilSaoPaulo } from "@/lib/tempo/datas";
+import { gravarEvidenciaGeeSerieS2 } from "@/lib/gee/gravadorEvidenciaGee";
 import type { PontoAmostral } from "@/types/ponto";
 
 export const dynamic = "force-dynamic";
@@ -108,11 +109,26 @@ export async function POST(request: NextRequest) {
       dataConsultaAtual,
     });
 
+    let evidenciaGravada = null;
+    if ((point as any)?.gravarEvidenciaRegra8 && medicaoS2?.observacoes) {
+      try {
+        evidenciaGravada = gravarEvidenciaGeeSerieS2({
+          coordenadas: { latitude, longitude },
+          operacao: (point as any).operacaoEvidencia || "inspecao_ponto",
+          respostaBruta: medicaoS2.observacoes,
+          dataConsulta: dataConsultaAtual,
+        });
+      } catch (err: any) {
+        resultado.avisos.push(`Falha na gravação de evidência Regra 8: ${err?.message}`);
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       ponto: resultado.ponto,
       avisos: resultado.avisos,
       geeDebug: ultimoErroGee,
+      evidenciaGravada,
     });
   } catch (err: any) {
     return NextResponse.json(
