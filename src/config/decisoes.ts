@@ -206,17 +206,42 @@ export const DECISOES: Record<string, Decisao<any>> = {
     id: "D10",
     titulo: "Limiar de NDVI para solo descoberto",
     estado: "decidida" as EstadoDecisao,
-    valor: "NDVI <= 0.25 (combinado com BSI > 0.10 quando aplicável na assinatura espectral)",
-    justificativa: "Calibrado no sistema GEOS3 (GeoCiS/ESALQ-USP) para solos brasileiros sob imagens orbitais (Landsat e Sentinel-2). Garante separação rigorosa entre solo exposto e resíduos de palhada de Plantio Direto.",
-    referencia: "Demattê et al. (2018), Remote Sensing of Environment 212:161-175; Safanelli et al. (2021), RBCS 45:e0210080 " +
-      "EMENDA DE 06/10/2026 (proposta do assistente, aceita pelo pesquisador em conversa): a citação \"Mannigel et al. (2002), RBCS 26:1039-1049\" NÃO foi confirmada; a obra encontrada com esses autores e ano é Mannigel, Carvalho, Moreti e Medeiros, \"Fator erodibilidade e tolerância de perda dos solos do Estado de São Paulo\", Acta Scientiarum, Maringá, v. 24, n. 5, p. 1335-1340, 2002, que trata de solos de São Paulo e não sustenta, por si, as classes de erodibilidade do Paraná. A citação fica SUSPENSA até conferência; a sustentação normativa de D09 é o Documentos 246 da Embrapa Solos.",
+    valor: "Mascara GEOS3 (Dematte et al., 2018): NDVI em [0,00; 0,25] E NBR2 em [0,00; 0,075] E (B4-B3) >= 0 E (B3-B2) >= 0, em Sentinel-2 MSI L2A",
+    justificativa: "Mascara de solo exposto do sistema GEOS3 (GeoCiS/ESALQ-USP), adotada como conjuncao de cinco testes: faixa de NDVI, faixa de NBR2 e dois testes de inclinacao positiva no visivel. O NBR2 e o componente no SWIR que discrimina residuo celulosico (palhada de Plantio Direto) de solo mineral exposto; o NDVI, isolado, nao faz essa separacao (Daughtry et al., 2001; 2004; Hively et al., 2021). A obra primaria calibrou a mascara exclusivamente sobre Landsat 5 TM; a transposicao para Sentinel-2 MSI e deste projeto e esta declarada em referencia.",
+    referencia:
+      "Demattê, J. A. M., Fongaro, C. T., Rizzo, R., & Safanelli, J. L. (2018). A powerful data mining procedure to retrieve soil spectral reflectance from satellite images. Remote Sensing of Environment, 212, 161–175. DOI: 10.1016/j.rse.2018.04.047; " +
+      "Safanelli, J. L., Chagas, C. S., Povaluk, M., et al. (2021). Soil mapping using Bare Soil Image (BSI) from Landsat temporal series in Brazil. Revista Brasileira de Ciência do Solo, 45, e0210080. DOI: 10.36783/18069657rbcs20210080. " +
+      "EMENDA DE 09/11/2026 (substitui integralmente o texto anterior deste campo): " +
+      "(i) O texto anterior deste campo continha cópia errônea da emenda de Mannigel que pertence a D09 (Fator K), onde permanece intacta; " +
+      "(ii) CONFERIDO NO PRIMÁRIO em 09/11/2026 conforme docs/verificacoes/fontes/dematte2018/conferencia_dematte_2018.md: a obra formula a máscara GEOS3 com NDVI em [0; 0,25], NBR2 em [0; 0,075] e as duas inclinações no visível (B4-B3 >= 0 e B3-B2 >= 0 no Sentinel-2, transpostos de Landsat B3-B2 e B2-B1), e NÃO contém o índice VNSIR; " +
+      "(iii) O valor 0,25 não constitui corte isolado univariado, mas sim o limite superior da faixa de NDVI [0,00; 0,25] em conjunção estrita com NBR2 e as inclinações; " +
+      "(iv) O limite de 0,075 foi escolhido pelos autores entre seis faixas testadas (0,025; 0,075; 0,150; 0,225; 0,300; 0,350) por avaliação multicritério com correlação canônica de 0,93 sobre Landsat 5 TM em São Paulo — logo é ótimo daquele conjunto específico e não constante universal (ver scripts/auditoria/varrer_faixas_nbr2.mjs para a varredura da Tarefa 4 no Paraná); " +
+      "(v) PENDÊNCIA DE TRANSPOSIÇÃO: a obra primária é exclusivamente Landsat 5 TM. A transposição para Sentinel-2 MSI L2A usa as bandas B2, B3, B4, B8, B11 e B12, empregando B8 (NIR amplo, 785–900 nm) e não B8A conforme Q4 da conferência técnica. Hipótese declarada e não validada experimentalmente; " +
+      "(vi) A formulação com índice VNSIR e limites negativos pertence a Demattê et al. (2020), Scientific Reports 10:4461, DOI 10.1038/s41598-020-61408-1 — obra ainda não conferida no primário, presente no acervo local e fora do Git, não adotada como lastro desta decisão; " +
+      "(vii) ATENÇÃO TERMINOLÓGICA: em Safanelli et al. (2021), BSI significa bare soil image (composição multitemporal sintética de solo exposto), e não o Bare Soil Index de Rikimaru; essa obra adota calibração regional paulista (NDVI em [-0,05; 0,30] e NBR2 em [-0,15; 0,15]) mais permissiva e não adotada no SAREL.",
     decididoPor: "pesquisador",
     decididoEm: "2026-09-22",
     parametros: {
       ndviSoloNu: {
         valor: 0.25,
         operador: "<=",
-        finalidade: "Limiar de solo descoberto do preditor de frequência de solo exposto Ê",
+        finalidade: "Limite superior da faixa de NDVI da mascara GEOS3 (Dematte et al., 2018)",
+      },
+      ndviSoloNuMin: {
+        valor: 0.0,
+        operador: ">=",
+        finalidade: "Limite inferior da faixa de NDVI da mascara GEOS3; exclui agua, sombra e nuvem residual",
+      },
+      nbr2Min: {
+        valor: 0.0,
+        operador: ">=",
+        finalidade: "Limite inferior do NBR2 da mascara GEOS3",
+      },
+      nbr2Max: {
+        valor: 0.075,
+        operador: "<=",
+        finalidade:
+          "Limite superior do NBR2 da mascara GEOS3 — e ESTE filtro que exclui palhada seca em SPD. Escolhido pelos autores entre seis faixas testadas, por avaliacao multicriterio (correlacao canonica 0,93)",
       },
     },
   },

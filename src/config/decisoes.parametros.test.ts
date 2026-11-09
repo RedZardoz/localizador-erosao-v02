@@ -116,15 +116,15 @@ describe("Governança — Fonte Única de Parâmetros e Acessor fail-closed (GOV
         productId: `CENA_FRONTEIRA_${i}`,
         nuvemSombra: false,
         b2: 0.05,
-        b3: null,
+        b3: 0.07,
         b4,
         b5: null,
         b6: null,
         b7: null,
         b8,
         b8a: null,
-        b11: 0.15,
-        b12: 0.20,
+        b11: 0.20,
+        b12: 0.19,
       }));
     }
 

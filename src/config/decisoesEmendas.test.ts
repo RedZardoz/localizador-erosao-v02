@@ -9,7 +9,8 @@ describe("N06 — Emendas de 06/10/2026 e Novos Parâmetros Propostos", () => {
     expect(DECISOES.D16.valor).toContain("EMENDA DE 06/10/2026");
     expect(DECISOES.D02.valor).toContain("EMENDA DE 06/10/2026");
     expect(DECISOES.D09.referencia).toContain("EMENDA DE 06/10/2026");
-    expect(DECISOES.D10.referencia).toContain("EMENDA DE 06/10/2026");
+    // D10 continha cópia errônea da emenda de Mannigel de D09; saneada em 09/11/2026
+    expect(DECISOES.D10.referencia).toContain("EMENDA DE 09/11/2026");
     expect(DECISOES.D14.valor).toContain("EMENDA DE 06/10/2026");
     expect(DECISOES.D13.valor).toContain("EMENDA DE 06/10/2026");
     expect(DECISOES.D15.valor).toContain("EMENDA DE 06/10/2026");

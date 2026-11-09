@@ -35,7 +35,7 @@ function criarCena(
     b7: 0.22,
     b8,
     b8a: 0.25,
-    b11: 0.20,
+    b11: Number((b12 * 1.05).toFixed(4)),
     b12,
   };
 }

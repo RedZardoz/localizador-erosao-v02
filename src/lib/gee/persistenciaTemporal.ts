@@ -25,6 +25,7 @@
  */
 
 import { ObservacaoCena, calcularNdvi, calcularBsi } from "./serieTemporal";
+import { ehSoloExpostoGeos3 } from "./mascaraSoloNuGeos3";
 import { DECISOES, exigirParametro } from "@/config/decisoes";
 
 export type RegimeFenologico =
@@ -111,6 +112,7 @@ export function analisarPersistenciaTemporal(
     const ndvi = calcularNdvi(c.b8, c.b4)!;
     const bsi = calcularBsi(c.b11, c.b4, c.b8, c.b2);
     const dataMs = new Date(c.data).getTime();
+    const vereditoGeos3 = ehSoloExpostoGeos3(c.b2, c.b3, c.b4, c.b8, c.b11, c.b12, { ndviMax: limiarNdviSoloNu });
     return {
       data: c.data,
       dataMs,
@@ -118,7 +120,7 @@ export function analisarPersistenciaTemporal(
       ndvi,
       bsi,
       b12: c.b12,
-      ehSoloNu: ndvi <= limiarNdviSoloNu,
+      ehSoloNu: vereditoGeos3 === true,
       ehDosselFechado: ndvi >= limiarNdviDosselFechado,
     };
   });

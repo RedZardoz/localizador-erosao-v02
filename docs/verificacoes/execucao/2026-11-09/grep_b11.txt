@@ -1,0 +1,38 @@
+﻿src/lib/gee/compostoSoloNu.test.ts:160:    // BSI = ((B11 + B4) - (B8 + B2)) / ((B11 + B4) + (B8 + B2))
+src/lib/gee/compostoSoloNu.ts:135:    insumos.push("serie_B2", "serie_B11");
+src/lib/gee/consolidacaoInspecao.test.ts:244:            B11: 17,
+src/lib/gee/consolidacaoInspecao.test.ts:261:      B11: 17,
+src/lib/gee/consolidacaoInspecao.ts:361:                    B11: medicaoS2.nObservacoesValidasPorBanda?.B11 ?? medicaoS2.nObservacoesValidas,
+src/lib/gee/contratoEscritorLeitorGee.test.ts:30:        nObservacoesValidasPorBanda: { B2: 30, B4: 30, B8: 30, B11: 30, B12: 30 },
+src/lib/gee/contratoEscritorLeitorGee.test.ts:42:        nObservacoesValidasPorBanda: { B2: 2, B4: 2, B8: 2, B11: 2, B12: 2 },
+src/lib/gee/copernicusGeeClient.test.ts:23:    B11_p15: 1800,
+src/lib/gee/copernicusGeeClient.test.ts:28:    B11_p50: 2100,
+src/lib/gee/copernicusGeeClient.test.ts:33:    B11_p85: 2500,
+src/lib/gee/copernicusGeeClient.test.ts:158:      "B11",
+src/lib/gee/copernicusGeeClient.test.ts:207:      ["id", "longitude", "latitude", "time", "B2", "B4", "B8", "B11", "B12"],
+src/lib/gee/copernicusGeeClient.test.ts:236:      ["id", "longitude", "latitude", "time", "B2", "B4", "B8", "B11", "B12"],
+src/lib/gee/copernicusGeeClient.ts:12: * - Bandas espectrais Sentinel-2 MSI L2A (B2, B4, B8, B11) s├úo consultadas diretamente
+src/lib/gee/copernicusGeeClient.ts:349:                  bandSelectors: { constantValue: ["B2", "B4", "B8", "B11", "B12"] },
+src/lib/gee/copernicusGeeClient.ts:532:                  bandSelectors: { constantValue: ["B2", "B4", "B8", "B11", "B12"] },
+src/lib/gee/copernicusGeeClient.ts:783:    B11: 0,
+src/lib/gee/copernicusGeeClient.ts:803:    const idxB11 = cabecalho.indexOf("b11");
+src/lib/gee/copernicusGeeClient.ts:833:      const b11 = extrairBanda(idxB11, "B11");
+src/lib/gee/copernicusGeeClient.ts:893:      const b11 = extrairBandaObj(["B11", "b11"], "B11");
+src/lib/gee/copernicusGeeClient.ts:985:  const b11_15 = typeof props.B11_p15 === "number" ? props.B11_p15 / 10000 : null;
+src/lib/gee/copernicusGeeClient.ts:1001:    typeof (props.B11_p50 ?? props.B11_median ?? props.B11) === "number"
+src/lib/gee/copernicusGeeClient.ts:1002:      ? (props.B11_p50 ?? props.B11_median ?? props.B11) / 10000
+src/lib/gee/copernicusGeeClient.ts:1012:  const b11_85 = typeof props.B11_p85 === "number" ? props.B11_p85 / 10000 : null;
+src/lib/gee/copernicusGeeClient.ts:1019:  // Assinatura cr├¡tica de exposi├º├úo de solo na entressafra (BSI can├┤nico preserva B11 = SWIR-1)
+src/lib/gee/copernicusGeeClient.ts:1115:    B11: nObservacoesValidas,
+src/lib/gee/estatisticasSerie.test.ts:62:  it("construirEstatisticasBloco deve gerar chaves completas para B11 e B12", () => {
+src/lib/gee/estatisticasSerie.test.ts:74:    expect(bloco["B11_p10"]).toBeDefined();
+src/lib/gee/estatisticasSerie.test.ts:75:    expect(bloco["B11_p50"]).toBeDefined();
+src/lib/gee/estatisticasSerie.test.ts:76:    expect(bloco["B11_p90"]).toBeDefined();
+src/lib/gee/estatisticasSerie.ts:8: * interquantil por banda da s├®rie hist├│rica, especialmente SWIR (B11 e B12).
+src/lib/gee/estatisticasSerie.ts:152: * Gera chaves como "B11_p10", "B11_p50", "B11_p90", "B12_p10", "B12_p50", "B12_p90".
+src/lib/gee/gravadorEvidenciaGee.test.ts:150:            nObservacoesValidasPorBanda: { B2: 25, B4: 25, B8: 25, B11: 25, B12: 25 },
+src/lib/gee/gravadorEvidenciaGee.test.ts:161:            nObservacoesValidasPorBanda: { B2: 4, B4: 4, B8: 4, B11: 4, B12: 4 },
+src/lib/gee/harmonicos.test.ts:83:    expect(mapa["B11_offset"]).toBeDefined();
+src/lib/gee/serieTemporal.test.ts:20:    // (B11 + B4) == -(B8 + B2) anula o denominador.
+src/lib/gee/serieTemporal.test.ts:54:    // B11 = 0.3, B4 = 0.2, B8 = 0.15, B2 = 0.1
+src/lib/gee/serieTemporal.ts:63: * BSI = ((B11 + B4) - (B8 + B2)) / ((B11 + B4) + (B8 + B2))

@@ -27,7 +27,7 @@ describe("Contrato Escritor-Leitor de Evidência da Regra 8 (GEE)", () => {
       {
         id: "PONTO_001",
         coordenadas: { latitude: -24.85, longitude: -54.05 },
-        nObservacoesValidasPorBanda: { B2: 30, B4: 30, B8: 30, B11: 30, B12: 30 },
+        nObservacoesValidasPorBanda: { B2: 30, B3: 30, B4: 30, B8: 30, B11: 30, B12: 30 },
         nObservacoesValidas: 30,
         insuficienteD11: false,
         observacoes: [
@@ -39,7 +39,7 @@ describe("Contrato Escritor-Leitor de Evidência da Regra 8 (GEE)", () => {
       {
         id: "PONTO_002",
         coordenadas: { latitude: -24.95, longitude: -54.15 },
-        nObservacoesValidasPorBanda: { B2: 2, B4: 2, B8: 2, B11: 2, B12: 2 },
+        nObservacoesValidasPorBanda: { B2: 2, B3: 2, B4: 2, B8: 2, B11: 2, B12: 2 },
         nObservacoesValidas: 2,
         insuficienteD11: true,
         observacoes: [

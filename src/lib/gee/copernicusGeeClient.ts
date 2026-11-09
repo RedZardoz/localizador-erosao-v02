@@ -41,6 +41,12 @@ export interface ObservacaoSerieTemporal {
   data: string; // YYYY-MM-DD (Regra 3: data da cena)
   ndvi: number | null;
   bsi: number | null;
+  b2?: number | null;
+  b3?: number | null;
+  b4?: number | null;
+  b8?: number | null;
+  b11?: number | null;
+  b12?: number | null;
 }
 
 export interface EntradaObservacaoCenaBruta {
@@ -49,6 +55,7 @@ export interface EntradaObservacaoCenaBruta {
   cenas?: string[];
   id?: string;
   b2?: number | null;
+  b3?: number | null;
   b4?: number | null;
   b8?: number | null;
   b11?: number | null;
@@ -346,7 +353,7 @@ export function construirExpressaoGeeSentinel2WorldCover(
                 functionName: "Image.select",
                 arguments: {
                   input: { argumentReference: "img" },
-                  bandSelectors: { constantValue: ["B2", "B4", "B8", "B11", "B12"] },
+                  bandSelectors: { constantValue: ["B2", "B3", "B4", "B8", "B11", "B12"] },
                 },
               },
             },
@@ -529,7 +536,7 @@ export function construirExpressaoGeeSerieSentinel2(
                 functionName: "Image.select",
                 arguments: {
                   input: { argumentReference: "img" },
-                  bandSelectors: { constantValue: ["B2", "B4", "B8", "B11", "B12"] },
+                  bandSelectors: { constantValue: ["B2", "B3", "B4", "B8", "B11", "B12"] },
                 },
               },
             },
@@ -778,6 +785,7 @@ export function processarObservacoesSerie(dadosBrutos: any): ResultadoProcessame
   const observacoes: ObservacaoSerieTemporal[] = [];
   const contagemPorBanda: Record<string, number> = {
     B2: 0,
+    B3: 0,
     B4: 0,
     B8: 0,
     B11: 0,
@@ -798,6 +806,7 @@ export function processarObservacoesSerie(dadosBrutos: any): ResultadoProcessame
     const idxId = cabecalho.indexOf("id");
     const idxTime = cabecalho.indexOf("time");
     const idxB2 = cabecalho.indexOf("b2");
+    const idxB3 = cabecalho.indexOf("b3");
     const idxB4 = cabecalho.indexOf("b4");
     const idxB8 = cabecalho.indexOf("b8");
     const idxB11 = cabecalho.indexOf("b11");
@@ -828,6 +837,7 @@ export function processarObservacoesSerie(dadosBrutos: any): ResultadoProcessame
       };
 
       const b2 = extrairBanda(idxB2, "B2");
+      const b3 = extrairBanda(idxB3, "B3");
       const b4 = extrairBanda(idxB4, "B4");
       const b8 = extrairBanda(idxB8, "B8");
       const b11 = extrairBanda(idxB11, "B11");
@@ -843,6 +853,12 @@ export function processarObservacoesSerie(dadosBrutos: any): ResultadoProcessame
         data: dataAquisicao,
         ndvi,
         bsi,
+        b2,
+        b3,
+        b4,
+        b8,
+        b11,
+        b12,
       });
     }
   } else {
@@ -888,6 +904,7 @@ export function processarObservacoesSerie(dadosBrutos: any): ResultadoProcessame
       };
 
       const b2 = extrairBandaObj(["B2", "b2"], "B2");
+      const b3 = extrairBandaObj(["B3", "b3"], "B3");
       const b4 = extrairBandaObj(["B4", "b4"], "B4");
       const b8 = extrairBandaObj(["B8", "b8"], "B8");
       const b11 = extrairBandaObj(["B11", "b11"], "B11");
@@ -911,6 +928,12 @@ export function processarObservacoesSerie(dadosBrutos: any): ResultadoProcessame
         data: dataAquisicao,
         ndvi,
         bsi,
+        b2,
+        b3,
+        b4,
+        b8,
+        b11,
+        b12,
       });
     }
   }

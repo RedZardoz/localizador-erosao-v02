@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `a1b89ebc4b3ed7534ee2b968603404c7741292b7`
-- Data do HEAD: 2026-11-09 14:18:04 -0300
+- Commit HEAD: `968b3ad92394fe7bd76a2b96e478071a2f65cd50`
+- Data do HEAD: 2026-11-09 18:32:48 +0000
 - Últimos 5 commits:
-  1. `a1b89eb lastro(D02,D10): confere primarios e diagnostica mascara GEOS3 em E-hat`
-  2. `2bed3c0 docs(planejamento): adicionar prompts A e B do executor de 09/11/2026`
-  3. `fbc8250 docs(bibliografia): catalogar 6 obras de sensoriamento espectral, solo nu e palhada no inventario`
-  4. `f409a6b docs(governanca): transcrever doze decisoes de conversa e registrar nota tecnica de lote GEE`
-  5. `1af5244 fix(governanca): medir tamanho de evidencias via blob do git (imune a CRLF/LF)`
+  1. `968b3ad docs(planejamento): acrescentar tarefa 6.1 ao prompt C`
+  2. `1289ec4 chore(governanca): ligar modo somente-leitura do painel de estado a Regra 3`
+  3. `5571f71 docs(planejamento): adicionar prompt C da mascara GEOS3 de Dematte et al. (2018)`
+  4. `a5528a0 chore(governanca): atualizar ESTADO.md apos incorporacao de evidencias de primarios`
+  5. `a1b89eb lastro(D02,D10): confere primarios e diagnostica mascara GEOS3 em E-hat`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 120

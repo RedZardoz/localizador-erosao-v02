@@ -1,0 +1,175 @@
+﻿
+> sarel@2.0.0 test
+> vitest run
+
+node.exe : The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via 
+the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in 
+your Vite config instead.
+No linha:1 caractere:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\lalfr\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (The plugin...g instead.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/lalfr/Docs Fora do Ar/LUIS ALFREDO/01 - MESTRADO PPGTCA 2026/02 - PESQUISA EROS├âO LAMINAR/geolocalizacao-erosao-propriedade
+
+ Ô£ô src/config/deflacao.test.ts (7 tests) 1468ms
+     Ô£ô audita os geradores de documentos contra deriva: exige PARAM_DEFLACAO e pro├¡be literais derivados ou defasados  1458ms
+ Ô£ô src/lib/seguranca/guardaImputacaoMediana.test.ts (2 tests) 2015ms
+     Ô£ô varre scripts/ e src/ e falha se houver imputa├º├úo por mediana fora de scripts/d25/ e do legado deprecado  2004ms
+ Ô£ô src/lib/export/pacoteReprodutibilidade.test.ts (20 tests) 1234ms
+     Ô£ô INTEGRA├ç├âO A5(c): extrai ZIP e roda 07_verificar_integridade.py via Python (exit 0 em ├¡ntegro, exit 1 se corrompido)  1000ms
+ Ô£ô src/lib/seguranca/padroesProibidos.test.ts (34 tests) 4139ms
+       Ô£ô nenhum arquivo em src/lib, src/app, src/store, src/config, src/components ou src/types deve conter padr├Áes proibidos  1465ms
+       Ô£ô nenhum script em scripts/ deve conter gera├º├úo sint├®tica n├úo documentada ou padr├Áes proibidos  535ms
+       Ô£ô assevera que nenhum JSON versionado em data/ e docs/ cont├®m hash implaus├¡vel ou timestamp suspeito  1149ms
+       Ô£ô assevera que nenhum artefato JSON de medi├º├úo em docs/verificacoes/ cont├®m s├®ries num├®ricas correlacionadas com a ordem do arquivo  422ms
+ Ô£ô src/lib/seguranca/cegamentoArtefatos.test.ts (5 tests) 4311ms
+     Ô£ô nenhum arquivo sob controle de vers├úo (git) deve conter simultaneamente c├│digo opaco VANT-BLIND-* e identificador de pol├¡gono D16_E_* (K2)  4256ms
+ Ô£ô src/lib/seguranca/importacoes.test.ts (4 tests) 1557ms
+       Ô£ô nenhum arquivo em src/ importa de legado/  1542ms
+stdout | src/lib/seguranca/provenienciaCaminhos.test.ts > Verifica├º├úo automatizada de caminhos em docs/PROVENIENCIA_ASSISTENCIA_IA.md (Disciplina R1 / Regra 9) > todos os caminhos de reposit├│rio citados em docs/PROVENIENCIA_ASSISTENCIA_IA.md devem existir no disco
+[C02] Caminhos citados em docs/PROVENIENCIA_ASSISTENCIA_IA.md ignorados pelo .gitignore (dado local leg├¡timo fora do git): 2 [
+  'docs/bibliografia/Pesquisas diretamente relacionadas/CNPS-DOC-246-2024.pdf',
+  'data/dem_cache/Copernicus_DSM_COG_10_S26_00_W055_00_DEM.tif'
+]
+
+ Ô£ô src/lib/seguranca/provenienciaCaminhos.test.ts (3 tests) 807ms
+     Ô£ô ehCaminhoIgnoradoGit: caminho com metacaracteres de shell n├úo executa comando e conta como n├úo ignorado  441ms
+     Ô£ô todos os caminhos de reposit├│rio citados em docs/PROVENIENCIA_ASSISTENCIA_IA.md devem existir no disco  356ms
+ Ô£ô src/config/estado.espelho.test.ts (4 tests) 2250ms
+     Ô£ô ESTADO.md no disco deve ser estritamente id├¬ntico ao gerado em mem├│ria pelo script de auditoria  2240ms
+ Ô£ô src/lib/seguranca/auditoriaComportamentoScripts.test.ts (10 tests) 5113ms
+     Ô£ô script estado_do_projeto.mjs cumpre rigorosamente os requisitos de rastreabilidade e recusa  2454ms
+     Ô£ô script mapear_citacao_metodologia.mjs cumpre rigorosamente os requisitos de rastreabilidade e recusa  913ms
+     Ô£ô script mapear_matriz_vs_prerregistro.mjs cumpre rigorosamente os requisitos de rastreabilidade e recusa  352ms
+     Ô£ô script varrer_faixas_nbr2.mjs cumpre rigorosamente os requisitos de rastreabilidade e recusa  310ms
+ Ô£ô src/lib/rusle/rusle.test.ts (20 tests) 489ms
+       Ô£ô nenhum m├│dulo em src/ (exceto fatorC.ts e testes) importa ou chama calcularFatorCSensibilidadeBsi nem calcularFatorCHibrido  461ms
+ Ô£ô src/lib/seguranca/verificacoes.test.ts (4 tests) 413ms
+       Ô£ô toda afirma├º├úo VERIFICADO em c├│digo deve apontar para arquivo existente em docs/verificacoes/  399ms
+ Ô£ô src/lib/seguranca/detectorSequencia.test.ts (6 tests) 505ms
+       Ô£ô nenhum artefato JSON ativo em docs/verificacoes deve conter s├®ries num├®ricas com |r| > 0.95  492ms
+ Ô£ô src/lib/tempo/datas.test.ts (4 tests) 802ms
+     Ô£ô varre src e falha se sobrar toISOString().split('T')[0] ou .slice(0, 10) fora do utilit├írio e da lista fechada de exce├º├Áes UTC  719ms
+ Ô£ô src/lib/autorizacao/equipe.test.ts (15 tests) 487ms
+ Ô£ô src/lib/gee/contratoEscritorLeitorGee.test.ts (2 tests) 540ms
+ Ô£ô src/lib/drone/planoVooNControl.test.ts (10 tests) 382ms
+     Ô£ô Y4, Y5 e Y6 sob Z1ÔÇôZ6: exporta campanha completa com terreno real GLO-30 e segrega├º├úo cega estrita  333ms
+ Ô£ô src/types/proveniencia.test.ts (3 tests) 407ms
+     Ô£ô garante que nenhum chamador de produ├º├úo em src/lib passa literal de data constante '2024-01-01'  388ms
+ Ô£ô src/lib/gee/sorteioPoligonos.test.ts (19 tests) 125ms
+ Ô£ô src/lib/gee/amostragemSoloNuLote.test.ts (10 tests) 162ms
+ Ô£ô src/app/api/sitios-referencia/route.test.ts (4 tests) 40ms
+ Ô£ô src/lib/matriz/contratoMatrizS11.test.ts (3 tests) 836ms
+     Ô£ô 9. As quatro rotas repassam a op├º├úo quando ela ├® fornecida ÔÇö falha se houver 5┬¬ chamada sem repassar  789ms
+ Ô£ô src/lib/embrapa/embrapaSoilClient.test.ts (33 tests) 105ms
+ Ô£ô src/components/map/candidatoEspectral.test.ts (2 tests) 100ms
+ Ô£ô src/lib/seguranca/gerarRelatorioFase.test.ts (6 tests) 60ms
+ Ô£ô src/lib/padraoOuro/sitiosLocais.test.ts (8 tests) 83ms
+ Ô£ô src/lib/export/planilha.test.ts (14 tests) 81ms
+ Ô£ô src/lib/gee/gravadorEvidenciaGee.test.ts (7 tests) 87ms
+ Ô£ô src/config/inventarioBibliografico.test.ts (5 tests) 50ms
+ Ô£ô src/lib/matriz/esquema.test.ts (16 tests) 33ms
+ Ô£ô src/lib/jev/jevClient.test.ts (11 tests) 69ms
+ Ô£ô src/lib/gee/copernicusGeeClient.test.ts (12 tests) 70ms
+ Ô£ô src/lib/seguranca/diarioRequisicoes.test.ts (5 tests) 48ms
+ Ô£ô src/lib/matriz/invariantes.test.ts (33 tests) 57ms
+ Ô£ô src/lib/fundiario/verificadorManifesto.test.ts (5 tests) 46ms
+ Ô£ô src/config/paridadeArtefatos.test.ts (7 tests) 154ms
+ Ô£ô src/hooks/useModalA11y.test.ts (6 tests) 56ms
+ Ô£ô src/lib/rusle/fatorR.test.ts (6 tests) 95ms
+ Ô£ô src/lib/fundiario/matcher.test.ts (16 tests | 3 skipped) 124ms
+ Ô£ô src/lib/fundiario/calculadoraDesenho.test.ts (5 tests) 65ms
+ Ô£ô src/components/layout/acessibilidadeAlvosERotulos.test.ts (6 tests) 65ms
+ Ô£ô src/components/inspetor/InspetorPonto.test.ts (4 tests) 50ms
+ Ô£ô src/lib/planet/planet.test.ts (15 tests) 66ms
+ Ô£ô src/lib/gee/consolidacaoInspecao.test.ts (5 tests) 43ms
+ Ô£ô src/config/decisoes.espelho.test.ts (4 tests) 40ms
+ Ô£ô src/lib/seguranca/credenciaisSeguras.test.ts (11 tests) 33ms
+ Ô£ô src/lib/matriz/montagemTemporal.test.ts (9 tests) 37ms
+stderr | src/lib/gee/auth.test.ts > getGoogleAccessToken > nao repete 
+error_description ao cliente quando a troca de token falha
+[AUTH] Erro retornado pelo Google OAuth: invalid_grant Invalid grant: account not found
+
+stderr | src/lib/gee/auth.test.ts > getGoogleAccessToken > nao repete 
+error_description ao cliente quando a troca de token falha
+[AUTH] Erro retornado pelo Google OAuth: invalid_grant Invalid grant: account not found
+
+ Ô£ô src/lib/gee/auth.test.ts (4 tests) 34ms
+ Ô£ô src/lib/gee/estratificacao.test.ts (8 tests) 29ms
+ Ô£ô src/lib/seguranca/localOnly.test.ts (9 tests) 24ms
+ Ô£ô src/config/desenvolvimentoDiretrizes.test.ts (6 tests) 22ms
+ Ô£ô src/components/config/ApiTokensManagerN15.test.ts (2 tests) 28ms
+ Ô£ô src/lib/matriz/montagemD16.test.ts (17 tests) 26ms
+ Ô£ô src/config/decisoes.parametros.test.ts (10 tests) 25ms
+ Ô£ô src/lib/chuva/chuva.test.ts (17 tests) 22ms
+ Ô£ô src/lib/gee/compostoSoloNu.test.ts (4 tests) 24ms
+ Ô£ô src/app/api/gee/gravar-evidencia-lote/route.test.ts (4 tests) 23ms
+ Ô£ô src/app/api/fundiario/status/route.test.ts (5 tests) 26ms
+ Ô£ô src/lib/gee/persistenciaTemporal.test.ts (6 tests) 25ms
+ Ô£ô src/lib/autorizacao/csvAutorizacoes.test.ts (15 tests) 19ms
+ Ô£ô src/lib/rotulos/binarizacao.test.ts (9 tests) 13ms
+ Ô£ô src/lib/rotulos/rotulos.test.ts (19 tests) 24ms
+ Ô£ô src/config/textosDefasadosC22.test.ts (3 tests) 26ms
+ Ô£ô src/components/map/PointPopupAvisos.test.ts (1 test) 19ms
+ Ô£ô src/lib/matriz/montagemRotulo.test.ts (13 tests) 19ms
+ Ô£ô src/config/decisoes.test.ts (5 tests) 20ms
+ Ô£ô src/lib/fundiario/manifestoSanidade.test.ts (7 tests) 16ms
+ Ô£ô src/lib/gee/poolEstratos.test.ts (15 tests) 19ms
+ Ô£ô src/config/readmeIntegridade.test.ts (2 tests) 6ms
+ Ô£ô src/lib/rusle/fatorK.test.ts (16 tests) 16ms
+ Ô£ô src/lib/padraoOuro/validacaoMatricial.test.ts (16 tests) 14ms
+ Ô£ô src/lib/autorizacao/logRecusas.test.ts (16 tests) 16ms
+ Ô£ô src/lib/gee/verificarPoolEstratosCli.test.ts (10 tests) 16936ms
+     Ô£ô recusa execu├º├úo sem --candidatos (exit code != 0)  1861ms
+     Ô£ô recusa execu├º├úo sem --reservas (exit code != 0)  1449ms
+     Ô£ô recusa execu├º├úo sem --n-minimo (exit code != 0)  1907ms
+     Ô£ô recusa execu├º├úo sem --taxas (exit code != 0)  1437ms
+     Ô£ô recusa arquivo JSON sem lista de candidatos (objeto sem chave 'candidatos'), nomeando as chaves presentes  1462ms
+     Ô£ô recusa arquivo JSON com lista de candidatos vazia (array raiz vazio ou propriedade vazia)  3087ms
+     Ô£ô aceita JSON contendo objeto com propriedade candidatos povoada e executa com sucesso  1576ms
+     Ô£ô recusa candidato sint├®tico com a MESMA mensagem do sorteio D23  1353ms
+     Ô£ô executa com conjunto de verifica├º├úo, exibe aviso obrigat├│rio no topo, n├úo imprime coordenadas/CAR e N├âO grava em docs/verificacoes/sorteio  1347ms
+     Ô£ô recusa argumento --saida apontando para docs/verificacoes/sorteio  1451ms
+ Ô£ô src/lib/rotulos/ingestaoColetor.test.ts (5 tests) 14ms
+ Ô£ô src/lib/gee/serieTemporal.test.ts (12 tests) 60ms
+ Ô£ô src/config/lastroCientifico.test.ts (15 tests) 30ms
+ Ô£ô src/lib/rusle/fatorLS.test.ts (13 tests) 15ms
+ Ô£ô src/lib/gee/terreno.test.ts (12 tests) 14ms
+ Ô£ô src/lib/gee/versaoMotor.test.ts (8 tests) 14ms
+ Ô£ô src/lib/matriz/perfisIntegridade.test.ts (19 tests) 13ms
+ Ô£ô src/config/tourMetodologico.test.ts (2 tests) 14ms
+ Ô£ô src/components/layout/acoesCabecalho.test.ts (8 tests) 12ms
+ Ô£ô src/lib/fundiario/selecaoPontoElegivel.test.ts (7 tests) 14ms
+ Ô£ô src/lib/gee/mascaraSoloNuGeos3.test.ts (15 tests) 13ms
+ Ô£ô src/lib/gee/elegibilidade.test.ts (7 tests) 11ms
+ Ô£ô src/lib/seguranca/sessaoEfemera.test.ts (4 tests) 10ms
+ Ô£ô src/lib/matriz/travaAlvosPreRegistro.test.ts (7 tests) 12ms
+ Ô£ô src/lib/localizacao/localizacao.test.ts (8 tests) 11ms
+ Ô£ô src/lib/gee/blocosEspaciais.test.ts (5 tests) 11ms
+ Ô£ô src/lib/gee/thinning.test.ts (6 tests) 11ms
+ Ô£ô src/app/api/gee/select-candidates/chuvaDecisao.test.ts (3 tests) 11ms
+ Ô£ô src/lib/gee/harmonicos.test.ts (3 tests) 10ms
+ Ô£ô src/lib/gee/varrerFaixasNbr2.test.ts (2 tests) 12ms
+ Ô£ô src/lib/rotulos/rotuloHumano.test.ts (8 tests) 8ms
+ Ô£ô src/store/interfaceIntegration.test.ts (4 tests) 8ms
+ Ô£ô src/lib/seguranca/guardaSintetico.test.ts (3 tests) 8ms
+ Ô£ô src/lib/gee/estatisticasSerie.test.ts (4 tests) 10ms
+ Ô£ô src/lib/gee/aoiTiling.test.ts (3 tests) 9ms
+ Ô£ô src/config/decisoesEmendas.test.ts (3 tests) 7ms
+ Ô£ô src/store/useSarelStore.test.ts (2 tests) 9ms
+ Ô£ô src/components/decisoes/PainelCriterioRefutacaoD25.test.ts (3 tests) 8ms
+ Ô£ô src/config/decisoesParidade.test.ts (3 tests) 11ms
+ Ô£ô src/lib/gee/amostragemBiofisica.test.ts (5 tests) 7ms
+ Ô£ô src/components/campanha/PainelCampanhaSelo.test.ts (4 tests) 8ms
+ Ô£ô src/components/config/SettingsModalN15.test.ts (2 tests) 7ms
+ Ô£ô src/lib/export/dms.test.ts (3 tests) 6ms
+ Ô£ô src/config/areaInteresse.test.ts (1 test) 5ms
+
+ Test Files  106 passed (106)
+      Tests  885 passed | 3 skipped (888)
+   Start at  16:19:59
+   Duration  21.51s (transform 6.94s, setup 0ms, import 17.67s, tests 47.69s, environment 29ms)
+

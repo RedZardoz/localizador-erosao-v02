@@ -1,0 +1,24 @@
+ M docs/bibliografia/INVENTARIO_SELECAO_BIBLIOGRAFICA.md
+ M docs/planejamento/DECISOES.md
+ M docs/planejamento/ESTADO.md
+ M docs/verificacoes/fontes/dematte2018/conferencia_dematte_2018.md
+ M src/config/decisoes.parametros.test.ts
+ M src/config/decisoes.ts
+ M src/config/decisoesEmendas.test.ts
+ M src/config/desenvolvimentoDiretrizes.test.ts
+ M src/lib/gee/amostragemSoloNuLote.ts
+ M src/lib/gee/compostoSoloNu.test.ts
+ M src/lib/gee/compostoSoloNu.ts
+ M src/lib/gee/contratoEscritorLeitorGee.test.ts
+ M src/lib/gee/copernicusGeeClient.test.ts
+ M src/lib/gee/copernicusGeeClient.ts
+ M src/lib/gee/persistenciaTemporal.test.ts
+ M src/lib/gee/persistenciaTemporal.ts
+ M src/lib/matriz/montagemTemporal.test.ts
+ M src/lib/matriz/montagemTemporal.ts
+?? docs/verificacoes/2026-11-09b_adocao_mascara_geos3_2018.md
+?? docs/verificacoes/execucao/
+?? scripts/auditoria/varrer_faixas_nbr2.mjs
+?? src/lib/gee/mascaraSoloNuGeos3.test.ts
+?? src/lib/gee/mascaraSoloNuGeos3.ts
+?? src/lib/gee/varrerFaixasNbr2.test.ts

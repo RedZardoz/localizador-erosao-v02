@@ -23,7 +23,8 @@ No texto primário de Demattê et al. (2018), os limites formulados para a másc
    > *"Regarding the use of NBR2, six threshold ranges were tested: 0 to 0.025, 0 to 0.075, 0 to 0.150, 0 to 0.225, 0 to 0.300 and 0 to 0.350, and values outside the previous ranges were also flagged as NA."* (p. 7)  
    > *"Despite there being small differences between canonical correlations among the thresholds, we believe that 0.075 NBR2 was the optimal choice, since it reduced the presence of artifacts in the image with the 0.075 NBR2 threshold."* (p. 8)
 3. **Canais Visuais:** gradientes espectrais positivos no visível (p. 7, Seção 2.5):
-   > *"The difference between B3 and B2, as well as between B2 and B1 were also calculated to improve soil masking... The negative values of B3-B2 and B2-B1 were flagged as NA."*
+   > *"The difference between B3 and B2, as well as between B2 and B1 were also calculated to improve soil masking... The negative values of B3-B3 [sic] and B2-B1 were flagged as NA."*  
+   *(Nota de fidelidade filológica: o texto impresso original do artigo contém o erro tipográfico manifesto `B3-B3 [sic]`; a leitura física e metodológica correta pretendida pelos autores é indiscutivelmente `B3-B2`, conforme expresso na frase imediatamente anterior do mesmo parágrafo — "difference between B3 and B2" — e na enumeração dos índices calculados "B2-B1 and B3-B2" na Fig. 4).*
 4. **VNSIR:** **NÃO EXISTE** em Demattê et al. (2018) (zero ocorrências no texto integral extraído).
 
 *Nota científica crucial:* A conjunção com `NDVI ∈ [−0,25; 0,25]`, `NBR2 ∈ [−0,30; 0,10]` e `VNSIR < 0,90` foi formulada na evolução subsequente do sistema GEOS3, publicada em **Demattê et al. (2020)** (*Scientific Reports* 10:4461, DOI: 10.1038/s41598-020-61408-1, p. 8, Equações 1 a 3), também presente no acervo local (`docs/bibliografia/01_pesquisas_diretamente_relacionadas/41598_2020_Article_61408.pdf`).

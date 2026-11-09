@@ -153,6 +153,7 @@ describe("Cliente GEE Sentinel-2 e Concordância Multitemporal ESA WorldCover (D
     expect(no5.arguments.image.functionInvocationValue.functionName).toBe("Image.select");
     expect(no5.arguments.image.functionInvocationValue.arguments.bandSelectors.constantValue).toEqual([
       "B2",
+      "B3",
       "B4",
       "B8",
       "B11",

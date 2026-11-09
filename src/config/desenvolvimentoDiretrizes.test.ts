@@ -44,12 +44,29 @@ describe("TAREFA 4 — Integridade do ponteiro CLAUDE.md e de docs/DESENVOLVIMEN
     expect(conteudo).toContain("Leitura Obrigatória no Início de Toda Sessão");
     expect(conteudo).toContain("docs/planejamento/ESTADO.md");
     expect(conteudo).toContain("docs/planejamento/DECISOES_DE_CONVERSA.md");
-    expect(conteudo).toContain("npm run estado");
+    // Trava não-vácua (Tarefa 6.1): exige 'npm run estado' isolado fora de 'estado:verificar'
+    expect(conteudo).toMatch(/npm run estado(?!:)/);
     expect(conteudo).toContain("npm run estado:verificar");
     expect(conteudo).toContain("As 9 Regras Invioláveis da Lei Fundamental");
     expect(conteudo).toContain("Três Verdes Obrigatórios");
     expect(conteudo).toContain("Ambiente de Desenvolvimento — Armadilhas Críticas");
     expect(conteudo).toContain("npm ci");
     expect(conteudo).toContain("next start");
+  });
+
+  it("meta-teste (Tarefa 6.1): prova que a asserção de 'npm run estado' não é vácua frente a 'estado:verificar'", () => {
+    // Texto simulado contendo apenas o comando de verificação:
+    const textoApenasVerificar = "Para auditar o painel, execute exclusivamente npm run estado:verificar.";
+
+    // A asserção ingênua anterior (.toContain) passava erroneamente por ser vácua:
+    expect(textoApenasVerificar.includes("npm run estado")).toBe(true);
+
+    // A nova asserção com fronteira negativa (/npm run estado(?!:)/) falha rigorosamente:
+    const regexGeracao = /npm run estado(?!:)/;
+    expect(regexGeracao.test(textoApenasVerificar)).toBe(false);
+
+    // E é satisfeita quando o comando de geração legítimo está presente:
+    const textoComAmbos = "Geração: npm run estado | Verificação: npm run estado:verificar";
+    expect(regexGeracao.test(textoComAmbos)).toBe(true);
   });
 });

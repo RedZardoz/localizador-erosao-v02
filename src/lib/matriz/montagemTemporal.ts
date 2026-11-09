@@ -22,6 +22,7 @@
  */
 
 import { ObservacaoCena, calcularNdvi, calcularBsi, definirJanelasModelo, filtrarSeriePorJanela } from "../gee/serieTemporal";
+import { ehSoloExpostoGeos3 } from "../gee/mascaraSoloNuGeos3";
 import { analisarPersistenciaTemporal, DiagnosticoPersistencia } from "../gee/persistenciaTemporal";
 import { ajustarHarmonicosBanda } from "../gee/harmonicos";
 import { DECISOES, exigirParametro } from "@/config/decisoes";
@@ -276,28 +277,39 @@ export function montarPreditoresTemporais(
   const ndvi_p90 = temNValidasPercentisCauda ? Number(ndvis[p90Idx].toFixed(4)) : null;
   const bsi_p50 = bsis.length > 0 ? Number(bsis[Math.floor(bsis.length * 0.5)].toFixed(4)) : null;
 
-  // Frequência de solo nu (E^) — Decomposição D11.2 e limiar D10 (NDVI <= 0.25)
+  // Frequência de solo nu (E^) — Decomposição D11.2 e máscara GEOS3 D10 (Demattê et al., 2018)
   let frequenciaSoloNu: Proveniencia<number>;
 
-  if (nValidas < N_MINIMO_OBSERVACOES_SOLO_NU_FALLBACK_D11_2) {
+  // Avaliação por cena via máscara GEOS3
+  // Regra 1 / Invariante 5: Se faltar banda espectral, a cena retorna null e é excluída do denominador
+  const cenasGeos3Validas = validas
+    .map((c) => ({
+      ...c,
+      ehSoloNu: ehSoloExpostoGeos3(c.b2, c.b3, c.b4, c.b8, c.b11, c.b12, { ndviMax: limiarNdviSoloNu }),
+    }))
+    .filter((c) => c.ehSoloNu !== null);
+
+  const nValidasGeos3 = cenasGeos3Validas.length;
+  const nSoloNu = cenasGeos3Validas.filter((c) => c.ehSoloNu === true).length;
+
+  if (nValidasGeos3 < N_MINIMO_OBSERVACOES_SOLO_NU_FALLBACK_D11_2) {
     // Abaixo do piso absoluto de 6 cenas (D11.1 / D11.2)
     frequenciaSoloNu = indisponivel(
       "insuficiente",
-      `Série temporal com ${nValidas} observações válidas (abaixo do piso absoluto de ${N_MINIMO_OBSERVACOES_SOLO_NU_FALLBACK_D11_2} cenas exigido por D11.1/D11.2).`
+      `Série temporal com ${nValidasGeos3} observações válidas com bandas completas para máscara GEOS3 (abaixo do piso absoluto de ${N_MINIMO_OBSERVACOES_SOLO_NU_FALLBACK_D11_2} cenas exigido por D11.1/D11.2).`
     );
-  } else if (nValidas < N_MINIMO_OBSERVACOES_SOLO_NU_D11_2) {
+  } else if (nValidasGeos3 < N_MINIMO_OBSERVACOES_SOLO_NU_D11_2) {
     // 6 <= n < 12: admite fallback APENAS em janelas sazonais curtas (< 120 dias)
     if (ehJanelaCurta) {
-      const nSoloNu = ndvis.filter((v) => v <= limiarNdviSoloNu).length;
-      const valorFreq = Number((nSoloNu / nValidas).toFixed(4));
-      const seFallback = Number((0.5 / Math.sqrt(nValidas)).toFixed(4));
+      const valorFreq = Number((nSoloNu / nValidasGeos3).toFixed(4));
+      const seFallback = Number((0.5 / Math.sqrt(nValidasGeos3)).toFixed(4));
       frequenciaSoloNu = modelado(
         valorFreq,
-        "Proporção binomial de solo exposto sob regime de fallback de janela curta (D11.2)",
-        ["Sentinel-2 MSI L2A", `NDVI <= ${limiarNdviSoloNu} (D10)`],
+        "Proporção binomial de solo exposto sob regime de fallback de janela curta (D11.2) via máscara GEOS3 (Demattê et al., 2018: NDVI em [0,00; 0,25], NBR2 em [0,00; 0,075], B4-B3>=0, B3-B2>=0)",
+        ["serie_B2", "serie_B3", "serie_B4", "serie_B8", "serie_B11", "serie_B12"],
         ["D10", "D11.2"],
         {
-          nObservacoes: nValidas,
+          nObservacoes: nValidasGeos3,
           erroPadrao: seFallback,
           regime: "fallback_janela_curta",
           elegivelD12: false,
@@ -306,21 +318,20 @@ export function montarPreditoresTemporais(
     } else {
       frequenciaSoloNu = indisponivel(
         "insuficiente",
-        `Série temporal em janela plurianual (${duracaoDias} dias) possui ${nValidas} observações válidas (mínimo exigido: ${N_MINIMO_OBSERVACOES_SOLO_NU_D11_2} cenas por D11.2 para SE <= 0,144; Agresti & Coull 1998; Brown et al. 2001).`
+        `Série temporal em janela plurianual (${duracaoDias} dias) possui ${nValidasGeos3} observações válidas (mínimo exigido: ${N_MINIMO_OBSERVACOES_SOLO_NU_D11_2} cenas por D11.2 para SE <= 0,144; Agresti & Coull 1998; Brown et al. 2001).`
       );
     }
   } else {
     // n >= 12: regime padrão pleno com SE <= 0,144
-    const nSoloNu = ndvis.filter((v) => v <= limiarNdviSoloNu).length;
-    const valorFreq = Number((nSoloNu / nValidas).toFixed(4));
-    const sePadrao = Number((0.5 / Math.sqrt(nValidas)).toFixed(4));
+    const valorFreq = Number((nSoloNu / nValidasGeos3).toFixed(4));
+    const sePadrao = Number((0.5 / Math.sqrt(nValidasGeos3)).toFixed(4));
     frequenciaSoloNu = modelado(
       valorFreq,
-      "Proporção binomial de solo exposto (D11.2)",
-      ["Sentinel-2 MSI L2A", `NDVI <= ${limiarNdviSoloNu} (D10)`],
+      "Proporção binomial de solo exposto (D11.2) via máscara GEOS3 (Demattê et al., 2018: NDVI em [0,00; 0,25], NBR2 em [0,00; 0,075], B4-B3>=0, B3-B2>=0)",
+      ["serie_B2", "serie_B3", "serie_B4", "serie_B8", "serie_B11", "serie_B12"],
       ["D10", "D11.2", "D12"],
       {
-        nObservacoes: nValidas,
+        nObservacoes: nValidasGeos3,
         erroPadrao: sePadrao,
         regime: "padrao",
         elegivelD12: true,

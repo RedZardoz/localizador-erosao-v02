@@ -17,6 +17,7 @@
  */
 
 import { Proveniencia } from "@/types/proveniencia";
+import { ehSoloExpostoGeos3 } from "./mascaraSoloNuGeos3";
 import {
   ObservacaoCena,
   NomeBandaEspectral,
@@ -108,49 +109,64 @@ export function extrairMetricasSoloExposto(
     };
   }
 
-  // 2. Classificar cada cena válida como solo nu (NDVI < limiarNdvi e BSI opcional)
-  const cenasComNdvi = validas.map(c => {
-    const ndvi = calcularNdvi(c.b8, c.b4);
-    let ehSoloNu = ndvi !== null && ndvi < limiarNdvi;
-
-    // Discriminação física contra falso positivo de palhada seca em SPD
-    if (ehSoloNu && typeof opcoes?.limiarMinBsi === "number") {
-      const bsi = calcularBsi(c.b11, c.b4, c.b8, c.b2);
-      if (bsi !== null && bsi < opcoes.limiarMinBsi) {
-        ehSoloNu = false;
+  // 2. Classificar cada cena válida com a máscara GEOS3 (Demattê et al., 2018)
+  // Regra 1 / Invariante 5: Se faltar banda para avaliar a máscara, ehSoloExpostoGeos3 retorna null.
+  // Cenas com bandas ausentes são excluídas do denominador de Ê (declarado na Proveniência).
+  const cenasAvaliadas = validas
+    .map(c => {
+      let veredito = ehSoloExpostoGeos3(c.b2, c.b3, c.b4, c.b8, c.b11, c.b12, { ndviMax: limiarNdvi });
+      if (veredito === true && typeof opcoes?.limiarMinBsi === "number") {
+        const bsi = calcularBsi(c.b11, c.b4, c.b8, c.b2);
+        if (bsi !== null && bsi < opcoes.limiarMinBsi) {
+          veredito = false;
+        }
       }
-    }
+      const ndvi = calcularNdvi(c.b8, c.b4);
+      return { ...c, ndviCalculado: ndvi, vereditoGeos3: veredito };
+    })
+    .filter(c => c.vereditoGeos3 !== null);
 
-    return { ...c, ndviCalculado: ndvi, ehSoloNu };
-  });
+  const nValidasAvaliadas = cenasAvaliadas.length;
 
-  const cenasSoloNu = cenasComNdvi.filter(c => c.ehSoloNu);
+  if (nValidasAvaliadas === 0) {
+    const indispSemObs: Proveniencia<number> = {
+      estado: "indisponivel",
+      causa: "insuficiente",
+      motivo: "Nenhuma observação com todas as bandas necessárias para a máscara GEOS3 (B2, B3, B4, B8, B11, B12).",
+    };
+
+    return {
+      frequenciaSoloNu: indispSemObs,
+      maiorSequenciaSoloNu: indispSemObs,
+      mesModalExposicao: indispSemObs,
+      compostoSoloNu: compostoVazio,
+      nObservacoesValidas: 0,
+      nObservacoesSoloNu: 0,
+    };
+  }
+
+  const cenasSoloNu = cenasAvaliadas.filter(c => c.vereditoGeos3 === true);
   const nSoloNu = cenasSoloNu.length;
 
   // 3. Frequência de solo nu (Ê)
   // Regra 1 / Invariante 5: se nSoloNu == 0, frequencia = 0.0 é um valor real medido/modelado!
-  const freqVal = Number((nSoloNu / nValidas).toFixed(4));
-  const insumos = ["serie_B4", "serie_B8"];
-  if (typeof opcoes?.limiarMinBsi === "number") {
-    insumos.push("serie_B2", "serie_B11");
-  }
+  const freqVal = Number((nSoloNu / nValidasAvaliadas).toFixed(4));
+  const insumos = ["serie_B2", "serie_B3", "serie_B4", "serie_B8", "serie_B11", "serie_B12"];
 
   const frequenciaSoloNu: Proveniencia<number> = {
     estado: "modelado",
     valor: freqVal,
-    modelo: typeof opcoes?.limiarMinBsi === "number"
-      ? "Ê = nSoloNu(NDVI < limiar & BSI >= limiarMin) / nTotalValidas"
-      : "Ê = nSoloNu / nTotalValidas",
+    modelo: "Ê = nSoloNu(GEOS3 Dematte et al. 2018: NDVI em [0,00; 0,25] & NBR2 em [0,00; 0,075] & (B4-B3)>=0 & (B3-B2)>=0) / nTotalValidas (cenas com bandas ausentes excluidas do denominador)",
     insumos,
     decisoes: ["D10"],
-    qualidade: { nObservacoes: nValidas },
+    qualidade: { nObservacoes: nValidasAvaliadas },
   };
 
   // 4. Maior sequência contínua de solo nu
   let maxSeq = 0;
   let seqAtual = 0;
-  for (const c of cenasComNdvi) {
-    if (c.ehSoloNu) {
+  for (const c of cenasAvaliadas) {
+    if (c.vereditoGeos3 === true) {
       seqAtual++;
       if (seqAtual > maxSeq) maxSeq = seqAtual;
     } else {
@@ -161,10 +177,10 @@ export function extrairMetricasSoloExposto(
   const maiorSequenciaSoloNu: Proveniencia<number> = {
     estado: "modelado",
     valor: maxSeq,
-    modelo: "Maior sequência temporal consecutiva de cenas com NDVI < limiar",
-    insumos: ["serie_B4", "serie_B8"],
+    modelo: "Maior sequência temporal consecutiva de cenas com solo exposto sob máscara GEOS3 (Demattê et al., 2018)",
+    insumos: ["serie_B2", "serie_B3", "serie_B4", "serie_B8", "serie_B11", "serie_B12"],
     decisoes: ["D10"],
-    qualidade: { nObservacoes: nValidas },
+    qualidade: { nObservacoes: nValidasAvaliadas },
   };
 
   // 5. Mês modal de exposição
@@ -173,7 +189,7 @@ export function extrairMetricasSoloExposto(
     mesModalExposicao = {
       estado: "indisponivel",
       causa: "fora-do-dominio",
-      motivo: `Nenhuma cena com solo descoberto (NDVI < ${limiarNdvi}) na série observada. Mês modal não aplicável.`,
+      motivo: `Nenhuma cena com solo descoberto sob máscara GEOS3 (Demattê et al., 2018) na série observada. Mês modal não aplicável.`,
     };
   } else {
     const contagemMeses: number[] = new Array(13).fill(0);
@@ -196,8 +212,8 @@ export function extrairMetricasSoloExposto(
     mesModalExposicao = {
       estado: "modelado",
       valor: melhorMes,
-      modelo: "Moda do mês de calendário das observações de solo descoberto",
-      insumos: ["serie_B4", "serie_B8", "datas_cenas"],
+      modelo: "Moda do mês de calendário das observações de solo descoberto sob máscara GEOS3 (Demattê et al., 2018)",
+      insumos: ["serie_B2", "serie_B3", "serie_B4", "serie_B8", "serie_B11", "serie_B12", "datas_cenas"],
       decisoes: ["D10"],
       qualidade: { nObservacoes: nSoloNu },
     };
@@ -212,7 +228,7 @@ export function extrairMetricasSoloExposto(
       compostoSoloNu[nomeB] = {
         estado: "indisponivel",
         causa: "fora-do-dominio",
-        motivo: `Solo permaneceu continuamente coberto na série (zero cenas com NDVI < ${limiarNdvi}). Composto espectral inexistente.`,
+        motivo: `Solo permaneceu continuamente coberto na série (zero cenas sob máscara GEOS3). Composto espectral inexistente.`,
       };
     } else {
       const valoresBanda = cenasSoloNu
@@ -237,8 +253,8 @@ export function extrairMetricasSoloExposto(
           compostoSoloNu[nomeB] = {
             estado: "modelado",
             valor: medVal,
-            modelo: "Mediana temporal das datas de solo exposto (NDVI < limiar D10)",
-            insumos: [`serie_${nomeB}`, "serie_B4", "serie_B8"],
+            modelo: "Mediana temporal das datas de solo exposto sob máscara GEOS3 (Demattê et al., 2018)",
+            insumos: [`serie_${nomeB}`, "serie_B2", "serie_B3", "serie_B4", "serie_B8", "serie_B11", "serie_B12"],
             decisoes: ["D10"],
             qualidade: { nObservacoes: valoresBanda.length },
           };
@@ -252,7 +268,7 @@ export function extrairMetricasSoloExposto(
     maiorSequenciaSoloNu,
     mesModalExposicao,
     compostoSoloNu,
-    nObservacoesValidas: nValidas,
+    nObservacoesValidas: nValidasAvaliadas,
     nObservacoesSoloNu: nSoloNu,
   };
 }

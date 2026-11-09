@@ -15,7 +15,7 @@ describe("Composto de Solo Exposto e Frequência Ê (Decisão D10)", () => {
         nuvemSombra: false,
         b2: 0.12, b3: 0.14, b4: 0.20, b5: 0.22, b6: 0.24, b7: 0.25,
         b8: 0.26, // NDVI = (0.26 - 0.20) / 0.46 ≈ 0.13 (< 0.25 -> Solo Nu)
-        b8a: 0.26, b11: 0.35, b12: 0.30,
+        b8a: 0.26, b11: 0.32, b12: 0.30,
       },
       // Mês 05 (Maio) - Solo Nu (segunda consecutiva)
       {
@@ -25,7 +25,7 @@ describe("Composto de Solo Exposto e Frequência Ê (Decisão D10)", () => {
         nuvemSombra: false,
         b2: 0.11, b3: 0.13, b4: 0.19, b5: 0.21, b6: 0.23, b7: 0.24,
         b8: 0.25, // NDVI = (0.25 - 0.19) / 0.44 ≈ 0.136 (< 0.25 -> Solo Nu)
-        b8a: 0.25, b11: 0.33, b12: 0.28,
+        b8a: 0.25, b11: 0.30, b12: 0.28,
       },
       // Mês 07 (Julho) - Vegetação
       {
@@ -177,7 +177,7 @@ describe("Composto de Solo Exposto e Frequência Ê (Decisão D10)", () => {
         nuvemSombra: false,
         b2: 0.10, b3: 0.12, b4: 0.20, b5: 0.22, b6: 0.24, b7: 0.25,
         b8: 0.25, // NDVI = (0.25 - 0.20) / 0.45 = 0.11
-        b8a: 0.25, b11: 0.35, b12: 0.30,
+        b8a: 0.25, b11: 0.33, b12: 0.31,
       },
     ];
 

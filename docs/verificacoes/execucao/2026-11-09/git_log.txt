@@ -1,0 +1,3 @@
+968b3ad docs(planejamento): acrescentar tarefa 6.1 ao prompt C
+1289ec4 chore(governanca): ligar modo somente-leitura do painel de estado a Regra 3
+5571f71 docs(planejamento): adicionar prompt C da mascara GEOS3 de Dematte et al. (2018)

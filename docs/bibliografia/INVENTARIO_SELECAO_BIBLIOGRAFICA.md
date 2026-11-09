@@ -20,7 +20,7 @@ O objetivo central da pesquisa consiste em **validar ou não a localização e p
    - Arquivos não relacionados diretamente ao tema (modelos de linguagem / LLMs agrícolas, seguro agrícola, previsão de queimadas), livros volumosos de introdução a bacias hidrográficas, notas técnicas internas em `.docx`/`.pptx` e gravações de tela em `.mkv` (mantidos fora do repositório analítico).
 
 4. **Lote em Triagem e Revisão — `Para Revisar/` (22 itens):**
-   - Inserido em 20 de outubro de 2026 a partir da triagem automatizada do log diário de buscas (*FLOW*) e consolidado no relatório *Auditoria e Curadoria Bibliográfica: Projeto SAREL*. Inclui teses e dissertações da UTFPR Medianeira (PPGTCA), UNIOESTE (Bacia do Paraná 3), UNESP e IFs, além de artigos focados em predição de erosão laminar com IA, Fator LS e agricultura de precisão. Mantidos em disco local conforme o padrão do repositório, com integridade auditada por SHA-256 em `docs/Selecao Bibliografica/Para Revisar/README.md`.
+   - Inserido em 20 de outubro de 2026 a partir da triagem automatizada do log diário de buscas (*FLOW*) e consolidado no relatório *Auditoria e Curadoria Bibliográfica: Projeto SAREL*. Inclui teses e dissertações da UTFPR Medianeira (PPGTCA), UNIOESTE (Bacia do Paraná 3), UNESP e IFs, além de artigos focados em predição de erosão laminar com IA, Fator LS e agricultura de precisão. Mantidos em disco local conforme o padrão do repositório, com integridade auditada por SHA-256 em `docs/bibliografia/Para Revisar/README.md`.
 
 ---
 
@@ -66,238 +66,238 @@ O objetivo central da pesquisa consiste em **validar ou não a localização e p
 ### Detalhamento dos Artigos Diretamente Relacionados
 
 #### 1. 10452-29467-1-PB.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/10452-29467-1-PB.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/10452-29467-1-PB.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 2. agronomy-16-00294-v2.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/agronomy-16-00294-v2.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/agronomy-16-00294-v2.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 3. Análise espaço_temporal da degradação usando aprendizado de máquina e técnicas geoespaciais..pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Análise espaço_temporal da degradação usando aprendizado de máquina e técnicas geoespaciais..pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Análise espaço_temporal da degradação usando aprendizado de máquina e técnicas geoespaciais..pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 4. Avaliação da degradação do solo utilizando computação flexível baseada em SIG e algoritmos avançados de aprendizado de máquina.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Avaliação da degradação do solo utilizando computação flexível baseada em SIG e algoritmos avançados de aprendizado de máquina.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Avaliação da degradação do solo utilizando computação flexível baseada em SIG e algoritmos avançados de aprendizado de máquina.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 5. CNPS-DOC-246-2024.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/CNPS-DOC-246-2024.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/CNPS-DOC-246-2024.pdf`
 - **Local de Origem / Fonte:** `docs/03 - Bibliografia - Artigos/CNPS-DOC-246-2024.pdf`
 - **Extensão/Páginas:** 40 páginas
 - **Metodologia Principal:** Pedologia / Erodibilidade / Fator K da USLE / Mannigel et al. (2002)
 - **Justificativa de Enquadramento:** Documento oficial definitivo da Embrapa Solos (Doc. 246/2024). Na Tabela 5 (páginas 13 a 15) estabelece a tabela oficial de conversão de classes qualitativas de erodibilidade para valores numéricos do Fator K da USLE (baseada em Mannigel et al., 2002 e IBGE, 2018). Fundamental para a seleção e ponderação pedológica amostral do SAREL.
 
 #### 6. Comparative-evaluation-of.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Comparative-evaluation-of.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Comparative-evaluation-of.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 7. Comparison of machine learning models for gully erosion susceptibility mapping.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Comparison of machine learning models for gully erosion susceptibility mapping.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Comparison of machine learning models for gully erosion susceptibility mapping.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 8. Deteccao-de-feicoes-erosivas-em-bacias-hidrograficas-2025.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Deteccao-de-feicoes-erosivas-em-bacias-hidrograficas-2025.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Deteccao-de-feicoes-erosivas-em-bacias-hidrograficas-2025.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 9. Enhancing predictive modeling of interrill and rill erosion susceptibility.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Enhancing predictive modeling of interrill and rill erosion susceptibility.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Enhancing predictive modeling of interrill and rill erosion susceptibility.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 10. galoa-proceedings-sbsr-2025-aplicacoes-de-aprendizado-de-maquina-para-modelagem-e-mapeamento.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/galoa-proceedings-sbsr-2025-aplicacoes-de-aprendizado-de-maquina-para-modelagem-e-mapeamento.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/galoa-proceedings-sbsr-2025-aplicacoes-de-aprendizado-de-maquina-para-modelagem-e-mapeamento.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 11. Integrated machine learning and geospatial analysis enhanced gully erosion susceptibility modeling in the Erer watershed in East - Semantic Scholar.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Integrated machine learning and geospatial analysis enhanced gully erosion susceptibility modeling in the Erer watershed in East - Semantic Scholar.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Integrated machine learning and geospatial analysis enhanced gully erosion susceptibility modeling in the Erer watershed in East - Semantic Scholar.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 12. Integração de dados geoespaciais de alta precisão e abordagens de aprendizado de máquina.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Integração de dados geoespaciais de alta precisão e abordagens de aprendizado de máquina.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Integração de dados geoespaciais de alta precisão e abordagens de aprendizado de máquina.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 13. jh0260072.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/jh0260072.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/jh0260072.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 14. jwc2025603.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/jwc2025603.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/jwc2025603.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 15. Karydas_Panagos_2018_The_G2_erosion_model_month_time_step_assessments.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Karydas_Panagos_2018_The_G2_erosion_model_month_time_step_assessments.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Karydas_Panagos_2018_The_G2_erosion_model_month_time_step_assessments.pdf`
 - **Local de Origem / Fonte:** `Europe PMC / Environmental Research 161 (2018) 115-124 (PMC5773245)`
 - **Extensão/Páginas:** 12 páginas
 - **Metodologia Principal:** Modelo Dinâmico G2 / Interação Chuva-Cobertura / Sensoriamento Remoto / JRC
 - **Justificativa de Enquadramento:** Artigo de Christos Karydas e Panos Panagos que apresenta formalmente o modelo dinâmico de erosão G2. Fornece a base física e matemática para a feature de interação do SAREL (erosividade da chuva torrencial multiplicada pela vulnerabilidade de cobertura vegetal / solo exposto: R_t * (1 - C_t)), permitindo que o XGBoost aprenda a dinâmica física real do splash laminar.
 
 #### 16. Kaufman_2012_EmbrapaSoja_Fundamentacao_Guarda_Temporal_Data_Leakage.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Kaufman_2012_EmbrapaSoja_Fundamentacao_Guarda_Temporal_Data_Leakage.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Kaufman_2012_EmbrapaSoja_Fundamentacao_Guarda_Temporal_Data_Leakage.pdf`
 - **Local de Origem / Fonte:** `Compilação formal metodológica (ACM TKDD 2012 & Embrapa Soja)`
 - **Extensão/Páginas:** 1 páginas
 - **Metodologia Principal:** Machine Learning / Data Leakage / Particionamento Temporal / Rotação Bienal
 - **Justificativa de Enquadramento:** Documenta a fundamentação metodológica da janela de guarda temporal de 2 anos adotada no SAREL. Integra a teoria de prevenção de vazamento de dados em Machine Learning (learn-predict separation de Kaufman et al., 2012 no ACM TKDD) com a realidade agronômica subtropical paranaense (rotação bienal de culturas: soja no verão, milho safrinha e trigo/aveia no inverno, conforme boletins da Embrapa Soja).
 
 #### 17. land-13-01665-v2.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/land-13-01665-v2.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/land-13-01665-v2.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 18. land-14-00163-v3.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/land-14-00163-v3.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/land-14-00163-v3.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 19. Machine Learning Models for the Spatial Prediction of Gully Erosion Susceptibility in the Piraí Drainage Basin Paraíba Do Sul Middle Valley Southeast Brazil.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Machine Learning Models for the Spatial Prediction of Gully Erosion Susceptibility in the Piraí Drainage Basin Paraíba Do Sul Middle Valley Southeast Brazil.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Machine Learning Models for the Spatial Prediction of Gully Erosion Susceptibility in the Piraí Drainage Basin Paraíba Do Sul Middle Valley Southeast Brazil.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 20. Mapeamento da suscetibilidade à erosão regressiva.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Mapeamento da suscetibilidade à erosão regressiva.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Mapeamento da suscetibilidade à erosão regressiva.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 21. Mapping Soil Erosion Classes using Remote Sensing Data and Ensemble Models.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Mapping Soil Erosion Classes using Remote Sensing Data and Ensemble Models.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Mapping Soil Erosion Classes using Remote Sensing Data and Ensemble Models.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 22. Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms - OPUS at UTS.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms - OPUS at UTS.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms - OPUS at UTS.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 23. Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Prediction of gully erosion susceptibility mapping using novel ensemble machine learning algorithms.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 24. PREVISÃO DE CLASSES DE EROSÃO LAMINAR USANDO.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/PREVISÃO DE CLASSES DE EROSÃO LAMINAR USANDO.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/PREVISÃO DE CLASSES DE EROSÃO LAMINAR USANDO.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 25. Roberts_2017_Cross_validation_strategies_spatial_temporal_structure.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Roberts_2017_Cross_validation_strategies_spatial_temporal_structure.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Roberts_2017_Cross_validation_strategies_spatial_temporal_structure.pdf`
 - **Local de Origem / Fonte:** `Download da base Ecography (CORE repository)`
 - **Extensão/Páginas:** 56 páginas
 - **Metodologia Principal:** Spatial Cross-Validation / Block CV / Autocorrelação Espacial / Métricas Não Viesadas
 - **Justificativa de Enquadramento:** Artigo seminal de David R. Roberts et al. (Ecography 2017) sobre estratégias de validação cruzada para dados com estrutura espacial e temporal. Fundamenta tecnicamente por que o particionamento aleatório k-fold padrão falha em dados geoespaciais e valida a necessidade de Spatial Cross-Validation (Block CV e thinning com buffer de 1 km) para neutralizar a autocorrelação espacial.
 
 #### 26. Safanelli_Dematte_2021_Fine_scale_soil_mapping_EO_data_GEOS3.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Safanelli_Dematte_2021_Fine_scale_soil_mapping_EO_data_GEOS3.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Safanelli_Dematte_2021_Fine_scale_soil_mapping_EO_data_GEOS3.pdf`
 - **Local de Origem / Fonte:** `Download da Revista Brasileira de Ciência do Solo (RBCS / GeoCiS ESALQ-USP)`
 - **Extensão/Páginas:** 20 páginas
 - **Metodologia Principal:** GEOS3 / Mineração Espectral / Google Earth Engine / Limiar NDVI Solo Nu
 - **Justificativa de Enquadramento:** Publicação do grupo de Geotecnologias em Ciência do Solo (GeoCiS / ESALQ-USP) liderado pelo Prof. Demattê. Descreve em detalhes a implementação operacional do algoritmo Geospatial Soil Sensing System (GEOS3) e fundamenta tecnicamente a identificação de solo exposto e o limiar espectral de NDVI <= 0,25 para discriminação precisa entre solo nu e palhada no Sistema Plantio Direto.
 
 #### 27. SILVA_2025MODELAGEM_PREDITIVA_NA_SUSCETIBILIDADE_.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/SILVA_2025MODELAGEM_PREDITIVA_NA_SUSCETIBILIDADE_.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/SILVA_2025MODELAGEM_PREDITIVA_NA_SUSCETIBILIDADE_.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 28. Soil erosion analysis based on machine learning method - Bulletin of Electrical Engineering and Informatics.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Soil erosion analysis based on machine learning method - Bulletin of Electrical Engineering and Informatics.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Soil erosion analysis based on machine learning method - Bulletin of Electrical Engineering and Informatics.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 29. sustainability-15-01939-v2.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/sustainability-15-01939-v2.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/sustainability-15-01939-v2.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 30. The_Spatiotemporal_Evolution_Driving_Mechanisms_an.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/The_Spatiotemporal_Evolution_Driving_Mechanisms_an.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/The_Spatiotemporal_Evolution_Driving_Mechanisms_an.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 31. Tree-based machine learning algorithms for soil erosion vulnerability prediction in Saddang Watershed-south Sulawesi-Indonesia _ Journal of Water and Clima Fixed.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Tree-based machine learning algorithms for soil erosion vulnerability prediction in Saddang Watershed-south Sulawesi-Indonesia _ Journal of Water and Clima Fixed.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Tree-based machine learning algorithms for soil erosion vulnerability prediction in Saddang Watershed-south Sulawesi-Indonesia _ Journal of Water and Clima Fixed.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 32. Utilizing Machine Learning Algorithms for the Development of Gully Erosion Susceptibility Maps - Semantic Scholar.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Utilizing Machine Learning Algorithms for the Development of Gully Erosion Susceptibility Maps - Semantic Scholar.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Utilizing Machine Learning Algorithms for the Development of Gully Erosion Susceptibility Maps - Semantic Scholar.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
 - **Justificativa de Enquadramento:** 
 
 #### 33. Vrieling_2006_Satellite_remote_sensing_water_erosion_review.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Vrieling_2006_Satellite_remote_sensing_water_erosion_review.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Vrieling_2006_Satellite_remote_sensing_water_erosion_review.pdf`
 - **Local de Origem / Fonte:** `Download da base Catena (Elsevier / Wageningen University)`
 - **Extensão/Páginas:** 17 páginas
 - **Metodologia Principal:** Sensoriamento Remoto Orbital / Proxies Espectrais / Limitações de Resolução Espacial
 - **Justificativa de Enquadramento:** Artigo seminal clássico de Anton Vrieling (Catena 2006) que fundamenta a detectabilidade de erosão laminar por sensoriamento remoto óptico orbital. Formaliza que satélites com resolução de 10m (como Sentinel-2) captam proxies espectrais indiretos (perda de matéria orgânica, redução de biomassa, exposição de horizontes subsuperficiais e encrostamento), enquanto a visualização direta de microrrelevo laminar exige VANTs com resolução centimétrica.
 
 #### 34. water-18-02255.pdf
-- **Caminho Atual:** `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/water-18-02255.pdf`
+- **Caminho Atual:** `docs/bibliografia/01_pesquisas_diretamente_relacionadas/water-18-02255.pdf`
 - **Local de Origem / Fonte:** `-`
 - **Extensão/Páginas:** - páginas
 - **Metodologia Principal:** Machine Learning / SR
@@ -371,11 +371,11 @@ A tabela abaixo sintetiza o inventário analítico das obras que sustentam as de
 
 | Decisão Vinculada | Autor Principal | Ano | Título da Obra | DOI / Identificador | Arquivo / Repositório Local | Papel Científico no SAREL |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **D01, D20** | Durigon, V. L. et al. | 2014 | NDVI time series for monitoring RUSLE cover management factor in a tropical watershed | `10.1080/01431161.2013.871081` | `docs/Selecao Bibliografica/Durigon_etal_2014.pdf` | Formulação base do Fator C: C = (1 - NDVI) / 2 |
+| **D01, D20** | Durigon, V. L. et al. | 2014 | NDVI time series for monitoring RUSLE cover management factor in a tropical watershed | `10.1080/01431161.2013.871081` | `docs/bibliografia/05_fundamentacao_teorica_dos_eixos/Durigon_etal_2014.pdf` | Formulação base do Fator C: C = (1 - NDVI) / 2 |
 | **D02, D20** | Rikimaru, A., Roy, P. S. & Miyatake, S. | 2002 | Tropical forest cover density mapping | *Tropical Ecology* 43(1):39-47 | `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Tropical forest cover density mapping - International Society for ....pdf` (conferido em `docs/verificacoes/fontes/rikimaru2002/`) | Formulação do índice BSI (componente de solo nu do modelo FCD) — NÃO sustenta os cortes numéricos de D02 |
-| **D04** | Kaufman, S. et al. | 2012 | Leakage in data mining: Formulation, detection, and avoidance | `10.1145/2382577.2382579` | `docs/Selecao Bibliografica/Pesquisas diretamente relacionadas/Kaufman_2012_EmbrapaSoja_Fundamentacao_Guarda_Temporal_Data_Leakage.pdf` | Fundamentação de guarda temporal de 2 anos contra vazamento de dados |
+| **D04** | Kaufman, S. et al. | 2012 | Leakage in data mining: Formulation, detection, and avoidance | `10.1145/2382577.2382579` | `docs/bibliografia/01_pesquisas_diretamente_relacionadas/Kaufman_2012_EmbrapaSoja_Fundamentacao_Guarda_Temporal_Data_Leakage.pdf` | Fundamentação de guarda temporal de 2 anos contra vazamento de dados |
 | **D04** | Franchini, J. C. et al. | 2011 | Evolução da fertilidade do solo em sistemas de rotação de culturas | Embrapa Soja Doc. 326 | `docs/verificacoes/fontes/` | Rotação bienal no Sistema Plantio Direto no Paraná |
-| **D05** | Drusch, M. et al. | 2012 | Sentinel-2: ESA's Optical High-Resolution Mission for GMES Operational Services | `10.1016/j.rse.2012.01.009` | `docs/Selecao Bibliografica/` | Especificação e resolução das bandas nativas da constelação Sentinel-2 MSI |
+| **D05** | Drusch, M. et al. | 2012 | Sentinel-2: ESA's Optical High-Resolution Mission for GMES Operational Services | `10.1016/j.rse.2012.01.009` | `AUSENTE DO ACERVO` | Especificação e resolução das bandas nativas da constelação Sentinel-2 MSI |
 | **D06** | Nuvem UAV | 2024 | Manual Técnico do VANT Multiespectral Spectral 2 | Nuvem UAV Indústria | `docs/verificacoes/voo/cobertura_voos.geojson` | Especificação instrumental de sensor de 5 bandas e acurácia de voo |
 | **D07, P05** | Zanaga, D. et al. | 2022 | ESA WorldCover 10 m 2021 v200 | `10.5281/zenodo.5571936` | `GEE: ESA/WorldCover/v200/2021` | Máscara de elegibilidade de uso do solo (classes 30 e 40) |
 | **D07, P04** | Santos, H. G. dos et al. | 2018 | Sistema Brasileiro de Classificação de Solos (SiBCS), 5ª ed. | ISBN 978-85-7035-800-4 | Embrapa Solos (356 p.) | Classes de relevo e domínio de declividade física 3% a 20% |
@@ -398,18 +398,18 @@ A tabela abaixo sintetiza o inventário analítico das obras que sustentam as de
 | **D15, D21** | Desmet, P. J. J. & Govers, G. | 1996 | A GIS procedure for automatically calculating the USLE LS factor on topographically complex landscapes | JSWC 51(5):427-433 | `docs/verificacoes/fontes/desmet1996/desmet_govers_1996_jswc.pdf` | Algoritmo bidimensional de área de contribuição para Fator LS |
 | **D15** | McCool, D. K. et al. | 1989 | Slope length and steepness factors for the revised universal soil loss equation | Trans. ASAE 32:1571-1576 | `docs/verificacoes/fontes/` | Fatores de declividade e comprimento de rampa |
 | **D16, D24, D26** | van der Ploeg, T. et al. | 2014 | Modern modeling techniques are data hungry: a simulation study for predicting dichotomous endpoints | `10.1186/1471-2288-14-137` | BMC Med. Res. Methodol. | Regime de eventos por variável (200 epv) em modelos flexíveis |
-| **D21** | Zevenbergen, L. W. & Thorne, C. R. | 1987 | Quantitative analysis of land surface topography | Earth Surf. Process. Landf. | `docs/Selecao Bibliografica/` | Algoritmos polinomiais de curvatura de perfil e plano |
-| **D21** | Beven, K. J. & Kirkby, M. J. | 1979 | A physically based, variable contributing area model of basin hydrology | Hydrol. Sci. Bull. | `docs/Selecao Bibliografica/` | Índice topográfico de umidade (Topographic Wetness Index - TWI) |
-| **D22** | Wischmeier, W. H. & Smith, D. D. | 1978 | Predicting Rainfall Erosion Losses: A Guide to Conservation Planning | USDA AH 537 | `docs/Selecao Bibliografica/AH_537 Predicting Rainfall Soil Losses.pdf` | Estrutura multiplicativa e práticas conservacionistas do Fator P |
+| **D21** | Zevenbergen, L. W. & Thorne, C. R. | 1987 | Quantitative analysis of land surface topography | Earth Surf. Process. Landf. | `AUSENTE DO ACERVO` | Algoritmos polinomiais de curvatura de perfil e plano |
+| **D21** | Beven, K. J. & Kirkby, M. J. | 1979 | A physically based, variable contributing area model of basin hydrology | Hydrol. Sci. Bull. | `AUSENTE DO ACERVO` | Índice topográfico de umidade (Topographic Wetness Index - TWI) |
+| **D22** | Wischmeier, W. H. & Smith, D. D. | 1978 | Predicting Rainfall Erosion Losses: A Guide to Conservation Planning | USDA AH 537 | `docs/bibliografia/05_fundamentacao_teorica_dos_eixos/AH_537 Predicting Rainfall Soil Losses.pdf` | Estrutura multiplicativa e práticas conservacionistas do Fator P |
 | **D23** | King, G. & Zeng, L. | 2001 | Logistic regression in rare events data | `10.1093/oxfordjournals.pan.a004868` | Political Analysis | Correção a priori de probabilidade em amostragem desbalanceada |
 | **D23** | Olofsson, P. et al. | 2014 | Good practices for estimating area and assessing accuracy using land change science | `10.1016/j.rse.2014.02.015` | Remote Sens. Environ. | Inferência populacional e matrizes de erro estratificadas |
 | **D24** | Riley, R. D. et al. | 2019 | Minimum sample size for developing a multivariable prediction model | `10.1002/sim.7993` | Statistics in Medicine | Critérios formais de dimensionamento amostral multivariado |
-| **D24, D25, P01, P02** | Roberts, D. R. et al. | 2017 | Cross-validation strategies for data with temporal, spatial, hierarchical or phylogenetic structure | `10.1111/ecog.02881` | `docs/Selecao Bibliografica/Pesquisas Machine Learning/Ecography - 2016 - Roberts - Cross-validation strategies...pdf` | Validação cruzada por blocos espaciais e alcance de variograma |
-| **D24, D25** | Hanley, J. A. & McNeil, B. J. | 1982 | The meaning and use of the area under a receiver operating characteristic (ROC) curve | Radiology 143:29-36 | `docs/Selecao Bibliografica/` | Propriedades estatísticas e erro-padrão da métrica AUC-ROC |
-| **D25** | Nosek, B. A. et al. | 2018 | The preregistration revolution | `10.1073/pnas.1708274114` | `docs/Selecao Bibliografica/nosek-et-al-2018-the-preregistration-revolution.pdf` | Fundamentação metodológica de pré-registro contra HARKing e p-hacking |
+| **D24, D25, P01, P02** | Roberts, D. R. et al. | 2017 | Cross-validation strategies for data with temporal, spatial, hierarchical or phylogenetic structure | `10.1111/ecog.02881` | `docs/bibliografia/06_pesquisas_machine_learning/Ecography - 2016 - Roberts - Cross‐validation strategies for data with temporal  spatial  hierarchical  or phylogenetic.pdf` | Validação cruzada por blocos espaciais e alcance de variograma |
+| **D24, D25** | Hanley, J. A. & McNeil, B. J. | 1982 | The meaning and use of the area under a receiver operating characteristic (ROC) curve | Radiology 143:29-36 | `AUSENTE DO ACERVO` | Propriedades estatísticas e erro-padrão da métrica AUC-ROC |
+| **D25** | Nosek, B. A. et al. | 2018 | The preregistration revolution | `10.1073/pnas.1708274114` | `docs/bibliografia/05_fundamentacao_teorica_dos_eixos/nosek-et-al-2018-the-preregistration-revolution.pdf` | Fundamentação metodológica de pré-registro contra HARKing e p-hacking |
 | **D25** | Cameron, A. C. et al. | 2008 | Bootstrap-based improvements for inference with clustered errors | `10.1162/rest.90.3.414` | Rev. Econ. Stat. | Inferência conservadora por cluster bootstrap |
 | **D25** | DeLong, E. R. et al. | 1988 | Comparing the areas under two or more correlated receiver operating characteristic curves | `10.2307/2531595` | Biometrics | Teste emparelhado para comparação de AUC entre competidores |
-| **D26** | Altman, D. G. & Royston, P. | 2006 | The cost of dichotomising continuous variables | `10.1136/bmj.332.7549.1080` | `docs/Selecao Bibliografica/Pesquisas Machine Learning/1080.1.full.pdf` | Justificativa estatística do alvo contínuo y in [0, 1] em vez de binarização |
+| **D26** | Altman, D. G. & Royston, P. | 2006 | The cost of dichotomising continuous variables | `10.1136/bmj.332.7549.1080` | `docs/bibliografia/06_pesquisas_machine_learning/1080.1.full.pdf` | Justificativa estatística do alvo contínuo y in [0, 1] em vez de binarização |
 | **D26, P10** | Tweedie, M. C. K. | 1984 | An index which distinguishes between some important exponential families | Statistics: Applications and New Directions | ISI Golden Jubilee | Distribuição composta de Poisson-gama para variáveis com excesso de zero |
 | **P03** | Congalton, R. G. & Green, K. | 2019 | Assessing the Accuracy of Remotely Sensed Data: Principles and Practices (3rd ed.) | `10.1201/9780429052729` | CRC Press | Acurácia temática e protocolos de amostragem de validação de mapas |
 | **P04** | Pekel, J.-F. et al. | 2016 | High-resolution mapping of global surface water and its long-term changes | `10.1038/nature20584` | Nature 540:418-422 | Máscara de ocorrência de água permanente > 10% |
@@ -420,7 +420,7 @@ A tabela abaixo sintetiza o inventário analítico das obras que sustentam as de
 
 ## 4.1 Inventário do Pacote ScienceDirect (22/10/2026 — 9 Artigos Descompactados)
 
-Acervo descompactado em `docs/Selecao Bibliografica/Pesquisas Machine Learning/` a partir de `ScienceDirect_articles_22Oct2026_13-13-36.639.zip`:
+Acervo descompactado em `docs/bibliografia/06_pesquisas_machine_learning/` a partir de `ScienceDirect_articles_22Oct2026_13-13-36.639.zip`:
 
 | Nº | Arquivo | Autor Principal | Ano | Título da Obra | Periódico / Fonte | Relevância para o SAREL |
 |---|---|---|---|---|---|---|
@@ -434,14 +434,14 @@ Acervo descompactado em `docs/Selecao Bibliografica/Pesquisas Machine Learning/`
 | 8 | `Time-weighted-dynamic-time-warping-analysis-for-mapping-inter_2021_Science-o.pdf` | Belgiu, M. et al. | 2021 | Time-weighted dynamic time warping analysis for mapping interannual cropping practices changes | *Science of Remote Sensing* | Séries temporais TWDTW para detecção de mudanças de uso |
 | 9 | `UAV--amp--satellite-synergies-for-optical-remote-sensin_2021_Science-of-Remo.pdf` | Alvarez-Vanhard, E. et al. | 2021 | UAV & satellite synergies for optical remote sensing applications: A literature review | *Science of Remote Sensing* | Sinergia fundamental VANT (centimétrico) e Satélite (decamétrico) |
 
-## 5. Lote em Triagem e Revisão (`docs/Selecao Bibliografica/Para Revisar/` — 22 Obras)
+## 5. Lote em Triagem e Revisão (`docs/bibliografia/03_contexto_regional_e_triagem/` — 22 Obras)
 
 Lote integrado ao acervo do SAREL em 20 de outubro de 2026, resultante da curadoria do histórico diário de buscas (*Daily research update: Laminar erosion and AI*) e do documento *Auditoria e Curadoria Bibliográfica: Projeto SAREL*.
 
 Conforme a diretriz do repositório ([`.gitignore`](../../.gitignore)), os arquivos `.pdf` brutos permanecem salvos localmente na máquina do pesquisador, enquanto o inventário e a integridade são mantidos no versionamento Git via rastreamento de hashes SHA-256 e metadados, atendendo aos requisitos da [Norma de Lastro Científico (`docs/NORMA_LASTRO_CIENTIFICO.md`)](../NORMA_LASTRO_CIENTIFICO.md).
 
 O detalhamento completo deste lote (com hashes SHA-256 de todas as obras, eixos temáticos e páginas) está documentado em:
-👉 **[`docs/Selecao Bibliografica/Para Revisar/README.md`](./Para%20Revisar/README.md)**
+👉 **[`docs/bibliografia/Para Revisar/README.md`](./Para%20Revisar/README.md)**
 
 | Nº | Arquivo Local (.pdf) | Autor(es) / Ano | Título da Obra / Publicação | Eixo Temático | Hash de Integridade (SHA-256) |
 |:--:|---|---|---|:--:|---|
