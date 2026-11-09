@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `70fa810a686d7cc1383a4da57c50e9fac56b0867`
-- Data do HEAD: 2026-11-08 22:18:39 -0300
+- Commit HEAD: `5b4bc06a7a2c2d9d82388541e4414ef6a372fa6d`
+- Data do HEAD: 2026-11-08 23:23:00 -0300
 - Últimos 5 commits:
-  1. `70fa810 chore(governanca): criar painel de estado, registro de decisoes de conversa e diretrizes de desenvolvimento`
-  2. `3245777 feat(auditoria): ajustar leitor de lote com recusa de pontual e testes de contrato`
-  3. `9585ef7 feat(gee): adicionar endpoint e gravador de evidencia em lote da Regra 8`
-  4. `5b309d2 feat(auditoria): recriar medidor de distribuicao temporal e trava comportamental de scripts`
-  5. `4aeaa7b feat(gee): adicionar gravador de evidencia da Regra 8 para Google Earth Engine`
+  1. `5b4bc06 fix(governanca): tornar painel ESTADO.md reproduzivel e estavel`
+  2. `70fa810 chore(governanca): criar painel de estado, registro de decisoes de conversa e diretrizes de desenvolvimento`
+  3. `3245777 feat(auditoria): ajustar leitor de lote com recusa de pontual e testes de contrato`
+  4. `9585ef7 feat(gee): adicionar endpoint e gravador de evidencia em lote da Regra 8`
+  5. `5b309d2 feat(auditoria): recriar medidor de distribuicao temporal e trava comportamental de scripts`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 120

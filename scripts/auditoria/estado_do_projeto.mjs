@@ -92,29 +92,32 @@ function extrairPerfis(caminhoPerfis) {
 }
 
 /**
- * Varre recursivamente arquivos em docs/verificacoes
+ * Lista arquivos de evidência versionados em docs/verificacoes
  */
-function listarArquivosVerificacoes(dirVerificacoes) {
+function listarArquivosVerificacoes(repoRoot, dirVerificacoes, lsFiles) {
   if (!fs.existsSync(dirVerificacoes)) return null;
   const lista = [];
 
-  function varrer(d, prefix = "") {
-    const itens = fs.readdirSync(d, { withFileTypes: true });
-    for (const it of itens) {
-      const rel = prefix ? `${prefix}/${it.name}` : it.name;
-      const abs = path.join(d, it.name);
-      if (it.isDirectory()) {
-        varrer(abs, rel);
-      } else if (it.isFile()) {
-        const stat = fs.statSync(abs);
-        const matchData = it.name.match(/(\d{4}-\d{2}-\d{2})/);
-        const dataStr = matchData ? matchData[1] : "sem data no nome";
-        lista.push({ caminho: rel, data: dataStr, tamanhoBytes: stat.size });
-      }
+  const arquivos = lsFiles
+    ? lsFiles.filter((f) => f.startsWith("docs/verificacoes/"))
+    : execSync("git ls-files docs/verificacoes", { cwd: repoRoot, encoding: "utf8" })
+        .trim()
+        .split(/\r?\n/)
+        .map((f) => f.trim())
+        .filter(Boolean);
+
+  for (const relRepo of arquivos) {
+    const rel = relRepo.replace(/^docs\/verificacoes\//, "");
+    const abs = path.join(repoRoot, relRepo);
+    if (fs.existsSync(abs)) {
+      const stat = fs.statSync(abs);
+      const nome = path.basename(rel);
+      const matchData = nome.match(/(\d{4}-\d{2}-\d{2})/);
+      const dataStr = matchData ? matchData[1] : "sem data no nome";
+      lista.push({ caminho: rel, data: dataStr, tamanhoBytes: stat.size });
     }
   }
 
-  varrer(dirVerificacoes);
   lista.sort((a, b) => a.caminho.localeCompare(b.caminho));
   return lista;
 }
@@ -201,8 +204,9 @@ export async function gerarEstadoMarkdown(opcoes = {}) {
 
   // SEÇÃO 2: Testes
   linhas.push("## 2. Testes Automatizados");
+  let lsFiles = null;
   try {
-    const lsFiles = execSync("git ls-files", { cwd: repoRoot, encoding: "utf8" })
+    lsFiles = execSync("git ls-files", { cwd: repoRoot, encoding: "utf8" })
       .trim()
       .split(/\r?\n/)
       .map((f) => f.trim())
@@ -331,7 +335,7 @@ export async function gerarEstadoMarkdown(opcoes = {}) {
 
   // SEÇÃO 7: Arquivos de Evidência em docs/verificacoes/
   linhas.push("## 7. Arquivos de Evidência em `docs/verificacoes/`");
-  const evidencias = listarArquivosVerificacoes(dirVerificacoes);
+  const evidencias = listarArquivosVerificacoes(repoRoot, dirVerificacoes, lsFiles);
   if (evidencias && evidencias.length > 0) {
     linhas.push(`- Total de arquivos de evidência medidos: ${evidencias.length}`);
     linhas.push("");
