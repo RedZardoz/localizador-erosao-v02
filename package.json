@@ -18,6 +18,7 @@
     "sortear:d16": "node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts",
     "decisoes:md": "node scripts/gerar_decisoes_md.mjs --gerar",
     "estado": "node scripts/auditoria/estado_do_projeto.mjs --gerar",
+    "estado:verificar": "node scripts/auditoria/estado_do_projeto.mjs --verificar",
     "gerar:script-d25": "node scripts/gerar_script_pacote.mjs"
   },
   "dependencies": {

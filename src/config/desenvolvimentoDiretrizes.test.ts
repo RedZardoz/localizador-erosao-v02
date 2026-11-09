@@ -45,6 +45,7 @@ describe("TAREFA 4 — Integridade do ponteiro CLAUDE.md e de docs/DESENVOLVIMEN
     expect(conteudo).toContain("docs/planejamento/ESTADO.md");
     expect(conteudo).toContain("docs/planejamento/DECISOES_DE_CONVERSA.md");
     expect(conteudo).toContain("npm run estado");
+    expect(conteudo).toContain("npm run estado:verificar");
     expect(conteudo).toContain("As 9 Regras Invioláveis da Lei Fundamental");
     expect(conteudo).toContain("Três Verdes Obrigatórios");
     expect(conteudo).toContain("Ambiente de Desenvolvimento — Armadilhas Críticas");
