@@ -1,4 +1,12 @@
 #!/usr/bin/env node
+/**
+ * PRINCÍPIO FUNDAMENTAL DO PAINEL DE ESTADO:
+ * O painel só pode derivar do que o GIT ARMAZENA. Permitido: git ls-files,
+ * git cat-file, git log, e leitura de conteúdo de arquivos versionados.
+ * VEDADO: fs.stat (tamanho, mtime, permissões), fs.readdir para inventariar,
+ * relógio de parede, branch, caminho absoluto, e qualquer coisa da árvore de
+ * trabalho que o git não defina.
+ */
 import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
@@ -72,7 +80,7 @@ function agruparPorEstado(objeto, prefixo) {
  */
 function extrairPerfis(caminhoPerfis) {
   if (!fs.existsSync(caminhoPerfis)) return null;
-  const linhas = fs.readFileSync(caminhoPerfis, "utf8").split("\n");
+  const linhas = fs.readFileSync(caminhoPerfis, "utf8").split(/\r?\n/);
   const perfis = new Map();
   let nomeAtual = null;
 
@@ -92,12 +100,9 @@ function extrairPerfis(caminhoPerfis) {
 }
 
 /**
- * Lista arquivos de evidência versionados em docs/verificacoes
+ * Lista arquivos de evidência versionados em docs/verificacoes com tamanho do blob Git
  */
-function listarArquivosVerificacoes(repoRoot, dirVerificacoes, lsFiles) {
-  if (!fs.existsSync(dirVerificacoes)) return null;
-  const lista = [];
-
+function listarArquivosVerificacoes(repoRoot, lsFiles, commitBase = "HEAD") {
   const arquivos = lsFiles
     ? lsFiles.filter((f) => f.startsWith("docs/verificacoes/"))
     : execSync("git ls-files docs/verificacoes", { cwd: repoRoot, encoding: "utf8" })
@@ -106,15 +111,66 @@ function listarArquivosVerificacoes(repoRoot, dirVerificacoes, lsFiles) {
         .map((f) => f.trim())
         .filter(Boolean);
 
+  if (!arquivos || arquivos.length === 0) return null;
+
+  // Obter tamanhos dos blobs versionados via git cat-file (imune a CRLF/LF da árvore de trabalho)
+  const mapaTamanhos = new Map();
+  try {
+    const input = arquivos.map((f) => `${commitBase}:${f}`).join("\n");
+    const saida = execSync("git cat-file --batch-check", {
+      cwd: repoRoot,
+      input,
+      encoding: "utf8",
+    })
+      .trim()
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+
+    for (let i = 0; i < arquivos.length; i++) {
+      const linha = saida[i];
+      if (linha && !linha.includes("missing")) {
+        const partes = linha.split(" ");
+        const tamanho = parseInt(partes[2], 10);
+        if (!isNaN(tamanho)) {
+          mapaTamanhos.set(arquivos[i], tamanho);
+        }
+      }
+    }
+  } catch {
+    // Fallback item a item com git cat-file -s
+    for (const f of arquivos) {
+      try {
+        const t = parseInt(
+          execSync(`git cat-file -s ${commitBase}:${f}`, { cwd: repoRoot, encoding: "utf8" }).trim(),
+          10
+        );
+        if (!isNaN(t)) mapaTamanhos.set(f, t);
+      } catch {}
+    }
+  }
+
+  const lista = [];
   for (const relRepo of arquivos) {
     const rel = relRepo.replace(/^docs\/verificacoes\//, "");
-    const abs = path.join(repoRoot, relRepo);
-    if (fs.existsSync(abs)) {
-      const stat = fs.statSync(abs);
+    let tamanhoBytes = mapaTamanhos.get(relRepo);
+
+    // Fallback se faltou no lote
+    if (tamanhoBytes === undefined) {
+      try {
+        const t = parseInt(
+          execSync(`git cat-file -s ${commitBase}:${relRepo}`, { cwd: repoRoot, encoding: "utf8" }).trim(),
+          10
+        );
+        if (!isNaN(t)) tamanhoBytes = t;
+      } catch {}
+    }
+
+    if (tamanhoBytes !== undefined) {
       const nome = path.basename(rel);
       const matchData = nome.match(/(\d{4}-\d{2}-\d{2})/);
       const dataStr = matchData ? matchData[1] : "sem data no nome";
-      lista.push({ caminho: rel, data: dataStr, tamanhoBytes: stat.size });
+      lista.push({ caminho: rel, data: dataStr, tamanhoBytes });
     }
   }
 
@@ -157,6 +213,18 @@ export async function gerarEstadoMarkdown(opcoes = {}) {
 
   const linhas = [];
 
+  // Resolução do commit base para estabilidade pós-commit
+  let commitBase = "HEAD";
+  if (!opcoes.forcarNovoHead && fs.existsSync(ARQUIVO_ESTADO_MD)) {
+    try {
+      const conteudoDisco = fs.readFileSync(ARQUIVO_ESTADO_MD, "utf8");
+      const matchHead = conteudoDisco.match(/Commit HEAD:\s*`([a-f0-9]+)`/);
+      if (matchHead && matchHead[1]) {
+        commitBase = matchHead[1];
+      }
+    } catch {}
+  }
+
   // Linha 1 obrigatória de rastreabilidade
   linhas.push("FONTE_DOS_DADOS\t" + fontesExistentes.join("\t"));
   linhas.push("");
@@ -166,18 +234,6 @@ export async function gerarEstadoMarkdown(opcoes = {}) {
   // SEÇÃO 1: Controle de Versão (Git)
   linhas.push("## 1. Controle de Versão (Git)");
   try {
-    // Resolução do commit base para estabilidade pós-commit
-    let commitBase = "HEAD";
-    if (!opcoes.forcarNovoHead && fs.existsSync(ARQUIVO_ESTADO_MD)) {
-      try {
-        const conteudoDisco = fs.readFileSync(ARQUIVO_ESTADO_MD, "utf8");
-        const matchHead = conteudoDisco.match(/Commit HEAD:\s*`([a-f0-9]+)`/);
-        if (matchHead && matchHead[1]) {
-          commitBase = matchHead[1];
-        }
-      } catch {}
-    }
-
     const saidaGit = execSync(`git log -5 --format="%H|%ci|%h %s" ${commitBase}`, { cwd: repoRoot, encoding: "utf8" })
       .trim()
       .split(/\r?\n/)
@@ -335,7 +391,7 @@ export async function gerarEstadoMarkdown(opcoes = {}) {
 
   // SEÇÃO 7: Arquivos de Evidência em docs/verificacoes/
   linhas.push("## 7. Arquivos de Evidência em `docs/verificacoes/`");
-  const evidencias = listarArquivosVerificacoes(repoRoot, dirVerificacoes, lsFiles);
+  const evidencias = listarArquivosVerificacoes(repoRoot, lsFiles, commitBase);
   if (evidencias && evidencias.length > 0) {
     linhas.push(`- Total de arquivos de evidência medidos: ${evidencias.length}`);
     linhas.push("");
