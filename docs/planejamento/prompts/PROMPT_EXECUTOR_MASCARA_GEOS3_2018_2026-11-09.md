@@ -336,6 +336,26 @@ Isso não muda conclusão nenhuma — muda o rito, que é o que a banca vai test
 
 ---
 
+## TAREFA 6.1 — desfazer uma asserção vácua introduzida no Prompt B
+
+Em `src/config/desenvolvimentoDiretrizes.test.ts:47-48` ficaram:
+
+```ts
+expect(conteudo).toContain("npm run estado");
+expect(conteudo).toContain("npm run estado:verificar");
+```
+
+A primeira é **vácua**: `"npm run estado:verificar"` contém `"npm run estado"` como substring, logo
+ela passa mesmo que o comando de geração nunca seja citado nas diretrizes. Não prova o que aparenta.
+
+Troque as duas por uma asserção que distinga de fato os dois comandos — por exemplo, exigindo a
+ocorrência do comando de geração **fora** do nome do comando de verificação (uma regex com
+fronteira, como `/npm run estado(?!:)/`), mantendo a exigência de `npm run estado:verificar`.
+Escreva um meta-teste que **falhe** se o texto das diretrizes citar apenas `estado:verificar`:
+é ele que prova que a trava deixou de ser vácua.
+
+---
+
 ## TAREFA 7 — evidência e commit
 
 ### 7.1 `docs/verificacoes/2026-11-09b_adocao_mascara_geos3_2018.md`
@@ -393,6 +413,7 @@ Cada item responde citando o **arquivo gravado** em `docs/verificacoes/execucao/
 - [ ] T4 — `varrer_faixas_nbr2.mjs` criado, com recusa sem dados reais; **não rodado em produção**
 - [ ] T5 — `grep_selecao_bibliografica.txt` gravado; nº de linhas: ______; só o inventário editado
 - [ ] T6 — `[sic]` restaurado na nota de conferência
+- [ ] T6.1 — asserção vácua de `desenvolvimentoDiretrizes.test.ts` substituída, com meta-teste que a prova não-vácua
 - [ ] T7 — evidência escrita
 - [ ] `npm test` — saída gravada em `docs/verificacoes/execucao/2026-11-09/npm_test.txt`
 - [ ] `git status --short` e `git log --oneline -3` gravados
