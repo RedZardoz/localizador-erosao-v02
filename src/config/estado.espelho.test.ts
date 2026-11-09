@@ -22,18 +22,18 @@ describe("TAREFA 2 — Espelho fiel de ESTADO.md a partir de medições do repos
   });
 
   describe("Meta-testes: robustez da detecção de divergências em ESTADO.md", () => {
-    it("deve detectar divergência plantada de branch ou commit", () => {
+    it("deve detectar divergência plantada de commit ou metadado", () => {
       const conteudoOriginal = fs.readFileSync(ARQUIVO_ESTADO_MD, "utf8");
       const conteudoPlantado = conteudoOriginal.replace(
         "## 1. Controle de Versão (Git)",
-        "## 1. Controle de Versão (Git)\n- Branch adulterado: `fake-branch`"
+        "## 1. Controle de Versão (Git)\n- Commit adulterado: `fake-commit-12345`"
       );
       expect(conteudoPlantado).not.toEqual(conteudoOriginal);
 
       const resultado = compararEspelho(conteudoOriginal, conteudoPlantado);
       expect(resultado.identicos).toBe(false);
       expect(resultado.diferencas.length).toBeGreaterThan(0);
-      expect(resultado.diferencas[0]).toContain("fake-branch");
+      expect(resultado.diferencas[0]).toContain("fake-commit-12345");
     });
 
     it("deve detectar divergência plantada por truncamento de conteúdo", () => {

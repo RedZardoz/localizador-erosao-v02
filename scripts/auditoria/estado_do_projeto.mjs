@@ -107,7 +107,8 @@ function listarArquivosVerificacoes(dirVerificacoes) {
         varrer(abs, rel);
       } else if (it.isFile()) {
         const stat = fs.statSync(abs);
-        const dataStr = stat.mtime.toISOString().slice(0, 10);
+        const matchData = it.name.match(/(\d{4}-\d{2}-\d{2})/);
+        const dataStr = matchData ? matchData[1] : "sem data no nome";
         lista.push({ caminho: rel, data: dataStr, tamanhoBytes: stat.size });
       }
     }
@@ -151,19 +152,6 @@ export async function gerarEstadoMarkdown(opcoes = {}) {
     }
   }
 
-  // Carimbo de data: preserva do disco quando em verificação/espelho, ou usa informado/atual
-  let dataMedicao = opcoes.dataGeracao || null;
-  if (!dataMedicao) {
-    if (fs.existsSync(ARQUIVO_ESTADO_MD)) {
-      const conteudoDisco = fs.readFileSync(ARQUIVO_ESTADO_MD, "utf8");
-      const match = conteudoDisco.match(/Medição realizada em:\s*([^\r\n]+)/);
-      if (match) dataMedicao = match[1].trim();
-    }
-    if (!dataMedicao) {
-      dataMedicao = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
-    }
-  }
-
   const linhas = [];
 
   // Linha 1 obrigatória de rastreabilidade
@@ -171,46 +159,40 @@ export async function gerarEstadoMarkdown(opcoes = {}) {
   linhas.push("");
   linhas.push("# Painel de Estado Atual do Projeto — SAREL");
   linhas.push("");
-  linhas.push(`- Medição realizada em: ${dataMedicao}`);
-  linhas.push("");
 
   // SEÇÃO 1: Controle de Versão (Git)
   linhas.push("## 1. Controle de Versão (Git)");
   try {
-    const branch = execSync("git branch --show-current", { cwd: repoRoot, encoding: "utf8" }).trim() ||
-                   execSync("git rev-parse --abbrev-ref HEAD", { cwd: repoRoot, encoding: "utf8" }).trim();
-    
     // Resolução do commit base para estabilidade pós-commit
     let commitBase = "HEAD";
-    const headAtual = execSync("git rev-parse HEAD", { cwd: repoRoot, encoding: "utf8" }).trim();
     if (!opcoes.forcarNovoHead && fs.existsSync(ARQUIVO_ESTADO_MD)) {
       try {
-        const ultimoCommitEstado = execSync("git log -1 --format=%H -- docs/planejamento/ESTADO.md", { cwd: repoRoot, encoding: "utf8" }).trim();
-        const statusEstado = execSync("git status --porcelain -- docs/planejamento/ESTADO.md", { cwd: repoRoot, encoding: "utf8" }).trim();
-        if (ultimoCommitEstado === headAtual && statusEstado === "") {
-          const conteudoDisco = fs.readFileSync(ARQUIVO_ESTADO_MD, "utf8");
-          const matchHead = conteudoDisco.match(/Commit HEAD:\s*`([a-f0-9]+)`/);
-          if (matchHead && matchHead[1]) {
-            commitBase = matchHead[1];
-          }
+        const conteudoDisco = fs.readFileSync(ARQUIVO_ESTADO_MD, "utf8");
+        const matchHead = conteudoDisco.match(/Commit HEAD:\s*`([a-f0-9]+)`/);
+        if (matchHead && matchHead[1]) {
+          commitBase = matchHead[1];
         }
       } catch {}
     }
 
-    const headHash = execSync(`git rev-parse ${commitBase}`, { cwd: repoRoot, encoding: "utf8" }).trim();
-    const headData = execSync(`git log -1 --format=%ci ${commitBase}`, { cwd: repoRoot, encoding: "utf8" }).trim();
-    const ultimosCommits = execSync(`git log -5 --oneline ${commitBase}`, { cwd: repoRoot, encoding: "utf8" })
+    const saidaGit = execSync(`git log -5 --format="%H|%ci|%h %s" ${commitBase}`, { cwd: repoRoot, encoding: "utf8" })
       .trim()
       .split(/\r?\n/)
       .map((l) => l.trim())
       .filter(Boolean);
 
-    linhas.push(`- Branch atual: \`${branch}\``);
-    linhas.push(`- Commit HEAD: \`${headHash}\``);
-    linhas.push(`- Data do HEAD: ${headData}`);
-    linhas.push("- Últimos 5 commits:");
-    for (let i = 0; i < ultimosCommits.length; i++) {
-      linhas.push(`  ${i + 1}. \`${ultimosCommits[i]}\``);
+    if (saidaGit.length > 0) {
+      const [headHash, headData, primeiroCommit] = saidaGit[0].split("|");
+      const ultimosCommits = [primeiroCommit, ...saidaGit.slice(1).map((l) => l.split("|")[2])];
+
+      linhas.push(`- Commit HEAD: \`${headHash}\``);
+      linhas.push(`- Data do HEAD: ${headData}`);
+      linhas.push("- Últimos 5 commits:");
+      for (let i = 0; i < ultimosCommits.length; i++) {
+        linhas.push(`  ${i + 1}. \`${ultimosCommits[i]}\``);
+      }
+    } else {
+      linhas.push("AUSENTE (nenhum commit retornado)");
     }
   } catch {
     linhas.push("AUSENTE (falha na leitura de dados do Git)");
@@ -353,7 +335,7 @@ export async function gerarEstadoMarkdown(opcoes = {}) {
   if (evidencias && evidencias.length > 0) {
     linhas.push(`- Total de arquivos de evidência medidos: ${evidencias.length}`);
     linhas.push("");
-    linhas.push("| Arquivo de Evidência | Data de Modificação | Tamanho (bytes) |");
+    linhas.push("| Arquivo de Evidência | Data no Nome | Tamanho (bytes) |");
     linhas.push("|---|:---:|---:|");
     for (const ev of evidencias) {
       linhas.push(`| \`${ev.caminho}\` | ${ev.data} | ${ev.tamanhoBytes} |`);
@@ -390,8 +372,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
       process.exit(0);
     }
   } else if (modoGerar) {
-    const agoraFormatado = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
-    const conteudo = await gerarEstadoMarkdown({ dataGeracao: agoraFormatado, forcarNovoHead: true });
+    const conteudo = await gerarEstadoMarkdown({ forcarNovoHead: true });
     fs.mkdirSync(path.dirname(ARQUIVO_ESTADO_MD), { recursive: true });
     fs.writeFileSync(ARQUIVO_ESTADO_MD, conteudo, "utf8");
     console.log(conteudo);
