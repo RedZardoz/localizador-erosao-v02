@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `2bed3c080f00cc33f09dc7ddaa026c92576933cf`
-- Data do HEAD: 2026-11-09 16:52:19 +0000
+- Commit HEAD: `a1b89ebc4b3ed7534ee2b968603404c7741292b7`
+- Data do HEAD: 2026-11-09 14:18:04 -0300
 - Últimos 5 commits:
-  1. `2bed3c0 docs(planejamento): adicionar prompts A e B do executor de 09/11/2026`
-  2. `fbc8250 docs(bibliografia): catalogar 6 obras de sensoriamento espectral, solo nu e palhada no inventario`
-  3. `f409a6b docs(governanca): transcrever doze decisoes de conversa e registrar nota tecnica de lote GEE`
-  4. `1af5244 fix(governanca): medir tamanho de evidencias via blob do git (imune a CRLF/LF)`
-  5. `51ff908 fix(governanca): usar git ls-files para relacao estrita de evidencias versionadas`
+  1. `a1b89eb lastro(D02,D10): confere primarios e diagnostica mascara GEOS3 em E-hat`
+  2. `2bed3c0 docs(planejamento): adicionar prompts A e B do executor de 09/11/2026`
+  3. `fbc8250 docs(bibliografia): catalogar 6 obras de sensoriamento espectral, solo nu e palhada no inventario`
+  4. `f409a6b docs(governanca): transcrever doze decisoes de conversa e registrar nota tecnica de lote GEE`
+  5. `1af5244 fix(governanca): medir tamanho de evidencias via blob do git (imune a CRLF/LF)`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 120
@@ -70,7 +70,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | chuva | `RUSLE_Fator_R` | SIM | SIM | SIM |
 
 ## 7. Arquivos de Evidência em `docs/verificacoes/`
-- Total de arquivos de evidência medidos: 107
+- Total de arquivos de evidência medidos: 118
 
 | Arquivo de Evidência | Data no Nome | Tamanho (bytes) |
 |---|:---:|---:|
@@ -104,11 +104,15 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `2026-11-02_lastro_d11_2_se_0144.md` | 2026-11-02 | 2431 |
 | `2026-11-03_poder_d25_preliminar.txt` | 2026-11-03 | 2474 |
 | `2026-11-03_poder_d25.txt` | 2026-11-03 | 4492 |
+| `2026-11-09_lastro_d02_d10_e_mascara_geos3.md` | 2026-11-09 | 8444 |
 | `cache_pedologia_bp3.json` | sem data no nome | 96740 |
 | `calculadora/2026-09-30_simulacao_desenho_d16_224m.md` | 2026-09-30 | 2027 |
 | `climatologia_chirps_bp3.json` | sem data no nome | 16112 |
 | `diario_climatologia_chirps_bp3.json` | sem data no nome | 231414 |
 | `fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md` | sem data no nome | 7016 |
+| `fontes/dematte2018/conferencia_dematte_2018.md` | sem data no nome | 6312 |
+| `fontes/dematte2018/extrair_dematte_2018.py` | sem data no nome | 2091 |
+| `fontes/dematte2018/saida_extracao_dematte_2018.txt` | sem data no nome | 64034 |
 | `fontes/desmet1996/desmet_govers_1996_jswc.pdf` | sem data no nome | 930133 |
 | `fontes/desmet1996/extrair_desmet_1996.py` | sem data no nome | 4173 |
 | `fontes/desmet1996/saida_extracao_desmet_1996.txt` | sem data no nome | 2614 |
@@ -123,7 +127,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `fontes/renard1997/extrair_renard_1997.py` | sem data no nome | 6522 |
 | `fontes/renard1997/saida_extracao_renard_1997.txt` | sem data no nome | 2872 |
 | `fontes/renard1997/saida_ocr_renard_1997.txt` | sem data no nome | 9539 |
+| `fontes/rikimaru2002/conferencia_rikimaru_2002.md` | sem data no nome | 5232 |
+| `fontes/rikimaru2002/extrair_rikimaru_2002.py` | sem data no nome | 2069 |
+| `fontes/rikimaru2002/saida_extracao_rikimaru_2002.txt` | sem data no nome | 19513 |
 | `fontes/rufino1993/rufino_biscaia_merten_1993_rbcs.pdf` | sem data no nome | 2130995 |
+| `fontes/safanelli2021/conferencia_safanelli_2021.md` | sem data no nome | 6195 |
+| `fontes/safanelli2021/extrair_safanelli_2021.py` | sem data no nome | 2119 |
+| `fontes/safanelli2021/safanelli_2021_rbcs.pdf` | sem data no nome | 2945488 |
+| `fontes/safanelli2021/saida_extracao_safanelli_2021.txt` | sem data no nome | 68303 |
 | `fontes/schmidt2019/extrair_schmidt_2019.py` | sem data no nome | 2919 |
 | `fontes/schmidt2019/saida_extracao_schmidt_2019.txt` | sem data no nome | 30208 |
 | `fontes/schmidt2019/schmidt_2019_methodsx.pdf` | sem data no nome | 4339190 |
