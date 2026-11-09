@@ -15,6 +15,8 @@ O sistema opera sob as **9 Regras Invioláveis da Lei Fundamental** (`docs/plane
 - **Rastreabilidade e proveniência científica total:** Cada variável do sistema possui selo de proveniência (`● medido`, `◊ modelado`, `□ tabelado`, `○ indisponível`).
 - **Segregação cega e proteção LGPD:** Dados fundiários mascarados byte a byte e exportações cegas por perfil operacional (`planilha`, `interpretacao-cega`, `campo-cego`, `voo-cego`, `matriz-treino`).
 
+As diretrizes de governança, regras metodológicas e armadilhas de desenvolvimento estão documentadas em [`docs/DESENVOLVIMENTO.md`](docs/DESENVOLVIMENTO.md).
+
 ---
 
 ## Arquitetura e Módulos Principais
@@ -76,8 +78,10 @@ Para instalar o sistema em máquinas de pesquisadores, avaliadores ou técnicos 
 - **Base Fundiária Local (`data/fundiario_brasil.db`):** Banco de dados SQLite local (~1,67 GB, não versionado no Git). O arquivo deve ser posicionado em `data/fundiario_brasil.db`. Caso o banco não esteja presente, o sistema opera de forma segura e degradada, emitindo estritamente o status `"base-nao-disponivel"` nas consultas fundiárias — garantindo pelas Regras 1 e 2 e pelo Invariante 5 que falha de infraestrutura jamais seja colapsada em `"sem-correspondencia"`.
 
 #### Instalação
+> Consulte [`docs/DESENVOLVIMENTO.md`](docs/DESENVOLVIMENTO.md) para a disciplina de ambiente (usar sempre `npm ci` e nunca `npm install`).
+
 ```bash
-npm install
+npm ci
 pip install -r requirements.txt
 ```
 
