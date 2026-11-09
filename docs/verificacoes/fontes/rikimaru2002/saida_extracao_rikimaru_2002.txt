@@ -1,0 +1,481 @@
+========================================================================
+EXTRACAO DIRETA DE Rikimaru et al. (2002) VIA pypdf.PdfReader
+========================================================================
+Caminho relativo: docs/bibliografia/01_pesquisas_diretamente_relacionadas/Tropical forest cover density mapping - International Society for ....pdf
+Tamanho do arquivo (bytes): 1069748
+Total de paginas do PDF: 9
+PDF Metadata (/Title): None
+PDF Metadata (/Author): None
+
+--- [PDF PAGINA 1 / 9] ---
+RIKIMARU, ROY & MIYATAKE 39 
+Tropical Ecology 43(1): 39-47, 2002 ISSN 0564-3295  
+© International Society for Tropical Ecology 
+ 
+Tropical forest cover density mapping 
+ 
+ 
+A. RIKIMARU1, P.S.ROY2 & S.MIYATAKE3 
+ 
+1Nagaoka University of Technology; 2Indian Institute of Remote Sensing (NRSA), Dehradun,  
+India; 3Japan Overseas Forestry Consultants Association, Tokyo, Japan 
+ 
+ 
+Abstract: Forest canopy density is one of the mo st useful parameters to consider in the 
+planning and implementation of rehabilitation program. This study is development of bio-
+physical analysis model for obtaining of Forest Canopy Density (FCD) using LANDSAT TM 
+data image analysis. The components of FCD model are four factors; vegetation, bare soil, 
+thermal and shadow. This work is implemented under the research project; PD32/93Rev2(F) of 
+International Tropical Timber Organization (ITTO).  
+ 
+Resumen: La densidad de dosel forestal es uno de los parámetros cuya inclusión tiene más 
+utilidad en la planeación e instrumentación de programas de rehabilitación. Este estudio con-
+siste en el desarrollo de un modelo de análisis biofísico para la obtención de Densidad de Dosel 
+Forestal (FCD por sus siglas en inglés) por medi o del análisis de datos de imágenes LANDSAT 
+TM. Los componentes del modelo FCD son cuatro  factores; vegetación, suelo desnudo, tempera-
+tura y sombra. Este trabajo forma parte del proyecto de investigación PD32/93Rev2(F) de la 
+Organización Internacional de Maderas Tropicales (ITTO).  
+ 
+Resumo: A densidade do copado florestal é um dos parâmetros mais úteis a serem consid-
+erados no planeamento e implementação de programas de reabilitação. Este estudo apresenta o 
+desenvolvimento do modelo de análise biofísica para obtenção da Densidade de Copado Flore-
+stal (FCD) usando a análise de imagem do LANDSAT TM. As componentes do modelo FCD 
+eram: vegetação, solo nu, temperatura e sombra. Este trabalho foi implementado pelo projecto 
+de investigação PD32/93Rev2(F) da Organização Internacional para a Madeira Tropical 
+(ITTO). 
+ 
+Key words: Canopy density mapping, FCD mapper, Landsat, remote sensing, semi-expert system. 
+ 
+ 
+ 
+ 
+ 
+Introduction 
+ As generally applied in forestry, conventional 
+RS methodology is based on qualitative analysis of 
+information derived from “training areas” ( i.e. 
+ground-truthing). This has certain disadvantages 
+in terms of the time and cost required for training 
+area establishment, and the accuracy of the results 
+obtained.  In response to these problems, new 
+methodology was developed during ITTO Project 
+PD 32/93 Rev. 2 (F), “Rehabilitation of Logged-over 
+Forests in Asia-Pacific Region, Sub-project III” 
+(JOFCA 1991, 1993).  In this new methodology, 
+forest status is assessed on the basis of canopy 
+density (JOFCA 1995, 1996).  The methodology is 
+presently  identified  as the Forest Canopy Density  
+ 
+Address for Correspondence:  A. Rikimaru, Department of Environmen tal Engineering, Nagaoka University o f
+Technology, Kamitomioka-Cho, Nagaoka, Niigata-Pref, Japan Zip 940-2188, Tel/Fax: +81-258-47-9668; Email: riki-
+maru@nagaokaut.ac.jp.
+
+--- [PDF PAGINA 2 / 9] ---
+40 TROPICAL FOREST COVER 
+Mapping (FCD) Model.  Unlike the conventional 
+qualitative method, the FCD Model indicates the 
+growth phenomena of forests, which is quantita-
+tive analysis. (Figs. 1 & 2) The degree of forest 
+density is expressed in percentages: i.e. 10%; 
+20%; 30%; 40% and so on.  FCD data indicates 
+ 
+ 
+ 
+Fig. 1. Analysis by conventional remote sensing method.
+
+--- [PDF PAGINA 3 / 9] ---
+RIKIMARU, ROY & MIYATAKE 41 
+the intensity of rehabi litation treatment that 
+may be required.  The method also makes it pos-
+sible to monitor transformation of forest condi-
+tions over time including degradation.  Addi-
+tionally, it can assess the progress of reforesta-
+tion activities.  
+The Forest Canopy De nsity (FCD) Mapping 
+and monitoring Model utilizes forest canopy den-
+sity as an essential parameter for characterization 
+of forest conditions. FCD data indicates the degree 
+of degradation, thereby also indicating the inten-
+sity of rehabilitation treatment that may be re-
+quired. 
+The remote sensing data used in FCD model is 
+LANDSAT TM data. The FCD model comprises 
+bio-physical phenomenon  modeling and analysis 
+utilizing data derived from four indices: Advanced 
+Vegetation Index (AVI), Bare Soil Index (BI), 
+Shadow Index or Scaled Shadow Index (SI, SSI) 
+and Thermal Index (TI). It determines FCD by 
+modeling operation and obtaining from these indi-
+ces. 
+The canopy density is calculated in percentage 
+for each pixel. The FCD model requires less infor-
+mation of ground truth. Just for accuracy check 
+and so on. FCD model is based on the growth phe-
+ 
+ 
+Fig. 2. Analysis by FCD mapping model.
+
+--- [PDF PAGINA 4 / 9] ---
+42 TROPICAL FOREST COVER 
+nomenon of forests. Consequently, it also becomes 
+possible to monitor transfor mation of forest condi-
+tions over time such as the progress of forestry ac-
+tivities The application test were implemented in 
+these area. The evergreen forests are in the islands 
+of Luzon (Philippines) and Sumatra (Indonesia); 
+and for monsoon (subtropical deciduous) forests in 
+Ching-Mai (Thailand) and Terai (Nepal). 
+Characteristics of four indices 
+The indices have some characteristics as be-
+low. The Forest Canopy Density Model combines 
+data from the four indices. Fig. 3 illustrates the 
+relationship between forest conditions and the four 
+indices (VI, BI, SI and TI).  Vegetation index re-
+sponse to all of vegetation items such as the forest 
+and the grassland. Advanced vegetation index AVI 
+reacts sensitively for the vegetation quantity com-
+pared with NDVI. Shadow index increases as the 
+forest density increases. Thermal index increases 
+as the vegetation quantity  increases.Black colored 
+soil area shows a high temperature. Bare soil in-
+dex increases as the bare soil exposure degrees of 
+ground increase. These index values are calculated 
+for every pixel. Fig.3 shows the characteristics of 
+four indices compared with forest condition.  
+Note that as the FCD value increases there is 
+a corresponding increase in the SI value. In other  
+words where there is more tree vegetation there is 
+more shadow. Concurrently, if there is less bare 
+soil (i.e. a  lower BI value) there will be  a corre-
+sponding decrease in the TI  value. It should be 
+noted that VI  is “saturated” earlier than SI. This 
+simply means that the maximum VI values that 
+can be recorded appear earlier in the analysis. 
+ 
+ 
+ 
+Fig. 3. The characteristics of four indices for forest condition.
+
+--- [PDF PAGINA 5 / 9] ---
+RIKIMARU, ROY & MIYATAKE 43 
+This happens because the VI captures data from 
+the total bio-mass, regardless of the density of the 
+trees or  forest. On the other hand,  the SI values 
+are primarily dependent on the amount of tall 
+vegetation such as trees which cast a significant 
+shadow. The comparative characters of the four 
+indices are shown in Table 1. 
+ 
+Table 1. Combination characteristics between 
+four indices. 
+ Hi- FCD  Low-FCD Grass land Bare Land 
+AVI Hi Mid Hi Low 
+BI Low Low Low Hi 
+SI Hi Mid Low Low 
+TI Low Mid Mid Hi 
+Obtaining of four indices 
+Advanced vegetation index (AVI) 
+When assessing  the vegetation status of for-
+ests, the new methods first examine the character-
+istics of chlorophyll-a using a new Advanced Vege-
+tation Index (AVI) that is calculated with the fol-
+lowing formulae: 
+B1～B7: TM Band 1～7 data 
+B43=B4-B3 after normalization of the data 
+range. 
+B43 < 0 AVI= 0  (Case a) 
+B43 > 0    AVI= ((B4 +1) x (256-B3) x B 43) 1/3 
+     (Case b)                         
+Bare soil index (BI) 
+The value of the vegetation index is not so re-
+liable in situations where  the vegetation covers 
+less than half of the area. For more reliable esti-
+mation of the vegetation status, the new methods 
+include a bare soil index (BI) which is formulated 
+with medium infrared information. The underly-
+ing logic of this approach is based on the high re-
+ciprocity between bare soil status and vegetation 
+status. By combining both vegetation and bare 
+soil indices in the analysis, one may assess the 
+status of forestlands on a continuum ranging 
+from high vegetation conditions to exposed soil 
+conditions. 
+ BI = 
+B1)(B4B3)(B5
+B1)(B4B3)(B5
++++
++−+ x 100 + 100  
+(0 < BI <200) 
+The range of BI is converted within 8 bits range  
+Shadow index (SI) 
+One unique characteristic of a forest is its 
+three dimensional structur e. To extract informa-
+tion on the forest structure from RS data, the new 
+methods examine the characteristics of shadow by 
+utilizing (a) spectral information on the forest 
+shadow itself and (b) thermal information on the 
+forest influenced by shadow. The shadow index is 
+formulated through extraction of the low radiance 
+of visible bands. 
+SI = ((256-B1) x (256-B2) x (256-B3))1/3 
+Thermal index (TI) 
+Two factors account for the relatively cool tem-
+perature inside a forest. One is the shielding effect 
+of the forest canopy, which blocks and absorbs en-
+ergy from the sun. The other is evaporation from 
+the leaf surface, which mitigates warming. Formu-
+lation of the thermal index is based on this phe-
+nomenon. The source of thermal information is the 
+thermal infrared band of TM data.  
+The procedure of FCD model  
+The flowchart of the procedures for FCD map-
+ping model is illustrated in Fig. 4. Image processed 
+results corresponding to the flow chart shows in 
+Fig. 5. 
+Noise reduction, clouds, cloud shadow 
+and water area 
+Clouds have a higher irradiant value than 
+ground data. Moreover, the amount of irradiant 
+varies depending on whether the clouds are white, 
+gray, black or combinations of different shades. 
+These factors adversely influence statistical 
+treatment and analysis of imagery data. Further-
+more, cloud shadow can be confused with shadow 
+cast by adjacent mountains, These problems can 
+be minimized by creating a cloud shadow mask, 
+using a histogram based on data derived from TM 
+band 1, 2, and 3. Thereafter, a shadow mask of  the 
+mountain shadow area is formed at the ground 
+level. This is done through parallel transformation 
+of the mask of the cloud area. Water bodies create 
+similar problems. Since water absorbs near infra-
+red, water bodies should (and can) also be masked 
+using a histogram of TM Band 4.
+
+--- [PDF PAGINA 6 / 9] ---
+44 TROPICAL FOREST COVER 
+Vegetation density (VD) 
+It is the procedure to synthesize VI and BI. 
+Processing method is using principal component 
+analysis. Because essentially, VI and BI have high 
+correlation of negative. Af ter that, set the scaling 
+of zero percent point and a hundred percent point. 
+Details are given in Rikimaru (1996). 
+Black soil detection 
+SI data is extracted from the low irradiant 
+area of each visible band. Where the soil is black or 
+appears to be black due to recent slash-and-burn, 
+low irradiant data may confuse shadow phenome-
+non with black soil conditions. This is because 
+black soil usually has high temperature due to its 
+high absorption rate of sun energy. But shadows 
+lead to a decrease in soil temperature. By overlay-
+ing TI data and SI data this confusion can be 
+avoided. Overlays are also useful when evaluating 
+the relative irradiance of different parcels of land 
+characterized by various shades of black soil. 
+ 
+ 
+Advanced shadow index (ASI) 
+When the forest canopy is very dense, satel-
+lite data is not always be able to indicate the 
+relative intensity of the shadow. Consequently, 
+crown density might be underestimated.  To deal 
+with this problem, the new methods include 
+those described below for determining the spa-
+tial distribution of shadow information. Details 
+are given in Rikimaru (1996). 
+Scaled shadow index (SSI) 
+The shadow index (SI) is a relative value. Its 
+normalized value can  be utilized for calculation 
+with other parameters. The SSI was developed in 
+order to integrate VI values and SI values. In ar-
+eas where the SSI value is zero, this corresponds 
+with forests that have the lowest shadow value 
+(i.e. 0%). In areas where the SSI value is 100, this 
+corresponds with forests that have the highest 
+possible shadow value (i.e. 100%). SSI is obtained 
+by linear transformation of SI. 
+ 
+ 
+LANDSAT TM DATA
+Noise Reduction Process
+Scan line noise, Atmospheric noise, Cloud area, Cloud Shadow area, Water area etc
+Range Normalization of TM data for each bands
+Advanced Vegetation Index Bare Soil Index Shadow Index Thermal Index
+Vegetation/Bare soil 
+Synthesis Model
+Vegetation density %
+Black Soil Detection
+Advanced Shadow Index
+Scaled Shadow Index
+Integration Model
+Forest Canopy Density Map
+Spatial
+Process
+Shadow
+Percentage
+for Forest
+ 
+Fig. 4. Flow chart of FCD mapping model
+
+--- [PDF PAGINA 7 / 9] ---
+RIKIMARU, ROY & MIYATAKE 45 
+With development of the SSI one can now 
+clearly differentiate between vegetation in the 
+canopy and vegetation on the ground. This consti-
+tutes one of the major advantages of the new 
+methods. It significantly improves the capability to 
+provide more accurate results from data analysis 
+than was possible in the past.  
+ 
+Integration process to achieve FCD model 
+Integration of VD and SSI means transformation 
+for forest canopy density value. Both parameter has 
+no dimension and has percentage scale unit of den-
+sity. It is possible to synthesize both indices safely by 
+means of corresponding scale and units of each.  
+FCD = (VD x SSI+1)1/2 -1 
+ 
+ 
+Fig. 5. Procedure for FCD mapping model.
+
+--- [PDF PAGINA 8 / 9] ---
+46 TROPICAL FOREST COVER 
+Development of the semi-expert 
+system for the FCD mapping model 
+At present, RS assessment  of forest conditions 
+is a task reserved for personnel who have received 
+special training in remote sensing analysis.  Fur-
+thermore, the images derived from conventional 
+RS analysis have rarely been simple enough to be 
+readily understood by practicing foresters, plan-
+ning officers and other concerned individuals. 
+As a follow-on phase of the previous project, 
+the Japan Overseas Forestry Consultants Associa-
+tion (JOFCA) has been implementing ITTO Pro-
+ject, PD 13/97 Rev. 1 (F),  and developed the Semi-
+expert System to make the new methodology more 
+available to persons who are not RS experts.  The 
+system is now available on CD-ROM format. 
+Principal features of the 
+semi-expert system 
+The Semi-expert System, or named the FCD-
+Mapper, is a computer software package compati-
+ble with Windows-type personal computers.  The 
+FCD Mapper contains the algorithms and other 
+formulas utilized to compute values of the several 
+indices contained in the FCD Model for the analy-
+sis of satellite imagery data. The system will up-
+grade the planning capacity of decision-makers in 
+forest management and increase the information 
+collecting capability of foresters, while reducing 
+costs and saving time. Use of the Semi-expert sys-
+tem will facilitate production of “user-friendly” 
+satellite imagery that accurately portrays forest 
+conditions.  Access to such imagery will increase 
+the capability of foresters to provide accurate, un-
+biased data on the status of forests in a format 
+that is easy to understand. 
+The concept of FCD-mapper 
+The concept of FCD-Mapper is the useful sys-
+tem for the forester, and not for the remote sensing 
+engineer. The Practical Processing System for the 
+Forester which implements FCD Mapping Process 
+as if the Remote Sensing Professional would oper-
+ate. FCD-Mapper has the knowledge of remote 
+sensing specialist for analysis of FCD model. 
+Specifications of the semi-expert system 
+Data Source : Landsat TM data 
+Optional Mode : IRS-1C; 1D; SPOT-4, etc. 
+Output Results : FCD Map (Color Hard Copy); 
+Area Counting Statistics of FCD 
+Stratification (Comments of 
+FCD Condition) 
+Export File 
+Format 
+: BMP 
+Computer : DOSV/Windows 95, 98 or NT type
+CPU : Pentium 133 MHz or above 
+Memory : 32MB or above 
+(64MB recommended) 
+Hard Disk 
+Capacity 
+: Free-space 500 MB or above (for 
+processing of TM full scene, 1GB 
+or above recommended) 
+Image 
+Display 
+: 1024×768 pixels, 64k color 
+variation or above 
+Printer : Windows compatible type (color/ 
+monochrome) 
+FCD Model : Interactive Operation with 
+Assistance of Semi-expert System 
+Sub-memory 
+Media 
+: MO-Disk 230MB 
+(640MB recommended) 
+ 
+Table 2. Comparison of the semi-expert system with conventional methods. 
+ Semi-expert System Work Station Personal Computer 
+Processing Time 0.5 days 4~5 days 5~6 days 
+Operator Forester Remote-sensing Expert Remote-sensing Expert 
+Time Required for 
+Training 
+2~3 days 2~3 months 2~3 months 
+Hardware Cost $ 3,000~4,000 US $ 20,000 US~ $ 3,000~4,000 US 
+Software Cost Provided for the ITTO 
+Members 
+$ 10,000 US~ $ 4,000 US~
+
+--- [PDF PAGINA 9 / 9] ---
+RIKIMARU, ROY & MIYATAKE 47 
+The core-members of the 
+development team 
+The FCD Model and FC D Mapper were devel-
+oped by Dr. Atsushi Rikimaru.  This work was car-
+ried out in collaboration with Dr. P. S. Roy, Dean 
+of the Indian Institute of Remote Sensing, Dr. 
+Surachai Ratanase rmpong, Senior Research Offi-
+cer of the National Research Council of Thailand, 
+Mr. Ruandha Agung Sugardiman of the Director-
+ate General of Forest and Estate Crops Inventory 
+and Land Use of Indonesia, and Mr. Virgilio Basa 
+and Ms. Alma Arquero of the National Mapping 
+and Resource Information Authority of the Philip-
+pines.  Computer software programming of the 
+FCD Mapper has been accomplished by Mr. Mi-
+noru Nakajima.  Continuing improvement in the 
+FCD Model and the Semi-expert System is a col-
+laborative task of all those just mentioned. 
+References 
+JOFCA. 1991. Classification system on logged-over forests. A 
+workshop for the ITTO project PD 2/87(F) Sub-project 
+II. Rehabilitation of logged-over forests in Asia/Pacific 
+region. Manila, Philippines, December 1991. 
+JOFCA. 1993. Rehabilitation of logged-over forests 
+in Asia/Pacific region, final report of Sub-project 
+II.  Prepared for ITTO. March 1993. Part II pp. 
+1-41. 
+JOFCA. 1995. Proceedings of the workshop on utiliza-
+tion of remote sensing in site assessment and 
+planning for rehabilitation of logged-over forests. 
+Cisarua, Bogor, Indonesia, September 25-28, 
+1995.  
+JOFCA. 1996. Proceedings of the workshop on utiliza-
+tion of remote sensing in site assessment and plan-
+ning for rehabilitation of logged-over forests. Bang-
+kok, Thailand, July 30-August 1, 1996.  
+Rikimaru, A. 1996. LANDSAT TM Data processing 
+guide for forest canopy density mapping and moni-
+toring model. pp. 1-8. In: ITTO Workshop on Util-
+ization of Remote Sensing i n  S i t e  A s s e s s m e n t  a n d  
+Planning for Rehabilitation of Logged-over Forests . 
+Bangkok, Thailand, July 30-August 1, 1996.  
+JOFCA. 1997. Utilization of remote sensing in site as-
+sessment and planning for rehabilitation of logged-
+over forests. Project report on PD32/93 Rev.2(F) Re-
+habilitation of logged-over forests in Asia/Pacific re-
+gion, Sub-project III.  Prepared for ITTO. January 
+1997.

@@ -89,22 +89,6 @@ interface LastroNaoConferido {
 
 const LASTRO_NAO_CONFERIDO: readonly LastroNaoConferido[] = [
   {
-    id: "D02",
-    obra: "Rikimaru, A., Roy, P. S. & Miyatake, S. (2002), Tropical forest cover density mapping",
-    afirmacao:
-      "os cortes numéricos de triagem espectral BSI > 0,10, NDVI < 0,40, BSI < 0,00 e NDVI > 0,65",
-    pendencia:
-      "A obra desenvolve modelo de Forest Canopy Density sobre LANDSAT TM, com quatro fatores " +
-      "(vegetação, solo nu, térmico e sombra). Ela sustenta o ÍNDICE BSI, não cortes numéricos para " +
-      "erosão laminar, que são convenção deste projeto. A quitação de 20/10/2026 por cruzamento com " +
-      "D20 foi, portanto, esticamento de citação. Agravantes de identificação a conferir no primário: " +
-      "a referência do registro grafa 'Rikimaru, T.' e o registro bibliográfico localizado indica " +
-      "'A. Rikimaru'; e o veículo 'Tropical Ecology 43(1):39-47' não foi confirmado. Impacto " +
-      "científico baixo — a emenda de 06/10/2026 já retirou estes cortes do alvo e da seleção, o que " +
-      "foi verificado no código —, impacto de governança alto.",
-    idAcervo: "rikimaru2002",
-  },
-  {
     id: "P05",
     obra: "Zanaga, D. et al. (2022), ESA WorldCover",
     afirmacao: "as classes 30 e 40 do produto WorldCover usadas como filtro de elegibilidade",
@@ -454,12 +438,14 @@ describe("Norma de Lastro Científico (docs/NORMA_LASTRO_CIENTIFICO.md)", () => 
     it("as três quitações por cruzamento de 20/10/2026 continuam declaradas enquanto não conferidas", () => {
       // A seção "Três das sete são baratas" da Norma orientou quitar D02, P05 e P02 por
       // cruzamento. Nenhuma das três obras está no acervo; nenhuma pode contar como conferida.
+      const acervosCruzamento: Record<string, string> = {
+        D02: "rikimaru2002",
+        P05: "zanaga2022",
+        P02: "roberts2017",
+      };
       const ids = new Set(LASTRO_NAO_CONFERIDO.map((e) => e.id));
-      for (const id of ["D02", "P05", "P02"]) {
-        const temAcervo = LASTRO_NAO_CONFERIDO.some(
-          (e) => e.id === id && obraArquivada(e.idAcervo)
-        );
-        if (!temAcervo) {
+      for (const [id, acervo] of Object.entries(acervosCruzamento)) {
+        if (!obraArquivada(acervo)) {
           expect(ids.has(id), `${id} foi quitado por cruzamento e sua obra não está arquivada`).toBe(
             true
           );

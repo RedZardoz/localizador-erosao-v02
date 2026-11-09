@@ -15,7 +15,7 @@ O diretório `docs/bibliografia/` reflete com 100% de correspondência a classif
 
 | Subdiretório | Categoria / Escopo | Total de Obras | Descrição / Eixo Metodológico |
 |:---|:---:|:---:|---|
-| [`01_pesquisas_diretamente_relacionadas/`](01_pesquisas_diretamente_relacionadas/) | **Direta** | 41 | Machine Learning (XGBoost, Ensembles), sensoriamento orbital, GEOS3, guarda temporal e Spatial Block CV (Itens 001 a 041). |
+| [`01_pesquisas_diretamente_relacionadas/`](01_pesquisas_diretamente_relacionadas/) | **Direta** | 41 | Machine Learning (XGBoost, Ensembles), sensoriamento orbital, GEOS3, guarda temporal e Spatial Block CV (Itens 001 a 035 e Adições 110 a 115). |
 | [`02_pesquisas_relacionadas/`](02_pesquisas_relacionadas/) | **Relacionada** | 53 | Modelagem física determinística (USLE/RUSLE), erodibilidade (Fator K), erosividade (Fator R) e Fator LS (Itens 036 a 088). |
 | [`03_contexto_regional_e_triagem/`](03_contexto_regional_e_triagem/) | **Triagem** | 19 | Dissertações regionais do PPGTCA/UTFPR Medianeira, UNIOESTE (BP3), UNESP e estrutura fundiária no CAR (Itens 089 a 107). |
 | [`04_obras_seminais_fundacionais/`](04_obras_seminais_fundacionais/) | **Seminal** | 2 | Hickey (2000) para Fator LS contínuo e Rufino, Biscaia & Merten (1993) para erosividade no Paraná (Itens 108 e 109). |

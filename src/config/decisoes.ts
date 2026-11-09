@@ -83,7 +83,13 @@ export const DECISOES: Record<string, Decisao<any>> = {
     valor: "Amostragem estratificada pura: Classe 1 (Erosão: BSI > 0.10 e NDVI < 0.40) vs Classe 0 (Controle/SPD: BSI < 0.00 e NDVI > 0.65) " +
       "EMENDA DE 06/10/2026 (proposta do assistente, aceita pelo pesquisador em conversa; pré-dados): os limiares de BSI e NDVI de D02 definem um CRITÉRIO DE TRIAGEM DE CANDIDATOS e uma ajuda visual, NÃO um rótulo (Regra 4: nada calculado vira rótulo). Por D16 os polígonos de VANT são sorteados pelos estratos biofísicos e nunca pelo rastreio espectral; logo estes limiares não têm papel na seleção de polígonos nem no alvo do modelo (D26). Onde o texto original diz \"Classe 1\" e \"Classe 0\", leia-se \"candidato espectral a erosão\" e \"candidato espectral a controle\".",
     justificativa: "Critérios biofísicos objetivos e reprodutíveis validados no Sentinel-2 e PlanetScope.",
-    referencia: "Rikimaru, T. et al. (2002); Metodologia PPGTCA 2026, Seção 3.1 e Tabela 1; D20",
+    referencia: "Rikimaru, A., Roy, P. S. & Miyatake, S. (2002), Tropical forest cover density mapping, Tropical Ecology 43(1):39-47 " +
+      "— citada EXCLUSIVAMENTE pelo indice BSI, que a obra formula como componente de solo nu de um modelo de Forest Canopy Density sobre LANDSAT TM. " +
+      "Os cortes numericos BSI > 0,10, NDVI < 0,40, BSI < 0,00 e NDVI > 0,65 sao CONVENCAO OPERACIONAL DESTE PROJETO e NAO sao atribuidos a esta fonte, que nao trata de erosao laminar. " +
+      "CONFERIDO NO PRIMARIO em 09/11/2026: ver docs/verificacoes/fontes/rikimaru2002/conferencia_rikimaru_2002.md. " +
+      "Q5: folha de rosto confirma A. Rikimaru, P. S. Roy & S. Miyatake, Tropical Ecology 43(1):39-47 (ISSN 0564-3295). " +
+      "Q6: a obra NAO contem nenhum corte numerico de BSI ou NDVI para erosao ou triagem. " +
+      "Q7: a formulacao adimensional do BI coincide com calcularBsi(B11, B4, B8, B2) transposta ao Sentinel-2.",
     decididoPor: "pesquisador",
     decididoEm: "2026-09-13",
     parametros: {

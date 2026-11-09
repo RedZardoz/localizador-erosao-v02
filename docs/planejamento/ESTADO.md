@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `51ff908d68a8e566dbe361f5eb89526cb39e177a`
-- Data do HEAD: 2026-11-08 23:26:55 -0300
+- Commit HEAD: `2bed3c080f00cc33f09dc7ddaa026c92576933cf`
+- Data do HEAD: 2026-11-09 16:52:19 +0000
 - Últimos 5 commits:
-  1. `51ff908 fix(governanca): usar git ls-files para relacao estrita de evidencias versionadas`
-  2. `5b4bc06 fix(governanca): tornar painel ESTADO.md reproduzivel e estavel`
-  3. `70fa810 chore(governanca): criar painel de estado, registro de decisoes de conversa e diretrizes de desenvolvimento`
-  4. `3245777 feat(auditoria): ajustar leitor de lote com recusa de pontual e testes de contrato`
-  5. `9585ef7 feat(gee): adicionar endpoint e gravador de evidencia em lote da Regra 8`
+  1. `2bed3c0 docs(planejamento): adicionar prompts A e B do executor de 09/11/2026`
+  2. `fbc8250 docs(bibliografia): catalogar 6 obras de sensoriamento espectral, solo nu e palhada no inventario`
+  3. `f409a6b docs(governanca): transcrever doze decisoes de conversa e registrar nota tecnica de lote GEE`
+  4. `1af5244 fix(governanca): medir tamanho de evidencias via blob do git (imune a CRLF/LF)`
+  5. `51ff908 fix(governanca): usar git ls-files para relacao estrita de evidencias versionadas`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 120
