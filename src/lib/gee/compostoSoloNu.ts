@@ -135,11 +135,16 @@ export function extrairMetricasSoloExposto(
       motivo: "Nenhuma observação com todas as bandas necessárias para a máscara GEOS3 (B2, B3, B4, B8, B11, B12).",
     };
 
+    const compostoVazioGeos3: Record<string, Proveniencia<number>> = {};
+    for (const b of TODAS_BANDAS_ESPECTRAIS) {
+      compostoVazioGeos3[b.toUpperCase()] = indispSemObs;
+    }
+
     return {
       frequenciaSoloNu: indispSemObs,
       maiorSequenciaSoloNu: indispSemObs,
       mesModalExposicao: indispSemObs,
-      compostoSoloNu: compostoVazio,
+      compostoSoloNu: compostoVazioGeos3,
       nObservacoesValidas: 0,
       nObservacoesSoloNu: 0,
     };

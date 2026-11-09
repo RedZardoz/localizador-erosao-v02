@@ -1,0 +1,5 @@
+2ba8e86 docs(planejamento): adicionar prompt D de retomada da ingestao de E-hat
+90959b7 feat(D10): adotar mascara de solo exposto de Dematte et al. (2018) em E-hat
+968b3ad docs(planejamento): acrescentar tarefa 6.1 ao prompt C
+1289ec4 chore(governanca): ligar modo somente-leitura do painel de estado a Regra 3
+5571f71 docs(planejamento): adicionar prompt C da mascara GEOS3 de Dematte et al. (2018)

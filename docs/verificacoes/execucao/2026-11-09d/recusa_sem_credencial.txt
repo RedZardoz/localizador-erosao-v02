@@ -1,0 +1,19 @@
+===============================================================================
+SAREL v2.0 — Medição de Frequência de Solo Nu em Lote (GEE REST)
+FONTE_DOS_DADOS: Google Earth Engine REST v1 (COPERNICUS/S2_SR_HARMONIZED) — Conjunção GEOS3 (Demattê et al., 2018)
+DEFINICAO_METRICA_SOLO_NU: s2_sr_harmonized_2016-01-01_2026-06-30_geos3_dematte2018_ndvi_0_0.25_nbr2_0_0.075_incl_b4b3_b3b2_worldcover_v100_v200
+Hash da Definição: 6a63a17cb9760d50
+===============================================================================
+
+[1/5] Verificando credencial de lote conforme Regra C1...
+
+===============================================================================
+[VIOLAÇÃO REGRA C1] Credencial GEE de lote ausente no ambiente.
+A variável de ambiente 'SAREL_GEE_SERVICE_ACCOUNT_FILE' não está configurada.
+Conforme a Regra Inviolável C1 (Via de Lote):
+  1. Nenhuma credencial toca a árvore do repositório, mesmo que em .gitignore.
+  2. A ingestão por lote exige o CAMINHO para um arquivo JSON externo fora da raiz do projeto.
+  3. Na ausência de credencial viva do GEE, a medição é interrompida (fail-closed).
+  4. NENHUM número sintético ou fallback é admitido (Regra 1 / Invariante 5).
+===============================================================================
+

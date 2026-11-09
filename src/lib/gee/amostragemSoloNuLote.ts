@@ -29,9 +29,6 @@ import { JANELA_TEMPORAL_D05 } from "@/lib/matriz/perfis";
 import { DECISOES, exigirParametro } from "@/config/decisoes";
 export { JANELA_TEMPORAL_D05 };
 
-export const DEFINICAO_METRICA_SOLO_NU =
-  "s2_sr_harmonized_2016_2026_ndvi_lt_0.25_worldcover_v100_v200";
-
 export const ASSET_SENTINEL2_SR = "COPERNICUS/S2_SR_HARMONIZED";
 export const LIMIAR_NDVI_SOLO_NU_MIN_D10 = exigirParametro(DECISOES.D10, "ndviSoloNuMin").valor;
 export const LIMIAR_NDVI_SOLO_NU_D10 = exigirParametro(DECISOES.D10, "ndviSoloNu").valor;
@@ -41,6 +38,31 @@ export const TAMANHO_BLOCO_PADRAO = 100;
 
 /** Intervalo da janela de composição (D05), derivado da constante única de D05. */
 export const INTERVALO_COMPOSICAO_D05 = `${JANELA_TEMPORAL_D05.inicio} a ${JANELA_TEMPORAL_D05.fim}`;
+
+/**
+ * Constrói a string de definição metodológica da métrica de solo nu,
+ * derivada compulsoriamente dos parâmetros de D10 e D05 para garantir
+ * que qualquer alteração de limiar invalide automaticamente os hashes de cache.
+ */
+export function construirDefinicaoMetricaSoloNu(
+  ndviMin: number = LIMIAR_NDVI_SOLO_NU_MIN_D10,
+  ndviMax: number = LIMIAR_NDVI_SOLO_NU_D10,
+  nbr2Min: number = LIMIAR_NBR2_SOLO_NU_MIN_D10,
+  nbr2Max: number = LIMIAR_NBR2_SOLO_NU_MAX_D10,
+  intervalo: string = INTERVALO_COMPOSICAO_D05
+): string {
+  return [
+    "s2_sr_harmonized",
+    intervalo.replace(/\s+a\s+/, "_"),
+    "geos3_dematte2018",
+    `ndvi_${ndviMin}_${ndviMax}`,
+    `nbr2_${nbr2Min}_${nbr2Max}`,
+    "incl_b4b3_b3b2",
+    "worldcover_v100_v200",
+  ].join("_");
+}
+
+export const DEFINICAO_METRICA_SOLO_NU = construirDefinicaoMetricaSoloNu();
 
 export interface PontoAmostragemSoloNu {
   id: string;
@@ -868,6 +890,11 @@ export async function medirFrequenciaSoloNuEmLoteGeeRest(
             chaveCache: chave,
           });
         }
+      }
+
+      // Salvamento incremental do cache a cada bloco para garantir resiliência
+      if (houveAtualizacaoCache && salvarAoFinal) {
+        salvarCacheFrequenciaSoloNu(cacheAtual, caminhoCache);
       }
     }
   }

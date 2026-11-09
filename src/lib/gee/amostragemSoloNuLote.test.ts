@@ -4,6 +4,7 @@ import path from "path";
 import os from "os";
 import {
   DEFINICAO_METRICA_SOLO_NU,
+  construirDefinicaoMetricaSoloNu,
   calcularHashDefinicao,
   gerarChaveCacheSoloNu,
   carregarCacheFrequenciaSoloNu,
@@ -16,6 +17,7 @@ import {
 } from "./amostragemSoloNuLote";
 import { WORLDCOVER_V100_ASSET_ID, WORLDCOVER_V200_ASSET_ID } from "./copernicusGeeClient";
 import { medido, valorOuNulo } from "../../types/proveniencia";
+import { DECISOES, exigirParametro } from "@/config/decisoes";
 import { criarDiarioRequisicoes } from "../seguranca/diarioRequisicoes";
 
 describe("Amostragem de Solo Nu em Lote via GEE REST e Cache Determinístico (C3)", () => {
@@ -36,15 +38,46 @@ describe("Amostragem de Solo Nu em Lote via GEE REST e Cache Determinístico (C3
     }
   });
 
-  it("deve calcular o hash determinístico da definição e invalidar se a definição mudar", () => {
+  it("deve derivar a definição da métrica de D10 e garantir conformidade GEOS3 (Tarefa 1)", () => {
+    const ndviMin = exigirParametro(DECISOES.D10, "ndviSoloNuMin").valor;
+    const ndviMax = exigirParametro(DECISOES.D10, "ndviSoloNu").valor;
+    const nbr2Min = exigirParametro(DECISOES.D10, "nbr2Min").valor;
+    const nbr2Max = exigirParametro(DECISOES.D10, "nbr2Max").valor;
+
+    // 1. A string contém os quatro valores de exigirParametro(DECISOES.D10, ...)
+    expect(DEFINICAO_METRICA_SOLO_NU).toContain(`ndvi_${ndviMin}_${ndviMax}`);
+    expect(DEFINICAO_METRICA_SOLO_NU).toContain(`nbr2_${nbr2Min}_${nbr2Max}`);
+    expect(DEFINICAO_METRICA_SOLO_NU).toContain("geos3_dematte2018");
+    expect(DEFINICAO_METRICA_SOLO_NU).toContain("incl_b4b3_b3b2");
+
+    // 2. A string NÃO contém resquício da regra antiga
+    expect(DEFINICAO_METRICA_SOLO_NU).not.toContain("ndvi_lt_0.25");
+    expect(DEFINICAO_METRICA_SOLO_NU).not.toContain("lt_0.25");
+
+    // 3. O hash padrão tem 16 caracteres hexadecimais
     const hashPadrao = calcularHashDefinicao();
     expect(hashPadrao).toHaveLength(16);
     expect(calcularHashDefinicao(DEFINICAO_METRICA_SOLO_NU)).toBe(hashPadrao);
+  });
 
-    const hashAlternativo = calcularHashDefinicao(
-      "s2_sr_harmonized_2018_2024_ndvi_lt_0.30_worldcover_v100_v200"
-    );
-    expect(hashAlternativo).not.toBe(hashPadrao);
+  it("meta-teste: alteração de qualquer limiar deve produzir hash diferente e invalidar o cache", () => {
+    const hashPadrao = calcularHashDefinicao();
+
+    // Altera ndviMax
+    const defNdviMaxAlterado = construirDefinicaoMetricaSoloNu(0.00, 0.30, 0.00, 0.075);
+    expect(calcularHashDefinicao(defNdviMaxAlterado)).not.toBe(hashPadrao);
+
+    // Altera ndviMin
+    const defNdviMinAlterado = construirDefinicaoMetricaSoloNu(0.05, 0.25, 0.00, 0.075);
+    expect(calcularHashDefinicao(defNdviMinAlterado)).not.toBe(hashPadrao);
+
+    // Altera nbr2Max
+    const defNbr2MaxAlterado = construirDefinicaoMetricaSoloNu(0.00, 0.25, 0.00, 0.10);
+    expect(calcularHashDefinicao(defNbr2MaxAlterado)).not.toBe(hashPadrao);
+
+    // Altera nbr2Min
+    const defNbr2MinAlterado = construirDefinicaoMetricaSoloNu(0.00, 0.25, 0.01, 0.075);
+    expect(calcularHashDefinicao(defNbr2MinAlterado)).not.toBe(hashPadrao);
   });
 
   it("deve gerar a chave canônica no formato ${id}@lat=${lat},lon=${lon}@def=${hash}", () => {

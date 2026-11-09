@@ -1,0 +1,14 @@
+M  docs/planejamento/ESTADO.md
+A  docs/verificacoes/2026-11-09d_calibracao_30_pontos_solo_nu.md
+A  docs/verificacoes/execucao/2026-11-09d/git_log.txt
+A  docs/verificacoes/execucao/2026-11-09d/git_status.txt
+A  docs/verificacoes/execucao/2026-11-09d/inspecao_candidatos_json.txt
+A  docs/verificacoes/execucao/2026-11-09d/npm_test.txt
+A  docs/verificacoes/execucao/2026-11-09d/recusa_sem_credencial.txt
+A  docs/verificacoes/execucao/2026-11-09d/rodada_30_pontos.txt
+A  docs/verificacoes/execucao/2026-11-09d/sorteio_30_pontos.txt
+A  scripts/medir_frequencia_solo_nu_lote.ts
+M  src/lib/gee/amostragemSoloNuLote.test.ts
+M  src/lib/gee/amostragemSoloNuLote.ts
+M  src/lib/gee/compostoSoloNu.ts
+M  src/lib/gee/verificarPoolEstratosCli.test.ts

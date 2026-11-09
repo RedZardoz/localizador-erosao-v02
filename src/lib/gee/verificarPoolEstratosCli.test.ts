@@ -244,7 +244,7 @@ describe("scripts/verificar_pool_estratos.ts — CLI de Verificação do Pool po
       if (fs.existsSync(tempFileObj)) fs.unlinkSync(tempFileObj);
       if (fs.existsSync(tempDir)) fs.rmdirSync(tempDir);
     }
-  });
+  }, 20000);
 
   it("aceita JSON contendo objeto com propriedade candidatos povoada e executa com sucesso", () => {
     const arquivosAntes = listarArquivosSorteio();

@@ -1,0 +1,38 @@
+SORTEIO DETERMINÍSTICO DOS 30 PONTOS DE CALIBRAÇÃO (PRNG LCG SEMENTE 20261109)
+Fonte: C:\Users\lalfr\Docs Fora do Ar\LUIS ALFREDO\01 - MESTRADO PPGTCA 2026\02 - PESQUISA EROSÃO LAMINAR\geolocalizacao-erosao-propriedade\docs\verificacoes\fontes\wfs_erodibilidade\medicao_w2_candidatos_bp3_2026-09-28.json (90 candidatos disponíveis)
+Aviso: O arquivo 'C:\Users\lalfr\Docs Fora do Ar\LUIS ALFREDO\01 - MESTRADO PPGTCA 2026\02 - PESQUISA EROSÃO LAMINAR\geolocalizacao-erosao-propriedade\docs\verificacoes\remedicao_candidatos_bp3_d16_2026-09-30.json' contém metadados do funil amostral (680 candidatos com terreno), mas não lista as coordenadas individuais de cada candidato.
+Total Sorteado: 30 pontos
+
+Lista de IDs sorteados:
+01. ID: cand-380 (lat: -24.634540, lon: -53.939359)
+02. ID: cand-57 (lat: -25.122323, lon: -54.155366)
+03. ID: cand-433 (lat: -24.472570, lon: -54.256078)
+04. ID: cand-27 (lat: -25.334940, lon: -54.125218)
+05. ID: cand-343 (lat: -24.678237, lon: -54.111335)
+06. ID: cand-593 (lat: -24.552159, lon: -53.795521)
+07. ID: cand-127 (lat: -25.015656, lon: -53.906023)
+08. ID: cand-85 (lat: -25.106278, lon: -54.310649)
+09. ID: cand-585 (lat: -24.508276, lon: -53.909247)
+10. ID: cand-392 (lat: -24.592983, lon: -53.745611)
+11. ID: cand-242 (lat: -25.495370, lon: -54.347823)
+12. ID: cand-328 (lat: -24.611600, lon: -54.256572)
+13. ID: cand-304 (lat: -24.741289, lon: -53.809287)
+14. ID: cand-536 (lat: -24.596143, lon: -53.853285)
+15. ID: cand-50 (lat: -25.208072, lon: -54.108632)
+16. ID: cand-15 (lat: -25.492189, lon: -54.372064)
+17. ID: cand-388 (lat: -24.548099, lon: -53.797919)
+18. ID: cand-65 (lat: -25.163317, lon: -54.239396)
+19. ID: cand-310 (lat: -24.972706, lon: -53.797526)
+20. ID: cand-363 (lat: -24.643936, lon: -53.983641)
+21. ID: cand-321 (lat: -24.621154, lon: -54.296268)
+22. ID: cand-107 (lat: -25.116961, lon: -54.175762)
+23. ID: cand-383 (lat: -24.681162, lon: -53.923280)
+24. ID: cand-255 (lat: -25.326079, lon: -54.216171)
+25. ID: cand-114 (lat: -24.978365, lon: -54.233941)
+26. ID: cand-482 (lat: -24.244666, lon: -54.195063)
+27. ID: cand-168 (lat: -24.835797, lon: -53.712976)
+28. ID: cand-223 (lat: -24.836263, lon: -53.737741)
+29. ID: cand-590 (lat: -24.527974, lon: -53.866632)
+30. ID: cand-459 (lat: -24.363312, lon: -53.973953)
+
+Declaração: Estes 30 pontos destinam-se exclusivamente à calibração de latência de infraestrutura do GEE (tempoPorPontoMs e taxa de falha) e NÃO constituem amostra científica, NÃO alteram D16, NÃO povoam estratos e NÃO entram na matriz de treino.

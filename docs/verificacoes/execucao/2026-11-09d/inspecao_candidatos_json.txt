@@ -1,0 +1,103 @@
+Arquivo: docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json
+Chaves de primeiro nível: ['dataRemedicao', 'versao', 'parametros', 'funilContagem', 'pedologia', 'tercisDeclividadeS', 'tercisFrequenciaSoloNuE', 'dimensoesMedidas', 'metricasGeeLote', 'estratosK2Medidos', 'statusSorteio']
+statusSorteio: BLOQUEADO — Dimensão Ê não foi medida; as 9 células de K̂=2 e os 18 estratos tridimensionais não podem ser povoados sem observações reais de satélite (P12)
+funilContagem: {
+  "imoveisEnvelopeBP3": 8651,
+  "imoveisDivisorBP3ForaUC": 4679,
+  "candidatosPosThinning": 687,
+  "candidatosComTerrenoD07": 680,
+  "candidatosRealocadosParteElegivelX3": 139,
+  "candidatosValidosPedologia": 677,
+  "candidatosComSoloNuMedido": 0
+}
+
+--- CHAVE: dataRemedicao (tipo: str) ---
+Valor: 2026-09-30
+
+--- CHAVE: versao (tipo: str) ---
+Valor: SAREL v2.0 - D16 Emendada (Remedição Pericial P12)
+
+--- CHAVE: parametros (tipo: dict) ---
+Subchaves (8): ['raioThinningInicialMetros', 'raioThinningFinalMetros', 'pisoThinningP02Metros', 'sementeP07', 'dominioDeclividadeD07', 'poligonosPorEstratoD16', 'estratosK2', 'candidatosNecessariosK2']
+Amostra das 3 primeiras entradas:
+  [raioThinningInicialMetros]: 5000
+  [raioThinningFinalMetros]: 2450
+  [pisoThinningP02Metros]: 1000
+
+--- CHAVE: funilContagem (tipo: dict) ---
+Subchaves (7): ['imoveisEnvelopeBP3', 'imoveisDivisorBP3ForaUC', 'candidatosPosThinning', 'candidatosComTerrenoD07', 'candidatosRealocadosParteElegivelX3', 'candidatosValidosPedologia', 'candidatosComSoloNuMedido']
+Amostra das 3 primeiras entradas:
+  [imoveisEnvelopeBP3]: 8651
+  [imoveisDivisorBP3ForaUC]: 4679
+  [candidatosPosThinning]: 687
+
+--- CHAVE: pedologia (tipo: dict) ---
+Subchaves (4): ['totalK1', 'totalK2', 'fracaoK2Pct', 'metaK2Atingida']
+Amostra das 3 primeiras entradas:
+  [totalK1]: 593
+  [totalK2]: 84
+  [fracaoK2Pct]: 12.41
+
+--- CHAVE: tercisDeclividadeS (tipo: dict) ---
+Subchaves (3): ['t1', 't2', 'contagemPorTercil']
+Amostra das 3 primeiras entradas:
+  [t1]: 5.12
+  [t2]: 8.46
+  [contagemPorTercil]: {
+    "S1": {
+        "total": 227,
+        "k1": 218,
+        "k2": 9
+    },
+    "S2": {
+        "total": 225,
+        "k1": 211,
+        "k2": 14
+    },
+    "S3": {
+        "total": 225,
+        "k1": 164,
+        "k2": 61
+    }
+}
+
+--- CHAVE: tercisFrequenciaSoloNuE (tipo: NoneType) ---
+Valor: None
+
+--- CHAVE: dimensoesMedidas (tipo: dict) ---
+Subchaves (3): ['S', 'K', 'E']
+Amostra das 3 primeiras entradas:
+  [S]: {
+    "estado": "medido",
+    "fonte": "Copernicus DEM GLO-30 Local COG (data/dem_cache/)",
+    "totalItens": 680,
+    "fonteExterna": false
+}
+  [K]: {
+    "estado": "medido",
+    "fonte": "Embrapa GeoInfo WFS / Cache Auditado (docs/verificacoes/cache_pedologia_bp3.json)",
+    "totalItens": 677,
+    "fonteExterna": false
+}
+  [E]: {
+    "estado": "indisponivel",
+    "fonte": "Google Earth Engine REST (COPERNICUS/S2_SR_HARMONIZED)",
+    "causa": "servico-indisponivel",
+    "motivo": "Credenciais GEE não configuradas no ambiente (SAREL_GEE_SERVICE_ACCOUNT_FILE ausente) — nenhuma chamada de rede realizada",
+    "totalItens": 0,
+    "fonteExterna": true,
+    "diarioRequisicoes": null
+}
+
+--- CHAVE: metricasGeeLote (tipo: dict) ---
+Subchaves (7): ['tempoTotalMs', 'requisicoesHttp', 'requisicoesEvitadas', 'reducaoRequisicoesPct', 'cacheHits', 'cacheMisses', 'pontosIndisponiveis']
+Amostra das 3 primeiras entradas:
+  [tempoTotalMs]: 7
+  [requisicoesHttp]: 0
+  [requisicoesEvitadas]: 680
+
+--- CHAVE: estratosK2Medidos (tipo: NoneType) ---
+Valor: None
+
+--- CHAVE: statusSorteio (tipo: str) ---
+Valor: BLOQUEADO — Dimensão Ê não foi medida; as 9 células de K̂=2 e os 18 estratos tridimensionais não podem ser povoados sem observações reais de satélite (P12)
