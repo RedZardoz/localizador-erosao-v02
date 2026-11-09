@@ -33,3 +33,9 @@ Ao fim de cada fase, os três comandos devem passar sem asserções afrouxadas o
 ## Ambiente de Desenvolvimento — Armadilhas Críticas
 - **Instalação de Dependências:** Usar sempre `npm ci` e nunca `npm install` (evita adulteração silenciosa do `package-lock.json`).
 - **Servidor Next.js e Rotas de API:** O `next start` indexa rotas na inicialização, de modo que rota nova exige reinício do servidor.
+
+## Restrição técnica: consulta de série temporal ao Earth Engine
+- A série temporal por ponto exige `ImageCollection.getRegion`, que devolve uma linha por cena; `Image.reduceRegions` NÃO serve, porque agrega e devolve um valor por ponto — adequado a escalares como a frequência de solo nu, usada em `src/lib/gee/amostragemSoloNuLote.ts`, e inadequado a séries.
+- Por isso `medirSerieSentinel2EmLoteGeeRest` (`src/lib/gee/copernicusGeeClient.ts:1204-1228`) emite UMA requisição por ponto, com no máximo 15 simultâneas. O termo "lote" ali designa paralelismo do lado do cliente, não operação em lote no servidor do GEE.
+- O teto de concorrência existe por limite de taxa do GEE.
+- Um eventual teto de tamanho de resposta em `getRegion` é hipótese a confirmar por medição ao vivo, nunca fato verificado.
