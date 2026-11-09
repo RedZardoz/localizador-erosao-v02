@@ -11,11 +11,11 @@
 
 ## 1. Organização do Acervo Conforme o Referencial Teórico Formal
 
-O diretório `docs/bibliografia/` reflete com 100% de correspondência a classificação formal estabelecida no documento `Estrutura_Referencial_Teorico_Dissertacao_SAREL.docx` (Seção 2.3, Capítulo 3 e Tabela 2), totalizando **109 trabalhos canônicos externos auditados** e preservando sem descarte todas as fontes complementares:
+O diretório `docs/bibliografia/` reflete com 100% de correspondência a classificação formal estabelecida no documento `Estrutura_Referencial_Teorico_Dissertacao_SAREL.docx` (Seção 2.3, Capítulo 3 e Tabela 2), totalizando **115 trabalhos externos catalogados** (109 canônicos auditados + 6 adições de sensoriamento espectral, solo nu e resíduos de cultura) e preservando sem descarte todas as fontes complementares:
 
 | Subdiretório | Categoria / Escopo | Total de Obras | Descrição / Eixo Metodológico |
 |:---|:---:|:---:|---|
-| [`01_pesquisas_diretamente_relacionadas/`](01_pesquisas_diretamente_relacionadas/) | **Direta** | 35 | Machine Learning (XGBoost, Ensembles), sensoriamento orbital, GEOS3, guarda temporal e Spatial Block CV (Itens 001 a 035). |
+| [`01_pesquisas_diretamente_relacionadas/`](01_pesquisas_diretamente_relacionadas/) | **Direta** | 41 | Machine Learning (XGBoost, Ensembles), sensoriamento orbital, GEOS3, guarda temporal e Spatial Block CV (Itens 001 a 041). |
 | [`02_pesquisas_relacionadas/`](02_pesquisas_relacionadas/) | **Relacionada** | 53 | Modelagem física determinística (USLE/RUSLE), erodibilidade (Fator K), erosividade (Fator R) e Fator LS (Itens 036 a 088). |
 | [`03_contexto_regional_e_triagem/`](03_contexto_regional_e_triagem/) | **Triagem** | 19 | Dissertações regionais do PPGTCA/UTFPR Medianeira, UNIOESTE (BP3), UNESP e estrutura fundiária no CAR (Itens 089 a 107). |
 | [`04_obras_seminais_fundacionais/`](04_obras_seminais_fundacionais/) | **Seminal** | 2 | Hickey (2000) para Fator LS contínuo e Rufino, Biscaia & Merten (1993) para erosividade no Paraná (Itens 108 e 109). |
