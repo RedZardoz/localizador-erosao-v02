@@ -53,7 +53,7 @@ Se qualquer pré-condição falhar, **pare e relate**. Não contorne.
 P07 é `dinamica-registrada`: **não existe semente padrão**, e o CLI recusa `--confirmar` sem
 `--semente <N>`. A semente é escolha explícita do pesquisador, registrada **antes** da execução.
 
-**Semente escolhida pelo pesquisador: `<SEMENTE>`**
+**Semente escolhida pelo pesquisador: `20261110`**
 
 Antes de rodar, registre em `docs/planejamento/DECISOES_DE_CONVERSA.md`, como entrada nova datada
 de 10/11/2026: a semente, quem a escolheu, que ela foi fixada **antes** de qualquer sorteio ter
@@ -92,7 +92,7 @@ desde `bb949cf`, e isso precisa ser entendido antes de um passo irreversível.
 Somente com a Tarefa 2 conferida e a Tarefa 1 commitada:
 
 ```
-node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts --confirmar --semente <SEMENTE> --candidatos docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json
+node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts --confirmar --semente 20261110 --candidatos docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json
 ```
 
 Grave a saída integral em `docs/verificacoes/execucao/2026-11-10j/sorteio_execucao.txt`.
@@ -149,7 +149,7 @@ Qualquer divergência: **relate e não corrija o selo**. O selo é o registro do
 
 - [ ] Branch: ______
 - [ ] Pré-condições: árvore limpa, suíte verde, tsc limpo, `docs/verificacoes/sorteio/` **vazio**
-- [ ] T1 — semente `<SEMENTE>` registrada no registro de conversa **antes** da execução, e commitada
+- [ ] T1 — semente `20261110` registrada no registro de conversa **antes** da execução, e commitada
 - [ ] T2 — dry-run rodado **sem** `--semente`; totais 67 / 34 / 33 / 336,34 conferidos
 - [ ] T3 — execução real, **uma única vez**; saída integral gravada
 - [ ] T4 — selo lido do disco e revalidado pelos 8 invariantes

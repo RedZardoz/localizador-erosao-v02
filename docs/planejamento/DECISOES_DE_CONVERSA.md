@@ -244,3 +244,15 @@ Este arquivo registra decisões tomadas em diálogo com o pesquisador; `src/conf
   7. Pré-registro preservado: emenda formalizada antes de qualquer dado de desfecho ou rótulo de campo.
 - Onde está no código: `src/config/decisoes.ts` (emendas em D12 e D16); `src/lib/gee/sorteioPoligonos.ts`; `src/lib/gee/sorteioPoligonosTipos.ts`.
 - Supera ou emenda: Emenda D12 e D16; complementa D23.
+
+## 14 — Fixação prévia da semente de amostragem para a execução de D16/D23
+
+- Data: 2026-11-10
+- Texto literal da decisão: "Rode e use a semente 20261110 não esqueça: substituir <SEMENTE> nos três lugares do prompt, e rodar o dry-run sem --semente." (Prompt J — Executor SAREL — execução do sorteio de D16).
+- Consequência implementada / pendente: IMPLEMENTADA.
+  1. A semente `20261110` foi explicitamente escolhida pelo pesquisador em conformidade com o parâmetro P07 (`dinamica-registrada`), que veda semente padrão oculta e exige registro de proveniência auditável.
+  2. A fixação da semente ocorreu formalmente ANTES de qualquer sorteio ter sido executado ou pré-visualizado (o dry-run prévio é obrigatoriamente executado sem a flag `--semente`, gerando semente volátil de inspeção, impedindo a escolha da semente pelo desfecho).
+  3. A execução do sorteio de D16 com `--confirmar --semente 20261110` é única, definitiva e estritamente irreversível nos termos da Decisão D23, sendo expressamente vedado descartar, sobrescrever ou gerar versões posteriores (_v2) de probabilidades de inclusão ($\pi_i$) e pesos de amostragem ($w_i$).
+- Onde está no código: `docs/planejamento/DECISOES_DE_CONVERSA.md`; `docs/planejamento/prompts/PROMPT_EXECUTOR_SORTEIO_D16_2026-11-10.md`; selo `docs/verificacoes/sorteio/sorteio_d16_*.json`.
+- Supera ou emenda: Aplica o parâmetro P07 e operacionaliza as Decisões D16 e D23.
+
