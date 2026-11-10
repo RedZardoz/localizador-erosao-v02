@@ -1,0 +1,7 @@
+﻿ M docs/planejamento/ESTADO.md
+ M scripts/sortear_poligonos_d16.ts
+ M src/lib/gee/sorteioPoligonos.test.ts
+ M src/lib/gee/sorteioPoligonos.ts
+ M src/lib/gee/sorteioPoligonosTipos.ts
+?? docs/verificacoes/2026-11-10i_invariante_selo.md
+?? docs/verificacoes/execucao/2026-11-10i/

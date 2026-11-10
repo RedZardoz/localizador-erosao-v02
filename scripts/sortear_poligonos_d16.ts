@@ -274,7 +274,7 @@ function executarCli(): void {
       "\n[DRY-RUN CONCLUÍDO] Nenhum sorteio foi executado e nenhum selo foi gravado em docs/verificacoes/sorteio/."
     );
     console.log(
-      "Para executar o sorteio real irreversível (72 polígonos de 5,02 ha (~361 ha), 36 treino + 36 held-out), invoque com --confirmar --candidatos <caminho.json>."
+      "Para executar o sorteio real irreversível (D16/D23), invoque com --confirmar --candidatos <caminho.json> --semente <N>."
     );
     process.exit(0);
   }

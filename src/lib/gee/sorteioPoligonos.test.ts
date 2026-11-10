@@ -6,6 +6,8 @@ import {
   ErroPreCondicaoSorteioD16,
   verificarPreCondicoesSorteioD16,
   sortear72PoligonosD16,
+  validarInvariantesSeloD16,
+  INVARIANTES_SELO_D16,
 } from "./sorteioPoligonos";
 import { TODOS_ESTRATOS_D12 } from "./estratificacao";
 import { medido } from "../../types/proveniencia";
@@ -673,6 +675,276 @@ describe("C07 (A15) — Candidatos com medidas ausentes no sorteio D16", () => {
     const relatorio = verificarPreCondicoesSorteioD16(pool as any, { lancarErro: false });
     expect(relatorio.candidatosExcluidosMedidaAusente).toBe(2);
     expect(relatorio.totalCandidatos).toBe(pool.length - 2);
+  });
+});
+
+describe("Prompt I — Invariantes de Totais e Integridade do Selo de Sorteio D16", () => {
+  function clonarSelo(selo: any): any {
+    return JSON.parse(JSON.stringify(selo));
+  }
+
+  it("1. Caminho feliz: sorteio válido sobre pool sintético passa pelos 8 invariantes", () => {
+    const pool = gerarPoolCandidatosElegiveis(5);
+    const selo = sortear72PoligonosD16(pool, {
+      semente: 12345,
+      gitCommit: "commit-feliz",
+      sha256ConjuntoCandidatos: "sha256-feliz",
+    });
+
+    expect(selo.versaoEsquema).toBe("1.4.0");
+    expect(selo.invariantesVerificados).toEqual([
+      "INV_1_TOTAL_TREINO_HELDOUT",
+      "INV_2_AREA_TOTAL",
+      "INV_3_SOMA_POLIGONOS_POR_ESTRATO",
+      "INV_4_PARTICAO_CANDIDATOS",
+      "INV_5_POLIGONOS_UNICOS",
+      "INV_6_CENSO_PI_1",
+      "INV_7_ESTRATO_VAZIO",
+      "INV_8_HORVITZ_THOMPSON",
+    ]);
+
+    expect(() => validarInvariantesSeloD16(selo)).not.toThrow();
+  });
+
+  describe("2. Testes de adulteração por invariante (8 testes)", () => {
+    it("Adulteração 1: INV_1_TOTAL_TREINO_HELDOUT lança se totalTreino + totalHeldOut != totalPoligonosSorteados", () => {
+      const pool = gerarPoolCandidatosElegiveis(5);
+      const selo = sortear72PoligonosD16(pool, {
+        semente: 12345,
+        gitCommit: "commit-tamper",
+        sha256ConjuntoCandidatos: "sha256-tamper",
+      });
+
+      const corrompido = clonarSelo(selo);
+      corrompido.totalTreino = corrompido.totalTreino + 1;
+
+      expect(() => validarInvariantesSeloD16(corrompido)).toThrow(
+        /\[SELO_INVALIDO:INV_1_TOTAL_TREINO_HELDOUT\]/
+      );
+    });
+
+    it("Adulteração 2: INV_2_AREA_TOTAL lança se areaTotalHectares != totalSorteados * 5.02", () => {
+      const pool = gerarPoolCandidatosElegiveis(5);
+      const selo = sortear72PoligonosD16(pool, {
+        semente: 12345,
+        gitCommit: "commit-tamper",
+        sha256ConjuntoCandidatos: "sha256-tamper",
+      });
+
+      const corrompido = clonarSelo(selo);
+      corrompido.areaTotalHectares = 999.99;
+
+      expect(() => validarInvariantesSeloD16(corrompido)).toThrow(
+        /\[SELO_INVALIDO:INV_2_AREA_TOTAL\]/
+      );
+    });
+
+    it("Adulteração 3: INV_3_SOMA_POLIGONOS_POR_ESTRATO lança se totalPoligonosSorteados != soma dos polígonos por estrato", () => {
+      const pool = gerarPoolCandidatosElegiveis(5);
+      const selo = sortear72PoligonosD16(pool, {
+        semente: 12345,
+        gitCommit: "commit-tamper",
+        sha256ConjuntoCandidatos: "sha256-tamper",
+      });
+
+      const corrompido = clonarSelo(selo);
+      corrompido.poligonos.pop(); // remove 1 polígono sem atualizar totalPoligonosSorteados
+
+      expect(() => validarInvariantesSeloD16(corrompido)).toThrow(
+        /\[SELO_INVALIDO:INV_3_SOMA_POLIGONOS_POR_ESTRATO\]/
+      );
+    });
+
+    it("Adulteração 4: INV_4_PARTICAO_CANDIDATOS lança se totalCandidatosEntrada != soma de N_h por estrato", () => {
+      const pool = gerarPoolCandidatosElegiveis(5);
+      const selo = sortear72PoligonosD16(pool, {
+        semente: 12345,
+        gitCommit: "commit-tamper",
+        sha256ConjuntoCandidatos: "sha256-tamper",
+      });
+
+      const corrompido = clonarSelo(selo);
+      corrompido.totalCandidatosEntrada = corrompido.totalCandidatosEntrada + 10;
+
+      expect(() => validarInvariantesSeloD16(corrompido)).toThrow(
+        /\[SELO_INVALIDO:INV_4_PARTICAO_CANDIDATOS\]/
+      );
+    });
+
+    it("Adulteração 5: INV_5_POLIGONOS_UNICOS lança se houver identificador de polígono repetido", () => {
+      const pool = gerarPoolCandidatosElegiveis(5);
+      const selo = sortear72PoligonosD16(pool, {
+        semente: 12345,
+        gitCommit: "commit-tamper",
+        sha256ConjuntoCandidatos: "sha256-tamper",
+      });
+
+      const corrompido = clonarSelo(selo);
+      corrompido.poligonos[1].idPoligono = corrompido.poligonos[0].idPoligono;
+
+      expect(() => validarInvariantesSeloD16(corrompido)).toThrow(
+        /\[SELO_INVALIDO:INV_5_POLIGONOS_UNICOS\]/
+      );
+    });
+
+    it("Adulteração 6: INV_6_CENSO_PI_1 lança se estrato de censo tiver polígono com pi_i != 1", () => {
+      const pool = gerarPoolCandidatosElegiveis(4); // Com 4 por estrato, todos são censo (Nh=4)
+      const selo = sortear72PoligonosD16(pool, {
+        semente: 12345,
+        gitCommit: "commit-tamper",
+        sha256ConjuntoCandidatos: "sha256-tamper",
+      });
+
+      expect(selo.estratosCenso?.length).toBeGreaterThan(0);
+      const corrompido = clonarSelo(selo);
+      corrompido.poligonos[0].pi_i = 0.8;
+      corrompido.poligonos[0].w_i = 1.25;
+
+      expect(() => validarInvariantesSeloD16(corrompido)).toThrow(
+        /\[SELO_INVALIDO:INV_6_CENSO_PI_1\]/
+      );
+    });
+
+    it("Adulteração 7: INV_7_ESTRATO_VAZIO lança se estrato vazio tiver N_h > 0 ou polígonos alocados", () => {
+      const pool = gerarPoolCandidatosElegiveis(4).filter(
+        (c) => !(c.nivelK === 2 && (c.declividadePct ?? 0) < 6 && (c.frequenciaSoloNu ?? 0) > 0.6)
+      );
+      const selo = sortear72PoligonosD16(pool, {
+        semente: 12345,
+        gitCommit: "commit-tamper",
+        sha256ConjuntoCandidatos: "sha256-tamper",
+      });
+
+      expect(selo.estratosVazios).toContain("E_1_3_2");
+
+      const corrompido = clonarSelo(selo);
+      // Declara E_1_1_1 como estrato vazio, mas ele possui Nh = 4 e 4 polígonos alocados
+      corrompido.estratosVazios = ["E_1_1_1"];
+
+      expect(() => validarInvariantesSeloD16(corrompido)).toThrow(
+        /\[SELO_INVALIDO:INV_7_ESTRATO_VAZIO\]/
+      );
+    });
+
+    it("Adulteração 8: INV_8_HORVITZ_THOMPSON lança se pi_i * w_i != 1 ou pi_i fora de (0, 1]", () => {
+      const pool = gerarPoolCandidatosElegiveis(5);
+      const selo = sortear72PoligonosD16(pool, {
+        semente: 12345,
+        gitCommit: "commit-tamper",
+        sha256ConjuntoCandidatos: "sha256-tamper",
+      });
+
+      const corrompido = clonarSelo(selo);
+      corrompido.poligonos[0].w_i = 999.0;
+
+      expect(() => validarInvariantesSeloD16(corrompido)).toThrow(
+        /\[SELO_INVALIDO:INV_8_HORVITZ_THOMPSON\]/
+      );
+    });
+  });
+
+  it("3. Censo: estrato com N_h = 3 passa nos invariantes 6 e 8 com pi_i = 1", () => {
+    const pool = gerarPoolCandidatosElegiveis(4);
+    const idx = pool.findIndex(
+      (c) =>
+        c.nivelK === 2 &&
+        (c.declividadePct ?? 0) < 6 &&
+        (c.frequenciaSoloNu ?? 0) >= 0.3 &&
+        (c.frequenciaSoloNu ?? 0) < 0.6
+    );
+    if (idx !== -1) {
+      pool.splice(idx, 1);
+    }
+
+    const selo = sortear72PoligonosD16(pool, {
+      semente: 42,
+      gitCommit: "commit-censo3",
+      sha256ConjuntoCandidatos: "sha-censo3",
+    });
+
+    expect(selo.estratosCenso).toBeDefined();
+    for (const idCenso of selo.estratosCenso!) {
+      const polis = selo.poligonos.filter((p) => p.estratoId === idCenso);
+      for (const p of polis) {
+        expect(p.pi_i).toBe(1);
+        expect(p.w_i).toBe(1);
+        expect(p.pi_i * p.w_i).toBe(1);
+      }
+    }
+    expect(() => validarInvariantesSeloD16(selo)).not.toThrow();
+  });
+
+  it("4. Vazio: estrato com N_h = 0 passa no invariante 7 sem alocar polígono", () => {
+    const pool = gerarPoolCandidatosElegiveis(4).filter(
+      (c) => !(c.nivelK === 2 && (c.declividadePct ?? 0) < 6 && (c.frequenciaSoloNu ?? 0) > 0.6)
+    );
+
+    const selo = sortear72PoligonosD16(pool, {
+      semente: 42,
+      gitCommit: "commit-vazio0",
+      sha256ConjuntoCandidatos: "sha-vazio0",
+    });
+
+    expect(selo.estratosVazios).toContain("E_1_3_2");
+    expect(selo.contagemCandidatosPorEstrato["E_1_3_2"]).toBe(0);
+    expect(selo.poligonos.filter((p) => p.estratoId === "E_1_3_2")).toHaveLength(0);
+    expect(() => validarInvariantesSeloD16(selo)).not.toThrow();
+  });
+
+  it("5. O universo real: com 677 candidatos de BP3, passa nos 8 invariantes e totais são 67 / 34 / 33 / 336,34", () => {
+    const caminhoCandidatos = path.resolve(
+      process.cwd(),
+      "docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json"
+    );
+    const caminhoCache = path.resolve(
+      process.cwd(),
+      "docs/verificacoes/cache_frequencia_solo_nu_bp3.json"
+    );
+    const dadosCandidatos = JSON.parse(fs.readFileSync(caminhoCandidatos, "utf-8"));
+    const dadosCache = JSON.parse(fs.readFileSync(caminhoCache, "utf-8"));
+
+    const mapaCache = new Map();
+    for (const item of Object.values(dadosCache.itens) as any[]) {
+      mapaCache.set(item.id, item);
+    }
+
+    const poolReal: CandidatoSorteioD16[] = [];
+    for (const cand of dadosCandidatos.candidatos) {
+      const med = mapaCache.get(cand.id);
+      if (!med || !med.frequenciaSoloNu || typeof med.frequenciaSoloNu.valor !== "number") continue;
+
+      poolReal.push({
+        id: cand.id,
+        latitude: cand.latitude,
+        longitude: cand.longitude,
+        declividadePct: cand.declividadePct,
+        frequenciaSoloNu: med.frequenciaSoloNu.valor,
+        nivelK: cand.nivelK,
+        classeWorldCover2020: 40,
+        classeWorldCover2021: 40,
+        kAmbiguoAssociacao: false,
+        provenienciaE: med.frequenciaSoloNu,
+      });
+    }
+
+    expect(poolReal).toHaveLength(677);
+
+    const selo = sortear72PoligonosD16(poolReal, {
+      semente: 42,
+      gitCommit: "commit-teste-real-inv",
+      sha256ConjuntoCandidatos: "sha256-real-inv",
+    });
+
+    // Verificação estrita dos totais
+    expect(selo.totalPoligonosSorteados).toBe(67);
+    expect(selo.totalTreino).toBe(34);
+    expect(selo.totalHeldOut).toBe(33);
+    expect(selo.areaTotalHectares).toBe(336.34);
+
+    // Validação dos 8 invariantes sobre o universo real
+    expect(() => validarInvariantesSeloD16(selo)).not.toThrow();
+    expect(selo.invariantesVerificados).toHaveLength(8);
+    expect(selo.versaoEsquema).toBe("1.4.0");
   });
 });
 

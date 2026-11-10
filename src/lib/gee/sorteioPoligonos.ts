@@ -52,6 +52,7 @@ import {
   CandidatoSorteioD16,
   PoligonoSorteadoD16,
   SeloSorteioD16,
+  INVARIANTES_SELO_D16,
   RelatorioPreCondicoesD16,
   IdPreCondicaoSorteioD16,
   ErroPreCondicaoSorteioD16,
@@ -390,8 +391,10 @@ export function sortear72PoligonosD16(
   const totalHeldOut = poligonos.filter((p) => p.papelConjunto === "held-out").length;
   const areaTotalHectares = Number((totalSorteados * 5.02).toFixed(2));
 
-  return {
-    versaoEsquema: "1.3.0",
+  const invariantesVerificados = [...INVARIANTES_SELO_D16];
+
+  const selo: SeloSorteioD16 = {
+    versaoEsquema: "1.4.0",
     geradoEm,
     semente,
     politicaSemente: String(PARAMETROS.P07?.valor ?? "dinamica-registrada"),
@@ -408,6 +411,7 @@ export function sortear72PoligonosD16(
     contagemCandidatosPorEstrato: relatorio.contagemCandidatosPorEstrato,
     estratosCenso,
     estratosVazios,
+    invariantesVerificados,
     decisoesVigentes: {
       D07: {
         titulo: REGISTRO_DECISOES.D07.titulo,
@@ -438,5 +442,114 @@ export function sortear72PoligonosD16(
     poligonos,
     tabelaCorrespondenciaOpaca,
   };
+
+  validarInvariantesSeloD16(selo);
+
+  return selo;
+}
+
+/**
+ * Validação rigorosa dos oito invariantes de integridade do selo de sorteio D16 (Prompt I).
+ * Lança erro com prefixo [SELO_INVALIDO:<ID_INVARIANTE>] nomeando o invariante violado
+ * e os valores observados.
+ */
+export function validarInvariantesSeloD16(selo: SeloSorteioD16): void {
+  // 1. totalTreino + totalHeldOut === totalPoligonosSorteados
+  if (selo.totalTreino + selo.totalHeldOut !== selo.totalPoligonosSorteados) {
+    throw new Error(
+      `[SELO_INVALIDO:INV_1_TOTAL_TREINO_HELDOUT] Invariante 1 violado: totalTreino (${selo.totalTreino}) + totalHeldOut (${selo.totalHeldOut}) = ${selo.totalTreino + selo.totalHeldOut} != totalPoligonosSorteados (${selo.totalPoligonosSorteados}).`
+    );
+  }
+
+  // 2. areaTotalHectares === Number((totalPoligonosSorteados * 5.02).toFixed(2))
+  const areaEsperada = Number((selo.totalPoligonosSorteados * 5.02).toFixed(2));
+  if (selo.areaTotalHectares !== areaEsperada) {
+    throw new Error(
+      `[SELO_INVALIDO:INV_2_AREA_TOTAL] Invariante 2 violado: areaTotalHectares (${selo.areaTotalHectares}) != esperado (${areaEsperada}).`
+    );
+  }
+
+  // 3. totalPoligonosSorteados === Σ_h n_h, somando os polígonos efetivamente alocados por estrato
+  const nPorEstrato: Record<string, number> = {};
+  for (const idEstrato of TODOS_ESTRATOS_D12) {
+    nPorEstrato[idEstrato] = 0;
+  }
+  for (const p of selo.poligonos) {
+    const atual = typeof nPorEstrato[p.estratoId] === "number" ? nPorEstrato[p.estratoId] : 0;
+    nPorEstrato[p.estratoId] = atual + 1;
+  }
+  const somaNhAlocados = Object.values(nPorEstrato).reduce((a, b) => a + b, 0);
+  if (selo.totalPoligonosSorteados !== somaNhAlocados) {
+    throw new Error(
+      `[SELO_INVALIDO:INV_3_SOMA_POLIGONOS_POR_ESTRATO] Invariante 3 violado: totalPoligonosSorteados (${selo.totalPoligonosSorteados}) != soma dos polígonos alocados por estrato (${somaNhAlocados}).`
+    );
+  }
+
+  // 4. totalCandidatosEntrada === Σ_h N_h — os estratos particionam a entrada, sem perder nem duplicar candidato
+  const somaNhPopulacao = Object.values(selo.contagemCandidatosPorEstrato).reduce((a, b) => a + b, 0);
+  if (selo.totalCandidatosEntrada !== somaNhPopulacao) {
+    throw new Error(
+      `[SELO_INVALIDO:INV_4_PARTICAO_CANDIDATOS] Invariante 4 violado: totalCandidatosEntrada (${selo.totalCandidatosEntrada}) != soma de N_h por estrato (${somaNhPopulacao}).`
+    );
+  }
+
+  // 5. nenhum Pixel_ID/identificador de polígono repetido no selo
+  const idsPoligonoVistos = new Set<string>();
+  for (const p of selo.poligonos) {
+    if (idsPoligonoVistos.has(p.idPoligono)) {
+      throw new Error(
+        `[SELO_INVALIDO:INV_5_POLIGONOS_UNICOS] Invariante 5 violado: identificador de polígono duplicado no selo: '${p.idPoligono}'.`
+      );
+    }
+    idsPoligonoVistos.add(p.idPoligono);
+  }
+
+  // 6. todo estrato listado em estratosCenso tem π_i === 1 em todos os seus polígonos
+  const estratosCenso = Array.isArray(selo.estratosCenso) ? selo.estratosCenso : [];
+  for (const idEstrato of estratosCenso) {
+    const polis = selo.poligonos.filter((p) => p.estratoId === idEstrato);
+    if (polis.length === 0) {
+      throw new Error(
+        `[SELO_INVALIDO:INV_6_CENSO_PI_1] Invariante 6 violado: estrato de censo '${idEstrato}' não possui polígonos alocados no selo.`
+      );
+    }
+    for (const p of polis) {
+      if (p.pi_i !== 1) {
+        throw new Error(
+          `[SELO_INVALIDO:INV_6_CENSO_PI_1] Invariante 6 violado: estrato de censo '${idEstrato}' possui polígono '${p.idPoligono}' com pi_i = ${p.pi_i} != 1.`
+        );
+      }
+    }
+  }
+
+  // 7. todo estrato listado em estratosVazios tem N_h === 0 e zero polígonos alocados
+  const estratosVazios = Array.isArray(selo.estratosVazios) ? selo.estratosVazios : [];
+  for (const idEstrato of estratosVazios) {
+    const nh =
+      typeof selo.contagemCandidatosPorEstrato[idEstrato] === "number"
+        ? selo.contagemCandidatosPorEstrato[idEstrato]
+        : 0;
+    const polis = selo.poligonos.filter((p) => p.estratoId === idEstrato);
+    if (nh !== 0 || polis.length !== 0) {
+      throw new Error(
+        `[SELO_INVALIDO:INV_7_ESTRATO_VAZIO] Invariante 7 violado: estrato vazio '${idEstrato}' possui N_h = ${nh} (esperado: 0) e ${polis.length} polígonos alocados (esperado: 0).`
+      );
+    }
+  }
+
+  // 8. para todo polígono, π_i ∈ (0, 1] e π_i × w_i === 1 (com tolerância 1e-9)
+  for (const p of selo.poligonos) {
+    if (typeof p.pi_i !== "number" || p.pi_i <= 0 || p.pi_i > 1) {
+      throw new Error(
+        `[SELO_INVALIDO:INV_8_HORVITZ_THOMPSON] Invariante 8 violado: polígono '${p.idPoligono}' possui pi_i = ${p.pi_i} fora do domínio (0, 1].`
+      );
+    }
+    const produto = p.pi_i * p.w_i;
+    if (Math.abs(produto - 1) > 1e-9) {
+      throw new Error(
+        `[SELO_INVALIDO:INV_8_HORVITZ_THOMPSON] Invariante 8 violado: polígono '${p.idPoligono}' possui pi_i * w_i = ${produto} != 1 (tolerância 1e-9).`
+      );
+    }
+  }
 }
 

@@ -1,0 +1,3 @@
+﻿58e4b68 docs(planejamento): adicionar prompt I do invariante de totais do selo
+da2abf9 feat(sorteio-d16): reativar guarda D11.2 em 3 camadas, implementar desenho 18x4 com regra de censo e destravar CLI
+4558797 docs(planejamento): adicionar prompt H da guarda D11.2 e do desenho 18x4

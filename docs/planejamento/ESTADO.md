@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `45587975ec55f46cffbad7479db9374dfbdd022b`
-- Data do HEAD: 2026-11-10 18:22:28 +0000
+- Commit HEAD: `58e4b68a10cc33943103179eab4ef4b94823938b`
+- Data do HEAD: 2026-11-10 19:41:32 +0000
 - Últimos 5 commits:
-  1. `4558797 docs(planejamento): adicionar prompt H da guarda D11.2 e do desenho 18x4`
-  2. `91706f0 docs(planejamento): material de decisao sobre a estratificacao de E-hat`
-  3. `af6cf47 feat(E-hat): ingerir 677 candidatos de BP3, caracterizar distribuicao e tabular 18 estratos D16`
-  4. `81d4511 docs(planejamento): adicionar prompt G da ingestao dos 677 e caracterizacao de E-hat`
-  5. `8d6bd48 feat(E-hat): calibrar amostragem de 30 pontos sob mascara GEOS3 e materializar cache`
+  1. `58e4b68 docs(planejamento): adicionar prompt I do invariante de totais do selo`
+  2. `da2abf9 feat(sorteio-d16): reativar guarda D11.2 em 3 camadas, implementar desenho 18x4 com regra de censo e destravar CLI`
+  3. `4558797 docs(planejamento): adicionar prompt H da guarda D11.2 e do desenho 18x4`
+  4. `91706f0 docs(planejamento): material de decisao sobre a estratificacao de E-hat`
+  5. `af6cf47 feat(E-hat): ingerir 677 candidatos de BP3, caracterizar distribuicao e tabular 18 estratos D16`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 124
@@ -70,7 +70,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | chuva | `RUSLE_Fator_R` | SIM | SIM | SIM |
 
 ## 7. Arquivos de Evidência em `docs/verificacoes/`
-- Total de arquivos de evidência medidos: 179
+- Total de arquivos de evidência medidos: 185
 
 | Arquivo de Evidência | Data no Nome | Tamanho (bytes) |
 |---|:---:|---:|
@@ -110,7 +110,8 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `2026-11-10_universo_candidatos_e_reprodutibilidade.md` | 2026-11-10 | 10193 |
 | `2026-11-10f_calibracao_e_estabilidade_fontes.md` | 2026-11-10 | 15604 |
 | `2026-11-10g_ingestao_680_e_distribuicao_e.md` | 2026-11-10 | 22153 |
-| `cache_frequencia_solo_nu_bp3.json` | sem data no nome | 577697 |
+| `2026-11-10h_guarda_d11_e_desenho_18x4.md` | 2026-11-10 | 11166 |
+| `cache_frequencia_solo_nu_bp3.json` | sem data no nome | 687981 |
 | `cache_pedologia_bp3.json` | sem data no nome | 96740 |
 | `calculadora/2026-09-30_simulacao_desenho_d16_224m.md` | 2026-09-30 | 2027 |
 | `calibracao_30_pontos_solo_nu.json` | sem data no nome | 1464 |
@@ -168,6 +169,11 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `execucao/2026-11-10g/npm_test.txt` | sem data no nome | 41266 |
 | `execucao/2026-11-10g/ocupacao_estratos_d16.txt` | sem data no nome | 16414 |
 | `execucao/2026-11-10g/teste_bloco_25.json` | sem data no nome | 1331 |
+| `execucao/2026-11-10h/estado_verificar.txt` | sem data no nome | 326 |
+| `execucao/2026-11-10h/git_log.txt` | sem data no nome | 538 |
+| `execucao/2026-11-10h/git_status.txt` | sem data no nome | 1810 |
+| `execucao/2026-11-10h/npm_test.txt` | sem data no nome | 39880 |
+| `execucao/2026-11-10h/tsc_noemit.txt` | sem data no nome | 2406 |
 | `fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md` | sem data no nome | 7016 |
 | `fontes/dematte2018/conferencia_dematte_2018.md` | sem data no nome | 6725 |
 | `fontes/dematte2018/extrair_dematte_2018.py` | sem data no nome | 2091 |

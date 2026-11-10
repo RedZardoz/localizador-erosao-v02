@@ -92,8 +92,21 @@ export interface PoligonoSorteadoD16 {
   pontoEmFronteiraPedologica: Proveniencia<boolean>;
 }
 
+export const INVARIANTES_SELO_D16 = [
+  "INV_1_TOTAL_TREINO_HELDOUT",
+  "INV_2_AREA_TOTAL",
+  "INV_3_SOMA_POLIGONOS_POR_ESTRATO",
+  "INV_4_PARTICAO_CANDIDATOS",
+  "INV_5_POLIGONOS_UNICOS",
+  "INV_6_CENSO_PI_1",
+  "INV_7_ESTRATO_VAZIO",
+  "INV_8_HORVITZ_THOMPSON",
+] as const;
+
+export type IdInvarianteSeloD16 = (typeof INVARIANTES_SELO_D16)[number];
+
 export interface SeloSorteioD16 {
-  versaoEsquema: "1.0.0" | "1.1.0" | "1.2.0" | "1.3.0";
+  versaoEsquema: "1.0.0" | "1.1.0" | "1.2.0" | "1.3.0" | "1.4.0";
   geradoEm: string;
   semente: number;
   politicaSemente: string;
@@ -110,6 +123,7 @@ export interface SeloSorteioD16 {
   contagemCandidatosPorEstrato: Record<string, number>;
   estratosCenso?: string[];
   estratosVazios?: string[];
+  invariantesVerificados?: string[];
   decisoesVigentes: Record<
     "D07" | "D08" | "D12" | "D16" | "D23",
     { titulo: string; status: string; decididaEm?: string }
