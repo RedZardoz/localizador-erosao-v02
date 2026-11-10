@@ -116,7 +116,7 @@ export interface OpcoesAmostragemSoloNuLote {
  * Calcula o hash determinístico SHA-256 da definição metodológica da métrica.
  */
 export function calcularHashDefinicao(definicao: string = DEFINICAO_METRICA_SOLO_NU): string {
-  return crypto.createHash("sha256").update(definicao.trim()).digest("hex").slice(0, 16);
+  return crypto.createHash("sha256").update(definicao.trim()).digest("hex");
 }
 
 /**
@@ -202,19 +202,166 @@ export function salvarCacheFrequenciaSoloNu(
 export function construirExpressaoGeeSoloNuLote(
   pontos: PontoAmostragemSoloNu[]
 ): Record<string, unknown> {
-  const featuresGeoJson = pontos.map((pt, idx) => ({
-    type: "Feature",
-    id: String(idx),
-    geometry: {
-      type: "Point",
-      coordinates: [pt.longitude, pt.latitude],
+  const cNdviMin = {
+    functionInvocationValue: {
+      functionName: "Image.gte",
+      arguments: {
+        image1: {
+          functionInvocationValue: {
+            functionName: "Image.normalizedDifference",
+            arguments: {
+              input: { argumentReference: "img" },
+              bandNames: { constantValue: ["B8", "B4"] },
+            },
+          },
+        },
+        image2: {
+          functionInvocationValue: {
+            functionName: "Image.constant",
+            arguments: { value: { constantValue: LIMIAR_NDVI_SOLO_NU_MIN_D10 } },
+          },
+        },
+      },
     },
-    properties: {
-      ponto_id: pt.id,
-      latitude: pt.latitude,
-      longitude: pt.longitude,
+  };
+
+  const cNdviMax = {
+    functionInvocationValue: {
+      functionName: "Image.lte",
+      arguments: {
+        image1: {
+          functionInvocationValue: {
+            functionName: "Image.normalizedDifference",
+            arguments: {
+              input: { argumentReference: "img" },
+              bandNames: { constantValue: ["B8", "B4"] },
+            },
+          },
+        },
+        image2: {
+          functionInvocationValue: {
+            functionName: "Image.constant",
+            arguments: { value: { constantValue: LIMIAR_NDVI_SOLO_NU_D10 } },
+          },
+        },
+      },
     },
-  }));
+  };
+
+  const cNbr2Min = {
+    functionInvocationValue: {
+      functionName: "Image.gte",
+      arguments: {
+        image1: {
+          functionInvocationValue: {
+            functionName: "Image.normalizedDifference",
+            arguments: {
+              input: { argumentReference: "img" },
+              bandNames: { constantValue: ["B11", "B12"] },
+            },
+          },
+        },
+        image2: {
+          functionInvocationValue: {
+            functionName: "Image.constant",
+            arguments: { value: { constantValue: LIMIAR_NBR2_SOLO_NU_MIN_D10 } },
+          },
+        },
+      },
+    },
+  };
+
+  const cNbr2Max = {
+    functionInvocationValue: {
+      functionName: "Image.lte",
+      arguments: {
+        image1: {
+          functionInvocationValue: {
+            functionName: "Image.normalizedDifference",
+            arguments: {
+              input: { argumentReference: "img" },
+              bandNames: { constantValue: ["B11", "B12"] },
+            },
+          },
+        },
+        image2: {
+          functionInvocationValue: {
+            functionName: "Image.constant",
+            arguments: { value: { constantValue: LIMIAR_NBR2_SOLO_NU_MAX_D10 } },
+          },
+        },
+      },
+    },
+  };
+
+  const cGradB4B3 = {
+    functionInvocationValue: {
+      functionName: "Image.gte",
+      arguments: {
+        image1: {
+          functionInvocationValue: {
+            functionName: "Image.select",
+            arguments: {
+              input: { argumentReference: "img" },
+              bandSelectors: { constantValue: ["B4"] },
+            },
+          },
+        },
+        image2: {
+          functionInvocationValue: {
+            functionName: "Image.select",
+            arguments: {
+              input: { argumentReference: "img" },
+              bandSelectors: { constantValue: ["B3"] },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  const cGradB3B2 = {
+    functionInvocationValue: {
+      functionName: "Image.gte",
+      arguments: {
+        image1: {
+          functionInvocationValue: {
+            functionName: "Image.select",
+            arguments: {
+              input: { argumentReference: "img" },
+              bandSelectors: { constantValue: ["B3"] },
+            },
+          },
+        },
+        image2: {
+          functionInvocationValue: {
+            functionName: "Image.select",
+            arguments: {
+              input: { argumentReference: "img" },
+              bandSelectors: { constantValue: ["B2"] },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  function andPair(a: Record<string, unknown>, b: Record<string, unknown>): Record<string, unknown> {
+    return {
+      functionInvocationValue: {
+        functionName: "Image.and",
+        arguments: {
+          image1: a,
+          image2: b,
+        },
+      },
+    };
+  }
+
+  const cascataSoloNu = andPair(
+    cNdviMin,
+    andPair(cNdviMax, andPair(cNbr2Min, andPair(cNbr2Max, andPair(cGradB4B3, cGradB3B2))))
+  );
 
   return {
     result: "0",
@@ -237,10 +384,33 @@ export function construirExpressaoGeeSoloNuLote(
       },
       features_pontos: {
         functionInvocationValue: {
-          functionName: "FeatureCollection",
+          functionName: "Collection",
           arguments: {
             features: {
-              constantValue: featuresGeoJson,
+              arrayValue: {
+                values: pontos.map((pt) => ({
+                  functionInvocationValue: {
+                    functionName: "Feature",
+                    arguments: {
+                      geometry: {
+                        functionInvocationValue: {
+                          functionName: "GeometryConstructors.Point",
+                          arguments: {
+                            coordinates: { constantValue: [pt.longitude, pt.latitude] },
+                          },
+                        },
+                      },
+                      metadata: {
+                        constantValue: {
+                          ponto_id: pt.id,
+                          latitude: pt.latitude,
+                          longitude: pt.longitude,
+                        },
+                      },
+                    },
+                  },
+                })),
+              },
             },
           },
         },
@@ -344,172 +514,7 @@ export function construirExpressaoGeeSoloNuLote(
               functionInvocationValue: {
                 functionName: "Image.rename",
                 arguments: {
-                  input: {
-                    functionInvocationValue: {
-                      functionName: "Image.and",
-                      arguments: {
-                        image1: {
-                          functionInvocationValue: {
-                            functionName: "Image.and",
-                            arguments: {
-                              image1: {
-                                functionInvocationValue: {
-                                  functionName: "Image.and",
-                                  arguments: {
-                                    image1: {
-                                      functionInvocationValue: {
-                                        functionName: "Image.and",
-                                        arguments: {
-                                          image1: {
-                                            functionInvocationValue: {
-                                              functionName: "Image.gte",
-                                              arguments: {
-                                                image1: {
-                                                  functionInvocationValue: {
-                                                    functionName: "Image.normalizedDifference",
-                                                    arguments: {
-                                                      input: { argumentReference: "img" },
-                                                      bandNames: { constantValue: ["B8", "B4"] },
-                                                    },
-                                                  },
-                                                },
-                                                image2: {
-                                                  functionInvocationValue: {
-                                                    functionName: "Image.constant",
-                                                    arguments: { value: { constantValue: LIMIAR_NDVI_SOLO_NU_MIN_D10 } },
-                                                  },
-                                                },
-                                              },
-                                            },
-                                          },
-                                          image2: {
-                                            functionInvocationValue: {
-                                              functionName: "Image.lte",
-                                              arguments: {
-                                                image1: {
-                                                  functionInvocationValue: {
-                                                    functionName: "Image.normalizedDifference",
-                                                    arguments: {
-                                                      input: { argumentReference: "img" },
-                                                      bandNames: { constantValue: ["B8", "B4"] },
-                                                    },
-                                                  },
-                                                },
-                                                image2: {
-                                                  functionInvocationValue: {
-                                                    functionName: "Image.constant",
-                                                    arguments: { value: { constantValue: LIMIAR_NDVI_SOLO_NU_D10 } },
-                                                  },
-                                                },
-                                              },
-                                            },
-                                          },
-                                        },
-                                      },
-                                    },
-                                    image2: {
-                                      functionInvocationValue: {
-                                        functionName: "Image.gte",
-                                        arguments: {
-                                          image1: {
-                                            functionInvocationValue: {
-                                              functionName: "Image.normalizedDifference",
-                                              arguments: {
-                                                input: { argumentReference: "img" },
-                                                bandNames: { constantValue: ["B11", "B12"] },
-                                              },
-                                            },
-                                          },
-                                          image2: {
-                                            functionInvocationValue: {
-                                              functionName: "Image.constant",
-                                              arguments: { value: { constantValue: LIMIAR_NBR2_SOLO_NU_MIN_D10 } },
-                                            },
-                                          },
-                                        },
-                                      },
-                                    },
-                                  },
-                                },
-                                image2: {
-                                  functionInvocationValue: {
-                                    functionName: "Image.lte",
-                                    arguments: {
-                                      image1: {
-                                        functionInvocationValue: {
-                                          functionName: "Image.normalizedDifference",
-                                          arguments: {
-                                            input: { argumentReference: "img" },
-                                            bandNames: { constantValue: ["B11", "B12"] },
-                                          },
-                                        },
-                                      },
-                                      image2: {
-                                        functionInvocationValue: {
-                                          functionName: "Image.constant",
-                                          arguments: { value: { constantValue: LIMIAR_NBR2_SOLO_NU_MAX_D10 } },
-                                        },
-                                      },
-                                    },
-                                  },
-                                },
-                              },
-                              image2: {
-                                functionInvocationValue: {
-                                  functionName: "Image.gte",
-                                  arguments: {
-                                    image1: {
-                                      functionInvocationValue: {
-                                        functionName: "Image.select",
-                                        arguments: {
-                                          input: { argumentReference: "img" },
-                                          bandSelectors: { constantValue: ["B4"] },
-                                        },
-                                      },
-                                    },
-                                    image2: {
-                                      functionInvocationValue: {
-                                        functionName: "Image.select",
-                                        arguments: {
-                                          input: { argumentReference: "img" },
-                                          bandSelectors: { constantValue: ["B3"] },
-                                        },
-                                      },
-                                    },
-                                  },
-                                },
-                              },
-                            },
-                          },
-                        },
-                        image2: {
-                          functionInvocationValue: {
-                            functionName: "Image.gte",
-                            arguments: {
-                              image1: {
-                                functionInvocationValue: {
-                                  functionName: "Image.select",
-                                  arguments: {
-                                    input: { argumentReference: "img" },
-                                    bandSelectors: { constantValue: ["B3"] },
-                                  },
-                                },
-                              },
-                              image2: {
-                                functionInvocationValue: {
-                                  functionName: "Image.select",
-                                  arguments: {
-                                    input: { argumentReference: "img" },
-                                    bandSelectors: { constantValue: ["B2"] },
-                                  },
-                                },
-                              },
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
+                  input: cascataSoloNu,
                   names: { constantValue: ["solo_nu"] },
                 },
               },

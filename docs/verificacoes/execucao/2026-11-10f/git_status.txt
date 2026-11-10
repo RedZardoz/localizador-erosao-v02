@@ -1,8 +1,12 @@
 ﻿ M docs/planejamento/ESTADO.md
- M docs/verificacoes/2026-11-10_universo_candidatos_e_reprodutibilidade.md
+ M docs/verificacoes/2026-11-10f_calibracao_e_estabilidade_fontes.md
+ M docs/verificacoes/execucao/2026-11-10f/git_log.txt
+ M docs/verificacoes/execucao/2026-11-10f/git_status.txt
+ M docs/verificacoes/execucao/2026-11-10f/npm_test.txt
+ M docs/verificacoes/execucao/2026-11-10f/rodada_30_pontos_calibracao.txt
  M scripts/medir_frequencia_solo_nu_lote.ts
- M scripts/remedir_candidatos_bp3_d16.ts
-?? docs/verificacoes/2026-11-10f_calibracao_e_estabilidade_fontes.md
-?? docs/verificacoes/execucao/2026-11-10f/
-?? scripts/auditoria/conferir_estabilidade_wfs_embrapa.ts
-?? src/lib/gee/medirFrequenciaSoloNuCli.test.ts
+ M src/lib/gee/amostragemSoloNuLote.test.ts
+ M src/lib/gee/amostragemSoloNuLote.ts
+?? docs/verificacoes/cache_frequencia_solo_nu_bp3.json
+?? docs/verificacoes/calibracao_30_pontos_solo_nu.json
+?? docs/verificacoes/diario_requisicoes_solo_nu_calibracao.json

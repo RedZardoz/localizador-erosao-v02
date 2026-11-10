@@ -1,3 +1,3 @@
-﻿193da3b docs(planejamento): adicionar prompt F com quatro correcoes do E-linha e a calibracao de E-hat
-76db730 feat(D16): persistir universo de candidatos e provar reprodutibilidade do funil
-bbee1e9 docs(planejamento): avisar que o E-linha roda sem credencial do GEE
+﻿df1df04 chore(estado): sincronizar painel ESTADO.md apos incorporacao dos testes e evidencias
+75ceffa fix(auditoria): auditar estabilidade WFS Embrapa, remover fallback do CLI e registrar recusa C1 de E-hat
+193da3b docs(planejamento): adicionar prompt F com quatro correcoes do E-linha e a calibracao de E-hat

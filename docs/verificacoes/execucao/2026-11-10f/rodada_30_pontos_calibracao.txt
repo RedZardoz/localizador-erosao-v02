@@ -2,7 +2,7 @@
 SAREL v2.0 — Medição de Frequência de Solo Nu em Lote (GEE REST)
 FONTE_DOS_DADOS: Google Earth Engine REST v1 (COPERNICUS/S2_SR_HARMONIZED) — Conjunção GEOS3 (Demattê et al., 2018)
 DEFINICAO_METRICA_SOLO_NU: s2_sr_harmonized_2016-01-01_2026-06-30_geos3_dematte2018_ndvi_0_0.25_nbr2_0_0.075_incl_b4b3_b3b2_worldcover_v100_v200
-Hash da Definição: 6a63a17cb9760d50
+Hash da Definição: 6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21
 ===============================================================================
 
 [1/5] Carregando universo de candidatos de 'C:\Users\lalfr\Docs Fora do Ar\LUIS ALFREDO\01 - MESTRADO PPGTCA 2026\02 - PESQUISA EROSÃO LAMINAR\geolocalizacao-erosao-propriedade\docs\verificacoes\universo_candidatos_bp3_d16_2026-11-10.json'...
@@ -12,3 +12,42 @@ Hash da Definição: 6a63a17cb9760d50
      cand-4423, cand-2463, cand-3753, cand-1164, cand-2515, cand-1722, cand-2221, cand-4530, cand-2684, cand-531, cand-3719, cand-2705, cand-3869, cand-4055, cand-409, cand-2769, cand-54, cand-2308, cand-89, cand-2954, cand-2304, cand-4118, cand-3786, cand-2139, cand-3161, cand-499, cand-2183, cand-3144, cand-1139, cand-1501
 
 [2/5] Verificando credencial de lote conforme Regra C1...
+  -> Credencial validada: Service Account 'cta-de-servico-erosao-laminar@imposing-muse-506616-i7.iam.gserviceaccount.com' (Projeto: 'imposing-muse-506616-i7')
+
+[3/5] Autenticando junto ao Google Earth Engine via RFC 7523...
+  -> Autenticação bem-sucedida. Token de acesso obtido.
+
+[4/5] Iniciando medição de 30 pontos via GEE REST...
+  -> Tamanho de bloco: 1
+  -> Modo de retomada: Inativo
+  -> Arquivo de cache: C:\Users\lalfr\Docs Fora do Ar\LUIS ALFREDO\01 - MESTRADO PPGTCA 2026\02 - PESQUISA EROSÃO LAMINAR\geolocalizacao-erosao-propriedade\docs\verificacoes\cache_frequencia_solo_nu_bp3.json
+
+===============================================================================
+RESULTADOS DA CALIBRAÇÃO DE SOLO NU (30 PONTOS):
+===============================================================================
+- Total de Pontos Avaliados: 30
+- Tempo Total da Rodada: 201580 ms (201.58 s)
+- tempoPorPontoMs:
+    Mediana: 5470.5 ms
+    p95:     11755.15 ms
+    Máximo:  30008 ms
+    Mínimo:  496 ms
+    Média:   6717.8 ms
+- Pontos com Ê medido: 29
+- Pontos indisponíveis: 1
+  Detalhamento por causa: {"servico-indisponivel":1}
+- Chamadas HTTP GEE: 30
+  Distribuição de códigos HTTP: {"0":1,"200":29}
+- nObservações por ponto (máscara GEOS3):
+    Mediana: 490
+    Mínimo:  237
+    Máximo:  1003
+    Média:   415.8
+    Pontos com n < 12: 0 (de 30)
+-------------------------------------------------------------------------------
+PROJEÇÃO PARA O LOTE DE 680 PONTOS:
+- Por Mediana (5470.5 ms/ponto): 62 minutos
+- Por p95 (11755.15 ms/ponto):     133.23 minutos
+- Diferença na cauda:                71.23 minutos
+===============================================================================
+Artefato de evidência gravado em: C:\Users\lalfr\Docs Fora do Ar\LUIS ALFREDO\01 - MESTRADO PPGTCA 2026\02 - PESQUISA EROSÃO LAMINAR\geolocalizacao-erosao-propriedade\docs\verificacoes\calibracao_30_pontos_solo_nu.json

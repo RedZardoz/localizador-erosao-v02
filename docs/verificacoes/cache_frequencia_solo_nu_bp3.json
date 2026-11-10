@@ -1,0 +1,560 @@
+{
+  "versao": "2.0",
+  "definicao": "s2_sr_harmonized_2016-01-01_2026-06-30_geos3_dematte2018_ndvi_0_0.25_nbr2_0_0.075_incl_b4b3_b3b2_worldcover_v100_v200",
+  "hashDefinicao": "6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21",
+  "atualizadoEm": "2026-11-10T16:26:39.846Z",
+  "totalItens": 29,
+  "itens": {
+    "cand-4423@lat=-24.68122,lon=-53.83171@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-4423",
+      "latitude": -24.68122,
+      "longitude": -53.83171,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0241,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:23:18.765Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=498"
+      },
+      "nObservacoes": 498,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-4423@lat=-24.68122,lon=-53.83171@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-2463@lat=-24.97620,lon=-53.73943@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-2463",
+      "latitude": -24.976197,
+      "longitude": -53.739431,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0039,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:23:26.358Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=518"
+      },
+      "nObservacoes": 518,
+      "classeWorldCover2020": 10,
+      "classeWorldCover2021": 10,
+      "ehElegivelUso": false,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-2463@lat=-24.97620,lon=-53.73943@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-3753@lat=-24.37831,lon=-53.95333@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-3753",
+      "latitude": -24.378314,
+      "longitude": -53.953329,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0872,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:23:33.853Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=745"
+      },
+      "nObservacoes": 745,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-3753@lat=-24.37831,lon=-53.95333@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-2515@lat=-24.52410,lon=-54.29845@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-2515",
+      "latitude": -24.524104,
+      "longitude": -54.298446,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0451,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:24:07.046Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=244"
+      },
+      "nObservacoes": 244,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-2515@lat=-24.52410,lon=-54.29845@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-1722@lat=-24.83438,lon=-53.87084@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-1722",
+      "latitude": -24.834383,
+      "longitude": -53.870838,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.068,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:24:11.555Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=515"
+      },
+      "nObservacoes": 515,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-1722@lat=-24.83438,lon=-53.87084@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-2221@lat=-25.30730,lon=-54.13529@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-2221",
+      "latitude": -25.307301,
+      "longitude": -54.135293,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:24:20.867Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=490"
+      },
+      "nObservacoes": 490,
+      "classeWorldCover2020": 10,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": false,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-2221@lat=-25.30730,lon=-54.13529@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-4530@lat=-24.61684,lon=-53.68242@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-4530",
+      "latitude": -24.616836,
+      "longitude": -53.682417,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.1002,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:24:31.626Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=519"
+      },
+      "nObservacoes": 519,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-4530@lat=-24.61684,lon=-53.68242@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-2684@lat=-24.54185,lon=-54.15616@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-2684",
+      "latitude": -24.541853,
+      "longitude": -54.15616,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0939,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:24:34.055Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=245"
+      },
+      "nObservacoes": 245,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-2684@lat=-24.54185,lon=-54.15616@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-531@lat=-25.16835,lon=-54.20178@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-531",
+      "latitude": -25.168349,
+      "longitude": -54.201779,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0633,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:24:36.609Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=237"
+      },
+      "nObservacoes": 237,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-531@lat=-25.16835,lon=-54.20178@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-3719@lat=-24.42762,lon=-53.91564@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-3719",
+      "latitude": -24.427619,
+      "longitude": -53.915642,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0937,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:24:45.899Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=1003"
+      },
+      "nObservacoes": 1003,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-3719@lat=-24.42762,lon=-53.91564@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-2705@lat=-24.61871,lon=-54.14987@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-2705",
+      "latitude": -24.618714,
+      "longitude": -54.149868,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0456,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:24:51.368Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=241"
+      },
+      "nObservacoes": 241,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-2705@lat=-24.61871,lon=-54.14987@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-3869@lat=-24.30643,lon=-54.20627@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-3869",
+      "latitude": -24.306428,
+      "longitude": -54.206274,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0156,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:24:55.003Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=256"
+      },
+      "nObservacoes": 256,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-3869@lat=-24.30643,lon=-54.20627@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-4055@lat=-24.14932,lon=-54.29577@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-4055",
+      "latitude": -24.149318,
+      "longitude": -54.295775,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0414,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:25:00.019Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=266"
+      },
+      "nObservacoes": 266,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-4055@lat=-24.14932,lon=-54.29577@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-409@lat=-25.21978,lon=-54.07536@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-409",
+      "latitude": -25.219779,
+      "longitude": -54.075361,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0248,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:25:04.640Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=242"
+      },
+      "nObservacoes": 242,
+      "classeWorldCover2020": 30,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-409@lat=-25.21978,lon=-54.07536@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-2769@lat=-24.64767,lon=-54.10361@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-2769",
+      "latitude": -24.647666,
+      "longitude": -54.103614,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:25:07.102Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=240"
+      },
+      "nObservacoes": 240,
+      "classeWorldCover2020": 10,
+      "classeWorldCover2021": 10,
+      "ehElegivelUso": false,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-2769@lat=-24.64767,lon=-54.10361@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-54@lat=-25.38093,lon=-54.46087@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-54",
+      "latitude": -25.380934,
+      "longitude": -54.46087,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:25:12.643Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=493"
+      },
+      "nObservacoes": 493,
+      "classeWorldCover2020": 30,
+      "classeWorldCover2021": 30,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-54@lat=-25.38093,lon=-54.46087@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-2308@lat=-24.81766,lon=-53.89200@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-2308",
+      "latitude": -24.817663,
+      "longitude": -53.891999,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0766,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:25:22.336Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=509"
+      },
+      "nObservacoes": 509,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-2308@lat=-24.81766,lon=-53.89200@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-89@lat=-25.27873,lon=-54.38137@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-89",
+      "latitude": -25.278733,
+      "longitude": -54.381369,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:25:28.094Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=240"
+      },
+      "nObservacoes": 240,
+      "classeWorldCover2020": 10,
+      "classeWorldCover2021": 10,
+      "ehElegivelUso": false,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-89@lat=-25.27873,lon=-54.38137@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-2954@lat=-24.67839,lon=-54.00084@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-2954",
+      "latitude": -24.678393,
+      "longitude": -54.000844,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:25:34.266Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=483"
+      },
+      "nObservacoes": 483,
+      "classeWorldCover2020": 10,
+      "classeWorldCover2021": 10,
+      "ehElegivelUso": false,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-2954@lat=-24.67839,lon=-54.00084@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-2304@lat=-24.81022,lon=-53.80930@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-2304",
+      "latitude": -24.810224,
+      "longitude": -53.809296,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:25:46.263Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=514"
+      },
+      "nObservacoes": 514,
+      "classeWorldCover2020": 10,
+      "classeWorldCover2021": 10,
+      "ehElegivelUso": false,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-2304@lat=-24.81022,lon=-53.80930@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-4118@lat=-24.10735,lon=-54.29147@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-4118",
+      "latitude": -24.107355,
+      "longitude": -54.291471,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.1188,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:25:49.775Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=261"
+      },
+      "nObservacoes": 261,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-4118@lat=-24.10735,lon=-54.29147@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-3786@lat=-24.33851,lon=-54.00630@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-3786",
+      "latitude": -24.338514,
+      "longitude": -54.0063,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0474,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:25:59.946Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=506"
+      },
+      "nObservacoes": 506,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-3786@lat=-24.33851,lon=-54.00630@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-2139@lat=-24.74486,lon=-54.11564@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-2139",
+      "latitude": -24.74486,
+      "longitude": -54.115644,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.1446,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:26:04.877Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=242"
+      },
+      "nObservacoes": 242,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-2139@lat=-24.74486,lon=-54.11564@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-3161@lat=-24.57793,lon=-53.76538@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-3161",
+      "latitude": -24.577929,
+      "longitude": -53.765384,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0307,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:26:12.386Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=521"
+      },
+      "nObservacoes": 521,
+      "classeWorldCover2020": 60,
+      "classeWorldCover2021": 30,
+      "ehElegivelUso": false,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-3161@lat=-24.57793,lon=-53.76538@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-499@lat=-25.18231,lon=-54.22214@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-499",
+      "latitude": -25.182308,
+      "longitude": -54.222136,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:26:15.902Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=238"
+      },
+      "nObservacoes": 238,
+      "classeWorldCover2020": 10,
+      "classeWorldCover2021": 10,
+      "ehElegivelUso": false,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-499@lat=-25.18231,lon=-54.22214@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-2183@lat=-24.71377,lon=-54.09647@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-2183",
+      "latitude": -24.713767,
+      "longitude": -54.096475,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0041,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:26:18.790Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=241"
+      },
+      "nObservacoes": 241,
+      "classeWorldCover2020": 30,
+      "classeWorldCover2021": 30,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-2183@lat=-24.71377,lon=-54.09647@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-3144@lat=-24.55340,lon=-53.77593@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-3144",
+      "latitude": -24.553398,
+      "longitude": -53.775934,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0267,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:26:24.263Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=524"
+      },
+      "nObservacoes": 524,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-3144@lat=-24.55340,lon=-53.77593@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-1139@lat=-24.97119,lon=-53.65496@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-1139",
+      "latitude": -24.97119,
+      "longitude": -53.654959,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:26:28.381Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=514"
+      },
+      "nObservacoes": 514,
+      "classeWorldCover2020": 30,
+      "classeWorldCover2021": 30,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-1139@lat=-24.97119,lon=-53.65496@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    },
+    "cand-1501@lat=-24.80063,lon=-53.69000@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21": {
+      "id": "cand-1501",
+      "latitude": -24.800633,
+      "longitude": -53.690003,
+      "frequenciaSoloNu": {
+        "estado": "medido",
+        "valor": 0.0565,
+        "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+        "adquiridoEm": "2016-01-01 a 2026-06-30",
+        "consultadoEm": "2026-11-10T16:26:39.844Z",
+        "detalhe": "reduceRegions first(solo_nu_mean), nObservacoes=513"
+      },
+      "nObservacoes": 513,
+      "classeWorldCover2020": 40,
+      "classeWorldCover2021": 40,
+      "ehElegivelUso": true,
+      "fonte": "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+      "chaveCache": "cand-1501@lat=-24.80063,lon=-53.69000@def=6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21"
+    }
+  }
+}

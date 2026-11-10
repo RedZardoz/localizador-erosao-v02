@@ -54,9 +54,9 @@ describe("Amostragem de Solo Nu em Lote via GEE REST e Cache Determinístico (C3
     expect(DEFINICAO_METRICA_SOLO_NU).not.toContain("ndvi_lt_0.25");
     expect(DEFINICAO_METRICA_SOLO_NU).not.toContain("lt_0.25");
 
-    // 3. O hash padrão tem 16 caracteres hexadecimais
+    // 3. O hash padrão tem 64 caracteres hexadecimais (SHA-256 canônico)
     const hashPadrao = calcularHashDefinicao();
-    expect(hashPadrao).toHaveLength(16);
+    expect(hashPadrao).toHaveLength(64);
     expect(calcularHashDefinicao(DEFINICAO_METRICA_SOLO_NU)).toBe(hashPadrao);
   });
 
@@ -102,13 +102,17 @@ describe("Amostragem de Solo Nu em Lote via GEE REST e Cache Determinístico (C3
     expect(no0.arguments.scale.constantValue).toBe(10);
     expect(no0.arguments.reducer.functionInvocationValue.functionName).toBe("Reducer.first");
 
-    // Verifica a coleção de feições construída com os 2 pontos
+    // Verifica a coleção de feições construída com os 2 pontos (Collection no GEE REST)
     const noFeatures = expr.values["features_pontos"].functionInvocationValue;
-    expect(noFeatures.functionName).toBe("FeatureCollection");
-    const featuresList = noFeatures.arguments.features.constantValue;
+    expect(noFeatures.functionName).toBe("Collection");
+    const featuresList = noFeatures.arguments.features.arrayValue.values;
     expect(featuresList).toHaveLength(2);
-    expect(featuresList[0].properties.ponto_id).toBe("cand-1");
-    expect(featuresList[1].properties.ponto_id).toBe("cand-2");
+    expect(
+      featuresList[0].functionInvocationValue.arguments.metadata.constantValue.ponto_id
+    ).toBe("cand-1");
+    expect(
+      featuresList[1].functionInvocationValue.arguments.metadata.constantValue.ponto_id
+    ).toBe("cand-2");
 
     // Verifica presença dos dois assets ESA WorldCover (2020 e 2021)
     const id2020 =
@@ -239,15 +243,23 @@ describe("Amostragem de Solo Nu em Lote via GEE REST e Cache Determinístico (C3
     // Mock do fetch para simular resposta do GEE REST
     const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (_url, opts: any) => {
       const body = JSON.parse(opts.body);
-      const featuresEntrada =
-        body.expression.values.features_pontos.functionInvocationValue.arguments.features
-          .constantValue;
+      const rawFeatures =
+        body.expression.values.features_pontos.functionInvocationValue.arguments.features;
+      const featuresEntrada = rawFeatures.arrayValue
+        ? rawFeatures.arrayValue.values.map((v: any, idx: number) => ({
+            id: String(idx),
+            ponto_id: v.functionInvocationValue.arguments.metadata.constantValue.ponto_id,
+          }))
+        : rawFeatures.constantValue.map((f: any) => ({
+            id: f.id,
+            ponto_id: f.properties.ponto_id,
+          }));
 
       const featuresSaida = featuresEntrada.map((f: any) => ({
         type: "Feature",
         id: f.id,
         properties: {
-          ponto_id: f.properties.ponto_id,
+          ponto_id: f.ponto_id,
           solo_nu_mean: 0.16,
           solo_nu_count: 85,
           Map_2020: 40,

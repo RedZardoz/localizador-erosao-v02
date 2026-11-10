@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `75ceffa4de46983aa060ec7d1fe8d937674a8823`
-- Data do HEAD: 2026-11-10 00:14:54 -0300
+- Commit HEAD: `df1df045f187043d43d9941c1a819c1cfb14f8e9`
+- Data do HEAD: 2026-11-10 00:16:21 -0300
 - Últimos 5 commits:
-  1. `75ceffa fix(auditoria): auditar estabilidade WFS Embrapa, remover fallback do CLI e registrar recusa C1 de E-hat`
-  2. `193da3b docs(planejamento): adicionar prompt F com quatro correcoes do E-linha e a calibracao de E-hat`
-  3. `76db730 feat(D16): persistir universo de candidatos e provar reprodutibilidade do funil`
-  4. `bbee1e9 docs(planejamento): avisar que o E-linha roda sem credencial do GEE`
-  5. `512978d docs(planejamento): substituir prompt E por E-linha, restrito ao universo de candidatos`
+  1. `df1df04 chore(estado): sincronizar painel ESTADO.md apos incorporacao dos testes e evidencias`
+  2. `75ceffa fix(auditoria): auditar estabilidade WFS Embrapa, remover fallback do CLI e registrar recusa C1 de E-hat`
+  3. `193da3b docs(planejamento): adicionar prompt F com quatro correcoes do E-linha e a calibracao de E-hat`
+  4. `76db730 feat(D16): persistir universo de candidatos e provar reprodutibilidade do funil`
+  5. `bbee1e9 docs(planejamento): avisar que o E-linha roda sem credencial do GEE`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 124

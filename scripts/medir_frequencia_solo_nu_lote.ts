@@ -206,6 +206,7 @@ export interface MetricasCalibracaoSoloNu {
     minimo: number;
     maximo: number;
     media: number;
+    pontosAbaixoDe12Obs: number;
   };
   requisicoesGee: {
     totalChamadas: number;
@@ -408,6 +409,7 @@ async function principal() {
     obsOrdenadas.length > 0
       ? Number((obsOrdenadas.reduce((acc, v) => acc + v, 0) / obsOrdenadas.length).toFixed(1))
       : 0;
+  const pontosAbaixoDe12Obs = obsOrdenadas.filter((n) => n < 12).length;
 
   // Projeção para 680 pontos
   const projetadoMedianaMinutos = Number(((medianaTempo * 680) / (1000 * 60)).toFixed(2));
@@ -434,6 +436,7 @@ async function principal() {
       minimo: minObs,
       maximo: maxObs,
       media: mediaObs,
+      pontosAbaixoDe12Obs,
     },
     requisicoesGee: {
       totalChamadas: diario.totalChamadas,
@@ -478,6 +481,7 @@ async function principal() {
   console.log(`    Mínimo:  ${minObs}`);
   console.log(`    Máximo:  ${maxObs}`);
   console.log(`    Média:   ${mediaObs}`);
+  console.log(`    Pontos com n < 12: ${pontosAbaixoDe12Obs} (de ${pontosParaMedir.length})`);
   console.log("-------------------------------------------------------------------------------");
   console.log("PROJEÇÃO PARA O LOTE DE 680 PONTOS:");
   console.log(`- Por Mediana (${medianaTempo} ms/ponto): ${projetadoMedianaMinutos} minutos`);

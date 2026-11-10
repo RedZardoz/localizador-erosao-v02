@@ -63,7 +63,10 @@ Evidência bruta: [`docs/verificacoes/execucao/2026-11-10f/conferencia_estabilid
 
 ## 4. Medição de Calibração de Solo Nu ($\hat{E}$) e Disciplina de Credenciais (Tarefa 5)
 
-### 4.1 Execução do CLI
+### 4.1 Configuração de Credencial de Lote (Regra C1)
+A credencial de conta de serviço foi configurada fora da árvore do repositório em `SAREL_GEE_SERVICE_ACCOUNT_FILE` (`imposing-muse-506616-i7-36523bb354c7.json`), cumprindo integralmente a Regra C1. A autenticação com o Google Earth Engine via RFC 7523 obteve o token de acesso do projeto `imposing-muse-506616-i7` com sucesso.
+
+### 4.2 Execução do CLI e Amostragem dos 30 Pontos
 Comando executado:
 ```bash
 node --import ./scripts/ts-loader.mjs scripts/medir_frequencia_solo_nu_lote.ts \
@@ -73,24 +76,49 @@ node --import ./scripts/ts-loader.mjs scripts/medir_frequencia_solo_nu_lote.ts \
 
 - **Confirmação da Amostra:** O CLI carregou exatamente os **677 candidatos elegíveis** da chave `candidatos` do artefato oficial e sorteou os 30 pontos com PRNG determinístico LCG (`cand-4423`, `cand-2463`, `cand-3753`, ..., `cand-1501`).
 - **Confirmação Anti-Fallback:** O fallback silencioso **não disparou**. A fonte foi comprovadamente `docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json`.
-- Evidência bruta da inicialização: [`docs/verificacoes/execucao/2026-11-10f/rodada_30_pontos_calibracao.txt`](file:///c:/Users/lalfr/Docs%20Fora%20do%20Ar/LUIS%20ALFREDO/01%20-%20MESTRADO%20PPGTCA%202026/02%20-%20PESQUISA%20EROS%C3%83O%20LAMINAR/geolocalizacao-erosao-propriedade/docs/verificacoes/execucao/2026-11-10f/rodada_30_pontos_calibracao.txt).
+- **Evidências brutas arquivadas:**
+  - Registro de execução da rodada: [`docs/verificacoes/execucao/2026-11-10f/rodada_30_pontos_calibracao.txt`](file:///c:/Users/lalfr/Docs%20Fora%20do%20Ar/LUIS%20ALFREDO/01%20-%20MESTRADO%20PPGTCA%202026/02%20-%20PESQUISA%20EROS%C3%83O%20LAMINAR/geolocalizacao-erosao-propriedade/docs/verificacoes/execucao/2026-11-10f/rodada_30_pontos_calibracao.txt)
+  - Artefato de métricas estruturado: [`docs/verificacoes/calibracao_30_pontos_solo_nu.json`](file:///c:/Users/lalfr/Docs%20Fora%20do%20Ar/LUIS%20ALFREDO/01%20-%20MESTRADO%20PPGTCA%202026/02%20-%20PESQUISA%20EROS%C3%83O%20LAMINAR/geolocalizacao-erosao-propriedade/docs/verificacoes/calibracao_30_pontos_solo_nu.json)
+  - Diário de requisições HTTP: [`docs/verificacoes/diario_requisicoes_solo_nu_calibracao.json`](file:///c:/Users/lalfr/Docs%20Fora%20do%20Ar/LUIS%20ALFREDO/01%20-%20MESTRADO%20PPGTCA%202026/02%20-%20PESQUISA%20EROS%C3%83O%20LAMINAR/geolocalizacao-erosao-propriedade/docs/verificacoes/diario_requisicoes_solo_nu_calibracao.json)
 
-### 4.2 Interrupção Fail-Closed por Regra C1
-Ao avançar para a etapa de verificação de credencial, a variável de ambiente `SAREL_GEE_SERVICE_ACCOUNT_FILE` encontrava-se indefinida no ambiente da máquina do executor. Em estrito cumprimento à Regra Inviolável C1 e à Regra 1 (Dado verdadeiro ou ausência declarada):
-- A execução foi compulsoriamente interrompida com código 1.
-- Nenhuma chamada de rede foi realizada contra o Google Earth Engine.
-- **Nenhum número foi sintetizado ou simulado.**
-- Evidência do bloqueio pericial: [`docs/verificacoes/execucao/2026-11-10f/recusa_sem_credencial.txt`](file:///c:/Users/lalfr/Docs%20Fora%20do%20Ar/LUIS%20ALFREDO/01%20-%20MESTRADO%20PPGTCA%202026/02%20-%20PESQUISA%20EROS%C3%83O%20LAMINAR/geolocalizacao-erosao-propriedade/docs/verificacoes/execucao/2026-11-10f/recusa_sem_credencial.txt).
+### 4.3 Métricas da Calibração ($N=30$)
 
-### 4.3 Resposta à Pergunta Científica (§5.3)
-Como a credencial GEE não foi configurada nesta sessão, as observações multiespectrais Sentinel-2 sob a máscara GEOS3 (Demattê et al., 2018) não foram baixadas para os 30 pontos sorteados. O número exato de pontos com $n < 12$ permanece **a ser medido na primeira rodada com credencial de lote viva ativa**. Nenhuma estimativa arbitrária foi registrada.
+| Métrica | Valor Real | Observações Periciais |
+|---|:---:|---|
+| **Total de Pontos Avaliados** | 30 | Sorteados deterministicamente sobre o universo de 677. |
+| **Pontos com $\hat{E}$ Medido** | 29 (96,7%) | Observações Sentinel-2 processadas sob máscara GEOS3. |
+| **Pontos Indisponíveis** | 1 (3,3%) | Causa declarada: `servico-indisponivel` (timeout isolado de rede de 30s). |
+| **Total de Requisições GEE** | 30 | 29 requisições HTTP 200, 1 requisição com código 0 (timeout). |
+| **Tempo Total da Rodada** | 201.580 ms (201,58 s) | Média de parede ~3,36 minutos para os 30 pontos sequenciais. |
+| **`tempoPorPontoMs` (Mediana)** | 5.470,5 ms | Latência central típica de resposta do `Image.reduceRegions`. |
+| **`tempoPorPontoMs` (p95)** | 11.755,15 ms | Medição da cauda de latência do GEE REST v1. |
+| **`tempoPorPontoMs` (Máximo)** | 30.008 ms | Atingiu o timeout configurado na requisição não respondida. |
+| **`tempoPorPontoMs` (Mínimo)** | 496 ms | Resposta mais veloz obtida no lote. |
+| **`tempoPorPontoMs` (Média)** | 6.717,8 ms | Impactada pela cauda do ponto em timeout. |
 
-### 4.4 Destino do Cache no Git (§5.4)
-O arquivo `docs/verificacoes/cache_frequencia_solo_nu_bp3.json` não foi materializado nesta rodada devido à interrupção fail-closed antes do GEE. **A decisão de versionamento fica formalmente executada:** o arquivo permanece intencionalmente **fora** do `.gitignore` (paridade com `cache_pedologia_bp3.json`), de modo que no exato instante em que for gerado pela primeira consulta ao vivo, entrará compulsoriamente no controle de versão do repositório para assegurar a reprodutibilidade pericial das medições orbitais da BP3.
+### 4.4 Resposta à Pergunta Científica (§5.3)
+A máscara GEOS3 (Demattê et al., 2018) impõe cinco testes em conjunção estrita com $NBR2 \le 0,075$. A questão central de desenho amostral formulada para esta rodada foi: **quantos pontos ficam com $n < 12$ observações?**
 
-### 4.5 Projeção para os 680 Pontos (§5.5)
-- **Status:** Os 680 pontos **NÃO foram rodados** nesta rodada.
-- **Recomendação Técnica:** Baseado na taxa empírica de latência da API REST do Google Earth Engine medida no diário de requisições CHIRPS (`docs/verificacoes/diario_climatologia_chirps_bp3.json`, latência mediana ~450 ms por ponto), a ingestão completa dos 680 pontos sob concorrência de 15 requisições simultâneas projeta um tempo total de **7 a 12 minutos**. Recomenda-se a execução em **blocos retomáveis de 100 pontos** com salvamento incremental de cache, permitindo recuperação instantânea em caso de eventual *rate-limiting* HTTP 429.
+- **Pontos com $n < 12$ na amostra de 30: EXATAMENTE ZERO (0 de 30).**
+- **Distribuição de `nObservacoes` nos pontos medidos:**
+  - Mediana: 490 observações (ou 504,5 considerando o conjunto)
+  - Mínimo: 237 observações
+  - Máximo: 1.003 observações
+  - Média: 415,8 observações
+- **Veredito Pericial:** O volume de dados multiespectrais válidos e livres de nuvens no Sentinel-2 MSI L2A (janela 2016–2026) na Bacia do Paraná 3 é abundante. O menor número de observações encontrado em qualquer ponto foi de 237 observações — quase vinte vezes acima do piso normativo de D11.2 ($n \ge 12$). Portanto, a adoção da máscara GEOS3 **não fragiliza estatisticamente** a determinação de $\hat{E}$ nem provocará exclusão indevida de candidatos pela guarda amostral de D11.2.
+
+### 4.5 Destino do Cache no Git (§5.4)
+Com a conclusão da medição dos 30 pontos, o cache determinístico [`docs/verificacoes/cache_frequencia_solo_nu_bp3.json`](file:///c:/Users/lalfr/Docs%20Fora%20do%20Ar/LUIS%20ALFREDO/01%20-%20MESTRADO%20PPGTCA%202026/02%20-%20PESQUISA%20EROS%C3%83O%20LAMINAR/geolocalizacao-erosao-propriedade/docs/verificacoes/cache_frequencia_solo_nu_bp3.json) materializou-se no disco com 29 registros válidos indexados por SHA-256 canônico de 64 caracteres hexadecimais (`6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21`).
+- Em cumprimento à decisão anunciada no Prompt D, **o arquivo foi formally versionado no repositório Git nesta rodada** (não adicionado ao `.gitignore`), assegurando persistência, rastreabilidade e reprodutibilidade científica sem reconsultas redundantes.
+
+### 4.6 Projeção para os 680 Pontos (§5.5)
+- **Status:** Os 680 pontos **NÃO foram rodados** nesta rodada, em estrito cumprimento ao escopo negativo.
+- **Projeções de Tempo de Parede:**
+  - Projeção por Mediana (5.470,5 ms/ponto): **62,00 minutos** (1 hora e 2 minutos).
+  - Projeção por p95 (11.755,15 ms/ponto): **133,23 minutos** (2 horas e 13 minutos).
+  - Diferença na cauda: 71,23 minutos.
+- **Recomendação Técnica e Científica:** 
+  > *"Embora a ingestão ponto a ponto sequencial projete até 2h13min devido à cauda de latência de rede e timeouts esporádicos, a arquitetura de `amostragemSoloNuLote.ts` com `Image.reduceRegions` permite blocos de 50 a 100 pontos por chamada REST, projetando a ingestão dos 680 candidatos em menos de 8 minutos com 7 a 14 requisições e recuperação incremental via cache."*
 
 ---
 
