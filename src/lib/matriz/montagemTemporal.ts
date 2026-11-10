@@ -75,16 +75,18 @@ export const LIMIAR_DIAS_JANELA_CURTA_FALLBACK_D11_2 = 120;
  * do cálculo de D12.
  */
 export function podeEntrarEstratificacaoD12(prov: Proveniencia<number>): boolean {
+  if (!prov) return false;
   if (prov.estado !== "medido" && prov.estado !== "modelado") return false;
-  if (prov.estado === "modelado") {
-    if (prov.qualidade?.elegivelD12 === false) return false;
-    if (prov.qualidade?.regime === "fallback_janela_curta") return false;
-    if (
-      prov.qualidade?.nObservacoes !== undefined &&
-      prov.qualidade.nObservacoes < N_MINIMO_OBSERVACOES_SOLO_NU_D11_2
-    ) {
-      return false;
-    }
+  // Fail-closed: ausência de qualidade declarada é categoricamente inelegível (D11.2 / D12)
+  if (!prov.qualidade) return false;
+  if (prov.qualidade.elegivelD12 === false) return false;
+  if (prov.qualidade.regime === "fallback_janela_curta") return false;
+  if (
+    typeof prov.qualidade.nObservacoes !== "number" ||
+    !Number.isFinite(prov.qualidade.nObservacoes) ||
+    prov.qualidade.nObservacoes < N_MINIMO_OBSERVACOES_SOLO_NU_D11_2
+  ) {
+    return false;
   }
   return true;
 }

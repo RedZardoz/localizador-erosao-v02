@@ -27,6 +27,7 @@ import { Proveniencia, medido, indisponivel, valorOuNulo } from "../../types/pro
 import { DiarioRequisicoes, registrarChamadaDiario } from "../seguranca/diarioRequisicoes";
 import { JANELA_TEMPORAL_D05 } from "@/lib/matriz/perfis";
 import { DECISOES, exigirParametro } from "@/config/decisoes";
+import { N_MINIMO_OBSERVACOES_SOLO_NU_D11_2 } from "@/lib/matriz/montagemTemporal";
 export { JANELA_TEMPORAL_D05 };
 
 export const ASSET_SENTINEL2_SR = "COPERNICUS/S2_SR_HARMONIZED";
@@ -668,6 +669,18 @@ export function processarRespostaGeeReduceRegions(
 
     if (rawSoloNu && typeof rawSoloNu === "object" && "estado" in rawSoloNu) {
       freqNuProv = rawSoloNu as Proveniencia<number>;
+      if (freqNuProv.estado === "medido" && !freqNuProv.qualidade && nObservacoes > 0) {
+        const elegivelD12 = nObservacoes >= N_MINIMO_OBSERVACOES_SOLO_NU_D11_2;
+        freqNuProv = {
+          ...freqNuProv,
+          qualidade: {
+            nObservacoes,
+            regime: elegivelD12 ? "padrao_pleno" : "fallback_janela_curta",
+            erroPadrao: Number((0.5 / Math.sqrt(nObservacoes)).toFixed(4)),
+            elegivelD12,
+          },
+        };
+      }
     } else if (typeof rawSoloNu === "number" && Number.isFinite(rawSoloNu) && avaliacaoD11.suficiente) {
       // A-08 / Regra 2: o clamp [0, 1] que aqui existia foi removido. A frequencia de solo nu e a
       // media de uma mascara binaria no GEE e pertence a [0, 1] por construcao; um valor fora disso
@@ -687,12 +700,23 @@ export function processarRespostaGeeReduceRegions(
         // Sem corte: a verificacao de dominio acima ja recusou o que esta fora, e o arredondamento
         // a 4 casas absorve o ruido de ponto flutuante sem esconder anomalia.
         const dentroDoDominio = Number(rawSoloNu.toFixed(4));
+        const elegivelD12 = nObservacoes >= N_MINIMO_OBSERVACOES_SOLO_NU_D11_2;
+        const regime: "padrao_pleno" | "fallback_janela_curta" = elegivelD12
+          ? "padrao_pleno"
+          : "fallback_janela_curta";
+        const erroPadrao = nObservacoes > 0 ? Number((0.5 / Math.sqrt(nObservacoes)).toFixed(4)) : undefined;
         freqNuProv = medido(
           dentroDoDominio,
           "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
           INTERVALO_COMPOSICAO_D05,
           new Date().toISOString(),
-          `reduceRegions first(solo_nu_mean), nObservacoes=${nObservacoes}`
+          `reduceRegions first(solo_nu_mean), nObservacoes=${nObservacoes}`,
+          {
+            nObservacoes,
+            regime,
+            erroPadrao,
+            elegivelD12,
+          }
         );
       }
     } else {
@@ -781,7 +805,25 @@ export async function medirFrequenciaSoloNuEmLoteGeeRest(
     const itemEmCache = cacheAtual.itens[chave];
 
     if (itemEmCache && !ignorarCache) {
-      resultados.set(pt.id, itemEmCache);
+      let itemValido = itemEmCache;
+      const freqNu = itemValido.frequenciaSoloNu;
+      if (freqNu && freqNu.estado === "medido" && !freqNu.qualidade) {
+        const nObs = typeof itemValido.nObservacoes === "number" ? itemValido.nObservacoes : 0;
+        const elegivel = nObs >= N_MINIMO_OBSERVACOES_SOLO_NU_D11_2;
+        itemValido = {
+          ...itemValido,
+          frequenciaSoloNu: {
+            ...freqNu,
+            qualidade: {
+              nObservacoes: nObs,
+              regime: elegivel ? "padrao_pleno" : "fallback_janela_curta",
+              erroPadrao: nObs > 0 ? Number((0.5 / Math.sqrt(nObs)).toFixed(4)) : undefined,
+              elegivelD12: elegivel,
+            },
+          },
+        };
+      }
+      resultados.set(pt.id, itemValido);
       cacheHits++;
     } else {
       pontosParaConsultar.push(pt);

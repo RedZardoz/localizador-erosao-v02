@@ -46,6 +46,8 @@ import {
   calcularLimiaresTercis,
   classificarTercil,
 } from "@/lib/gee/estratificacao";
+import { podeEntrarEstratificacaoD12, N_MINIMO_OBSERVACOES_SOLO_NU_D11_2 } from "@/lib/matriz/montagemTemporal";
+import { Proveniencia, medido } from "@/types/proveniencia";
 import { aplicarThinningDeterminista } from "@/lib/gee/thinning";
 import {
   calcularSemivariogramaEmpirico,
@@ -611,6 +613,57 @@ export async function POST(request: NextRequest) {
           return null;
         }
 
+        const rawNObservacoes =
+          typeof (medS2 as any).nObservacoes === "number"
+            ? (medS2 as any).nObservacoes
+            : medS2.nObservacoesValidas;
+        const nObsE =
+          typeof rawNObservacoes === "number" && Number.isFinite(rawNObservacoes)
+            ? Math.round(rawNObservacoes)
+            : 0;
+        const elegivelD12 = nObsE >= N_MINIMO_OBSERVACOES_SOLO_NU_D11_2;
+        const regime: "padrao_pleno" | "fallback_janela_curta" = elegivelD12
+          ? "padrao_pleno"
+          : "fallback_janela_curta";
+        const erroPadrao = nObsE > 0 ? Number((0.5 / Math.sqrt(nObsE)).toFixed(4)) : undefined;
+
+        const fonteS2 =
+          typeof medS2.fonte === "string" && medS2.fonte.length > 0
+            ? medS2.fonte
+            : "GEE REST v1 Sentinel-2 MSI L2A";
+        const adqS2 =
+          typeof medS2.adquiridoEm === "string" && medS2.adquiridoEm.length > 0
+            ? medS2.adquiridoEm
+            : "serie-temporal-s2";
+
+        let provE: Proveniencia<number>;
+        if (
+          (medS2 as any).frequenciaSoloNuProv &&
+          typeof (medS2 as any).frequenciaSoloNuProv === "object" &&
+          "estado" in (medS2 as any).frequenciaSoloNuProv
+        ) {
+          provE = (medS2 as any).frequenciaSoloNuProv;
+        } else {
+          provE = medido(
+            medS2.frequenciaSoloNu,
+            fonteS2,
+            adqS2,
+            new Date().toISOString(),
+            `nObservacoes=${nObsE}`,
+            {
+              nObservacoes: nObsE,
+              regime,
+              erroPadrao,
+              elegivelD12,
+            }
+          );
+        }
+
+        if (!podeEntrarEstratificacaoD12(provE)) {
+          descartadosSemFrequenciaSoloNu += 1;
+          return null;
+        }
+
         return {
           id: c.id,
           latitude: c.latitude,
@@ -618,6 +671,7 @@ export async function POST(request: NextRequest) {
           declividadePct: medTerreno.declividadePct,
           frequenciaSoloNu: medS2.frequenciaSoloNu,
           nivelK: derivacaoK2024.nivelK,
+          provenienciaE: provE,
         };
       })
       .filter((item): item is CandidatoEstratificacao => item !== null);
@@ -993,13 +1047,41 @@ export async function POST(request: NextRequest) {
                   motivo: motivoD11,
                 }
               : medicaoS2.frequenciaSoloNu !== null
-                ? {
-                    estado: "medido" as const,
-                    valor: medicaoS2.frequenciaSoloNu,
-                    fonte: medicaoS2.fonte,
-                    adquiridoEm: dataAquisicaoS2,
-                    consultadoEm: dataConsultaAtual,
-                  }
+                ? (() => {
+                    const nObsValidas =
+                      typeof medicaoS2.nObservacoesValidas === "number" &&
+                      Number.isFinite(medicaoS2.nObservacoesValidas)
+                        ? medicaoS2.nObservacoesValidas
+                        : null;
+                    const elegivel =
+                      nObsValidas !== null &&
+                      nObsValidas >= N_MINIMO_OBSERVACOES_SOLO_NU_D11_2;
+                    return {
+                      estado: "medido" as const,
+                      valor: medicaoS2.frequenciaSoloNu,
+                      fonte: medicaoS2.fonte,
+                      adquiridoEm: dataAquisicaoS2,
+                      consultadoEm: dataConsultaAtual,
+                      qualidade:
+                        nObsValidas !== null
+                          ? {
+                              nObservacoes: nObsValidas,
+                              regime: elegivel
+                                ? ("padrao_pleno" as const)
+                                : ("fallback_janela_curta" as const),
+                              erroPadrao:
+                                nObsValidas > 0
+                                  ? Number(
+                                      (
+                                        0.5 / Math.sqrt(nObsValidas)
+                                      ).toFixed(4)
+                                    )
+                                  : undefined,
+                              elegivelD12: elegivel,
+                            }
+                          : undefined,
+                    };
+                  })()
                 : {
                     estado: "indisponivel" as const,
                     causa: "nao-calculado" as const,

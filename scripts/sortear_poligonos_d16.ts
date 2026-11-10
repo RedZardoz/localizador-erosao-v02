@@ -25,6 +25,7 @@ import {
 } from "@/lib/gee/sorteioPoligonos";
 import { dataCivilSaoPaulo } from "@/lib/tempo/datas";
 import { TODOS_ESTRATOS_D12 } from "@/lib/gee/estratificacao";
+import { medido } from "@/types/proveniencia";
 
 const DIRETORIO_SELOS = path.join(process.cwd(), "docs", "verificacoes", "sorteio");
 
@@ -64,16 +65,30 @@ function gerarConjuntoInspecaoDryRun(): CandidatoSorteioD16[] {
       for (const k of kNiveis) {
         const nNoEstrato = 6; // 6 candidatos por estrato (total 108) para garantir >= 4 por estrato conforme emenda D16 (72 polígonos)
         for (let i = 0; i < nNoEstrato; i++) {
+          const freq = Number((eTercis[eIdx] + i * 0.004 + (sIdx * 2 + k) * 0.0001).toFixed(4));
           pool.push({
             id: `DRYRUN-BP3-${String(seq).padStart(4, "0")}`,
             latitude: Number((-24.75 - seq * 0.0012).toFixed(6)),
             longitude: Number((-53.78 - seq * 0.0012).toFixed(6)),
             declividadePct: Number((sTercis[sIdx] + i * 0.04 + (eIdx * 2 + k) * 0.001).toFixed(4)),
-            frequenciaSoloNu: Number((eTercis[eIdx] + i * 0.004 + (sIdx * 2 + k) * 0.0001).toFixed(4)),
+            frequenciaSoloNu: freq,
             nivelK: k,
             classeWorldCover2020: i % 2 === 0 ? 40 : 30,
             classeWorldCover2021: 40,
             kAmbiguoAssociacao: k === 2 && i === 0,
+            provenienciaE: medido(
+              freq,
+              "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+              "2016-01-01 a 2026-06-30",
+              new Date().toISOString(),
+              "reduceRegions first(solo_nu_mean), nObservacoes=50",
+              {
+                nObservacoes: 50,
+                regime: "padrao_pleno",
+                erroPadrao: 0.0707,
+                elegivelD12: true,
+              }
+            ),
           });
           seq++;
         }
@@ -83,24 +98,7 @@ function gerarConjuntoInspecaoDryRun(): CandidatoSorteioD16[] {
   return pool;
 }
 
-export const MENSAGEM_BLOQUEIO_D11_2 =
-  `[BLOQUEIO PRE-REGISTRADO D11.2] O sorteio de D16 esta travado.\n` +
-  `A guarda que veda E-hat sob suficiencia insuficiente (6 <= n < 12, SE ~ 0,20) de entrar nos\n` +
-  `tercis de D12 nao esta ativa no caminho de producao. Ver:\n` +
-  `  - docs/auditorias/DeepSeek/AUDITORIA_FUNCIONAL_METODOLOGICA_2026-11-09.md, achado S1-1\n` +
-  `  - docs/planejamento/prompts/PROMPT_EXECUTOR_... (Prompt H), que a reativa\n` +
-  `Enquanto esta trava existir, nenhum sorteio pode ser executado. Remove-la e tarefa do Prompt H,\n` +
-  `junto com o conserto, e nao antes.`;
-
-export const TRAVA_D11_2_ATIVA = true;
-
 function executarCli(): void {
-  const travaAtiva: boolean = TRAVA_D11_2_ATIVA;
-  if (travaAtiva) {
-    console.error(MENSAGEM_BLOQUEIO_D11_2);
-    process.exit(1);
-  }
-
   const args = process.argv.slice(2);
   const flagDryRun = args.includes("--dry-run");
   const flagConfirmar = args.includes("--confirmar");
@@ -246,8 +244,15 @@ function executarCli(): void {
 
   for (const idEstrato of TODOS_ESTRATOS_D12) {
     const n = relatorio.contagemCandidatosPorEstrato[idEstrato];
-    const piPreview = n >= 4 ? (4 / n).toFixed(4) : "INVIÁVEL (<4)";
-    console.log(`${prefixoNum}  - ${idEstrato}: ${String(n).padStart(3, " ")} candidatos | pi_i previsto = 4/${n} (${piPreview})`);
+    let piPreview: string;
+    if (n >= 4) {
+      piPreview = `pi_i previsto = 4/${n} (${(4 / n).toFixed(4)})`;
+    } else if (n > 0) {
+      piPreview = `CENSO DO ESTRATO (pi_i = 1, w_i = 1, sem suplente)`;
+    } else {
+      piPreview = `ESTRATO VAZIO DECLARADO (N_h = 0)`;
+    }
+    console.log(`${prefixoNum}  - ${idEstrato}: ${String(n).padStart(3, " ")} candidatos | ${piPreview}`);
   }
 
   if (origemSintetica) {

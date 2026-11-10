@@ -3,8 +3,27 @@ import {
   executarAmostragemEstratificada,
   calcularLimiaresTercis,
   classificarTercil,
+  particionarCandidatosEm18Estratos,
   CandidatoEstratificacao,
 } from "./estratificacao";
+import { medido, modelado } from "../../types/proveniencia";
+import { podeEntrarEstratificacaoD12 } from "../matriz/montagemTemporal";
+
+function provEValida(val: number, nObs = 50) {
+  return medido(
+    val,
+    "GEE REST v1 reduceRegions",
+    "2016-01-01 a 2026-06-30",
+    new Date().toISOString(),
+    `nObs=${nObs}`,
+    {
+      nObservacoes: nObs,
+      regime: nObs >= 12 ? "padrao_pleno" : "fallback_janela_curta",
+      erroPadrao: Number((0.5 / Math.sqrt(nObs)).toFixed(4)),
+      elegivelD12: nObs >= 12,
+    }
+  );
+}
 
 describe("Limiares de Quantis e Tercis", () => {
   it("deve calcular limiares de 33.3% e 66.7% corretamente", () => {
@@ -65,13 +84,15 @@ describe("Amostragem Estratificada no Espaço Ŝ × Ê × K̂ (§10.6)", () => {
         for (const k of [1, 2] as const) {
           // 10 candidatos por estrato
           for (let i = 0; i < 10; i++) {
+            const freq = e * 0.25 + (i * 0.01);
             lista.push({
               id: `cand-${id++}`,
               latitude: -25.0 - s * 0.1,
               longitude: -50.0 - e * 0.1,
               declividadePct: s * 5.0 + (i * 0.1), // s=1 -> ~5%, s=2 -> ~10%, s=3 -> ~15%
-              frequenciaSoloNu: e * 0.25 + (i * 0.01), // e=1 -> ~0.25, e=2 -> ~0.50, e=3 -> ~0.75
+              frequenciaSoloNu: freq, // e=1 -> ~0.25, e=2 -> ~0.50, e=3 -> ~0.75
               nivelK: k,
+              provenienciaE: provEValida(freq),
             });
           }
         }
@@ -122,6 +143,7 @@ describe("Amostragem Estratificada no Espaço Ŝ × Ê × K̂ (§10.6)", () => {
       declividadePct: 5.0, // Constante!
       frequenciaSoloNu: 0.1 * i,
       nivelK: 1,
+      provenienciaE: provEValida(0.1 * i),
     }));
 
     const res = executarAmostragemEstratificada(candidatosPlanos, 5, 42);
@@ -140,8 +162,8 @@ describe("Amostragem Estratificada no Espaço Ŝ × Ê × K̂ (§10.6)", () => {
   it("deve registrar déficit quando estrato não tiver candidatos suficientes", () => {
     // Apenas 2 candidatos para uma meta de 10
     const poucos: CandidatoEstratificacao[] = [
-      { id: "c1", latitude: -25.0, longitude: -50.0, declividadePct: 5.0, frequenciaSoloNu: 0.2, nivelK: 1 },
-      { id: "c2", latitude: -25.1, longitude: -50.1, declividadePct: 15.0, frequenciaSoloNu: 0.8, nivelK: 2 },
+      { id: "c1", latitude: -25.0, longitude: -50.0, declividadePct: 5.0, frequenciaSoloNu: 0.2, nivelK: 1, provenienciaE: provEValida(0.2) },
+      { id: "c2", latitude: -25.1, longitude: -50.1, declividadePct: 15.0, frequenciaSoloNu: 0.8, nivelK: 2, provenienciaE: provEValida(0.8) },
     ];
 
     const res = executarAmostragemEstratificada(poucos, 10, 42);
@@ -172,5 +194,76 @@ describe("Amostragem Estratificada no Espaço Ŝ × Ê × K̂ (§10.6)", () => {
     expect(() => particionarCandidatosEm18Estratos(candidatosComFallback)).toThrow(
       /regime inelegível para D12/
     );
+  });
+
+  describe("Travas Obrigatórias D11.2 / D12 (Prompt H)", () => {
+    it("Trava 2: medido com n=6 é recusado por podeEntrarEstratificacaoD12", () => {
+      const prov = medido(
+        0.15,
+        "GEE REST",
+        "2016-2026",
+        new Date().toISOString(),
+        "n=6",
+        {
+          nObservacoes: 6,
+          regime: "fallback_janela_curta",
+          erroPadrao: 0.2041,
+          elegivelD12: false,
+        }
+      );
+      expect(podeEntrarEstratificacaoD12(prov)).toBe(false);
+    });
+
+    it("Trava 3: qualidade ausente é recusada por podeEntrarEstratificacaoD12 (fail-closed)", () => {
+      const provMedidoSemQualidade = medido(0.15, "GEE REST", "2016-2026");
+      expect(podeEntrarEstratificacaoD12(provMedidoSemQualidade)).toBe(false);
+
+      const provModeladoSemQualidade = modelado(0.15, "Modelo", ["S2"]);
+      expect(podeEntrarEstratificacaoD12(provModeladoSemQualidade)).toBe(false);
+    });
+
+    it("Trava 4: candidato sem provenienciaE falha nomeando D11.2", () => {
+      const candidatoInvalido = {
+        id: "cand-sem-prov",
+        latitude: -25.0,
+        longitude: -50.0,
+        declividadePct: 5.0,
+        frequenciaSoloNu: 0.15,
+        nivelK: 1 as const,
+      } as unknown as CandidatoEstratificacao;
+
+      expect(() => particionarCandidatosEm18Estratos([candidatoInvalido])).toThrow(
+        /D11\.2/
+      );
+    });
+
+    it("Trava 5: n = 12 exatamente é aceito (fronteira inclusiva)", () => {
+      const prov12 = medido(
+        0.15,
+        "GEE REST",
+        "2016-2026",
+        new Date().toISOString(),
+        "n=12",
+        {
+          nObservacoes: 12,
+          regime: "padrao_pleno",
+          erroPadrao: 0.1443,
+          elegivelD12: true,
+        }
+      );
+      expect(podeEntrarEstratificacaoD12(prov12)).toBe(true);
+
+      const candidatoN12: CandidatoEstratificacao = {
+        id: "cand-12",
+        latitude: -25.0,
+        longitude: -50.0,
+        declividadePct: 5.0,
+        frequenciaSoloNu: 0.15,
+        nivelK: 1,
+        provenienciaE: prov12,
+      };
+
+      expect(() => particionarCandidatosEm18Estratos([candidatoN12])).not.toThrow();
+    });
   });
 });

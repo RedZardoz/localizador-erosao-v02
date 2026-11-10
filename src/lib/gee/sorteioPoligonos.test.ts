@@ -8,6 +8,7 @@ import {
   sortear72PoligonosD16,
 } from "./sorteioPoligonos";
 import { TODOS_ESTRATOS_D12 } from "./estratificacao";
+import { medido } from "../../types/proveniencia";
 
 function gerarPoolCandidatosElegiveis(nPorEstrato = 4): CandidatoSorteioD16[] {
   const sTercis = [4.0, 9.0, 16.0];
@@ -20,16 +21,30 @@ function gerarPoolCandidatosElegiveis(nPorEstrato = 4): CandidatoSorteioD16[] {
     for (let eIdx = 0; eIdx < eTercis.length; eIdx++) {
       for (const k of kNiveis) {
         for (let i = 0; i < nPorEstrato; i++) {
+          const freq = Number((eTercis[eIdx] + i * 0.005 + (sIdx * 2 + k) * 0.0001).toFixed(4));
           candidatos.push({
             id: `CAND-${String(seq).padStart(4, "0")}`,
             latitude: -24.8 - seq * 0.001,
             longitude: -53.8 - seq * 0.001,
-            declividadePct: sTercis[sIdx] + i * 0.05 + (eIdx * 2 + k) * 0.001,
-            frequenciaSoloNu: eTercis[eIdx] + i * 0.005 + (sIdx * 2 + k) * 0.0001,
+            declividadePct: Number((sTercis[sIdx] + i * 0.05 + (eIdx * 2 + k) * 0.001).toFixed(4)),
+            frequenciaSoloNu: freq,
             nivelK: k,
             classeWorldCover2020: i % 2 === 0 ? 40 : 30,
             classeWorldCover2021: 40,
             kAmbiguoAssociacao: k === 2 && i === 0,
+            provenienciaE: medido(
+              freq,
+              "GEE REST v1 reduceRegions (S2_SR_HARMONIZED)",
+              "2016-01-01 a 2026-06-30",
+              new Date().toISOString(),
+              "reduceRegions first(solo_nu_mean), nObservacoes=50",
+              {
+                nObservacoes: 50,
+                regime: "padrao_pleno",
+                erroPadrao: 0.0707,
+                elegivelD12: true,
+              }
+            ),
           });
           seq++;
         }
@@ -135,11 +150,11 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
     expect(sorteadoIndisponivel!.unidadeDeterminanteK2024?.codUm2).toBe("LVdf30");
   });
 
-  it("deve recusar e nomear 'minimo_4_candidatos_por_estrato' listando os estratos deficientes para 1, 2 e 3 candidatos", () => {
+  it("deve recusar e nomear 'minimo_4_candidatos_por_estrato' quando exigirMinimo4PorEstrato for ativado no modo legado", () => {
     for (const qtd of [1, 2, 3]) {
       const pool = gerarPoolCandidatosElegiveis(qtd);
       try {
-        verificarPreCondicoesSorteioD16(pool, { lancarErro: true });
+        verificarPreCondicoesSorteioD16(pool, { lancarErro: true, exigirMinimo4PorEstrato: true });
         expect.fail(`Deveria ter recusado estratos com ${qtd} candidato(s)`);
       } catch (e) {
         expect(e).toBeInstanceOf(ErroPreCondicaoSorteioD16);
@@ -152,17 +167,194 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
     }
   });
 
-  it("X0: chamando o sorteio diretamente com nH = 2 ou nH = 3, deve lançar em lugar de devolver undefined ou pi_i > 1", () => {
-    for (const qtd of [2, 3]) {
-      const pool = gerarPoolCandidatosElegiveis(qtd);
+  describe("Regra de Estrato Deficiente e Sorteio D16 — Travas de π_i (Prompt H / Opção a)", () => {
+    it("Trava T3.1: N_h = 3 produz censo com π_i = 1, w_i = 1 e NÃO lança erro", () => {
+      const pool = gerarPoolCandidatosElegiveis(3);
+      let selo: any;
       expect(() => {
-        sortear72PoligonosD16(pool, {
+        selo = sortear72PoligonosD16(pool, {
           semente: 42,
-          gitCommit: "commit-teste",
-          sha256ConjuntoCandidatos: "sha256-teste",
+          gitCommit: "commit-teste-nh3",
+          sha256ConjuntoCandidatos: "sha256-nh3",
         });
-      }).toThrow();
-    }
+      }).not.toThrow();
+
+      expect(selo).toBeDefined();
+      // Em cada estrato com 3 candidatos, foram tomados os 3 candidatos (censo)
+      // 18 estratos * 3 = 54 polígonos
+      expect(selo.totalPoligonosSorteados).toBe(54);
+      for (const p of selo.poligonos) {
+        expect(p.pi_i).toBe(1);
+        expect(p.w_i).toBe(1);
+        expect(p.pi_i * p.w_i).toBe(1);
+      }
+      expect(selo.estratosCenso).toHaveLength(18);
+    });
+
+    it("Trava T3.2: N_h = 0 produz estrato vazio declarado no selo e NÃO lança erro", () => {
+      // Gera pool com 4 candidatos em 17 estratos e 0 no estrato E_1_3_2
+      const pool = gerarPoolCandidatosElegiveis(4).filter((c) => {
+        // Exclui candidatos que cairiam em E_1_3_2 (s=1, e=3, k=2)
+        return !(c.nivelK === 2 && (c.declividadePct ?? 0) < 6 && (c.frequenciaSoloNu ?? 0) > 0.6);
+      });
+
+      let selo: any;
+      expect(() => {
+        selo = sortear72PoligonosD16(pool, {
+          semente: 42,
+          gitCommit: "commit-teste-nh0",
+          sha256ConjuntoCandidatos: "sha256-nh0",
+        });
+      }).not.toThrow();
+
+      expect(selo).toBeDefined();
+      expect(selo.estratosVazios.length).toBeGreaterThan(0);
+      for (const vazioId of selo.estratosVazios) {
+        expect(selo.contagemCandidatosPorEstrato[vazioId]).toBe(0);
+        const poligonosNoEstrato = selo.poligonos.filter((p: any) => p.estratoId === vazioId);
+        expect(poligonosNoEstrato).toHaveLength(0);
+      }
+    });
+
+    it("Trava T3.3: N_h = 4 produz π_i = 1 e é marcado como censo no selo", () => {
+      const pool = gerarPoolCandidatosElegiveis(4);
+      const selo = sortear72PoligonosD16(pool, {
+        semente: 42,
+        gitCommit: "commit-teste-nh4",
+        sha256ConjuntoCandidatos: "sha256-nh4",
+      });
+
+      expect(selo.totalPoligonosSorteados).toBe(72);
+      expect(selo.estratosCenso).toHaveLength(18);
+      for (const p of selo.poligonos) {
+        expect(p.pi_i).toBe(1);
+        expect(p.w_i).toBe(1);
+        expect(p.pi_i * p.w_i).toBe(1);
+      }
+    });
+
+    it("Trava T3.4: N_h = 51 produz π_i = 4/51, w_i = 51/4 e π_i × w_i = 1", () => {
+      const caminhoCandidatos = path.resolve(
+        process.cwd(),
+        "docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json"
+      );
+      const caminhoCache = path.resolve(
+        process.cwd(),
+        "docs/verificacoes/cache_frequencia_solo_nu_bp3.json"
+      );
+      const dadosCandidatos = JSON.parse(fs.readFileSync(caminhoCandidatos, "utf-8"));
+      const dadosCache = JSON.parse(fs.readFileSync(caminhoCache, "utf-8"));
+
+      const mapaCache = new Map();
+      for (const item of Object.values(dadosCache.itens) as any[]) {
+        mapaCache.set(item.id, item);
+      }
+
+      const poolReal: CandidatoSorteioD16[] = [];
+      for (const cand of dadosCandidatos.candidatos) {
+        const med = mapaCache.get(cand.id);
+        if (!med || !med.frequenciaSoloNu || typeof med.frequenciaSoloNu.valor !== "number") continue;
+
+        poolReal.push({
+          id: cand.id,
+          latitude: cand.latitude,
+          longitude: cand.longitude,
+          declividadePct: cand.declividadePct,
+          frequenciaSoloNu: med.frequenciaSoloNu.valor,
+          nivelK: cand.nivelK,
+          classeWorldCover2020: 40,
+          classeWorldCover2021: 40,
+          kAmbiguoAssociacao: false,
+          provenienciaE: med.frequenciaSoloNu,
+        });
+      }
+
+      const selo = sortear72PoligonosD16(poolReal, {
+        semente: 42,
+        gitCommit: "commit-teste-nh51",
+        sha256ConjuntoCandidatos: "sha256-nh51",
+      });
+
+      // O estrato E_3_1_2 (S3 x E1 x K2) tem exatamente 51 candidatos no universo real
+      expect(selo.contagemCandidatosPorEstrato["E_3_1_2"]).toBe(51);
+
+      const poligonos51 = selo.poligonos.filter((p) => p.estratoId === "E_3_1_2");
+      expect(poligonos51).toHaveLength(4);
+      for (const p of poligonos51) {
+        expect(p.nCandidatosEstrato).toBe(51);
+        expect(p.pi_i).toBeCloseTo(4 / 51, 6);
+        expect(p.w_i).toBeCloseTo(51 / 4, 6);
+        expect(p.pi_i * p.w_i).toBeCloseTo(1, 6);
+      }
+    });
+
+    it("Trava T3.5: Total sorteado sobre o universo real da BP3 é exatamente 67 (não 72)", () => {
+      const caminhoCandidatos = path.resolve(
+        process.cwd(),
+        "docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json"
+      );
+      const caminhoCache = path.resolve(
+        process.cwd(),
+        "docs/verificacoes/cache_frequencia_solo_nu_bp3.json"
+      );
+      expect(fs.existsSync(caminhoCandidatos)).toBe(true);
+      expect(fs.existsSync(caminhoCache)).toBe(true);
+
+      const dadosCandidatos = JSON.parse(fs.readFileSync(caminhoCandidatos, "utf-8"));
+      const dadosCache = JSON.parse(fs.readFileSync(caminhoCache, "utf-8"));
+
+      const mapaCache = new Map();
+      for (const item of Object.values(dadosCache.itens) as any[]) {
+        mapaCache.set(item.id, item);
+      }
+
+      const poolReal: CandidatoSorteioD16[] = [];
+      for (const cand of dadosCandidatos.candidatos) {
+        const med = mapaCache.get(cand.id);
+        if (!med || !med.frequenciaSoloNu || typeof med.frequenciaSoloNu.valor !== "number") continue;
+
+        poolReal.push({
+          id: cand.id,
+          latitude: cand.latitude,
+          longitude: cand.longitude,
+          declividadePct: cand.declividadePct,
+          frequenciaSoloNu: med.frequenciaSoloNu.valor,
+          nivelK: cand.nivelK,
+          classeWorldCover2020: 40,
+          classeWorldCover2021: 40,
+          kAmbiguoAssociacao: false,
+          provenienciaE: med.frequenciaSoloNu,
+        });
+      }
+
+      expect(poolReal).toHaveLength(677);
+
+      const selo = sortear72PoligonosD16(poolReal, {
+        semente: 42,
+        gitCommit: "commit-teste-bp3",
+        sha256ConjuntoCandidatos: "sha256-bp3",
+      });
+
+      // Total sorteado sobre o universo atual: 67, não 72!
+      expect(selo.totalPoligonosSorteados).toBe(67);
+      expect(selo.totalTreino).toBe(34);
+      expect(selo.totalHeldOut).toBe(33);
+      expect(selo.totalTreino + selo.totalHeldOut).toBe(67);
+
+      // Estrato vazio declarado: E_1_3_2 (S1 x E3 x K2)
+      expect(selo.estratosVazios).toContain("E_1_3_2");
+
+      // Estratos de censo em K=2 (pi_i = 1):
+      // E_1_2_2 (Nh=3), E_2_2_2 (Nh=4), E_2_3_2 (Nh=4), E_3_2_2 (Nh=4)
+      expect(selo.estratosCenso).toContain("E_1_2_2");
+      expect(selo.estratosCenso).toContain("E_2_2_2");
+      expect(selo.estratosCenso).toContain("E_2_3_2");
+      expect(selo.estratosCenso).toContain("E_3_2_2");
+
+      // Exatamente 5 dos 9 estratos de K=2 são censo ou vazios
+      const estratosK2CensoOuVazio = [...selo.estratosCenso!, ...selo.estratosVazios!].filter(e => e.endsWith("_2"));
+      expect(estratosK2CensoOuVazio).toHaveLength(5);
+    });
   });
 
   it("deve recusar e nomear 'guarda_anticircularidade_d16' se candidato contiver scoreSuscetibilidade, scoreJev ou severidade", () => {
@@ -263,16 +455,30 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
           const nNesteEstrato = tamanhosDesejados[estratoCounter];
           estratoCounter++;
           for (let i = 0; i < nNesteEstrato; i++) {
+            const freq = Number((eTercis[eIdx] + i * 0.003 + (sIdx * 2 + k) * 0.0001).toFixed(4));
             candidatosHeterogeneos.push({
               id: `HET-${String(seq).padStart(4, "0")}`,
               latitude: -24.7 - seq * 0.001,
               longitude: -53.9 - seq * 0.001,
-              declividadePct: sTercis[sIdx] + i * 0.03 + (eIdx * 2 + k) * 0.001,
-              frequenciaSoloNu: eTercis[eIdx] + i * 0.003 + (sIdx * 2 + k) * 0.0001,
+              declividadePct: Number((sTercis[sIdx] + i * 0.03 + (eIdx * 2 + k) * 0.001).toFixed(4)),
+              frequenciaSoloNu: freq,
               nivelK: k,
               classeWorldCover2020: 40,
               classeWorldCover2021: 30,
               kAmbiguoAssociacao: false,
+              provenienciaE: medido(
+                freq,
+                "GEE REST v1 reduceRegions",
+                "2016-01-01 a 2026-06-30",
+                new Date().toISOString(),
+                "nObservacoes=50",
+                {
+                  nObservacoes: 50,
+                  regime: "padrao_pleno",
+                  erroPadrao: 0.0707,
+                  elegivelD12: true,
+                }
+              ),
             });
             seq++;
           }

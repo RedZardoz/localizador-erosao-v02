@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `81d451140ea79a51ef775b0cd0600a0c77400bd2`
-- Data do HEAD: 2026-11-10 16:56:18 +0000
+- Commit HEAD: `45587975ec55f46cffbad7479db9374dfbdd022b`
+- Data do HEAD: 2026-11-10 18:22:28 +0000
 - Últimos 5 commits:
-  1. `81d4511 docs(planejamento): adicionar prompt G da ingestao dos 677 e caracterizacao de E-hat`
-  2. `8d6bd48 feat(E-hat): calibrar amostragem de 30 pontos sob mascara GEOS3 e materializar cache`
-  3. `df1df04 chore(estado): sincronizar painel ESTADO.md apos incorporacao dos testes e evidencias`
-  4. `75ceffa fix(auditoria): auditar estabilidade WFS Embrapa, remover fallback do CLI e registrar recusa C1 de E-hat`
-  5. `193da3b docs(planejamento): adicionar prompt F com quatro correcoes do E-linha e a calibracao de E-hat`
+  1. `4558797 docs(planejamento): adicionar prompt H da guarda D11.2 e do desenho 18x4`
+  2. `91706f0 docs(planejamento): material de decisao sobre a estratificacao de E-hat`
+  3. `af6cf47 feat(E-hat): ingerir 677 candidatos de BP3, caracterizar distribuicao e tabular 18 estratos D16`
+  4. `81d4511 docs(planejamento): adicionar prompt G da ingestao dos 677 e caracterizacao de E-hat`
+  5. `8d6bd48 feat(E-hat): calibrar amostragem de 30 pontos sob mascara GEOS3 e materializar cache`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 124
@@ -70,7 +70,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | chuva | `RUSLE_Fator_R` | SIM | SIM | SIM |
 
 ## 7. Arquivos de Evidência em `docs/verificacoes/`
-- Total de arquivos de evidência medidos: 158
+- Total de arquivos de evidência medidos: 179
 
 | Arquivo de Evidência | Data no Nome | Tamanho (bytes) |
 |---|:---:|---:|
@@ -109,7 +109,8 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `2026-11-09d_calibracao_30_pontos_solo_nu.md` | 2026-11-09 | 10582 |
 | `2026-11-10_universo_candidatos_e_reprodutibilidade.md` | 2026-11-10 | 10193 |
 | `2026-11-10f_calibracao_e_estabilidade_fontes.md` | 2026-11-10 | 15604 |
-| `cache_frequencia_solo_nu_bp3.json` | sem data no nome | 25062 |
+| `2026-11-10g_ingestao_680_e_distribuicao_e.md` | 2026-11-10 | 22153 |
+| `cache_frequencia_solo_nu_bp3.json` | sem data no nome | 577697 |
 | `cache_pedologia_bp3.json` | sem data no nome | 96740 |
 | `calculadora/2026-09-30_simulacao_desenho_d16_224m.md` | 2026-09-30 | 2027 |
 | `calibracao_30_pontos_solo_nu.json` | sem data no nome | 1464 |
@@ -148,6 +149,25 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `execucao/2026-11-10f/rodada_30_pontos_calibracao.txt` | sem data no nome | 3506 |
 | `execucao/2026-11-10f/tsc_noemit.txt` | sem data no nome | 0 |
 | `execucao/2026-11-10f/varredura_datas_fixas.txt` | sem data no nome | 1816 |
+| `execucao/2026-11-10g/bloco_25_teste_fumaca.txt` | sem data no nome | 6832 |
+| `execucao/2026-11-10g/cache_teste_fumaca.json` | sem data no nome | 21651 |
+| `execucao/2026-11-10g/caracterizacao_distribuicao_e.txt` | sem data no nome | 7204 |
+| `execucao/2026-11-10g/confirmacao_credencial.txt` | sem data no nome | 428 |
+| `execucao/2026-11-10g/diario_ingestao_677_recuperacao1.json` | sem data no nome | 5308 |
+| `execucao/2026-11-10g/diario_ingestao_677_recuperacao2.json` | sem data no nome | 944 |
+| `execucao/2026-11-10g/diario_ingestao_677_rodada1.json` | sem data no nome | 9016 |
+| `execucao/2026-11-10g/diario_teste_fumaca_25.json` | sem data no nome | 614 |
+| `execucao/2026-11-10g/escolha_bloco.txt` | sem data no nome | 1430 |
+| `execucao/2026-11-10g/estado_verificar.txt` | sem data no nome | 326 |
+| `execucao/2026-11-10g/git_log.txt` | sem data no nome | 568 |
+| `execucao/2026-11-10g/git_status.txt` | sem data no nome | 886 |
+| `execucao/2026-11-10g/ingestao_677_recuperacao1.txt` | sem data no nome | 7714 |
+| `execucao/2026-11-10g/ingestao_677_recuperacao2.txt` | sem data no nome | 6240 |
+| `execucao/2026-11-10g/ingestao_677_rodada1.txt` | sem data no nome | 8882 |
+| `execucao/2026-11-10g/janela_temporal_real.txt` | sem data no nome | 2462 |
+| `execucao/2026-11-10g/npm_test.txt` | sem data no nome | 41266 |
+| `execucao/2026-11-10g/ocupacao_estratos_d16.txt` | sem data no nome | 16414 |
+| `execucao/2026-11-10g/teste_bloco_25.json` | sem data no nome | 1331 |
 | `fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md` | sem data no nome | 7016 |
 | `fontes/dematte2018/conferencia_dematte_2018.md` | sem data no nome | 6725 |
 | `fontes/dematte2018/extrair_dematte_2018.py` | sem data no nome | 2091 |
@@ -207,6 +227,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `fontes/zhu2013/extrair_zhu_2013.py` | sem data no nome | 3701 |
 | `fontes/zhu2013/saida_extracao_zhu_2013.txt` | sem data no nome | 4976 |
 | `fontes/zhu2013/zhu_2013_tese_ccdc.pdf` | sem data no nome | 5623376 |
+| `ingestao_677_solo_nu.json` | sem data no nome | 12254 |
 | `legado_climatologia_chirps_bp3_2022.json` | sem data no nome | 4103 |
 | `planet/2026-10-20_planet_my_plan_insights.png` | 2026-10-20 | 107436 |
 | `pluviometria_iat_estacoes.csv` | sem data no nome | 8214 |

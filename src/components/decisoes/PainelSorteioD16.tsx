@@ -83,6 +83,7 @@ export const PainelSorteioD16: React.FC = () => {
         kAmbiguoAssociacao: kAmbiguo,
         unidadeDeterminanteK2024:
           p.criterioSelecao.unidadeDeterminanteK2024 ?? p.solo?.unidadeDeterminanteK2024 ?? null,
+        provenienciaE: p.temporal?.D?.serie?.frequenciaSoloNu,
       });
     }
     return { candidatosMapeados: validos, candidatosExcluidosMedidaAusente: excluidos };

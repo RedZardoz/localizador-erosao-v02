@@ -37,9 +37,10 @@ export class ErroPreCondicaoSorteioD16 extends Error {
 }
 
 export interface CandidatoSorteioD16
-  extends Omit<CandidatoEstratificacao, "declividadePct" | "frequenciaSoloNu"> {
+  extends Omit<CandidatoEstratificacao, "declividadePct" | "frequenciaSoloNu" | "provenienciaE"> {
   declividadePct: number | null;
   frequenciaSoloNu: number | null;
+  provenienciaE?: Proveniencia<number>;
   classeWorldCover2020: number | null | undefined;
   classeWorldCover2021: number | null | undefined;
   kAmbiguoAssociacao: true | false | "indisponivel" | undefined;
@@ -92,7 +93,7 @@ export interface PoligonoSorteadoD16 {
 }
 
 export interface SeloSorteioD16 {
-  versaoEsquema: "1.0.0" | "1.1.0" | "1.2.0";
+  versaoEsquema: "1.0.0" | "1.1.0" | "1.2.0" | "1.3.0";
   geradoEm: string;
   semente: number;
   politicaSemente: string;
@@ -100,13 +101,15 @@ export interface SeloSorteioD16 {
   sha256ConjuntoCandidatos: string;
   hashIntegridade: string;
   totalCandidatosEntrada: number;
-  totalPoligonosSorteados: 36 | 72;
-  totalTreino: 18 | 36;
-  totalHeldOut: 18 | 36;
-  areaTotalHectares: 360 | 361.44;
+  totalPoligonosSorteados: number;
+  totalTreino: number;
+  totalHeldOut: number;
+  areaTotalHectares: number;
   limiaresS: { t1: number; t2: number };
   limiaresE: { t1: number; t2: number };
   contagemCandidatosPorEstrato: Record<string, number>;
+  estratosCenso?: string[];
+  estratosVazios?: string[];
   decisoesVigentes: Record<
     "D07" | "D08" | "D12" | "D16" | "D23",
     { titulo: string; status: string; decididaEm?: string }
@@ -126,6 +129,8 @@ export interface RelatorioPreCondicoesD16 {
   limiaresE: { t1: number; t2: number };
   contagemCandidatosPorEstrato: Record<string, number>;
   estratosDeficientes: string[];
+  estratosCenso?: string[];
+  estratosVazios?: string[];
 }
 
 export const CAMPOS_ESTRUTURAIS_PERMITIDOS_CANDIDATO = new Set<string>([
@@ -189,9 +194,10 @@ export function verificarPreCondicoesSorteioD16(
   opcoes: {
     seloExistenteCaminho?: string | null;
     lancarErro?: boolean;
+    exigirMinimo4PorEstrato?: boolean;
   } = {}
 ): RelatorioPreCondicoesD16 {
-  const { seloExistenteCaminho = null, lancarErro = true } = opcoes;
+  const { seloExistenteCaminho = null, lancarErro = true, exigirMinimo4PorEstrato = false } = opcoes;
 
   const candidatosValidos = candidatos.filter(
     (c): c is CandidatoSorteioD16 & { declividadePct: number; frequenciaSoloNu: number } =>
@@ -202,15 +208,42 @@ export function verificarPreCondicoesSorteioD16(
   );
   const candidatosExcluidosMedidaAusente = candidatos.length - candidatosValidos.length;
 
-  const particao =
-    candidatosValidos.length > 0
-      ? particionarCandidatosEm18Estratos(candidatosValidos)
-      : {
-          limiaresS: { t1: 0, t2: 0 },
-          limiaresE: { t1: 0, t2: 0 },
-          todosPossiveisEstratos: [...TODOS_ESTRATOS_D12],
-          estratosMap: Object.fromEntries(TODOS_ESTRATOS_D12.map((e) => [e, []])),
-        };
+  let particao: {
+    limiaresS: { t1: number; t2: number };
+    limiaresE: { t1: number; t2: number };
+    todosPossiveisEstratos: string[];
+    estratosMap: Record<string, CandidatoEstratificacao[]>;
+  };
+
+  try {
+    particao =
+      candidatosValidos.length > 0
+        ? particionarCandidatosEm18Estratos(
+            candidatosValidos as unknown as CandidatoEstratificacao[]
+          )
+        : {
+            limiaresS: { t1: 0, t2: 0 },
+            limiaresE: { t1: 0, t2: 0 },
+            todosPossiveisEstratos: [...TODOS_ESTRATOS_D12],
+            estratosMap: Object.fromEntries(TODOS_ESTRATOS_D12.map((e) => [e, []])),
+          };
+  } catch (err) {
+    if (lancarErro) throw err;
+    return {
+      aprovado: false,
+      condicaoFalha: "guarda_anticircularidade_d16",
+      motivoFalha: err instanceof Error ? err.message : String(err),
+      seloExistenteCaminho,
+      totalCandidatos: candidatosValidos.length,
+      candidatosExcluidosMedidaAusente,
+      limiaresS: { t1: 0, t2: 0 },
+      limiaresE: { t1: 0, t2: 0 },
+      contagemCandidatosPorEstrato: Object.fromEntries(TODOS_ESTRATOS_D12.map((e) => [e, 0])),
+      estratosDeficientes: [...TODOS_ESTRATOS_D12],
+      estratosCenso: [],
+      estratosVazios: [...TODOS_ESTRATOS_D12],
+    };
+  }
 
   const contagemCandidatosPorEstrato: Record<string, number> = {};
   for (const idEstrato of TODOS_ESTRATOS_D12) {
@@ -219,6 +252,14 @@ export function verificarPreCondicoesSorteioD16(
   }
   const estratosDeficientes = TODOS_ESTRATOS_D12.filter(
     (idEstrato) => contagemCandidatosPorEstrato[idEstrato] < 4
+  );
+  const estratosCenso = TODOS_ESTRATOS_D12.filter(
+    (idEstrato) =>
+      contagemCandidatosPorEstrato[idEstrato] > 0 &&
+      contagemCandidatosPorEstrato[idEstrato] <= 4
+  );
+  const estratosVazios = TODOS_ESTRATOS_D12.filter(
+    (idEstrato) => contagemCandidatosPorEstrato[idEstrato] === 0
   );
 
   const falhar = (
@@ -239,6 +280,8 @@ export function verificarPreCondicoesSorteioD16(
       limiaresE: particao.limiaresE,
       contagemCandidatosPorEstrato,
       estratosDeficientes,
+      estratosCenso,
+      estratosVazios,
     };
   };
 
@@ -334,14 +377,16 @@ export function verificarPreCondicoesSorteioD16(
     }
   }
 
-  // Pré-condição 5: os 18 estratos têm ao menos 4 candidatos cada
-  if (estratosDeficientes.length > 0) {
+  // Pré-condição 5: Sob a emenda D12/D16 (10/11/2026), estratos deficientes (Nh < 4) são tratados
+  // pela regra registrada de censo (0 < Nh < 4) ou estrato vazio declarado (Nh = 0).
+  // Apenas no modo estrito legado (exigirMinimo4PorEstrato: true) lança erro para Nh < 4.
+  if (exigirMinimo4PorEstrato && estratosDeficientes.length > 0) {
     const detalhe = estratosDeficientes
       .map((e) => `${e} (${contagemCandidatosPorEstrato[e]} candidato(s))`)
       .join(", ");
     return falhar(
       "minimo_4_candidatos_por_estrato",
-      `Os 18 estratos de D12 exigem ao menos 4 candidatos cada para formar dois de treino e dois de held-out de D16. Estratos deficientes (${estratosDeficientes.length}/18): ${detalhe}.`
+      `Os 18 estratos de D12 exigem ao menos 4 candidatos cada no modo estrito legado. Estratos deficientes (${estratosDeficientes.length}/18): ${detalhe}.`
     );
   }
 
@@ -355,6 +400,8 @@ export function verificarPreCondicoesSorteioD16(
     limiaresS: particao.limiaresS,
     limiaresE: particao.limiaresE,
     contagemCandidatosPorEstrato,
-    estratosDeficientes: [],
+    estratosDeficientes,
+    estratosCenso,
+    estratosVazios,
   };
 }

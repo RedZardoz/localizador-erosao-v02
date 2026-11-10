@@ -171,6 +171,9 @@ describe("Amostragem de Solo Nu em Lote via GEE REST e Cache Determinístico (C3
     expect(c1!.frequenciaSoloNu.estado).toBe("medido");
     expect(valorOuNulo(c1!.frequenciaSoloNu)).toBe(0.185);
     expect(c1!.nObservacoes).toBe(92);
+    expect((c1!.frequenciaSoloNu as any).qualidade?.nObservacoes).toBe(92);
+    expect((c1!.frequenciaSoloNu as any).qualidade?.regime).toBe("padrao_pleno");
+    expect((c1!.frequenciaSoloNu as any).qualidade?.elegivelD12).toBe(true);
     expect(c1!.classeWorldCover2020).toBe(40);
     expect(c1!.classeWorldCover2021).toBe(40);
     expect(c1!.ehElegivelUso).toBe(true);

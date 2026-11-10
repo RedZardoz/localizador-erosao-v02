@@ -225,16 +225,6 @@ export function sortear72PoligonosD16(
     lancarErro: true,
   });
 
-  for (const idEstrato of TODOS_ESTRATOS_D12) {
-    const nEstrato = relatorio.contagemCandidatosPorEstrato[idEstrato];
-    if (typeof nEstrato !== "number" || nEstrato < 4) {
-      throw new ErroPreCondicaoSorteioD16(
-        "minimo_4_candidatos_por_estrato",
-        `O estrato '${idEstrato}' possui apenas ${nEstrato} candidato(s); a emenda de D16 (72 polígonos de 5,02 ha) exige mínimo de 4 candidatos por estrato.`
-      );
-    }
-  }
-
   const candidatosValidos = candidatos.filter(
     (c): c is CandidatoSorteioD16 & { declividadePct: number; frequenciaSoloNu: number } =>
       typeof c.declividadePct === "number" &&
@@ -242,10 +232,14 @@ export function sortear72PoligonosD16(
       typeof c.frequenciaSoloNu === "number" &&
       Number.isFinite(c.frequenciaSoloNu)
   );
-  const particao = particionarCandidatosEm18Estratos(candidatosValidos);
+  const particao = particionarCandidatosEm18Estratos(
+    candidatosValidos as unknown as (CandidatoSorteioD16 & CandidatoEstratificacao)[]
+  );
   const prng = criarPrng(semente);
   const poligonos: PoligonoSorteadoD16[] = [];
   const tabelaCorrespondenciaOpaca: Record<string, string> = {};
+  const estratosCenso: string[] = [];
+  const estratosVazios: string[] = [];
 
   for (const idEstrato of TODOS_ESTRATOS_D12) {
     const listaOriginal = [...particao.estratosMap[idEstrato]].sort((a, b) =>
@@ -253,44 +247,65 @@ export function sortear72PoligonosD16(
     );
     const nH = listaOriginal.length;
 
-    // Defesa em profundidade: guarda de sanidade no próprio sorteio independente da pré-condição
-    if (nH < 4) {
+    // Situação 1: N_h = 0 -> estrato vazio declarado; não contribui; registrado no selo com N_h = 0
+    if (nH === 0) {
+      estratosVazios.push(idEstrato);
+      continue;
+    }
+
+    // Situação 2 e 3: N_h > 0
+    let nAmostrados: number;
+    let pi_i: number;
+    let w_i: number;
+
+    if (nH >= 4) {
+      // N_h >= 4: sorteia 4; pi_i = 4 / N_h; w_i = N_h / 4
+      nAmostrados = 4;
+      pi_i = 4 / nH;
+      w_i = nH / 4;
+      if (nH === 4) {
+        // Quando N_h = 4 e se sorteiam 4, pi_i = 1: estrato é censo, não amostra!
+        estratosCenso.push(idEstrato);
+      }
+    } else {
+      // 0 < N_h < 4: censo do estrato: toma todos os N_h; pi_i = 1; w_i = 1
+      nAmostrados = nH;
+      pi_i = 1;
+      w_i = 1;
+      estratosCenso.push(idEstrato);
+    }
+
+    // Asseverar preservação estrita de Horvitz-Thompson: pi_i * w_i = 1 (D23)
+    const produto = pi_i * w_i;
+    if (Math.abs(produto - 1) > 1e-9) {
       throw new Error(
-        `[SORTEIO_72_INVALIDO] Estrato '${idEstrato}' possui apenas ${nH} candidato(s) no pool (mínimo absoluto exigido: 4 para amostragem 2+2 sem reposição).`
+        `[SORTEIO_INVALIDO] Violação de Horvitz-Thompson: pi_i * w_i = ${produto} != 1 no estrato '${idEstrato}'.`
       );
     }
 
-    const pi_i = 4 / nH;
-    const w_i = nH / 4;
-
-    // Asseverar 0 < pi_i <= 1 (invariante de amostragem)
-    if (pi_i <= 0 || pi_i > 1) {
-      throw new Error(
-        `[SORTEIO_72_INVALIDO] Probabilidade de inclusão inválida pi_i=${pi_i} no estrato '${idEstrato}' (deve satisfazer 0 < pi_i <= 1).`
-      );
+    // Seleção dos candidatos
+    let selecionados: CandidatoSorteioD16[];
+    if (nH >= 4) {
+      // Fisher-Yates parcial para sortear 4 candidatos distintos sem reposição
+      const pool = [...listaOriginal];
+      for (let i = 0; i < 4; i++) {
+        const j = i + Math.floor(prng() * (pool.length - i));
+        const tmp = pool[i];
+        pool[i] = pool[j];
+        pool[j] = tmp;
+      }
+      selecionados = pool.slice(0, 4);
+    } else {
+      // Censo: toma todos os nH candidatos disponíveis
+      selecionados = [...listaOriginal];
     }
 
-    // Fisher-Yates parcial para sortear 4 candidatos distintos sem reposição
-    const pool = [...listaOriginal];
-    if (pool.length < 4) {
-      throw new Error(
-        `[SORTEIO_72_INVALIDO] Pool insuficiente no estrato '${idEstrato}' para Fisher-Yates (${pool.length} < 4).`
-      );
-    }
-    for (let i = 0; i < 4; i++) {
-      const j = i + Math.floor(prng() * (pool.length - i));
-      const tmp = pool[i];
-      pool[i] = pool[j];
-      pool[j] = tmp;
-    }
-    const quarteto = pool.slice(0, 4);
-
-    // Sorteia a designação de 2 "treino" e 2 "held-out" usando o próprio PRNG
+    // Sorteia a designação de papéis "treino" e "held-out" usando o próprio PRNG
+    const nTreino = Math.ceil(nAmostrados / 2);
+    const nHeldOut = nAmostrados - nTreino;
     const papeis: Array<"treino" | "held-out"> = [
-      "treino",
-      "treino",
-      "held-out",
-      "held-out",
+      ...Array(nTreino).fill("treino"),
+      ...Array(nHeldOut).fill("held-out"),
     ];
     for (let i = papeis.length - 1; i > 0; i--) {
       const j = Math.floor(prng() * (i + 1));
@@ -299,15 +314,15 @@ export function sortear72PoligonosD16(
       papeis[j] = tmp;
     }
 
-    for (let k = 0; k < 4; k++) {
-      const c = quarteto[k] as CandidatoSorteioD16 | undefined;
+    for (let k = 0; k < nAmostrados; k++) {
+      const c = selecionados[k] as CandidatoSorteioD16;
       if (!c) {
         throw new Error(
-          `[SORTEIO_72_INVALIDO] Candidato sorteado no índice ${k} do estrato '${idEstrato}' é indefinido.`
+          `[SORTEIO_INVALIDO] Candidato sorteado no índice ${k} do estrato '${idEstrato}' é indefinido.`
         );
       }
       if (pi_i <= 0 || pi_i > 1) {
-        throw new Error(`[SORTEIO_72_INVALIDO] pi_i fora do intervalo (0, 1]: ${pi_i}`);
+        throw new Error(`[SORTEIO_INVALIDO] pi_i fora do intervalo (0, 1]: ${pi_i}`);
       }
       const papel = papeis[k];
       const sufixoOrdem = String(k + 1).padStart(2, "0");
@@ -328,11 +343,11 @@ export function sortear72PoligonosD16(
         w_i,
         nCandidatosEstrato: nH,
         centroide: {
-          latitude: c.latitude,
-          longitude: c.longitude,
+          latitude: c.latitude!,
+          longitude: c.longitude!,
         },
         areaHectares: 5.02,
-        geometria: construirPoligono502Ha(c.latitude, c.longitude),
+        geometria: construirPoligono502Ha(c.latitude!, c.longitude!),
         declividadePct: c.declividadePct as number,
         frequenciaSoloNu: c.frequenciaSoloNu as number,
         nivelK: c.nivelK,
@@ -370,8 +385,13 @@ export function sortear72PoligonosD16(
   h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
   const hashIntegridade = `${(h1 >>> 0).toString(16).padStart(8, "0")}${(h2 >>> 0).toString(16).padStart(8, "0")}`;
 
+  const totalSorteados = poligonos.length;
+  const totalTreino = poligonos.filter((p) => p.papelConjunto === "treino").length;
+  const totalHeldOut = poligonos.filter((p) => p.papelConjunto === "held-out").length;
+  const areaTotalHectares = Number((totalSorteados * 5.02).toFixed(2));
+
   return {
-    versaoEsquema: "1.2.0",
+    versaoEsquema: "1.3.0",
     geradoEm,
     semente,
     politicaSemente: String(PARAMETROS.P07?.valor ?? "dinamica-registrada"),
@@ -379,13 +399,15 @@ export function sortear72PoligonosD16(
     sha256ConjuntoCandidatos,
     hashIntegridade,
     totalCandidatosEntrada: candidatos.length,
-    totalPoligonosSorteados: 72,
-    totalTreino: 36,
-    totalHeldOut: 36,
-    areaTotalHectares: 361.44,
+    totalPoligonosSorteados: totalSorteados,
+    totalTreino,
+    totalHeldOut,
+    areaTotalHectares,
     limiaresS: relatorio.limiaresS,
     limiaresE: relatorio.limiaresE,
     contagemCandidatosPorEstrato: relatorio.contagemCandidatosPorEstrato,
+    estratosCenso,
+    estratosVazios,
     decisoesVigentes: {
       D07: {
         titulo: REGISTRO_DECISOES.D07.titulo,

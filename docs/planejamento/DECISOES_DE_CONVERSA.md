@@ -225,3 +225,22 @@ Este arquivo registra decisões tomadas em diálogo com o pesquisador; `src/conf
 - Onde está no código: `CLAUDE.md`; `docs/DESENVOLVIMENTO.md`;
   `src/config/desenvolvimentoDiretrizes.test.ts`; `README.md`; commit `70fa810`.
 - Supera ou emenda: nada.
+
+## 13 — Três regimes de Ê mantidos, ausência estrutural de Ŝ₁ × Ê₃ × K̂₂ e regra para estratos deficientes
+
+- Data: 2026-11-10
+- Texto literal da decisão: "manter a opção (a) — três regimes de Ê, 18 estratos com 4 polígonos, documentando a ausência estrutural" (Prompt H, com lastro em `docs/planejamento/MATERIAL_DECISAO_ESTRATIFICACAO_E_2026-11-10.md`).
+- Consequência implementada / pendente: IMPLEMENTADA.
+  1. Três regimes de Ê mantidos pela partição de tercis empíricos globais (t₁ = 0,0116; t₂ = 0,0490) sobre os 677 candidatos de BP3. A opção de colapso para 2 classes foi examinada e rejeitada pelo pesquisador para preservar a discriminação entre SPD consolidado (Ê₁), exposição sazonal (Ê₂) e exposição crônica (Ê₃).
+  2. Ausência estrutural declarada do estrato Ŝ₁ × Ê₃ × K̂₂ (relevo plano, alto solo nu, solo frágil), vazio na BP3 (N_h = 0) por determinantes biofísicos locais (máximo observado em Ŝ₁ × K̂₂ é 0,0331 < 0,0490).
+  3. Pendência honesta registrada: não verificado se o raio de thinning (2.450 m) contribuiu para a escassez.
+  4. Regra de alocação para estratos deficientes:
+     - N_h ≥ 4: sorteia 4; π_i = 4 / N_h; w_i = N_h / 4
+     - 0 < N_h < 4: censo integral do estrato (toma todos os N_h); π_i = 1; w_i = 1
+     - N_h = 0: estrato vazio declarado; não contribui; registrado com N_h = 0
+     - Em todos os casos, π_i × w_i = 1 (preservando Horvitz-Thompson, D23).
+  5. Total alcançável de 67 polígonos (36 em K̂=1, 31 em K̂=2).
+  6. Ausência de reservas declarada para cinco estratos de K̂=2 com N_h ≤ 4 (regime de censo, π_i = 1, variância nula).
+  7. Pré-registro preservado: emenda formalizada antes de qualquer dado de desfecho ou rótulo de campo.
+- Onde está no código: `src/config/decisoes.ts` (emendas em D12 e D16); `src/lib/gee/sorteioPoligonos.ts`; `src/lib/gee/sorteioPoligonosTipos.ts`.
+- Supera ou emenda: Emenda D12 e D16; complementa D23.
