@@ -1,0 +1,161 @@
+{
+  "versao": "1.0",
+  "artefatoAlvo": "scripts/medir_frequencia_solo_nu_lote.ts",
+  "criadoEm": "2026-11-10T17:55:18.257Z",
+  "atualizadoEm": "2026-11-10T18:03:58.988Z",
+  "totalChamadas": 15,
+  "totalItensProcessados": 150,
+  "totalBytesRecebidos": 71740,
+  "chamadas": [
+    {
+      "timestampIso": "2026-11-10T17:55:47.512Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 5119,
+      "codigoHttp": 200,
+      "duracaoMs": 29234
+    },
+    {
+      "timestampIso": "2026-11-10T17:55:56.975Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 5177,
+      "codigoHttp": 200,
+      "duracaoMs": 9457
+    },
+    {
+      "timestampIso": "2026-11-10T17:56:05.263Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 5114,
+      "codigoHttp": 200,
+      "duracaoMs": 8284
+    },
+    {
+      "timestampIso": "2026-11-10T17:56:19.340Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 5130,
+      "codigoHttp": 200,
+      "duracaoMs": 14071
+    },
+    {
+      "timestampIso": "2026-11-10T17:56:30.405Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 5112,
+      "codigoHttp": 200,
+      "duracaoMs": 11061
+    },
+    {
+      "timestampIso": "2026-11-10T17:59:30.418Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 0,
+      "codigoHttp": 0,
+      "duracaoMs": 180006
+    },
+    {
+      "timestampIso": "2026-11-10T18:01:11.476Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 5139,
+      "codigoHttp": 200,
+      "duracaoMs": 101054
+    },
+    {
+      "timestampIso": "2026-11-10T18:01:33.143Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 5076,
+      "codigoHttp": 200,
+      "duracaoMs": 21656
+    },
+    {
+      "timestampIso": "2026-11-10T18:01:38.823Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 5125,
+      "codigoHttp": 200,
+      "duracaoMs": 5674
+    },
+    {
+      "timestampIso": "2026-11-10T18:01:45.751Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 5146,
+      "codigoHttp": 200,
+      "duracaoMs": 6924
+    },
+    {
+      "timestampIso": "2026-11-10T18:03:25.391Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 5156,
+      "codigoHttp": 200,
+      "duracaoMs": 99631
+    },
+    {
+      "timestampIso": "2026-11-10T18:03:36.330Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 5106,
+      "codigoHttp": 200,
+      "duracaoMs": 10929
+    },
+    {
+      "timestampIso": "2026-11-10T18:03:44.673Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 5079,
+      "codigoHttp": 200,
+      "duracaoMs": 8334
+    },
+    {
+      "timestampIso": "2026-11-10T18:03:50.448Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 5131,
+      "codigoHttp": 200,
+      "duracaoMs": 5769
+    },
+    {
+      "timestampIso": "2026-11-10T18:03:58.988Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 10,
+      "tamanhoRespostaBytes": 5130,
+      "codigoHttp": 200,
+      "duracaoMs": 8533
+    }
+  ]
+}

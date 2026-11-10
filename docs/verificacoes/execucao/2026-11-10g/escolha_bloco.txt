@@ -1,0 +1,22 @@
+ESCOLHA DO TAMANHO DE BLOCO E PROJEÇÃO (Tarefa 1 - Prompt G)
+Data/Hora: 2026-11-10 14:10:00
+Referência: docs/verificacoes/execucao/2026-11-10g/bloco_25_teste_fumaca.txt
+
+1. MEDIÇÕES DO TESTE DE FUMAÇA (25 pontos):
+- Tentativa 1 (timeout 60.000 ms): estourou timeout (duracao 60.010 ms, status HTTP 0, 0 medidos, 25 servico-indisponivel).
+- Tentativa 2 (timeout 120.000 ms): concluído com sucesso (duracao 113.832 ms, status HTTP 200, 25 de 25 medidos, 0 indisponíveis).
+- Latência média por ponto em bloco de 25: 4.553,04 ms (contra 5.470,5 ms de mediana na amostragem 1 a 1 da calibração).
+
+2. AVALIAÇÃO DE TAMANHOS DE BLOCO (25, 50, 100):
+- Bloco de 100: estimado em > 450 s (~7,5 minutos), excede a cota de timeout síncrono do endpoint GEE REST value:compute. Inviável.
+- Bloco de 50: estimado em > 220 s (~3,7 minutos), margem de risco inaceitável para proxies e timeouts de infraestrutura.
+- Bloco de 25: viável, com 113,8 s medidos.
+
+3. DECISÃO FINAL:
+- Tamanho de bloco escolhido: 25 pontos.
+- Timeout configurado para a rodada: 180.000 ms (180 s = 3 minutos), fornecendo margem de segurança de ~66 s sobre a duração observada (113,8 s).
+- Projeção para 677 candidatos:
+  - Pontos já em cache oficial (commit 8d6bd48): 29 pontos.
+  - Pontos a medir: 648 pontos.
+  - Número de blocos: 26 blocos (25 blocos de 25 + 1 bloco de 23).
+  - Tempo estimado total: 26 x ~114 s ≈ 2.964 s ≈ 49,4 minutos.

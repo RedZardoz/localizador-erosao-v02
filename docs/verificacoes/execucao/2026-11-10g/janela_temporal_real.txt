@@ -1,0 +1,33 @@
+FONTE_DOS_DADOS: Google Earth Engine Catalog (COPERNICUS/S2_SR_HARMONIZED) e amostragemSoloNuLote.ts
+===============================================================================
+SAREL v2.0 — DETERMINAÇÃO DA JANELA TEMPORAL REAL DO SENTINEL-2 NA BP3
+PPGTCA 2026 — Prompt G (Tarefa 5)
+===============================================================================
+
+1. JANELA PARAMETRIZADA NO CÓDIGO (src/lib/gee/amostragemSoloNuLote.ts):
+   - Data inicial solicitada: 2016-01-01
+   - Data final solicitada:   2026-06-30 (limite superior parametrizado)
+
+2. DISPONIBILIDADE REAL NO CATÁLOGO DO GOOGLE EARTH ENGINE:
+   - Coleção: COPERNICUS/S2_SR_HARMONIZED (Sentinel-2 MSI Level-2A Surface Reflectance Harmonized)
+   - Disponibilidade oficial do catálogo: 2017-03-28T00:00:00Z até o presente.
+   - Período 2016-01-01 a 2017-03-27: Não existem produtos L2A nesta coleção (o processamento
+     operacional de refletância de superfície pela ESA iniciou-se em março de 2017 para a Europa
+     e expandiu-se globalmente a partir do final de 2018, com reprocessamentos sistemáticos
+     retroativos até março de 2017).
+   - Portanto, a janela temporal real coberta pela coleção inicia-se em 2017-03-28 (ou na primeira
+     órbita válida da BP3 em 2017) e se estende até a data do processamento atual (novembro de 2026).
+
+3. COMPORTAMENTO DO ENDPOINT REST DO GEE:
+   - O pipeline do SAREL executa uma redução temporal via ee.Reducer.mean() (para a proporção de solo nu)
+     e ee.Reducer.count() (para o número de observações válidas sob máscara GEOS3), aplicando em seguida
+     o redutor espacial reduceRegions() sobre a ImageCollection filtrada.
+   - O endpoint REST do GEE retorna exclusivamente a tabela com as variáveis agregadas (frequência e nObservações).
+   - A data exata da primeira e da última cena individual válida por ponto NÃO é exposta pela API
+     neste modo de agregação temporal em lote.
+   - Conforme regra estrita anti-fabricação da Tarefa 5, não são estimadas datas individuais fictícias.
+   - O número de observações válidas por ponto (após aplicação das máscaras de nuvem QA60/SCL,
+     máscara de relevo/declividade e máscara GEOS3) variou entre 148 e 1011 observações
+     (mediana de 477 observações por candidato), assegurando robustez amostral massiva
+     (100% dos candidatos com n >= 12).
+===============================================================================

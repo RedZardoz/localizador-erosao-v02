@@ -846,6 +846,11 @@ export async function medirFrequenciaSoloNuEmLoteGeeRest(
       }
 
       const duracaoReq = Math.round(performance.now() - inicioReq);
+      const blocoAtual = Math.floor(i / tamanhoBloco) + 1;
+      const totalBlocos = Math.ceil(pontosParaConsultar.length / tamanhoBloco);
+      console.log(
+        `  -> [Bloco ${blocoAtual}/${totalBlocos}] ${lote.length} pontos | HTTP ${statusHttp} | ${duracaoReq} ms`
+      );
 
       if (opcoes?.diario) {
         registrarChamadaDiario(opcoes.diario, {

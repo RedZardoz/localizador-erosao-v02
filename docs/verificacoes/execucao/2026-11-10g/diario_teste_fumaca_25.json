@@ -1,0 +1,21 @@
+{
+  "versao": "1.0",
+  "artefatoAlvo": "scripts/medir_frequencia_solo_nu_lote.ts",
+  "criadoEm": "2026-11-10T17:07:35.934Z",
+  "atualizadoEm": "2026-11-10T17:09:29.763Z",
+  "totalChamadas": 1,
+  "totalItensProcessados": 25,
+  "totalBytesRecebidos": 12208,
+  "chamadas": [
+    {
+      "timestampIso": "2026-11-10T17:09:29.763Z",
+      "servico": "GEE",
+      "endpoint": "https://earthengine.googleapis.com/v1/projects/imposing-muse-506616-i7/value:compute",
+      "metodoHttp": "POST",
+      "quantidadeItens": 25,
+      "tamanhoRespostaBytes": 12208,
+      "codigoHttp": 200,
+      "duracaoMs": 113826
+    }
+  ]
+}

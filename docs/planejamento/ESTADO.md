@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `df1df045f187043d43d9941c1a819c1cfb14f8e9`
-- Data do HEAD: 2026-11-10 00:16:21 -0300
+- Commit HEAD: `81d451140ea79a51ef775b0cd0600a0c77400bd2`
+- Data do HEAD: 2026-11-10 16:56:18 +0000
 - Últimos 5 commits:
-  1. `df1df04 chore(estado): sincronizar painel ESTADO.md apos incorporacao dos testes e evidencias`
-  2. `75ceffa fix(auditoria): auditar estabilidade WFS Embrapa, remover fallback do CLI e registrar recusa C1 de E-hat`
-  3. `193da3b docs(planejamento): adicionar prompt F com quatro correcoes do E-linha e a calibracao de E-hat`
-  4. `76db730 feat(D16): persistir universo de candidatos e provar reprodutibilidade do funil`
-  5. `bbee1e9 docs(planejamento): avisar que o E-linha roda sem credencial do GEE`
+  1. `81d4511 docs(planejamento): adicionar prompt G da ingestao dos 677 e caracterizacao de E-hat`
+  2. `8d6bd48 feat(E-hat): calibrar amostragem de 30 pontos sob mascara GEOS3 e materializar cache`
+  3. `df1df04 chore(estado): sincronizar painel ESTADO.md apos incorporacao dos testes e evidencias`
+  4. `75ceffa fix(auditoria): auditar estabilidade WFS Embrapa, remover fallback do CLI e registrar recusa C1 de E-hat`
+  5. `193da3b docs(planejamento): adicionar prompt F com quatro correcoes do E-linha e a calibracao de E-hat`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 124
@@ -70,7 +70,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | chuva | `RUSLE_Fator_R` | SIM | SIM | SIM |
 
 ## 7. Arquivos de Evidência em `docs/verificacoes/`
-- Total de arquivos de evidência medidos: 155
+- Total de arquivos de evidência medidos: 158
 
 | Arquivo de Evidência | Data no Nome | Tamanho (bytes) |
 |---|:---:|---:|
@@ -108,11 +108,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `2026-11-09b_adocao_mascara_geos3_2018.md` | 2026-11-09 | 8652 |
 | `2026-11-09d_calibracao_30_pontos_solo_nu.md` | 2026-11-09 | 10582 |
 | `2026-11-10_universo_candidatos_e_reprodutibilidade.md` | 2026-11-10 | 10193 |
-| `2026-11-10f_calibracao_e_estabilidade_fontes.md` | 2026-11-10 | 13107 |
+| `2026-11-10f_calibracao_e_estabilidade_fontes.md` | 2026-11-10 | 15604 |
+| `cache_frequencia_solo_nu_bp3.json` | sem data no nome | 25062 |
 | `cache_pedologia_bp3.json` | sem data no nome | 96740 |
 | `calculadora/2026-09-30_simulacao_desenho_d16_224m.md` | 2026-09-30 | 2027 |
+| `calibracao_30_pontos_solo_nu.json` | sem data no nome | 1464 |
 | `climatologia_chirps_bp3.json` | sem data no nome | 16112 |
 | `diario_climatologia_chirps_bp3.json` | sem data no nome | 231414 |
+| `diario_requisicoes_solo_nu_calibracao.json` | sem data no nome | 10267 |
 | `execucao/2026-11-09/git_log.txt` | sem data no nome | 236 |
 | `execucao/2026-11-09/git_status.txt` | sem data no nome | 1003 |
 | `execucao/2026-11-09/grep_b11.txt` | sem data no nome | 3819 |
@@ -138,11 +141,11 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `execucao/2026-11-10/tsc_noemit.txt` | sem data no nome | 69 |
 | `execucao/2026-11-10f/conferencia_estabilidade_wfs.txt` | sem data no nome | 3851 |
 | `execucao/2026-11-10f/estado_verificar.txt` | sem data no nome | 162 |
-| `execucao/2026-11-10f/git_log.txt` | sem data no nome | 270 |
-| `execucao/2026-11-10f/git_status.txt` | sem data no nome | 412 |
-| `execucao/2026-11-10f/npm_test.txt` | sem data no nome | 21003 |
+| `execucao/2026-11-10f/git_log.txt` | sem data no nome | 313 |
+| `execucao/2026-11-10f/git_status.txt` | sem data no nome | 644 |
+| `execucao/2026-11-10f/npm_test.txt` | sem data no nome | 20013 |
 | `execucao/2026-11-10f/recusa_sem_credencial.txt` | sem data no nome | 2535 |
-| `execucao/2026-11-10f/rodada_30_pontos_calibracao.txt` | sem data no nome | 1530 |
+| `execucao/2026-11-10f/rodada_30_pontos_calibracao.txt` | sem data no nome | 3506 |
 | `execucao/2026-11-10f/tsc_noemit.txt` | sem data no nome | 0 |
 | `execucao/2026-11-10f/varredura_datas_fixas.txt` | sem data no nome | 1816 |
 | `fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md` | sem data no nome | 7016 |

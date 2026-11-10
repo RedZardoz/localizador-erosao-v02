@@ -1,0 +1,6 @@
+﻿Confirmacao de Credencial GEE (Regra C1) - Prompt G
+Data/Hora: 2026-11-10 14:00:59
+Variavel de Ambiente: SAREL_GEE_SERVICE_ACCOUNT_FILE (User level)
+Arquivo configurado: C:\Users\lalfr\Docs Fora do Ar\LUIS ALFREDO\01 - MESTRADO PPGTCA 2026\02 - PESQUISA EROSÃO LAMINAR\06 -Outros Arquivos LE - APP\Chaves\imposing-muse-506616-i7-36523bb354c7.json
+Arquivo existe no disco: True
+Arquivo estritamente fora do repositorio: True

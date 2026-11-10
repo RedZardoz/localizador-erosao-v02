@@ -53,6 +53,8 @@ export interface ArgumentosCli {
   cacheArquivo: string;
   semente: number;
   tamanhoBloco: number;
+  timeoutMs: number;
+  diarioArquivo?: string;
 }
 
 export function parseArgumentos(args: string[]): ArgumentosCli {
@@ -66,6 +68,8 @@ export function parseArgumentos(args: string[]): ArgumentosCli {
   let cacheArquivo = obterCaminhoPadraoCacheFrequenciaSoloNu();
   let semente = 20261109; // Semente determinística padrão declarada
   let tamanhoBloco = 1; // Para calibração individual de latência por ponto; pode ser customizado via --tamanho-bloco
+  let timeoutMs = 60000; // Timeout padrão de rede de 60 segundos por requisição ao GEE
+  let diarioArquivo: string | undefined = undefined;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -83,6 +87,10 @@ export function parseArgumentos(args: string[]): ArgumentosCli {
       semente = parseInt(args[++i], 10);
     } else if (arg === "--tamanho-bloco" && i + 1 < args.length) {
       tamanhoBloco = parseInt(args[++i], 10);
+    } else if (arg === "--timeout-ms" && i + 1 < args.length) {
+      timeoutMs = parseInt(args[++i], 10);
+    } else if (arg === "--diario" && i + 1 < args.length) {
+      diarioArquivo = path.resolve(process.cwd(), args[++i]);
     }
   }
 
@@ -94,6 +102,8 @@ export function parseArgumentos(args: string[]): ArgumentosCli {
     cacheArquivo,
     semente,
     tamanhoBloco,
+    timeoutMs,
+    diarioArquivo,
   };
 }
 
@@ -317,7 +327,9 @@ async function principal() {
   console.log(`  -> Arquivo de cache: ${args.cacheArquivo}`);
 
   const dirDiario = path.resolve(process.cwd(), "docs/verificacoes");
-  const caminhoDiario = path.join(dirDiario, "diario_requisicoes_solo_nu_calibracao.json");
+  const caminhoDiario = args.diarioArquivo
+    ? args.diarioArquivo
+    : path.join(dirDiario, "diario_requisicoes_solo_nu_calibracao.json");
   const diario = criarDiarioRequisicoes("scripts/medir_frequencia_solo_nu_lote.ts");
 
   const temposPorPontoMs: number[] = [];
@@ -337,6 +349,7 @@ async function principal() {
       caminhoCache: args.cacheArquivo,
       ignorarCache: !args.retomar,
       salvarCache: true,
+      timeoutMs: args.timeoutMs,
       diario,
     }
   );
