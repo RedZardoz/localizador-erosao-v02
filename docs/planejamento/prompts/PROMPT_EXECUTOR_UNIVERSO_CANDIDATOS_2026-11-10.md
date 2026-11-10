@@ -28,6 +28,31 @@ aconteceu. O Prompt D trouxe mensagem pronta pressupondo sucesso, a rodada recus
 
 ---
 
+## AVISO OPERACIONAL — rode esta execução SEM a credencial do GEE
+
+Verificado em `scripts/remedir_candidatos_bp3_d16.ts`:
+
+- `:384` carrega a credencial de lote; `:395` registra que, **sem** `SAREL_GEE_SERVICE_ACCOUNT_FILE`,
+  segue com `credenciaisGeeAuth = null` e usa o cache persistente. O pipeline **não aborta**: chega
+  normalmente ao `:664`, onde o artefato é gravado. Logo o E′ roda sem credencial e entrega tudo o
+  que pede.
+- `:411`, porém, chama `medirFrequenciaSoloNuEmLoteGeeRest` sobre **todos** os `candidatosComTerreno`,
+  em blocos de 100, com `salvarCache: true`. **Com a credencial definida, esta execução mediria os
+  680 pontos** — a ingestão completa, por acidente, antes da calibração de 30, antes de o desenho do
+  lote estar decidido e com a guarda de D11.2 ainda morta.
+
+**Portanto: garanta que `SAREL_GEE_SERVICE_ACCOUNT_FILE` NÃO está definida nesta execução.**
+Confirme antes de rodar e grave a confirmação:
+
+```
+node -e "console.log('SAREL_GEE_SERVICE_ACCOUNT_FILE=', process.env.SAREL_GEE_SERVICE_ACCOUNT_FILE ?? '(nao definida)')" > docs/verificacoes/execucao/2026-11-10/credencial_ausente_confirmada.txt 2>&1
+```
+
+Se a saída mostrar um caminho, **pare**: desdefina a variável nesta sessão de terminal e rode de
+novo. Ê deve sair desta rodada com 0 pontos medidos — isso é o esperado, não falha.
+
+---
+
 ## TAREFA 1 — persistir o universo de candidatos
 
 `scripts/remedir_candidatos_bp3_d16.ts` tem os candidatos em memória (`candidatosComTerreno`,
@@ -151,6 +176,7 @@ reprodutibilidade.
 Cada item cita o arquivo gravado em `docs/verificacoes/execucao/2026-11-10/`:
 
 - [ ] Branch: ______
+- [ ] AVISO — `credencial_ausente_confirmada.txt` gravado, mostrando a variável NÃO definida
 - [ ] T1 — artefato do universo criado; nº de candidatos: ______; o de 30/09 intacto
 - [ ] T1 — cada campo por candidato traz proveniência, ou o relatório diz qual não traz e por quê
 - [ ] T2 — tabela preenchida. Bateram as seis? ______ Se não, qual etapa e em quanto: ______
