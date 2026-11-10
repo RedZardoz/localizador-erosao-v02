@@ -1,0 +1,8 @@
+﻿ M docs/planejamento/ESTADO.md
+ M docs/verificacoes/2026-11-10_universo_candidatos_e_reprodutibilidade.md
+ M scripts/medir_frequencia_solo_nu_lote.ts
+ M scripts/remedir_candidatos_bp3_d16.ts
+?? docs/verificacoes/2026-11-10f_calibracao_e_estabilidade_fontes.md
+?? docs/verificacoes/execucao/2026-11-10f/
+?? scripts/auditoria/conferir_estabilidade_wfs_embrapa.ts
+?? src/lib/gee/medirFrequenciaSoloNuCli.test.ts

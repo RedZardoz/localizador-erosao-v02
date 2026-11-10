@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `bbee1e98e882ed8dfea56a976783e1dff96bd5ca`
-- Data do HEAD: 2026-11-10 01:06:18 +0000
+- Commit HEAD: `193da3b35929d80fa700db671915308fcf7799d9`
+- Data do HEAD: 2026-11-10 02:52:01 +0000
 - Últimos 5 commits:
-  1. `bbee1e9 docs(planejamento): avisar que o E-linha roda sem credencial do GEE`
-  2. `512978d docs(planejamento): substituir prompt E por E-linha, restrito ao universo de candidatos`
-  3. `ddaeb7e docs(planejamento): adicionar prompt E da guarda D11.2 e do universo de candidatos`
-  4. `eb708a4 AUDITORIA_FUNCIONAL_METODOLOGICA_2026-11-09`
-  5. `bca0e50 feat(E-hat): corrigir definicao da metrica e medir calibracao de 30 pontos`
+  1. `193da3b docs(planejamento): adicionar prompt F com quatro correcoes do E-linha e a calibracao de E-hat`
+  2. `76db730 feat(D16): persistir universo de candidatos e provar reprodutibilidade do funil`
+  3. `bbee1e9 docs(planejamento): avisar que o E-linha roda sem credencial do GEE`
+  4. `512978d docs(planejamento): substituir prompt E por E-linha, restrito ao universo de candidatos`
+  5. `ddaeb7e docs(planejamento): adicionar prompt E da guarda D11.2 e do universo de candidatos`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 123
@@ -70,7 +70,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | chuva | `RUSLE_Fator_R` | SIM | SIM | SIM |
 
 ## 7. Arquivos de Evidência em `docs/verificacoes/`
-- Total de arquivos de evidência medidos: 136
+- Total de arquivos de evidência medidos: 145
 
 | Arquivo de Evidência | Data no Nome | Tamanho (bytes) |
 |---|:---:|---:|
@@ -107,6 +107,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `2026-11-09_lastro_d02_d10_e_mascara_geos3.md` | 2026-11-09 | 8444 |
 | `2026-11-09b_adocao_mascara_geos3_2018.md` | 2026-11-09 | 8652 |
 | `2026-11-09d_calibracao_30_pontos_solo_nu.md` | 2026-11-09 | 10582 |
+| `2026-11-10_universo_candidatos_e_reprodutibilidade.md` | 2026-11-10 | 8963 |
 | `cache_pedologia_bp3.json` | sem data no nome | 96740 |
 | `calculadora/2026-09-30_simulacao_desenho_d16_224m.md` | 2026-09-30 | 2027 |
 | `climatologia_chirps_bp3.json` | sem data no nome | 16112 |
@@ -127,6 +128,13 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `execucao/2026-11-09d/recusa_sem_credencial.txt` | sem data no nome | 1295 |
 | `execucao/2026-11-09d/rodada_30_pontos.txt` | sem data no nome | 1295 |
 | `execucao/2026-11-09d/sorteio_30_pontos.txt` | sem data no nome | 2544 |
+| `execucao/2026-11-10/credencial_ausente_confirmada.txt` | sem data no nome | 47 |
+| `execucao/2026-11-10/estado_verificar.txt` | sem data no nome | 67 |
+| `execucao/2026-11-10/git_log.txt` | sem data no nome | 263 |
+| `execucao/2026-11-10/git_status.txt` | sem data no nome | 723 |
+| `execucao/2026-11-10/npm_test.txt` | sem data no nome | 19532 |
+| `execucao/2026-11-10/rodada_remedicao_pipeline.txt` | sem data no nome | 4219 |
+| `execucao/2026-11-10/tsc_noemit.txt` | sem data no nome | 69 |
 | `fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md` | sem data no nome | 7016 |
 | `fontes/dematte2018/conferencia_dematte_2018.md` | sem data no nome | 6725 |
 | `fontes/dematte2018/extrair_dematte_2018.py` | sem data no nome | 2091 |
@@ -198,6 +206,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `projecao/verifica_tabela_recalculada_2026-09-28.py` | 2026-09-28 | 3195 |
 | `r_rufino_pluviometro_vs_waltrick.csv` | sem data no nome | 4414 |
 | `remedicao_candidatos_bp3_d16_2026-09-30.json` | 2026-09-30 | 2411 |
+| `universo_candidatos_bp3_d16_2026-11-10.json` | 2026-11-10 | 1837396 |
 | `verificacao_custo_e_ruido_poder_d25_2026-11-03.md` | 2026-11-03 | 7762 |
 | `verificacao_grade_completa_poder_2026-11-04.md` | 2026-11-04 | 15799 |
 | `verificacao_monotonicidade_poder_2026-11-03.md` | 2026-11-03 | 7637 |

@@ -59,7 +59,12 @@ O pipeline foi executado com a base fundiária nacional local (`data/fundiario_b
   - $\hat{S}_3$ (8,46%, 20,00%]: 225 candidatos ($\hat{K}_1=164$, $\hat{K}_2=61$)
 
 ### Veredito Científico
-**O funil amostral do SAREL v2.0 é demonstradamente 100% determinístico e reproduzível.** Nenhuma etapa divergiu por um único dígito, comprovando a robustez dos algoritmos de thinning determinístico (P02), filtragem hidrológica da BP3, seleção estocástica de células internas (X3 / P07) e classificação pedológica. Esta propriedade fica formalmente estabelecida para citação na dissertação de mestrado.
+
+A reprodução estrita das contagens e dos candidatos entre 30/09/2026 e 10/11/2026 exige uma demarcação epistemológica precisa entre o que foi formalmente provado e o que não foi testado pelo reprocessamento local:
+
+- **Provado (Determinismo Computacional):** As mesmas entradas locais produziram exatamente as mesmas saídas, dígito por dígito, 41 dias depois e em processo de execução independente. Este resultado **não é trivial** e descarta formalmente: aleatoriedade oculta, dependência da ordem de iteração nos laços, sementes estocásticas não inicializadas, não-idempotência na alocação de células internas (X3 / P07) e flutuações de ponto flutuante no thinning espacial multidirecional (P02).
+- **Não Provado por esta Rodada Isolada (Estabilidade de Fontes Externas):** O reprocessamento foi integralmente servido por arquivos locais e caches pré-existentes (`data/fundiario_brasil.db`, GeoTIFFs locais do DEM Copernicus GLO-30 e `docs/verificacoes/cache_pedologia_bp3.json`). Portanto, a execução hermética por si só não detectaria eventuais alterações no snapshot do SICAR, na versão do WorldCover da ESA ou nas camadas do GeoServer da Embrapa.
+- **Frase Citável para a Dissertação:** *"Determinismo computacional do funil amostral do SAREL v2.0 comprovado em 10/11/2026 contra a execução de 30/09/2026, sobre as mesmas fontes locais auditadas; a estabilidade das fontes externas foi posteriormente aferida por reconsulta amostral ao vivo do WFS da Embrapa GeoInfo (Prompt F, 10/11/2026), registrando 100% de concordância em nível de erodibilidade K̂ e fator numérico K em amostra de 30 pontos."*
 
 ---
 

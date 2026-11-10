@@ -1,0 +1,31 @@
+﻿===============================================================================
+SAREL v2.0 — Medição de Frequência de Solo Nu em Lote (GEE REST)
+FONTE_DOS_DADOS: Google Earth Engine REST v1 (COPERNICUS/S2_SR_HARMONIZED) — Conjunção GEOS3 (Demattê et al., 2018)
+DEFINICAO_METRICA_SOLO_NU: s2_sr_harmonized_2016-01-01_2026-06-30_geos3_dematte2018_ndvi_0_0.25_nbr2_0_0.075_incl_b4b3_b3b2_worldcover_v100_v200
+Hash da Definição: 6a63a17cb9760d50
+===============================================================================
+
+[1/5] Carregando universo de candidatos de 'C:\Users\lalfr\Docs Fora do Ar\LUIS ALFREDO\01 - MESTRADO PPGTCA 2026\02 - PESQUISA EROSÃO LAMINAR\geolocalizacao-erosao-propriedade\docs\verificacoes\universo_candidatos_bp3_d16_2026-11-10.json'...
+  -> Candidatos válidos carregados: 677 (Fonte: C:\Users\lalfr\Docs Fora do Ar\LUIS ALFREDO\01 - MESTRADO PPGTCA 2026\02 - PESQUISA EROSÃO LAMINAR\geolocalizacao-erosao-propriedade\docs\verificacoes\universo_candidatos_bp3_d16_2026-11-10.json)
+  -> Aplicando seleção determinística de 30 pontos com PRNG LCG (Semente: 20261110)...
+  -> 30 pontos sorteados:
+     cand-4423, cand-2463, cand-3753, cand-1164, cand-2515, cand-1722, cand-2221, cand-4530, cand-2684, cand-531, cand-3719, cand-2705, cand-3869, cand-4055, cand-409, cand-2769, cand-54, cand-2308, cand-89, cand-2954, cand-2304, cand-4118, cand-3786, cand-2139, cand-3161, cand-499, cand-2183, cand-3144, cand-1139, cand-1501
+
+[2/5] Verificando credencial de lote conforme Regra C1...
+node : 
+No linha:1 caractere:1
++ node --import ./scripts/ts-loader.mjs scripts/medir_frequencia_solo_n ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+===============================================================================
+[VIOLAÇÃO REGRA C1] Credencial GEE de lote ausente no ambiente.
+A variável de ambiente 'SAREL_GEE_SERVICE_ACCOUNT_FILE' não está configurada.
+Conforme a Regra Inviolável C1 (Via de Lote):
+  1. Nenhuma credencial toca a árvore do repositório, mesmo que em .gitignore.
+  2. A ingestão por lote exige o CAMINHO para um arquivo JSON externo fora da raiz do projeto.
+  3. Na ausência de credencial viva do GEE, a medição é interrompida (fail-closed).
+  4. NENHUM número sintético ou fallback é admitido (Regra 1 / Invariante 5).
+===============================================================================
+

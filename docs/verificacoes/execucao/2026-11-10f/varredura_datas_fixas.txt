@@ -1,0 +1,25 @@
+===============================================================================
+SAREL v2.0 — Varredura de Datas Fixas em scripts/remedir_candidatos_bp3_d16.ts
+Data da Auditoria: 10/11/2026
+Protocolo: Prompt F (Tarefa 3) — Eliminação de rótulo de proveniência fixo
+===============================================================================
+
+1. Ocorrências encontradas na varredura inicial:
+-------------------------------------------------------------------------------
+Linha 5:   * Data: 30/09/2026
+Linha 110: console.log("Data: 30/09/2026 | Metodologia PPGTCA 2026 | Domínio D07: [3%, 20%]");
+Linha 418: const diarioGee = criarDiarioRequisicoes("docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json");
+Linha 598: // Salva artefato do universo de candidatos (Prompt E' — 10/11/2026)
+Linha 599: const dataExecucao = "2026-11-10";
+
+2. Ações de Correção Aplicadas:
+-------------------------------------------------------------------------------
+- Linha 5: Substituído por "Data da Execução: Dinâmica (determinada na execução via ISO 8601 / pt-BR)".
+- Linha 110: Substituído por impressão dinâmica da data real da execução via Intl.DateTimeFormat("pt-BR") / ISO.
+- Linha 418: Substituído por caminho parametrizado com a data da execução corrente (`remedicao_candidatos_bp3_d16_${dataExecucao}.json`).
+- Linha 599: Substituído por `const dataExecucao = new Date().toISOString().slice(0, 10);` para garantir que novas execuções não carimbem artificialmente uma data passada.
+
+3. Resultado da Verificação Pós-Correção:
+-------------------------------------------------------------------------------
+Zero ocorrências de "30/09/2026" como metadado fixo de execução em scripts/remedir_candidatos_bp3_d16.ts.
+O pipeline agora reflete a data real em tempo de execução.

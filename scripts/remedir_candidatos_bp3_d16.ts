@@ -2,7 +2,7 @@
  * ============================================================================
  * Remedição Pericial de Candidatos da BP3 — Pipeline Amostral D16 Emendada
  * SAREL v2.0 — Decisões D07, D08, D09, D12, D16, D24 / Parâmetros P02, P07
- * Data: 30/09/2026
+ * Data da Execução: Dinâmica (registrada na execução via ISO 8601 / pt-BR)
  * ============================================================================
  *
  * EXECUTA E REGISTRA:
@@ -105,9 +105,12 @@ function buscarImoveisReais(limite: number): Promise<ImovelRealDb[]> {
 }
 
 async function executarRemedicao() {
+  const dataExecucao = new Date().toISOString().slice(0, 10);
+  const dataFormatadaPtBr = new Intl.DateTimeFormat("pt-BR").format(new Date());
+
   console.log("===============================================================================");
   console.log("REMEDIÇÃO PERICIAL DOS CANDIDATOS DA BP3 — PIPELINE AMOSTRAL D16 EMENDADA");
-  console.log("Data: 30/09/2026 | Metodologia PPGTCA 2026 | Domínio D07: [3%, 20%]");
+  console.log(`Data: ${dataFormatadaPtBr} (${dataExecucao}) | Metodologia PPGTCA 2026 | Domínio D07: [3%, 20%]`);
   console.log("===============================================================================\n");
 
   // 1. Busca imóveis rurais cadastrados no SQLite local
@@ -415,7 +418,7 @@ async function executarRemedicao() {
   const caminhoCacheSoloNu = obterCaminhoPadraoCacheFrequenciaSoloNu();
   const dirVerif = path.resolve(process.cwd(), "docs/verificacoes");
   const caminhoDiarioGee = path.join(dirVerif, "diario_requisicoes_bp3.json");
-  const diarioGee = criarDiarioRequisicoes("docs/verificacoes/remedicao_candidatos_bp3_d16_2026-09-30.json");
+  const diarioGee = criarDiarioRequisicoes(`docs/verificacoes/remedicao_candidatos_bp3_d16_${dataExecucao}.json`);
 
   const { resultados: resultadosSoloNu, metricas: metricasGee } =
     await medirFrequenciaSoloNuEmLoteGeeRest(pontosAmostragem, credenciaisGeeAuth, {
@@ -595,8 +598,7 @@ async function executarRemedicao() {
   }
   console.log("===============================================================================\n");
 
-  // Salva artefato do universo de candidatos (Prompt E' — 10/11/2026)
-  const dataExecucao = "2026-11-10";
+  // Salva artefato do universo de candidatos (universo completo para amostragem D16)
   const artefatoUniversoPath = path.join(dirVerif, `universo_candidatos_bp3_d16_${dataExecucao}.json`);
 
   const candidatosExport = candidatosValidos.map((c) => ({

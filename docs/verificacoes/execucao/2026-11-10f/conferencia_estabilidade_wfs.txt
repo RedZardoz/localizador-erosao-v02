@@ -1,0 +1,62 @@
+﻿===============================================================================
+SAREL v2.0 — Auditoria de Estabilidade da Fonte Externa WFS Embrapa GeoInfo
+FONTE_DOS_DADOS: Embrapa GeoInfo OGC WFS 1.1.0 (geonode:bra_erodibilidade_2024_sirgas2000, geonode:parana_solos_20201105) vs docs/verificacoes/cache_pedologia_bp3.json
+Semente PRNG: 20261110 | Amostra: 30 pontos de 677
+===============================================================================
+
+[1/3] Carregados 677 candidatos do universo e 680 itens do cache.
+[2/3] Sorteados 30 candidatos com semente 20261110.
+[3/3] Consultando WFS ao vivo e comparando com cache (sem alterar cache)...
+  [OK] cand-4485 (-24.620437, -53.741575) -> status: igual
+  [OK] cand-16 (-25.549198, -54.473208) -> status: igual
+  [OK] cand-4238 (-24.555712, -53.988493) -> status: igual
+  [OK] cand-3869 (-24.306428, -54.206274) -> status: igual
+  [OK] cand-4612 (-24.471936, -53.908067) -> status: igual
+  [OK] cand-1576 (-24.799659, -54.333454) -> status: igual
+  [OK] cand-487 (-25.158738, -54.072677) -> status: igual
+  [DIVERGENTE] cand-2012 (-25.287959, -54.221690) -> status: divergente (classeErodibilidade: cache=Alta vs wfs=Média)
+  [OK] cand-4621 (-24.504937, -53.893948) -> status: igual
+  [OK] cand-1501 (-24.800633, -53.690003) -> status: igual
+  [OK] cand-3674 (-24.452433, -53.895480) -> status: igual
+  [OK] cand-3768 (-24.378929, -53.892242) -> status: igual
+  [OK] cand-1950 (-25.275173, -54.018445) -> status: igual
+  [OK] cand-1650 (-24.926957, -53.836691) -> status: igual
+  [DIVERGENTE] cand-1659 (-24.972685, -53.852150) -> status: divergente (classeErodibilidade: cache=Alta vs wfs=Média)
+  [DIVERGENTE] cand-3147 (-24.688249, -53.776832) -> status: divergente (classeErodibilidade: cache=Alta vs wfs=Média)
+  [OK] cand-1644 (-24.803341, -54.166396) -> status: igual
+  [OK] cand-738 (-25.110126, -54.311540) -> status: igual
+  [OK] cand-577 (-25.143274, -54.241562) -> status: igual
+  [OK] cand-3456 (-24.460705, -53.849916) -> status: igual
+  [OK] cand-475 (-25.131726, -54.049541) -> status: igual
+  [OK] cand-805 (-25.016476, -54.256828) -> status: igual
+  [OK] cand-366 (-25.131104, -54.119661) -> status: igual
+  [OK] cand-4593 (-24.579209, -53.927312) -> status: igual
+  [OK] cand-4428 (-24.632233, -53.818889) -> status: igual
+  [DIVERGENTE] cand-2812 (-24.649075, -54.072993) -> status: divergente (classeErodibilidade: cache=Alta vs wfs=Média)
+  [DIVERGENTE] cand-2380 (-24.743947, -53.941740) -> status: divergente (classeErodibilidade: cache=Alta vs wfs=Média)
+  [OK] cand-1933 (-25.470469, -54.302366) -> status: igual
+  [OK] cand-4327 (-24.516095, -53.748851) -> status: igual
+  [OK] cand-1556 (-24.817457, -54.266131) -> status: igual
+
+===============================================================================
+RESUMO DA AUDITORIA DE ESTABILIDADE WFS EMBRAPA
+===============================================================================
+Total de pontos avaliados: 30
+  - Iguais:        25 / 30 (83.3%)
+  - Divergentes:   5 / 30 (16.7%)
+  - Sem resposta:  0 / 30 (0.0%)
+===============================================================================
+
+DETALHAMENTO DAS DIVERGÊNCIAS ENCONTRADAS:
+Candidato cand-2012 (lat: -25.287959, lon: -54.22169):
+  - Campo 'classeErodibilidade': Cache = Alta | WFS = Média
+Candidato cand-1659 (lat: -24.972685, lon: -53.85215):
+  - Campo 'classeErodibilidade': Cache = Alta | WFS = Média
+Candidato cand-3147 (lat: -24.688249, lon: -53.776832):
+  - Campo 'classeErodibilidade': Cache = Alta | WFS = Média
+Candidato cand-2812 (lat: -24.649075, lon: -54.072993):
+  - Campo 'classeErodibilidade': Cache = Alta | WFS = Média
+Candidato cand-2380 (lat: -24.743947, lon: -53.94174):
+  - Campo 'classeErodibilidade': Cache = Alta | WFS = Média
+
+Nota Pericial: O arquivo de cache não foi modificado (integridade preservada).

@@ -127,29 +127,20 @@ export function carregarCandidatos(caminhoArquivo: string): {
     listaBruta = Object.entries(dados.itens).map(([k, v]: [string, any]) => ({ id: k, ...v }));
   }
 
-  // Se o arquivo inspecionado não contiver a lista individual (caso de remedicao_candidatos_bp3_d16_2026-09-30.json)
+  // Se o arquivo inspecionado não contiver a lista individual (caso de arquivos apenas com agregados)
   if (listaBruta.length === 0) {
     const totalTerreno =
       typeof dados.funilContagem?.candidatosComTerrenoD07 === "number"
         ? dados.funilContagem.candidatosComTerrenoD07
-        : "N/D";
-    const msg =
-      `O arquivo '${caminhoArquivo}' contém metadados do funil amostral ` +
-      `(${totalTerreno} candidatos com terreno), ` +
-      `mas não lista as coordenadas individuais de cada candidato.`;
-    aviso = msg;
-
-    const fallback = path.resolve(
-      process.cwd(),
-      "docs/verificacoes/fontes/wfs_erodibilidade/medicao_w2_candidatos_bp3_2026-09-28.json"
+        : typeof dados.totalCandidatos === "number"
+          ? dados.totalCandidatos
+          : "N/D";
+    throw new Error(
+      `[FAIL-CLOSED] O arquivo indicado '${caminhoArquivo}' contém metadados/agregados do funil amostral ` +
+      `(${totalTerreno} candidatos), mas não lista as coordenadas individuais de cada candidato. ` +
+      `É obrigatório indicar um arquivo com registros individuais (ex: 'docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json'). ` +
+      `Substituições automáticas de universo ou fallbacks silenciosos são estritamente vedados.`
     );
-    if (fs.existsSync(fallback)) {
-      const fallbackRaw = JSON.parse(fs.readFileSync(fallback, "utf8"));
-      if (Array.isArray(fallbackRaw.candidatosMedidos)) {
-        listaBruta = fallbackRaw.candidatosMedidos;
-      }
-      fonte = fallback;
-    }
   }
 
   const pontos: PontoAmostragemSoloNu[] = [];
@@ -239,8 +230,42 @@ async function principal() {
   console.log(`Hash da Definição: ${calcularHashDefinicao()}`);
   console.log("===============================================================================\n");
 
-  // 1. Verificação estrita de credencial (Regra C1)
-  console.log("[1/5] Verificando credencial de lote conforme Regra C1...");
+  // 1. Leitura e amostragem de candidatos (validação fail-closed antecipada)
+  console.log(`[1/5] Carregando universo de candidatos de '${args.candidatosArquivo}'...`);
+  let carregamento: ReturnType<typeof carregarCandidatos>;
+  try {
+    carregamento = carregarCandidatos(args.candidatosArquivo);
+  } catch (err: any) {
+    console.error("\n===============================================================================");
+    console.error(`[ERRO UNIVERSO DE CANDIDATOS] Recusa fail-closed ao carregar candidatos:`);
+    console.error(`  ${err?.message || String(err)}`);
+    console.error("===============================================================================\n");
+    process.exit(1);
+  }
+  const { pontos: candidatosDisponiveis, fonte: fonteCandidatos, aviso } = carregamento;
+
+  if (aviso) {
+    console.log(`  -> ${aviso}`);
+  }
+  console.log(`  -> Candidatos válidos carregados: ${candidatosDisponiveis.length} (Fonte: ${fonteCandidatos})`);
+
+  if (candidatosDisponiveis.length === 0) {
+    console.error("[ERRO] Nenhum candidato com coordenadas válidas encontrado para medição.");
+    process.exit(1);
+  }
+
+  let pontosParaMedir = candidatosDisponiveis;
+  if (typeof args.limite === "number" && args.limite > 0) {
+    console.log(
+      `  -> Aplicando seleção determinística de ${args.limite} pontos com PRNG LCG (Semente: ${args.semente})...`
+    );
+    pontosParaMedir = selecionarAmostraPrng(candidatosDisponiveis, args.limite, args.semente);
+    console.log(`  -> ${pontosParaMedir.length} pontos sorteados:`);
+    console.log(`     ${pontosParaMedir.map((p) => p.id).join(", ")}`);
+  }
+
+  // 2. Verificação estrita de credencial (Regra C1)
+  console.log("\n[2/5] Verificando credencial de lote conforme Regra C1...");
   let credsLote: ReturnType<typeof carregarCredenciaisServiceAccountLote> = null;
 
   try {
@@ -273,8 +298,8 @@ async function principal() {
 
   console.log(`  -> Credencial validada: Service Account '${credsLote.client_email}' (Projeto: '${credsLote.project_id}')`);
 
-  // 2. Autenticação OAuth2 RFC 7523
-  console.log("\n[2/5] Autenticando junto ao Google Earth Engine via RFC 7523...");
+  // 3. Autenticação OAuth2 RFC 7523
+  console.log("\n[3/5] Autenticando junto ao Google Earth Engine via RFC 7523...");
   let tokenAcesso: { accessToken: string; expiresAt?: number } | null = null;
   try {
     tokenAcesso = await getGoogleAccessToken(credsLote, EARTH_ENGINE_SCOPES);
@@ -282,32 +307,6 @@ async function principal() {
   } catch (err: any) {
     console.error(`\n[ERRO AUTENTICAÇÃO GEE] Falha ao trocar asserção JWT por access token: ${err?.message}`);
     process.exit(1);
-  }
-
-  // 3. Leitura e amostragem de candidatos
-  console.log(`\n[3/5] Carregando universo de candidatos de '${args.candidatosArquivo}'...`);
-  const { pontos: candidatosDisponiveis, fonte: fonteCandidatos, aviso } = carregarCandidatos(
-    args.candidatosArquivo
-  );
-
-  if (aviso) {
-    console.log(`  -> ${aviso}`);
-  }
-  console.log(`  -> Candidatos válidos carregados: ${candidatosDisponiveis.length} (Fonte: ${fonteCandidatos})`);
-
-  if (candidatosDisponiveis.length === 0) {
-    console.error("[ERRO] Nenhum candidato com coordenadas válidas encontrado para medição.");
-    process.exit(1);
-  }
-
-  let pontosParaMedir = candidatosDisponiveis;
-  if (typeof args.limite === "number" && args.limite > 0) {
-    console.log(
-      `  -> Aplicando seleção determinística de ${args.limite} pontos com PRNG LCG (Semente: ${args.semente})...`
-    );
-    pontosParaMedir = selecionarAmostraPrng(candidatosDisponiveis, args.limite, args.semente);
-    console.log(`  -> ${pontosParaMedir.length} pontos sorteados:`);
-    console.log(`     ${pontosParaMedir.map((p) => p.id).join(", ")}`);
   }
 
   // 4. Medição de solo nu via GEE REST com cache determinístico e diário
