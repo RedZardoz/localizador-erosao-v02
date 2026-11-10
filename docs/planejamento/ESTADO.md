@@ -3,23 +3,23 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `193da3b35929d80fa700db671915308fcf7799d9`
-- Data do HEAD: 2026-11-10 02:52:01 +0000
+- Commit HEAD: `75ceffa4de46983aa060ec7d1fe8d937674a8823`
+- Data do HEAD: 2026-11-10 00:14:54 -0300
 - Últimos 5 commits:
-  1. `193da3b docs(planejamento): adicionar prompt F com quatro correcoes do E-linha e a calibracao de E-hat`
-  2. `76db730 feat(D16): persistir universo de candidatos e provar reprodutibilidade do funil`
-  3. `bbee1e9 docs(planejamento): avisar que o E-linha roda sem credencial do GEE`
-  4. `512978d docs(planejamento): substituir prompt E por E-linha, restrito ao universo de candidatos`
-  5. `ddaeb7e docs(planejamento): adicionar prompt E da guarda D11.2 e do universo de candidatos`
+  1. `75ceffa fix(auditoria): auditar estabilidade WFS Embrapa, remover fallback do CLI e registrar recusa C1 de E-hat`
+  2. `193da3b docs(planejamento): adicionar prompt F com quatro correcoes do E-linha e a calibracao de E-hat`
+  3. `76db730 feat(D16): persistir universo de candidatos e provar reprodutibilidade do funil`
+  4. `bbee1e9 docs(planejamento): avisar que o E-linha roda sem credencial do GEE`
+  5. `512978d docs(planejamento): substituir prompt E por E-linha, restrito ao universo de candidatos`
 
 ## 2. Testes Automatizados
-- Arquivos de teste versionados no repositório: 123
-  - TypeScript herméticos (`src/**/*.test.ts`): 107
+- Arquivos de teste versionados no repositório: 124
+  - TypeScript herméticos (`src/**/*.test.ts`): 108
   - TypeScript vivos (`src/**/*.vivo.test.ts`): 2
   - Python (`test_*.py` em `scripts/` e `docs/`): 14
-- Arquivos de teste executados na suíte padrão hermética (`npm run test`): 107
+- Arquivos de teste executados na suíte padrão hermética (`npm run test`): 108
 - Diferença explicada pelas configurações do Vitest:
-  - `vitest.config.mts`: seleciona exclusivamente `src/**/*.test.ts` (107 arquivos) e exclui `src/**/*.vivo.test.ts`.
+  - `vitest.config.mts`: seleciona exclusivamente `src/**/*.test.ts` (108 arquivos) e exclui `src/**/*.vivo.test.ts`.
   - `vitest.vivo.config.mts`: seleciona exclusivamente os 2 testes vivos (`src/**/*.vivo.test.ts`), executados via `npm run test:vivo` por dependerem de infraestrutura pesada local fora do Git (`data/fundiario_brasil.db` e DEM Copernicus GLO-30 em `data/dem_cache/`).
   - Testes em Python (14 arquivos): executados no ambiente Python (`pytest` / runners em `scripts/`), desacoplados da suíte Vitest.
 
@@ -70,7 +70,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | chuva | `RUSLE_Fator_R` | SIM | SIM | SIM |
 
 ## 7. Arquivos de Evidência em `docs/verificacoes/`
-- Total de arquivos de evidência medidos: 145
+- Total de arquivos de evidência medidos: 155
 
 | Arquivo de Evidência | Data no Nome | Tamanho (bytes) |
 |---|:---:|---:|
@@ -107,7 +107,8 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `2026-11-09_lastro_d02_d10_e_mascara_geos3.md` | 2026-11-09 | 8444 |
 | `2026-11-09b_adocao_mascara_geos3_2018.md` | 2026-11-09 | 8652 |
 | `2026-11-09d_calibracao_30_pontos_solo_nu.md` | 2026-11-09 | 10582 |
-| `2026-11-10_universo_candidatos_e_reprodutibilidade.md` | 2026-11-10 | 8963 |
+| `2026-11-10_universo_candidatos_e_reprodutibilidade.md` | 2026-11-10 | 10193 |
+| `2026-11-10f_calibracao_e_estabilidade_fontes.md` | 2026-11-10 | 13107 |
 | `cache_pedologia_bp3.json` | sem data no nome | 96740 |
 | `calculadora/2026-09-30_simulacao_desenho_d16_224m.md` | 2026-09-30 | 2027 |
 | `climatologia_chirps_bp3.json` | sem data no nome | 16112 |
@@ -135,6 +136,15 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `execucao/2026-11-10/npm_test.txt` | sem data no nome | 19532 |
 | `execucao/2026-11-10/rodada_remedicao_pipeline.txt` | sem data no nome | 4219 |
 | `execucao/2026-11-10/tsc_noemit.txt` | sem data no nome | 69 |
+| `execucao/2026-11-10f/conferencia_estabilidade_wfs.txt` | sem data no nome | 3851 |
+| `execucao/2026-11-10f/estado_verificar.txt` | sem data no nome | 162 |
+| `execucao/2026-11-10f/git_log.txt` | sem data no nome | 270 |
+| `execucao/2026-11-10f/git_status.txt` | sem data no nome | 412 |
+| `execucao/2026-11-10f/npm_test.txt` | sem data no nome | 21003 |
+| `execucao/2026-11-10f/recusa_sem_credencial.txt` | sem data no nome | 2535 |
+| `execucao/2026-11-10f/rodada_30_pontos_calibracao.txt` | sem data no nome | 1530 |
+| `execucao/2026-11-10f/tsc_noemit.txt` | sem data no nome | 0 |
+| `execucao/2026-11-10f/varredura_datas_fixas.txt` | sem data no nome | 1816 |
 | `fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md` | sem data no nome | 7016 |
 | `fontes/dematte2018/conferencia_dematte_2018.md` | sem data no nome | 6725 |
 | `fontes/dematte2018/extrair_dematte_2018.py` | sem data no nome | 2091 |
