@@ -1,0 +1,64 @@
+﻿===============================================================================
+REMEDIÇÃO PERICIAL DOS CANDIDATOS DA BP3 — PIPELINE AMOSTRAL D16 EMENDADA
+Data: 30/09/2026 | Metodologia PPGTCA 2026 | Domínio D07: [3%, 20%]
+===============================================================================
+
+[1/6] Consultando imóveis reais cadastrados no envelope da BP3 (data/fundiario_brasil.db)...
+  -> Imóveis recuperados no envelope: 8651
+  -> Imóveis dentro do divisor hidrológico BP3 (fora de UC florestal): 4679
+
+[2/6] Executando Thinning determinístico com relaxamento até o piso P02 (X1)...
+  -> Raio inicial: 5000 m | Candidatos obtidos: 223
+  -> Iteração 1: raio relaxado de 5000 m para 3500 m (piso P02=1000 m) -> 402 candidatos.
+  -> Iteração 2: raio relaxado de 3500 m para 2450 m (piso P02=1000 m) -> 687 candidatos.
+  -> Thinning concluído: Raio Final = 2450 m | Candidatos = 687
+
+[3/6] Medição topográfica e seleção de ponto na porção elegível do imóvel (X3)...
+  -> Centroides já em 3-20%: 541
+  -> Imóveis recuperados por célula elegível interna (X3): 139
+  -> Total com declividade D07 [3%, 20%] comprovada: 680
+
+[4/6] Avaliando teto operacional após o filtro físico D07 (X2)...
+  -> Requisições Earth Engine antes de X2: consumidas sobre os 90 primeiros independente de declividade
+  -> Requisições Earth Engine após X2: 100% direcionadas a pontos comprovadamente elegíveis em D07!
+
+[5/6] Consultando caracterização pedológica oficial (Embrapa GeoInfo)...
+  -> Cache pedológico carregado: 677 registros válidos em C:\Users\lalfr\Docs Fora do Ar\LUIS ALFREDO\01 - MESTRADO PPGTCA 2026\02 - PESQUISA EROSÃO LAMINAR\geolocalizacao-erosao-propriedade\docs\verificacoes\cache_pedologia_bp3.json
+  -> Consultando WFS Embrapa GeoInfo para 3 candidatos pendentes...
+
+[5b/6] Amostragem em lote de Frequência de Solo Nu (Ê) via GEE REST / Cache Persistente (C3)...
+  -> Variável SAREL_GEE_SERVICE_ACCOUNT_FILE não definida. Utilizando cache persistente auditado.
+  -> Total de candidatos avaliados para Ê: 680
+  -> Candidatos com Ê medido real de satélite: 0
+  -> Requisições REST GEE realizadas: 0
+  -> ⚠ AVISO PERICIAL (P12): Frequência de Solo Nu (Ê) NÃO FOI MEDIDA.
+  -> Causa: credenciais GEE ausentes (SAREL_GEE_SERVICE_ACCOUNT_FILE não configurada).
+  -> Conforme P12, a dimensão Ê permanece INDISPONÍVEL e nenhum número sintético é admitido.
+  -> Consequência: Os 18 estratos tridimensionais e as 9 células de K̂=2 NÃO PODEM SER POVOADAS.
+
+[6/6] Classificando candidatos nos domínios biofísicos comprovados...
+
+===============================================================================
+RESULTADO CONSOLIDADO DA REMEDIÇÃO (COM ESTADO DE PROVENIÊNCIA P12):
+- Imóveis analisados no divisor BP3: 4679
+- Candidatos pós-thinning a 2450 m (piso P02): 687
+- Candidatos com declividade D07 comprovada [3%, 20%]: 680
+- Candidatos válidos com pedologia caracterizada (K̂): 677
+  -> Total em K̂=1: 593 (87.6%)
+  -> Total em K̂=2: 84 (12.4%)
+  -> Meta de K̂=2 exigida (4 por estrato x 9 estratos): 36 candidatos
+  -> Balanço global em K̂=2: ATINGIDO COM FOLGA (84 >= 36)
+-------------------------------------------------------------------------------
+Distribuição por Tercil de Declividade (Ŝ):
+  - Ŝ1 (3,00% a 5.12%): 227 candidatos (K̂=1: 218, K̂=2: 9)
+  - Ŝ2 (5.12% a 8.46%): 225 candidatos (K̂=1: 211, K̂=2: 14)
+  - Ŝ3 (8.46% a 20,00%): 225 candidatos (K̂=1: 164, K̂=2: 61)
+-------------------------------------------------------------------------------
+Distribuição por Tercil de Frequência de Solo Nu (Ê):
+  - NÃO CALCULADA (Ê não medido — ausência de credenciais vivas do Earth Engine)
+-------------------------------------------------------------------------------
+Distribuição nas 9 células de K̂=2 (Ŝ × Ê):
+  - NÃO POVOADA (BLOQUEADA conforme P12 até medição externa real)
+===============================================================================
+
+Artefato Universo JSON gerado em: C:\Users\lalfr\Docs Fora do Ar\LUIS ALFREDO\01 - MESTRADO PPGTCA 2026\02 - PESQUISA EROSÃO LAMINAR\geolocalizacao-erosao-propriedade\docs\verificacoes\universo_candidatos_bp3_d16_2026-11-10.json

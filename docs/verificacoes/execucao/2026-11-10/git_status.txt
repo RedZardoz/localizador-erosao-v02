@@ -1,0 +1,13 @@
+M  docs/planejamento/ESTADO.md
+A  docs/verificacoes/2026-11-10_universo_candidatos_e_reprodutibilidade.md
+A  docs/verificacoes/execucao/2026-11-10/credencial_ausente_confirmada.txt
+A  docs/verificacoes/execucao/2026-11-10/estado_verificar.txt
+A  docs/verificacoes/execucao/2026-11-10/git_log.txt
+A  docs/verificacoes/execucao/2026-11-10/git_status.txt
+A  docs/verificacoes/execucao/2026-11-10/npm_test.txt
+A  docs/verificacoes/execucao/2026-11-10/rodada_remedicao_pipeline.txt
+A  docs/verificacoes/execucao/2026-11-10/tsc_noemit.txt
+A  docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json
+M  scripts/remedir_candidatos_bp3_d16.ts
+M  scripts/sortear_poligonos_d16.ts
+A  src/lib/gee/sorteioPoligonosTravaD11.test.ts

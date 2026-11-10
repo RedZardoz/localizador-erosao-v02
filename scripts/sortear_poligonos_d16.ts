@@ -83,7 +83,24 @@ function gerarConjuntoInspecaoDryRun(): CandidatoSorteioD16[] {
   return pool;
 }
 
+export const MENSAGEM_BLOQUEIO_D11_2 =
+  `[BLOQUEIO PRE-REGISTRADO D11.2] O sorteio de D16 esta travado.\n` +
+  `A guarda que veda E-hat sob suficiencia insuficiente (6 <= n < 12, SE ~ 0,20) de entrar nos\n` +
+  `tercis de D12 nao esta ativa no caminho de producao. Ver:\n` +
+  `  - docs/auditorias/DeepSeek/AUDITORIA_FUNCIONAL_METODOLOGICA_2026-11-09.md, achado S1-1\n` +
+  `  - docs/planejamento/prompts/PROMPT_EXECUTOR_... (Prompt H), que a reativa\n` +
+  `Enquanto esta trava existir, nenhum sorteio pode ser executado. Remove-la e tarefa do Prompt H,\n` +
+  `junto com o conserto, e nao antes.`;
+
+export const TRAVA_D11_2_ATIVA = true;
+
 function executarCli(): void {
+  const travaAtiva: boolean = TRAVA_D11_2_ATIVA;
+  if (travaAtiva) {
+    console.error(MENSAGEM_BLOQUEIO_D11_2);
+    process.exit(1);
+  }
+
   const args = process.argv.slice(2);
   const flagDryRun = args.includes("--dry-run");
   const flagConfirmar = args.includes("--confirmar");

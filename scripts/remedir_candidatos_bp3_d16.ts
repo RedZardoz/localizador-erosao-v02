@@ -16,7 +16,7 @@
  *   relata com os números exatos e as células deficientes sem alterar limiares.
  */
 
-import { execFile } from "child_process";
+import { execFile, execSync } from "child_process";
 import path from "path";
 import fs from "fs";
 import {
@@ -56,6 +56,17 @@ import {
 import { valorOuNulo } from "@/types/proveniencia";
 import { criarDiarioRequisicoes, salvarDiarioRequisicoes } from "@/lib/seguranca/diarioRequisicoes";
 import { REGISTRO_DECISOES, PARAMETROS, exigirDecisao } from "@/config/decisoes";
+
+export const FONTE_DOS_DADOS =
+  "Base Fundiária Nacional (data/fundiario_brasil.db) + Copernicus DEM GLO-30 Local COG + Embrapa GeoInfo WFS (Carta 2024 / docs/verificacoes/cache_pedologia_bp3.json)";
+
+function obterGitCommitAtual(): string {
+  try {
+    return execSync("git rev-parse HEAD", { encoding: "utf-8" }).trim();
+  } catch {
+    return "indisponivel";
+  }
+}
 
 interface ImovelRealDb {
   cod_car: string;
@@ -278,8 +289,7 @@ async function executarRemedicao() {
         if (
           reg &&
           (reg.nivelK === 1 || reg.nivelK === 2) &&
-          typeof reg.kSolos === "number" &&
-          Number.isFinite(reg.kSolos)
+          ((typeof reg.kSolos === "number" && Number.isFinite(reg.kSolos)) || reg.foraDoDominioSolo === true)
         ) {
           cachePedologia[id] = reg;
         }
@@ -446,6 +456,7 @@ async function executarRemedicao() {
 
   interface CandidatoMedidoCompleto {
     id: string;
+    codigoCar?: string;
     latitude: number;
     longitude: number;
     municipio: string;
@@ -483,6 +494,7 @@ async function executarRemedicao() {
 
     candidatosValidos.push({
       id: c.id,
+      codigoCar: c.codigoCar,
       latitude: c.latitude,
       longitude: c.longitude,
       municipio: c.municipio,
@@ -583,13 +595,117 @@ async function executarRemedicao() {
   }
   console.log("===============================================================================\n");
 
-  // Salva artefatos
-  const artefatoJsonPath = path.join(dirVerif, "remedicao_candidatos_bp3_d16_2026-09-30.json");
-  const artefatoMdPath = path.join(dirVerif, "2026-09-30_remedicao_candidatos_bp3_d16.md");
+  // Salva artefato do universo de candidatos (Prompt E' — 10/11/2026)
+  const dataExecucao = "2026-11-10";
+  const artefatoUniversoPath = path.join(dirVerif, `universo_candidatos_bp3_d16_${dataExecucao}.json`);
 
-  const dadosArtefato = {
-    dataRemedicao: "2026-09-30",
-    versao: "SAREL v2.0 - D16 Emendada (Remedição Pericial P12)",
+  const candidatosExport = candidatosValidos.map((c) => ({
+    id: c.id,
+    codigoCar: c.codigoCar,
+    municipio: c.municipio,
+    areaHa: c.areaHa,
+    latitude: c.latitude,
+    longitude: c.longitude,
+    declividadePct: c.declividadePct,
+    elevacaoMetros: c.elevacaoMetros,
+    pontoRealocado: c.pontoRealocado,
+    nivelK: c.nivelK,
+    classeErodibilidade: c.classeErodibilidade,
+    fonteClasse: typeof c.fonteClasse === "string" ? c.fonteClasse : "Carta 2024 (erodUm)",
+    kSolos: c.kSolos,
+    frequenciaSoloNu: c.frequenciaSoloNu,
+    proveniencia: {
+      latitude: {
+        estado: "medido" as const,
+        fonte: c.pontoRealocado
+          ? "Célula elegível interna no imóvel rural (selecionarPontoElegivelImovel, semente P07)"
+          : "Base Fundiária Nacional (data/fundiario_brasil.db — SICAR Oficial MMA/SFB)",
+        tipo: c.pontoRealocado ? "ponto_elegivel_interno_x3" : "centroide_imovel",
+      },
+      longitude: {
+        estado: "medido" as const,
+        fonte: c.pontoRealocado
+          ? "Célula elegível interna no imóvel rural (selecionarPontoElegivelImovel, semente P07)"
+          : "Base Fundiária Nacional (data/fundiario_brasil.db — SICAR Oficial MMA/SFB)",
+        tipo: c.pontoRealocado ? "ponto_elegivel_interno_x3" : "centroide_imovel",
+      },
+      declividadePct: {
+        estado: "medido" as const,
+        fonte: "Copernicus DEM GLO-30 Local COG (data/dem_cache/)",
+        elevacaoMetros: c.elevacaoMetros,
+      },
+      nivelK: {
+        estado: "medido" as const,
+        fonte: "Embrapa GeoInfo WFS / Cache Auditado (docs/verificacoes/cache_pedologia_bp3.json)",
+        classeErodibilidade: c.classeErodibilidade,
+        fonteClasse: typeof c.fonteClasse === "string" ? c.fonteClasse : "Carta 2024 (erodUm)",
+        kSolos: c.kSolos,
+      },
+    },
+  }));
+
+  const candidatosComTerrenoExport = candidatosComTerreno.map((c) => {
+    const solo = resultadosSolo.get(c.id);
+    const nivelKValido = solo && (solo.nivelK === 1 || solo.nivelK === 2);
+    const eValidoPedologia = Boolean(
+      nivelKValido && !solo.foraDoDominioSolo && solo.kSolos !== null && Number.isFinite(solo.kSolos)
+    );
+    const fonteClasseStr = solo && typeof solo.fonteClasse === "string" ? solo.fonteClasse : "Carta 2024 (erodUm)";
+    return {
+      id: c.id,
+      codigoCar: c.codigoCar,
+      municipio: c.municipio,
+      areaHa: c.areaHa,
+      latitude: c.latitude,
+      longitude: c.longitude,
+      declividadePct: c.declividadePct,
+      elevacaoMetros: c.elevacaoMetros,
+      pontoRealocado: c.pontoRealocado,
+      validoPedologia: eValidoPedologia,
+      nivelK: nivelKValido ? solo.nivelK : null,
+      classeErodibilidade: solo ? solo.classeErodibilidade : null,
+      kSolos: solo ? solo.kSolos : null,
+      proveniencia: {
+        latitude: {
+          estado: "medido" as const,
+          fonte: c.pontoRealocado
+            ? "Célula elegível interna no imóvel rural (selecionarPontoElegivelImovel, semente P07)"
+            : "Base Fundiária Nacional (data/fundiario_brasil.db — SICAR Oficial MMA/SFB)",
+          tipo: c.pontoRealocado ? "ponto_elegivel_interno_x3" : "centroide_imovel",
+        },
+        longitude: {
+          estado: "medido" as const,
+          fonte: c.pontoRealocado
+            ? "Célula elegível interna no imóvel rural (selecionarPontoElegivelImovel, semente P07)"
+            : "Base Fundiária Nacional (data/fundiario_brasil.db — SICAR Oficial MMA/SFB)",
+          tipo: c.pontoRealocado ? "ponto_elegivel_interno_x3" : "centroide_imovel",
+        },
+        declividadePct: {
+          estado: "medido" as const,
+          fonte: "Copernicus DEM GLO-30 Local COG (data/dem_cache/)",
+          elevacaoMetros: c.elevacaoMetros,
+        },
+        nivelK: nivelKValido
+          ? {
+              estado: "medido" as const,
+              fonte: "Embrapa GeoInfo WFS / Cache Auditado (docs/verificacoes/cache_pedologia_bp3.json)",
+              classeErodibilidade: solo.classeErodibilidade,
+              fonteClasse: fonteClasseStr,
+              kSolos: solo.kSolos,
+            }
+          : {
+              estado: "indisponivel" as const,
+              causa: "fora-do-dominio" as const,
+              motivo: "Candidato sem caracterização pedológica válida na Carta 2024 / WFS Embrapa",
+            },
+      },
+    };
+  });
+
+  const dadosArtefatoUniverso = {
+    FONTE_DOS_DADOS,
+    dataExecucao,
+    gitCommitHead: obterGitCommitAtual(),
     parametros: {
       raioThinningInicialMetros: 5000,
       raioThinningFinalMetros: raioFinalMetros,
@@ -646,92 +762,14 @@ async function executarRemedicao() {
         diarioRequisicoes: diarioGee.totalChamadas > 0 ? "docs/verificacoes/diario_requisicoes_bp3.json" : null,
       },
     },
-    metricasGeeLote: {
-      tempoTotalMs: metricasGee.tempoTotalMs,
-      requisicoesHttp: metricasGee.requisicoesHttp,
-      requisicoesEvitadas: metricasGee.requisicoesEvitadas,
-      reducaoRequisicoesPct: metricasGee.reducaoRequisicoesPct,
-      cacheHits: metricasGee.cacheHits,
-      cacheMisses: metricasGee.cacheMisses,
-      pontosIndisponiveis: metricasGee.pontosIndisponiveis,
-    },
-    estratosK2Medidos: contagemK2PorEstrato,
-    statusSorteio: temSoloNuMedidoReal
-      ? "LIBERADO"
-      : "BLOQUEADO — Dimensão Ê não foi medida; as 9 células de K̂=2 e os 18 estratos tridimensionais não podem ser povoados sem observações reais de satélite (P12)",
+    totalCandidatos: candidatosExport.length,
+    totalCandidatosComTerreno: candidatosComTerrenoExport.length,
+    candidatos: candidatosExport,
+    candidatosComTerreno: candidatosComTerrenoExport,
   };
 
-  fs.writeFileSync(artefatoJsonPath, JSON.stringify(dadosArtefato, null, 2), "utf8");
-  console.log(`Artefato JSON gerado em: ${artefatoJsonPath}`);
-
-  const relatorioMd = `# Remedição Pericial dos Candidatos da BP3 na Faixa 3% a 20% (D07 Real)
-**Data:** 30/09/2026 (Retificado em 01/10/2026 conforme Auditoria Pericial P12)  
-**Autoria:** Luís Alfredo Ferreira da Silva (\`RedZardoz\`)  
-**Agente Executor:** Antigravity (Google DeepMind)  
-**Normas Aplicadas:** Decisões D07, D08, D09, D10, D12, D16, D23, D24; Parâmetros P02, P07, P11, P12; Regras R1 a R6, C1, C2, C3, F1 a F5.
-
----
-
-## 1. Funil Metodológico da Amostragem
-| Etapa | Candidatos | Justificativa Metodológica |
-|---|---|---|
-| Imóveis no Envelope da BP3 | ${imoveisBrutos.length} | Consulta oficial em \`data/fundiario_brasil.db\` |
-| Dentro do Divisor Hidrográfico BP3 | ${imoveisBp3.length} | Divisor oficial IAT e exclusão de UCs Integrais |
-| Pós-Thinning Espacial Determinístico (P02) | **${totalPosThinning}** | Raio relaxado de 5.000 m até o piso de **${raioFinalMetros} m** (\`exigirDecisao(P02)\`) |
-| Domínio Físico D07 [3%, 20%] com Ponto Elegível (X3) | **${candidatosComTerreno.length}** | Amostragem estocástica interna no imóvel rural |
-| Imóveis Recuperados por Ponto Elegível (X3) | ${realocadosElegiveis} | Seleção ao acaso (P07) livre de suspeita de erosão |
-| Pedologia Validada (Embrapa WFS / Cache Auditado) | **${candidatosValidos.length}** | Erodibilidade oficial K̂ medida (593 em K̂=1, 84 em K̂=2) |
-| Frequência de Solo Nu (Ê via GEE REST) | **${candidatosComSoloNuMedido.length}** (${temSoloNuMedidoReal ? "Medido" : "NÃO MEDIDO — P12"}) | ${temSoloNuMedidoReal ? "Medição real via REST" : "Credencial GEE ausente no ambiente — 0 chamadas de rede"} |
-
----
-
-## 2. Balanço Pedológico em K̂=2 contra os 36 Necessários
-- **Candidatos em K̂=1 (Erodibilidade Baixa/Muito Baixa/Média):** ${totalK1} (${((totalK1 / candidatosValidos.length) * 100).toFixed(1)}%)
-- **Candidatos em K̂=2 (Erodibilidade Alta/Muito Alta):** **${totalK2}** (${((totalK2 / candidatosValidos.length) * 100).toFixed(1)}%)
-- **Meta de D16 Emendada (4 por estrato × 9 estratos de K̂=2):** **36 candidatos**
-- **Veredito Global:** ${totalK2 >= 36 ? `**META GLOBAL ATINGIDA COM SUCESSO (${totalK2} >= 36)**` : `**INSUFICIENTE (${totalK2} < 36)**`}
-
----
-
-## 3. Distribuição por Tercis de Declividade (Ŝ)
-- **Ŝ1 (3,00% a ${limiaresS.t1.toFixed(2)}%):** ${contagemSK.S1.total} candidatos (K̂=1: ${contagemSK.S1.k1} | K̂=2: ${contagemSK.S1.k2})
-- **Ŝ2 (${limiaresS.t1.toFixed(2)}% a ${limiaresS.t2.toFixed(2)}%):** ${contagemSK.S2.total} candidatos (K̂=1: ${contagemSK.S2.k1} | K̂=2: ${contagemSK.S2.k2})
-- **Ŝ3 (${limiaresS.t2.toFixed(2)}% a 20,00%):** ${contagemSK.S3.total} candidatos (K̂=1: ${contagemSK.S3.k1} | K̂=2: ${contagemSK.S3.k2})
-
----
-
-## 4. Estado Pericial da Dimensão Frequência de Solo Nu (Ê) e Partição de K̂=2
-${
-  temSoloNuMedidoReal
-    ? `| Estrato | Contagem Medida | Condição D16 (Mínimo 4) |
-|---|---|---|
-` +
-      Object.entries(contagemK2PorEstrato || {})
-        .map(([estrato, qtd]) => `| \`${estrato}\` | ${qtd} | ${qtd >= 4 ? "✅ ATENDIDA" : "⚠️ DEFICIENTE"} |`)
-        .join("\n")
-    : `> [!IMPORTANT]
-> **DECLARAÇÃO DE INDISPONIBILIDADE PERICIAL (POSTURA P12):**
-> A dimensão de **Frequência de Solo Nu (Ê)** **NÃO FOI MEDIDA** devido à ausência da credencial oficial do Google Earth Engine no ambiente (\`SAREL_GEE_SERVICE_ACCOUNT_FILE\`).
-> 
-> Em estrita conformidade com a determinação pericial de 01/10/2026 e com a regra fundamental **P12**:
-> 1. Todo fallback sintético, determinístico ou fixo (0,15) foi **integralmente expurgado**.
-> 2. O arquivo de cache sintético anterior foi **definitivamente apagado**.
-> 3. A tabela das 9 células de K̂=2 e dos 18 estratos tridimensionais **NÃO FOI POVOADA** e é declarada como **NÃO MEDIDA**.
-> 4. O sorteio dos 36 polígonos segue **COMPULSORIAMENTE BLOQUEADO** até que ocorra medição espectral autêntica via rede autenticada com diário comprobatório.`
-}
-
----
-
-## 5. Auditoria de Requisições e Governança de Rede (Guarda Estrutural F5)
-- **Status do Serviço GEE:** ${temSoloNuMedidoReal ? "Online e Autenticado" : "Offline / Sem Credenciais"}
-- **Requisições HTTP GEE Realizadas:** ${metricasGee.requisicoesHttp}
-- **Itens Indisponíveis Registrados:** ${metricasGee.pontosIndisponiveis}
-- **Diário de Requisições:** ${diarioGee.totalChamadas > 0 ? `\`docs/verificacoes/diario_requisicoes_bp3.json\` (${diarioGee.totalChamadas} chamadas registradas)` : "Nenhuma chamada externa efetuada (0 requisições)"}
-- **Guarda Inviolável:** Nenhum artefato de medição externa é aceito sem o respectivo diário de requisições contendo código HTTP 2xx e contagem de itens compatível.
-`;
-
-  fs.writeFileSync(artefatoMdPath, relatorioMd, "utf8");
-  console.log(`Relatório Markdown gerado em: ${artefatoMdPath}`);
+  fs.writeFileSync(artefatoUniversoPath, JSON.stringify(dadosArtefatoUniverso, null, 2), "utf8");
+  console.log(`Artefato Universo JSON gerado em: ${artefatoUniversoPath}`);
 }
 
 executarRemedicao().catch((err) => {

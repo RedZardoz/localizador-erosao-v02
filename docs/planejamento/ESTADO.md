@@ -3,23 +3,23 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `2ba8e8623b4b4c8f76652f112342efcc22ee1ccd`
-- Data do HEAD: 2026-11-09 20:06:25 +0000
+- Commit HEAD: `bbee1e98e882ed8dfea56a976783e1dff96bd5ca`
+- Data do HEAD: 2026-11-10 01:06:18 +0000
 - Últimos 5 commits:
-  1. `2ba8e86 docs(planejamento): adicionar prompt D de retomada da ingestao de E-hat`
-  2. `90959b7 feat(D10): adotar mascara de solo exposto de Dematte et al. (2018) em E-hat`
-  3. `968b3ad docs(planejamento): acrescentar tarefa 6.1 ao prompt C`
-  4. `1289ec4 chore(governanca): ligar modo somente-leitura do painel de estado a Regra 3`
-  5. `5571f71 docs(planejamento): adicionar prompt C da mascara GEOS3 de Dematte et al. (2018)`
+  1. `bbee1e9 docs(planejamento): avisar que o E-linha roda sem credencial do GEE`
+  2. `512978d docs(planejamento): substituir prompt E por E-linha, restrito ao universo de candidatos`
+  3. `ddaeb7e docs(planejamento): adicionar prompt E da guarda D11.2 e do universo de candidatos`
+  4. `eb708a4 AUDITORIA_FUNCIONAL_METODOLOGICA_2026-11-09`
+  5. `bca0e50 feat(E-hat): corrigir definicao da metrica e medir calibracao de 30 pontos`
 
 ## 2. Testes Automatizados
-- Arquivos de teste versionados no repositório: 122
-  - TypeScript herméticos (`src/**/*.test.ts`): 106
+- Arquivos de teste versionados no repositório: 123
+  - TypeScript herméticos (`src/**/*.test.ts`): 107
   - TypeScript vivos (`src/**/*.vivo.test.ts`): 2
   - Python (`test_*.py` em `scripts/` e `docs/`): 14
-- Arquivos de teste executados na suíte padrão hermética (`npm run test`): 106
+- Arquivos de teste executados na suíte padrão hermética (`npm run test`): 107
 - Diferença explicada pelas configurações do Vitest:
-  - `vitest.config.mts`: seleciona exclusivamente `src/**/*.test.ts` (106 arquivos) e exclui `src/**/*.vivo.test.ts`.
+  - `vitest.config.mts`: seleciona exclusivamente `src/**/*.test.ts` (107 arquivos) e exclui `src/**/*.vivo.test.ts`.
   - `vitest.vivo.config.mts`: seleciona exclusivamente os 2 testes vivos (`src/**/*.vivo.test.ts`), executados via `npm run test:vivo` por dependerem de infraestrutura pesada local fora do Git (`data/fundiario_brasil.db` e DEM Copernicus GLO-30 em `data/dem_cache/`).
   - Testes em Python (14 arquivos): executados no ambiente Python (`pytest` / runners em `scripts/`), desacoplados da suíte Vitest.
 
@@ -70,7 +70,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | chuva | `RUSLE_Fator_R` | SIM | SIM | SIM |
 
 ## 7. Arquivos de Evidência em `docs/verificacoes/`
-- Total de arquivos de evidência medidos: 128
+- Total de arquivos de evidência medidos: 136
 
 | Arquivo de Evidência | Data no Nome | Tamanho (bytes) |
 |---|:---:|---:|
@@ -106,6 +106,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `2026-11-03_poder_d25.txt` | 2026-11-03 | 4492 |
 | `2026-11-09_lastro_d02_d10_e_mascara_geos3.md` | 2026-11-09 | 8444 |
 | `2026-11-09b_adocao_mascara_geos3_2018.md` | 2026-11-09 | 8652 |
+| `2026-11-09d_calibracao_30_pontos_solo_nu.md` | 2026-11-09 | 10582 |
 | `cache_pedologia_bp3.json` | sem data no nome | 96740 |
 | `calculadora/2026-09-30_simulacao_desenho_d16_224m.md` | 2026-09-30 | 2027 |
 | `climatologia_chirps_bp3.json` | sem data no nome | 16112 |
@@ -119,6 +120,13 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `execucao/2026-11-09/grep_selecao_bibliografica.txt` | sem data no nome | 72880 |
 | `execucao/2026-11-09/ls_selecao_bibliografica.txt` | sem data no nome | 228 |
 | `execucao/2026-11-09/npm_test.txt` | sem data no nome | 12595 |
+| `execucao/2026-11-09d/git_log.txt` | sem data no nome | 400 |
+| `execucao/2026-11-09d/git_status.txt` | sem data no nome | 736 |
+| `execucao/2026-11-09d/inspecao_candidatos_json.txt` | sem data no nome | 3738 |
+| `execucao/2026-11-09d/npm_test.txt` | sem data no nome | 19999 |
+| `execucao/2026-11-09d/recusa_sem_credencial.txt` | sem data no nome | 1295 |
+| `execucao/2026-11-09d/rodada_30_pontos.txt` | sem data no nome | 1295 |
+| `execucao/2026-11-09d/sorteio_30_pontos.txt` | sem data no nome | 2544 |
 | `fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md` | sem data no nome | 7016 |
 | `fontes/dematte2018/conferencia_dematte_2018.md` | sem data no nome | 6725 |
 | `fontes/dematte2018/extrair_dematte_2018.py` | sem data no nome | 2091 |

@@ -1,0 +1,3 @@
+bbee1e9 docs(planejamento): avisar que o E-linha roda sem credencial do GEE
+512978d docs(planejamento): substituir prompt E por E-linha, restrito ao universo de candidatos
+ddaeb7e docs(planejamento): adicionar prompt E da guarda D11.2 e do universo de candidatos

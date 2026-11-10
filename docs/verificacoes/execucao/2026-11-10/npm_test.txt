@@ -1,0 +1,175 @@
+﻿
+> sarel@2.0.0 test
+> vitest run
+
+node.exe : [33mThe plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via 
+the [1mresolve.tsconfigPaths[22m option. You can remove the plugin and set [1mresolve.tsconfigPaths: true[22m in 
+your Vite config instead.[39m
+No linha:1 caractere:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\lalfr\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([33mThe plugin...g instead.[39m:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90mC:/Users/lalfr/Docs Fora do Ar/LUIS ALFREDO/01 - MESTRADO PPGTCA 2026/02 - PESQUISA EROSÃO LAMINAR/geolocalizacao-erosao-propriedade[39m
+
+ [32m✓[39m src/lib/fundiario/matcher.test.ts [2m([22m[2m16 tests[22m[2m | [22m[33m3 skipped[39m[2m)[22m[32m 52[2mms[22m[39m
+ [32m✓[39m src/lib/gee/sorteioPoligonosTravaD11.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1858[2mms[22m[39m
+     [33m[2m✓[22m[39m recusa imediatamente qualquer execução do sorteio de D16 com bloqueio de pré-registro D11.2 (exit code 1) [33m 1855[2mms[22m[39m
+ [32m✓[39m src/config/estado.espelho.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 1623[2mms[22m[39m
+     [33m[2m✓[22m[39m ESTADO.md no disco deve ser estritamente idêntico ao gerado em memória pelo script de auditoria [33m 1614[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/guardaImputacaoMediana.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1608[2mms[22m[39m
+     [33m[2m✓[22m[39m varre scripts/ e src/ e falha se houver imputação por mediana fora de scripts/d25/ e do legado deprecado [33m 1566[2mms[22m[39m
+ [32m✓[39m src/config/deflacao.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 1152[2mms[22m[39m
+     [33m[2m✓[22m[39m audita os geradores de documentos contra deriva: exige PARAM_DEFLACAO e proíbe literais derivados ou defasados [33m 1136[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/padroesProibidos.test.ts [2m([22m[2m34 tests[22m[2m)[22m[33m 3651[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum arquivo em src/lib, src/app, src/store, src/config, src/components ou src/types deve conter padrões proibidos [33m 1370[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum script em scripts/ deve conter geração sintética não documentada ou padrões proibidos [33m 365[2mms[22m[39m
+       [33m[2m✓[22m[39m separa B11 (SWIR-1) de B12 (SWIR-2), preserva B11 no BSI e deriva adquiridoEm real de PRODUCT_ID (F0.1, F0.3) [33m 326[2mms[22m[39m
+       [33m[2m✓[22m[39m assevera que nenhum JSON versionado em data/ e docs/ contém hash implausível ou timestamp suspeito [33m 894[2mms[22m[39m
+       [33m[2m✓[22m[39m assevera que nenhum artefato JSON de medição em docs/verificacoes/ contém séries numéricas correlacionadas com a ordem do arquivo [33m 434[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/cegamentoArtefatos.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 4196[2mms[22m[39m
+     [33m[2m✓[22m[39m nenhum arquivo sob controle de versão (git) deve conter simultaneamente código opaco VANT-BLIND-* e identificador de polígono D16_E_* (K2) [33m 4158[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/auditoriaComportamentoScripts.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 4561[2mms[22m[39m
+     [33m[2m✓[22m[39m script estado_do_projeto.mjs cumpre rigorosamente os requisitos de rastreabilidade e recusa [33m 1927[2mms[22m[39m
+     [33m[2m✓[22m[39m script mapear_citacao_metodologia.mjs cumpre rigorosamente os requisitos de rastreabilidade e recusa [33m 980[2mms[22m[39m
+     [33m[2m✓[22m[39m script varrer_faixas_nbr2.mjs cumpre rigorosamente os requisitos de rastreabilidade e recusa [33m 335[2mms[22m[39m
+ [32m✓[39m src/lib/export/pacoteReprodutibilidade.test.ts [2m([22m[2m20 tests[22m[2m)[22m[33m 1403[2mms[22m[39m
+     [33m[2m✓[22m[39m INTEGRAÇÃO A5(c): extrai ZIP e roda 07_verificar_integridade.py via Python (exit 0 em íntegro, exit 1 se corrompido) [33m 1233[2mms[22m[39m
+ [32m✓[39m src/lib/tempo/datas.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 946[2mms[22m[39m
+     [33m[2m✓[22m[39m varre src e falha se sobrar toISOString().split('T')[0] ou .slice(0, 10) fora do utilitário e da lista fechada de exceções UTC [33m 901[2mms[22m[39m
+ [32m✓[39m src/lib/gee/contratoEscritorLeitorGee.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 423[2mms[22m[39m
+[90mstdout[2m | src/lib/seguranca/provenienciaCaminhos.test.ts[2m > [22m[2mVerificação automatizada de caminhos em docs/PROVENIENCIA_ASSISTENCIA_IA.md (Disciplina R1 / Regra 9)[2m > [22m[2mtodos os caminhos de repositório citados em docs/PROVENIENCIA_ASSISTENCIA_IA.md devem existir no disco
+[22m[39m[C02] Caminhos citados em docs/PROVENIENCIA_ASSISTENCIA_IA.md ignorados pelo .gitignore (dado local legítimo fora do git): 2 [
+  [32m'docs/bibliografia/Pesquisas diretamente relacionadas/CNPS-DOC-246-2024.pdf'[39m,
+  [32m'data/dem_cache/Copernicus_DSM_COG_10_S26_00_W055_00_DEM.tif'[39m
+]
+
+ [32m✓[39m src/lib/seguranca/provenienciaCaminhos.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 900[2mms[22m[39m
+     [33m[2m✓[22m[39m ehCaminhoIgnoradoGit: caminho com metacaracteres de shell não executa comando e conta como não ignorado [33m 464[2mms[22m[39m
+     [33m[2m✓[22m[39m todos os caminhos de repositório citados em docs/PROVENIENCIA_ASSISTENCIA_IA.md devem existir no disco [33m 417[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/rusle.test.ts [2m([22m[2m20 tests[22m[2m)[22m[33m 518[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum módulo em src/ (exceto fatorC.ts e testes) importa ou chama calcularFatorCSensibilidadeBsi nem calcularFatorCHibrido [33m 473[2mms[22m[39m
+ [32m✓[39m src/lib/drone/planoVooNControl.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 342[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/importacoes.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 1283[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum arquivo em src/ importa de legado/ [33m 1272[2mms[22m[39m
+ [32m✓[39m src/lib/autorizacao/equipe.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 376[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/verificacoes.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 533[2mms[22m[39m
+       [33m[2m✓[22m[39m toda afirmação VERIFICADO em código deve apontar para arquivo existente em docs/verificacoes/ [33m 517[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/detectorSequencia.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 448[2mms[22m[39m
+       [33m[2m✓[22m[39m nenhum artefato JSON ativo em docs/verificacoes deve conter séries numéricas com |r| > 0.95 [33m 431[2mms[22m[39m
+ [32m✓[39m src/types/proveniencia.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 217[2mms[22m[39m
+ [32m✓[39m src/lib/gee/amostragemSoloNuLote.test.ts [2m([22m[2m11 tests[22m[2m)[22m[33m 315[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/gerarRelatorioFase.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 62[2mms[22m[39m
+ [32m✓[39m src/components/map/candidatoEspectral.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 79[2mms[22m[39m
+ [32m✓[39m src/lib/matriz/contratoMatrizS11.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 457[2mms[22m[39m
+     [33m[2m✓[22m[39m 9. As quatro rotas repassam a opção quando ela é fornecida — falha se houver 5ª chamada sem repassar [33m 418[2mms[22m[39m
+ [32m✓[39m src/lib/gee/sorteioPoligonos.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 121[2mms[22m[39m
+ [32m✓[39m src/lib/gee/gravadorEvidenciaGee.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 101[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/diarioRequisicoes.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 88[2mms[22m[39m
+ [32m✓[39m src/config/paridadeArtefatos.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m src/lib/gee/copernicusGeeClient.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 81[2mms[22m[39m
+ [32m✓[39m src/lib/export/planilha.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 80[2mms[22m[39m
+ [32m✓[39m src/lib/padraoOuro/sitiosLocais.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 78[2mms[22m[39m
+ [32m✓[39m src/components/layout/acessibilidadeAlvosERotulos.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 65[2mms[22m[39m
+ [32m✓[39m src/lib/fundiario/manifestoSanidade.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/lib/matriz/invariantes.test.ts [2m([22m[2m33 tests[22m[2m)[22m[32m 70[2mms[22m[39m
+ [32m✓[39m src/config/inventarioBibliografico.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 69[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/fatorR.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+ [32m✓[39m src/lib/jev/jevClient.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 76[2mms[22m[39m
+ [32m✓[39m src/lib/embrapa/embrapaSoilClient.test.ts [2m([22m[2m33 tests[22m[2m)[22m[32m 88[2mms[22m[39m
+ [32m✓[39m src/lib/fundiario/calculadoraDesenho.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m src/lib/fundiario/verificadorManifesto.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+ [32m✓[39m src/lib/matriz/esquema.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/credenciaisSeguras.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32m✓[39m src/lib/matriz/montagemTemporal.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m src/lib/planet/planet.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 65[2mms[22m[39m
+ [32m✓[39m src/lib/gee/consolidacaoInspecao.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 61[2mms[22m[39m
+ [32m✓[39m src/components/inspetor/InspetorPonto.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 53[2mms[22m[39m
+ [32m✓[39m src/app/api/sitios-referencia/route.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m src/config/decisoes.espelho.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32m✓[39m src/hooks/useModalA11y.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 51[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/localOnly.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/app/api/fundiario/status/route.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+[90mstderr[2m | src/lib/gee/auth.test.ts[2m > [22m[2mgetGoogleAccessToken[2m > [22m[2mnao repete 
+error_description ao cliente quando a troca de token falha
+[22m[39m[AUTH] Erro retornado pelo Google OAuth: invalid_grant Invalid grant: account not found
+
+[90mstderr[2m | src/lib/gee/auth.test.ts[2m > [22m[2mgetGoogleAccessToken[2m > [22m[2mnao repete 
+error_description ao cliente quando a troca de token falha
+[22m[39m[AUTH] Erro retornado pelo Google OAuth: invalid_grant Invalid grant: account not found
+
+ [32m✓[39m src/lib/gee/auth.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m src/lib/gee/estratificacao.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m src/components/config/ApiTokensManagerN15.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m src/lib/matriz/montagemD16.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m src/lib/chuva/chuva.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m src/config/decisoes.parametros.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/config/decisoes.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/lib/gee/persistenciaTemporal.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/lib/gee/compostoSoloNu.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/config/desenvolvimentoDiretrizes.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/app/api/gee/gravar-evidencia-lote/route.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/lib/matriz/montagemRotulo.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m src/lib/rotulos/rotulos.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/components/map/PointPopupAvisos.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m src/lib/autorizacao/csvAutorizacoes.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/lib/rotulos/ingestaoColetor.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/lib/rotulos/binarizacao.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/lib/padraoOuro/validacaoMatricial.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/lib/gee/poolEstratos.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/lib/gee/verificarPoolEstratosCli.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 16842[2mms[22m[39m
+     [33m[2m✓[22m[39m recusa execução sem --candidatos (exit code != 0) [33m 1586[2mms[22m[39m
+     [33m[2m✓[22m[39m recusa execução sem --reservas (exit code != 0) [33m 1615[2mms[22m[39m
+     [33m[2m✓[22m[39m recusa execução sem --n-minimo (exit code != 0) [33m 1571[2mms[22m[39m
+     [33m[2m✓[22m[39m recusa execução sem --taxas (exit code != 0) [33m 1706[2mms[22m[39m
+     [33m[2m✓[22m[39m recusa arquivo JSON sem lista de candidatos (objeto sem chave 'candidatos'), nomeando as chaves presentes [33m 1470[2mms[22m[39m
+     [33m[2m✓[22m[39m recusa arquivo JSON com lista de candidatos vazia (array raiz vazio ou propriedade vazia) [33m 2808[2mms[22m[39m
+     [33m[2m✓[22m[39m aceita JSON contendo objeto com propriedade candidatos povoada e executa com sucesso [33m 1702[2mms[22m[39m
+     [33m[2m✓[22m[39m recusa candidato sintético com a MESMA mensagem do sorteio D23 [33m 1517[2mms[22m[39m
+     [33m[2m✓[22m[39m executa com conjunto de verificação, exibe aviso obrigatório no topo, não imprime coordenadas/CAR e NÃO grava em docs/verificacoes/sorteio [33m 1346[2mms[22m[39m
+     [33m[2m✓[22m[39m recusa argumento --saida apontando para docs/verificacoes/sorteio [33m 1515[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/fatorLS.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/lib/autorizacao/logRecusas.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/config/textosDefasadosC22.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/lib/rusle/fatorK.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/config/lastroCientifico.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/lib/gee/serieTemporal.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/lib/gee/mascaraSoloNuGeos3.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/config/tourMetodologico.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/components/layout/acoesCabecalho.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/lib/gee/terreno.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/lib/gee/versaoMotor.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/app/api/gee/select-candidates/chuvaDecisao.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/lib/matriz/perfisIntegridade.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/lib/gee/harmonicos.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/lib/fundiario/selecaoPontoElegivel.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/sessaoEfemera.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/lib/gee/thinning.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/lib/matriz/travaAlvosPreRegistro.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/lib/localizacao/localizacao.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/lib/gee/elegibilidade.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/lib/gee/varrerFaixasNbr2.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/lib/gee/estatisticasSerie.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/lib/gee/aoiTiling.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/store/interfaceIntegration.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/lib/seguranca/guardaSintetico.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/store/useSarelStore.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/lib/gee/amostragemBiofisica.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/lib/gee/blocosEspaciais.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/components/decisoes/PainelCriterioRefutacaoD25.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/lib/rotulos/rotuloHumano.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/config/decisoesEmendas.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/components/campanha/PainelCampanhaSelo.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/config/readmeIntegridade.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/lib/export/dms.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/config/areaInteresse.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/components/config/SettingsModalN15.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/config/decisoesParidade.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m107 passed[39m[22m[90m (107)[39m
+[2m      Tests [22m [1m[32m887 passed[39m[22m[2m | [22m[33m3 skipped[39m[90m (890)[39m
+[2m   Start at [22m 22:39:48
+[2m   Duration [22m 21.71s[2m (transform 6.80s, setup 0ms, import 16.88s, tests 46.41s, environment 24ms)[22m
+
