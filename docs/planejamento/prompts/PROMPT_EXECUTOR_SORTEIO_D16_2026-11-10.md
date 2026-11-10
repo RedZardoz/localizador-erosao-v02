@@ -55,6 +55,12 @@ P07 é `dinamica-registrada`: **não existe semente padrão**, e o CLI recusa `-
 
 **Semente escolhida pelo pesquisador: `20261110`**
 
+> **ESTA TAREFA JÁ FOI CUMPRIDA.** A semente está registrada na entrada 14 de
+> `docs/planejamento/DECISOES_DE_CONVERSA.md`, commitada **antes** de qualquer sorteio, e a
+> entrada foi corrigida em `f475eed` (dizia `IMPLEMENTADA` para uma consequência pendente, e
+> citava o caminho de um selo inexistente). **Não refaça o registro.** Confirme que a entrada 14
+> existe e está correta, e siga para a Tarefa 2.
+
 Antes de rodar, registre em `docs/planejamento/DECISOES_DE_CONVERSA.md`, como entrada nova datada
 de 10/11/2026: a semente, quem a escolheu, que ela foi fixada **antes** de qualquer sorteio ter
 sido visto, e que a execução é única e irreversível por D23.
@@ -64,7 +70,7 @@ sido visto, e que a execução é única e irreversível por D23.
 ## TAREFA 2 — dry-run SEM semente
 
 ```
-node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts --dry-run --candidatos docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json
+node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts --dry-run --candidatos docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json --cache docs/verificacoes/cache_frequencia_solo_nu_bp3.json
 ```
 
 **Não passe `--semente` neste comando.** Sem ela, o CLI gera uma semente aleatória só para o
@@ -75,12 +81,26 @@ Isso não é formalidade. Se o dry-run usasse a semente escolhida, seria possív
 não gostar, e trocar a semente — que é escolher o sorteio pelo desfecho. A separação é a garantia
 de que isso não aconteceu.
 
-Confira na saída do dry-run, e grave:
+Confira na saída do dry-run, e grave. Esta é a saída que o planejador obteve em clone limpo no
+commit `74b138e`, e que deve ser reproduzida:
 
-- modo impresso como `DRY-RUN (SIMULAÇÃO SEGURA — NENHUM SORTEIO EXECUTADO)`;
-- totais **67 / 34 / 33 / 336,34**;
-- `E_1_3_2` como estrato vazio declarado, `E_1_2_2` como censo com N_h = 3;
-- a mensagem `[DRY-RUN CONCLUÍDO] Nenhum sorteio foi executado e nenhum selo foi gravado`.
+```
+Modo de operação: DRY-RUN (SIMULAÇÃO SEGURA — NENHUM SORTEIO EXECUTADO)
+Arquivo de cache de Ê: docs/verificacoes/cache_frequencia_solo_nu_bp3.json
+Hash da definição de Ê: 6a63a17cb9760d507648b903beec99cfcce6479940e9041b90f23dc59daa7a21
+Total de candidatos avaliados: 677
+  - E_1_2_2:   3 candidatos | CENSO DO ESTRATO (pi_i = 1, w_i = 1, sem suplente)
+  - E_1_3_2:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - Total de polígonos sorteados: 67
+  - Total de polígonos de treino: 34
+  - Total de polígonos held-out: 33
+  - Área total amostrada: 336.34 ha
+[DRY-RUN CONCLUÍDO] Nenhum sorteio foi executado e nenhum selo foi gravado
+```
+
+O hash da definição de Ê tem de bater exatamente: ele prova que o cache foi produzido sob a
+mesma máscara GEOS3 que D10 registra. O Prompt K tornou isso fail-closed — divergência de hash
+aborta com `[ERRO_JUNCAO_E]` em vez de sortear sobre medição de outra definição.
 
 **Se qualquer um dos quatro totais divergir, PARE.** Divergência significa que o universo mudou
 desde `bb949cf`, e isso precisa ser entendido antes de um passo irreversível.
@@ -92,7 +112,7 @@ desde `bb949cf`, e isso precisa ser entendido antes de um passo irreversível.
 Somente com a Tarefa 2 conferida e a Tarefa 1 commitada:
 
 ```
-node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts --confirmar --semente 20261110 --candidatos docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json
+node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts --confirmar --semente 20261110 --candidatos docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json --cache docs/verificacoes/cache_frequencia_solo_nu_bp3.json
 ```
 
 Grave a saída integral em `docs/verificacoes/execucao/2026-11-10j/sorteio_execucao.txt`.
@@ -150,7 +170,8 @@ Qualquer divergência: **relate e não corrija o selo**. O selo é o registro do
 - [ ] Branch: ______
 - [ ] Pré-condições: árvore limpa, suíte verde, tsc limpo, `docs/verificacoes/sorteio/` **vazio**
 - [ ] T1 — semente `20261110` registrada no registro de conversa **antes** da execução, e commitada
-- [ ] T2 — dry-run rodado **sem** `--semente`; totais 67 / 34 / 33 / 336,34 conferidos
+- [ ] T2 — dry-run rodado **sem** `--semente` e **com** `--cache`; 677 avaliados; totais 67 / 34 / 33 / 336,34
+- [ ] T2 — hash da definição de Ê igual a `6a63a17c...7a21`
 - [ ] T3 — execução real, **uma única vez**; saída integral gravada
 - [ ] T4 — selo lido do disco e revalidado pelos 8 invariantes
 - [ ] T4 — semente no selo igual à registrada: ______
