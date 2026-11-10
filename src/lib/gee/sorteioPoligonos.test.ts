@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import fs from "fs";
 import path from "path";
+import { execSync } from "child_process";
 import {
   CandidatoSorteioD16,
   ErroPreCondicaoSorteioD16,
@@ -8,6 +9,7 @@ import {
   sortear72PoligonosD16,
   validarInvariantesSeloD16,
   INVARIANTES_SELO_D16,
+  juntarCandidatosComCacheSoloNu,
 } from "./sorteioPoligonos";
 import { TODOS_ESTRATOS_D12 } from "./estratificacao";
 import { medido } from "../../types/proveniencia";
@@ -247,29 +249,7 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
       const dadosCandidatos = JSON.parse(fs.readFileSync(caminhoCandidatos, "utf-8"));
       const dadosCache = JSON.parse(fs.readFileSync(caminhoCache, "utf-8"));
 
-      const mapaCache = new Map();
-      for (const item of Object.values(dadosCache.itens) as any[]) {
-        mapaCache.set(item.id, item);
-      }
-
-      const poolReal: CandidatoSorteioD16[] = [];
-      for (const cand of dadosCandidatos.candidatos) {
-        const med = mapaCache.get(cand.id);
-        if (!med || !med.frequenciaSoloNu || typeof med.frequenciaSoloNu.valor !== "number") continue;
-
-        poolReal.push({
-          id: cand.id,
-          latitude: cand.latitude,
-          longitude: cand.longitude,
-          declividadePct: cand.declividadePct,
-          frequenciaSoloNu: med.frequenciaSoloNu.valor,
-          nivelK: cand.nivelK,
-          classeWorldCover2020: 40,
-          classeWorldCover2021: 40,
-          kAmbiguoAssociacao: false,
-          provenienciaE: med.frequenciaSoloNu,
-        });
-      }
+      const poolReal = juntarCandidatosComCacheSoloNu(dadosCandidatos.candidatos, dadosCache);
 
       const selo = sortear72PoligonosD16(poolReal, {
         semente: 42,
@@ -305,29 +285,7 @@ describe("Motor de Sorteio dos 36 Polígonos de Drone — FASE A1 (D16 / D23)", 
       const dadosCandidatos = JSON.parse(fs.readFileSync(caminhoCandidatos, "utf-8"));
       const dadosCache = JSON.parse(fs.readFileSync(caminhoCache, "utf-8"));
 
-      const mapaCache = new Map();
-      for (const item of Object.values(dadosCache.itens) as any[]) {
-        mapaCache.set(item.id, item);
-      }
-
-      const poolReal: CandidatoSorteioD16[] = [];
-      for (const cand of dadosCandidatos.candidatos) {
-        const med = mapaCache.get(cand.id);
-        if (!med || !med.frequenciaSoloNu || typeof med.frequenciaSoloNu.valor !== "number") continue;
-
-        poolReal.push({
-          id: cand.id,
-          latitude: cand.latitude,
-          longitude: cand.longitude,
-          declividadePct: cand.declividadePct,
-          frequenciaSoloNu: med.frequenciaSoloNu.valor,
-          nivelK: cand.nivelK,
-          classeWorldCover2020: 40,
-          classeWorldCover2021: 40,
-          kAmbiguoAssociacao: false,
-          provenienciaE: med.frequenciaSoloNu,
-        });
-      }
+      const poolReal = juntarCandidatosComCacheSoloNu(dadosCandidatos.candidatos, dadosCache);
 
       expect(poolReal).toHaveLength(677);
 
@@ -903,29 +861,7 @@ describe("Prompt I — Invariantes de Totais e Integridade do Selo de Sorteio D1
     const dadosCandidatos = JSON.parse(fs.readFileSync(caminhoCandidatos, "utf-8"));
     const dadosCache = JSON.parse(fs.readFileSync(caminhoCache, "utf-8"));
 
-    const mapaCache = new Map();
-    for (const item of Object.values(dadosCache.itens) as any[]) {
-      mapaCache.set(item.id, item);
-    }
-
-    const poolReal: CandidatoSorteioD16[] = [];
-    for (const cand of dadosCandidatos.candidatos) {
-      const med = mapaCache.get(cand.id);
-      if (!med || !med.frequenciaSoloNu || typeof med.frequenciaSoloNu.valor !== "number") continue;
-
-      poolReal.push({
-        id: cand.id,
-        latitude: cand.latitude,
-        longitude: cand.longitude,
-        declividadePct: cand.declividadePct,
-        frequenciaSoloNu: med.frequenciaSoloNu.valor,
-        nivelK: cand.nivelK,
-        classeWorldCover2020: 40,
-        classeWorldCover2021: 40,
-        kAmbiguoAssociacao: false,
-        provenienciaE: med.frequenciaSoloNu,
-      });
-    }
+    const poolReal = juntarCandidatosComCacheSoloNu(dadosCandidatos.candidatos, dadosCache);
 
     expect(poolReal).toHaveLength(677);
 
@@ -947,5 +883,59 @@ describe("Prompt I — Invariantes de Totais e Integridade do Selo de Sorteio D1
     expect(selo.versaoEsquema).toBe("1.4.0");
   });
 });
+
+describe("Prompt K — Exercício do CLI de Sorteio com Junção de Ê e Fail-Closed", () => {
+  it("exercita o CLI em subprocesso com --dry-run sobre o universo real e o cache de Ê", () => {
+    const caminhoCandidatos = "docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json";
+    const caminhoCache = "docs/verificacoes/cache_frequencia_solo_nu_bp3.json";
+    const caminhoDirSorteio = path.resolve(process.cwd(), "docs/verificacoes/sorteio");
+    const arquivosAntes = fs.existsSync(caminhoDirSorteio) ? fs.readdirSync(caminhoDirSorteio) : [];
+
+    const comando = `node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts --dry-run --candidatos ${caminhoCandidatos} --cache ${caminhoCache}`;
+    const stdout = execSync(comando, { encoding: "utf8", stdio: "pipe" });
+
+    // Verificações exigidas na Tarefa 2:
+    // 1. Total de candidatos avaliados: 677
+    expect(stdout).toContain("Total de candidatos avaliados: 677");
+
+    // 2. Totais 67 / 34 / 33 / 336,34
+    expect(stdout).toContain("totais 67 / 34 / 33 / 336,34");
+
+    // 3. E_1_3_2 como estrato genuinamente vazio (N_h = 0)
+    expect(stdout).toMatch(/E_1_3_2:\s+0 candidatos \| ESTRATO VAZIO DECLARADO/);
+
+    // 4. E_1_2_2 como censo com N_h = 3
+    expect(stdout).toMatch(/E_1_2_2:\s+3 candidatos \| CENSO DO ESTRATO/);
+
+    // 5. Modo DRY-RUN e nenhum selo gravado
+    expect(stdout).toContain("Modo de operação: DRY-RUN (SIMULAÇÃO SEGURA — NENHUM SORTEIO EXECUTADO)");
+    expect(stdout).toContain("[DRY-RUN CONCLUÍDO] Nenhum sorteio foi executado");
+
+    const arquivosDepois = fs.existsSync(caminhoDirSorteio) ? fs.readdirSync(caminhoDirSorteio) : [];
+    expect(arquivosDepois).toEqual(arquivosAntes);
+  });
+
+  it("garante fail-closed do CLI em subprocesso quando --cache aponta para arquivo inexistente", () => {
+    const caminhoCandidatos = "docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json";
+    const caminhoCacheInexistente = "docs/verificacoes/cache_inexistente_9999.json";
+
+    const comando = `node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts --dry-run --candidatos ${caminhoCandidatos} --cache ${caminhoCacheInexistente}`;
+
+    let falhouComErro = false;
+    let saidaCapturada = "";
+
+    try {
+      execSync(comando, { encoding: "utf8", stdio: "pipe" });
+    } catch (err: any) {
+      falhouComErro = true;
+      saidaCapturada = (err.stdout || "") + (err.stderr || "");
+      expect(err.status).toBe(1);
+    }
+
+    expect(falhouComErro).toBe(true);
+    expect(saidaCapturada).toContain("[ERRO_JUNCAO_E]");
+  });
+});
+
 
 

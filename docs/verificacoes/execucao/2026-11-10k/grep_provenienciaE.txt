@@ -1,0 +1,26 @@
+﻿scripts/sortear_poligonos_d16.ts:81:            provenienciaE: medido(
+scripts/verificar_pool_estratos.ts:197:  // possuírem frequência numérica válida mas não incluírem o objeto provenienciaE
+scripts/verificar_pool_estratos.ts:201:    if (!c.provenienciaE && typeof c.frequenciaSoloNu === "number") {
+scripts/verificar_pool_estratos.ts:202:      c.provenienciaE = medido(
+src/app/api/gee/select-candidates/route.ts:674:          provenienciaE: provE,
+src/components/decisoes/PainelSorteioD16.tsx:86:        provenienciaE: p.temporal?.D?.serie?.frequenciaSoloNu,
+src/lib/gee/estratificacao.test.ts:95:              provenienciaE: provEValida(freq),
+src/lib/gee/estratificacao.test.ts:146:      provenienciaE: provEValida(0.1 * i),
+src/lib/gee/estratificacao.test.ts:165:      { id: "c1", latitude: -25.0, longitude: -50.0, declividadePct: 5.0, frequenciaSoloNu: 0.2, nivelK: 1, provenienciaE: provEValida(0.2) },
+src/lib/gee/estratificacao.test.ts:166:      { id: "c2", latitude: -25.1, longitude: -50.1, declividadePct: 15.0, frequenciaSoloNu: 0.8, nivelK: 2, provenienciaE: provEValida(0.8) },
+src/lib/gee/estratificacao.test.ts:174:  it("conforme D11.2 e D12: lanca erro se candidato possuir provenienciaE sob regime de fallback de janela curta", async () => {
+src/lib/gee/estratificacao.test.ts:184:        provenienciaE: {
+src/lib/gee/estratificacao.test.ts:225:    it("Trava 4: candidato sem provenienciaE falha nomeando D11.2", () => {
+src/lib/gee/estratificacao.test.ts:263:        provenienciaE: prov12,
+src/lib/gee/estratificacao.ts:31:  provenienciaE: Proveniencia<number>; // Proveniência formal obrigatória da dimensão Ê (D11.2 / D12)
+src/lib/gee/estratificacao.ts:167:    if (!c.provenienciaE || !podeEntrarEstratificacaoD12(c.provenienciaE)) {
+src/lib/gee/estratificacao.ts:169:        `Candidato ${c.id} possui frequência de solo nu obtida sob regime inelegível para D12 ou provenienciaE ausente ` +
+src/lib/gee/guardaD11_2.test.ts:43:      provenienciaE: provN6,
+src/lib/gee/guardaD11_2.test.ts:80:  // Trava 4: Candidato sem provenienciaE falha nomeando D11.2
+src/lib/gee/guardaD11_2.test.ts:81:  it("Trava 4: candidato sem provenienciaE falha nomeando D11.2", () => {
+src/lib/gee/guardaD11_2.test.ts:123:      provenienciaE: provN12,
+src/lib/gee/sorteioPoligonos.test.ts:39:            provenienciaE: medido(
+src/lib/gee/sorteioPoligonos.test.ts:429:              provenienciaE: medido(
+src/lib/gee/sorteioPoligonos.ts:669:      provenienciaE: med.frequenciaSoloNu,
+src/lib/gee/sorteioPoligonosTipos.ts:40:  extends Omit<CandidatoEstratificacao, "declividadePct" | "frequenciaSoloNu" | "provenienciaE"> {
+src/lib/gee/sorteioPoligonosTipos.ts:43:  provenienciaE?: Proveniencia<number>;

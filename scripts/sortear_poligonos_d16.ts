@@ -22,7 +22,9 @@ import {
   CandidatoSorteioD16,
   verificarPreCondicoesSorteioD16,
   sortear72PoligonosD16,
+  juntarCandidatosComCacheSoloNu,
 } from "@/lib/gee/sorteioPoligonos";
+import { calcularHashDefinicao } from "@/lib/gee/amostragemSoloNuLote";
 import { dataCivilSaoPaulo } from "@/lib/tempo/datas";
 import { TODOS_ESTRATOS_D12 } from "@/lib/gee/estratificacao";
 import { medido } from "@/types/proveniencia";
@@ -106,6 +108,12 @@ function executarCli(): void {
   const idxCand = args.indexOf("--candidatos");
   const caminhoCandidatos = idxCand >= 0 && args[idxCand + 1] ? args[idxCand + 1] : null;
 
+  const idxCache = args.indexOf("--cache");
+  const caminhoCache =
+    idxCache >= 0 && args[idxCache + 1]
+      ? args[idxCache + 1]
+      : "docs/verificacoes/cache_frequencia_solo_nu_bp3.json";
+
   const idxSemente = args.indexOf("--semente");
   const sementeInformada =
     idxSemente >= 0 && args[idxSemente + 1] ? Number(args[idxSemente + 1]) : null;
@@ -156,6 +164,8 @@ function executarCli(): void {
   let candidatos: CandidatoSorteioD16[];
   let origemCandidatos: string;
   let origemSintetica = false;
+  let candidatosLidosContagem = 0;
+  let hashDefinicaoE = "sintetico";
 
   if (caminhoCandidatos) {
     const absPath = path.resolve(process.cwd(), caminhoCandidatos);
@@ -164,6 +174,7 @@ function executarCli(): void {
       process.exit(1);
     }
     const bruto = JSON.parse(fs.readFileSync(absPath, "utf-8"));
+    let candidatosBrutos: any[];
     if (Array.isArray(bruto)) {
       if (bruto.length === 0) {
         console.error(
@@ -171,7 +182,7 @@ function executarCli(): void {
         );
         process.exit(1);
       }
-      candidatos = bruto as CandidatoSorteioD16[];
+      candidatosBrutos = bruto;
     } else if (typeof bruto === "object" && bruto !== null) {
       const obj = bruto as Record<string, unknown>;
       if (!("candidatos" in obj) || !Array.isArray(obj.candidatos)) {
@@ -188,7 +199,7 @@ function executarCli(): void {
         );
         process.exit(1);
       }
-      candidatos = obj.candidatos as CandidatoSorteioD16[];
+      candidatosBrutos = obj.candidatos;
     } else {
       console.error(
         `[ERRO_ARQUIVO] O conteúdo de ${absPath} não é um JSON válido de candidatos (esperado objeto com chave 'candidatos' ou array na raiz).`
@@ -196,21 +207,45 @@ function executarCli(): void {
       process.exit(1);
     }
     origemCandidatos = absPath;
+    candidatosLidosContagem = candidatosBrutos.length;
+
     if (
       bruto?.origemSintetica === true ||
-      candidatos.some(
-        (c) =>
+      candidatosBrutos.some(
+        (c: any) =>
           String(c.id).startsWith("DRY-CAND-") ||
           c.isSynthetic === true ||
           c.origemSintetica === true
       )
     ) {
       origemSintetica = true;
+      candidatos = candidatosBrutos as CandidatoSorteioD16[];
+    } else {
+      // Candidatos reais: junção com cache de frequência de solo nu Ê (Prompt K)
+      try {
+        const absCache = path.isAbsolute(caminhoCache)
+          ? caminhoCache
+          : path.resolve(process.cwd(), caminhoCache);
+        candidatos = juntarCandidatosComCacheSoloNu(candidatosBrutos, absCache);
+        hashDefinicaoE = calcularHashDefinicao();
+      } catch (err: any) {
+        console.error(err.message || String(err));
+        process.exit(1);
+      }
     }
   } else {
     candidatos = gerarConjuntoInspecaoDryRun();
     origemCandidatos = "inspecao-estrutural-dry-run (sem arquivo --candidatos informado)";
     origemSintetica = true;
+    candidatosLidosContagem = candidatos.length;
+  }
+
+  // Se a contagem total de candidatos com Ê for zero, o CLI falha com mensagem explícita (T1.4)
+  if (candidatos.length === 0) {
+    console.error(
+      "[ERRO_JUNCAO_E] A contagem total de candidatos válidos com Ê é zero. Impossível prosseguir com o sorteio."
+    );
+    process.exit(1);
   }
 
   // Garantia de código (T4.3): o selo de D23 jamais pode nascer de candidato sintético, mesmo com --confirmar
@@ -226,10 +261,23 @@ function executarCli(): void {
     lancarErro: false,
   });
 
+  if (relatorio.totalCandidatos === 0) {
+    console.error(
+      "[ERRO_JUNCAO_E] A contagem total de candidatos avaliados com Ê é zero. Impossível prosseguir com o sorteio."
+    );
+    process.exit(1);
+  }
+
   const prefixoNum = origemSintetica ? "[SINTETICO] " : "";
 
   console.log(`Modo de operação: ${flagConfirmar && !flagDryRun ? "CONFIRMAR (REAL)" : "DRY-RUN (SIMULAÇÃO SEGURA — NENHUM SORTEIO EXECUTADO)"}`);
   console.log(`Origem do conjunto: ${origemCandidatos}`);
+  if (!origemSintetica) {
+    console.log(`Arquivo de cache de Ê: ${caminhoCache}`);
+    console.log(`Hash da definição de Ê: ${hashDefinicaoE}`);
+    console.log(`Candidatos lidos: ${candidatosLidosContagem}`);
+    console.log(`Candidatos com Ê: ${candidatos.length}`);
+  }
 
   if (origemSintetica) {
     console.log(
@@ -254,6 +302,27 @@ function executarCli(): void {
     }
     console.log(`${prefixoNum}  - ${idEstrato}: ${String(n).padStart(3, " ")} candidatos | ${piPreview}`);
   }
+
+  let totalSorteadosPrevisto = 0;
+  let totalTreinoPrevisto = 0;
+  let totalHeldOutPrevisto = 0;
+  for (const idEstrato of TODOS_ESTRATOS_D12) {
+    const n = relatorio.contagemCandidatosPorEstrato[idEstrato];
+    const nAmostrados = n >= 4 ? 4 : n;
+    const nTr = Math.ceil(nAmostrados / 2);
+    const nHo = nAmostrados - nTr;
+    totalSorteadosPrevisto += nAmostrados;
+    totalTreinoPrevisto += nTr;
+    totalHeldOutPrevisto += nHo;
+  }
+  const areaTotalPrevistaHa = Number((totalSorteadosPrevisto * 5.02).toFixed(2));
+
+  console.log(`\n${prefixoNum}Resumo dos totais de amostragem previstos:`);
+  console.log(`${prefixoNum}  - Total de polígonos sorteados: ${totalSorteadosPrevisto}`);
+  console.log(`${prefixoNum}  - Total de polígonos de treino: ${totalTreinoPrevisto}`);
+  console.log(`${prefixoNum}  - Total de polígonos held-out: ${totalHeldOutPrevisto}`);
+  console.log(`${prefixoNum}  - Área total amostrada: ${areaTotalPrevistaHa.toFixed(2)} ha`);
+  console.log(`${prefixoNum}  - Notação compacta: totais ${totalSorteadosPrevisto} / ${totalTreinoPrevisto} / ${totalHeldOutPrevisto} / ${areaTotalPrevistaHa.toFixed(2).replace(".", ",")}`);
 
   if (origemSintetica) {
     console.log(

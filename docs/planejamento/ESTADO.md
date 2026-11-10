@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `0399d04aaa34dc3405e6e7a08e967b3887bbafdb`
-- Data do HEAD: 2026-11-10 22:37:31 +0000
+- Commit HEAD: `f475eed42defd7a1976136e07002103c4ce80645`
+- Data do HEAD: 2026-11-10 23:11:27 +0000
 - Últimos 5 commits:
-  1. `0399d04 docs(planejamento): adicionar prompt J da execucao do sorteio de D16`
-  2. `bb949cf feat(sorteio-d16): validar 8 invariantes de integridade do selo D16 e atualizar versaoEsquema para 1.4.0`
-  3. `58e4b68 docs(planejamento): adicionar prompt I do invariante de totais do selo`
-  4. `da2abf9 feat(sorteio-d16): reativar guarda D11.2 em 3 camadas, implementar desenho 18x4 com regra de censo e destravar CLI`
-  5. `4558797 docs(planejamento): adicionar prompt H da guarda D11.2 e do desenho 18x4`
+  1. `f475eed docs(planejamento): corrigir a entrada 14 do registro de decisoes`
+  2. `f739058 Merge branch 'correcoes/contencao-2026-11-02' of https://github.com/RedZardoz/localizador-erosao-v02 into correcoes/contencao-2026-11-02`
+  3. `e67fc90 docs(planejamento): registrar semente 20261110 antes do sorteio de D16`
+  4. `8c4740e fix(planejamento): prompt K — CLI do sorteio nao junta E-hat, deve rodar antes do J`
+  5. `0399d04 docs(planejamento): adicionar prompt J da execucao do sorteio de D16`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 124
@@ -70,7 +70,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | chuva | `RUSLE_Fator_R` | SIM | SIM | SIM |
 
 ## 7. Arquivos de Evidência em `docs/verificacoes/`
-- Total de arquivos de evidência medidos: 191
+- Total de arquivos de evidência medidos: 195
 
 | Arquivo de Evidência | Data no Nome | Tamanho (bytes) |
 |---|:---:|---:|
@@ -180,6 +180,10 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `execucao/2026-11-10i/git_status.txt` | sem data no nome | 280 |
 | `execucao/2026-11-10i/npm_test.txt` | sem data no nome | 40316 |
 | `execucao/2026-11-10i/tsc_noemit.txt` | sem data no nome | 0 |
+| `execucao/2026-11-10j/precondicao_git_status.txt` | sem data no nome | 46 |
+| `execucao/2026-11-10j/precondicao_ls_sorteio.txt` | sem data no nome | 0 |
+| `execucao/2026-11-10j/precondicao_npm_test.txt` | sem data no nome | 19854 |
+| `execucao/2026-11-10j/precondicao_tsc_noemit.txt` | sem data no nome | 0 |
 | `fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md` | sem data no nome | 7016 |
 | `fontes/dematte2018/conferencia_dematte_2018.md` | sem data no nome | 6725 |
 | `fontes/dematte2018/extrair_dematte_2018.py` | sem data no nome | 2091 |

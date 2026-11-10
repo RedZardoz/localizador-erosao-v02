@@ -28,6 +28,8 @@
  *    nem versionar (`_v2`), protegendo os `pi_i` já selados.
  */
 
+import fs from "node:fs";
+import path from "node:path";
 import crypto from "node:crypto";
 import { execSync } from "node:child_process";
 import {
@@ -46,6 +48,7 @@ import {
 import { CAMPOS_PROIBIDOS_MATRIZ_TREINO } from "@/lib/matriz/invariantes";
 import { Proveniencia, indisponivel } from "@/types/proveniencia";
 import { diagnosticarFronteiraPedologicaBbox } from "@/lib/embrapa/embrapaSoilClient";
+import { calcularHashDefinicao, CacheFrequenciaSoloNuArquivo } from "./amostragemSoloNuLote";
 
 export * from "./sorteioPoligonosTipos";
 import {
@@ -552,4 +555,128 @@ export function validarInvariantesSeloD16(selo: SeloSorteioD16): void {
     }
   }
 }
+
+export interface OpcoesJuncaoCacheSoloNu {
+  hashEsperado?: string;
+}
+
+/**
+ * Realiza a junção fail-closed entre candidatos e as medições de frequência de solo nu (Ê)
+ * persistidas no cache da máscara GEOS3 (Prompt K).
+ *
+ * Compartilhada estritamente entre a execução do CLI e a suíte de testes.
+ */
+export function juntarCandidatosComCacheSoloNu(
+  candidatos: unknown[],
+  cacheOuCaminho: string | CacheFrequenciaSoloNuArquivo | any,
+  opcoes: OpcoesJuncaoCacheSoloNu = {}
+): CandidatoSorteioD16[] {
+  let cacheObj: any;
+
+  if (typeof cacheOuCaminho === "string") {
+    const absPath = path.isAbsolute(cacheOuCaminho)
+      ? cacheOuCaminho
+      : path.resolve(process.cwd(), cacheOuCaminho);
+    if (!fs.existsSync(absPath)) {
+      throw new Error(
+        `[ERRO_JUNCAO_E] Arquivo de cache de frequência de solo nu não encontrado: ${absPath}`
+      );
+    }
+    try {
+      cacheObj = JSON.parse(fs.readFileSync(absPath, "utf-8"));
+    } catch (err: any) {
+      throw new Error(
+        `[ERRO_JUNCAO_E] Falha ao ler ou parsear o arquivo de cache '${absPath}': ${err.message}`
+      );
+    }
+  } else if (typeof cacheOuCaminho === "object" && cacheOuCaminho !== null) {
+    cacheObj = cacheOuCaminho;
+  } else {
+    throw new Error(
+      "[ERRO_JUNCAO_E] Argumento de cache inválido (esperado caminho em string ou objeto de cache)."
+    );
+  }
+
+  if (!cacheObj || typeof cacheObj !== "object" || !cacheObj.itens || typeof cacheObj.itens !== "object") {
+    throw new Error(
+      "[ERRO_JUNCAO_E] Arquivo de cache inválido ou sem a propriedade 'itens'."
+    );
+  }
+
+  const hashEsperado = opcoes.hashEsperado !== undefined ? opcoes.hashEsperado : calcularHashDefinicao();
+  const hashCache = typeof cacheObj.hashDefinicao === "string" ? cacheObj.hashDefinicao : "";
+  if (hashCache !== hashEsperado) {
+    throw new Error(
+      `[ERRO_JUNCAO_E] O hash da definição da máscara GEOS3 no cache ('${hashCache}') diverge do hash corrente ('${hashEsperado}'). Cache de outra definição não pode alimentar o sorteio.`
+    );
+  }
+
+  if (!Array.isArray(candidatos) || candidatos.length === 0) {
+    throw new Error(
+      "[ERRO_JUNCAO_E] Lista de candidatos de entrada inválida ou vazia (0 candidatos recebidos para junção)."
+    );
+  }
+
+  const mapaCache = new Map<string, any>();
+  for (const item of Object.values(cacheObj.itens) as any[]) {
+    if (item && item.id) {
+      mapaCache.set(String(item.id), item);
+    }
+  }
+
+  const faltantes: string[] = [];
+  for (const cand of candidatos as any[]) {
+    const idStr = String(cand.id);
+    const med = mapaCache.get(idStr);
+    if (!med || !med.frequenciaSoloNu || typeof med.frequenciaSoloNu.valor !== "number") {
+      faltantes.push(idStr);
+    }
+  }
+
+  if (faltantes.length > 0) {
+    const exemplos = faltantes.slice(0, 5).join(", ");
+    throw new Error(
+      `[ERRO_JUNCAO_E] ${faltantes.length} de ${candidatos.length} candidato(s) não possuem medição válida de frequência de solo nu no cache. Primeiros IDs ausentes: ${exemplos}.`
+    );
+  }
+
+  const poolReal: CandidatoSorteioD16[] = [];
+  for (const cand of candidatos as any[]) {
+    const med = mapaCache.get(String(cand.id))!;
+    const wc2020 =
+      typeof cand.classeWorldCover2020 === "number" && [30, 40].includes(cand.classeWorldCover2020)
+        ? cand.classeWorldCover2020
+        : 40;
+    const wc2021 =
+      typeof cand.classeWorldCover2021 === "number" && [30, 40].includes(cand.classeWorldCover2021)
+        ? cand.classeWorldCover2021
+        : 40;
+    const kAmbiguo =
+      typeof cand.kAmbiguoAssociacao === "boolean"
+        ? cand.kAmbiguoAssociacao
+        : false;
+
+    poolReal.push({
+      id: cand.id,
+      latitude: cand.latitude,
+      longitude: cand.longitude,
+      declividadePct: cand.declividadePct,
+      frequenciaSoloNu: med.frequenciaSoloNu.valor,
+      nivelK: cand.nivelK,
+      classeWorldCover2020: wc2020,
+      classeWorldCover2021: wc2021,
+      kAmbiguoAssociacao: kAmbiguo,
+      provenienciaE: med.frequenciaSoloNu,
+    });
+  }
+
+  if (poolReal.length === 0) {
+    throw new Error(
+      "[ERRO_JUNCAO_E] A contagem total de candidatos válidos com Ê após a junção é zero."
+    );
+  }
+
+  return poolReal;
+}
+
 

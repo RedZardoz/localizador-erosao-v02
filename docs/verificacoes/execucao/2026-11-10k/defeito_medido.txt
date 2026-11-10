@@ -1,0 +1,34 @@
+﻿[P07] Semente nao informada: gerada para esta execucao de dry-run -> 1623226115 (registre-a para reproduzir).
+========================================================================
+SAREL — COMANDO DE SORTEIO DOS 72 POLÍGONOS DE 5,02 ha (~361 ha) (FASE A1 — D16/D23)
+========================================================================
+Modo de operação: DRY-RUN (SIMULAÇÃO SEGURA — NENHUM SORTEIO EXECUTADO)
+Origem do conjunto: C:\Users\lalfr\Docs Fora do Ar\LUIS ALFREDO\01 - MESTRADO PPGTCA 2026\02 - PESQUISA EROSÃO LAMINAR\geolocalizacao-erosao-propriedade\docs\verificacoes\universo_candidatos_bp3_d16_2026-11-10.json
+Total de candidatos avaliados: 0
+Limiares empíricos S (declividade %): t1=0.0000%, t2=0.0000%
+Limiares empíricos E (freq. solo nu): t1=0.0000, t2=0.0000
+
+Contagem de candidatos por estrato (18 estratos de D12):
+  - E_1_1_1:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_1_1_2:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_1_2_1:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_1_2_2:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_1_3_1:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_1_3_2:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_2_1_1:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_2_1_2:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_2_2_1:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_2_2_2:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_2_3_1:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_2_3_2:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_3_1_1:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_3_1_2:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_3_2_1:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_3_2_2:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_3_3_1:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+  - E_3_3_2:   0 candidatos | ESTRATO VAZIO DECLARADO (N_h = 0)
+
+[OK] Todas as 7 pré-condições de D07, D08, D12, D16 e D23 foram aprovadas.
+
+[DRY-RUN CONCLUÍDO] Nenhum sorteio foi executado e nenhum selo foi gravado em docs/verificacoes/sorteio/.
+Para executar o sorteio real irreversível (D16/D23), invoque com --confirmar --candidatos <caminho.json> --semente <N>.

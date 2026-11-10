@@ -1,0 +1,3 @@
+﻿f475eed docs(planejamento): corrigir a entrada 14 do registro de decisoes
+f739058 Merge branch 'correcoes/contencao-2026-11-02' of https://github.com/RedZardoz/localizador-erosao-v02 into correcoes/contencao-2026-11-02
+e67fc90 docs(planejamento): registrar semente 20261110 antes do sorteio de D16
