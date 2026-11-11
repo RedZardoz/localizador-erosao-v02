@@ -257,15 +257,34 @@ Este arquivo registra decisões tomadas em diálogo com o pesquisador; `src/conf
 - Supera ou emenda: Aplica o parâmetro P07 e operacionaliza as Decisões D16 e D23.
 - Correção de 10/11/2026 (planejador): este registro foi commitado afirmando `IMPLEMENTADA` e citando o caminho de um selo inexistente. Ambos foram corrigidos acima sem reescrita de histórico, por ser o registro que a banca lê. A fixação prévia da semente, que é o fato que este registro precisa provar, permanece íntegra e datada no commit anterior. Em 10/11/2026 (executor), o sorteio foi definitivamente consumado sob os 8 invariantes.
 
-## 15 — Etapa 5 da Interface (Planos de Voo de VANT): Pendências de Geração e Cegamento Amostral
+## 15 — Etapa 5 da Interface (Planos de Voo de VANT): Separação de Papéis e Quatro Pendências de Cegamento
 
 - Data: 2026-11-11
-- Texto literal da decisão: "Opção (B) da organização da interface com etapa 5 declarada 'não implementada', aguardando duas decisões do pesquisador sobre geração vs download de planos de voo e download sob selo público redigido vs selo completo cego." (Prompt P — Executor SAREL — casca de fluxo operacional).
-- Consequência implementada / pendente: **PENDENTE**. Duas decisões em aberto precedem a implementação da Etapa 5 na interface gráfica:
-  1. A interface deve **gerar** os planos de voo (`.plan` para QGroundControl) interativamente, ou apenas disponibilizar para **download** os pacotes de arquivos previamente calculados via CLI (`src/lib/drone/planoVooNControl.ts`)?
-  2. O download das feições dos polígonos sorteados deve ser extraído a partir do **selo público redigido** (que omite deliberadamente as chaves primárias dos candidatos de alta erodibilidade para blindagem do sorteio) ou do **selo completo cego**? Como a execução da campanha de campo exige a geolocalização física inequívoca dos vértices dos polígonos sorteados, trata-se de operação formalmente **cega**, regulada pelas regras K1–K3 do protocolo de cegamento, e não pelo selo público de transparência estatística.
-  A Etapa 5 permanece exibida na casca de fluxo operacional com o estado explícito "não implementada" e motivo textual, sem botões simulados nem falsos estados verdes.
-- Onde está no código: `src/components/fluxo/BarraFluxoOperacional.tsx`; `docs/planejamento/prompts/PROMPT_EXECUTOR_CASCA_FLUXO_2026-11-11.md`; `docs/verificacoes/2026-11-11p_casca_fluxo.md`.
+- Texto literal da decisão: "Opção (B) da organização da interface com etapa 5 declarada 'não implementada', com emenda de 11/11/2026 esclarecendo os quatro papéis da equipe e as quatro pendências para a operacionalização dos planos de voo e autorizações." (Prompt P — Executor SAREL — casca de fluxo operacional).
+- Consequência implementada / pendente: **PENDENTE**.
+  O pesquisador esclareceu que a equipe de campo opera com **papéis distintos**: quem contata o proprietário para autorização **não é** quem executa a coleta em campo nem quem opera o voo de drone.
+  
+  O levantamento do código revela que a separação por perfis já existe em parte, mas apresenta lacunas críticas:
+
+  | Papel | O que vê | Situação no Código |
+  |---|---|---|
+  | **Autorização** | polígono, `codigoCar`, `nomeProprietario`, município | artefato de script; **sem perfil de exportação em `perfis.ts` e sem interface** |
+  | **Campo** | código, coordenadas, município, CAR, `Titular_Mascarado`, rota de acesso | perfil `campo-cego` ✓ |
+  | **Voo** | código, coordenadas, área do polígono | perfil `voo-cego` ✓ |
+  | **Interpretação** | código, coordenadas, janela temporal, tile | perfil `interpretacao-cega` ✓ |
+  | **Desfecho da autorização** | `desfecho`, `motivo_recusa`, `substituido_por`, `estrato_id` | `src/lib/autorizacao/csvAutorizacoes.ts` — **órfão, sem consumidor na interface** |
+
+  Correção da formulação inicial: não existe um download genérico a partir do selo público (que omite feições para blindagem do sorteio) ou do selo completo (que expõe dados excessivos). A distribuição deve ocorrer estritamente **por perfil**.
+
+  Quatro decisões do pesquisador estão em aberto e precedem qualquer implementação na Etapa 5:
+  1. A interface deve **gerar** os planos de voo (`.plan` para QGroundControl) interativamente, ou apenas disponibilizar para **download** os pacotes de arquivos previamente calculados via script CLI (`src/lib/drone/planoVooNControl.ts`)?
+  2. Criar o perfil `autorizacao` em `src/lib/matriz/perfis.ts`, com o mínimo indispensável para contato com proprietários e nada além — definir se `estrato_id` deve ou não constar (ausência sendo a salvaguarda de cegamento mais segura);
+  3. Ligar `src/lib/autorizacao/csvAutorizacoes.ts`, atualmente órfão, ao fluxo de registro de desfechos na interface gráfica;
+  4. Qual mecanismo a interface usará para blindar o cegamento e impedir que um operador baixe o perfil incorreto (seleção explícita de perfil/papel, confirmação de responsabilidade ou controle de acesso).
+
+  A Etapa 5 permanece exibida na casca com o estado honesto `"nao_implementada"` e texto descritivo, sem botões inoperantes ou verdes falsos.
+- Onde está no código: `src/components/fluxo/BarraFluxoOperacional.tsx`; `src/lib/matriz/perfis.ts`; `src/lib/autorizacao/csvAutorizacoes.ts`; `docs/planejamento/prompts/PROMPT_EXECUTOR_CASCA_FLUXO_2026-11-11.md`; `docs/verificacoes/2026-11-11p_casca_fluxo.md`.
 - Supera ou emenda: Operacionaliza a Opção (B) de `docs/planejamento/MATERIAL_DECISAO_INTERFACE_2026-11-11.md`.
+
 
 

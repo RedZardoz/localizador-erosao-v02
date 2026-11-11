@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `ce8e782b22a91f92ad17427cf33539f12c1136ba`
-- Data do HEAD: 2026-11-11 00:28:20 -0300
+- Commit HEAD: `fc8feca9196bf95c28c58dd158da0d3ed14e67e3`
+- Data do HEAD: 2026-11-11 05:12:56 +0000
 - Últimos 5 commits:
-  1. `ce8e782 feat(fluxo): implementar casca de fluxo operacional, medicao de dimensoes e travas (Prompt P)`
-  2. `3d24cf2 docs(planejamento): adicionar prompt P da casca de fluxo operacional`
-  3. `027c10a docs(planejamento): material de decisao sobre a organizacao da interface`
-  4. `38932a3 docs(planejamento): adicionar prompt O da coerencia de D02 e D20 (achado S1-8)`
-  5. `dd6ab81 docs(planejamento): sincronizar ESTADO.md com tour metodologico atualizado e novas travas (Prompt N)`
+  1. `fc8feca docs(planejamento): adicionar prompt Q do cegamento por distribuicao`
+  2. `d228f2c docs(planejamento): material de decisao sobre onde vive o cegamento da campanha`
+  3. `5c861dd docs(planejamento): emendar prompt P com a separacao de papeis da equipe`
+  4. `b5885b9 docs(planejamento): sincronizar ESTADO.md com casca de fluxo operacional e novos testes (Prompt P)`
+  5. `ce8e782 feat(fluxo): implementar casca de fluxo operacional, medicao de dimensoes e travas (Prompt P)`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 127

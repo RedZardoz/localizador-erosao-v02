@@ -142,13 +142,31 @@ Em `src/components/fluxo/BarraFluxoOperacional.test.ts`, foi implementada a fun�
 
 ---
 
-## 7. Tarefa 5: Registro das Pendências da Etapa 5
+## 7. Tarefa 5: Separação de Papéis e Registro das Quatro Pendências da Etapa 5
 
-Em estrito cumprimento à diretriz de não simulação, a Etapa 5 (Voos) foi declarada `nao_implementada` com explicação de que planos de voo são gerados via script (`src/lib/drone/planoVooNControl.ts`).
+Em estrito cumprimento à diretriz de não simulação, a Etapa 5 (Voos) foi declarada `nao_implementada` com explicação clara de que os planos de voo são gerados via script (`src/lib/drone/planoVooNControl.ts`) e ainda não possuem superfície na interface.
 
-As duas decisões abertas do pesquisador foram formalizadas na entrada `## 15` de `docs/planejamento/DECISOES_DE_CONVERSA.md`:
-1. *A interface gráfica deve **gerar** interativamente os planos de voo (`.plan`), ou apenas disponibilizar o **download** dos pacotes previamente calculados por script?*
-2. *O download dos polígonos sorteados para o plano de voo provém do **selo público redigido** ou do **selo completo cego**?* (Operação cega de campo, sujeita às regras K1–K3 do cegamento amostral).
+### Emenda de 11/11/2026: Separação de Papéis na Equipe e Cegamento Amostral
+
+O pesquisador esclareceu que a equipe de pesquisa opera com **papéis distintos**: quem contata o proprietário para autorização **não é** quem executa a coleta em campo nem quem opera o voo de drone.
+
+O levantamento do código revela que a separação já está parcialmente delineada em perfis de exportação, mas apresenta lacunas conceituais e estruturais:
+
+| Papel | O que vê | Situação no Código |
+|---|---|---|
+| **Autorização** | polígono, `codigoCar`, `nomeProprietario`, município | artefato de script; **sem perfil de exportação em `src/lib/matriz/perfis.ts` e sem interface** |
+| **Campo** | código, coordenadas, município, CAR, `Titular_Mascarado`, rota de acesso | perfil `campo-cego` ✓ |
+| **Voo** | código, coordenadas, área do polígono | perfil `voo-cego` ✓ |
+| **Interpretação** | código, coordenadas, janela temporal, tile | perfil `interpretacao-cega` ✓ |
+| **Desfecho da autorização** | `desfecho`, `motivo_recusa`, `substituido_por`, `estrato_id` | `src/lib/autorizacao/csvAutorizacoes.ts` — **órfão, sem consumidor na interface** |
+
+**Correção metodológica da formulação prévia:** não existe download genérico do selo público (que oculta deliberadamente identificadores e feições para blindagem estatística) ou do selo completo (que expõe dados excessivos, quebrando o cegamento). A saída correta e segura é estruturada **por perfil**.
+
+### As Quatro Decisões Pendentes Registradas em `DECISOES_DE_CONVERSA.md` (Entrada ## 15):
+1. A interface gráfica deve **gerar** interativamente os planos de voo (`.plan` para QGroundControl) ou apenas disponibilizar o **download** dos pacotes previamente calculados por script CLI (`src/lib/drone/planoVooNControl.ts`)?
+2. Criar o perfil `autorizacao` em `src/lib/matriz/perfis.ts`, contendo estritamente o necessário para contato com proprietários rurais (com confirmação se `estrato_id` deve ou não constar);
+3. Conectar o módulo `src/lib/autorizacao/csvAutorizacoes.ts` (atualmente órfão) ao fluxo de registro de desfechos na interface;
+4. Qual mecanismo a interface usará para garantir a blindagem do cegamento e impedir que um membro da equipe baixe a saída de papel indevido (seleção de perfil, declaração explícita de papel ou autenticação).
 
 ---
 
@@ -175,9 +193,29 @@ As duas decisões abertas do pesquisador foram formalizadas na entrada `## 15` d
 - `04_tsc_check.txt`
 - `05_npm_test.txt`
 - `06_vitest_paridade_g08.txt`
+- `07_pos_estado_verificar.txt`
+- `08_pos_git_status.txt`
 
 ---
 
-## 9. Conclusão
+## 9. Checklist do Prompt P
+
+- [x] **Branch:** `correcoes/contencao-2026-11-02`
+- [x] **T1 — casca com 8 etapas, sempre visível; estado com motivo em texto**
+- [x] **T1 — nenhum painel existente alterado por dentro**
+- [x] **T2 — `"sorteio"` em `ModalType`; painel reaproveitado sem alteração; decisão sobre dupla montagem:** remoção de `DecisoesModal.tsx:105` documentada, assegurando montagem única em `PainelSorteioModal`
+- [x] **T3 — painel de medição somente leitura; indisponível declarado quando faltar dado**
+- [x] **T4 — as 4 âncoras existem; trava de seletor do tour passa, com meta-teste**
+- [x] **T5 — etapa 5 como "não implementada", com motivo; quatro pendências registradas**
+- [x] **T5 — a tabela de papéis consta da evidência, com a lacuna do perfil `autorizacao` nomeada**
+- [x] **T6 — as 5 travas passam; G08 verde sem exceção nova**
+- [x] **T7 — evidência escrita, com captura ou transcrição das oito etapas**
+- [x] **`npm test` e `npx tsc --noEmit` gravados**
+- [x] **`npm run estado:verificar`, `git status --short`, `git log --oneline -3` gravados**
+- [x] **`git push` confirmado contra o remoto**
+
+---
+
+## 10. Conclusão
 
 A casca de fluxo operacional foi entregue com total aderência às especificações do projeto, sem nenhuma suposição infundada, com transparência metodológica, preservando a trava G08 e fornecendo uma experiência de navegação clara e confiável para a pesquisa científica de mestrado.
