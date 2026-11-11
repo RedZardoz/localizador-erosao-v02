@@ -22,6 +22,8 @@ export type ModalType =
   | "matriz"
   | "decisoes"
   | "export"
+  | "sorteio"
+  | "medicao"
   | null;
 
 export type BasemapType =

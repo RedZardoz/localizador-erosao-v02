@@ -3,23 +3,23 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `da2102ae6498e6b94c79dc9a91b0bbda2dc97035`
-- Data do HEAD: 2026-11-10 23:27:25 -0300
+- Commit HEAD: `3d24cf297d7b84953d32dff511997eb1cd3674cb`
+- Data do HEAD: 2026-11-11 03:10:41 +0000
 - Últimos 5 commits:
-  1. `da2102a feat(tour): atualizar tour metodologico com marcos da dissertacao e travas (Prompt N)`
-  2. `1ec35a3 docs(planejamento): adicionar prompt N de atualizacao do tour metodologico`
-  3. `8f4a4b1 docs(planejamento): sincronizar ESTADO.md com 110 testes herméticos e evidências do Prompt M`
-  4. `ecaea6c feat(interface): alinhar interface ao desenho medido D16 e travas de paridade (Prompt M)`
-  5. `814e6f8 Update Verificação e Validação SAREL 2026_11_11`
+  1. `3d24cf2 docs(planejamento): adicionar prompt P da casca de fluxo operacional`
+  2. `027c10a docs(planejamento): material de decisao sobre a organizacao da interface`
+  3. `38932a3 docs(planejamento): adicionar prompt O da coerencia de D02 e D20 (achado S1-8)`
+  4. `dd6ab81 docs(planejamento): sincronizar ESTADO.md com tour metodologico atualizado e novas travas (Prompt N)`
+  5. `da2102a feat(tour): atualizar tour metodologico com marcos da dissertacao e travas (Prompt N)`
 
 ## 2. Testes Automatizados
-- Arquivos de teste versionados no repositório: 126
-  - TypeScript herméticos (`src/**/*.test.ts`): 110
+- Arquivos de teste versionados no repositório: 127
+  - TypeScript herméticos (`src/**/*.test.ts`): 111
   - TypeScript vivos (`src/**/*.vivo.test.ts`): 2
   - Python (`test_*.py` em `scripts/` e `docs/`): 14
-- Arquivos de teste executados na suíte padrão hermética (`npm run test`): 110
+- Arquivos de teste executados na suíte padrão hermética (`npm run test`): 111
 - Diferença explicada pelas configurações do Vitest:
-  - `vitest.config.mts`: seleciona exclusivamente `src/**/*.test.ts` (110 arquivos) e exclui `src/**/*.vivo.test.ts`.
+  - `vitest.config.mts`: seleciona exclusivamente `src/**/*.test.ts` (111 arquivos) e exclui `src/**/*.vivo.test.ts`.
   - `vitest.vivo.config.mts`: seleciona exclusivamente os 2 testes vivos (`src/**/*.vivo.test.ts`), executados via `npm run test:vivo` por dependerem de infraestrutura pesada local fora do Git (`data/fundiario_brasil.db` e DEM Copernicus GLO-30 em `data/dem_cache/`).
   - Testes em Python (14 arquivos): executados no ambiente Python (`pytest` / runners em `scripts/`), desacoplados da suíte Vitest.
 

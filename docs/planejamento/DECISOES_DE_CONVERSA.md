@@ -257,3 +257,15 @@ Este arquivo registra decisões tomadas em diálogo com o pesquisador; `src/conf
 - Supera ou emenda: Aplica o parâmetro P07 e operacionaliza as Decisões D16 e D23.
 - Correção de 10/11/2026 (planejador): este registro foi commitado afirmando `IMPLEMENTADA` e citando o caminho de um selo inexistente. Ambos foram corrigidos acima sem reescrita de histórico, por ser o registro que a banca lê. A fixação prévia da semente, que é o fato que este registro precisa provar, permanece íntegra e datada no commit anterior. Em 10/11/2026 (executor), o sorteio foi definitivamente consumado sob os 8 invariantes.
 
+## 15 — Etapa 5 da Interface (Planos de Voo de VANT): Pendências de Geração e Cegamento Amostral
+
+- Data: 2026-11-11
+- Texto literal da decisão: "Opção (B) da organização da interface com etapa 5 declarada 'não implementada', aguardando duas decisões do pesquisador sobre geração vs download de planos de voo e download sob selo público redigido vs selo completo cego." (Prompt P — Executor SAREL — casca de fluxo operacional).
+- Consequência implementada / pendente: **PENDENTE**. Duas decisões em aberto precedem a implementação da Etapa 5 na interface gráfica:
+  1. A interface deve **gerar** os planos de voo (`.plan` para QGroundControl) interativamente, ou apenas disponibilizar para **download** os pacotes de arquivos previamente calculados via CLI (`src/lib/drone/planoVooNControl.ts`)?
+  2. O download das feições dos polígonos sorteados deve ser extraído a partir do **selo público redigido** (que omite deliberadamente as chaves primárias dos candidatos de alta erodibilidade para blindagem do sorteio) ou do **selo completo cego**? Como a execução da campanha de campo exige a geolocalização física inequívoca dos vértices dos polígonos sorteados, trata-se de operação formalmente **cega**, regulada pelas regras K1–K3 do protocolo de cegamento, e não pelo selo público de transparência estatística.
+  A Etapa 5 permanece exibida na casca de fluxo operacional com o estado explícito "não implementada" e motivo textual, sem botões simulados nem falsos estados verdes.
+- Onde está no código: `src/components/fluxo/BarraFluxoOperacional.tsx`; `docs/planejamento/prompts/PROMPT_EXECUTOR_CASCA_FLUXO_2026-11-11.md`; `docs/verificacoes/2026-11-11p_casca_fluxo.md`.
+- Supera ou emenda: Operacionaliza a Opção (B) de `docs/planejamento/MATERIAL_DECISAO_INTERFACE_2026-11-11.md`.
+
+

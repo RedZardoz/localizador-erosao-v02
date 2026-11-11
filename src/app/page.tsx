@@ -13,6 +13,9 @@ import { PainelMatrizModal } from "@/components/matriz/PainelMatrizModal";
 import { DecisoesModal } from "@/components/decisoes/DecisoesModal";
 import { ExportModal } from "@/components/export/ExportModal";
 import { SystemLogsModal } from "@/components/diagnostics/SystemLogsModal";
+import { BarraFluxoOperacional } from "@/components/fluxo/BarraFluxoOperacional";
+import { PainelSorteioModal } from "@/components/decisoes/PainelSorteioModal";
+import { PainelMedicaoModal } from "@/components/medicao/PainelMedicaoModal";
 import { ApresentacaoSpotlight } from "@/components/presentation/ApresentacaoSpotlight";
 import { ApresentacaoManager } from "@/components/presentation/ApresentacaoManager";
 import { ModalExplicativaMetodologica } from "@/components/presentation/ModalExplicativaMetodologica";
@@ -132,6 +135,9 @@ export default function HomePage() {
       {/* 1. Header Superior com Identidade, AOI e Centrais */}
       <Header />
 
+      {/* 1.1 Casca de Navegação do Fluxo Metodológico da Pesquisa */}
+      <BarraFluxoOperacional />
+
       {/* 2. Workspace Principal: Sidebar Lateral + Visualizador 3D */}
       <div className="flex-1 flex relative overflow-hidden">
         <Sidebar />
@@ -143,6 +149,8 @@ export default function HomePage() {
         <SettingsModal />
         <RegionRequestModal />
         <CandidateSelectionModal />
+        <PainelMedicaoModal />
+        <PainelSorteioModal />
         <AuditDossierModal />
         <PainelCampanhaModal />
         <PainelMatrizModal />
