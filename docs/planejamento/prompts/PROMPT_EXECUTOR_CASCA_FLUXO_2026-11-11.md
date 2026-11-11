@@ -132,15 +132,42 @@ por `src/lib/drone/planoVooNControl.ts` e por script.
 A etapa 5 aparece na casca com estado **"não implementada"**, e o texto diz, em uma frase, que os
 planos são gerados por script e ainda não têm superfície na interface.
 
-**Não construa a geração nem o download nesta rodada.** Duas decisões do pesquisador estão em
-aberto e precedem a implementação:
+**EMENDA DE 11/11/2026 — a segunda pergunta está majoritariamente respondida.** O pesquisador
+esclareceu que a equipe tem **papéis distintos**: quem vê os polígonos e o contato do proprietário,
+para pedir autorização, **não é** quem faz a coleta nem quem voa. Levantamento do código mostra que
+o projeto já implementou essa separação:
+
+| Papel | O que vê | Situação |
+|---|---|---|
+| Autorização | polígono, `codigoCar`, `nomeProprietario`, município | artefato de script; **sem perfil de exportação e sem interface** |
+| Campo | código, coordenadas, município, CAR, **`Titular_Mascarado`**, rota de acesso | perfil `campo-cego` ✓ |
+| Voo | código, coordenadas, área do polígono | perfil `voo-cego` ✓ |
+| Interpretação | código, coordenadas, janela temporal, tile | perfil `interpretacao-cega` ✓ |
+| Desfecho da autorização | `desfecho`, `motivo_recusa`, `substituido_por`, `estrato_id` | `src/lib/autorizacao/csvAutorizacoes.ts` — **órfão, sem consumidor** |
+
+Portanto **não existe um download de polígonos: existem quatro, um por papel**, e três já têm a
+forma certa. O que falta é (i) um perfil para o papel de autorização, que é o único que precisa do
+titular real, e (ii) a interface que roteia cada papel à sua saída.
+
+**Ainda assim, não construa nada disso nesta rodada.** Registre como pendência, agora mais precisa:
 
 1. a interface **gera** os planos de voo, ou apenas **baixa** os que o script produziu?
-2. o download dos polígonos sorteados vem do **selo público redigido** ou do **selo completo**? Para
-   ir a campo é preciso identificar o polígono, logo essa é operação **cega**, sujeita às regras
-   K1-K3 do cegamento, e não à regra do selo público.
+2. criar o perfil `autorizacao` em `src/lib/matriz/perfis.ts`, com o mínimo necessário para pedir
+   autorização e **nada além** — confirme se `estrato_id` deve ou não constar, lembrando que quem
+   pede autorização não interpreta, mas que ausência é sempre mais segura que presença;
+3. ligar `csvAutorizacoes.ts`, hoje sem consumidor, ao registro de desfechos na interface;
+4. como a interface impede que a pessoa errada baixe a saída errada — se por seleção de papel, por
+   confirmação explícita, ou por outro meio. **Esta é a pergunta que protege o cegamento**, e é do
+   pesquisador.
 
-Registre as duas como pendência em `docs/planejamento/DECISOES_DE_CONVERSA.md`, entrada nova
+O texto antigo desta tarefa dizia que o download seria do selo público ou do completo. **Essa
+formulação estava errada**: nenhum dos dois serve diretamente. O público não identifica polígono, e
+o completo identifica demais para qualquer papel isolado. A saída certa é **por perfil**, que é o
+mecanismo que o projeto já tem.
+
+**Não construa a geração nem o download nesta rodada.** Decisões em aberto, conforme acima:
+
+Registre as quatro como pendência em `docs/planejamento/DECISOES_DE_CONVERSA.md`, entrada nova
 datada, dizendo que a etapa 5 aguarda essas definições.
 
 ---
@@ -174,7 +201,8 @@ textual das oito etapas como aparecem.
 - [ ] T2 — `"sorteio"` em `ModalType`; painel reaproveitado sem alteração; decisão sobre dupla montagem: ______
 - [ ] T3 — painel de medição somente leitura; indisponível declarado quando faltar dado
 - [ ] T4 — as 4 âncoras existem; trava de seletor do tour passa, com meta-teste
-- [ ] T5 — etapa 5 como "não implementada", com motivo; duas pendências registradas
+- [ ] T5 — etapa 5 como "não implementada", com motivo; **quatro** pendências registradas
+- [ ] T5 — a tabela de papéis consta da evidência, com a lacuna do perfil `autorizacao` nomeada
 - [ ] T6 — as 5 travas passam; G08 verde sem exceção nova
 - [ ] T7 — evidência escrita, com captura ou transcrição das oito etapas
 - [ ] `npm test` e `npx tsc --noEmit` gravados
