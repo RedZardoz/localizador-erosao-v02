@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `fc8feca9196bf95c28c58dd158da0d3ed14e67e3`
-- Data do HEAD: 2026-11-11 05:12:56 +0000
+- Commit HEAD: `d7284c96d2df065dc742a0d0aaed14f4955626f2`
+- Data do HEAD: 2026-11-11 02:17:43 -0300
 - Últimos 5 commits:
-  1. `fc8feca docs(planejamento): adicionar prompt Q do cegamento por distribuicao`
-  2. `d228f2c docs(planejamento): material de decisao sobre onde vive o cegamento da campanha`
-  3. `5c861dd docs(planejamento): emendar prompt P com a separacao de papeis da equipe`
-  4. `b5885b9 docs(planejamento): sincronizar ESTADO.md com casca de fluxo operacional e novos testes (Prompt P)`
-  5. `ce8e782 feat(fluxo): implementar casca de fluxo operacional, medicao de dimensoes e travas (Prompt P)`
+  1. `d7284c9 docs(planejamento): registrar emenda de papeis da equipe e 4 pendencias da etapa 5 (Prompt P)`
+  2. `fc8feca docs(planejamento): adicionar prompt Q do cegamento por distribuicao`
+  3. `d228f2c docs(planejamento): material de decisao sobre onde vive o cegamento da campanha`
+  4. `5c861dd docs(planejamento): emendar prompt P com a separacao de papeis da equipe`
+  5. `b5885b9 docs(planejamento): sincronizar ESTADO.md com casca de fluxo operacional e novos testes (Prompt P)`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 127
@@ -117,7 +117,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `2026-11-11l_selo_publico_d16.md` | 2026-11-11 | 9478 |
 | `2026-11-11m_interface_alinhada.md` | 2026-11-11 | 10940 |
 | `2026-11-11n_tour_atualizado.md` | 2026-11-11 | 10845 |
-| `2026-11-11p_casca_fluxo.md` | 2026-11-11 | 12677 |
+| `2026-11-11p_casca_fluxo.md` | 2026-11-11 | 15842 |
 | `cache_frequencia_solo_nu_bp3.json` | sem data no nome | 687981 |
 | `cache_pedologia_bp3.json` | sem data no nome | 96740 |
 | `calculadora/2026-09-30_simulacao_desenho_d16_224m.md` | 2026-09-30 | 2027 |
