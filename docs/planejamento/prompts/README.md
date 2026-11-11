@@ -27,13 +27,22 @@ prompt. **Evidência** é o documento da Regra 8 produzido pela rodada.
 | **L** | `PROMPT_EXECUTOR_SELO_PUBLICO_2026-11-11.md` | Selo público redigido, que preserva o cegamento | executado | `0272204`, `0133f4c` | `2026-11-11l_selo_publico_d16.md` |
 | **M** | `PROMPT_EXECUTOR_INTERFACE_2026-11-11.md` | Alinha a interface ao desenho realizado; trava de paridade G08/G09 | executado | `ecaea6c`, `8f4a4b1` | `2026-11-11m_interface_alinhada.md` |
 | **N** | `PROMPT_EXECUTOR_TOUR_2026-11-11.md` | Atualiza o tour metodológico e acrescenta travas de conteúdo | executado | `da2102a`, `dd6ab81` | `2026-11-11n_tour_atualizado.md` |
-| **O** | `PROMPT_EXECUTOR_D02_D20_COERENCIA_2026-11-11.md` | Coerência de D02 e D20 — achado S1-8 da auditoria DeepSeek | **pendente** | — | — |
+| **O** | `PROMPT_EXECUTOR_D02_D20_COERENCIA_2026-11-11.md` | Coerência de D02 e D20 — achado S1-8 da auditoria DeepSeek | executado | `5298f4e`, `7325853` | — |
 | **P** | `PROMPT_EXECUTOR_CASCA_FLUXO_2026-11-11.md` | Casca de fluxo operacional sobre os painéis existentes | executado | `ce8e782`, `b5885b9`, `d7284c9`, `cadc359` | `2026-11-11p_casca_fluxo.md` |
-| **Q** | `PROMPT_EXECUTOR_CEGAMENTO_DISTRIBUICAO_2026-11-11.md` | Cegamento por distribuição: pacotes por papel, diário e travas | **pendente** | — | — |
+| **Q** | `PROMPT_EXECUTOR_CEGAMENTO_DISTRIBUICAO_2026-11-11.md` | Cegamento por distribuição: pacotes por papel, diário e travas | executado | `6c1484c`, `b56bac0` | `2026-11-11q_cegamento_distribuicao.md` |
 
-**Ordem recomendada do que falta:** **O**, depois **Q**. São independentes, mas ambos editam
-`src/config/decisoes.ts`; o O é menor e puramente documental, e deixa o registro coerente antes de
-o Q acrescentar sua emenda.
+**Todos os dezessete prompts foram executados.** As travas introduzidas por M, N, O, P e Q foram
+verificadas por **teste de mutação** conduzido pelo planejador em clone limpo — quebra-se a
+propriedade de propósito e confere-se que a trava acusa:
+
+| Trava | Mutação aplicada | Resultado |
+|---|---|---|
+| Cegamento de perfis (Q) | `estrato_id` acrescentado a `voo-cego` | falhou em **dois** pontos: fixação exata de colunas e barreira de proibidos |
+| Fórmula única do Fator C (O) | D20 promovida de volta a `decidida` | falhou com `expected 'decidida' to be 'proposta'` |
+| Seletores do tour (P) | — | as quatro âncoras antes ausentes passaram a resolver |
+
+Trava que não foi testada por mutação é trava que ninguém sabe se funciona. Três já passaram neste
+projeto sem nunca disparar: a de D11.2, a de `toContain("npm run estado")` e a de conteúdo do tour.
 
 ---
 
