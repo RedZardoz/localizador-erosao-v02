@@ -3,23 +3,23 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `7325853e8b3c1fb2fd2ae2858bec502f54fa64d9`
-- Data do HEAD: 2026-11-11 08:39:21 -0300
+- Commit HEAD: `6c1484ce9d74cb101d0b82fb8dcc1e39de437710`
+- Data do HEAD: 2026-11-11 10:07:48 -0300
 - Últimos 5 commits:
-  1. `7325853 docs(planejamento): sincronizar ESTADO.md com Prompt O`
-  2. `5298f4e feat(decisoes): sanar ambiguidade metodologica em D02 e D20 e adicionar trava de formula unica (Prompt O)`
-  3. `45851ab docs(planejamento): indexar os prompts do executor com letra, situacao e commits`
-  4. `bb260e1 docs(planejamento): mandar o prompt Q fechar as pendencias que ele proprio resolve`
-  5. `cadc359 docs(planejamento): sincronizar ESTADO.md pos emenda de papeis (Prompt P)`
+  1. `6c1484c feat(seguranca): implementar cegamento por distribuicao, pacotes selados por papel e diario (Prompt Q)`
+  2. `7325853 docs(planejamento): sincronizar ESTADO.md com Prompt O`
+  3. `5298f4e feat(decisoes): sanar ambiguidade metodologica em D02 e D20 e adicionar trava de formula unica (Prompt O)`
+  4. `45851ab docs(planejamento): indexar os prompts do executor com letra, situacao e commits`
+  5. `bb260e1 docs(planejamento): mandar o prompt Q fechar as pendencias que ele proprio resolve`
 
 ## 2. Testes Automatizados
-- Arquivos de teste versionados no repositório: 128
-  - TypeScript herméticos (`src/**/*.test.ts`): 112
+- Arquivos de teste versionados no repositório: 130
+  - TypeScript herméticos (`src/**/*.test.ts`): 114
   - TypeScript vivos (`src/**/*.vivo.test.ts`): 2
   - Python (`test_*.py` em `scripts/` e `docs/`): 14
-- Arquivos de teste executados na suíte padrão hermética (`npm run test`): 112
+- Arquivos de teste executados na suíte padrão hermética (`npm run test`): 114
 - Diferença explicada pelas configurações do Vitest:
-  - `vitest.config.mts`: seleciona exclusivamente `src/**/*.test.ts` (112 arquivos) e exclui `src/**/*.vivo.test.ts`.
+  - `vitest.config.mts`: seleciona exclusivamente `src/**/*.test.ts` (114 arquivos) e exclui `src/**/*.vivo.test.ts`.
   - `vitest.vivo.config.mts`: seleciona exclusivamente os 2 testes vivos (`src/**/*.vivo.test.ts`), executados via `npm run test:vivo` por dependerem de infraestrutura pesada local fora do Git (`data/fundiario_brasil.db` e DEM Copernicus GLO-30 em `data/dem_cache/`).
   - Testes em Python (14 arquivos): executados no ambiente Python (`pytest` / runners em `scripts/`), desacoplados da suíte Vitest.
 
@@ -70,7 +70,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | chuva | `RUSLE_Fator_R` | SIM | SIM | SIM |
 
 ## 7. Arquivos de Evidência em `docs/verificacoes/`
-- Total de arquivos de evidência medidos: 271
+- Total de arquivos de evidência medidos: 281
 
 | Arquivo de Evidência | Data no Nome | Tamanho (bytes) |
 |---|:---:|---:|
@@ -119,6 +119,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `2026-11-11n_tour_atualizado.md` | 2026-11-11 | 10845 |
 | `2026-11-11o_coerencia_d02_d20.md` | 2026-11-11 | 13363 |
 | `2026-11-11p_casca_fluxo.md` | 2026-11-11 | 15842 |
+| `2026-11-11q_cegamento_distribuicao.md` | 2026-11-11 | 10144 |
 | `cache_frequencia_solo_nu_bp3.json` | sem data no nome | 687981 |
 | `cache_pedologia_bp3.json` | sem data no nome | 96740 |
 | `calculadora/2026-09-30_simulacao_desenho_d16_224m.md` | 2026-09-30 | 2027 |
@@ -126,6 +127,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `climatologia_chirps_bp3.json` | sem data no nome | 16112 |
 | `diario_climatologia_chirps_bp3.json` | sem data no nome | 231414 |
 | `diario_requisicoes_solo_nu_calibracao.json` | sem data no nome | 10267 |
+| `distribuicao/diario_distribuicao.json` | sem data no nome | 146 |
 | `execucao/2026-11-09/git_log.txt` | sem data no nome | 236 |
 | `execucao/2026-11-09/git_status.txt` | sem data no nome | 1003 |
 | `execucao/2026-11-09/grep_b11.txt` | sem data no nome | 3819 |
@@ -259,6 +261,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `execucao/2026-11-11p/06_vitest_paridade_g08.txt` | sem data no nome | 585 |
 | `execucao/2026-11-11p/07_pos_estado_verificar.txt` | sem data no nome | 162 |
 | `execucao/2026-11-11p/08_pos_git_status.txt` | sem data no nome | 1093 |
+| `execucao/2026-11-11q/00_pre_git_status.txt` | sem data no nome | 318 |
+| `execucao/2026-11-11q/01_pre_git_branch.txt` | sem data no nome | 34 |
+| `execucao/2026-11-11q/02_pre_estado_verificar.txt` | sem data no nome | 162 |
+| `execucao/2026-11-11q/03_check_ignore_diario.txt` | sem data no nome | 269 |
+| `execucao/2026-11-11q/04_tsc_no_emit.txt` | sem data no nome | 15 |
+| `execucao/2026-11-11q/05_npm_test.txt` | sem data no nome | 45144 |
+| `execucao/2026-11-11q/06_git_status_pre_commit.txt` | sem data no nome | 1022 |
+| `execucao/2026-11-11q/07_estado_verificar.txt` | sem data no nome | 326 |
 | `fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md` | sem data no nome | 7016 |
 | `fontes/dematte2018/conferencia_dematte_2018.md` | sem data no nome | 6725 |
 | `fontes/dematte2018/extrair_dematte_2018.py` | sem data no nome | 2091 |
