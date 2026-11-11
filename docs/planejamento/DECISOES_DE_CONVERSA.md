@@ -285,6 +285,12 @@ Este arquivo registra decisões tomadas em diálogo com o pesquisador; `src/conf
   A Etapa 5 permanece exibida na casca com o estado honesto `"nao_implementada"` e texto descritivo, sem botões inoperantes ou verdes falsos.
 - Onde está no código: `src/components/fluxo/BarraFluxoOperacional.tsx`; `src/lib/matriz/perfis.ts`; `src/lib/autorizacao/csvAutorizacoes.ts`; `docs/planejamento/prompts/PROMPT_EXECUTOR_CASCA_FLUXO_2026-11-11.md`; `docs/verificacoes/2026-11-11p_casca_fluxo.md`.
 - Supera ou emenda: Operacionaliza a Opção (B) de `docs/planejamento/MATERIAL_DECISAO_INTERFACE_2026-11-11.md`.
+- Atualização de 11/11/2026 (Prompt Q — Cegamento por Distribuição e Opções B+D):
+  Resolução das pendências da Etapa 5:
+  - **Pendência 1 (Geração vs Download de `.plan`):** Permanece **ABERTA**.
+  - **Pendência 2 (Perfil `autorizacao`):** **RESOLVIDA** pela Tarefa 2. Perfil `autorizacao` criado em `src/lib/matriz/perfis.ts` e suportado em `extrairLinhasPorPerfil` (`src/lib/export/planilha.ts`), contendo o mínimo operacional (`Codigo`, `Latitude`, `Longitude`, `Municipio`, `Codigo_CAR`, `Nome_Proprietario`, `Area_Imovel_Ha`, `Area_Poligono_Ha`) com **omissão estrita de `Estrato_ID`** e trava de segurança própria (`validarColunasAutorizacao`).
+  - **Pendência 3 (Ligar `csvAutorizacoes.ts` à interface):** Permanece **ABERTA** (fora do escopo desta rodada, reservada para momento oportuno).
+  - **Pendência 4 (Mecanismo de blindagem do cegamento):** **RESOLVIDA** pelas Tarefas 1, 3, 4 e 5. Decisão de arquitetura formalizada pelas Opções (B) + (D): o SAREL opera como console do coordenador em 127.0.0.1; o cegamento de peritos e operadores dá-se na **distribuição externa** através de pacotes selados por papel com hash SHA-256 e Diário de Distribuição versionado (`docs/verificacoes/distribuicao/diario_distribuicao.json`). Seletor de papel na UI foi explicitamente recusado por constituir falsa segurança. Apontamento: commit desta rodada e emenda de 11/11/2026 a D16 (Entrada 17 abaixo).
 
 ## 16 — Migração dos Limiares de D02 para Parâmetro Operacional (Série P) e Devolução a Pendente
 
@@ -298,6 +304,17 @@ Este arquivo registra decisões tomadas em diálogo com o pesquisador; `src/conf
 - Onde está no código: `src/config/decisoes.ts:79-117` (D02); `src/lib/gee/amostragemBiofisica.ts:38-45`; `src/config/decisoes.parametros.test.ts:48-61`.
 - Supera ou emenda: Acompanha a entrada 02 de `DECISOES_DE_CONVERSA.md` e o achado S1-8 da auditoria DeepSeek.
 
+## 17 — Fronteira do Sistema e Cegamento por Distribuição (Opções B e D)
 
-
+- Data: 2026-11-11
+- Texto literal da decisão: "Decisão do pesquisador (11/11/2026): opções (B) + (D) do docs/planejamento/MATERIAL_DECISAO_CEGAMENTO_2026-11-11.md — pacotes selados por papel com diário de distribuição, mais emenda declarando que o SAREL é o console do coordenador e que o cegamento se dá na distribuição. Não implemente seletor de papel na interface." (Prompt Q — Executor SAREL — cegamento por distribuição).
+- Consequência implementada / pendente: **IMPLEMENTADA**.
+  1. **O SAREL é o console do coordenador:** Roda localmente em `127.0.0.1`, sem autenticação e sem conceito de usuário; o operador do console tem acesso a todos os perfis por concepção da pesquisa. Isso é deliberado e não constitui falha.
+  2. **Cegamento por distribuição:** O que cada papel pode ver é determinado estritamente pelo pacote selado que recebe (`pacote_{papel}_{data}.csv`), com cabeçalho contendo advertência de uso restrito e hash criptográfico SHA-256 do payload tabular.
+  3. **Comprovação da dissertação:** O que a dissertação afirma é o que o Diário de Distribuição (`docs/verificacoes/distribuicao/diario_distribuicao.json`) comprova mediante conferência do hash SHA-256 gerado no momento da exportação (demonstrando que os peritos e intérpretes receberam arquivos sem estrato, sem titular real e sem probabilidades ou pesos amostrais).
+  4. **Recusa do seletor de papel na UI:** Implementação de seletor de papel na interface web gráfica foi considerada e terminantemente recusada: sem camada de autenticação/RBAC, um seletor seria mero lembrete cosmético e criaria aparência de controle inexistente, vulnerável a questionamento em banca.
+  5. **Trava estrita de colunas:** Criada trava em código (`src/lib/matriz/travaCegamentoPerfis.test.ts` e `src/lib/matriz/perfis.ts`) que fixa o conjunto exato de colunas dos perfis cegos (`interpretacao-cega`, `campo-cego`, `voo-cego`) e de `autorizacao`, barrando por lista de exclusão qualquer coluna proibida com meta-teste de injeção de `estrato_id`.
+  6. **Destinatário opcional:** O registro de destinatário no Diário de Distribuição aceita texto livre mas é estritamente opcional, preservando a governança sobre dados pessoais de colaboradores do projeto.
+- Onde está no código: `src/config/decisoes.ts` (emenda a D16); `src/lib/matriz/perfis.ts` e `src/lib/matriz/travaCegamentoPerfis.test.ts`; `src/lib/export/pacoteDistribuicao.ts` e `src/lib/export/pacoteDistribuicao.test.ts`; `docs/verificacoes/distribuicao/diario_distribuicao.json`; `docs/planejamento/MATERIAL_DECISAO_CEGAMENTO_2026-11-11.md`.
+- Supera ou emenda: Emenda D16 (Protocolo Cego de Amostragem e Distribuição de Papéis).
 

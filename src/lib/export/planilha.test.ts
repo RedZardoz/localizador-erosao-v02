@@ -228,6 +228,53 @@ describe("Exportação XLSX e CSV — Validações e Guardas", () => {
     });
   });
 
+  it("TAREFA 2: perfil 'autorizacao' exporta CSV e XLSX com 8 colunas fixadas, sem estrato, com titular real e CAR", async () => {
+    const ponto = mockPonto(1, {
+      estratoId: "E_2_3_1",
+      fundiario: {
+        status: "encontrado",
+        motivo: null,
+        consultadoEm: "2026-09-10",
+        criterioAssociacao: null,
+        codigoCar: "PR-4104808-TESTE-CAR",
+        titularMascarado: "J*** S***",
+        documentoMascarado: "***.123.456-**",
+        registroIncra: null,
+        areaImovelHa: 85.5,
+        bases: { uf: "PR" },
+      } as any,
+    });
+    (ponto.fundiario as any).nomeProprietario = "João da Silva";
+    (ponto as any).areaPoligonoHa = 5.02;
+
+    const linhas = extrairLinhasPorPerfil([ponto], "autorizacao");
+    expect(linhas).toHaveLength(1);
+    expect(Object.keys(linhas[0])).toEqual([
+      "Codigo",
+      "Latitude",
+      "Longitude",
+      "Municipio",
+      "Codigo_CAR",
+      "Nome_Proprietario",
+      "Area_Imovel_Ha",
+      "Area_Poligono_Ha",
+    ]);
+    expect(linhas[0].Nome_Proprietario).toBe("João da Silva");
+    expect(linhas[0].Codigo_CAR).toBe("PR-4104808-TESTE-CAR");
+    expect(linhas[0].Area_Imovel_Ha).toBe("85.5 ha");
+    expect(linhas[0].Area_Poligono_Ha).toBe("5.02 ha");
+    expect(linhas[0]).not.toHaveProperty("Estrato_ID");
+    expect(linhas[0]).not.toHaveProperty("estrato_id");
+
+    const csv = gerarCsvCientifico([ponto], "autorizacao");
+    expect(csv).toContain("Codigo,Latitude,Longitude,Municipio,Codigo_CAR,Nome_Proprietario,Area_Imovel_Ha,Area_Poligono_Ha");
+    expect(csv).toContain("João da Silva");
+    expect(csv).not.toContain("E_2_3_1");
+
+    const xlsx = await gerarPlanilhaXLSX([ponto], { perfil: "autorizacao" });
+    expect(xlsx).toBeInstanceOf(Buffer);
+  });
+
   describe("C05 (A20): Proteção LGPD e desvinculação fundiária em voo-cego", () => {
     it("entrada em claro nunca sai em claro em nenhum perfil", () => {
       const p = mockPonto(1, {

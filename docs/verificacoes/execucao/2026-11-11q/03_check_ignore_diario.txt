@@ -1,0 +1,5 @@
+﻿$ git check-ignore -v docs/verificacoes/distribuicao/diario_distribuicao.json
+ExitCode: 1 (não ignorado - arquivo versionável)
+
+$ git status --short docs/verificacoes/distribuicao/diario_distribuicao.json
+?? docs/verificacoes/distribuicao/diario_distribuicao.json

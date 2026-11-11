@@ -3,6 +3,7 @@ export type PerfilExportacao =
   | "interpretacao-cega"
   | "campo-cego"
   | "voo-cego"
+  | "autorizacao"
   | "matriz-treino"
   | "matriz-heldout"
   | "linha-de-base-rusle"
@@ -247,6 +248,19 @@ export const PERFIS_EXPORTACAO: Record<PerfilExportacao, { descricao: string; co
       "Area_Voo_Poligono",
     ],
   },
+  autorizacao: {
+    descricao: "Plano para contato fundiário prévio com proprietários (sem estrato biofísico)",
+    colunasPermitidas: [
+      "Codigo",
+      "Latitude",
+      "Longitude",
+      "Municipio",
+      "Codigo_CAR",
+      "Nome_Proprietario",
+      "Area_Imovel_Ha",
+      "Area_Poligono_Ha",
+    ],
+  },
   "matriz-treino": {
     descricao: "Matriz final para modelagem supervisionada externa (PPGTCA 2026)",
     colunasPermitidas: [
@@ -384,4 +398,92 @@ export const PERFIS_EXPORTACAO: Record<PerfilExportacao, { descricao: string; co
 
 export function obterColunasPermitidas(perfil: PerfilExportacao): string[] {
   return PERFIS_EXPORTACAO[perfil].colunasPermitidas;
+}
+
+/**
+ * Perfis estritamente submetidos ao protocolo de cegamento (Invariante 2 / D16).
+ */
+export const PERFIS_CEGOS: readonly PerfilExportacao[] = [
+  "interpretacao-cega",
+  "campo-cego",
+  "voo-cego",
+] as const;
+
+/**
+ * Padrões de colunas terminantemente proibidas em qualquer perfil cego.
+ * Lista de exclusão que barra vazamento de variáveis de desenho amostral (estrato),
+ * titularidade real, documentos pessoais, probabilidades de inclusão (pi_i), pesos (w_i),
+ * identificadores de candidato, partições de treino/teste e variáveis-alvo.
+ */
+export const PADROES_PROIBIDOS_PERFIS_CEGOS: readonly { nome: string; padrao: RegExp }[] = [
+  { nome: "estrato biofísico", padrao: /estrato/i },
+  { nome: "titular real do imóvel", padrao: /(?:^|_)(?:nome_?proprietario|proprietario)(?:$|_)/i },
+  { nome: "titular não mascarado", padrao: /(?:^|_)titular(?!_mascarado)(?:$|_)/i },
+  { nome: "documento pessoal não mascarado", padrao: /(?:^|_)documento(?!_mascarado)(?:$|_)/i },
+  { nome: "documento pessoal CPF/CNPJ", padrao: /(?:^|_)(?:cpf|cnpj)(?:$|_)/i },
+  { nome: "probabilidade de inclusão amostral", padrao: /(?:^|_)(?:pi|pi_i|probabilidade_?inclusao)(?:$|_)/i },
+  { nome: "peso amostral", padrao: /(?:^|_)(?:peso|peso_?amostragem|w|w_i)(?:$|_)/i },
+  { nome: "identificador de candidato", padrao: /candidato/i },
+  { nome: "partição ou papel no conjunto de modelagem", padrao: /(?:^|_)(?:papel_?conjunto|particao|treino|heldout|held_out)(?:$|_)/i },
+  { nome: "alvo ou desfecho supervisionado", padrao: /(?:^|_)(?:fracao_?erodida|classe_?alvo_?binaria|rotulo_?classe)(?:$|_)/i },
+] as const;
+
+export class ErroViolacaoCegamento extends Error {
+  readonly perfil: string;
+  readonly coluna: string;
+  readonly motivo: string;
+
+  constructor(perfil: string, coluna: string, motivo: string) {
+    super(`[VIOLAÇÃO DE CEGAMENTO] O perfil cego '${perfil}' contém a coluna proibida '${coluna}': ${motivo}`);
+    this.name = "ErroViolacaoCegamento";
+    this.perfil = perfil;
+    this.coluna = coluna;
+    this.motivo = motivo;
+  }
+}
+
+/**
+ * Valida se um conjunto de colunas para um perfil cego viola o cegamento.
+ * Lança ErroViolacaoCegamento na primeira ocorrência de coluna proibida.
+ */
+export function validarColunasCegas(perfilNome: string, colunas: readonly string[]): void {
+  for (const col of colunas) {
+    for (const { nome, padrao } of PADROES_PROIBIDOS_PERFIS_CEGOS) {
+      if (padrao.test(col)) {
+        throw new ErroViolacaoCegamento(perfilNome, col, `identifica ${nome}`);
+      }
+    }
+  }
+}
+
+/**
+ * Colunas fixadas estritamente para o perfil de autorização fundiária.
+ * Contém dados para contato com proprietários, mas OMITE categoricamente o estrato biofísico.
+ */
+export const COLUNAS_FIXADAS_AUTORIZACAO: readonly string[] = [
+  "Codigo",
+  "Latitude",
+  "Longitude",
+  "Municipio",
+  "Codigo_CAR",
+  "Nome_Proprietario",
+  "Area_Imovel_Ha",
+  "Area_Poligono_Ha",
+] as const;
+
+/**
+ * Valida as colunas do perfil autorizacao:
+ * 1. O conjunto deve coincidir estritamente com COLUNAS_FIXADAS_AUTORIZACAO.
+ * 2. Nenhuma coluna pode identificar estrato biofísico (/estrato/i).
+ */
+export function validarColunasAutorizacao(colunas: readonly string[]): void {
+  for (const col of colunas) {
+    if (/estrato/i.test(col)) {
+      throw new ErroViolacaoCegamento(
+        "autorizacao",
+        col,
+        "identifica estrato biofísico (omissão obrigatória sob D16 / Tarefa 2)"
+      );
+    }
+  }
 }

@@ -1,0 +1,5 @@
+﻿
+> sarel@2.0.0 estado:verificar
+> node scripts/auditoria/estado_do_projeto.mjs --verificar
+
+OK: ESTADO.md está perfeitamente sincronizado com o repositório.

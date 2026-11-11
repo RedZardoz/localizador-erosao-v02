@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `cd27c89b5ef056b7f2078df1657dc4ad5b25fa79`
-- Data do HEAD: 2026-11-11 08:37:45 -0300
+- Commit HEAD: `7325853e8b3c1fb2fd2ae2858bec502f54fa64d9`
+- Data do HEAD: 2026-11-11 08:39:21 -0300
 - Últimos 5 commits:
-  1. `cd27c89 feat(decisoes): sanar ambiguidade metodologica em D02 e D20 e adicionar trava de formula unica (Prompt O)`
-  2. `bb260e1 docs(planejamento): mandar o prompt Q fechar as pendencias que ele proprio resolve`
-  3. `cadc359 docs(planejamento): sincronizar ESTADO.md pos emenda de papeis (Prompt P)`
-  4. `d7284c9 docs(planejamento): registrar emenda de papeis da equipe e 4 pendencias da etapa 5 (Prompt P)`
-  5. `fc8feca docs(planejamento): adicionar prompt Q do cegamento por distribuicao`
+  1. `7325853 docs(planejamento): sincronizar ESTADO.md com Prompt O`
+  2. `5298f4e feat(decisoes): sanar ambiguidade metodologica em D02 e D20 e adicionar trava de formula unica (Prompt O)`
+  3. `45851ab docs(planejamento): indexar os prompts do executor com letra, situacao e commits`
+  4. `bb260e1 docs(planejamento): mandar o prompt Q fechar as pendencias que ele proprio resolve`
+  5. `cadc359 docs(planejamento): sincronizar ESTADO.md pos emenda de papeis (Prompt P)`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 128
