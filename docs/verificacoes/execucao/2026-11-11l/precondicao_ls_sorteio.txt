@@ -1,0 +1,11 @@
+﻿
+
+    Diretório: C:\Users\lalfr\Docs Fora do Ar\LUIS ALFREDO\01 - MESTRADO PPGTCA 2026\02 - PESQUISA EROSÃO 
+    LAMINAR\geolocalizacao-erosao-propriedade\docs\verificacoes\sorteio
+
+
+Mode                 LastWriteTime         Length Name                                                                 
+----                 -------------         ------ ----                                                                 
+-a----        10/11/2026     21:05          98498 sorteio_d16_2026-11-10.json                                          
+
+

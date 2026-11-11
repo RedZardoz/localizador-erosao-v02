@@ -132,6 +132,46 @@ export interface SeloSorteioD16 {
   tabelaCorrespondenciaOpaca: Record<string, string>;
 }
 
+export interface EstratoPublicoD16 {
+  estratoId: string;
+  nCandidatos: number;
+  nSorteados: number;
+  pi_i: number | null;
+  w_i: number | null;
+  regime: "amostra" | "censo" | "vazio";
+  nTreino: number;
+  nHeldOut: number;
+  areaHectares: number;
+}
+
+export interface SeloPublicoD16 {
+  versaoEsquema: string;
+  geradoEm: string;
+  semente: number;
+  politicaSemente: string;
+  gitCommit: string;
+  sha256ConjuntoCandidatos: string;
+  hashIntegridade: string;
+  totalCandidatosEntrada: number;
+  totalPoligonosSorteados: number;
+  totalTreino: number;
+  totalHeldOut: number;
+  areaTotalHectares: number;
+  limiaresS: { t1: number; t2: number; [k: string]: unknown };
+  limiaresE: { t1: number; t2: number; [k: string]: unknown };
+  contagemCandidatosPorEstrato: Record<string, number>;
+  estratosCenso?: string[];
+  estratosVazios?: string[];
+  invariantesVerificados?: string[];
+  decisoesVigentes: Record<
+    "D07" | "D08" | "D12" | "D16" | "D23" | string,
+    { titulo: string; status: string; decididaEm?: string }
+  >;
+  sha256SeloCompleto: string;
+  declaracaoNatureza: string;
+  estratos: EstratoPublicoD16[];
+}
+
 export interface RelatorioPreCondicoesD16 {
   aprovado: boolean;
   condicaoFalha: IdPreCondicaoSorteioD16 | null;

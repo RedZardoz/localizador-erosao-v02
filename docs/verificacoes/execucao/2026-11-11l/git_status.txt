@@ -1,0 +1,7 @@
+﻿ M docs/planejamento/ESTADO.md
+ M src/lib/gee/sorteioPoligonosTipos.ts
+?? docs/verificacoes/2026-11-11l_selo_publico_d16.md
+?? docs/verificacoes/execucao/2026-11-11l/
+?? docs/verificacoes/selo_publico_d16_2026-11-10.json
+?? scripts/auditoria/gerar_selo_publico_d16.mjs
+?? src/lib/seguranca/seloPublicoD16.test.ts

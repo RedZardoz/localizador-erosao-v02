@@ -1,0 +1,7 @@
+﻿FONTE_DOS_DADOS	docs/verificacoes/sorteio/sorteio_d16_2026-11-10.json
+[OK:SELO_PUBLICO_GERADO] Selo público gravado em: docs/verificacoes/selo_publico_d16_2026-11-10.json
+  - SHA-256 do selo completo: ee1a8d82dbdbe4ae604817b65012771a983042a4ee764032e30bfe5154ab0f3c
+  - Versão do esquema: 1.4.0
+  - Total polígonos: 67 (34 treino / 33 held-out)
+  - Área total: 336.34 ha
+  - Estratos agregados: 18 estratos

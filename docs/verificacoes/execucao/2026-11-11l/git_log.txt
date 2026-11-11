@@ -1,0 +1,3 @@
+﻿14e302f docs(planejamento): adicionar prompt L do selo publico redigido do sorteio D16
+b368b50 feat(sorteio-d16): executar sorteio oficial D16 sob semente 20261110 e selar desenho amostral
+3b54177 docs(planejamento): atualizar prompt J com --cache e a saida esperada do dry-run

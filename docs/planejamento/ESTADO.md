@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `3b54177e3a716590c76443da784535be2eff55ba`
-- Data do HEAD: 2026-11-10 23:59:55 +0000
+- Commit HEAD: `14e302fa7c9fb74e384cf6199d73693e00531da5`
+- Data do HEAD: 2026-11-11 01:00:09 +0000
 - Últimos 5 commits:
-  1. `3b54177 docs(planejamento): atualizar prompt J com --cache e a saida esperada do dry-run`
-  2. `74b138e feat(sorteio-d16): juntar frequencia de solo nu e proveniencia no CLI`
-  3. `f475eed docs(planejamento): corrigir a entrada 14 do registro de decisoes`
-  4. `f739058 Merge branch 'correcoes/contencao-2026-11-02' of https://github.com/RedZardoz/localizador-erosao-v02 into correcoes/contencao-2026-11-02`
-  5. `e67fc90 docs(planejamento): registrar semente 20261110 antes do sorteio de D16`
+  1. `14e302f docs(planejamento): adicionar prompt L do selo publico redigido do sorteio D16`
+  2. `b368b50 feat(sorteio-d16): executar sorteio oficial D16 sob semente 20261110 e selar desenho amostral`
+  3. `3b54177 docs(planejamento): atualizar prompt J com --cache e a saida esperada do dry-run`
+  4. `74b138e feat(sorteio-d16): juntar frequencia de solo nu e proveniencia no CLI`
+  5. `f475eed docs(planejamento): corrigir a entrada 14 do registro de decisoes`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 124
@@ -70,7 +70,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | chuva | `RUSLE_Fator_R` | SIM | SIM | SIM |
 
 ## 7. Arquivos de Evidência em `docs/verificacoes/`
-- Total de arquivos de evidência medidos: 203
+- Total de arquivos de evidência medidos: 212
 
 | Arquivo de Evidência | Data no Nome | Tamanho (bytes) |
 |---|:---:|---:|
@@ -112,6 +112,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `2026-11-10g_ingestao_680_e_distribuicao_e.md` | 2026-11-10 | 22153 |
 | `2026-11-10h_guarda_d11_e_desenho_18x4.md` | 2026-11-10 | 11166 |
 | `2026-11-10i_invariante_selo.md` | 2026-11-10 | 7230 |
+| `2026-11-10j_sorteio_d16_executado.md` | 2026-11-10 | 7679 |
 | `2026-11-10k_juncao_e_no_cli.md` | 2026-11-10 | 8850 |
 | `cache_frequencia_solo_nu_bp3.json` | sem data no nome | 687981 |
 | `cache_pedologia_bp3.json` | sem data no nome | 96740 |
@@ -181,10 +182,18 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `execucao/2026-11-10i/git_status.txt` | sem data no nome | 280 |
 | `execucao/2026-11-10i/npm_test.txt` | sem data no nome | 40316 |
 | `execucao/2026-11-10i/tsc_noemit.txt` | sem data no nome | 0 |
-| `execucao/2026-11-10j/precondicao_git_status.txt` | sem data no nome | 46 |
-| `execucao/2026-11-10j/precondicao_ls_sorteio.txt` | sem data no nome | 0 |
-| `execucao/2026-11-10j/precondicao_npm_test.txt` | sem data no nome | 19854 |
+| `execucao/2026-11-10j/dry_run.txt` | sem data no nome | 5476 |
+| `execucao/2026-11-10j/estado_verificar.txt` | sem data no nome | 162 |
+| `execucao/2026-11-10j/git_log.txt` | sem data no nome | 244 |
+| `execucao/2026-11-10j/git_status.txt` | sem data no nome | 1066 |
+| `execucao/2026-11-10j/npm_test_pos_sorteio.txt` | sem data no nome | 21522 |
+| `execucao/2026-11-10j/precondicao_git_status.txt` | sem data no nome | 239 |
+| `execucao/2026-11-10j/precondicao_ls_sorteio.txt` | sem data no nome | 78 |
+| `execucao/2026-11-10j/precondicao_npm_test.txt` | sem data no nome | 20067 |
 | `execucao/2026-11-10j/precondicao_tsc_noemit.txt` | sem data no nome | 0 |
+| `execucao/2026-11-10j/sorteio_execucao.txt` | sem data no nome | 5198 |
+| `execucao/2026-11-10j/tsc_noemit_pos_sorteio.txt` | sem data no nome | 0 |
+| `execucao/2026-11-10j/verificacao_selo.txt` | sem data no nome | 7198 |
 | `execucao/2026-11-10k/defeito_medido.txt` | sem data no nome | 2316 |
 | `execucao/2026-11-10k/estado_verificar.txt` | sem data no nome | 162 |
 | `execucao/2026-11-10k/git_log.txt` | sem data no nome | 301 |

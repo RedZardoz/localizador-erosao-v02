@@ -1,0 +1,298 @@
+{
+  "versaoEsquema": "1.4.0",
+  "geradoEm": "2026-11-11T00:05:29.403Z",
+  "semente": 20261110,
+  "politicaSemente": "dinamica-registrada",
+  "gitCommit": "3b54177e3a716590c76443da784535be2eff55ba",
+  "sha256ConjuntoCandidatos": "0de2e0e3b313091a98cade8c507a6a88fb21b47399e486d70cf88eab74e5a65c",
+  "hashIntegridade": "15a5f1f38a3cf512",
+  "totalCandidatosEntrada": 677,
+  "totalPoligonosSorteados": 67,
+  "totalTreino": 34,
+  "totalHeldOut": 33,
+  "areaTotalHectares": 336.34,
+  "limiaresS": {
+    "t1": 5.12,
+    "t2": 8.46,
+    "nValidos": 677,
+    "nNaoFinitos": 0,
+    "nEmpatesEmT1": 2,
+    "nEmpatesEmT2": 1
+  },
+  "limiaresE": {
+    "t1": 0.0116,
+    "t2": 0.049,
+    "nValidos": 677,
+    "nNaoFinitos": 0,
+    "nEmpatesEmT1": 3,
+    "nEmpatesEmT2": 2
+  },
+  "contagemCandidatosPorEstrato": {
+    "E_1_1_1": 41,
+    "E_1_1_2": 6,
+    "E_1_2_1": 86,
+    "E_1_2_2": 3,
+    "E_1_3_1": 91,
+    "E_1_3_2": 0,
+    "E_2_1_1": 43,
+    "E_2_1_2": 6,
+    "E_2_2_1": 80,
+    "E_2_2_2": 4,
+    "E_2_3_1": 88,
+    "E_2_3_2": 4,
+    "E_3_1_1": 79,
+    "E_3_1_2": 51,
+    "E_3_2_1": 50,
+    "E_3_2_2": 4,
+    "E_3_3_1": 35,
+    "E_3_3_2": 6
+  },
+  "estratosCenso": [
+    "E_1_2_2",
+    "E_2_2_2",
+    "E_2_3_2",
+    "E_3_2_2"
+  ],
+  "estratosVazios": [
+    "E_1_3_2"
+  ],
+  "invariantesVerificados": [
+    "INV_1_TOTAL_TREINO_HELDOUT",
+    "INV_2_AREA_TOTAL",
+    "INV_3_SOMA_POLIGONOS_POR_ESTRATO",
+    "INV_4_PARTICAO_CANDIDATOS",
+    "INV_5_POLIGONOS_UNICOS",
+    "INV_6_CENSO_PI_1",
+    "INV_7_ESTRATO_VAZIO",
+    "INV_8_HORVITZ_THOMPSON"
+  ],
+  "decisoesVigentes": {
+    "D07": {
+      "titulo": "Domínio de validade: declividade 3 a 20%, WorldCover 30 e 40, concordância entre épocas",
+      "status": "decidida",
+      "decididaEm": "2026-09-27"
+    },
+    "D08": {
+      "titulo": "Unidades em associação: ambiguidade de K determinada na fonte oficial, sem heurística",
+      "status": "decidida",
+      "decididaEm": "2026-09-28"
+    },
+    "D12": {
+      "titulo": "Dimensões da estratificação: 18 estratos, com K̂ da carta de erodibilidade de 2024",
+      "status": "decidida",
+      "decididaEm": "2026-09-28"
+    },
+    "D16": {
+      "titulo": "Campanha: polígonos de VANT como massa de treino e teste, campo como âncora e confirmação",
+      "status": "decidida",
+      "decididaEm": "2026-09-27"
+    },
+    "D23": {
+      "titulo": "Regime amostral: estratificação desproporcional com probabilidade de inclusão registrada",
+      "status": "decidida",
+      "decididaEm": "2026-09-27"
+    }
+  },
+  "sha256SeloCompleto": "ee1a8d82dbdbe4ae604817b65012771a983042a4ee764032e30bfe5154ab0f3c",
+  "declaracaoNatureza": "Este e um documento DERIVADO, redigido, do selo de sorteio D16. NAO e um sorteio, NAO confere probabilidades de inclusao e NAO substitui o selo completo para fins de execucao. O selo completo permanece fora do controle de versao pela guarda K2 (cegamento duplo da campanha de campo) e pode ser liberado apos o encerramento da campanha.",
+  "estratos": [
+    {
+      "estratoId": "E_1_1_1",
+      "nCandidatos": 41,
+      "nSorteados": 4,
+      "pi_i": 0.0975609756097561,
+      "w_i": 10.25,
+      "regime": "amostra",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_1_1_2",
+      "nCandidatos": 6,
+      "nSorteados": 4,
+      "pi_i": 0.6666666666666666,
+      "w_i": 1.5,
+      "regime": "amostra",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_1_2_1",
+      "nCandidatos": 86,
+      "nSorteados": 4,
+      "pi_i": 0.046511627906976744,
+      "w_i": 21.5,
+      "regime": "amostra",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_1_2_2",
+      "nCandidatos": 3,
+      "nSorteados": 3,
+      "pi_i": 1,
+      "w_i": 1,
+      "regime": "censo",
+      "nTreino": 2,
+      "nHeldOut": 1,
+      "areaHectares": 15.06
+    },
+    {
+      "estratoId": "E_1_3_1",
+      "nCandidatos": 91,
+      "nSorteados": 4,
+      "pi_i": 0.04395604395604396,
+      "w_i": 22.75,
+      "regime": "amostra",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_1_3_2",
+      "nCandidatos": 0,
+      "nSorteados": 0,
+      "pi_i": null,
+      "w_i": null,
+      "regime": "vazio",
+      "nTreino": 0,
+      "nHeldOut": 0,
+      "areaHectares": 0
+    },
+    {
+      "estratoId": "E_2_1_1",
+      "nCandidatos": 43,
+      "nSorteados": 4,
+      "pi_i": 0.09302325581395349,
+      "w_i": 10.75,
+      "regime": "amostra",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_2_1_2",
+      "nCandidatos": 6,
+      "nSorteados": 4,
+      "pi_i": 0.6666666666666666,
+      "w_i": 1.5,
+      "regime": "amostra",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_2_2_1",
+      "nCandidatos": 80,
+      "nSorteados": 4,
+      "pi_i": 0.05,
+      "w_i": 20,
+      "regime": "amostra",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_2_2_2",
+      "nCandidatos": 4,
+      "nSorteados": 4,
+      "pi_i": 1,
+      "w_i": 1,
+      "regime": "censo",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_2_3_1",
+      "nCandidatos": 88,
+      "nSorteados": 4,
+      "pi_i": 0.045454545454545456,
+      "w_i": 22,
+      "regime": "amostra",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_2_3_2",
+      "nCandidatos": 4,
+      "nSorteados": 4,
+      "pi_i": 1,
+      "w_i": 1,
+      "regime": "censo",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_3_1_1",
+      "nCandidatos": 79,
+      "nSorteados": 4,
+      "pi_i": 0.05063291139240506,
+      "w_i": 19.75,
+      "regime": "amostra",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_3_1_2",
+      "nCandidatos": 51,
+      "nSorteados": 4,
+      "pi_i": 0.0784313725490196,
+      "w_i": 12.75,
+      "regime": "amostra",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_3_2_1",
+      "nCandidatos": 50,
+      "nSorteados": 4,
+      "pi_i": 0.08,
+      "w_i": 12.5,
+      "regime": "amostra",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_3_2_2",
+      "nCandidatos": 4,
+      "nSorteados": 4,
+      "pi_i": 1,
+      "w_i": 1,
+      "regime": "censo",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_3_3_1",
+      "nCandidatos": 35,
+      "nSorteados": 4,
+      "pi_i": 0.11428571428571428,
+      "w_i": 8.75,
+      "regime": "amostra",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    },
+    {
+      "estratoId": "E_3_3_2",
+      "nCandidatos": 6,
+      "nSorteados": 4,
+      "pi_i": 0.6666666666666666,
+      "w_i": 1.5,
+      "regime": "amostra",
+      "nTreino": 2,
+      "nHeldOut": 2,
+      "areaHectares": 20.08
+    }
+  ]
+}
