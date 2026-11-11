@@ -30,8 +30,15 @@ prompt. **Evidência** é o documento da Regra 8 produzido pela rodada.
 | **O** | `PROMPT_EXECUTOR_D02_D20_COERENCIA_2026-11-11.md` | Coerência de D02 e D20 — achado S1-8 da auditoria DeepSeek | executado | `5298f4e`, `7325853` | — |
 | **P** | `PROMPT_EXECUTOR_CASCA_FLUXO_2026-11-11.md` | Casca de fluxo operacional sobre os painéis existentes | executado | `ce8e782`, `b5885b9`, `d7284c9`, `cadc359` | `2026-11-11p_casca_fluxo.md` |
 | **Q** | `PROMPT_EXECUTOR_CEGAMENTO_DISTRIBUICAO_2026-11-11.md` | Cegamento por distribuição: pacotes por papel, diário e travas | executado | `6c1484c`, `b56bac0` | `2026-11-11q_cegamento_distribuicao.md` |
+| **R** | `PROMPT_EXECUTOR_MODELO_P_2026-11-11.md` | Retira a alegação de predição prospectiva (Modelo P, achado S1-6) | **escrito, não executado** | `3673379` | — |
+| **S** | `PROMPT_EXECUTOR_APRESENTACAO_2026-11-11.md` | Apresentação (PPTX) e documento (DOCX) didáticos | executado | `35bc056`, `a5277df` | `2026-11-11s/` |
+| **T** | `PROMPT_EXECUTOR_MOCKUP_2026-11-11.md` | Mockup distribuível para navegador, não operacional | **em execução** | `7b3ad9a` | — |
+| **U** | `PROMPT_EXECUTOR_TEXTO_FOTOINTERPRETACAO_2026-11-11.md` | Corrige o texto sobre fotointerpretação humana; fecha quem delineia | **escrito, não executado** | `702ff2c`, `b776a00` | — |
+| **V** | `PROMPT_EXECUTOR_INGESTAO_DELINEACAO_2026-11-11.md` | Instrumenta a ingestão da delineação de D26: grade nativa, recusa de P11, importador | **escrito, não executado** | — | — |
 
-**Todos os dezessete prompts foram executados.** As travas introduzidas por M, N, O, P e Q foram
+**Dezoito dos vinte e dois prompts foram executados** (A–Q e S). **R**, **T** e **U** estão
+escritos e aguardando execução — **T** em execução em 11/11 — e **V** acaba de ser escrito.
+As travas introduzidas por M, N, O, P e Q foram
 verificadas por **teste de mutação** conduzido pelo planejador em clone limpo — quebra-se a
 propriedade de propósito e confere-se que a trava acusa:
 
