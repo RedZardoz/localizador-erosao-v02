@@ -318,3 +318,18 @@ Este arquivo registra decisões tomadas em diálogo com o pesquisador; `src/conf
 - Onde está no código: `src/config/decisoes.ts` (emenda a D16); `src/lib/matriz/perfis.ts` e `src/lib/matriz/travaCegamentoPerfis.test.ts`; `src/lib/export/pacoteDistribuicao.ts` e `src/lib/export/pacoteDistribuicao.test.ts`; `docs/verificacoes/distribuicao/diario_distribuicao.json`; `docs/planejamento/MATERIAL_DECISAO_CEGAMENTO_2026-11-11.md`.
 - Supera ou emenda: Emenda D16 (Protocolo Cego de Amostragem e Distribuição de Papéis).
 
+## 18 — Fase amostral adicional: pendência registrada para retomada
+
+- Data: 2026-11-11
+- Texto literal da decisão: "pensando no futuro, penso que poderíamos ter um campo (segregado em configurações) onde a semente seria alterada e registrada, possibilitando um outro sorteio e nova pesquisa. Talvez até mesmo aumentando o universo de treino, melhorando a estatística e possibilitando melhor precisão." (pesquisador, 11/11/2026).
+- Consequência: **PENDENTE** — registrada para retomada em breve; nada foi implementado.
+- Análise do planejador, por levantamento em 11/11/2026:
+  1. **A intenção é legítima.** 67 polígonos, com 33 reservados, é amostra fina; mais polígonos dariam mais poder estatístico.
+  2. **Um campo que troca a semente é perigoso.** D23 existe para impedir o re-sorteio, e o valor do selo vem de ser irreversível. O risco não é garimpo deliberado: é que a mera possibilidade de re-sortear, uma vez visto o primeiro resultado, contamina a afirmação. "Por que esta semente?" deixa de ter resposta boa quando trocá-la é configuração.
+  3. **Um novo sorteio sobre o mesmo universo não ajudaria onde o desenho é fino.** Cinco dos nove estratos de K̂=2 já estão esgotados — um vazio (N_h = 0), um com 3 e três com exatamente 4, todos em regime de censo. Novo sorteio acrescentaria polígonos apenas onde já há folga: os nove estratos de K̂=1, com 35 a 91 candidatos cada, que não são o gargalo.
+  4. **O que de fato ampliaria a amostra** é relaxar o thinning nas células deficientes para **gerar candidatos novos**, e então sortear uma **fase amostral adicional**, com semente própria registrada, produzindo um **segundo selo que soma ao primeiro** em vez de substituí-lo. Horvitz-Thompson trata isso como segunda fase, com π_i próprio por fase.
+  5. **Desenho recomendado do campo**, se vier a existir: não "trocar a semente", e sim "registrar nova fase amostral" — exigindo semente nova, justificativa e produzindo selo adicional, nunca sobrescrevendo. A diferença é de affordance: um convida a refazer, o outro a acrescentar.
+  6. **"Nova pesquisa" em sentido estrito não precisa desse campo:** é novo pré-registro, novo held-out, novo tudo.
+- Impacto a avaliar na retomada: D16 (sorteio), D23 (probabilidades de inclusão), o cálculo de poder, e o momento — ampliar depois de os primeiros polígonos serem voados é metodologicamente mais caro.
+- Material de decisão próprio: **a produzir**.
+- Onde está no código: `src/lib/gee/sorteioPoligonos.ts` (regra de censo e π_i por estrato); `scripts/sortear_poligonos_d16.ts` (recusa idempotente de D23).
