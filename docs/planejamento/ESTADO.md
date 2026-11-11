@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `bb260e179ae13862d893fa7ebc00e77cff1868ed`
-- Data do HEAD: 2026-11-11 11:16:39 +0000
+- Commit HEAD: `cd27c89b5ef056b7f2078df1657dc4ad5b25fa79`
+- Data do HEAD: 2026-11-11 08:37:45 -0300
 - Últimos 5 commits:
-  1. `bb260e1 docs(planejamento): mandar o prompt Q fechar as pendencias que ele proprio resolve`
-  2. `cadc359 docs(planejamento): sincronizar ESTADO.md pos emenda de papeis (Prompt P)`
-  3. `d7284c9 docs(planejamento): registrar emenda de papeis da equipe e 4 pendencias da etapa 5 (Prompt P)`
-  4. `fc8feca docs(planejamento): adicionar prompt Q do cegamento por distribuicao`
-  5. `d228f2c docs(planejamento): material de decisao sobre onde vive o cegamento da campanha`
+  1. `cd27c89 feat(decisoes): sanar ambiguidade metodologica em D02 e D20 e adicionar trava de formula unica (Prompt O)`
+  2. `bb260e1 docs(planejamento): mandar o prompt Q fechar as pendencias que ele proprio resolve`
+  3. `cadc359 docs(planejamento): sincronizar ESTADO.md pos emenda de papeis (Prompt P)`
+  4. `d7284c9 docs(planejamento): registrar emenda de papeis da equipe e 4 pendencias da etapa 5 (Prompt P)`
+  5. `fc8feca docs(planejamento): adicionar prompt Q do cegamento por distribuicao`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 128
@@ -70,7 +70,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | chuva | `RUSLE_Fator_R` | SIM | SIM | SIM |
 
 ## 7. Arquivos de Evidência em `docs/verificacoes/`
-- Total de arquivos de evidência medidos: 259
+- Total de arquivos de evidência medidos: 271
 
 | Arquivo de Evidência | Data no Nome | Tamanho (bytes) |
 |---|:---:|---:|
@@ -117,6 +117,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `2026-11-11l_selo_publico_d16.md` | 2026-11-11 | 9478 |
 | `2026-11-11m_interface_alinhada.md` | 2026-11-11 | 10940 |
 | `2026-11-11n_tour_atualizado.md` | 2026-11-11 | 10845 |
+| `2026-11-11o_coerencia_d02_d20.md` | 2026-11-11 | 13363 |
 | `2026-11-11p_casca_fluxo.md` | 2026-11-11 | 15842 |
 | `cache_frequencia_solo_nu_bp3.json` | sem data no nome | 687981 |
 | `cache_pedologia_bp3.json` | sem data no nome | 96740 |
@@ -238,6 +239,17 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `execucao/2026-11-11n/07_grep_termos_proibidos.txt` | sem data no nome | 103 |
 | `execucao/2026-11-11n/08_pos_estado_verificar.txt` | sem data no nome | 162 |
 | `execucao/2026-11-11n/09_pos_git_status.txt` | sem data no nome | 235 |
+| `execucao/2026-11-11o/00_pre_git_status.txt` | sem data no nome | 318 |
+| `execucao/2026-11-11o/01_pre_git_branch.txt` | sem data no nome | 34 |
+| `execucao/2026-11-11o/02_pre_estado_verificar.txt` | sem data no nome | 162 |
+| `execucao/2026-11-11o/03_grep_d20_consumo.txt` | sem data no nome | 0 |
+| `execucao/2026-11-11o/04_conferencia_decisoesEmendas.txt` | sem data no nome | 2203 |
+| `execucao/2026-11-11o/05_grep_hibrido.txt` | sem data no nome | 19111 |
+| `execucao/2026-11-11o/06_vitest_trava_formula_unica.txt` | sem data no nome | 588 |
+| `execucao/2026-11-11o/07_tsc_check.txt` | sem data no nome | 0 |
+| `execucao/2026-11-11o/08_npm_test.txt` | sem data no nome | 21120 |
+| `execucao/2026-11-11o/09_pos_estado_verificar.txt` | sem data no nome | 162 |
+| `execucao/2026-11-11o/10_pos_git_status.txt` | sem data no nome | 1027 |
 | `execucao/2026-11-11p/00_pre_git_status.txt` | sem data no nome | 318 |
 | `execucao/2026-11-11p/01_pre_git_branch.txt` | sem data no nome | 34 |
 | `execucao/2026-11-11p/02_pre_estado_verificar.txt` | sem data no nome | 162 |
