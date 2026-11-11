@@ -13,9 +13,10 @@ describe("Registro de Decisões — Mecanismo e Integridade", () => {
   });
 
   it("Decisões formalizadas na metodologia devem estar decididas e retornar valor válido", () => {
-    // Todas as decisoes de DECISOES estao decididas desde 27/09/2026; a lista e
-    // derivada para que o teste acompanhe o registro sem numero magico.
-    const decididas = Object.keys(DECISOES);
+    // Decisões formalizadas com estado "decidida" retornam valor válido.
+    // D20 foi rebaixada a "proposta" em 11/11/2026 (Prompt O / Achado S1-8: modelo de sensibilidade).
+    const decididas = Object.keys(DECISOES).filter((id) => DECISOES[id].estado === "decidida");
+    expect(decididas.length).toBeGreaterThan(0);
     for (const id of decididas) {
       const d = DECISOES[id];
       expect(d.estado).toBe("decidida");
@@ -30,11 +31,13 @@ describe("Registro de Decisões — Mecanismo e Integridade", () => {
     const todas = Object.values(DECISOES);
     const pendentes = todas.filter((d) => d.estado === "pendente");
     const decididas = todas.filter((d) => d.estado === "decidida");
+    const propostas = todas.filter((d) => d.estado === "proposta");
 
-    // A partição de DECISOES é binária: toda decisão está "decidida" ou "pendente".
+    // A partição de DECISOES cobre "decidida", "pendente" e "proposta".
     // Asseverar a partição, e não uma contagem literal, evita que o registro de uma
     // nova decisão quebre o teste sem que nenhuma invariante tenha sido violada.
-    expect(pendentes.length + decididas.length).toBe(todas.length);
+    expect(pendentes.length + decididas.length + propostas.length).toBe(todas.length);
+    expect(propostas.map((d) => d.id)).toEqual(["D20"]);
     // A guarda antivacuidade NAO pode depender de haver decisao pendente no projeto:
     // em 27/09/2026 todas as decisoes de DECISOES passaram a "decidida", e uma guarda
     // sobre pendentes.length se tornaria insatisfazivel justamente quando o registro

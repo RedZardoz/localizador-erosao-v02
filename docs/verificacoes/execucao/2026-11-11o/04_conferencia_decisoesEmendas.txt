@@ -1,0 +1,41 @@
+﻿import { describe, it, expect } from "vitest";
+import { DECISOES, PARAMETROS } from "./decisoes";
+
+describe("N06 â€” Emendas de 06/10/2026 e Novos ParÃ¢metros Propostos", () => {
+  it("as 10 decisÃµes emendadas devem conter a marca EMENDA DE 06/10/2026 no campo apropriado", () => {
+    expect(DECISOES.D25.valor).toContain("EMENDA DE 06/10/2026");
+    expect(DECISOES.D24.valor).toContain("EMENDA DE 06/10/2026");
+    expect(DECISOES.D06.valor).toContain("EMENDA DE 06/10/2026");
+    expect(DECISOES.D16.valor).toContain("EMENDA DE 06/10/2026");
+    expect(DECISOES.D02.valor).toContain("EMENDA DE 06/10/2026");
+    expect(DECISOES.D09.referencia).toContain("EMENDA DE 06/10/2026");
+    // D10 continha cÃ³pia errÃ´nea da emenda de Mannigel de D09; saneada em 09/11/2026
+    expect(DECISOES.D10.referencia).toContain("EMENDA DE 09/11/2026");
+    expect(DECISOES.D14.valor).toContain("EMENDA DE 06/10/2026");
+    expect(DECISOES.D13.valor).toContain("EMENDA DE 06/10/2026");
+    expect(DECISOES.D15.valor).toContain("EMENDA DE 06/10/2026");
+  });
+
+  it("regra de preservaÃ§Ã£o: estado, decididoPor e decididoEm devem ser rigorosamente preservados", () => {
+    expect(DECISOES.D24.estado).toBe("decidida");
+    expect(DECISOES.D25.estado).toBe("decidida");
+    expect(DECISOES.D06.estado).toBe("decidida");
+    expect(DECISOES.D16.estado).toBe("decidida");
+    expect(DECISOES.D02.estado).toBe("decidida");
+    expect(DECISOES.D09.estado).toBe("decidida");
+    expect(DECISOES.D10.estado).toBe("decidida");
+    expect(DECISOES.D14.estado).toBe("decidida");
+    expect(DECISOES.D13.estado).toBe("decidida");
+    expect(DECISOES.D15.estado).toBe("decidida");
+  });
+
+  it("novos parÃ¢metros propostos P10, P11, P20..P24 devem existir com estado 'proposta' e SEM valor", () => {
+    const novosIds = ["P10", "P11", "P20", "P21", "P22", "P23", "P24"];
+    for (const id of novosIds) {
+      const p = PARAMETROS[id];
+      expect(p, `ParÃ¢metro ${id} deve existir em PARAMETROS`).toBeDefined();
+      expect(p.estado, `ParÃ¢metro ${id} deve ter estado 'proposta'`).toBe("proposta");
+      expect(p.valor, `ParÃ¢metro ${id} nÃ£o deve ter valor`).toBeUndefined();
+    }
+  });
+});

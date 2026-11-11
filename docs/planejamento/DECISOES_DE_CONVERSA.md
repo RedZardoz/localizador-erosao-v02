@@ -286,5 +286,18 @@ Este arquivo registra decisões tomadas em diálogo com o pesquisador; `src/conf
 - Onde está no código: `src/components/fluxo/BarraFluxoOperacional.tsx`; `src/lib/matriz/perfis.ts`; `src/lib/autorizacao/csvAutorizacoes.ts`; `docs/planejamento/prompts/PROMPT_EXECUTOR_CASCA_FLUXO_2026-11-11.md`; `docs/verificacoes/2026-11-11p_casca_fluxo.md`.
 - Supera ou emenda: Operacionaliza a Opção (B) de `docs/planejamento/MATERIAL_DECISAO_INTERFACE_2026-11-11.md`.
 
+## 16 — Migração dos Limiares de D02 para Parâmetro Operacional (Série P) e Devolução a Pendente
+
+- Data: 2026-11-11
+- Texto literal da decisão: "Registrar como pendência formal a proposta da entrada 02 de migrar os quatro limiares espectrais de D02 para parâmetro operacional e devolver D02 ao estado pendente." (Prompt O — Executor SAREL — achado S1-8 da auditoria DeepSeek).
+- Consequência implementada / pendente: **PENDENTE (NÃO EXECUTADA NESTA RODADA)**.
+  1. **A proposta:** Devolver D02 ao estado `pendente` com foco exclusivo em critérios observacionais de campo (ficha KoboToolbox / observação humana) e mover os quatro limiares de triagem espectral (`bsiMin`, `ndviMax`, `bsiMax`, `ndviMin`) para parâmetro operacional na série P (por exemplo, `P25`), separando formalmente a regra de triagem da decisão de rotulagem.
+  2. **Razão de não execução agora:** Trata-se de uma refatoração estrutural no registro de decisões às vésperas da apresentação. O ganho imediato seria puramente de forma e não de conteúdo, visto que a EMENDA de 11/11/2026 já retitulou D02 para *"Critério espectral de triagem de candidatos (BSI e NDVI)"* e declarou explicitamente que os cortes são convenção operacional do projeto e não produzem rótulo (Regra 4).
+  3. **Impacto técnico medido:** A função `exigirParametro` (`src/config/decisoes.ts:58-66`) lança `ErroDecisaoPendente` quando a decisão não está no estado `"decidida"`. Em código de produção, `src/lib/gee/amostragemBiofisica.ts:38-45` lê os quatro cortes de D02 via `exigirParametro(DECISOES.D02, ...)`. Portanto, rebaixar D02 para `"pendente"` sem criar previamente o parâmetro da série P e refatorar `amostragemBiofisica.ts` (e as respectivas suítes de teste de parâmetros) quebraria imediatamente a execução de triagem biofísica.
+  4. **Decisão:** A execução dessa migração estrutural permanece pendente e é de competência exclusiva do pesquisador.
+- Onde está no código: `src/config/decisoes.ts:79-117` (D02); `src/lib/gee/amostragemBiofisica.ts:38-45`; `src/config/decisoes.parametros.test.ts:48-61`.
+- Supera ou emenda: Acompanha a entrada 02 de `DECISOES_DE_CONVERSA.md` e o achado S1-8 da auditoria DeepSeek.
+
+
 
 

@@ -3,23 +3,23 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `d7284c96d2df065dc742a0d0aaed14f4955626f2`
-- Data do HEAD: 2026-11-11 02:17:43 -0300
+- Commit HEAD: `bb260e179ae13862d893fa7ebc00e77cff1868ed`
+- Data do HEAD: 2026-11-11 11:16:39 +0000
 - Últimos 5 commits:
-  1. `d7284c9 docs(planejamento): registrar emenda de papeis da equipe e 4 pendencias da etapa 5 (Prompt P)`
-  2. `fc8feca docs(planejamento): adicionar prompt Q do cegamento por distribuicao`
-  3. `d228f2c docs(planejamento): material de decisao sobre onde vive o cegamento da campanha`
-  4. `5c861dd docs(planejamento): emendar prompt P com a separacao de papeis da equipe`
-  5. `b5885b9 docs(planejamento): sincronizar ESTADO.md com casca de fluxo operacional e novos testes (Prompt P)`
+  1. `bb260e1 docs(planejamento): mandar o prompt Q fechar as pendencias que ele proprio resolve`
+  2. `cadc359 docs(planejamento): sincronizar ESTADO.md pos emenda de papeis (Prompt P)`
+  3. `d7284c9 docs(planejamento): registrar emenda de papeis da equipe e 4 pendencias da etapa 5 (Prompt P)`
+  4. `fc8feca docs(planejamento): adicionar prompt Q do cegamento por distribuicao`
+  5. `d228f2c docs(planejamento): material de decisao sobre onde vive o cegamento da campanha`
 
 ## 2. Testes Automatizados
-- Arquivos de teste versionados no repositório: 127
-  - TypeScript herméticos (`src/**/*.test.ts`): 111
+- Arquivos de teste versionados no repositório: 128
+  - TypeScript herméticos (`src/**/*.test.ts`): 112
   - TypeScript vivos (`src/**/*.vivo.test.ts`): 2
   - Python (`test_*.py` em `scripts/` e `docs/`): 14
-- Arquivos de teste executados na suíte padrão hermética (`npm run test`): 111
+- Arquivos de teste executados na suíte padrão hermética (`npm run test`): 112
 - Diferença explicada pelas configurações do Vitest:
-  - `vitest.config.mts`: seleciona exclusivamente `src/**/*.test.ts` (111 arquivos) e exclui `src/**/*.vivo.test.ts`.
+  - `vitest.config.mts`: seleciona exclusivamente `src/**/*.test.ts` (112 arquivos) e exclui `src/**/*.vivo.test.ts`.
   - `vitest.vivo.config.mts`: seleciona exclusivamente os 2 testes vivos (`src/**/*.vivo.test.ts`), executados via `npm run test:vivo` por dependerem de infraestrutura pesada local fora do Git (`data/fundiario_brasil.db` e DEM Copernicus GLO-30 em `data/dem_cache/`).
   - Testes em Python (14 arquivos): executados no ambiente Python (`pytest` / runners em `scripts/`), desacoplados da suíte Vitest.
 
@@ -27,8 +27,8 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 - Maior ID existente: `D26`
 - Total de decisões registradas: 26
 - Decisões agrupadas por estado:
-  - Decididas (26): D01, D02, D03, D04, D05, D06, D07, D08, D09, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26
-  - Propostas (0): (nenhuma)
+  - Decididas (25): D01, D02, D03, D04, D05, D06, D07, D08, D09, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D21, D22, D23, D24, D25, D26
+  - Propostas (1): D20
   - Pendentes (0): (nenhuma)
 
 ## 4. Parâmetros Operacionais (`PARAMETROS`)

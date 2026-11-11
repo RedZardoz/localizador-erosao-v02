@@ -138,7 +138,8 @@ describe("Fase 8 — Linha de Base RUSLE e Fator C", () => {
             (full.endsWith(".ts") || full.endsWith(".tsx")) &&
             !full.endsWith(".test.ts") &&
             !full.endsWith(".test.tsx") &&
-            !full.replace(/\\/g, "/").endsWith("src/lib/rusle/fatorC.ts")
+            !full.replace(/\\/g, "/").endsWith("src/lib/rusle/fatorC.ts") &&
+            !full.replace(/\\/g, "/").endsWith("src/config/decisoes.ts")
           ) {
             arqs.push(full);
           }

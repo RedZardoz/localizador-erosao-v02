@@ -1,7 +1,7 @@
 # Registro de Decisões Metodológicas — SAREL
 
 **Espelho legível e auditável de `src/config/decisoes.ts`.**  
-Gerado automaticamente via `npm run decisoes:md` em 2026-11-10.
+Gerado automaticamente via `npm run decisoes:md` em 2026-11-11.
 
 > **Regra 9 do SAREL (Governança Metodológica):**  
 > Todo parâmetro metodológico tem dono e registro. Decisão pendente gera estado `indisponivel` com causa `"decisao-pendente"` e o respectivo ID. **Somente o pesquisador tem autoridade para mudar uma decisão para `"decidida"`.**
@@ -13,7 +13,7 @@ Gerado automaticamente via `npm run decisoes:md` em 2026-11-10.
 | ID | Título da Decisão | Estado | Valor / Diretriz Adotada | Decidido Em |
 |:---|:---|:---:|:---|:---:|
 | **D01** | Fórmula do Fator C: Durigon et al. (2014) | ✅ Decidida | (1 - NDVI) / 2 | 2026-09-08 |
-| **D02** | Critérios observacionais de presente/ausente e negativo explícito | ✅ Decidida | Amostragem estratificada pura: Classe 1 (Erosão: BSI > 0.10 e NDVI < 0.40) vs Classe 0 (Controle/SPD: BSI < 0.00 e ND... | 2026-09-13 |
+| **D02** | Critério espectral de triagem de candidatos (BSI e NDVI) | ✅ Decidida | Amostragem estratificada pura: Classe 1 (Erosão: BSI > 0.10 e NDVI < 0.40) vs Classe 0 (Controle/SPD: BSI < 0.00 e ND... | 2026-09-13 |
 | **D03** | Escala do rótulo: coleta ordinal com binarização declarada | ✅ Decidida | COLETA em escala ordinal de quatro níveis, com o vocabulário do SAREL Coletor como canônico: 'ausente', 'incipiente',... | 2026-09-27 |
 | **D04** | Modelo D (detecção), Modelo P (predição) e intervalo de guarda temporal | ✅ Decidida | Ambos os modelos integrados: Modelo D para detecção contemporânea de feições ativas (t0) e Modelo P para predição pro... | 2026-09-22 |
 | **D05** | Série de treino: Sentinel-2 exclusivo; Landsat só como camada de tendência, nunca preditor | ✅ Decidida | MATRIZ DE TREINO: exclusivamente a série Sentinel-2 MSI nível L2A, a 10 m e 20 m conforme a banda, no período de 2016... | 2026-09-27 |
@@ -31,7 +31,7 @@ Gerado automaticamente via `npm run decisoes:md` em 2026-11-10.
 | **D17** | Ciclo da cota Planet e alocação racional entre download e tiles | ✅ Decidida | Cota de Scene Downloads de 3.000 km² tratada como TOTAL do período de vigência do plano (Education and Research Basic... | 2026-09-27 |
 | **D18** | Buffer do recorte Planet por ponto amostral | ✅ Decidida | Raio de 250 m ao redor do centróide amostral, materializado como bounding box de 500 m de lado em EPSG:4326, equivale... | 2026-09-27 |
 | **D19** | Pares de evento: reescrita do ponto para o polígono, análise secundária fora de D25 | ✅ Decidida | REESCRITA PARA O DESENHO POR POLÍGONOS. A proposta original — 40 a 60 PONTOS amostrais pareados pré e pós evento eros... | 2026-09-27 |
-| **D20** | Fórmula do Fator C híbrido SPD: Durigon et al. (2014) modulada pelo BSI | ✅ Decidida | C = ((1 - NDVI) / 2) * (1 + BSI), com domínio físico estrito C em [0, 1]; qualquer C fora de [0, 1] resulta em indisp... | 2026-09-27 |
+| **D20** | Modelo de sensibilidade do Fator C modulado pelo BSI (não analítico) | 🛑 Proposta | Análise de sensibilidade: C = ((1 - NDVI) / 2) * (1 + BSI), com domínio físico estrito C em [0, 1]; qualquer C fora d... | 2026-09-27 |
 | **D21** | Fonte e resolução do Modelo Digital de Elevação | ✅ Decidida | Copernicus DEM GLO-30 (ESA) na resolução nativa de 30 m, processado em projeção métrica SIRGAS 2000 / UTM 22S (EPSG:3... | 2026-09-27 |
 | **D22** | Fator P derivado de observação de campo, estratificado por declividade | ✅ Decidida | Nos pontos com visita de campo, o Fator P deixa de ser a constante tabelada 1,0 e passa a ser derivado da combinação ... | 2026-09-27 |
 | **D23** | Regime amostral: estratificação desproporcional com probabilidade de inclusão registrada | ✅ Decidida | Amostragem ESTRATIFICADA DESPROPORCIONAL com a probabilidade de inclusão pi_i REGISTRADA POR UNIDADE SORTEADA, substi... | 2026-09-27 |
@@ -80,12 +80,12 @@ Gerado automaticamente via `npm run decisoes:md` em 2026-11-10.
 
 ---
 
-### D02 — Critérios observacionais de presente/ausente e negativo explícito
+### D02 — Critério espectral de triagem de candidatos (BSI e NDVI)
 
 | Campo | Valor |
 |---|---|
 | **Estado** | ✅ **Decidida** |
-| **Valor Adotado** | Amostragem estratificada pura: Classe 1 (Erosão: BSI > 0.10 e NDVI < 0.40) vs Classe 0 (Controle/SPD: BSI < 0.00 e NDVI > 0.65) EMENDA DE 06/10/2026 (proposta do assistente, aceita pelo pesquisador em conversa; pré-dados): os limiares de BSI e NDVI de D02 definem um CRITÉRIO DE TRIAGEM DE CANDIDATOS e uma ajuda visual, NÃO um rótulo (Regra 4: nada calculado vira rótulo). Por D16 os polígonos de VANT são sorteados pelos estratos biofísicos e nunca pelo rastreio espectral; logo estes limiares não têm papel na seleção de polígonos nem no alvo do modelo (D26). Onde o texto original diz "Classe 1" e "Classe 0", leia-se "candidato espectral a erosão" e "candidato espectral a controle". |
+| **Valor Adotado** | Amostragem estratificada pura: Classe 1 (Erosão: BSI > 0.10 e NDVI < 0.40) vs Classe 0 (Controle/SPD: BSI < 0.00 e NDVI > 0.65) EMENDA DE 06/10/2026 (proposta do assistente, aceita pelo pesquisador em conversa; pré-dados): os limiares de BSI e NDVI de D02 definem um CRITÉRIO DE TRIAGEM DE CANDIDATOS e uma ajuda visual, NÃO um rótulo (Regra 4: nada calculado vira rótulo). Por D16 os polígonos de VANT são sorteados pelos estratos biofísicos e nunca pelo rastreio espectral; logo estes limiares não têm papel na seleção de polígonos nem no alvo do modelo (D26). Onde o texto original diz "Classe 1" e "Classe 0", leia-se "candidato espectral a erosão" e "candidato espectral a controle". EMENDA DE 11/11/2026 (achado S1-8 da auditoria DeepSeek): retitulada para alinhar título e valor. Os quatro cortes numéricos (BSI > 0,10, NDVI < 0,40, BSI < 0,00, NDVI > 0,65) são convenção operacional do projeto, conferido no primário em 09/11/2026 (Rikimaru et al., 2002 formula o índice BSI e não prescreve corte algum). A triagem espectral NÃO produz rótulo (Regra 4: nada calculado vira rótulo). O rótulo de presente/ausente e sua binarização são produzidos exclusivamente por observação humana (D03 e D16), permanecendo D02 restrita à triagem prévia de candidatos. |
 | **Referência** | Rikimaru, A., Roy, P. S. & Miyatake, S. (2002), Tropical forest cover density mapping, Tropical Ecology 43(1):39-47 — citada EXCLUSIVAMENTE pelo indice BSI, que a obra formula como componente de solo nu de um modelo de Forest Canopy Density sobre LANDSAT TM. Os cortes numericos BSI > 0,10, NDVI < 0,40, BSI < 0,00 e NDVI > 0,65 sao CONVENCAO OPERACIONAL DESTE PROJETO e NAO sao atribuidos a esta fonte, que nao trata de erosao laminar. CONFERIDO NO PRIMARIO em 09/11/2026: ver docs/verificacoes/fontes/rikimaru2002/conferencia_rikimaru_2002.md. Q5: folha de rosto confirma A. Rikimaru, P. S. Roy & S. Miyatake, Tropical Ecology 43(1):39-47 (ISSN 0564-3295). Q6: a obra NAO contem nenhum corte numerico de BSI ou NDVI para erosao ou triagem. Q7: a formulacao adimensional do BI coincide com calcularBsi(B11, B4, B8, B2) transposta ao Sentinel-2. |
 | **Justificativa** | Critérios biofísicos objetivos e reprodutíveis validados no Sentinel-2 e PlanetScope. |
 | **Decidido por** | pesquisador |
@@ -314,14 +314,14 @@ Gerado automaticamente via `npm run decisoes:md` em 2026-11-10.
 
 ---
 
-### D20 — Fórmula do Fator C híbrido SPD: Durigon et al. (2014) modulada pelo BSI
+### D20 — Modelo de sensibilidade do Fator C modulado pelo BSI (não analítico)
 
 | Campo | Valor |
 |---|---|
-| **Estado** | ✅ **Decidida** |
-| **Valor Adotado** | C = ((1 - NDVI) / 2) * (1 + BSI), com domínio físico estrito C em [0, 1]; qualquer C fora de [0, 1] resulta em indisponivel com causa fora-do-dominio. Na ausência de BSI válido, aplica-se a forma pura de D01: C = (1 - NDVI) / 2. |
+| **Estado** | 🛑 **Proposta** |
+| **Valor Adotado** | Análise de sensibilidade: C = ((1 - NDVI) / 2) * (1 + BSI), com domínio físico estrito C em [0, 1]; qualquer C fora de [0, 1] resulta em indisponivel com causa fora-do-dominio. Na ausência de BSI válido, aplica-se a forma pura de D01: C = (1 - NDVI) / 2. EMENDA DE 11/11/2026 (achado S1-8 da auditoria DeepSeek): D20 rebaixada a 'proposta' para declarar o que ela é: modelo de sensibilidade, não fórmula analítica. 1) O Fator C analítico do projeto é exclusivamente D01 (Durigon et al., 2014 puro: C = (1 - NDVI) / 2). 2) O termo multiplicativo (1 + BSI) não consta de nenhuma fonte citada (Durigon et al., 2014; Rikimaru et al., 2002; Renard et al., 1997) e é construto empírico do projeto, conforme verificação bibliográfica de 03/11/2026. 3) D20 permanece disponível exclusivamente como análise de sensibilidade, implementada em calcularFatorCSensibilidadeBsi, fora do caminho analítico. |
 | **Referência** | Durigon et al. (2014), International Journal of Remote Sensing 35(2):441-453 (formulação base); Rikimaru et al. (2002) (Bare Soil Index); Renard et al. (1997), USDA-ARS Agriculture Handbook 703 (domínio do Fator C); docs/auditorias/Relatorio_Auditoria_Integral_Coerencia_Efetividade_2026-09-26.md, achado C1 |
-| **Justificativa** | Estende a formulação de Durigon et al. (2014) — decidida em D01 e preservada como caminho puro — acrescentando modulação pelo Índice de Solo Exposto (BSI). Fundamento físico: sob Sistema Plantio Direto, o NDVI isolado não distingue palhada senescente de solo mineral exposto, pois ambos apresentam NDVI baixo. O BSI resolve a ambiguidade pelo sinal: palhada senescente exibe NDVI baixo com BSI negativo (cobertura morta ainda protege o solo do impacto da gota), enquanto solo mineral exposto exibe NDVI baixo com BSI positivo (superfície desprotegida e suscetível ao salpicamento). Como o Fator C expressa a razão de perda de solo sob determinada cobertura em relação ao solo continuamente descoberto, é fisicamente correto que a mesma leitura de NDVI produza C menor sob palhada e C maior sob solo exposto. O domínio estrito em [0, 1] é imposto na saída porque o Fator C é razão adimensional por construção (Renard et al., 1997): sem essa verificação, a combinação NDVI = -1 com BSI = 1 produzia C = 2,0, o dobro do máximo físico, que se propagaria para A = R*K*LS*C*P. Conforme a Regra 2, valor fora do domínio não é cortado por piso ou teto artificial: causa indisponibilidade explícita. Esta decisão NÃO substitui nem revoga D01, que permanece registrada com a formulação original e segue vigente quando o BSI não está disponível. |
+| **Justificativa** | Modelo exploratório de sensibilidade que estende a formulação de Durigon et al. (2014) — decidida em D01 e adotada como fórmula analítica exclusiva do projeto — acrescentando modulação pelo Índice de Solo Exposto (BSI). Fundamento físico exploratório: sob Sistema Plantio Direto, o NDVI isolado não distingue palhada senescente de solo mineral exposto, pois ambos apresentam NDVI baixo. O BSI resolve a ambiguidade pelo sinal: palhada senescente exibe NDVI baixo com BSI negativo (cobertura morta ainda protege o solo do impacto da gota), enquanto solo mineral exposto exibe NDVI baixo com BSI positivo (superfície desprotegida e suscetível ao salpicamento). Como o Fator C expressa a razão de perda de solo sob determinada cobertura em relação ao solo continuamente descoberto, é fisicamente plausível como hipótese de sensibilidade que a mesma leitura de NDVI produza C menor sob palhada e C maior sob solo exposto. O domínio estrito em [0, 1] é imposto na saída porque o Fator C é razão adimensional por construção (Renard et al., 1997): sem essa verificação, a combinação NDVI = -1 com BSI = 1 produzia C = 2,0, o dobro do máximo físico. Conforme a Regra 2, valor fora do domínio não é cortado por piso ou teto artificial: causa indisponibilidade explícita. Esta proposta NÃO substitui D01 nem entra no cálculo analítico de produção da RUSLE. |
 | **Decidido por** | pesquisador |
 | **Decidido em** | 2026-09-27 |
 
