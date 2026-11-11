@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `387a16a40808fdca7ee747f71183ef0dae3c8056`
-- Data do HEAD: 2026-11-11 13:32:48 -0300
+- Commit HEAD: `d8ff5649117c199d60dc898eb83bfc797f672612`
+- Data do HEAD: 2026-11-11 13:46:48 -0300
 - Últimos 5 commits:
-  1. `387a16a feat(vitrine): gerar mockup distribuivel offline para navegador (Prompt T)`
-  2. `4c02f48 docs(planejamento): adicionar prompt V, instrumentacao da ingestao da delineacao`
-  3. `b776a00 docs(planejamento): fechar no prompt U a pendencia de quem delineia o ortomosaico`
-  4. `702ff2c docs(planejamento): adicionar prompt U, correcao do texto sobre fotointerpretacao`
-  5. `7b3ad9a docs(planejamento): adicionar prompt T do mockup distribuivel para navegador`
+  1. `d8ff564 feat(vitrine): gerar executavel unico Windows para o mockup demonstrativo`
+  2. `1f1ed80 docs(planejamento): sincronizar ESTADO.md apos Prompt T`
+  3. `387a16a feat(vitrine): gerar mockup distribuivel offline para navegador (Prompt T)`
+  4. `4c02f48 docs(planejamento): adicionar prompt V, instrumentacao da ingestao da delineacao`
+  5. `b776a00 docs(planejamento): fechar no prompt U a pendencia de quem delineia o ortomosaico`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 130
@@ -70,7 +70,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | chuva | `RUSLE_Fator_R` | SIM | SIM | SIM |
 
 ## 7. Arquivos de Evidência em `docs/verificacoes/`
-- Total de arquivos de evidência medidos: 319
+- Total de arquivos de evidência medidos: 321
 
 | Arquivo de Evidência | Data no Nome | Tamanho (bytes) |
 |---|:---:|---:|
@@ -121,7 +121,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `2026-11-11p_casca_fluxo.md` | 2026-11-11 | 15842 |
 | `2026-11-11q_cegamento_distribuicao.md` | 2026-11-11 | 10144 |
 | `2026-11-11s_apresentacao_documento_didaticos.md` | 2026-11-11 | 14889 |
-| `2026-11-11t_mockup_distribuivel.md` | 2026-11-11 | 13911 |
+| `2026-11-11t_mockup_distribuivel.md` | 2026-11-11 | 16052 |
 | `cache_frequencia_solo_nu_bp3.json` | sem data no nome | 687981 |
 | `cache_pedologia_bp3.json` | sem data no nome | 96740 |
 | `calculadora/2026-09-30_simulacao_desenho_d16_224m.md` | 2026-09-30 | 2027 |
@@ -304,9 +304,11 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `execucao/2026-11-11t/04_check_rotas_api.txt` | sem data no nome | 892 |
 | `execucao/2026-11-11t/05_check_offline_tour_17_etapas.txt` | sem data no nome | 3645 |
 | `execucao/2026-11-11t/06_check_selo_redigido.txt` | sem data no nome | 264 |
-| `execucao/2026-11-11t/07_npm_test.txt` | sem data no nome | 26603 |
+| `execucao/2026-11-11t/07_npm_test.txt` | sem data no nome | 23492 |
 | `execucao/2026-11-11t/08_tsc_noEmit.txt` | sem data no nome | 54 |
 | `execucao/2026-11-11t/09_npm_lint.txt` | sem data no nome | 604 |
+| `execucao/2026-11-11t/10_mockup_exe_build.txt` | sem data no nome | 567 |
+| `execucao/2026-11-11t/11_check_exe_isolado_offline.txt` | sem data no nome | 571 |
 | `fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md` | sem data no nome | 7016 |
 | `fontes/dematte2018/conferencia_dematte_2018.md` | sem data no nome | 6725 |
 | `fontes/dematte2018/extrair_dematte_2018.py` | sem data no nome | 2091 |
