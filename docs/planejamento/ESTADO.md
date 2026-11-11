@@ -3,23 +3,23 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `814e6f85b2a65f19e4cb8a7be24a351349ccbf71`
-- Data do HEAD: 2026-11-10 22:30:51 -0300
+- Commit HEAD: `ecaea6c7f8eb0200316cd0b869a832ac486a3351`
+- Data do HEAD: 2026-11-10 22:57:59 -0300
 - Últimos 5 commits:
-  1. `814e6f8 Update Verificação e Validação SAREL 2026_11_11`
-  2. `7ecdfac docs(planejamento): adicionar prompt M de alinhamento da interface ao desenho medido`
-  3. `5047c72 docs(dissertacao): registrar verificacao e validacao do SAREL em documento Word`
-  4. `0133f4c docs(planejamento): sincronizar painel ESTADO.md com 109 arquivos de teste herméticos e evidências`
-  5. `0272204 feat(sorteio-d16): implementar selo público redigido do sorteio D16 (Prompt L)`
+  1. `ecaea6c feat(interface): alinhar interface ao desenho medido D16 e travas de paridade (Prompt M)`
+  2. `814e6f8 Update Verificação e Validação SAREL 2026_11_11`
+  3. `7ecdfac docs(planejamento): adicionar prompt M de alinhamento da interface ao desenho medido`
+  4. `5047c72 docs(dissertacao): registrar verificacao e validacao do SAREL em documento Word`
+  5. `0133f4c docs(planejamento): sincronizar painel ESTADO.md com 109 arquivos de teste herméticos e evidências`
 
 ## 2. Testes Automatizados
-- Arquivos de teste versionados no repositório: 125
-  - TypeScript herméticos (`src/**/*.test.ts`): 109
+- Arquivos de teste versionados no repositório: 126
+  - TypeScript herméticos (`src/**/*.test.ts`): 110
   - TypeScript vivos (`src/**/*.vivo.test.ts`): 2
   - Python (`test_*.py` em `scripts/` e `docs/`): 14
-- Arquivos de teste executados na suíte padrão hermética (`npm run test`): 109
+- Arquivos de teste executados na suíte padrão hermética (`npm run test`): 110
 - Diferença explicada pelas configurações do Vitest:
-  - `vitest.config.mts`: seleciona exclusivamente `src/**/*.test.ts` (109 arquivos) e exclui `src/**/*.vivo.test.ts`.
+  - `vitest.config.mts`: seleciona exclusivamente `src/**/*.test.ts` (110 arquivos) e exclui `src/**/*.vivo.test.ts`.
   - `vitest.vivo.config.mts`: seleciona exclusivamente os 2 testes vivos (`src/**/*.vivo.test.ts`), executados via `npm run test:vivo` por dependerem de infraestrutura pesada local fora do Git (`data/fundiario_brasil.db` e DEM Copernicus GLO-30 em `data/dem_cache/`).
   - Testes em Python (14 arquivos): executados no ambiente Python (`pytest` / runners em `scripts/`), desacoplados da suíte Vitest.
 
@@ -70,7 +70,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | chuva | `RUSLE_Fator_R` | SIM | SIM | SIM |
 
 ## 7. Arquivos de Evidência em `docs/verificacoes/`
-- Total de arquivos de evidência medidos: 224
+- Total de arquivos de evidência medidos: 238
 
 | Arquivo de Evidência | Data no Nome | Tamanho (bytes) |
 |---|:---:|---:|
@@ -115,6 +115,7 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `2026-11-10j_sorteio_d16_executado.md` | 2026-11-10 | 7679 |
 | `2026-11-10k_juncao_e_no_cli.md` | 2026-11-10 | 8850 |
 | `2026-11-11l_selo_publico_d16.md` | 2026-11-11 | 9478 |
+| `2026-11-11m_interface_alinhada.md` | 2026-11-11 | 10940 |
 | `cache_frequencia_solo_nu_bp3.json` | sem data no nome | 687981 |
 | `cache_pedologia_bp3.json` | sem data no nome | 96740 |
 | `calculadora/2026-09-30_simulacao_desenho_d16_224m.md` | 2026-09-30 | 2027 |
@@ -212,6 +213,19 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `execucao/2026-11-11l/precondicao_git_status.txt` | sem data no nome | 46 |
 | `execucao/2026-11-11l/precondicao_ls_sorteio.txt` | sem data no nome | 550 |
 | `execucao/2026-11-11l/tsc_noemit.txt` | sem data no nome | 0 |
+| `execucao/2026-11-11m/00_pre_estado_verificar.txt` | sem data no nome | 162 |
+| `execucao/2026-11-11m/00_pre_git_status.txt` | sem data no nome | 46 |
+| `execucao/2026-11-11m/01_git_branch.txt` | sem data no nome | 34 |
+| `execucao/2026-11-11m/02_tsc_check.txt` | sem data no nome | 0 |
+| `execucao/2026-11-11m/03_vitest_selo_publico.txt` | sem data no nome | 582 |
+| `execucao/2026-11-11m/04_vitest_candidato_espectral.txt` | sem data no nome | 594 |
+| `execucao/2026-11-11m/05_vitest_paridade_artefatos.txt` | sem data no nome | 587 |
+| `execucao/2026-11-11m/06_vitest_total_suite.txt` | sem data no nome | 21616 |
+| `execucao/2026-11-11m/07_estado_verificar.txt` | sem data no nome | 162 |
+| `execucao/2026-11-11m/08_git_diff_stat.txt` | sem data no nome | 567 |
+| `execucao/2026-11-11m/09_final_git_status.txt` | sem data no nome | 533 |
+| `execucao/2026-11-11m/10_final_git_diff_stat.txt` | sem data no nome | 567 |
+| `execucao/2026-11-11m/11_final_estado_verificar.txt` | sem data no nome | 162 |
 | `fontes/cochran1977/cochran_1977_sampling_techniques_ch5a12.md` | sem data no nome | 7016 |
 | `fontes/dematte2018/conferencia_dematte_2018.md` | sem data no nome | 6725 |
 | `fontes/dematte2018/extrair_dematte_2018.py` | sem data no nome | 2091 |
