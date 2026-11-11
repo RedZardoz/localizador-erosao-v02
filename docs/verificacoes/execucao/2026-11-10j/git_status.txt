@@ -1,0 +1,20 @@
+﻿ M docs/planejamento/DECISOES_DE_CONVERSA.md
+ M docs/planejamento/ESTADO.md
+ M docs/verificacoes/execucao/2026-11-10j/precondicao_git_status.txt
+ M docs/verificacoes/execucao/2026-11-10j/precondicao_ls_sorteio.txt
+ M docs/verificacoes/execucao/2026-11-10j/precondicao_npm_test.txt
+ M scripts/sortear_poligonos_d16.ts
+ M src/config/estado.espelho.test.ts
+ M src/lib/gee/sorteioPoligonos.test.ts
+ M src/lib/seguranca/auditoriaComportamentoScripts.test.ts
+ M src/lib/seguranca/padroesProibidos.ts
+ M vitest.config.mts
+?? docs/verificacoes/2026-11-10j_sorteio_d16_executado.md
+?? docs/verificacoes/execucao/2026-11-10j/dry_run.txt
+?? docs/verificacoes/execucao/2026-11-10j/estado_verificar.txt
+?? docs/verificacoes/execucao/2026-11-10j/git_log.txt
+?? docs/verificacoes/execucao/2026-11-10j/git_status.txt
+?? docs/verificacoes/execucao/2026-11-10j/npm_test_pos_sorteio.txt
+?? docs/verificacoes/execucao/2026-11-10j/sorteio_execucao.txt
+?? docs/verificacoes/execucao/2026-11-10j/tsc_noemit_pos_sorteio.txt
+?? docs/verificacoes/execucao/2026-11-10j/verificacao_selo.txt

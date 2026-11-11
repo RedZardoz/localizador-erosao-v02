@@ -151,7 +151,7 @@ function executarCli(): void {
   console.log("SAREL — COMANDO DE SORTEIO DOS 72 POLÍGONOS DE 5,02 ha (~361 ha) (FASE A1 — D16/D23)");
   console.log("========================================================================");
 
-  if (seloExistente) {
+  if (seloExistente && flagConfirmar && !flagDryRun) {
     console.error(
       `[RECUSA IDEMPOTENTE — D23] Selo de sorteio anterior detectado em: ${seloExistente}`
     );
@@ -257,7 +257,7 @@ function executarCli(): void {
   }
 
   const relatorio = verificarPreCondicoesSorteioD16(candidatos, {
-    seloExistenteCaminho: seloExistente,
+    seloExistenteCaminho: flagConfirmar ? seloExistente : null,
     lancarErro: false,
   });
 

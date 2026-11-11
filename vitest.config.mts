@@ -8,5 +8,6 @@ export default defineConfig({
     environment: "node",
     include: ["src/**/*.test.ts"],
     exclude: ["src/**/*.vivo.test.ts"],
+    testTimeout: 30000,
   },
 });

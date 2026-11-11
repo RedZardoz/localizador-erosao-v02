@@ -1,1 +1,4 @@
-﻿?? docs/verificacoes/execucao/2026-11-10j/
+﻿ M docs/planejamento/ESTADO.md
+ M docs/verificacoes/execucao/2026-11-10j/precondicao_git_status.txt
+ M docs/verificacoes/execucao/2026-11-10j/precondicao_ls_sorteio.txt
+ M docs/verificacoes/execucao/2026-11-10j/precondicao_npm_test.txt

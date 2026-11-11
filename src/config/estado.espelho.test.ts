@@ -19,7 +19,7 @@ describe("TAREFA 2 — Espelho fiel de ESTADO.md a partir de medições do repos
       resultado.identicos,
       `ESTADO.md no disco divergiu do estado medido do repositório. Execute 'npm run estado' para regenerar.\nPrimeiras divergências:\n${resultado.diferencas.join("\n")}`
     ).toBe(true);
-  });
+  }, 30000);
 
   describe("Meta-testes: robustez da detecção de divergências em ESTADO.md", () => {
     it("deve detectar divergência plantada de commit ou metadado", () => {

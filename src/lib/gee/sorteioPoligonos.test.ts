@@ -935,7 +935,30 @@ describe("Prompt K — Exercício do CLI de Sorteio com Junção de Ê e Fail-Cl
     expect(falhouComErro).toBe(true);
     expect(saidaCapturada).toContain("[ERRO_JUNCAO_E]");
   });
+
+  it("garante recusa idempotente do CLI em subprocesso quando chamado com --confirmar e já existe selo em disco", () => {
+    const caminhoCandidatos = "docs/verificacoes/universo_candidatos_bp3_d16_2026-11-10.json";
+    const caminhoCache = "docs/verificacoes/cache_frequencia_solo_nu_bp3.json";
+
+    const comando = `node --import ./scripts/ts-loader.mjs scripts/sortear_poligonos_d16.ts --confirmar --semente 20261110 --candidatos ${caminhoCandidatos} --cache ${caminhoCache}`;
+
+    let falhouComErro = false;
+    let saidaCapturada = "";
+
+    try {
+      execSync(comando, { encoding: "utf8", stdio: "pipe" });
+    } catch (err: any) {
+      falhouComErro = true;
+      saidaCapturada = (err.stdout || "") + (err.stderr || "");
+      expect(err.status).toBe(1);
+    }
+
+    expect(falhouComErro).toBe(true);
+    expect(saidaCapturada).toContain("[RECUSA IDEMPOTENTE — D23]");
+    expect(saidaCapturada).toContain("A Decisão D23 proíbe descartar, sobrescrever ou versionar");
+  });
 });
+
 
 
 

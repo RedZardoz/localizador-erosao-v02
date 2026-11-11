@@ -617,9 +617,22 @@ export function varrerIntegridadeJson(caminhoArquivo: string): ViolacaoJson[] {
         (kLower.includes("sha256") || kLower.includes("hash")) &&
         !kLower.includes("estado") &&
         !kLower.includes("motivo") &&
-        !kLower.includes("algoritmo");
+        !kLower.includes("algoritmo") &&
+        k !== "hashIntegridade";
 
-      if (ehCampoHash) {
+      if (k === "hashIntegridade") {
+        if (typeof v === "string") {
+          if (!/^[0-9a-f]{16}$/i.test(v)) {
+            violacoes.push({
+              arquivo: relPath,
+              propriedade: propRota,
+              padrao: "hash-implausivel",
+              valor: v,
+              motivo: `Formato inválido para hashIntegridade (esperado exatamente 16 caracteres hexadecimais [0-9a-f], recebido ${v.length}).`,
+            });
+          }
+        }
+      } else if (ehCampoHash) {
         if (typeof v === "string") {
           const res = verificarSanidadeHashSha256(v);
           if (!res.valido) {

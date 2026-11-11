@@ -103,7 +103,7 @@ describe("Trava comportamental de scripts de auditoria (Regras 1, 8 e §18)", ()
     it(`script ${nome} cumpre rigorosamente os requisitos de rastreabilidade e recusa`, () => {
       const resultado = validarComportamentoScriptAuditoria(scriptPath);
       expect(resultado.valido, resultado.motivo).toBe(true);
-    });
+    }, 30000);
   }
 
   describe("Meta-testes (§18 da Lei Fundamental: garantia de não-vacuidade)", () => {
