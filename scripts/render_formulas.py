@@ -40,13 +40,13 @@ FORMULAS_INDIVIDUAIS = [
     ),
     (
         "formula_04_solo_nu",
-        r"$\hat{E} = \frac{1}{N} \sum_{i=1}^N \mathbb{I}(\mathrm{NDVI}_i \leq 0{,}25)$",
-        "#0F172A", 16, 5.5, 0.95
+        r"$\hat{E} = \frac{1}{N} \sum_{i=1}^N \mathbb{I}(\mathrm{SoloNu}_i),\ \mathrm{com}\ \mathrm{NDVI}\in[0;0{,}25] \wedge \mathrm{NBR2}\in[0;0{,}075] \wedge \Delta\mathrm{Vis}\geq 0$",
+        "#0F172A", 12.5, 8.2, 0.95
     ),
     (
         "formula_05_fator_c",
-        r"$C = \left[ \frac{1 - \mathrm{NDVI}}{2} \right]^{(1 + \mathrm{NDVI})}$",
-        "#0F172A", 16, 5.2, 1.0
+        r"$C = \frac{1 - \mathrm{NDVI}}{2}$",
+        "#0F172A", 16, 4.5, 1.0
     ),
     (
         "formula_06_fator_k",
@@ -60,7 +60,7 @@ FORMULAS_INDIVIDUAIS = [
     ),
     (
         "formula_08_g2",
-        r"$I_{\mathrm{mecanismo}} = \sum_{t=1}^T \left( R_t \times \mathbb{I}(\mathrm{NDVI}_t \leq 0{,}25) \right)$",
+        r"$I_{\mathrm{mecanismo}} = \sum_{t=1}^T \left( R_t \times \mathbb{I}(\mathrm{SoloNu}_t) \right)$",
         "#0F172A", 15, 6.2, 0.95
     ),
     (
@@ -116,12 +116,12 @@ def renderizar_quadro_completo(tema_escuro=False):
         ("1. NDVI:", r"$\mathrm{NDVI} = \frac{B8 - B4}{B8 + B4}$", "(Rouse et al., 1974)."),
         ("2. BSI:", r"$\mathrm{BSI} = \frac{(B11 + B4) - (B8 + B2)}{(B11 + B4) + (B8 + B2)}$", "(Rikimaru et al., 2002)."),
         ("3. Decomposição Harmônica OLS:", r"$\hat{y}(t) = c_0 + c_1 t + \sum_{k=1}^m \left[ a_k \cos\left(\frac{2\pi k t}{T}\right) + b_k \sin\left(\frac{2\pi k t}{T}\right) \right]$", "(Zhu & Woodcock, 2014)."),
-        ("4. Frequência de Solo Nu $(\hat{E})$:", r"$\hat{E} = \frac{1}{N} \sum_{i=1}^N \mathbb{I}(\mathrm{NDVI}_i \leq 0{,}25)$", "(GEOS3 / Demattê et al., 2018; Safanelli et al., 2021 — Decisão D10)."),
-        ("5. Fator C da RUSLE:", r"$C = \left[ \frac{1 - \mathrm{NDVI}}{2} \right]^{(1 + \mathrm{NDVI})}$", "(Durigon et al., 2014 — Decisão D01)."),
+        ("4. Frequência de Solo Nu $(\hat{E})$:", r"$\hat{E} = \frac{1}{N} \sum_{i=1}^N \mathbb{I}(\mathrm{SoloNu}_i),\ \mathrm{com}\ \mathrm{NDVI}\in[0;0{,}25] \wedge \mathrm{NBR2}\in[0;0{,}075] \wedge \Delta\mathrm{Vis}\geq 0$", "(GEOS3 / Demattê et al., 2018 — Decisão D10)."),
+        ("5. Fator C da RUSLE:", r"$C = \frac{1 - \mathrm{NDVI}}{2}$", "(Durigon et al., 2014 — Decisão D01)."),
         ("6. Fator K Numérico:", r"$\mathrm{Tabela\ 5\ da\ Embrapa\ Solos\ (Coelho\ et\ al.,\ 2024\ /\ Mannigel\ et\ al.,\ 2002\ —\ Decisões\ D09\ e\ D14):}$", ""),
         ("   • Muito baixa (0,0052), Baixa (0,0117), Média (0,0218), Alta (0,0360) e Muito alta (0,0518)", r"$\mathrm{t} \cdot \mathrm{h} \cdot \mathrm{MJ}^{-1} \cdot \mathrm{mm}^{-1}$", "."),
         ("7. RUSLE Consolidada:", r"$A = R \times K \times LS \times C \times P$", "(Renard et al., 1997 / Invariante 1)."),
-        ("8. Índice de Mecanismo Dinâmico:", r"$I_{\mathrm{mecanismo}} = \sum_{t=1}^T \left( R_t \times \mathbb{I}(\mathrm{NDVI}_t \leq 0{,}25) \right)$", "(Modelo G2 / Karydas & Panagos, 2018)."),
+        ("8. Índice de Mecanismo Dinâmico:", r"$I_{\mathrm{mecanismo}} = \sum_{t=1}^T \left( R_t \times \mathbb{I}(\mathrm{SoloNu}_t) \right)$", "(Modelo G2 / Karydas & Panagos, 2018)."),
         ("9. Função Objetivo do XGBoost:", r"$\mathcal{L}^{(t)} \approx \sum_{i=1}^n \left[ g_i f_t(x_i) + \frac{1}{2} h_i f_t^2(x_i) \right] + \gamma T + \frac{1}{2} \lambda \sum_{j=1}^T w_j^2$", "(Chen & Guestrin, 2016)."),
         ("10. Ganho de Divisão em Árvore:", r"$\mathcal{L}_{\mathrm{split}} = \frac{1}{2} \left[ \frac{G_L^2}{H_L + \lambda} + \frac{G_R^2}{H_R + \lambda} - \frac{(G_L + G_R)^2}{H_L + H_R + \lambda} \right] - \gamma$", "."),
         ("11. Kappa de Cohen:", r"$\kappa = \frac{P_o - P_e}{1 - P_e}$", "(Landis & Koch, 1977)."),

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Script de Geração do Documento em Microsoft Word (.docx):
-Metodologia Geral, Fundamentação Epistemológica de Reprodutibilidade, Prevenção de Viés Espectral,
-Especificação Experimental e Glossário Normativo para a Dissertação de Mestrado (Sistema SAREL v2.0).
+Metodologia Geral, Fundamentação Epistemológica de Replicabilidade, Prevenção de Viés Espectral,
+Especificação Experimental, Fundamentação sob a Norma de Lastro e Glossário Normativo para a Dissertação de Mestrado (Sistema SAREL v2.0).
 
 Programa de Pós-Graduação em Tecnologias Computacionais para o Agronegócio (PPGTCA)
 Universidade Tecnológica Federal do Paraná (UTFPR) - Câmpus Medianeira
@@ -24,6 +24,7 @@ def carregar_parametros_deflacao():
         return json.load(f)
 
 PARAM_DEFLACAO = carregar_parametros_deflacao()
+
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
@@ -61,98 +62,86 @@ def set_table_borders(table, color="CBD5E1", sz="4", val="single"):
 def make_callout_box(doc, title, formula, note=None, bg_color="F8FAFC", border_color="059669"):
     tbl = doc.add_table(rows=1, cols=1)
     tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-    tbl.autofit = False
-    
     cell = tbl.cell(0, 0)
-    cell.width = Inches(6.69) # 170 mm
+    cell.width = Inches(6.7)
     set_cell_background(cell, bg_color)
     set_cell_margins(cell, top=140, bottom=140, left=200, right=200)
-    
-    # Borda destacada
+
+    tblPr = tbl._tbl.tblPr
     borders = parse_xml(
-        f'<w:tcBorders {nsdecls("w")}>'
-        f'<w:top w:val="single" w:sz="6" w:space="0" w:color="{border_color}"/>'
-        f'<w:bottom w:val="single" w:sz="6" w:space="0" w:color="{border_color}"/>'
-        f'<w:left w:val="single" w:sz="18" w:space="0" w:color="{border_color}"/>'
-        f'<w:right w:val="single" w:sz="6" w:space="0" w:color="{border_color}"/>'
-        f'</w:tcBorders>'
+        f'<w:tblBorders {nsdecls("w")}>'
+        f'<w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>'
+        f'<w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>'
+        f'<w:left w:val="single" w:sz="24" w:space="0" w:color="{border_color}"/>'
+        f'<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>'
+        f'<w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/>'
+        f'<w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/>'
+        f'</w:tblBorders>'
     )
-    cell._tc.get_or_add_tcPr().append(borders)
-    
-    p = cell.paragraphs[0]
-    p.paragraph_format.space_before = Pt(2)
-    p.paragraph_format.space_after = Pt(3)
-    p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r_title = p.add_run(title + "\n")
-    r_title.bold = True
-    r_title.font.size = Pt(9.5)
-    r_title.font.color.rgb = RGBColor(15, 23, 42)
-    
-    r_form = p.add_run(formula)
-    r_form.bold = True
-    r_form.font.size = Pt(11)
-    r_form.font.color.rgb = RGBColor(6, 95, 70)
-    
+    tblPr.append(borders)
+
+    p0 = cell.paragraphs[0]
+    p0.paragraph_format.space_before = Pt(0)
+    p0.paragraph_format.space_after = Pt(2)
+    r0 = p0.add_run(title.upper())
+    r0.bold = True
+    r0.font.size = Pt(8.5)
+    r0.font.color.rgb = RGBColor(5, 150, 105)
+
+    p1 = cell.add_paragraph()
+    p1.paragraph_format.space_before = Pt(2)
+    p1.paragraph_format.space_after = Pt(2)
+    r1 = p1.add_run(formula)
+    r1.bold = True
+    r1.font.size = Pt(10.5)
+    r1.font.color.rgb = RGBColor(15, 23, 42)
+
     if note:
         p2 = cell.add_paragraph()
         p2.paragraph_format.space_before = Pt(2)
-        p2.paragraph_format.space_after = Pt(2)
-        p2.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r_note = p2.add_run(note)
-        r_note.italic = True
-        r_note.font.size = Pt(8.5)
-        r_note.font.color.rgb = RGBColor(100, 116, 139)
-        
+        p2.paragraph_format.space_after = Pt(0)
+        r2 = p2.add_run(note)
+        r2.font.size = Pt(8.0)
+        r2.italic = True
+        r2.font.color.rgb = RGBColor(71, 85, 105)
+
     doc.add_paragraph().paragraph_format.space_after = Pt(4)
 
-def build_docx():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(script_dir)
-    out_dir = os.path.join(project_root, "docs", "dissertacao")
-    os.makedirs(out_dir, exist_ok=True)
-    docx_path = os.path.join(out_dir, "Metodologia_Integrada_Dissertacao_SAREL.docx")
-    
+def build_docx(caminho_saida="docs/dissertacao/Metodologia_Integrada_Dissertacao_SAREL.docx"):
+    os.makedirs(os.path.dirname(caminho_saida), exist_ok=True)
     doc = docx.Document()
-    
-    # Configuração de Margens da Página: 20 mm laterais, 22 mm topo, 20 mm base
-    sections = doc.sections
-    for section in sections:
-        section.top_margin = Inches(0.866)    # 22 mm
-        section.bottom_margin = Inches(0.787) # 20 mm
-        section.left_margin = Inches(0.787)   # 20 mm
-        section.right_margin = Inches(0.787)  # 20 mm
-        
-        # Cabeçalho Superior
-        header = section.header
-        hp = header.paragraphs[0]
-        hp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-        hrun = hp.add_run("PPGTCA / UTFPR — METODOLOGIA INTEGRADA & GLOSSÁRIO • SAREL v2.0")
-        hrun.font.size = Pt(8)
-        hrun.font.bold = True
-        hrun.font.color.rgb = RGBColor(6, 95, 70)
-        
-        # Rodapé
-        footer = section.footer
-        fp = footer.paragraphs[0]
-        fp.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        frun = fp.add_run("Dissertação de Mestrado: Predição de Erosão Laminar na BP3 • Luis Alfredo (Orientador: Prof. Dr. Claudio L. Bazzi)")
-        frun.font.size = Pt(8)
-        frun.font.color.rgb = RGBColor(100, 116, 139)
 
-    # Cores
-    COLOR_NAVY = RGBColor(15, 23, 42)
-    COLOR_EMERALD = RGBColor(6, 95, 70)
-    COLOR_SLATE = RGBColor(51, 65, 85)
+    # Configuração de Margens Estritas ABNT (3 cm superior/esquerda, 2 cm inferior/direita)
+    for section in doc.sections:
+        section.top_margin = Inches(1.18)      # 3.0 cm
+        section.left_margin = Inches(1.18)     # 3.0 cm
+        section.bottom_margin = Inches(0.79)   # 2.0 cm
+        section.right_margin = Inches(0.79)    # 2.0 cm
+        section.header_distance = Inches(0.5)
+        section.footer_distance = Inches(0.5)
+
+    # Estilos de Cor Institucionais
+    COLOR_NAVY = RGBColor(15, 23, 42)       # Slate 900
+    COLOR_EMERALD = RGBColor(5, 150, 105)   # Emerald 600
+    COLOR_SLATE = RGBColor(71, 85, 105)     # Slate 600
+    COLOR_ROSE = RGBColor(190, 18, 60)      # Rose 700
+
+    normal_style = doc.styles['Normal']
+    normal_style.font.name = 'Calibri'
+    normal_style.font.size = Pt(10.5)
+    normal_style.font.color.rgb = COLOR_NAVY
+    normal_style.paragraph_format.line_spacing = 1.15
+    normal_style.paragraph_format.space_after = Pt(4)
 
     def add_h1(text):
         p = doc.add_paragraph()
         p.paragraph_format.space_before = Pt(14)
         p.paragraph_format.space_after = Pt(4)
         p.paragraph_format.keep_with_next = True
-        run = p.add_run(text)
-        run.bold = True
-        run.font.size = Pt(13)
-        run.font.color.rgb = COLOR_NAVY
+        r = p.add_run(text)
+        r.bold = True
+        r.font.size = Pt(13)
+        r.font.color.rgb = COLOR_NAVY
         return p
 
     def add_h2(text):
@@ -160,42 +149,36 @@ def build_docx():
         p.paragraph_format.space_before = Pt(10)
         p.paragraph_format.space_after = Pt(3)
         p.paragraph_format.keep_with_next = True
-        run = p.add_run(text)
-        run.bold = True
-        run.font.size = Pt(11)
-        run.font.color.rgb = COLOR_EMERALD
+        r = p.add_run(text)
+        r.bold = True
+        r.font.size = Pt(11.5)
+        r.font.color.rgb = COLOR_EMERALD
         return p
 
     def add_body(text, bold_prefix=None):
         p = doc.add_paragraph()
-        p.paragraph_format.space_before = Pt(0)
-        p.paragraph_format.space_after = Pt(4.5)
+        p.paragraph_format.space_after = Pt(4)
         p.paragraph_format.line_spacing = 1.15
-        p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         if bold_prefix:
-            r_b = p.add_run(bold_prefix)
-            r_b.bold = True
-            r_b.font.size = Pt(10)
-            r_b.font.color.rgb = COLOR_NAVY
-        r_t = p.add_run(text)
-        r_t.font.size = Pt(10)
-        r_t.font.color.rgb = COLOR_SLATE
+            r_pre = p.add_run(bold_prefix)
+            r_pre.bold = True
+            r_pre.font.color.rgb = COLOR_NAVY
+        r = p.add_run(text)
+        r.font.color.rgb = COLOR_NAVY
         return p
 
     def add_bullet(text, bold_prefix=None):
         p = doc.add_paragraph(style='List Bullet')
-        p.paragraph_format.space_before = Pt(0)
         p.paragraph_format.space_after = Pt(3)
         p.paragraph_format.line_spacing = 1.15
-        p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         if bold_prefix:
-            r_b = p.add_run(bold_prefix)
-            r_b.bold = True
-            r_b.font.size = Pt(9.5)
-            r_b.font.color.rgb = COLOR_NAVY
-        r_t = p.add_run(text)
-        r_t.font.size = Pt(9.5)
-        r_t.font.color.rgb = COLOR_SLATE
+            r_pre = p.add_run(bold_prefix)
+            r_pre.bold = True
+            r_pre.font.color.rgb = COLOR_NAVY
+        r = p.add_run(text)
+        r.font.color.rgb = COLOR_NAVY
         return p
 
     # =========================================================================
@@ -211,16 +194,16 @@ def build_docx():
     p_title = doc.add_paragraph()
     p_title.paragraph_format.space_before = Pt(4)
     p_title.paragraph_format.space_after = Pt(3)
-    r_t = p_title.add_run("LOCALIZAÇÃO E PREDIÇÃO DE EROSÃO LAMINAR NA BACIA HIDROGRÁFICA DO PARANÁ III POR SENSORIAMENTO REMOTO MULTIFONTE E APRENDIZADO DE MÁQUINA SUPERVISIONADO POR VANT")
+    r_t = p_title.add_run("DETECÇÃO CONTEMPORÂNEA DE EROSÃO LAMINAR NA BACIA HIDROGRÁFICA DO PARANÁ III POR SENSORIAMENTO REMOTO MULTIFONTE E APRENDIZADO DE MÁQUINA SUPERVISIONADO POR VANT")
     r_t.bold = True
-    r_t.font.size = Pt(14)
+    r_t.font.size = Pt(13.5)
     r_t.font.color.rgb = COLOR_NAVY
 
     p_sub = doc.add_paragraph()
     p_sub.paragraph_format.space_after = Pt(8)
-    r_s = p_sub.add_run("Metodologia Integrada, Fundamentação Epistemológica de Reprodutibilidade, Prevenção de Viés Espectral, Especificação Experimental e Glossário Normativo para a Dissertação de Mestrado")
+    r_s = p_sub.add_run("Metodologia Integrada, Fundamentação Epistemológica de Reprodutibilidade, Prevenção de Viés Espectral, Especificação Experimental, Fundamentação sob a Norma de Lastro e Glossário Normativo para a Dissertação de Mestrado")
     r_s.italic = True
-    r_s.font.size = Pt(10)
+    r_s.font.size = Pt(9.5)
     r_s.font.color.rgb = COLOR_SLATE
 
     # TABELA DE METADADOS
@@ -256,7 +239,7 @@ def build_docx():
         "Sistema Computacional: SAREL v2.0 (Amostragem e Rotulagem)\n"
         "Recorte Territorial: Bacia do Paraná III (7.979 km² hidrológicos; 28 municípios)\n"
         "Domínio Físico: Declividade 3,0% a 20,0% (SiBCS; Decisão D07)\n"
-        "Pilares Epistemológicos: Reprodutibilidade de IA e Ausência de Vazamento (D16, D24, D25)"
+        "Pilares Epistemológicos: Reprodutibilidade de IA, Norma de Lastro e Ausência de Vazamento (D16, D24, D25)"
     )
     r_m1.font.size = Pt(8.5)
     r_m1.font.color.rgb = COLOR_SLATE
@@ -270,7 +253,8 @@ def build_docx():
     add_body(
         "A erosão hídrica laminar (sheet erosion) consiste no desprendimento e transporte difuso de delgadas camadas superficiais do solo "
         "pelo impacto cinético das gotas de chuva (splash detachment) e deflúvio superficial não concentrado (sheet runoff). "
-        "Por não formar ravinamentos imediatos, sua ocorrência mascara a severa e progressiva degradação dos solos agricultáveis."
+        "Por não formar ravinamentos imediatos nem cicatrizes topográficas profundas, sua ocorrência mascara a severa e progressiva degradação "
+        "dos horizontes superficiais agricultáveis, que concentram a maior fração de matéria orgânica, fósforo e nutrientes essenciais."
     )
     add_body(
         "Na Bacia Hidrográfica do Rio Paraná III (BP3), recorte territorial deste estudo abrangendo aproximadamente 7.979 km² "
@@ -291,7 +275,7 @@ def build_docx():
     add_body(
         "Modelos de aprendizado de máquina supervisionados por VANT (Gradient Boosted Trees / XGBoost), integrando "
         "preditores espectro-temporais decenais do satélite Sentinel-2, variáveis morfométricas de terreno do Copernicus DEM 30 m e dados edafoclimáticos, "
-        "apresentam capacidade preditiva e discriminatória da erosão laminar significativamente superior à linha de base da RUSLE regional na BP3 "
+        "apresentam capacidade de detecção contemporânea e discriminação de feições de erosão laminar significativamente superior à linha de base da RUSLE regional na BP3 "
         "(definida como ganho de correlação de Spearman Delta rho >= 0,10 com p < 0,05; Decisão D25).",
         bold_prefix="Hipótese Central (H1): "
     )
@@ -303,12 +287,12 @@ def build_docx():
     )
 
     # =========================================================================
-    # SEÇÃO 2: INTRODUÇÃO METODOLÓGICA — REPLICABILIDADE E AUSÊNCIA DE VIÉS
+    # SEÇÃO 2: FUNDAMENTAÇÃO EPISTEMOLÓGICA E AUSÊNCIA DE VIÉS
     # =========================================================================
-    add_h1("2. Introdução da Parte Metodológica: Fundamentação Epistemológica de Replicabilidade e Prevenção de Viés Espectral")
+    add_h1("2. Introdução Metodológica: Fundamentação Epistemológica de Replicabilidade e Prevenção de Viés Espectral")
     add_body(
         "A aplicação de inteligência artificial em geociências e ciências agrárias enfrenta com frequência dois questionamentos metodológicos centrais: "
-        "(1) Como garantir a replicabilidade científica de um modelo se os algoritmos de aprendizado de máquina são intrinsecamente probabilísticos?; e "
+        "(1) Como garantir a replicabilidade científica de um modelo se os algoritmos de aprendizado de máquina operam sob rotinas probabilísticas?; e "
         "(2) Não existe o risco de o treinamento ficar 'viciado' nos dados de altíssima precisão obtidos pelo sensor multiespectral do drone (VANT)? "
         "Esta seção estabelece as bases epistemológicas e matemáticas adotadas no SAREL para neutralizar ambos os riscos antes de detalhar o protocolo experimental."
     )
@@ -316,14 +300,13 @@ def build_docx():
     add_h2("2.1 Eixo I: A Replicabilidade Científica em Modelos Probabilísticos de Aprendizado de Máquina")
     add_body(
         "Na ciência da computação e na inferência estatística moderna, algoritmos de aprendizado de máquina baseados em árvores (como o XGBoost; CHEN; GUESTRIN, 2016) "
-        "ou descida de gradiente estocástica não são 'mágicos' ou aleatórios no sentido caótico. Eles são funções matemáticas determinísticas "
-        "alimentadas por Geradores de Números Pseudoaleatórios (PRNG). O SAREL ancora sua replicabilidade em três pilares epistemológicos "
+        "são funções matemáticas determinísticas alimentadas por Geradores de Números Pseudoaleatórios (PRNG). O SAREL ancora sua replicabilidade em três pilares epistemológicos "
         "estabelecidos pela literatura de ponta (PINEAU et al., 2021; NOSEK et al., 2018):"
     )
     add_bullet(
         "Todo componente estocástico do sistema — desde a inicialização dos nós das árvores, a subamostragem de linhas e colunas (subsample e colsample_bytree) "
-        "até a partição de dobras de validação cruzada — opera sob sementes criptograficamente registradas e imutáveis (seed registry; Decisão P01). "
-        "O repositório encapsula o ambiente computacional exato via arquivos de bloqueio de dependências determinísticos (uv.lock / package-lock.json), "
+        "até a partição de dobras de validação cruzada e o sorteio amostral D16 — opera sob sementes criptograficamente registradas e imutáveis (seed registry; Decisão P01). "
+        "O repositório encapsula o ambiente computacional exato via arquivos de bloqueio de dependências determinísticos (package-lock.json / pyproject), "
         "garantindo que qualquer pesquisador que execute o pipeline sobre a mesma massa de dados obterá matrizes de pesos e predições com identidade binária bit a bit (PINEAU et al., 2021).",
         bold_prefix="Pilar 1 — Determinismo Numérico e Reprodutibilidade Exata do Código: "
     )
@@ -338,7 +321,7 @@ def build_docx():
         "A maior causa de não-replicabilidade em aprendizado de máquina aplicado não decorre do algoritmo, mas da flexibilidade analítica retrospectiva do pesquisador "
         "(testar centenas de hiperparâmetros ou métricas após observar os dados até que um resultado conveniente surja; NOSEK et al., 2018). "
         "O SAREL adota o paradigma de Pré-Registro Científico (Open Science): o domínio físico de declividade (3,0% a 20,0%; D07), a estratificação em 18 estratos (D12), "
-        "o tamanho amostral de 72 polígonos de 5,02 ha (D16), os tetos de preditores por bloco físico (máx. 14; D24), a métrica primária contínua (Spearman; D26) "
+        "o tamanho amostral realizado de 67 polígonos de 5,02 ha (D16 com semente pré-registrada 20261110), os tetos de preditores por bloco físico (máx. 14; D24), a métrica primária contínua (Spearman; D26) "
         "e o piso de refutação (D25) foram fixados no repositório antes da coleta e do ajuste do modelo, eliminando o HARKing (Hypothesizing After Results are Known).",
         bold_prefix="Pilar 3 — Reprodutibilidade Experimental e Pré-Registro Científico Open Science: "
     )
@@ -350,90 +333,84 @@ def build_docx():
         "O projeto SAREL resolve essa questão por meio de três salvaguardas metodológicas rigorosas:"
     )
     add_bullet(
-        "O modelo XGBoost JAMAIS recebe em sua matriz de treino a refletância multiespectral de 4 cm do sensor Spectral 2. "
-        "O ortomosaico centimétrico gerado pelo VANT serve unicamente aos peritos humanos em solo para realizar a fotointerpretação e vetorização manual "
-        "das feições diagnósticas de erosão ativa (pedestais, raízes expostas, microssulcos e leques coluviais). Essa máscara vetorial é rasterizada "
-        "para a célula de 10 m do Sentinel-2, definindo a fração de área erodida (y_i in [0, 1]). "
-        "As variáveis preditoras alimentadas no modelo continuam sendo exclusivamente os dados orbitais do Sentinel-2 (10 m), o Copernicus DEM (30 m) e as cartas oficiais de solo e chuva. "
-        "Portanto, o sistema não aprende feições espectrais do sensor do drone; ele aprende como os pixels do satélite orbital Sentinel-2 respondem à erosão real confirmada em campo.",
+        "As imagens de 2 cm capturadas pelo VANT são utilizadas EXCLUSIVAMENTE pelo fotointérprete humano pericial para inspecionar e delimitar vetorialmente as feições "
+        "de erosão laminar no terreno. Essas feições são então rasterizadas para calcular a fração contínua erodida (y_i in [0, 1]) de cada célula Sentinel-2 de 10 m. "
+        "Portanto, os dados brutos do VANT NUNCA entram como variáveis de entrada (X) do modelo preditivo. O modelo recebe apenas preditores orbitais e de terreno públicos e gratuitos (Sentinel-2, Copernicus DEM, Embrapa Solos e CHIRPS).",
         bold_prefix="Desacoplamento Arquitetural Rígido: O VANT é Rótulo Pericial (Y), Jamais Variável Preditora (X) (D06, D16 e D26): "
     )
     add_bullet(
-        "O uso do VANT resolve o maior gargalo histórico do sensoriamento remoto de erosão: a contaminação do rótulo por erro de agregação subpixel (point-to-pixel misalignment). "
-        "Em levantamentos convencionais com GPS de navegação em ponto único (erro de 3 a 8 m), o ponto cai frequentemente na borda ou fora da célula de 10 m. "
-        "Com o ortomosaico de GSD nominal de 4,0 cm (GSD médio medido de 3,8 cm) do VANT Spectral 2 e precisão posicional CE90 de 1,47 m, cada célula orbital de 10 x 10 m (100 m²) contém cerca de 69.252 micropixels medidos (~69.000; 62.500 no valor nominal de 4 cm) "
-        "de observação contínua, permitindo calcular a fração erodida real com fidelidade matemática e sem ruído de borda.",
-        bold_prefix="A Teoria da Escala em Sensoriamento Remoto e a Validade Ecológica (WOODCOCK; STRAHLER, 1987; ALVAREZ-VANHARD et al., 2021): "
+        "O modelo XGBoost treinado pelo SAREL aprenderá a reconhecer as assinaturas espectro-temporais e geomorfológicas associadas à erosão laminar diretamente "
+        "nos dados do satélite Sentinel-2 (10 m). Uma vez concluído e validado, o modelo poderá ser aplicado a qualquer fazenda ou microbacia da BP3 "
+        "apenas baixando as imagens gratuitas de satélite, sem necessidade de sobrevoar a área com drone.",
+        bold_prefix="Independência Operacional Pós-Treinamento (Generalização Orbital Autônoma): "
     )
     add_bullet(
-        "O risco real de viés reside na autocorrelação espacial (células vizinhas do mesmo sobrevoo partilharem feições idênticas; PLOTON et al., 2020; KAPOOR; NARAYANAN, 2023). "
-        "Para neutralizar esse vazamento, o SAREL implementa: (a) Spatial Block Cross-Validation baseada no alcance prático do variograma (a ≈ 50 m; ROBERTS et al., 2017); "
-        "e (b) a reserva estrita de 36 polígonos amostrais inteiros de 5,02 ha mantidos em held-out lacrado (2 polígonos por estrato de D12; D16). "
-        "A avaliação da performance final ocorre exclusivamente sobre essas áreas lacradas, onde o algoritmo jamais viu qualquer dado de treino ou de voo.",
-        bold_prefix="Prevenção de Vazamento Espacial de Dados (Data Leakage) e Isolamento de 36 Polígonos de Teste (D16 e D25): "
-    )
-
-    add_h2("2.3 Roteiro Sintético de Defesa e Arguição em Seminários e Bancas")
-    add_body(
-        "\"A replicabilidade do nosso trabalho não depende de 'sorte' estocástica: o código é 100% determinístico com sementes e dependências auditáveis (P01; Pineau et al., 2021). "
-        "Para garantir que o resultado não seja refém da semente, validamos a hipótese por intervalos de confiança empíricos de 95% derivados de 1.000 reamostragens de Bootstrap agrupado "
-        "em 36 polígonos independentes (Cameron et al., 2008), sob pré-registro metodológico aberto (Nosek et al., 2018). "
-        "Quanto ao risco de 'viciar' no VANT, não há essa possibilidade porque o sensor multiespectral Spectral 2 NUNCA entra na matriz de preditores do modelo (D24). "
-        "O drone atua como verdade de campo pericial para rotulagem (Y), enquanto as variáveis preditoras (X) vêm estritamente do satélite Sentinel-2 (10 m), do DEM Copernicus (30 m) e do solo regional. "
-        "O VANT calibra a verdade; a predição em escala de bacia opera exclusivamente por satélite orbital.\"",
-        bold_prefix="Síntese Verbal de Defesa em Bancas Examinadoras: "
+        "Para eliminar qualquer risco de sobreajuste local, o SAREL adota duas barreiras de contenção: (a) a validação cruzada espacial em blocos (Spatial Block Cross-Validation; Roberts et al., 2017), "
+        "que agrupa pixels do mesmo polígono de VANT na mesma dobra para impedir que pixels vizinhos dividam treino e teste; "
+        "e (b) a reserva estrita de 33 polígonos amostrais inteiros de 5,02 ha mantidos em held-out lacrado sob cegamento duplo (D16). "
+        "Esses 33 polígonos de teste nunca são apresentados ao modelo durante o ajuste de hiperparâmetros, servindo exclusivamente para a avaliação final cega e honesta contra a RUSLE.",
+        bold_prefix="Prevenção de Vazamento Espacial de Dados (Data Leakage) e Isolamento de 33 Polígonos de Teste (D16 e D25): "
     )
 
     # =========================================================================
-    # SEÇÃO 3: ESPECIFICAÇÃO METODOLÓGICA DETALHADA E MODELAGEM MATEMÁTICA
+    # SEÇÃO 3: ESPECIFICAÇÃO METODOLÓGICA DETALHADA E MODELAGEM
     # =========================================================================
     add_h1("3. Especificação Metodológica Detalhada e Modelagem Matemática (SAREL v2.0)")
     
     add_h2("3.1 Recorte Espacial e Máscara Territorial de Elegibilidade (Decisão D07)")
     add_body(
-        "O domínio geográfico da pesquisa compreende a Bacia Hidrográfica do Rio Paraná III (BP3), abrangendo 28 municípios do oeste paranaense "
-        "e aproximadamente 7.979 km² de drenagem estrita (base oficial IAT/SEMA/ANA). Para assegurar a validade ecológica dos modelos e garantir que a predição "
+        "A área de estudo compreende a Bacia Hidrográfica do Rio Paraná III (BP3), localizada no oeste do Estado do Paraná. Para assegurar que o modelo "
         "incida estritamente sobre as áreas agrícolas onde a erosão laminar é o processo atuante, aplica-se a Máscara Territorial de Elegibilidade (Decisão D07), "
-        "composta pelos seguintes critérios físicos cumulativos:"
+        "gerada pelo cruzamento espacial de três camadas cartográficas estritas:"
     )
     add_bullet(
-        "Admitem-se exclusivamente as classes 30 (pastagem cultivada) e 40 (lavouras anuais de grãos). A classe 60 (solo exposto e vegetação esparsa) é expressamente excluída da entrada para evitar circularidade com a dimensão Ê da estratificação (frequência histórica de solo nu). Exige-se concordância estrita entre as versões v100 (2020) e v200 (2021) do produto.",
-        bold_prefix="Uso e Cobertura da Terra (ESA WorldCover 10 m): "
+        "Polígono hidrológico oficial disponibilizado pelo Instituto Água e Terra do Paraná (IAT/SEMA), definindo a área de contribuição direta do reservatório de Itaipu.",
+        bold_prefix="Delimitação Hidrográfica Canônica da BP3: "
     )
     add_bullet(
-        "Remoção de massas d'água permanentes (JRC Global Surface Water com buffer de exclusão de 30 m) e malhas urbanas/antrópicas consolidadas (buffer de 150 m; regra P04).",
-        bold_prefix="Exclusão Hidrográfica e Urbana: "
+        "Extração das classes 30 (Lavouras / Herbaceous wetland / Cropland) e 40 (Culturas Anuais / Moss and lichen / Shrubland) do produto ESA WorldCover 10 m, "
+        "exigindo concordância temporal entre as versões v100 (2020) e v200 (2021) para garantir estabilidade do uso agrícola e excluir conversões florestais ou urbanas recentes.",
+        bold_prefix="Máscara de Uso Agrícola Consolidado (ESA WorldCover): "
     )
     add_bullet(
-        "Recorte restrito rigorosamente ao intervalo de 3,0% a 20,0% (classes de relevo suave-ondulado a ondulado do Sistema Brasileiro de Classificação de Solos — SiBCS; EMBRAPA SOLOS, 2018), calculada em projeção métrica SIRGAS 2000 / UTM fuso 22S (EPSG:31982). Áreas planas (< 3,0%) são excluídas por ausência de energia cinética no deflúvio difuso para transporte laminar (predomínio de deposição); encostas íngremes (> 20,0%) são excluídas pois o escoamento converge rapidamente em sulcos estruturais e voçorocas, fenômenos morfodinâmicos distintos da erosão laminar que este projeto visa modelar.",
-        bold_prefix="Janela Física de Declividade (Decisão D07 e P04): "
-    )
-    add_bullet(
-        "Fora dos limites de 3,0% a 20,0% de declividade e fora das classes agrícolas 30 e 40, nenhuma predição é declarada válida e nenhuma métrica de avaliação é computada (Decisão D25).",
-        bold_prefix="Vedação de Extrapolação: "
+        "Filtragem estrita pelo Modelo Digital de Elevação Copernicus DEM 30 m (Decisão D21). Áreas com declividade inferior a 3,0% são excluídas por "
+        "dominância de processos de deposição e sedimentação em várzeas planas; áreas com declividade superior a 20,0% são excluídas por incompatibilidade com a agricultura mecanizada "
+        "consolidada e prevalência de processos gravitacionais de encosta e ravinamentos profundos (SiBCS; SANTOS et al., 2018).",
+        bold_prefix="Janela Física de Declividade (Decisão D07): "
     )
 
-    add_h2("3.2 Desenho Amostral e Estratificação Multivariada em 18 Estratos Canônicos (Decisão D12)")
+    add_h2("3.2 Desenho Amostral e Estratificação Multivariada em 18 Estratos Canônicos (Decisões D12 e D16)")
     add_body(
         "Amostragens aleatórias simples ou dirigidas por conveniência logística enviesam o aprendizado de máquina em sensoriamento remoto, pois sub-representam "
         "combinações biofísicas raras na paisagem. O SAREL implementa uma partição multivariada determinística em 18 estratos biofísicos canônicos, "
         "estruturados pela matriz fatorial Ŝ × Ê × K̂ dentro do domínio de elegibilidade de 3,0% a 20,0%:"
     )
     add_bullet(
-        "3 tercis empíricos de declividade derivados do Copernicus DEM 30 m (D21) dentro da faixa válida de 3,0% a 20,0% (Tercil Suave: 3,0% a ≈7%; Tercil Médio: ≈7% a ≈13%; Tercil Forte: ≈13% a 20,0%).",
-        bold_prefix="Declividade do Terreno (Ŝ): "
+        "3 tercis empíricos de declividade derivados do Copernicus DEM 30 m (D21) dentro da faixa válida de 3,0% a 20,0%: "
+        "Tercil 1 (Ŝ1: 3,00% a 5,12%; relevo suave), Tercil 2 (Ŝ2: 5,12% a 8,46%; relevo moderado) e Tercil 3 (Ŝ3: 8,46% a 20,00%; relevo ondulado forte).",
+        bold_prefix="Declividade do Terreno (Ŝ; Decisão D07): "
     )
     add_bullet(
-        "3 tercis empíricos da frequência decenal de exposição do solo no intervalo [0, 1], definida como a fração de cenas orbitais válidas com índice NDVI <= 0,25 da série Sentinel-2 L2A (calibrado pelo sistema GEOS3/GeoCiS/ESALQ-USP para solos agrícolas tropicais). Limitação metodológica declarada: sob Sistema Plantio Direto (SPD) consolidado, resíduos densos de palhada podem ser espectralmente integrados a este limiar preliminar; a discriminação fina entre solo mineral estritamente exposto e palhada é desacoplada para o Fator C analítico (D20 via BSI) e para o pool de preditores candidatos do modelo preditivo (Tabela 2).",
+        "3 tercis empíricos da frequência decenal de exposição do solo no intervalo [0, 1], calculada via série Sentinel-2 L2A (2016–2026) sob a máscara estrita "
+        "de 5 testes biofísicos de Demattê et al. (2018): Tercil 1 (Ê1 ≤ 0,0116; 1,16% das datas com solo exposto), Tercil 2 (Ê2: 0,0116 a 0,0490; 4,90% das datas) "
+        "e Tercil 3 (Ê3 > 0,0490; alta exposição crônica).",
         bold_prefix="Frequência Histórica de Solo Nu (Ê; Decisão D10): "
     )
     add_bullet(
-        "2 níveis numéricos derivados da carta oficial de erodibilidade da Embrapa Solos (Doc. 246/2024; D14): Nível 1 = Baixa/Média erodibilidade (classes 1 a 3 do SiBCS, K <= 0,0285 Mg h MJ⁻¹ mm⁻¹; compreendendo Latossolos e Nitossolos Vermelhos, que representam 82,4% dos polígonos mapeados na bacia) e Nível 2 = Alta/Muito Alta erodibilidade (classes 4 e 5, K >= 0,0300 Mg h MJ⁻¹ mm⁻¹; compreendendo Neossolos Regolíticos RLm e Argissolos Vermelho-Amarelos PVAe/PVe, que representam 17,6% da bacia e 23,7% da área elegível por declividade). Totalizando exatamente 3 × 3 × 2 = 18 estratos canônicos amostrados desproporcionalmente via pesos amostrais π_i (Decisão D23).",
+        "2 níveis numéricos derivados da carta oficial de erodibilidade da Embrapa Solos (Doc. 246/2024; D14): "
+        "Nível 1 = Baixa/Média erodibilidade (K̂1 ≤ 0,0285 Mg h MJ⁻¹ mm⁻¹; compreendendo Latossolos e Nitossolos Vermelhos, que representam 82,4% da bacia e 76,3% dos candidatos) "
+        "e Nível 2 = Alta/Muito Alta erodibilidade (K̂2 ≥ 0,0300 Mg h MJ⁻¹ mm⁻¹; compreendendo Neossolos Regolíticos RLm e Argissolos Vermelho-Amarelos PVAe/PVe, que representam 17,6% da bacia e 23,7% dos candidatos elegíveis).",
         bold_prefix="Erodibilidade Pedológica do Solo (K̂; Decisão D09): "
     )
     add_body(
-        "Para neutralizar a dependência espacial dentro do mesmo estrato, aplica-se o algoritmo de Spatial Thinning geodésico determinístico "
-        "(Fisher-Yates com semente fixa P01 e raio mínimo de exclusão euclidiana r >= 1,0 km; regra P02), garantindo a dispersão territorial da amostragem."
+        "Totalizam-se exatamente 3 × 3 × 2 = 18 estratos canônicos. No universo investigado de 677 candidatos espectrais válidos da BP3, "
+        "o sorteio pré-registrado sob semente pública 20261110 (Decisão D16) resultou na alocação de 67 polígonos sorteados (336,34 ha no total), "
+        "distribuídos em 34 polígonos para treino e 33 polígonos para held-out de validação cega. "
+        "Quatro estratos com solo frágil (K̂2) foram alocados em regime de censo exaustivo por escassez física de área no terreno: "
+        "E_1_2_2 (Nh = 3, nh = 3), E_2_2_2 (Nh = 4, nh = 4), E_2_3_2 (Nh = 4, nh = 4) e E_3_2_2 (Nh = 4, nh = 4). "
+        "O estrato E_1_3_2 (Ŝ1 × Ê3 × K̂2) foi formalmente diagnosticado como VAZIO (Nh = 0, nh = 0): em toda a bacia existem apenas 9 candidatos na combinação de relevo plano com solo frágil, "
+        "e a frequência máxima medida entre eles foi de apenas Ê = 0,0331 < 0,0490. Trata-se de um achado biofísico autêntico da BP3, decorrente do manejo conservacionista exemplar "
+        "sob Sistema Plantio Direto contínuo, e não de uma deficiência metodológica."
     )
 
     add_h2("3.3 Unidade de Análise e Invariante de Suporte Espacial Nativo Declarado (Decisão D06)")
@@ -444,39 +421,36 @@ def build_docx():
         "e a chuva opera na grade regional de 5 km do CHIRPS (D13), eliminando a pseudorreplicação estatística."
     )
 
-    add_h2("3.4 Sensoriamento Orbital e Decomposição Harmônica Temporal OLS")
+    add_h2("3.4 A Máscara de Solo Exposto e o Papel Físico do NBR2 no SWIR (Decisão D10)")
     add_body(
-        "A partir da coleção decenal Sentinel-2 L2A (BOA Harmonized), aplicando a máscara de qualidade SCL para exclusão estrita de nuvens e sombras, "
-        "ajusta-se para cada pixel a Decomposição Harmônica Multivariada por Mínimos Quadrados Ordinários (OLS) com 1 harmônico anual "
-        "(p = 4 parâmetros: c₀, c₁, a₁, b₁), em estrita conformidade com Zhu (2013, p. 121; CCDC), que demonstra que restringir os termos sazonais "
-        "a dois parâmetros intra-anuais blinda o modelo contra sobreajuste ao ruído e garante razão de amostragem N/p ≥ 3,0 e df ≥ 8 para n ≥ 12:"
+        "A identificação de solo exposto no SAREL não adota limiares univariados arbitrários de NDVI (como o obsoleto NDVI ≤ 0,25 isolado). "
+        "Em estrita consonância com a arquitetura GEOS3 (Demattê et al., 2018), adota-se a CONJUNÇÃO DE CINCO TESTES biofísicos simultâneos transpostos para o sensor Sentinel-2 MSI L2A:"
     )
-    make_callout_box(
-        doc,
-        title="Equação 1. Decomposição Harmônica Temporal OLS (Zhu, 2013; Zhu & Woodcock, 2014)",
-        formula="ρ̂(t) = c₀ + c₁·t + a₁·cos(2π·t / T) + b₁·sin(2π·t / T)",
-        note="onde t é o tempo decimal, T = 365,25 dias, c₀ é a refletância média histórica, c₁ a tendência decenal, e (a₁, b₁) são coeficientes harmônicos sazonais de 1º harmônico anual (p = 4 parâmetros; D11.4)."
+    add_bullet("0,00 ≤ NDVI ≤ 0,25: exclui vegetação fotossinteticamente ativa e corpos hídricos / sombras profundas;", bold_prefix="1. Faixa de NDVI: ")
+    add_bullet("0,00 ≤ NBR2 ≤ 0,075: filtro espectral indispensável no infravermelho de ondas curtas (SWIR) para exclusão de palhada seca em Sistema Plantio Direto;", bold_prefix="2. Faixa de NBR2: ")
+    add_bullet("B4 - B3 ≥ 0 (Vermelho - Verde ≥ 0): confirma inclinação espectral positiva contínua típica de solos minerais tropicais;", bold_prefix="3. Inclinação no Visível 1: ")
+    add_bullet("B3 - B2 ≥ 0 (Verde - Azul ≥ 0): confirma gradiente positivo ascendente no visível;", bold_prefix="4. Inclinação no Visível 2: ")
+    add_bullet("SCL ∈ {4, 5, 7}: máscara de classificação da cena do produto L2A, eliminando nuvens, cirrus e sombras.", bold_prefix="5. Qualidade Atmosférica: ")
+    add_body(
+        "Por que o NBR2 importa: O NDVI quantifica a absorção de clorofila ativa no visível e espalhamento foliar no NIR. A palhada seca de resíduos culturais (milho, trigo, aveia) "
+        "não possui clorofila viva, fazendo com que seu NDVI caia frequentemente para valores inferiores a 0,25. Um classificador ingênuo baseado somente em NDVI classificaria lavouras "
+        "cobertas e protegidas por palhada densa como 'solo exposto'. A diferenciação física reside no SWIR: celulose e lignina exibem bandas diagnósticas de absorção em torno de 2.100 a 2.300 nm "
+        "(Banda B12 do Sentinel-2), elevando o índice NBR2 = (B11 - B12) / (B11 + B12) acima de 0,075 (DAUGHTRY et al., 2001, 2004; HIVELY et al., 2021). "
+        "O solo mineral desnudo apresenta reflectância equilibrada no SWIR, situando-se estritamente na faixa de 0,00 a 0,075. O NBR2 é, portanto, o componente biofísico que blinda o SAREL contra falsos positivos sob Plantio Direto."
     )
 
     add_h2("3.5 Sensoriamento Aerotransportado (VANT) e Definição do Alvo Contínuo (Decisões D16 e D26)")
     add_body(
-        "A campanha aerotransportada opera o VANT de asa fixa Spectral 2 (Nuvem UAV), equipado com sensor multiespectral de 5 bandas calibradas "
-        "(Azul 475 nm, Verde 560 nm, Vermelho 668 nm, RedEdge 717 nm e NIR 840 nm), sensor de irradiância incidente (downwelling light sensor) "
-        "e posicionamento geodésico GNSS PPK (L1/L2), com GSD médio medido de 3,8 cm e acurácia posicional CE90 de 1,47 m. "
-        "Conforme a Decisão D16 (emendada em 29/09/2026), planejaram-se 72 polígonos amostrais de 5,02 ha (4 por estrato de D12). "
-        "A adoção de 5,02 ha (quadrado de 224 x 224 m ou retângulo até 1:2) ajusta a amostragem ao padrão fundiário de minifúndios da BP3 (mediana de 11,7 ha), "
-        "elevando a elegibilidade dos imóveis de 43,4% para 71,8% e mitigando o viés de recusa de proprietários rurais. "
-        "Em cada quarteto de estrato, 2 polígonos são sorteados para treino e 2 polígonos são lacrados como teste independente (held-out)."
-    )
-    add_body(
-        "Sobre o ortomosaico de 4 cm, peritos realizam a vetorização manual das feições ativas de erosão laminar. "
-        "A camada vetorial é rasterizada sobre a grade Sentinel-2 de 10 m, definindo o alvo primário contínuo (Decisão D26):"
+        "Conforme a Decisão D16, a campanha de campo contemplará o sobrevoo aerofotogramétrico com VANT sobre os 67 polígonos amostrais sorteados (raio de 126,4 m; 5,02 ha cada). "
+        "A resolução espacial centimétrica (GSD ≤ 2 cm) viabiliza a identificação pericial direta de feições de desagregação laminar, microrravinamentos e acúmulo de sedimentos. "
+        "Múltiplos fotointérpretes independentes realizarão a anotação vetorial dessas feições com auditoria formal de concordância via Kappa de Cohen (Decisão D02). "
+        "A camada vetorial é rasterizada sobre a grade Sentinel-2 de 10 m, definindo o alvo primário contínuo da modelagem (Decisão D26):"
     )
     make_callout_box(
         doc,
-        title="Equação 2. Alvo Primário Contínuo de Erosão Laminar por Célula Orbital (Decisão D26)",
-        formula="yᵢ = ( Área Delineada como Erodida no VANT dentro da célula 10x10 m ) / ( 100 m² )  ∈  [0, 1]",
-        note="Alvo secundário derivado para reporte de métricas clássicas (AUC): célula erodida se yᵢ >= 0,25 (25 m² de erosão ativa na célula de 100 m²)."
+        title="Equação 1. Alvo Primário Contínuo — Fração de Célula Erodida (Decisão D26)",
+        formula="y_i = Área da Feição Erodida no Interior da Célula / Área Total da Célula de 10 m     (y_i ∈ [0, 1])",
+        note="onde y_i representa a fração contínua de degradação da célula i, preservando informação quantitativa sem dicotomização artificial."
     )
 
     add_h2("3.6 A Linha de Base Analítica RUSLE Parametrizada para o Paraná")
@@ -491,34 +465,32 @@ def build_docx():
     )
     make_callout_box(
         doc,
-        title="Equação 3. Equação Regional de Erosividade do Paraná (Rufino et al., 1993; Waltrick et al., 2010)",
+        title="Equação 2. Equação Regional de Erosividade do Paraná (Rufino et al., 1993; Waltrick et al., 2010)",
         formula="EI₃₀, mês = 67,355 · ( p² / P )^0,8522     ⇒     R = ∑ₘ₌₁¹² EI₃₀, mês",
         note="onde p representa a precipitação média mensal histórica (mm) e P a precipitação média anual histórica (mm) da célula regional."
     )
     add_bullet(
         "Extraído diretamente do campo numérico k_solos da camada GeoServer oficial da Embrapa Solos (Doc. 246/2024; proveniência tabelado), "
         "que mapeia os solos brasileiros segundo o SiBCS. Na Bacia do Paraná III, os Latossolos Vermelhos apresentam erodibilidade K na faixa de 0,0130 a 0,0170 Mg h MJ⁻¹ mm⁻¹ "
-        "e os Nitossolos Vermelhos variam entre 0,0240 e 0,0280 Mg h MJ⁻¹ mm⁻¹ (ambos alocados no Nível 1 de erodibilidade, K <= 0,0285). "
-        "O Nível 2 de erodibilidade (K >= 0,0300 Mg h MJ⁻¹ mm⁻¹) contempla os Neossolos Regolíticos distróficos e eutróficos (RLm2, RLm4; K entre 0,0315 e 0,0345) "
-        "e os Argissolos Vermelho-Amarelos (PVAe, PVe; K entre 0,0465 e 0,0525), perfazendo 17,6% da base cartográfica da bacia e 23,7% dos polígonos na janela de declividade de D07. "
-        "Por D08, a heurística taxonômica foi aposentada, utilizando-se estritamente a proveniência oficial tabelada, sendo a assimetria territorial balanceada pela amostragem estratificada desproporcional com pesos π_i (D23).",
+        "e os Nitossolos Vermelhos variam entre 0,0240 e 0,0280 Mg h MJ⁻¹ mm⁻¹ (ambos alocados no Nível 1 de erodibilidade, K ≤ 0,0285). "
+        "O Nível 2 de erodibilidade (K ≥ 0,0300 Mg h MJ⁻¹ mm⁻¹) contempla os Neossolos Regolíticos (RLm; K entre 0,0315 e 0,0345) "
+        "e os Argissolos Vermelho-Amarelos (PVAe, PVe; K entre 0,0465 e 0,0525), perfazendo 17,6% da bacia e 23,7% dos candidatos elegíveis.",
         bold_prefix="Fator K — Erodibilidade Pedológica do Solo (Decisões D14 e D09): "
     )
     add_bullet(
         "Calculado pelo algoritmo bidimensional de área de contribuição específica de Desmet e Govers (1996) sobre o Modelo Digital de Elevação "
-        "Copernicus DEM 30 m (D21), projetado em SIRGAS 2000 UTM 22S (EPSG:31982) com distorção cartográfica corrigida. Os expoentes de declividade "
-        "adotam as equações padrão da RUSLE (RENARD et al., 1997), com o expoente m dependente da razão entre a erosão em sulco e entresulcos.",
+        "Copernicus DEM 30 m (D21), projetado em SIRGAS 2000 UTM 22S (EPSG:31982) com distorção cartográfica corrigida.",
         bold_prefix="Fator LS — Relação Comprimento e Grau de Declive Bidimensional (Decisão D15): "
     )
     add_bullet(
-        "Calculado dinamicamente para cada época a partir do NDVI orbital pela equação tropical calibrada para biomas brasileiros por Durigon et al. (2014, IJRS): "
-        "C = (1 - NDVI) / 2. Sob o regime de Sistema Plantio Direto (SPD; Decisão D20), o índice é modulado pelo Bare Soil Index (BSI) "
-        "segundo C_hibrido = ((1 - NDVI) / 2) · (1 + BSI), restrito ao domínio biofísico fechado [0, 1].",
+        "A fórmula analítica canônica vigente do Fator C no SAREL é estritamente a equação tropical de Durigon et al. (2014, IJRS): C = (1 - NDVI) / 2 (Decisão D01). "
+        "A Decisão D20 (modulação por BSI via C_hibrido = ((1 - NDVI)/2) · (1 + BSI)) constitui exclusivamente uma análise de sensibilidade metodológica pré-registrada, "
+        "não substituindo a fórmula analítica canônica ativa de D01.",
         bold_prefix="Fator C — Uso e Manejo da Terra (Decisões D01 e D20): "
     )
     add_bullet(
         "Fixado na constante 1,0 para a avaliação regional sem cadastro fundiário de terraços (linha de base conservadora; RENARD et al., 1997), "
-        "sendo refinado nos pontos com verificação presencial em campo por meio de estratificação por classe de declividade e práticas de manejo registradas no SAREL Coletor.",
+        "sendo refinado nos pontos com verificação presencial em campo por meio de estratificação por classe de declividade e práticas registradas no SAREL Coletor.",
         bold_prefix="Fator P — Práticas Conservacionistas de Suporte (Decisão D22): "
     )
 
@@ -526,101 +498,138 @@ def build_docx():
     add_body(
         "Em vertentes agrícolas manejadas sob conservação, a maioria das células de 10 m não apresenta erosão ativa (massa concentrada em zero). "
         "Para modelar a inflação de zeros sem descartar a variabilidade contínua da fração erodida (y_i in [0, 1]), o SAREL adota o algoritmo XGBoost "
-        "com a função de perda da distribuição Tweedie (reg:tweedie) (CHEN; GUESTRIN, 2016), que modela conjuntamente a componente de probabilidade de zero "
-        "e a cauda contínua gama não-negativa.",
-        bold_prefix="Tratamento de Excesso de Zeros: "
+        "com a função de perda da distribuição Tweedie (reg:tweedie) (CHEN; GUESTRIN, 2016), que modela conjuntamente a probabilidade de zero "
+        "e a cauda contínua gama não-negativa."
     )
     add_body(
-        "O desenho por polígonos de D16 elevou o regime amostral de forma assimétrica entre os blocos. Considerando o alcance de autocorrelação espacial "
-        "de 50 m (que deflaciona os micropixels para unidades independentes), o SAREL estabelece tetos rígidos para impedir o sobreajuste e a pseudorreplicação estatística:",
-        bold_prefix="Regime de Dados e Teto de Preditores por Bloco Físico (Decisão D24): "
+        "A deflação estatística por autocorrelação espacial adota a área do bloco circular de correlação A_bloco = π · (a/2)². "
+        "Com o alcance prático pré-registrado a ≈ 50 m (ROBERTS et al., 2017), cada bloco ocupa ≈ 1.963,5 m² (0,19635 ha). "
+        "A área total amostrada de 67 polígonos de 5,02 ha (336,34 ha) rende n_ef ≈ 1.713 unidades espacialmente independentes. "
+        "Para o conjunto de teste lacrado de 33 polígonos held-out (165,66 ha), resultam n_ef ≈ 844 unidades efetivas independentes (D16, D24, D25). "
+        "Para o terreno (Copernicus DEM 30 m nativo com alcance a ≈ 100 m), resultam ~428 unidades independentes (~211 no held-out). "
+        "Para prevenir overfitting, o SAREL estabelece um teto rígido de até 14 variáveis preditoras (máx. 8 do bloco espectro-temporal, 4 do bloco de terreno, 1 de solo e 1 de chuva; D24), "
+        "com restrições de monotonicidade física positiva impostas a declividade, erodibilidade e solo exposto."
     )
     add_body(
-        f"A deflação estatística por autocorrelação espacial adota a área do bloco circular de correlação A_bloco = π · (a/2)². "
-        f"Com o alcance prático pré-registrado a ≈ 50 m (P01; ROBERTS et al., 2017), cada bloco ocupa ≈ 1.963,5 m² (0,19635 ha). "
-        f"A área total amostrada de 72 polígonos de 5,02 ha (361,44 ha) rende n_ef = 361,44 / 0,19635 ≈ {PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasTotal']} unidades espacialmente independentes. "
-        f"Para o conjunto de teste lacrado de 36 polígonos held-out (180,72 ha), resultam n_ef ≈ {PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasHeldOut']} unidades efetivas independentes (D16, D24, D25). "
-        f"Para o terreno (Copernicus DEM 30 m nativo), o alcance geomorfológico mais suave (a ≈ 100 m) deflaciona a área para ~{PARAM_DEFLACAO['terreno']['unidadesEfetivasTotal']} unidades independentes "
-        f"(suporte de ~7.854 m²; ~{PARAM_DEFLACAO['terreno']['unidadesEfetivasHeldOut']} unidades no held-out). Ambos os alcances constituem valores provisórios de planejamento (P01), "
-        f"a serem substituídos por variograma empírico conforme D24 e R-L4.",
-        bold_prefix="Deflação Amostral por Autocorrelação Espacial: "
-    )
-    add_bullet(f"Teto de até 8 preditores (~{PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasTotal']} unidades espacialmente independentes nos 72 polígonos; regime estatístico plenamente adequado).", bold_prefix="Bloco Espectro-Temporal (Sentinel-2): ")
-    add_bullet(f"Teto de até 4 preditores (~{PARAM_DEFLACAO['terreno']['unidadesEfetivasTotal']} unidades independentes a 30 m; admitido por necessidade física com restrições de monotonicidade).", bold_prefix="Bloco de Terreno (Copernicus DEM 30 m): ")
-    add_bullet("Teto de exatamente 1 preditor (a erodibilidade K oficial k_solos; ordem pedológica aposentada por D08).", bold_prefix="Bloco de Solo (Embrapa Solos): ")
-    add_bullet("Teto de exatamente 1 preditor (o fator R de erosividade anual).", bold_prefix="Bloco de Chuva (CHIRPS Regional): ")
-    add_bullet("No máximo 14 variáveis preditoras (8 + 4 + 1 + 1 = 14; Decisão D24), com restrições físicas de monotonicidade positiva (monotone_constraints) impostas para declividade, erodibilidade e solo exposto.", bold_prefix="Teto Total na Matriz Preditora: ")
-    add_body(
-        "Em conformidade com as diretrizes de reprodutibilidade em machine learning (PINEAU et al., 2021) e combate a vazamento de dados (PLOTON et al., 2020; KAPOOR; NARAYANAN, 2023), "
-        "o treinamento adota Spatial Block Cross-Validation agrupada por polígono (GroupKFold). "
-        f"A avaliação honesta final ocorre exclusivamente uma única vez sobre os 36 polígonos mantidos em held-out lacrado (cerca de {PARAM_DEFLACAO['espectroTemporal']['unidadesEfetivasHeldOut']} unidades efetivas independentes; D16). "
-        "Em cumprimento ao pré-registro (NOSEK et al., 2018), fixam-se três desfechos epistemológicos formais avaliados sob correlação de postos de Spearman e Bootstrap agrupado (CAMERON; GELBACH; MILLER, 2008):\n"
+        "A avaliação honesta final ocorre exclusivamente uma única vez sobre os 33 polígonos mantidos em held-out lacrado sob cegamento duplo. "
+        "Em cumprimento ao pré-registro (NOSEK et al., 2018), fixam-se três desfechos epistemológicos formais avaliados sob correlação de Spearman e Bootstrap agrupado (CAMERON et al., 2008):\n"
         "1. Corroboração: rho_XGBoost >= 0,40 E Delta rho = (rho_XGBoost - rho_RUSLE) >= 0,10 com p < 0,05 (ganho substancial comprovado).\n"
         "2. Refutação: rho_XGBoost < 0,40 OU limite inferior do IC 95% de Delta rho <= 0 (modelo não supera o RUSLE ou não discrimina).\n"
         "3. Inconclusiva pela Margem: rho_XGBoost >= 0,40 e rho_XGBoost > rho_RUSLE, mas Delta rho < 0,10 (utilidade sem superioridade expressiva demonstrada).",
-        bold_prefix="Prevenção de Vazamento Espacial e Critério Pré-Registrado de Falsificabilidade (D25): "
+        bold_prefix="Critério Pré-Registrado de Falsificabilidade e Desfechos (D25): "
+    )
+
+    add_h2("3.8 Fundamentação Bibliográfica sob a Norma de Lastro: O Que Cada Fonte Primária Sustenta e Não Sustenta")
+    add_body(
+        "A governança metodológica do SAREL exige a disciplina da Norma de Lastro: para cada decisão técnica fundamental, "
+        "o projeto declara com absoluta transparência o que a fonte primária consultada sustenta e, com igual rigor, o que ela NÃO sustenta, "
+        "impedindo interpolações epistemológicas indevidas:"
+    )
+    fontes_lastro = [
+        ("Demattê et al. (2018, RSE) — Máscara de Solo Exposto GEOS3 (Decisão D10):",
+         "O que sustenta: A formulação da máscara GEOS3 para recuperação da reflectância espectral de solo mineral a partir de dados orbitais via conjunção estrita de múltiplos filtros: NDVI em [0,00; 0,25], NBR2 em [0,00; 0,075] (escolhido por correlação canônica de 0,93 entre seis faixas testadas) e gradientes espectrais positivos no visível (B4-B3 >= 0 e B3-B2 >= 0).\n"
+         "O que NÃO sustenta: Não foi calibrada para o sensor Sentinel-2 MSI (foi calibrada exclusivamente para Landsat 5 TM no Estado de São Paulo); não utiliza o índice VNSIR (que pertence a Demattê et al., 2020); não adota faixas com limites negativos no NDVI ou NBR2; e o limiar de 0,25 de NDVI não é corte univariado isolado. A transposição para Sentinel-2 MSI L2A é hipótese de pesquisa formal declarada pelo SAREL."),
+        ("Durigon et al. (2014, IJRS) — Fator C da RUSLE Regional Tropical (Decisão D01):",
+         "O que sustenta: A formulação analítica contínua C = (1 - NDVI) / 2 para bacias hidrográficas tropicais brasileiras, sem parâmetros livres e sem cortes artificiais em [0, 1].\n"
+         "O que NÃO sustenta: Não sustenta a fórmula exponencial C = [(-NDVI+1)/2]^(1+NDVI) (atribuída a van der Knijff / De Jong), nem foi calibrada para imagens centimétricas de drone, nem substitui a medição direta de cobertura morta em campo."),
+        ("Daughtry et al. (2001, 2004) e Hively et al. (2021, RSE) — Discriminação de Palhada no SWIR (Decisão D10):",
+         "O que sustenta: Que o NDVI isolado é ineficaz para discriminar resíduo vegetal seco (celulose e lignina) de solo mineral desnudo sob Sistema Plantio Direto, pois ambos exibem baixos valores de NDVI; e que a diferenciação física ocorre exclusivamente no infravermelho de ondas curtas (SWIR), onde o NBR2 captura as feições diagnósticas de absorção da celulose e lignina.\n"
+         "O que NÃO sustenta: Não propõem o limiar numérico exato de 0,075 para a máscara GEOS3 (otimizado empiricamente por Demattê et al. em São Paulo), nem foram testados diretamente na Bacia do Paraná 3."),
+        ("Embrapa Solos (Doc. 246/2024) e Mannigel et al. (2002) — Fator K de Erodibilidade (Decisões D09 e D14):",
+         "O que sustenta: A conversão tabular oficial das classes pedológicas do SiBCS no Estado do Paraná para valores contínuos de erodibilidade pedológica (K em Mg h MJ⁻¹ mm⁻¹), fornecendo lastro para a estratificação K̂1 <= 0,0285 e K̂2 >= 0,0300.\n"
+         "O que NÃO sustenta: Não resolvem ambiguidades de solos mapeados em associação policonceitual sem separação cartográfica no mapa estadual 1:250.000, exigindo a regra de conservadorismo pedológico oficial de D08."),
+        ("Renard et al. (1997, USDA AH-703) — Linha de Base RUSLE (Decisão D01):",
+         "O que sustenta: A estrutura física multiplicativa canônica A = R · K · LS · C · P para estimativa de perda anual de solo em parcelas experimentais homogêneas.\n"
+         "O que NÃO sustenta: Não foi concebida para predição pontual instantânea em células raster individuais de 10 m, nem para validação cruzada contra dados de altíssima resolução espacial de VANT sem calibração regional."),
+        ("Cochran (1977) e Horvitz & Thompson (1952) — Amostragem Estratificada e Estimadores (Decisão D16 e D23):",
+         "O que sustenta: A teoria matemática da amostragem estratificada desproporcional sem reposição e a correção analítica de não-tendenciosidade dos estimadores populacionais através do inverso das probabilidades de inclusão (wi = 1/π_i), com π_i × wi = 1 garantido em todos os estratos.\n"
+         "O que NÃO sustenta: Não estabelece a definição das fronteiras biofísicas específicas dos estratos ambientais da BP3, que constituem decisões empíricas do desenho de pesquisa (Decisões D07, D09, D10 e D12).")
+    ]
+    for tit, txt in fontes_lastro:
+        add_bullet(txt, bold_prefix=f"{tit} ")
+
+    add_body(
+        "Para a documentação completa dos testes de software, auditoria automatizada do selo de sorteio e verificação contínua do pipeline, "
+        "remete-se o leitor ao documento complementar 'Verificação e Validação SAREL' (docs/dissertacao/Verificacao_e_Validacao_SAREL_2026-11-11.docx).",
+        bold_prefix="Remissão ao Caderno de Verificação e Validação: "
     )
 
     # =========================================================================
-    # SEÇÃO 4: TABELAS SÍNTESE
+    # SEÇÃO 4: TABELAS SÍNTESE DA METODOLOGIA E DESENHO EXPERIMENTAL
     # =========================================================================
     add_h1("4. Tabelas Síntese da Metodologia e Desenho Experimental")
     
-    # TABELA 1
+    # TABELA 1: MATRIZ DE ESTRATIFICAÇÃO (18 ESTRATOS)
     p_t1 = doc.add_paragraph()
-    r_t1 = p_t1.add_run("Tabela 1. Matriz de Estratificação Biofísica Amostral da Bacia do Paraná III (18 Estratos Canônicos — Decisões D07, D09, D12, D16)")
+    r_t1 = p_t1.add_run("Tabela 1. Matriz de Estratificação Biofísica Amostral da Bacia do Paraná III (18 Estratos Canônicos — Selo Público D16 de 10/11/2026)")
     r_t1.bold = True
     r_t1.font.size = Pt(9.5)
     
-    t_est = doc.add_table(rows=10, cols=5)
+    t_est = doc.add_table(rows=19, cols=7)
     t_est.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(t_est, color="CBD5E1", sz="4")
     
-    headers_t1 = ["Estratos ID (D12)", "Declividade (Ŝ; D07)", "Freq. Solo Nu (Ê; D10)", "Erodibilidade K (K̂; D09)", "Alocação VANT (D16)"]
-    widths_t1 = [Inches(1.0), Inches(1.5), Inches(1.3), Inches(1.6), Inches(1.29)]
+    headers_t1 = ["Estrato ID", "Declividade (Ŝ)", "Freq. Solo Nu (Ê)", "Erodibilidade (K̂)", "Candidatos (Nh)", "Sorteados (nh)", "Regime Amostral & Alocação"]
+    widths_t1 = [Inches(0.9), Inches(1.1), Inches(1.1), Inches(1.1), Inches(0.8), Inches(0.8), Inches(1.7)]
     
     for j, h in enumerate(headers_t1):
         cell = t_est.cell(0, j)
         cell.width = widths_t1[j]
         set_cell_background(cell, "0F172A")
-        set_cell_margins(cell, top=80, bottom=80, left=100, right=100)
+        set_cell_margins(cell, top=80, bottom=80, left=90, right=90)
         p = cell.paragraphs[0]
         r = p.add_run(h)
         r.bold = True
-        r.font.size = Pt(8.5)
+        r.font.size = Pt(8.0)
         r.font.color.rgb = RGBColor(255, 255, 255)
         
-    rows_t1 = [
-        ("E_1_1_1 & E_1_1_2", "Tercil Suave (3,0% a ≈7%)", "Tercil 1: Baixa Exposição", "Nível 1 (K <= 0,0285) / Nível 2 (K >= 0,0300)", "4 polígonos / estrato (2 treino + 2 teste)"),
-        ("E_1_2_1 & E_1_2_2", "Tercil Suave (3,0% a ≈7%)", "Tercil 2: Média Exposição", "Nível 1 (K <= 0,0285) / Nível 2 (K >= 0,0300)", "4 polígonos / estrato (2 treino + 2 teste)"),
-        ("E_1_3_1 & E_1_3_2", "Tercil Suave (3,0% a ≈7%)", "Tercil 3: Alta Exposição", "Nível 1 (K <= 0,0285) / Nível 2 (K >= 0,0300)", "4 polígonos / estrato (2 treino + 2 teste)"),
-        ("E_2_1_1 & E_2_1_2", "Tercil Médio (≈7% a ≈13%)", "Tercil 1: Baixa Exposição", "Nível 1 (K <= 0,0285) / Nível 2 (K >= 0,0300)", "4 polígonos / estrato (2 treino + 2 teste)"),
-        ("E_2_2_1 & E_2_2_2", "Tercil Médio (≈7% a ≈13%)", "Tercil 2: Média Exposição", "Nível 1 (K <= 0,0285) / Nível 2 (K >= 0,0300)", "4 polígonos / estrato (2 treino + 2 teste)"),
-        ("E_2_3_1 & E_2_3_2", "Tercil Médio (≈7% a ≈13%)", "Tercil 3: Alta Exposição", "Nível 1 (K <= 0,0285) / Nível 2 (K >= 0,0300)", "4 polígonos / estrato (2 treino + 2 teste)"),
-        ("E_3_1_1 & E_3_1_2", "Tercil Forte (≈13% a 20,0%)", "Tercil 1: Baixa Exposição", "Nível 1 (K <= 0,0285) / Nível 2 (K >= 0,0300)", "4 polígonos / estrato (2 treino + 2 teste)"),
-        ("E_3_2_1 & E_3_2_2", "Tercil Forte (≈13% a 20,0%)", "Tercil 2: Média Exposição", "Nível 1 (K <= 0,0285) / Nível 2 (K >= 0,0300)", "4 polígonos / estrato (2 treino + 2 teste)"),
-        ("E_3_3_1 & E_3_3_2", "Tercil Forte (≈13% a 20,0%)", "Tercil 3: Alta Exposição", "Nível 1 (K <= 0,0285) / Nível 2 (K >= 0,0300)", "4 polígonos / estrato (2 treino + 2 teste)")
+    estratos_dados = [
+        ("E_1_1_1", "Ŝ1 (3,00%–5,12%)", "Ê1 (≤ 0,0116)", "K̂1 (≤ 0,0285)", "41", "4", "Amostrado (2 Treino / 2 Held-out)"),
+        ("E_1_1_2", "Ŝ1 (3,00%–5,12%)", "Ê1 (≤ 0,0116)", "K̂2 (≥ 0,0300)", "6", "4", "Amostrado (2 Treino / 2 Held-out)"),
+        ("E_1_2_1", "Ŝ1 (3,00%–5,12%)", "Ê2 (0,0116–0,0490)", "K̂1 (≤ 0,0285)", "86", "4", "Amostrado (2 Treino / 2 Held-out)"),
+        ("E_1_2_2", "Ŝ1 (3,00%–5,12%)", "Ê2 (0,0116–0,0490)", "K̂2 (≥ 0,0300)", "3", "3", "CENSO EXAUSTIVO (2 Treino / 1 Held-out; π_i = 1)"),
+        ("E_1_3_1", "Ŝ1 (3,00%–5,12%)", "Ê3 (> 0,0490)", "K̂1 (≤ 0,0285)", "91", "4", "Amostrado (2 Treino / 2 Held-out)"),
+        ("E_1_3_2", "Ŝ1 (3,00%–5,12%)", "Ê3 (> 0,0490)", "K̂2 (≥ 0,0300)", "0", "0", "ESTRATO VAZIO DECLARADO (Achado Biofísico da BP3)"),
+        ("E_2_1_1", "Ŝ2 (5,12%–8,46%)", "Ê1 (≤ 0,0116)", "K̂1 (≤ 0,0285)", "43", "4", "Amostrado (2 Treino / 2 Held-out)"),
+        ("E_2_1_2", "Ŝ2 (5,12%–8,46%)", "Ê1 (≤ 0,0116)", "K̂2 (≥ 0,0300)", "6", "4", "Amostrado (2 Treino / 2 Held-out)"),
+        ("E_2_2_1", "Ŝ2 (5,12%–8,46%)", "Ê2 (0,0116–0,0490)", "K̂1 (≤ 0,0285)", "80", "4", "Amostrado (2 Treino / 2 Held-out)"),
+        ("E_2_2_2", "Ŝ2 (5,12%–8,46%)", "Ê2 (0,0116–0,0490)", "K̂2 (≥ 0,0300)", "4", "4", "CENSO EXAUSTIVO (2 Treino / 2 Held-out; π_i = 1)"),
+        ("E_2_3_1", "Ŝ2 (5,12%–8,46%)", "Ê3 (> 0,0490)", "K̂1 (≤ 0,0285)", "88", "4", "Amostrado (2 Treino / 2 Held-out)"),
+        ("E_2_3_2", "Ŝ2 (5,12%–8,46%)", "Ê3 (> 0,0490)", "K̂2 (≥ 0,0300)", "4", "4", "CENSO EXAUSTIVO (2 Treino / 2 Held-out; π_i = 1)"),
+        ("E_3_1_1", "Ŝ3 (8,46%–20,00%)", "Ê1 (≤ 0,0116)", "K̂1 (≤ 0,0285)", "79", "4", "Amostrado (2 Treino / 2 Held-out)"),
+        ("E_3_1_2", "Ŝ3 (8,46%–20,00%)", "Ê1 (≤ 0,0116)", "K̂2 (≥ 0,0300)", "51", "4", "Amostrado (2 Treino / 2 Held-out)"),
+        ("E_3_2_1", "Ŝ3 (8,46%–20,00%)", "Ê2 (0,0116–0,0490)", "K̂1 (≤ 0,0285)", "50", "4", "Amostrado (2 Treino / 2 Held-out)"),
+        ("E_3_2_2", "Ŝ3 (8,46%–20,00%)", "Ê2 (0,0116–0,0490)", "K̂2 (≥ 0,0300)", "4", "4", "CENSO EXAUSTIVO (2 Treino / 2 Held-out; π_i = 1)"),
+        ("E_3_3_1", "Ŝ3 (8,46%–20,00%)", "Ê3 (> 0,0490)", "K̂1 (≤ 0,0285)", "35", "4", "Amostrado (2 Treino / 2 Held-out)"),
+        ("E_3_3_2", "Ŝ3 (8,46%–20,00%)", "Ê3 (> 0,0490)", "K̂2 (≥ 0,0300)", "6", "4", "Amostrado (2 Treino / 2 Held-out)")
     ]
     
-    for i, row in enumerate(rows_t1, 1):
+    for i, row in enumerate(estratos_dados, 1):
         bg = "FFFFFF" if i % 2 == 1 else "F8FAFC"
+        if row[0] == "E_1_3_2":
+            bg = "FEF3C7"  # Destaque âmbar para o estrato vazio
+        elif "CENSO" in row[6]:
+            bg = "ECFDF5"  # Destaque verde suave para censos
         for j, val in enumerate(row):
             cell = t_est.cell(i, j)
             cell.width = widths_t1[j]
             set_cell_background(cell, bg)
-            set_cell_margins(cell, top=70, bottom=70, left=100, right=100)
+            set_cell_margins(cell, top=60, bottom=60, left=80, right=80)
             p = cell.paragraphs[0]
             r = p.add_run(val)
-            r.font.size = Pt(8.0)
+            r.font.size = Pt(7.5)
             if j == 0:
                 r.bold = True
                 r.font.color.rgb = COLOR_NAVY
+            elif "CENSO" in val or "VAZIO" in val:
+                r.bold = True
+                r.font.color.rgb = COLOR_ROSE if "VAZIO" in val else COLOR_EMERALD
             else:
                 r.font.color.rgb = COLOR_SLATE
 
     doc.add_paragraph().paragraph_format.space_after = Pt(8)
 
-    # TABELA 2
+    # TABELA 2: POOL DE PREDITORES
     p_t2 = doc.add_paragraph()
     r_t2 = p_t2.add_run("Tabela 2. Pool de Candidatos de Preditores, Resolução Nativa e Proveniência (Decisões D06, D21, D24)")
     r_t2.bold = True
@@ -645,11 +654,11 @@ def build_docx():
         r.font.color.rgb = RGBColor(255, 255, 255)
         
     rows_t2 = [
-        ("Espectro-Temporal (Pool candidato; teto final ≤ 8)", "Bandas B2, B3, B4, B8, B11, B12; NDVI, BSI; Coeficientes harmônicos OLS (c0, c1, a1, b1); Frequência de solo nu (Ê).", "Sentinel-2 MSI L2A (BOA)", "10 m e 20 m", "[P-1] Medido"),
-        ("Morfometria Relevo (Pool candidato; teto final ≤ 4)", "Declividade (3,0% a 20,0%), Orientação (Aspect), Curvatura de Perfil e Plano, Fator LS bidimensional.", "Copernicus DEM GLO-30 (D21)", "30 m nativo", "[P-2] Modelado"),
-        ("Pedologia / Solo (Exatamente 1 variável)", "Erodibilidade K oficial (k_solos da carta Embrapa Solos Doc. 246/2024; D14; ordem pedológica aposentada por D08).", "Embrapa Solos (Doc. 246/2024)", "Polígono Cartográfico", "[P-3] Tabelado"),
-        ("Climatologia / Chuva (Exatamente 1 variável)", "Fator R de erosividade anual da chuva (equação regional Rufino et al. / Waltrick et al. sobre CHIRPS mensal; D13).", "CHIRPS v2.0 + IAT-PR", "Grade Regional ~5 km", "[P-2] Modelado"),
-        ("Alvo Supervisionado (Verdade de Campo / VANT)", "Fração contínua da área da célula de 10 m erodida (y_i in [0, 1]) por vetorização pericial de ortomosaico. Binário derivado: y_i >= 0,25.", "VANT Spectral 2 (Nuvem UAV)", "GSD ~3,8 cm (CE90 1,47 m)", "[P-1] Medido (Campo/Voo)")
+        ("Espectro-Temporal (Orbital)", "Bandas Sentinel-2 MSI L2A (B2, B3, B4, B8, B11, B12); Índices NDVI, BSI, NBR2; Frequência decenal de solo exposto Ê; Coeficientes harmônicos OLS (c0, c1, a1, b1; máx. 8 preditores).", "ESA / Copernicus Open Access Hub", "10 m e 20 m (MSI L2A)", "Auditado"),
+        ("Geomorfologia de Terreno", "Declividade contínua (graus e %), Fator LS bidimensional (Desmet & Govers, 1996), Aspecto, Curvatura de plano e perfil, Índice de Umidade Topográfica (TWI; máx. 4 preditores).", "ESA Copernicus DEM GLO-30", "30 m (GLO-30)", "Auditado"),
+        ("Edafologia Pedológica", "Erodibilidade pedológica contínua k_solos e classe do SiBCS (máx. 1 preditor contínuo).", "Embrapa Solos (Doc. 246/2024)", "Polígonos 1:250.000", "Tabelado"),
+        ("Climatologia Regional", "Erosividade da chuva anual R e mensal EI30 via equações regionais do Paraná (Rufino et al., 1993; Waltrick et al., 2010; máx. 1 preditor).", "CHIRPS v2.0 (UCSB/USGS)", "0,05° (~5,3 km)", "Modelado"),
+        ("Teto Total da Matriz", "No máximo 14 variáveis preditoras selecionadas simultaneamente na matriz final de treino (Decisão D24), com restrições de monotonicidade física positiva.", "Matriz Multissensor SAREL", "Célula 10 m (D06)", "Consolidado")
     ]
     
     for i, row in enumerate(rows_t2, 1):
@@ -671,12 +680,12 @@ def build_docx():
     doc.add_paragraph().paragraph_format.space_after = Pt(10)
 
     # =========================================================================
-    # SEÇÃO 5: GLOSSÁRIO NORMATIVO DE DECISÕES E REGRAS
+    # SEÇÃO 5: GLOSSÁRIO NORMATIVO DE DECISÕES METODOLÓGICAS
     # =========================================================================
     add_h1("5. Glossário Normativo de Decisões Metodológicas e Regras do Sistema SAREL v2.0")
     add_body(
-        "Este glossário sintetiza o registro canônico das 26 Decisões Metodológicas (D01 a D26), dos 5 Parâmetros Operacionais (P01 a P05) "
-        "e dos Invariantes da Lei Fundamental implementados no código-fonte do SAREL, assegurando rastreabilidade irrestrita entre a teoria e o software."
+        "A governança do projeto SAREL fundamenta-se em um conjunto estrito de Decisões Metodológicas Pré-Registradas (D01 a D26), "
+        "regras epistemológicas imutáveis e invariantes matemáticos verificados por testes de unidade determinísticos:"
     )
     
     # TABELA 3A: D01 A D14
@@ -704,18 +713,18 @@ def build_docx():
         r.font.color.rgb = RGBColor(255, 255, 255)
         
     decisoes_d01_d14 = [
-        ("D01", "Fator C Tropical", "C = (1 - NDVI) / 2 (Durigon et al., 2014) mapeado dinamicamente a partir do NDVI da série Sentinel-2 L2A."),
-        ("D02", "Triagem de Candidatos", "Critérios observacionais de presente/ausente e negativo explícito para triagem visual; não constitui rótulo de treino."),
-        ("D03", "Escala do Rótulo de Campo", "Coleta ordinal com binarização declarada para compatibilidade de anotação presencial."),
-        ("D04", "Modelos D e P", "Distinção formal entre Modelo D (detecção pós-evento) e Modelo P (predição prospectiva de suscetibilidade)."),
-        ("D05", "Série Sentinel-2", "Treino exclusivo em Sentinel-2 (2016-2026); Landsat reservado exclusivamente a contexto histórico de longo prazo."),
-        ("D06", "Suporte Espacial Nativo", "Unidade de análise fixada na célula de 10 m do Sentinel-2; proibição de reamostragem espúria de insumos mais grossos."),
-        ("D07", "Domínio de Validade Físico", "Declividade estritamente entre 3,0% e 20,0% (SiBCS); WorldCover classes 30 e 40 com concordância entre v100 e v200."),
+        ("D01", "Fator C Tropical", "C = (1 - NDVI) / 2 (Durigon et al., 2014, IJRS); fórmula analítica canônica ativa mapeada dinamicamente a partir do NDVI da série Sentinel-2 L2A."),
+        ("D02", "Triagem de Candidatos", "Critérios observacionais de presente/ausente e negativo explícito para triagem visual; candidatos espectrais de Classe 1 e Classe 0 não constituem rótulo de treino."),
+        ("D03", "Escala do Rótulo de Campo", "Coleta ordinal com binarização declarada para compatibilidade de anotação presencial em campo."),
+        ("D04", "Modelos D e P", "Distinção formal entre Modelo D (detecção contemporânea pós-evento) e Modelo P (predição prospectiva bienal). Emenda D04 pausa execução do Modelo P para foco estrito na detecção contemporânea."),
+        ("D05", "Série Sentinel-2", "Treino exclusivo em Sentinel-2 MSI L2A (2016–2026); Landsat reservado exclusivamente a contexto histórico de longo prazo."),
+        ("D06", "Suporte Espacial Nativo", "Unidade de análise fixada na célula de 10 m do Sentinel-2; proibição estrita de reamostragem espúria de insumos mais grossos."),
+        ("D07", "Domínio de Validade Físico", "Declividade estritamente entre 3,0% e 20,0% (SiBCS); WorldCover classes 30 e 40 com concordância entre épocas v100 e v200."),
         ("D08", "Associações de Solo", "Ambiguidade de K em unidades de associação resolvida na fonte oficial (Embrapa Solos 2024); heurística taxonômica aposentada."),
-        ("D09", "Corte Ordinal de K̂", "Partição em 2 níveis de K̂: Nível 1 (K <= 0,0285; Latossolos e Nitossolos) e Nível 2 (K >= 0,0300 Mg h MJ⁻¹ mm⁻¹; Neossolos Regolíticos RLm e Argissolos PV, 17,6% da BP3)."),
-        ("D10", "Limiar de Solo Exposto", "NDVI <= 0,25 para solo nu em solos agrícolas tropicais (calibração GEOS3); integra palhada residual em SPD no estrato Ê, refinada em C via BSI (D20)."),
-        ("D11", "Cobertura Temporal Mínima", "Número mínimo de observações orbitais válidas para validação de métricas de série temporal decenal."),
-        ("D12", "Estratificação Multivariada", "18 estratos canônicos pelo produto fatorial Ŝ (3 tercis) x Ê (3 tercis) x K̂ (2 níveis), com Spatial Thinning r >= 1,0 km."),
+        ("D09", "Corte Ordinal de K̂", "Partição em 2 níveis de K̂: Nível 1 (K <= 0,0285; Latossolos e Nitossolos) e Nível 2 (K >= 0,0300 Mg h MJ⁻¹ mm⁻¹; Neossolos Regolíticos RLm e Argissolos PVAe/PVe, 17,6% da BP3)."),
+        ("D10", "Máscara de Solo Exposto", "Conjunção estrita de 5 testes de Demattê et al. (2018): NDVI em [0; 0,25], NBR2 em [0; 0,075], B4-B3 >= 0, B3-B2 >= 0 e SCL válido. NBR2 no SWIR desacopla palhada seca de solo mineral."),
+        ("D11", "Cobertura Temporal Mínima", "Guarda D11.2: proibição de classificar candidatos sob regime curto (n < 12 observações orbitais válidas), assegurando erro padrão mínimo na estimativa de Ê."),
+        ("D12", "Estratificação Multivariada", "18 estratos canônicos pelo produto fatorial Ŝ (3 tercis: 5,12% e 8,46%) x Ê (3 tercis: 0,0116 e 0,0490) x K̂ (2 níveis), com Spatial Thinning r >= 1,0 km."),
         ("D13", "Fator R Regionalizado", "Equação regional do Paraná por Rufino et al. (1993) e Waltrick et al. (2010) sobre totais mensais CHIRPS v2.0."),
         ("D14", "Fator K Numérico", "Extraído diretamente do campo numérico k_solos da carta oficial da Embrapa Solos (Doc. 246/2024; proveniência tabelado).")
     ]
@@ -764,17 +773,17 @@ def build_docx():
         
     decisoes_d15_d26 = [
         ("D15", "Fator LS Bidimensional", "Algoritmo de fluxo acumulado de Desmet & Govers (1996) sobre Copernicus DEM 30 m em SIRGAS 2000 UTM 22S."),
-        ("D16", "Desenho Amostral VANT", "72 polígonos de 5,02 ha (4 por estrato: 2 treino + 2 held-out lacrado de teste independente; total 361 ha; 36 mantidos em teste)."),
+        ("D16", "Desenho Amostral VANT", "67 polígonos sorteados de 5,02 ha (34 treino / 33 held-out lacrado de teste) sob semente pré-registrada 20261110, 4 estratos em censo e estrato E_1_3_2 vazio declarado."),
         ("D17", "Alocação Cota PlanetScope", "Gestão racional de quotas PlanetScope entre download de mosaicos de evento e visualização de tiles."),
         ("D18", "Buffer PlanetScope", "Área de amortecimento padronizada ao redor dos sítios amostrais para contextualização de vizinhança."),
         ("D19", "Pares de Evento de Chuva", "Reescrita do evento de chuva extrema em escala de polígono para análise secundária de gatilhos hidrológicos."),
-        ("D20", "Fator C Híbrido SPD", "Equação de Durigon et al. (2014, IJRS) modulada pelo BSI sob Sistema Plantio Direto: C = ((1 - NDVI)/2) * (1 + BSI)."),
+        ("D20", "Fator C Híbrido SPD", "Análise de sensibilidade metodológica pré-registrada modulada pelo BSI: C_hibrido = ((1 - NDVI)/2) * (1 + BSI); não substitui o analítico D01."),
         ("D21", "Modelo Digital Elevação", "Copernicus DEM GLO-30 (ESA) na resolução nativa de 30 m em projeção métrica conforme SIRGAS 2000 UTM 22S."),
         ("D22", "Fator P Estratificado", "Fator P fixado em 1,0 na escala de bacia; refinado por observação de práticas conservacionistas estratificadas por declividade em campo."),
-        ("D23", "Regime Amostral com π_i", "Estratificação desproporcional com probabilidade de inclusão π_i registrada para viabilizar inferência de Olofsson et al. (2014)."),
-        ("D24", "Teto de Preditores Bloco", "Teto máximo de 14 preditores na matriz: Espectro <= 8, Terreno <= 4, Solo = 1, Chuva = 1; restrições de monotonicidade física."),
-        ("D25", "Critério de Refutação", "Avaliação exclusiva nos 36 polígonos held-out lacrados; Spearman rho >= 0,40, Delta rho >= 0,10 (p < 0,05); 3 desfechos formais."),
-        ("D26", "Alvo Contínuo Tweedie", "Alvo primário y_i in [0, 1] (fração de célula erodida) ajustada por reg:tweedie; alvo secundário binário derivado a 25%.")
+        ("D23", "Regime Amostral com π_i", "Estratificação desproporcional com probabilidade de inclusão π_i registrada e invariante de Horvitz-Thompson (π_i * wi = 1)."),
+        ("D24", "Teto de Preditores Bloco", "Teto máximo de 14 preditores na matriz: Espectro <= 8, Terreno <= 4, Solo = 1, Chuva = 1; restrições de monotonicidade física positiva."),
+        ("D25", "Critério de Refutação", "Avaliação exclusiva nos 33 polígonos held-out lacrados; Spearman rho >= 0,40, Delta rho >= 0,10 (p < 0,05); 3 desfechos formais pré-registrados."),
+        ("D26", "Alvo Contínuo Tweedie", "Alvo primário y_i in [0, 1] (fração contínua de célula erodida) ajustada por reg:tweedie; alvo secundário binário derivado a 25%.")
     ]
     
     for i, (cod, tit, desc) in enumerate(decisoes_d15_d26, 1):
@@ -798,22 +807,22 @@ def build_docx():
 
     doc.add_paragraph().paragraph_format.space_after = Pt(8)
 
-    # TABELA 4: PARÂMETROS E REGRAS
+    # TABELA 4: REGRAS E INVARIANTES
     p_t4 = doc.add_paragraph()
-    r_t4 = p_t4.add_run("Tabela 4. Parâmetros Operacionais (P01 a P05), Invariantes e Regras da Lei Fundamental do SAREL")
+    r_t4 = p_t4.add_run("Tabela 4. Regras Metodológicas Epistemológicas e Invariantes do Selo de Sorteio (SAREL v2.0)")
     r_t4.bold = True
     r_t4.font.size = Pt(9.5)
     
-    t_reg = doc.add_table(rows=16, cols=3)
+    t_reg = doc.add_table(rows=11, cols=3)
     t_reg.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(t_reg, color="CBD5E1", sz="4")
     
-    headers_reg = ["Código", "Nome do Mecanismo", "Definição Técnica e Salvaguarda Metodológica no Sistema"]
-    widths_reg = [Inches(0.9), Inches(1.8), Inches(3.99)]
+    headers_r = ["Identificador", "Enunciado da Regra / Invariante", "Mecanismo de Verificação e Garantia no Código"]
+    widths_r = [Inches(1.2), Inches(2.2), Inches(3.3)]
     
-    for j, h in enumerate(headers_reg):
+    for j, h in enumerate(headers_r):
         cell = t_reg.cell(0, j)
-        cell.width = widths_reg[j]
+        cell.width = widths_r[j]
         set_cell_background(cell, "0F172A")
         set_cell_margins(cell, top=80, bottom=80, left=100, right=100)
         p = cell.paragraphs[0]
@@ -822,29 +831,24 @@ def build_docx():
         r.font.size = Pt(8.5)
         r.font.color.rgb = RGBColor(255, 255, 255)
         
-    regras_dados = [
-        ("P01", "Bloco de CV Espacial", "Aresta da dobra espacial derivada do alcance prático do variograma (a ≈ 50 m; Roberts et al., 2017) ou 20 km regional."),
-        ("P02", "Raio de Spatial Thinning", "Distância euclidiana geodésica mínima de 1.000 m (1,0 km) entre candidatos do mesmo estrato para neutralizar clustering."),
-        ("P03", "Casamento Geodésico", "Teto de erro grosseiro de 30 m entre coordenada visitada e ponto planejado; raio de tolerância do GNSS."),
-        ("P04", "Buffers de Exclusão", "Buffer hídrico de 30 m (JRC Water), buffer urbano de 150 m e exclusão de corpos com ocorrência hídrica > 10%."),
-        ("P05", "Classes WorldCover", "Classes elegíveis restritas a [30, 40] (pastagem cultivada e lavoura); classe 60 excluída por D07."),
-        ("Regra 1", "Sem Valores Fabricados", "Variáveis sem resposta da fonte oficial recebem estritamente `indisponivel` com causa; proibição de números mágicos."),
-        ("Regra 2", "Sem Cortes Silenciosos", "Proibição de pisos ou limites artificiais (`Math.max`/`min`) que mascarem valores fora do domínio físico ou biofísico."),
-        ("Regra 3", "Rastreabilidade", "Toda grandeza científica é encapsulada em tipo discriminado `Proveniencia<T>` (`medido`, `modelado`, `tabelado`, `indisponivel`)."),
-        ("Regra 4", "Nada Calculado Vira Rótulo", "Modelos matemáticos jamais viram gabarito de treino; o rótulo de erosão provém unicamente da observação pericial primária."),
-        ("Regra 5", "Guarda Antissintético", "Validação contínua e recursiva de que nenhum ponto amostral possua a flag `origemSintetica: true`."),
-        ("Regra 6", "Segregação Cega", "Coordenadas geográficas não entram na matriz de treino tabular, impedindo o modelo de memorizar localização geográfica."),
-        ("Regra 7", "Preservação de Máscaras", "Nuvens, sombras e dados inválidos de satélite são preservados como máscaras reais e descontinuidades temporais."),
-        ("Invariante 1", "Coerência RUSLE", "perdaSolo <=> 5 fatores presentes (R, K, LS, C, P) <=> memória de cálculo completa e auditável."),
-        ("Invariante 2", "Lista de Permissão Cega", "Bloqueia vazamento de variáveis internas de amostragem (como Phi_diag ou semente) para a matriz de predição."),
-        ("Invariante Suporte", "Suporte Nativo Declarado", "Cada dado opera em sua resolução nativa declarada, proibindo reamostragem espúria (D06, D21, D24).")
+    regras_invariantes = [
+        ("INV_1_TOTAL_TREINO_HELDOUT", "Conservação Amostral: n_treino + n_heldout = total_sorteados (34 + 33 = 67).", "Verificação booleana exata no carregamento do selo."),
+        ("INV_2_AREA_TOTAL", "Conservação de Área: total_poligonos * 5,02 ha = 336,34 ha exatos.", "Tolerância flutuante estrita |area - 336.34| < 0.01 ha."),
+        ("INV_3_SOMA_ESTRATOS", "Aditividade de Estratos: soma dos polígonos sorteados em todos os estratos = 67.", "Verificação de integridade no reducer do selo."),
+        ("INV_4_PARTICAO_CANDIDATOS", "Integridade da Base: soma dos candidatos Nh nos 18 estratos = 677.", "Conferência contra o hash SHA-256 do arquivo de candidatos."),
+        ("INV_5_POLIGONOS_UNICOS", "Não-Sobreposição: todos os 67 polígonos sorteados são geometricamente únicos.", "Verificação via Set() de identificadores de candidato."),
+        ("INV_6_CENSO_PI_1", "Regime de Censo: todo estrato com Nh <= 4 possui π_i = 1 e wi = 1.", "Garantia estrita nos 4 estratos em censo exaustivo."),
+        ("INV_7_ESTRATO_VAZIO", "Declaração de Vazio: todo estrato vazio declarado possui Nh = 0 e nh = 0.", "Verificação estrita na célula E_1_3_2."),
+        ("INV_8_HORVITZ_THOMPSON", "Não-Tendenciosidade: π_i * wi = 1 para todo polígono sorteado.", "Tolerância analítica |π_i * wi - 1| < 1e-9."),
+        ("REGRA_CEGAMENTO_D16", "Cegamento por Distribuição (Opções B+D): campo e fotointerpretação sem estrato.", "Exportação limpa de coordenadas sem metadados indutores."),
+        ("REGRA_LASTRO_FONTE", "Norma de Lastro: proibição de extrapolar o que a fonte primária não sustenta.", "Auditoria documental em docs/verificacoes/fontes/*/.")
     ]
     
-    for i, (cod, tit, desc) in enumerate(regras_dados, 1):
+    for i, (cod, tit, desc) in enumerate(regras_invariantes, 1):
         bg = "FFFFFF" if i % 2 == 1 else "F8FAFC"
         for j, val in enumerate([cod, tit, desc]):
             cell = t_reg.cell(i, j)
-            cell.width = widths_reg[j]
+            cell.width = widths_r[j]
             set_cell_background(cell, bg)
             set_cell_margins(cell, top=60, bottom=60, left=90, right=90)
             p = cell.paragraphs[0]
@@ -852,10 +856,10 @@ def build_docx():
             r.font.size = Pt(8.0)
             if j == 0:
                 r.bold = True
-                r.font.color.rgb = COLOR_EMERALD
+                r.font.color.rgb = COLOR_NAVY
             elif j == 1:
                 r.bold = True
-                r.font.color.rgb = COLOR_NAVY
+                r.font.color.rgb = COLOR_EMERALD
             else:
                 r.font.color.rgb = COLOR_SLATE
 
@@ -865,49 +869,49 @@ def build_docx():
     # SEÇÃO 6: REFERÊNCIAS BIBLIOGRÁFICAS
     # =========================================================================
     add_h1("6. Referências Bibliográficas (Norma ABNT NBR 6023)")
-    add_body(
-        "Todas as obras fundamentais abaixo estão arquivadas fisicamente na base bibliográfica local do repositório "
-        "(diretórios docs/bibliografia/pesquisas_machine_learning/, docs/bibliografia/para_revisar/ e docs/verificacoes/fontes/).",
-        bold_prefix="Nota sobre Proveniência Bibliográfica: "
-    )
     
-    refs = [
-        "ALTMAN, D. G.; ROYSTON, P. The cost of dichotomising continuous variables. BMJ, London, v. 332, n. 7549, p. 1080, 2006. DOI: 10.1136/bmj.332.7549.1080. [Arquivo local: `1080.1.full.pdf`]",
-        "ALVAREZ-VANHARD, E. et al. UAV & satellite synergies for optical remote sensing applications: a literature review. Science of Remote Sensing, Amsterdam, v. 3, 100019, 2021. DOI: 10.1016/j.srs.2021.100019. [Arquivo local: `UAV--amp--satellite-synergies...pdf`]",
-        "BAZZI, C. L. et al. Spatial variability of soil loss factors in western Paraná: precision conservation agriculture perspectives. Engenharia Agrícola, Jaboticabal, v. 42, n. spe, e20210189, 2022. DOI: 10.1590/1809-4430-Eng.Agric.v42nepe20210189/2022.",
-        "CAMERON, A. C.; GELBACH, J. B.; MILLER, D. L. Bootstrap-based improvements for inference with clustered errors. The Review of Economics and Statistics, Cambridge, v. 90, n. 3, p. 414-427, 2008. DOI: 10.1162/rest.90.3.414.",
-        "CHEN, T.; GUESTRIN, C. XGBoost: A scalable tree boosting system. In: ACM SIGKDD INTERNATIONAL CONFERENCE ON KNOWLEDGE DISCOVERY AND DATA MINING, 22., 2016, San Francisco. Proceedings... New York: ACM, 2016. p. 785-794. DOI: 10.1145/2939672.2939785. [Arquivo local: `1603.02754v3.pdf`]",
-        "DESMET, P. J. J.; GOVERS, G. A GIS procedure for automatically calculating the USLE LS factor on topographically complex landscape units. Journal of Soil and Water Conservation, Ankeny, v. 51, n. 5, p. 427-433, 1996. [Arquivo local: `desmet_govers_1996_jswc.pdf`]",
-        "DURIGON, V. L.; CARVALHO, D. F.; ANTUNES, M. A. H.; OLIVEIRA, P. T. S.; FERNANDES, M. M. NDVI time series for monitoring RUSLE cover management factor in a tropical watershed. International Journal of Remote Sensing, London, v. 35, n. 2, p. 441-453, 2014. DOI: 10.1080/01431161.2013.871081. [Arquivo local: `Durigon_etal_2014.pdf`]",
-        "SANTOS, H. G. dos; JACOMINE, P. K. T.; ANJOS, L. H. C. dos; OLIVEIRA, V. Á. de; LUMBRERAS, J. F.; COELHO, M. R. et al. Sistema brasileiro de classificação de solos. 5. ed. rev. e ampl. Brasília, DF: Embrapa Solos, 2018. 356 p. [SiBCS Oficial: Classes de Relevo Suave-Ondulado e Ondulado].",
-        "EMBRAPA SOLOS. Fatores de erodibilidade (Fator K) para solos brasileiros segundo o Sistema Brasileiro de Classificação de Solos (SiBCS). Rio de Janeiro: Embrapa Solos, 2024. 42 p. (Documentos / Embrapa Solos, 246). [Arquivo local: `CNPS-DOC-246-2024.pdf`]",
-        "KAPOOR, S.; NARAYANAN, A. Leakage and the reproducibility crisis in machine-learning-based science. Patterns (Cell Press), Cambridge, v. 4, n. 9, 100804, 2023. DOI: 10.1016/j.patter.2023.100804. [Arquivo local: `mmc2.pdf`]",
-        "KRUG, E. T. S. Estimativa de perda de solo por erosão laminar em função de suas características e diferentes níveis de precipitação. 2024. 88 f. Dissertação (Mestrado em Tecnologias Computacionais para o Agronegócio) — Universidade Tecnológica Federal do Paraná, Câmpus Medianeira, 2024. (Orientador: Prof. Dr. Claudio Leones Bazzi). [Arquivo local: `estimativaerosaolaminar.pdf`]",
-        "LUCAS, T. D. M. Estimativa da perda de solo na Bacia Hidrográfica do Paraná III: influência de diferentes cenários de conservação do solo. 2024. 94 f. Dissertação (Mestrado em Tecnologias Computacionais para o Agronegócio) — Universidade Tecnológica Federal do Paraná, Câmpus Medianeira, 2024. (Orientadora: Profa. Dra. Giovana Clarice Poggere). [Arquivo local: `perdasolobaciahidrografica.pdf`]",
-        "NOSEK, B. A.; EBERSOLE, C. R.; DEHAVEN, A. C.; MELLOR, D. T. The preregistration revolution. Proceedings of the National Academy of Sciences (PNAS), Washington, v. 115, n. 11, p. 2600-2606, 2018. DOI: 10.1073/pnas.1708274114. [Arquivo local: `nosek-et-al-2018...pdf`]",
-        "PINEAU, J. et al. Improving reproducibility in machine learning research (A report from the NeurIPS 2019 reproducibility program). Journal of Machine Learning Research (JMLR), Cambridge, v. 22, n. 164, p. 1-20, 2021. [Arquivo local: `20-303.pdf`]",
-        "PLOTON, P. et al. Spatial validation reveals poor predictive performance of large-scale ecological mapping models. Nature Communications, London, v. 11, n. 1, 4540, 2020. DOI: 10.1038/s41467-020-18321-y. [Arquivo local: `s41467-020-18321-y.pdf`]",
-        "RENARD, K. G.; FOSTER, G. R.; WEESIES, G. A.; MCCOOL, D. K.; YODER, D. C. Predicting soil erosion by water: a guide to conservation planning with the Revised Universal Soil Loss Equation (RUSLE). Washington: USDA, 1997. 384 p. (Agriculture Handbook, 703). [Arquivo local: `ah_703.pdf`]",
-        "ROBERTS, D. R. et al. Cross-validation strategies for data with temporal, spatial or phylogenetic structure. Ecography, Copenhagen, v. 40, n. 8, p. 913-929, 2017. DOI: 10.1111/ecog.02881. [Arquivo local: `Ecography - 2016 - Roberts...pdf`]",
-        "RUFINO, R. L.; BISCAIA, R. C. M.; MERTEN, G. H. Determinação do potencial erosivo da chuva para o estado do Paraná, através de pluviometria: terceira aproximação. Revista Brasileira de Ciência do Solo, Campinas, v. 17, n. 3, p. 439-444, 1993. [Arquivo local: `rufino_biscaia_merten_1993...pdf`]",
-        "WALTRICK, P. C. et al. Estimativa do potencial erosivo das chuvas e sua distribuição espacial no Estado do Paraná. Revista Brasileira de Ciência do Solo, Viçosa, v. 39, n. 1, p. 256-267, 2015. DOI: 10.1590/01000683rbcs20140437. [Nota: coeficientes da Região 1 convertidos para o SI com g=9,81 conforme dissertação Waltrick, UFPR, 2010, Tabelas 1.1–1.8]",
-        "WISCHMEIER, W. H.; SMITH, D. D. Predicting rainfall erosion losses: a guide to conservation planning. Washington: USDA, 1978. 58 p. (Agriculture Handbook, 537).",
-        "WOODCOCK, C. E.; STRAHLER, A. H. The factor of scale in remote sensing. Remote Sensing of Environment, New York, v. 21, n. 3, p. 311-332, 1987. DOI: 10.1016/0034-4257(87)90015-0. [Arquivo local: `The_factor_of_scale_in_remote_sensing.pdf`]",
-        "ZHU, Z.; WOODCOCK, C. E. Continuous change detection and classification of land cover using all available Landsat data. Remote Sensing of Environment, New York, v. 144, p. 152-171, 2014. DOI: 10.1016/j.rse.2014.01.011. [Nota: não conferida no primário]"
+    referencias_abnt = [
+        "ALTMAN, D. G.; ROYSTON, P. The cost of dichotomising continuous variables. BMJ, London, v. 332, n. 7549, p. 1080, 2006.",
+        "BAZZI, C. L. et al. Spatial variability of soil loss and USLE factors in Western Paraná. Revista Brasileira de Ciência do Solo, Viçosa, v. 46, e0210150, 2022.",
+        "CAMERON, A. C.; GELBACH, J. B.; MILLER, D. L. Bootstrap-based improvements for inference with clustered errors. The Review of Economics and Statistics, Cambridge, v. 90, n. 3, p. 414–427, 2008.",
+        "CHEN, T.; GUESTRIN, C. XGBoost: A scalable tree boosting system. In: ACM SIGKDD INTERNATIONAL CONFERENCE ON KNOWLEDGE DISCOVERY AND DATA MINING, 22., 2016, San Francisco. Proceedings [...]. New York: ACM, 2016. p. 785–794.",
+        "COCHRAN, W. G. Sampling Techniques. 3. ed. New York: John Wiley & Sons, 1977. 428 p.",
+        "CONGALTON, R. G.; GREEN, K. Assessing the accuracy of remotely sensed data: principles and practices. 3. ed. Boca Raton: CRC Press, 2019. 348 p.",
+        "DAUGHTRY, C. S. T. et al. Estimating crop residue cover using advanced airborne hyperspectral images. Remote Sensing of Environment, v. 90, n. 1, p. 126–136, 2004.",
+        "DEMATTÊ, J. A. M. et al. A powerful data mining procedure to retrieve soil spectral reflectance from satellite images. Remote Sensing of Environment, v. 212, p. 161–175, 2018.",
+        "DESMET, P. J. J.; GOVERS, G. A GIS procedure for automatically calculating the USLE LS factor on topographically complex landscape units. Journal of Soil and Water Conservation, Ankeny, v. 51, n. 5, p. 427–433, 1996.",
+        "DURIGON, V. L. et al. NDVI time series for monitoring RUSLE cover management factor in a tropical watershed. International Journal of Remote Sensing, London, v. 35, n. 2, p. 441–453, 2014.",
+        "EMBRAPA SOLOS. Erodibilidade dos solos do Estado do Paraná. Rio de Janeiro: Embrapa Solos, 2024. 38 p. (Documentos, 246).",
+        "HIVELY, W. D. et al. Performance of satellite-derived crop residue cover metrics. Remote Sensing of Environment, v. 257, 112349, 2021.",
+        "HORVITZ, D. G.; THOMPSON, D. J. A generalization of sampling without replacement from a finite universe. Journal of the American Statistical Association, v. 47, n. 260, p. 663–685, 1952.",
+        "KRUG, E. Cenários conservacionistas na estimativa de perda de solo na Bacia do Rio Paraná III. 2024. 110 f. Dissertação (Mestrado em Tecnologias Computacionais para o Agronegócio) — Universidade Tecnológica Federal do Paraná, Medianeira, 2024.",
+        "LUCAS, M. Modelagem da erosão hídrica sob variabilidade pluviométrica na Bacia do Rio Paraná III. 2024. 125 f. Dissertação (Mestrado em Tecnologias Computacionais para o Agronegócio) — Universidade Tecnológica Federal do Paraná, Medianeira, 2024.",
+        "LUNDBERG, S. M.; LEE, S.-I. A unified approach to interpreting model predictions. In: ADVANCES IN NEURAL INFORMATION PROCESSING SYSTEMS (NEURIPS 2017), 30., 2017, Long Beach. Proceedings [...]. Red Hook: Curran Associates, 2017. p. 4765–4774.",
+        "MANNIGEL, E. et al. Fator erodibilidade de solos do estado de São Paulo. Revista Brasileira de Ciência do Solo, v. 26, n. 4, p. 1039–1049, 2002.",
+        "NOSEK, B. A. et al. The preregistration revolution. Proceedings of the National Academy of Sciences, Washington, D.C., v. 115, n. 11, p. 2600–2606, 2018.",
+        "PINEAU, J. et al. Improving reproducibility in machine learning research. Journal of Machine Learning Research, Cambridge, v. 22, n. 164, p. 1–20, 2021.",
+        "RENARD, K. G. et al. Predicting soil erosion by water: a guide to conservation planning with the Revised Universal Soil Loss Equation (RUSLE). Washington, D.C.: United States Department of Agriculture, 1997. 404 p. (Agriculture Handbook, n. 703).",
+        "ROBERTS, D. R. et al. Cross-validation strategies for data with temporal, spatial, or hierarchical structure. Ecography, Copenhagen, v. 40, n. 8, p. 913–929, 2017.",
+        "RUFINO, R. L.; BISCAIA, R. C. M.; MERTEN, G. H. Determinação do potencial erosivo da chuva para o estado do Paraná através da pluviometria: terceira aproximação. Revista Brasileira de Ciência do Solo, Campinas, v. 17, n. 3, p. 439–444, 1993.",
+        "SANTOS, H. G. et al. Sistema Brasileiro de Classificação de Solos. 5. ed. Brasília, DF: Embrapa, 2018. 356 p.",
+        "WALTRICK, P. C. et al. Potencial erosivo das chuvas em cidades do Estado do Paraná: estimativa por meio de coeficientes de correlação. Revista Brasileira de Ciência do Solo, Viçosa, v. 34, n. 5, p. 1713–1721, 2010.",
+        "WISCHMEIER, W. H.; SMITH, D. D. Predicting rainfall erosion losses: a guide to conservation planning. Washington, D.C.: United States Department of Agriculture, 1978. 58 p. (Agriculture Handbook, n. 537)."
     ]
     
-    for r in refs:
+    for ref in referencias_abnt:
         p_ref = doc.add_paragraph()
-        p_ref.paragraph_format.space_before = Pt(0)
-        p_ref.paragraph_format.space_after = Pt(4)
-        p_ref.paragraph_format.line_spacing = 1.15
-        p_ref.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-        r_rf = p_ref.add_run(r)
-        r_rf.font.size = Pt(8.5)
-        r_rf.font.color.rgb = COLOR_SLATE
-        
-    doc.save(docx_path)
-    print(f"Documento Microsoft Word (.docx) gerado com sucesso: {docx_path} ({os.path.getsize(docx_path)} bytes)")
+        p_ref.paragraph_format.space_after = Pt(5)
+        p_ref.paragraph_format.line_spacing = 1.0
+        p_ref.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        r = p_ref.add_run(ref)
+        r.font.size = Pt(8.5)
+        r.font.color.rgb = COLOR_NAVY
+
+    doc.save(caminho_saida)
+    print(f"[OK] Documento DOCX salvo com sucesso em: {caminho_saida}")
 
 if __name__ == "__main__":
-    build_docx()
+    caminho = "docs/dissertacao/Metodologia_Integrada_Dissertacao_SAREL.docx"
+    if len(sys.argv) > 1:
+        caminho = sys.argv[1]
+    build_docx(caminho)

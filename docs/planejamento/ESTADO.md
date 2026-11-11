@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `6c1484ce9d74cb101d0b82fb8dcc1e39de437710`
-- Data do HEAD: 2026-11-11 10:07:48 -0300
+- Commit HEAD: `0657173aea94b22b1e7c64b9b8c1fe4dd1203a45`
+- Data do HEAD: 2026-11-11 13:40:28 +0000
 - Últimos 5 commits:
-  1. `6c1484c feat(seguranca): implementar cegamento por distribuicao, pacotes selados por papel e diario (Prompt Q)`
-  2. `7325853 docs(planejamento): sincronizar ESTADO.md com Prompt O`
-  3. `5298f4e feat(decisoes): sanar ambiguidade metodologica em D02 e D20 e adicionar trava de formula unica (Prompt O)`
-  4. `45851ab docs(planejamento): indexar os prompts do executor com letra, situacao e commits`
-  5. `bb260e1 docs(planejamento): mandar o prompt Q fechar as pendencias que ele proprio resolve`
+  1. `0657173 docs(planejamento): registrar a fase amostral adicional como pendencia (entrada 18)`
+  2. `35bc056 docs(planejamento): adicionar prompt S da apresentacao PPTX e documento DOCX`
+  3. `3673379 docs(planejamento): adicionar prompt R, retirada da alegacao de predicao prospectiva`
+  4. `38443e6 docs(planejamento): material de decisao sobre o Modelo P e a alegacao de predicao`
+  5. `a1579db docs(planejamento): marcar O e Q como executados e registrar os testes de mutacao`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 130
