@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `ecaea6c7f8eb0200316cd0b869a832ac486a3351`
-- Data do HEAD: 2026-11-10 22:57:59 -0300
+- Commit HEAD: `1ec35a39ecd210ddc434225624d921085bc5c157`
+- Data do HEAD: 2026-11-11 02:05:10 +0000
 - Últimos 5 commits:
-  1. `ecaea6c feat(interface): alinhar interface ao desenho medido D16 e travas de paridade (Prompt M)`
-  2. `814e6f8 Update Verificação e Validação SAREL 2026_11_11`
-  3. `7ecdfac docs(planejamento): adicionar prompt M de alinhamento da interface ao desenho medido`
-  4. `5047c72 docs(dissertacao): registrar verificacao e validacao do SAREL em documento Word`
-  5. `0133f4c docs(planejamento): sincronizar painel ESTADO.md com 109 arquivos de teste herméticos e evidências`
+  1. `1ec35a3 docs(planejamento): adicionar prompt N de atualizacao do tour metodologico`
+  2. `8f4a4b1 docs(planejamento): sincronizar ESTADO.md com 110 testes herméticos e evidências do Prompt M`
+  3. `ecaea6c feat(interface): alinhar interface ao desenho medido D16 e travas de paridade (Prompt M)`
+  4. `814e6f8 Update Verificação e Validação SAREL 2026_11_11`
+  5. `7ecdfac docs(planejamento): adicionar prompt M de alinhamento da interface ao desenho medido`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 126

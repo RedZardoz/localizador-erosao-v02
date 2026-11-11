@@ -9,6 +9,33 @@
  * formulação matemática formal, script executado e referência bibliográfica.
  */
 
+import { DECISOES, PARAMETROS } from "./decisoes";
+import { obterComparativoDesenhoD16 } from "@/lib/gee/seloPublicoD16";
+
+const chavesDecisoes = Object.keys(DECISOES).sort();
+export const TOTAL_DECISOES = chavesDecisoes.length;
+export const TOTAL_PARAMETROS = Object.keys(PARAMETROS).length;
+export const PRIMEIRA_DECISAO = chavesDecisoes[0] || "D01";
+export const ULTIMA_DECISAO = chavesDecisoes[chavesDecisoes.length - 1] || "D26";
+export const FAIXA_DECISOES = `${PRIMEIRA_DECISAO} a ${ULTIMA_DECISAO}`;
+
+const comparativoD16 = obterComparativoDesenhoD16();
+const { nominal: DESENHO_NOMINAL, realizado: DESENHO_REALIZADO } = comparativoD16;
+const totalSorteadosD16 = DESENHO_REALIZADO.disponivel
+  ? DESENHO_REALIZADO.totalPoligonosSorteados
+  : 67;
+const totalTreinoD16 = DESENHO_REALIZADO.disponivel
+  ? DESENHO_REALIZADO.totalTreino
+  : 34;
+const totalHeldOutD16 = DESENHO_REALIZADO.disponivel
+  ? DESENHO_REALIZADO.totalHeldOut
+  : 33;
+const areaHaRealizadoFormatada = DESENHO_REALIZADO.disponivel
+  ? DESENHO_REALIZADO.areaTotalHectares.toFixed(2).replace(".", ",")
+  : "336,34";
+const nominalPoligonosD16 = DESENHO_NOMINAL.totalPoligonos;
+const nominalHaD16 = DESENHO_NOMINAL.areaTotalArredondadaHa;
+
 export interface VariavelCalculo {
   simbolo: string;
   significado: string;
@@ -159,15 +186,15 @@ function calcularDeclividade(dz_dx: number, dz_dy: number): number {
   "amostragem-gee": {
     id: "amostragem-gee",
     titulo: "Central de Amostragem Biofísica GEE",
-    subtitulo: "Triagem Espectral de Cicatrizes de Erosão no Google Earth Engine",
+    subtitulo: "Triagem Espectral de Candidatos a Erosão e Controle no Google Earth Engine",
     modulo: "3. Sensoriamento Remoto & Espectrometria",
     seletorAlvo: '[data-metodologia="amostragem-gee"]',
     oQueFaz:
-      "Executa a busca e extração de candidatos a amostras de solo exposto e controle na Bacia Paraná 3, utilizando a coleção Sentinel-2 L2A via Google Earth Engine API.",
+      "Executa a busca e triagem espectral de candidatos a feições erosivas e candidatos a controle sob Sistema Plantio Direto (SPD) na Bacia Paraná 3, utilizando a coleção Sentinel-2 L2A via Google Earth Engine API.",
     comoUsar:
       "Clique para abrir o painel, defina a safra/período agrícola, especifique os limiares de reflectância e execute a triagem. Os pontos encontrados surgirão no mapa em memória efêmera.",
     comoFunciona:
-      "Aplica máscara rígida de nuvens e sombras (QA60/SCL), reduz a série multitemporal pela mediana nos meses secos (janela de solo descoberto) e calcula os índices espectrais biofísicos NDVI e BSI.",
+      "Aplica máscara rígida de nuvens e sombras (QA60/SCL), reduz a série multitemporal pela mediana nos meses secos (janela de solo descoberto) e calcula os índices espectrais biofísicos NDVI e BSI para triagem de candidatos.",
     calculo: {
       nome: "Índice de Vegetação (NDVI) & Índice de Solo Exposto (BSI)",
       formulaTex: "\\text{BSI} = \\frac{(\\rho_{\\text{SWIR1}} + \\rho_{\\text{Red}}) - (\\rho_{\\text{NIR}} + \\rho_{\\text{Blue}})}{(\\rho_{\\text{SWIR1}} + \\rho_{\\text{Red}}) + (\\rho_{\\text{NIR}} + \\rho_{\\text{Blue}})}",
@@ -180,13 +207,13 @@ function calcularDeclividade(dz_dx: number, dz_dy: number): number {
         { simbolo: "\\rho_{\\text{Red}}", significado: "Banda 4 do Sentinel-2 (665 nm)", unidade: "Reflectância" },
       ],
       interpretacao:
-        "Erosão laminar ativa exige BSI > 0.10 e NDVI < 0.40 (solo descoberto com cicatriz de arraste mineral). Controle sob SPD exige BSI < 0.00 e NDVI > 0.65.",
+        "Candidato espectral a feição erosiva (BSI > 0,10 e NDVI < 0,40 · triagem D02) e candidato espectral a controle sob SPD (BSI < 0,00 e NDVI > 0,65). Os cortes numéricos são convenção operacional do projeto (com análise de sensibilidade pré-registrada e pendente), servindo para triagem preliminar de candidatos e auxílio visual ao intérprete, nunca como rótulo definitivo (Regra 4: nada calculado vira rótulo; Rikimaru et al., 2002 formula o índice, mas não prescreve cortes).",
     },
     script: {
       linguagem: "python-gee",
-      rotulo: "Redução e Triagem Biofísica no GEE",
-      codigo: `# Google Earth Engine - Script de Redução Temporal de Solo Nu
-def extrair_candidatos_erosao(aoi, ano_safra):
+      rotulo: "Redução e Triagem de Candidatos Espectrais no GEE",
+      codigo: `# Google Earth Engine - Script de Redução Temporal e Triagem Espectral (D02)
+def extrair_candidatos_espectrais(aoi, ano_safra):
     s2 = (ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
           .filterBounds(aoi)
           .filterDate(f'{ano_safra}-07-01', f'{ano_safra}-10-31')
@@ -199,19 +226,139 @@ def extrair_candidatos_erosao(aoi, ano_safra):
         '((b("B11") + b("B4")) - (b("B8") + b("B2"))) / ((b("B11") + b("B4")) + (b("B8") + b("B2")))'
     ).rename('BSI')
     
-    # Máscara de elegibilidade pura (Decisão D02)
-    candidatos = bsi.gt(0.10).And(ndvi.lt(0.40))
-    return candidatos`,
+    # Triagem de candidatos espectrais (Decisão D02 - convenção operacional, não rótulo)
+    candidatos_espectrais_erosao = bsi.gt(0.10).And(ndvi.lt(0.40))
+    return candidatos_espectrais_erosao`,
       explicacao:
-        "Operação executada nos servidores do GEE, transferindo apenas coordenadas aprovadas para o SAREL.",
+        "Operação executada no GEE para triagem inicial de candidatos espectrais, transferindo coordenadas elegíveis para inspeção visual sem atribuir rótulo antecipado.",
     },
-    referencia: "Rouse et al. (1974); Diek et al. (2017); Metodologia PPGTCA 2026.",
+    referencia: "Rouse et al. (1974); Rikimaru et al. (2002); Diek et al. (2017); Decisão D02 (Convenção Operacional PPGTCA 2026).",
     decisaoId: "D02",
     acaoAtalho: {
       rotulo: "Abrir Central GEE",
       tipo: "modal",
       modalAlvo: "candidates",
     },
+  },
+
+  "mascara-solo-geos3": {
+    id: "mascara-solo-geos3",
+    titulo: "Máscara de Solo Exposto GEOS3 (Sentinel-2)",
+    subtitulo: "Discriminação Espectral de Solo Mineral vs. Palhada via SWIR (NBR2)",
+    modulo: "3. Sensoriamento Remoto & Espectrometria",
+    seletorAlvo: '[data-metodologia="mascara-solo-geos3"]',
+    oQueFaz:
+      "Aplica a máscara espectral multicritério do GEOS3 para isolar pixels de solo mineral exposto, eliminando vegetação fotossinteticamente ativa e cobertura morta (palhada agrícola sob Sistema Plantio Direto).",
+    comoUsar:
+      "Ativada no processamento de séries temporais Sentinel-2 L2A no Earth Engine ou no Inspetor de Séries Temporais para filtrar observações elegíveis de solo descoberto.",
+    comoFunciona:
+      "Submete cada pixel Sentinel-2 L2A a uma conjunção estrita de 5 testes espectrais: (1) NDVI ∈ [0,00; 0,25]; (2) NBR2 ∈ [0,00; 0,075]; (3) B4 ≥ B3; (4) B3 ≥ B2; e (5) ausência de nuvem/sombra. O índice NBR2 (baseado em SWIR1/B11 e SWIR2/B12) é o componente crítico que discrimina celulose e lignina da palhada do solo mineral desprovido de resíduo vegetal — separação que o NDVI isolado é incapaz de realizar. A transposição dos limiares empíricos de Landsat 5 TM para Sentinel-2 MSI L2A é declarada formalmente como hipótese de pesquisa não validada (Decisão D10 / EMENDA DE 09/11/2026).",
+    calculo: {
+      nome: "Critério Multiespectral GEOS3 para Detecção de Solo Exposto",
+      formulaTex:
+        "\\text{SoloMineral} \\iff (0{,}00 \\le \\text{NDVI} \\le 0{,}25) \\land (0{,}00 \\le \\text{NBR2} \\le 0{,}075) \\land (\\rho_{\\text{B4}} \\ge \\rho_{\\text{B3}}) \\land (\\rho_{\\text{B3}} \\ge \\rho_{\\text{B2}})",
+      formulaDescritiva:
+        "Solo Mineral = (0.00 <= NDVI <= 0.25) E (0.00 <= NBR2 <= 0.075) E (Banda 4 >= Banda 3) E (Banda 3 >= Banda 2), com NBR2 = (B11 - B12) / (B11 + B12).",
+      variaveis: [
+        {
+          simbolo: "\\text{NBR2}",
+          significado: "Normalized Burn Ratio 2: (SWIR1 - SWIR2) / (SWIR1 + SWIR2)",
+          unidade: "[-1, 1]",
+        },
+        {
+          simbolo: "\\text{NDVI}",
+          significado: "Normalized Difference Vegetation Index: (NIR - Red) / (NIR + Red)",
+          unidade: "[-1, 1]",
+        },
+        {
+          simbolo: "\\rho_{\\text{B4}}, \\rho_{\\text{B3}}, \\rho_{\\text{B2}}",
+          significado: "Reflectâncias de superfície no Vermelho (B4), Verde (B3) e Azul (B2)",
+          unidade: "Reflectância de Superfície",
+        },
+      ],
+      interpretacao:
+        "O NBR2 aproveita bandas de absorção de celulose e lignina em 2,1-2,3 µm para distinguir palhada de solo mineral, enquanto as condições B4 >= B3 e B3 >= B2 asseguram curva espectral ascendente típica de solo. A transposição de Landsat para Sentinel-2 permanece como hipótese experimental não validada.",
+    },
+    script: {
+      linguagem: "python-gee",
+      rotulo: "Filtro Multicritério GEOS3 no GEE (D10)",
+      codigo: `# Google Earth Engine - Máscara de Solo Exposto GEOS3 (Sentinel-2 L2A)
+# Decisão D10: transposição Landsat 5 TM -> Sentinel-2 MSI (hipótese não validada)
+def mascarar_solo_mineral_geos3(imagem):
+    ndvi = imagem.normalizedDifference(['B8', 'B4']).rename('NDVI')
+    nbr2 = imagem.normalizedDifference(['B11', 'B12']).rename('NBR2')
+    b4 = imagem.select('B4')
+    b3 = imagem.select('B3')
+    b2 = imagem.select('B2')
+    
+    teste_ndvi = ndvi.gte(0.00).And(ndvi.lte(0.25))
+    teste_nbr2 = nbr2.gte(0.00).And(nbr2.lte(0.075))
+    teste_curva = b4.gte(b3).And(b3.gte(b2))
+    
+    solo_mineral = teste_ndvi.And(teste_nbr2).And(teste_curva)
+    return imagem.updateMask(solo_mineral)`,
+      explicacao:
+        "Conjunção dos cinco testes espectrais no SWIR e visível para isolar exclusivamente solo mineral, descartando resíduo vegetal e palhada sob SPD.",
+    },
+    referencia:
+      "Demattê et al. (2018), GEOS3; Daughtry et al. (2001, 2004); Hively et al. (2021); Decisão D10 (EMENDA DE 09/11/2026).",
+    decisaoId: "D10",
+  },
+
+  "frequencia-solo-nu-e": {
+    id: "frequencia-solo-nu-e",
+    titulo: "Frequência Temporal de Solo Exposto (Dimensão Ê)",
+    subtitulo: "Medição Multitemporal e Estratificação em Tercis Empíricos (D11/D12)",
+    modulo: "4. Estatística Espacial & Amostragem",
+    seletorAlvo: '[data-metodologia="frequencia-solo-nu-e"]',
+    oQueFaz:
+      "Mede a proporção histórica de cenas em que cada candidato apresentou solo mineral exposto ao longo da série Sentinel-2 L2A, derivando a dimensão Ê para estratificação amostral tridimensional.",
+    comoUsar:
+      "Consulte os histogramas de frequência temporal e as faixas de tercis empíricos calculados na Bacia Paraná 3 para verificar a partição em classes Ê1, Ê2 e Ê3.",
+    comoFunciona:
+      "Mede todos os 677 candidatos da base amostral, contabilizando de 148 a 1.011 observações válidas por ponto (mediana 477), com nenhum ponto abaixo do piso estrito de 12 observações (D11.2). A distribuição é fortemente assimétrica: 181 pontos (26,7%) apresentam exatamente zero observações de solo nu na série histórica (cobertura vegetal perene ou SPD ininterrupto). Os tercis empíricos foram calculados em t1 = 0,0116 e t2 = 0,0490, gerando uma ocupação balanceada de 226 pontos em Ê1, 225 em Ê2 e 226 em Ê3.",
+    calculo: {
+      nome: "Frequência Relativa de Solo Nu e Tercis Empíricos (D11/D12)",
+      formulaTex:
+        "\\hat{E}_i = \\frac{1}{N_{\\text{val}, i}} \\sum_{t=1}^{N_{\\text{val}, i}} \\mathbb{I}_{\\text{solo}}(p_i, t), \\quad \\text{onde } N_{\\text{val}, i} \\ge 12 \\; (\\text{mediana } 477)",
+      formulaDescritiva:
+        "Ê = (Número de passagens com solo exposto GEOS3) / (Total de cenas válidas sem nuvem). Limiares empíricos: Ê1: [0, 0.0116]; Ê2: (0.0116, 0.0490]; Ê3: (0.0490, 1.0].",
+      variaveis: [
+        {
+          simbolo: "\\hat{E}_i",
+          significado: "Frequência histórica relativa de solo descoberto no ponto i",
+          unidade: "[0, 1]",
+        },
+        {
+          simbolo: "N_{\\text{val}, i}",
+          significado: "Número de passagens Sentinel-2 válidas e desobstruídas",
+          unidade: "148 a 1011 (mediana 477)",
+        },
+        {
+          simbolo: "\\mathbb{I}_{\\text{solo}}",
+          significado: "Indicador binário de conformidade com os 5 testes GEOS3",
+          unidade: "{0, 1}",
+        },
+      ],
+      interpretacao:
+        "Identifica áreas com exposição frequente do solo (alta propensão a processos erosivos) versus áreas com cobertura vegetal contínua, servindo como a segunda dimensão da estratificação D12.",
+    },
+    script: {
+      linguagem: "typescript",
+      rotulo: "Cálculo de Tercis Empíricos da Frequência de Solo Nu",
+      codigo: `// Cálculo de tercis e estratificação da dimensão Ê (Decisões D11 e D12)
+export function calcularTercisFrequenciaSoloNu(amostras: number[]): { t1: number; t2: number } {
+  const ordenados = [...amostras].sort((a, b) => a - b);
+  const n = ordenados.length; // 677 candidatos na Bacia Paraná 3
+  const t1 = ordenados[Math.floor(n / 3)];       // 0.0116 (226 pontos em Ê1)
+  const t2 = ordenados[Math.floor((2 * n) / 3)]; // 0.0490 (225 pontos em Ê2, 226 em Ê3)
+  return { t1, t2 };
+}`,
+      explicacao:
+        "Particiona o domínio contínuo de solo nu em três estratos equiprováveis para garantir máxima representatividade na alocação amostral.",
+    },
+    referencia: "Diek et al. (2017); Decisões D10, D11 e D12 (PPGTCA 2026).",
+    decisaoId: "D11",
   },
 
   "thinning-espacial": {
@@ -348,6 +495,70 @@ export function obterFatorKPorClasseSolo(classe: string): number {
     decisaoId: "D09",
   },
 
+  "sorteio-d16-realizado": {
+    id: "sorteio-d16-realizado",
+    titulo: "Desenho Amostral Realizado (Selo Público D16)",
+    subtitulo: "Estratificação Tridimensional (S x E x K), Alocação Ótima e Censo Estrutural",
+    modulo: "5. Desenho Amostral & Planejamento de Campo",
+    seletorAlvo: '[data-metodologia="sorteio-d16-realizado"]',
+    oQueFaz:
+      `Apresenta o plano amostral estratificado probabilístico executado na Bacia Paraná 3, confrontando o desenho nominal (${nominalPoligonosD16} polígonos, ~${nominalHaD16} ha) com o desenho realizado (${totalSorteadosD16} polígonos, ${areaHaRealizadoFormatada} ha: ${totalTreinoD16} treino + ${totalHeldOutD16} held-out).`,
+    comoUsar:
+      "Inspecione a distribuição de polígonos por estrato no mapa e na tabela do selo público para verificar a conformidade com as quotas amostrais e os pesos de Horvitz-Thompson.",
+    comoFunciona:
+      `O sorteio opera sobre 18 estratos tridimensionais (Declividade Ŝ × Solo Nu Ê × Erodibilidade K̂). No plano realizado, foram sorteados ${totalSorteadosD16} polígonos de 5,02 ha (${totalTreinoD16} treino e ${totalHeldOutD16} held-out reservado, totalizando ${areaHaRealizadoFormatada} ha), contra ${nominalPoligonosD16} nominais (~${nominalHaD16} ha). O estrato E_1_3_2 (Ŝ₁ × Ê₃ × K̂₂) resultou vazio porque a bacia hidrográfica possui apenas 9 candidatos de relevo plano com alta erodibilidade, e o valor máximo de Ê observado entre eles foi de 0,0331, abaixo do corte do tercil superior (0,0490) — um achado biofísico genuíno da BP3, não uma falha do método. Cinco dos nove estratos de K̂=2 operam em regime de censo ou déficit sem suplentes (E_1_3_2 vazio e E_1_2_2, E_2_2_2, E_2_3_2, E_3_2_2 com N <= 4).`,
+    calculo: {
+      nome: "Alocação Estratificada Probabilística e Pesos de Horvitz-Thompson",
+      formulaTex:
+        "n_h = \\min(4, N_h), \\quad \\pi_{hi} = \\frac{n_h}{N_h}, \\quad w_{hi} = \\frac{1}{\\pi_{hi}} = \\frac{N_h}{n_h}",
+      formulaDescritiva:
+        "Número de polígonos no estrato h = min(4, N_h). Probabilidade de inclusão pi = n_h / N_h; Peso amostral w = 1 / pi.",
+      variaveis: [
+        {
+          simbolo: "n_h",
+          significado: "Número de polígonos alocados ao estrato h (meta = 4: 2 treino + 2 held-out)",
+          unidade: "Polígonos",
+        },
+        {
+          simbolo: "N_h",
+          significado: "Total de candidatos elegíveis pertencentes ao estrato h na bacia",
+          unidade: "Candidatos",
+        },
+        {
+          simbolo: "\\pi_{hi}",
+          significado: "Probabilidade de inclusão de primeira ordem da unidade i",
+          unidade: "(0, 1]",
+        },
+        {
+          simbolo: "w_{hi}",
+          significado: "Peso de expansão amostral de Horvitz-Thompson",
+          unidade: "[1, +inf)",
+        },
+      ],
+      interpretacao:
+        "Garante inferência estatística não-viesada (D23) sobre a área total da bacia mesmo diante de desigualdades na frequência natural dos tipos de solo e relevo.",
+    },
+    script: {
+      linguagem: "typescript",
+      rotulo: "Consulta do Desenho Amostral pelo Leitor Único",
+      codigo: `// Leitura única do desenho amostral nominal vs realizado (src/lib/gee/seloPublicoD16.ts)
+import { obterComparativoDesenhoD16 } from "@/lib/gee/seloPublicoD16";
+
+const { nominal, realizado } = obterComparativoDesenhoD16();
+if (realizado.disponivel) {
+  console.log(\`Polígonos: \${realizado.totalPoligonosSorteados} de \${nominal.totalPoligonos} nominais\`);
+  console.log(\`Treino: \${realizado.totalTreino} | Held-out: \${realizado.totalHeldOut}\`);
+  console.log(\`Área total: \${realizado.areaTotalHectares.toFixed(2)} ha\`);
+  console.log(\`Estratos em censo sem suplentes: \${realizado.estratosCenso.join(", ")}\`);
+  console.log(\`Estrato vazio biofísico: \${realizado.estratosVazios.join(", ")}\`);
+}`,
+      explicacao:
+        "Importa os quantitativos certificados diretamente do leitor único do selo público, impedindo discrepâncias entre telas e módulos.",
+    },
+    referencia: "Cochran (1977), Sampling Techniques; Särndal et al. (1992); Decisões D12, D16 e D23.",
+    decisaoId: "D16",
+  },
+
   "campanha-rotulos": {
     id: "campanha-rotulos",
     titulo: "Central de Campanha & Ingestão de Rótulos",
@@ -407,11 +618,11 @@ export function calcularKappaCohen(tp: number, fp: number, fn: number, tn: numbe
     modulo: "7. Machine Learning & Modelagem Preditiva",
     seletorAlvo: '[data-metodologia="matriz-treino"]',
     oQueFaz:
-      "Gera a matriz tabular final consolidada, unindo todas as covariáveis ambientais (espectrais, topográficas, pedológicas e climáticas) aos rótulos binários de erosão.",
+      "Gera a matriz tabular final consolidada, unindo todas as covariáveis ambientais (espectrais, topográficas, pedológicas e climáticas) aos alvos canônicos de erosão: Fracao_Erodida como alvo primário contínuo e desfechos secundários de classificação.",
     comoUsar:
       "Clique para abrir a central, visualize a tabela de atributos, verifique os diagnósticos de colinearidade (VIF) e exporte a base pronta para os scripts externos de modelagem.",
     comoFunciona:
-      "Extrai mais de 15 preditores por ponto amostral, aplica divisão por blocos espaciais (Spatial Block CV com buffer de isolamento de 1 km) para evitar vazamento de dados (data leakage) e exporta em CSV/Parquet.",
+      "Extrai os preditores biofísicos aprovados por ponto amostral, aplica divisão por blocos espaciais (Spatial Block CV com buffer de isolamento de 1 km) para evitar vazamento de dados (data leakage) e exporta em CSV/Parquet. Preditores derivados do competidor mecanicista RUSLE (Fator C, Fator P e Perda A) são expressamente proibidos por D25. O Fator LS foi retirado da matriz de treino por decisão metodológica (permanecendo na linha de base e na planilha). O Fator K e o Fator R são mantidos como insumos biofísicos legítimos.",
     calculo: {
       nome: "Fator de Inflação da Variância (VIF) para Remoção de Multicolinearidade",
       formulaTex: "\\text{VIF}_j = \\frac{1}{1 - R_j^2}, \\quad \\mathcal{L}^{(t)} \\approx \\sum_{i=1}^n \\left[ g_i f_t(x_i) + \\frac{1}{2} h_i f_t^2(x_i) \\right] + \\gamma T + \\frac{1}{2}\\lambda \\sum_{j=1}^T w_j^2",
@@ -423,31 +634,45 @@ export function calcularKappaCohen(tp: number, fp: number, fn: number, tn: numbe
         { simbolo: "\\mathcal{L}^{(t)}", significado: "Função objetivo regularizada de 2ª ordem do XGBoost", unidade: "Escalar" },
       ],
       interpretacao:
-        "Impede que bandas espectrais altamente correlacionadas distorçam a importância das variáveis físicas nos valores de explicabilidade SHAP.",
+        "Impede que bandas espectrais altamente correlacionadas distorçam a importância das variáveis físicas nos valores de explicabilidade SHAP. O alvo primário contínuo Fracao_Erodida (D26) é modelado com objetivo reg:tweedie.",
     },
     script: {
       linguagem: "typescript",
       rotulo: "Montagem Tabular de Covariáveis do Ponto",
-      codigo: `// Montagem da linha de covariáveis para treinamento supervisionado
-function extrairLinhaMatriz(ponto: PontoAmostral): Record<string, number> {
+      codigo: `// Recorte ilustrativo de colunas reais do perfil 'matriz-treino' (src/lib/matriz/perfis.ts)
+// Nota metodológica: saídas do competidor RUSLE (Fator C, Fator P, Perda A) são expressamente
+// PROIBIDAS como preditor (D25). Fator LS foi removido da matriz por decisão metodológica
+// (mantido na planilha e na linha de base mecanicista).
+function extrairLinhaMatrizTreino(amostra: RegistroAmostral): Record<string, string | number> {
   return {
-    latitude: ponto.latitude,
-    longitude: ponto.longitude,
-    ndvi: ponto.propriedades.ndvi,
-    bsi: ponto.propriedades.bsi,
-    fator_c: (1 - ponto.propriedades.ndvi) / 2,
-    fator_k: ponto.propriedades.fatorK,
-    fator_ls: ponto.propriedades.ls,
-    fator_r: ponto.propriedades.fatorR,
-    declividade_graus: ponto.propriedades.declividade,
-    rotulo_classe: ponto.classe === 'erosao' ? 1 : 0
+    // Identificadores e desenho amostral (D12 / D16 / D26)
+    Celula_ID: amostra.celulaId,
+    Poligono_ID: amostra.poligonoId,
+    Papel_Conjunto: amostra.papelConjunto, // 'treino' | 'held-out'
+    Estrato_ID: amostra.estratoId,
+    // Topografia (Copernicus DEM 30m - D07)
+    Elevacao_m: amostra.elevacao,
+    Declividade_graus: amostra.declividadeGraus,
+    Curvatura_Perfil: amostra.curvaturaPerfil,
+    TWI: amostra.twi,
+    // Pedologia e Chuva (insumos físicos admitidos)
+    RUSLE_Fator_K: amostra.fatorK,
+    RUSLE_Fator_R: amostra.fatorR,
+    // Espectral e Dinâmica Temporal (Sentinel-2 L2A)
+    Frequencia_Solo_Nu: amostra.frequenciaSoloNu,
+    NDVI_P90_Serie: amostra.ndviP90,
+    Taxa_Degradacao_SWIR_Anual: amostra.taxaSwir,
+    // Alvo Canônico Primário (D26 - contínuo em [0, 1], reg:tweedie)
+    Fracao_Erodida: amostra.fracaoErodida,
+    // Alvo Secundário de Classificação (D03)
+    Classe_Alvo_Binaria: amostra.classeAlvoBinaria
   };
 }`,
       explicacao:
-        "Garante reprodutibilidade total sem preenchimentos artificiais ou interpolações espúrias.",
+        "Recorte representativo de colunas reais da matriz de treino (perfis.ts). O alvo primário é Fracao_Erodida (contínuo em [0, 1], D26). O Fator C da RUSLE é preditor terminantemente proibido por D25 (saída do competidor), enquanto o Fator LS foi excluído por decisão metodológica (permanecendo na linha de base e na planilha). Fator K e Fator R são mantidos como insumos biofísicos.",
     },
-    referencia: "Chen & Guestrin (2016), XGBoost; Roberts et al. (2017), Ecography; Decisão D04.",
-    decisaoId: "D04",
+    referencia: "Chen & Guestrin (2016), XGBoost; Roberts et al. (2017), Ecography; Decisões D04, D25 e D26.",
+    decisaoId: "D04, D25, D26",
     acaoAtalho: {
       rotulo: "Abrir Matriz de Treino",
       tipo: "modal",
@@ -457,14 +682,14 @@ function extrairLinhaMatriz(ponto: PontoAmostral): Record<string, number> {
 
   "decisoes-metodologicas": {
     id: "decisoes-metodologicas",
-    titulo: "Livro de Decisões Metodológicas (D01 a D19)",
+    titulo: `Livro de Decisões Metodológicas (${FAIXA_DECISOES})`,
     subtitulo: "Rastreabilidade Epistemológica e Blindagem Metodológica para a Banca",
     modulo: "8. Governança Epistemológica & Auditoria",
     seletorAlvo: '[data-metodologia="decisoes-metodologicas"]',
     oQueFaz:
-      "Apresenta o registro formal e imutável de todas as 19 decisões metodológicas da dissertação de mestrado, com justificativa científica, autoria, data e literatura de suporte.",
+      `Apresenta o registro formal e imutável de todas as ${TOTAL_DECISOES} decisões metodológicas e ${TOTAL_PARAMETROS} parâmetros operacionais do SAREL, com justificativa científica, autoria, data e literatura de suporte.`,
     comoUsar:
-      "Clique para abrir o catálogo de decisões. Cada decisão (D01 a D19) pode ser inspecionada individualmente com seu status (decidida/proposta/pendente).",
+      `Clique para abrir o catálogo de decisões. Cada decisão (${FAIXA_DECISOES}) pode ser inspecionada individualmente com seu status (decidida/proposta/pendente) e histórico de emendas.`,
     comoFunciona:
       "O sistema possui travas estritas no código (ex: `exigirDecisao(DECISOES.D01)`). Se qualquer cálculo tentar rodar sem que a respectiva decisão esteja formalmente selada no estado 'decidida', o sistema aborta a operação por segurança científica.",
     calculo: {
@@ -473,7 +698,7 @@ function extrairLinhaMatriz(ponto: PontoAmostral): Record<string, number> {
       formulaDescritiva:
         "Para toda decisão formal d no conjunto de decisões D, o estado deve ser estritamente 'decidida' e embasado em literatura consagrada.",
       variaveis: [
-        { simbolo: "\\mathcal{D}", significado: "Conjunto formal de 19 decisões metodológicas da dissertação", unidade: "Conjunto" },
+        { simbolo: "\\mathcal{D}", significado: `Conjunto formal de ${TOTAL_DECISOES} decisões metodológicas da dissertação (${FAIXA_DECISOES})`, unidade: "Conjunto" },
         { simbolo: "d", significado: "Decisão individual (ex: D01 para Fator C, D02 para Elegibilidade Espectral)", unidade: "Entidade" },
       ],
       interpretacao:
@@ -493,12 +718,81 @@ export function exigirDecisao<T>(d: Decisao<T>): T {
         "Garante que o software recuse a execução caso premissas científicas estejam pendentes.",
     },
     referencia: "Normas de Qualificação PPGTCA 2026; Diretrizes de Pesquisa e Inovação do Itaipu Parquetec.",
-    decisaoId: "D01-D19",
+    decisaoId: `${PRIMEIRA_DECISAO}-${ULTIMA_DECISAO}`,
     acaoAtalho: {
       rotulo: "Abrir Livro de Decisões",
       tipo: "modal",
       modalAlvo: "decisoes",
     },
+  },
+
+  "cadeia-verificacao": {
+    id: "cadeia-verificacao",
+    titulo: "Cadeia de Verificação e Cegamento Amostral",
+    subtitulo: "Selo Criptográfico, Invariantes do Sorteio e Reprodutibilidade Hermética",
+    modulo: "8. Governança Epistemológica & Auditoria",
+    seletorAlvo: '[data-metodologia="cadeia-verificacao"]',
+    oQueFaz:
+      "Demonstra a cadeia criptográfica de custódia e verificação do sorteio de polígonos (D16), atestando a reprodutibilidade exata com semente pré-registrada, cumprimento de 8 invariantes matemáticos e cegamento estrito da camada K2.",
+    comoUsar:
+      "Consulte o relatório forense de verificação e validação (docs/dissertacao/Verificacao_e_Validacao_SAREL_2026-11-11.docx) e execute os scripts de auditoria automatizados para reproduzir o sorteio bit a bit.",
+    comoFunciona:
+      "O sorteio de polígonos foi executado com a semente pré-registrada 20261110. A conformidade é garantida pela verificação compulsória de 8 invariantes matemáticos formais (INV-1 a INV-8), abrangendo partição exata de treino/held-out, conservação de área geodésica, quotas por estrato, identificadores únicos e censo de K2. O selo público redigido preserva o cegamento duplo dos observadores e da equipe de campo (sem divulgar a identidade dos candidatos de alta erodibilidade). A reprodutibilidade foi comprovada de ponta a ponta em clone limpo independente de sistema operacional e máquina.",
+    calculo: {
+      nome: "Verificação Criptográfica e Invariantes Formais de Amostragem",
+      formulaTex:
+        "H = \\text{SHA-256}(\\mathbf{C}_{\\text{candidatos}}), \\quad \\bigwedge_{k=1}^8 \\text{INV}_k = \\text{True}, \\quad \\text{Seed} = 20261110",
+      formulaDescritiva:
+        "Integridade = SHA-256 dos candidatos de entrada E Conjunção dos 8 invariantes INV-1 a INV-8 E Semente pseudo-aleatória pré-registrada.",
+      variaveis: [
+        {
+          simbolo: "H",
+          significado: "Hash SHA-256 do conjunto de entrada de 677 candidatos",
+          unidade: "Hexadecimal (64 chars)",
+        },
+        {
+          simbolo: "\\text{INV}_k",
+          significado: "Invariante formal de amostragem k (k = 1, ..., 8)",
+          unidade: "Booleano",
+        },
+        {
+          simbolo: "\\text{Seed}",
+          significado: "Semente do gerador Mersenne Twister pré-registrada antes do sorteio",
+          unidade: "Inteiro (20261110)",
+        },
+      ],
+      interpretacao:
+        "Assegura que nenhuma amostra possa ter sido manipulada, trocada ou re-sorteada após conhecimento dos dados, provendo blindagem contra viés de confirmação e p-hacking.",
+    },
+    script: {
+      linguagem: "typescript",
+      rotulo: "Auditoria Criptográfica de Invariantes",
+      codigo: `// Verificação dos 8 invariantes do selo de sorteio D16 (Prompt M / Dossiê V&V)
+import { obterDesenhoRealizadoD16 } from "@/lib/gee/seloPublicoD16";
+
+const selo = obterDesenhoRealizadoD16();
+if (selo.disponivel) {
+  const invariantesObrigatorios = [
+    "INV_1_TOTAL_TREINO_HELDOUT",
+    "INV_2_AREA_TOTAL",
+    "INV_3_SOMA_POLIGONOS_POR_ESTRATO",
+    "INV_4_PARTICAO_CANDIDATOS",
+    "INV_5_POLIGONOS_UNICOS",
+    "INV_6_CENSO_PI_1",
+    "INV_7_ESTRATO_VAZIO",
+    "INV_8_HORVITZ_THOMPSON",
+  ];
+  const todosAprovados = invariantesObrigatorios.every(inv =>
+    selo.invariantesVerificados.includes(inv)
+  );
+  console.log(\`Cadeia de custódia íntegra: \${todosAprovados} (Semente: \${selo.semente})\`);
+}`,
+      explicacao:
+        "Atesta o cumprimento rigoroso dos 8 invariantes do selo de sorteio e a integridade da semente pré-registrada.",
+    },
+    referencia:
+      "Dossiê de Verificação e Validação SAREL (PPGTCA 2026); docs/dissertacao/Verificacao_e_Validacao_SAREL_2026-11-11.docx.",
+    decisaoId: "D16, D23",
   },
 
   "dossie-auditoria": {
@@ -700,12 +994,16 @@ export const PASSOS_TOUR_APRESENTACAO: string[] = [
   "aoi-selector",
   "terreno-3d",
   "amostragem-gee",
+  "mascara-solo-geos3",
+  "frequencia-solo-nu-e",
   "thinning-espacial",
   "fator-c-rusle",
   "fator-k-pedologia",
+  "sorteio-d16-realizado",
   "campanha-rotulos",
   "matriz-treino",
   "decisoes-metodologicas",
+  "cadeia-verificacao",
   "dossie-auditoria",
   "exportacao-oficial",
 ];

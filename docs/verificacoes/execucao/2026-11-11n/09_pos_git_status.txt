@@ -1,0 +1,6 @@
+﻿ M docs/planejamento/ESTADO.md
+ M src/config/tourMetodologico.test.ts
+ M src/config/tourMetodologico.ts
+ M src/lib/gee/seloPublicoD16.ts
+?? docs/verificacoes/2026-11-11n_tour_atualizado.md
+?? docs/verificacoes/execucao/2026-11-11n/

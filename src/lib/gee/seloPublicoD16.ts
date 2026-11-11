@@ -12,9 +12,9 @@
  *
  * SALVAGUARDAS INVIOLÁVEIS:
  * 1. Ponto único: nenhum componente da interface lê arquivos de selo diretamente.
- * 2. Ausência declarada: se o selo estiver ausente ou inválido, devolve estado
- *    declarado indisponível ({ disponivel: false, motivo: "..." }) sem inventar
- *    números nem aplicar valores padrão espúrios.
+ * 2. Validação estrita em execução: o módulo faz import estático do JSON (selo ausente
+ *    é erro em compilação, a salvaguarda mais forte); caso o conteúdo presente seja inválido
+ *    ou corrompido, devolve estado indisponível ({ disponivel: false, motivo: "..." }) sem inventar números.
  * 3. Pureza de importação: módulo isento de dependências node:* para execução segura
  *    em componentes React ("use client") e no navegador.
  */
