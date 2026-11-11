@@ -21,6 +21,7 @@ import {
 import { useSarelStore, usePontosVisiveis } from "@/store/useSarelStore";
 import { DECISOES } from "@/config/decisoes";
 import { obterDistribuicaoAcoes } from "./acoesCabecalho";
+import { IS_VITRINE_DEMONSTRACAO } from "@/config/vitrineDemonstracao";
 
 export const Header: React.FC = () => {
   const {
@@ -212,7 +213,9 @@ export const Header: React.FC = () => {
               <strong className="text-slate-900 dark:text-white font-bold">
                 {pontosVisiveis.length}
               </strong>{" "}
-              <span className="hidden sm:inline">Amostras</span>
+              <span className="hidden sm:inline">
+                {IS_VITRINE_DEMONSTRACAO ? "Sintéticas (Demo)" : "Amostras"}
+              </span>
               {pontosProvisorios.length > 0 && (
                 <span className="ml-1 text-amber-600 dark:text-amber-400 font-mono text-[10px] hidden md:inline">
                   ({pontosProvisorios.length})

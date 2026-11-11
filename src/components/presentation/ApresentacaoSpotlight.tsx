@@ -20,6 +20,38 @@ interface ApresentacaoSpotlightProps {
   destaqueApenas?: boolean;
 }
 
+export function resolverElementoTour(id: string, seletorAlvo: string): HTMLElement | null {
+  const direto = document.querySelector(seletorAlvo) as HTMLElement | null;
+  if (direto) {
+    const r = direto.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0) return direto;
+  }
+
+  const mapaFallbacks: Record<string, string> = {
+    "config-api": '[data-metodologia="menu-configuracoes"]',
+    "decisoes-metodologicas": '[data-metodologia="menu-configuracoes"]',
+    "diagnostico": '[data-metodologia="menu-configuracoes"]',
+    "mascara-solo-geos3": '[data-fluxo-modal="medicao"]',
+    "frequencia-solo-nu-e": '[data-fluxo-modal="medicao"]',
+    "sorteio-d16-realizado": '[data-fluxo-modal="sorteio"]',
+    "dossie-auditoria": '[data-fluxo-modal="audit-dossier"]',
+    "amostragem-gee": '[data-fluxo-modal="candidates"]',
+    "campanha-rotulos": '[data-fluxo-modal="campanha"]',
+    "matriz-treino": '[data-fluxo-modal="matriz"]',
+    "aoi-selector": '[data-fluxo-modal="region"]',
+    "thinning-espacial": '[data-fluxo-modal="candidates"]',
+    "fator-k-pedologia": '#btn-camadas-mapa',
+    "fator-c-rusle": '[data-fluxo-modal="audit-dossier"]',
+    "exportacao-oficial": '#btn-mais-acoes',
+  };
+
+  const seletorFallback = mapaFallbacks[id];
+  if (seletorFallback) {
+    return document.querySelector(seletorFallback) as HTMLElement | null;
+  }
+  return null;
+}
+
 export const ApresentacaoSpotlight: React.FC<ApresentacaoSpotlightProps> = () => {
   const {
     modoApresentacaoAtivo,
@@ -42,12 +74,7 @@ export const ApresentacaoSpotlight: React.FC<ApresentacaoSpotlightProps> = () =>
       return;
     }
 
-    let elemento = document.querySelector(item.seletorAlvo) as HTMLElement | null;
-
-    // Fallback gracioso: se o item for de configuração e o menu ainda estiver abrindo, foca na engrenagem
-    if (!elemento && (item.id === "config-api" || item.id === "decisoes-metodologicas" || item.id === "diagnostico")) {
-      elemento = document.querySelector('[data-metodologia="menu-configuracoes"]') as HTMLElement | null;
-    }
+    const elemento = resolverElementoTour(item.id, item.seletorAlvo);
 
     if (elemento) {
       const r = elemento.getBoundingClientRect();
@@ -74,7 +101,7 @@ export const ApresentacaoSpotlight: React.FC<ApresentacaoSpotlightProps> = () =>
     if (!item?.seletorAlvo) return;
 
     const timer = setTimeout(() => {
-      const elemento = document.querySelector(item.seletorAlvo) as HTMLElement | null;
+      const elemento = resolverElementoTour(item.id, item.seletorAlvo);
       if (elemento) {
         elemento.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
       }

@@ -1,0 +1,7 @@
+# T6.6 Verificacao do Selo Publico Redigido vs Selo Completo
+hashIntegridade: true
+sha256SeloCompletoPrefix: true
+sha256ConjuntoCandidatosPrefix: true
+declaracaoRedigida: true
+ausenciaTabelaCorrespondenciaOpacaLiteral: true
+ausenciaPoligonosSorteioCompletos: true

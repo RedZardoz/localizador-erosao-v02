@@ -19,6 +19,8 @@ import { PainelMedicaoModal } from "@/components/medicao/PainelMedicaoModal";
 import { ApresentacaoSpotlight } from "@/components/presentation/ApresentacaoSpotlight";
 import { ApresentacaoManager } from "@/components/presentation/ApresentacaoManager";
 import { ModalExplicativaMetodologica } from "@/components/presentation/ModalExplicativaMetodologica";
+import { VitrineDemonstracaoController } from "@/components/vitrine/VitrineDemonstracaoModalEBanner";
+import { IS_VITRINE_DEMONSTRACAO } from "@/config/vitrineDemonstracao";
 import { useSarelStore } from "@/store/useSarelStore";
 
 // Carregamento dinâmico do MapViewer com WebGL desabilitando SSR
@@ -92,12 +94,47 @@ export default function HomePage() {
       ev.preventDefault();
     };
 
+    // 1.1 Bloqueio defensivo offline no modo vitrine (impede chamadas externas ou /api/*)
+    const origFetch = window.fetch.bind(window);
+    if (IS_VITRINE_DEMONSTRACAO) {
+      window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url =
+          typeof input === "string"
+            ? input
+            : input instanceof URL
+            ? input.toString()
+            : input.url;
+        const ehMesmaOrigem =
+          typeof window !== "undefined" &&
+          (url.startsWith("/") || url.startsWith(window.location.origin));
+        const ehRotaApi = url.includes("/api/");
+
+        if (!ehMesmaOrigem || ehRotaApi) {
+          return new Response(
+            JSON.stringify({
+              ok: false,
+              offlineVitrine: true,
+              erro: "Requisição externa ou de API desabilitada no mockup estático.",
+            }),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+        }
+        return origFetch(input, init);
+      };
+    }
+
     window.addEventListener("error", onWinError);
     window.addEventListener("unhandledrejection", onUnhandledRejection);
 
     return () => {
       observer.disconnect();
       console.error = origConsoleError;
+      if (IS_VITRINE_DEMONSTRACAO) {
+        window.fetch = origFetch;
+      }
       window.removeEventListener("error", onWinError);
       window.removeEventListener("unhandledrejection", onUnhandledRejection);
     };
@@ -132,6 +169,9 @@ export default function HomePage() {
 
   return (
     <main className="h-screen w-screen flex flex-col overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+      {/* 0. Banner Permanente e Tela Inicial de Vitrine Demonstrativa (Prompt T) */}
+      <VitrineDemonstracaoController />
+
       {/* 1. Header Superior com Identidade, AOI e Centrais */}
       <Header />
 

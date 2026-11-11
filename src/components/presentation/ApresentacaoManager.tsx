@@ -8,6 +8,7 @@ import {
   PASSOS_TOUR_APRESENTACAO,
   obterItemMetodologico,
 } from "@/config/tourMetodologico";
+import { resolverElementoTour } from "./ApresentacaoSpotlight";
 
 export const ApresentacaoManager: React.FC = () => {
   const {
@@ -94,7 +95,7 @@ export const ApresentacaoManager: React.FC = () => {
     const item = obterItemMetodologico(itemMetodologicoAtivoId);
     if (!item?.seletorAlvo) return;
 
-    const elemento = document.querySelector(item.seletorAlvo);
+    const elemento = resolverElementoTour(item.id, item.seletorAlvo);
     if (elemento) {
       elemento.classList.add(
         "ring-4",

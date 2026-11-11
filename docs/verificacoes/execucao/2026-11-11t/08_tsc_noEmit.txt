@@ -1,0 +1,1 @@
+﻿OK: npx tsc --noEmit concluido sem erros (exit 0).

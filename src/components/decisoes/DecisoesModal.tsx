@@ -6,6 +6,7 @@ import { useSarelStore } from "@/store/useSarelStore";
 import { DECISOES, Decisao } from "@/config/decisoes";
 import { PainelCriterioRefutacaoD25 } from "./PainelCriterioRefutacaoD25";
 import { useModalA11y } from "@/hooks/useModalA11y";
+import { VitrineAvisoModal } from "@/components/vitrine/VitrineAvisoModal";
 
 export const DecisoesModal: React.FC = () => {
   const { modalAtiva, setModalAtiva } = useSarelStore();
@@ -100,6 +101,7 @@ export const DecisoesModal: React.FC = () => {
 
         {/* Grid de Decisões e Critério de Refutação D25 */}
         <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+          <VitrineAvisoModal textoCustom="DEMONSTRAÇÃO ESTÁTICA (MOCKUP): Registro somente leitura das Decisões Metodológicas (D01–D26) e Critério de Refutação D25 retratado em 11/11/2026." />
           <PainelCriterioRefutacaoD25 />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {decisoesFiltradas.map((dec) => (

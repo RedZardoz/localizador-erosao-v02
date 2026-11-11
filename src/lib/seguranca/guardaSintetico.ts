@@ -14,10 +14,18 @@ export function ehPontoSintetico(ponto: PontoAmostral): boolean {
   if (ponto.origemSintetica === true) {
     return true;
   }
-  if (ponto.id.startsWith("TEST-") || ponto.id.startsWith("SYNTHETIC-")) {
+  if (
+    ponto.id.startsWith("TEST-") ||
+    ponto.id.startsWith("SYNTHETIC-") ||
+    ponto.id.startsWith("SINTETICO_NAO_VOAR_")
+  ) {
     return true;
   }
-  if (ponto.codigo.startsWith("TEST-") || ponto.codigo.startsWith("SINT-")) {
+  if (
+    ponto.codigo.startsWith("TEST-") ||
+    ponto.codigo.startsWith("SINT-") ||
+    ponto.codigo.startsWith("SINTETICO_NAO_VOAR_")
+  ) {
     return true;
   }
   return false;

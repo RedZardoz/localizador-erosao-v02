@@ -25,6 +25,12 @@ import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
 import { CONFIGURACAO_REGISTRADA_D16 } from "@/lib/fundiario/calculadoraDesenho";
 import { obterComparativoDesenhoD16 } from "@/lib/gee/seloPublicoD16";
 import {
+  IS_VITRINE_DEMONSTRACAO,
+  AVISO_OPERACAO_DESABILITADA,
+  AVISO_EXPORTACAO_DESABILITADA,
+} from "@/config/vitrineDemonstracao";
+import { VitrineAvisoModal } from "@/components/vitrine/VitrineAvisoModal";
+import {
   FileSpreadsheet,
   CheckCircle2,
   Plane,
@@ -75,6 +81,14 @@ export function PainelCampanha() {
   }>({ estado: "indisponivel", causa: "carregando", sitios: [] });
 
   useEffect(() => {
+    if (IS_VITRINE_DEMONSTRACAO) {
+      setSitiosLocaisInfo({
+        estado: "indisponivel",
+        causa: "desabilitado-no-mockup",
+        sitios: [],
+      });
+      return;
+    }
     fetch("/api/sitios-referencia")
       .then((res) => {
         if (!res.ok) return { estado: "indisponivel", causa: "dado-local-ausente", sitios: [] };
@@ -101,7 +115,7 @@ export function PainelCampanha() {
   const [msgCampanha, setMsgCampanha] = useState<{ tipo: "sucesso" | "erro"; texto: string } | null>(null);
 
   const exportarPerfilCsv = (perfil: PerfilExportacao) => {
-    if (pontosAtivos.length === 0) return;
+    if (IS_VITRINE_DEMONSTRACAO || pontosAtivos.length === 0) return;
     try {
       const csvStr = gerarCsvCientifico(pontosAtivos, perfil, rotulosConsolidados);
       const blob = new Blob([csvStr], { type: "text/csv;charset=utf-8;" });
@@ -121,7 +135,7 @@ export function PainelCampanha() {
   };
 
   const exportarPerfilXlsx = async (perfil: PerfilExportacao) => {
-    if (pontosAtivos.length === 0) return;
+    if (IS_VITRINE_DEMONSTRACAO || pontosAtivos.length === 0) return;
     try {
       const buffer = await gerarPlanilhaXLSX(pontosAtivos, { perfil, rotulosConsolidados });
       const blob = new Blob([buffer as any], {
@@ -144,7 +158,7 @@ export function PainelCampanha() {
 
   // Download do Template Canônico do SAREL Coletor (28 colunas canônicas)
   const baixarTemplateSarelColetorCsv = () => {
-    if (pontosAtivos.length === 0) return;
+    if (IS_VITRINE_DEMONSTRACAO || pontosAtivos.length === 0) return;
     const mapaEsperadas = pontosAtivos.map((p) => ({
       codigo: p.codigo,
       latitude: p.latitude,
@@ -162,6 +176,7 @@ export function PainelCampanha() {
 
   // Ingestão Oficial do SAREL Coletor (CSV separado por ponto-e-vírgula com 28 colunas + GNSS)
   const processarArquivoSarelColetor = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (IS_VITRINE_DEMONSTRACAO) return;
     const file = e.target.files?.[0];
     if (!file) return;
     try {
@@ -216,6 +231,7 @@ export function PainelCampanha() {
 
   // Ingestão Histórica de Legado KoboToolbox (Superado D16)
   const processarArquivoKoboLegado = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (IS_VITRINE_DEMONSTRACAO) return;
     const file = e.target.files?.[0];
     if (!file) return;
     try {
@@ -506,7 +522,11 @@ export function PainelCampanha() {
             {sitiosLocaisInfo.estado !== "disponivel" && (
               <div className="mb-3 p-2.5 rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                <span>Sítios de aferição: dado local ausente (instale o banco pelo Instalador/Google Drive)</span>
+                <span>
+                  {IS_VITRINE_DEMONSTRACAO
+                    ? "Sítios de aferição locais (SQLite): consulta à rota local desabilitada no mockup estático offline."
+                    : "Sítios de aferição: dado local ausente (instale o banco pelo Instalador/Google Drive)"}
+                </span>
               </div>
             )}
 
@@ -685,6 +705,9 @@ export function PainelCampanha() {
       {/* CONTEÚDO 2: INGESTÃO SAREL COLETOR (FASE B — D16) */}
       {abaInterna === "coletor" && (
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-4">
+          <VitrineAvisoModal
+            textoCustom={`${AVISO_OPERACAO_DESABILITADA} Download de template e ingestão de planilhas do SAREL Coletor ficam desabilitados nesta demonstração.`}
+          />
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
@@ -697,8 +720,13 @@ export function PainelCampanha() {
             </div>
             <button
               onClick={baixarTemplateSarelColetorCsv}
-              disabled={pontosAtivos.length === 0}
-              className="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+              disabled={IS_VITRINE_DEMONSTRACAO || pontosAtivos.length === 0}
+              title={
+                IS_VITRINE_DEMONSTRACAO
+                  ? AVISO_EXPORTACAO_DESABILITADA
+                  : "Baixar template CSV do SAREL Coletor"
+              }
+              className="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed text-emerald-800 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               Baixar Template CSV do Coletor ({pontosAtivos.length} Pontos)
@@ -719,11 +747,18 @@ export function PainelCampanha() {
           )}
 
           {/* Área de Upload de CSV do Coletor */}
-          <div className="rounded-xl border border-dashed border-emerald-300 dark:border-emerald-700 p-8 text-center space-y-3 bg-emerald-50/30 dark:bg-emerald-950/10">
+          <div
+            className={`rounded-xl border border-dashed p-8 text-center space-y-3 ${
+              IS_VITRINE_DEMONSTRACAO
+                ? "border-slate-300 dark:border-slate-700 bg-slate-100/70 dark:bg-slate-800/30 opacity-75"
+                : "border-emerald-300 dark:border-emerald-700 bg-emerald-50/30 dark:bg-emerald-950/10"
+            }`}
+          >
             <input
               ref={fileInputColetorRef}
               type="file"
               accept=".csv"
+              disabled={IS_VITRINE_DEMONSTRACAO}
               onChange={processarArquivoSarelColetor}
               className="hidden"
             />
@@ -737,8 +772,14 @@ export function PainelCampanha() {
               </p>
             </div>
             <button
-              onClick={() => fileInputColetorRef.current?.click()}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm cursor-pointer inline-flex items-center gap-1.5"
+              onClick={() => !IS_VITRINE_DEMONSTRACAO && fileInputColetorRef.current?.click()}
+              disabled={IS_VITRINE_DEMONSTRACAO}
+              title={
+                IS_VITRINE_DEMONSTRACAO
+                  ? AVISO_OPERACAO_DESABILITADA
+                  : "Selecionar arquivo CSV"
+              }
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-sm cursor-pointer inline-flex items-center gap-1.5"
             >
               <Upload className="w-3.5 h-3.5" />
               Selecionar CSV do SAREL Coletor
@@ -791,6 +832,7 @@ export function PainelCampanha() {
       {/* CONTEÚDO 3: EXPORTAÇÃO CEGA POR PERFIL */}
       {abaInterna === "exportacao" && (
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-4">
+          <VitrineAvisoModal textoCustom={AVISO_EXPORTACAO_DESABILITADA} />
           <div>
             <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
               Gestão de Campanha e Exportação por Perfil Cego (Invariante 2)
@@ -822,7 +864,8 @@ export function PainelCampanha() {
                   <div className="mt-4 grid grid-cols-2 gap-2">
                     <button
                       onClick={() => exportarPerfilCsv(perfil)}
-                      disabled={pontosAtivos.length === 0}
+                      disabled={IS_VITRINE_DEMONSTRACAO || pontosAtivos.length === 0}
+                      title={IS_VITRINE_DEMONSTRACAO ? AVISO_EXPORTACAO_DESABILITADA : `Exportar ${perfil} (.csv)`}
                       className="rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 py-1.5 px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1"
                     >
                       <Download className="w-3.5 h-3.5" />
@@ -830,8 +873,9 @@ export function PainelCampanha() {
                     </button>
                     <button
                       onClick={() => exportarPerfilXlsx(perfil)}
-                      disabled={pontosAtivos.length === 0}
-                      className="rounded-lg bg-indigo-600 hover:bg-indigo-700 py-1.5 px-2 text-xs font-semibold text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1"
+                      disabled={IS_VITRINE_DEMONSTRACAO || pontosAtivos.length === 0}
+                      title={IS_VITRINE_DEMONSTRACAO ? AVISO_EXPORTACAO_DESABILITADA : `Exportar ${perfil} (.xlsx)`}
+                      className="rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-400 dark:disabled:bg-slate-700 py-1.5 px-2 text-xs font-semibold text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1"
                     >
                       <FileSpreadsheet className="w-3.5 h-3.5" />
                       XLSX
@@ -847,6 +891,9 @@ export function PainelCampanha() {
       {/* CONTEÚDO 4: HISTÓRICO DE LEGADO SUPERADO (D16) */}
       {abaInterna === "legado" && (
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-4">
+          <VitrineAvisoModal
+            textoCustom={`${AVISO_OPERACAO_DESABILITADA} A consulta de arquivos históricos Kobo está desabilitada nesta demonstração estática.`}
+          />
           <div>
             <h3 className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider flex items-center gap-2">
               <History className="w-4 h-4" />
@@ -878,12 +925,15 @@ export function PainelCampanha() {
                   ref={fileInputKoboLegadoRef}
                   type="file"
                   accept=".csv,.json"
+                  disabled={IS_VITRINE_DEMONSTRACAO}
                   onChange={processarArquivoKoboLegado}
                   className="hidden"
                 />
                 <button
-                  onClick={() => fileInputKoboLegadoRef.current?.click()}
-                  className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-semibold rounded-lg cursor-pointer flex items-center gap-1.5"
+                  onClick={() => !IS_VITRINE_DEMONSTRACAO && fileInputKoboLegadoRef.current?.click()}
+                  disabled={IS_VITRINE_DEMONSTRACAO}
+                  title={IS_VITRINE_DEMONSTRACAO ? AVISO_OPERACAO_DESABILITADA : undefined}
+                  className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-slate-800 dark:text-slate-200 text-xs font-semibold rounded-lg cursor-pointer flex items-center gap-1.5"
                 >
                   <Upload className="w-3.5 h-3.5" />
                   Consultar Arquivo Legado Kobo (Histórico)

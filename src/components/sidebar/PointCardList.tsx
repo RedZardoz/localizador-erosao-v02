@@ -13,6 +13,8 @@ import {
 import { useSarelStore, usePontosVisiveis } from "@/store/useSarelStore";
 import type { PontoAmostral } from "@/types/ponto";
 import { valorOuNulo } from "@/types/proveniencia";
+import { ehPontoSintetico } from "@/lib/seguranca/guardaSintetico";
+import { IS_VITRINE_DEMONSTRACAO } from "@/config/vitrineDemonstracao";
 
 export const PointCardList: React.FC = () => {
   const pontosVisiveis = usePontosVisiveis();
@@ -43,7 +45,9 @@ export const PointCardList: React.FC = () => {
     >
       <div className="flex items-center justify-between">
         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Lista de Amostras ({pontosVisiveis.length})
+          {IS_VITRINE_DEMONSTRACAO
+            ? `Amostras Sintéticas — Mockup (${pontosVisiveis.length})`
+            : `Lista de Amostras (${pontosVisiveis.length})`}
         </span>
       </div>
 
@@ -51,6 +55,7 @@ export const PointCardList: React.FC = () => {
         {pontosVisiveis.map((p) => {
           const isSelected = p.id === pontoSelecionadoId;
           const temCar = !!p.fundiario?.codigoCar;
+          const ehSintetico = IS_VITRINE_DEMONSTRACAO || ehPontoSintetico(p);
           const rotulado = !!p.rotulo;
           const classe = p.classeAmostral ?? "indefinido";
 
@@ -74,6 +79,11 @@ export const PointCardList: React.FC = () => {
                     {p.codigo}
                   </span>
                   {/* Badge de Classe Amostral da Pesquisa */}
+                  {ehSintetico && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded font-black bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-300 border border-amber-400 font-mono">
+                      SINTÉTICO
+                    </span>
+                  )}
                   {classe === "erosao" ? (
                     <span className="text-[9px] px-1.5 py-0.5 rounded font-bold bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-900/60 font-mono">
                       EROSÃO

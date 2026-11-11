@@ -13,6 +13,11 @@ import { useSarelStore } from "@/store/useSarelStore";
 import { GcpCredentialsManager } from "./GcpCredentialsManager";
 import { ApiTokensManager } from "./ApiTokensManager";
 import { useModalA11y } from "@/hooks/useModalA11y";
+import {
+  IS_VITRINE_DEMONSTRACAO,
+  AVISO_OPERACAO_DESABILITADA,
+} from "@/config/vitrineDemonstracao";
+import { VitrineAvisoModal } from "@/components/vitrine/VitrineAvisoModal";
 
 export const SettingsModal: React.FC = () => {
   const { modalAtiva, setModalAtiva } = useSarelStore();
@@ -32,6 +37,16 @@ export const SettingsModal: React.FC = () => {
   }>({ carregado: false, existe: false, tabelas: null });
 
   useEffect(() => {
+    if (IS_VITRINE_DEMONSTRACAO) {
+      setStatusFundiario({
+        carregado: true,
+        existe: false,
+        tabelas: null,
+        erro: "desabilitado no mockup estático (offline)",
+      });
+      return;
+    }
+
     let cancelado = false;
     fetch("/api/fundiario/status")
       .then((res) => res.json())
@@ -135,6 +150,7 @@ export const SettingsModal: React.FC = () => {
 
         {/* Conteúdo da Aba */}
         <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+          <VitrineAvisoModal textoCustom={`${AVISO_OPERACAO_DESABILITADA} Credenciais, tokens de mapa/GEE e base fundiária local permanecem bloqueados nesta demonstração estática offline.`} />
           {abaAtiva === "gee" && <GcpCredentialsManager />}
           {abaAtiva === "tokens" && <ApiTokensManager />}
           {abaAtiva === "fundiario" && (
@@ -149,14 +165,18 @@ export const SettingsModal: React.FC = () => {
                   </div>
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${
-                      !statusFundiario.carregado || statusFundiario.erro === "status não verificado nesta sessão"
+                      IS_VITRINE_DEMONSTRACAO
+                        ? "bg-amber-100 text-amber-900 border border-amber-300"
+                        : !statusFundiario.carregado || statusFundiario.erro === "status não verificado nesta sessão"
                         ? "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                         : statusFundiario.existe
                         ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                         : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
                     }`}
                   >
-                    {!statusFundiario.carregado
+                    {IS_VITRINE_DEMONSTRACAO
+                      ? "desabilitado no mockup (offline)"
+                      : !statusFundiario.carregado
                       ? "verificando..."
                       : statusFundiario.erro === "status não verificado nesta sessão"
                       ? "status não verificado nesta sessão"

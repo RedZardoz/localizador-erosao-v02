@@ -1,0 +1,17 @@
+# T6.4 Verificacao de Ausencia de Rotas de API no Pacote Estático
+Arquivos de rota ou diretorios '/api/' dentro de docs/apresentacoes/mockup: 0
+Pastas de top-level em docs/apresentacoes/mockup: 404, 404.html, favicon.ico, icon.png, index.html, index.txt, README.md, _next
+Integridade da producao (src/app/api/**/route.ts preservados): 13 rotas
+  - src/app/api/auth/gee-session/route.ts
+  - src/app/api/auth/gee-test/route.ts
+  - src/app/api/embrapa/solo/route.ts
+  - src/app/api/fundiario/consulta/route.ts
+  - src/app/api/fundiario/status/route.ts
+  - src/app/api/gee/gravar-evidencia-lote/route.ts
+  - src/app/api/gee/gravar-evidencia/route.ts
+  - src/app/api/gee/inspect-point/route.ts
+  - src/app/api/gee/select-candidates/route.ts
+  - src/app/api/gee/sorteio-d16/route.ts
+  - src/app/api/jev/auditar/route.ts
+  - src/app/api/jev/test/route.ts
+  - src/app/api/sitios-referencia/route.ts

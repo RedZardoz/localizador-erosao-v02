@@ -36,6 +36,11 @@ import {
 import type { AreaEstudo } from "@/types/ui";
 import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
 import * as toGeoJSON from "@tmcw/togeojson";
+import { VitrineAvisoModal } from "@/components/vitrine/VitrineAvisoModal";
+import {
+  IS_VITRINE_DEMONSTRACAO,
+  AVISO_OPERACAO_DESABILITADA,
+} from "@/config/vitrineDemonstracao";
 
 export const RegionRequestModal: React.FC = () => {
   const {
@@ -76,10 +81,22 @@ export const RegionRequestModal: React.FC = () => {
     null
   );
 
-  // 1. Carrega lista de todos os 27 Estados via IBGE
+  // 1. Carrega lista de Estados via IBGE (em modo vitrine usa lista estática local, sem fetch)
   useEffect(() => {
     let ativo = true;
     if (modalAtiva === "region" && estados.length === 0) {
+      if (IS_VITRINE_DEMONSTRACAO) {
+        setEstados([
+          { id: 41, sigla: "PR", nome: "Paraná" },
+          { id: 35, sigla: "SP", nome: "São Paulo" },
+          { id: 31, sigla: "MG", nome: "Minas Gerais" },
+          { id: 43, sigla: "RS", nome: "Rio Grande do Sul" },
+          { id: 42, sigla: "SC", nome: "Santa Catarina" },
+        ]);
+        setCarregandoEstados(false);
+        return;
+      }
+
       setCarregandoEstados(true);
       listarEstadosIbge()
         .then((dados) => {
@@ -111,13 +128,28 @@ export const RegionRequestModal: React.FC = () => {
     };
   }, [modalAtiva, estados.length]);
 
-  // 2. Carrega municípios do Estado selecionado via IBGE
+  // 2. Carrega municípios do Estado selecionado via IBGE (em modo vitrine usa apenas a base local BP3)
   useEffect(() => {
     let ativo = true;
     if (modalAtiva === "region" && ufSelecionada) {
-      setCarregandoMunicipios(true);
       setMunicipioSelecionadoId("");
       setBuscaMunicipio("");
+      if (IS_VITRINE_DEMONSTRACAO) {
+        if (ufSelecionada === "PR") {
+          setMunicipios(
+            PARANA3_28_MUNICIPIOS_GEOJSON.features.map((f) => ({
+              id: Number(f.properties.codigoIbge),
+              nome: f.properties.nome,
+            }))
+          );
+        } else {
+          setMunicipios([]);
+        }
+        setCarregandoMunicipios(false);
+        return;
+      }
+
+      setCarregandoMunicipios(true);
       listarMunicipiosPorUf(ufSelecionada)
         .then((dados) => {
           if (ativo) {
@@ -460,6 +492,7 @@ export const RegionRequestModal: React.FC = () => {
 
         {/* Gerenciador de Áreas Cadastradas com Checkboxes (Ativar/Desativar) */}
         <div className="p-4 bg-slate-100/80 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 space-y-2">
+          <VitrineAvisoModal />
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
               <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -502,9 +535,16 @@ export const RegionRequestModal: React.FC = () => {
                 </label>
 
                 <button
-                  onClick={() => removerArea(area.id)}
-                  className="p-1 text-slate-400 hover:text-rose-500 rounded-lg cursor-pointer shrink-0 transition-colors"
-                  title="Remover área da tela"
+                  onClick={() => {
+                    if (!IS_VITRINE_DEMONSTRACAO) removerArea(area.id);
+                  }}
+                  disabled={IS_VITRINE_DEMONSTRACAO}
+                  className="p-1 text-slate-400 hover:text-rose-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg cursor-pointer shrink-0 transition-colors"
+                  title={
+                    IS_VITRINE_DEMONSTRACAO
+                      ? AVISO_OPERACAO_DESABILITADA
+                      : "Remover área da tela"
+                  }
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -612,20 +652,30 @@ export const RegionRequestModal: React.FC = () => {
                   {/* Botão de Selecionar o Estado Todo Apenas */}
                   <button
                     onClick={handleSelecionarEstadoTodo}
-                    disabled={carregandoEstadoTodo}
-                    className="h-10 px-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
-                    title="Baixa a malha vetorial do estado todo e adiciona como área de amostragem"
+                    disabled={IS_VITRINE_DEMONSTRACAO || carregandoEstadoTodo}
+                    className="h-10 px-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-45 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                    title={
+                      IS_VITRINE_DEMONSTRACAO
+                        ? AVISO_OPERACAO_DESABILITADA
+                        : "Baixa a malha vetorial do estado todo e adiciona como área de amostragem"
+                    }
                   >
                     {carregandoEstadoTodo ? (
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                     ) : (
                       <Navigation className="w-3.5 h-3.5" />
                     )}
-                    <span>Selecionar o Estado Todo como Área</span>
+                    <span>
+                      {IS_VITRINE_DEMONSTRACAO
+                        ? "Baixar Malha Estadual IBGE (Desab.)"
+                        : "Selecionar o Estado Todo como Área"}
+                    </span>
                   </button>
                 </div>
                 <p className="text-[11px] text-slate-500">
-                  Dica: Para selecionar o estado todo apenas, clique no botão acima. Para restringir a municípios, utilize o campo abaixo.
+                  {IS_VITRINE_DEMONSTRACAO
+                    ? AVISO_OPERACAO_DESABILITADA
+                    : "Dica: Para selecionar o estado todo apenas, clique no botão acima. Para restringir a municípios, utilize o campo abaixo."}
                 </p>
               </div>
 
@@ -662,15 +712,28 @@ export const RegionRequestModal: React.FC = () => {
 
                   <button
                     onClick={handleAdicionarMunicipio}
-                    disabled={!municipioSelecionadoId || carregandoMunAdicao}
-                    className="h-10 px-4 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-cyan-600/20 flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                    disabled={
+                      IS_VITRINE_DEMONSTRACAO ||
+                      !municipioSelecionadoId ||
+                      carregandoMunAdicao
+                    }
+                    title={
+                      IS_VITRINE_DEMONSTRACAO
+                        ? AVISO_OPERACAO_DESABILITADA
+                        : undefined
+                    }
+                    className="h-10 px-4 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-cyan-600/20 flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
                   >
                     {carregandoMunAdicao ? (
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                     ) : (
                       <Check className="w-3.5 h-3.5" />
                     )}
-                    <span>Adicionar Município</span>
+                    <span>
+                      {IS_VITRINE_DEMONSTRACAO
+                        ? "Adicionar Município IBGE (Desab.)"
+                        : "Adicionar Município"}
+                    </span>
                   </button>
                 </div>
 
@@ -868,17 +931,29 @@ export const RegionRequestModal: React.FC = () => {
           {/* ABA 3: IMPORTAÇÃO DE POLÍGONO EXTERNO */}
           {abaAtiva === "upload" && (
             <div className="space-y-3">
-              <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-purple-500 rounded-2xl bg-slate-50 dark:bg-slate-950 cursor-pointer transition-colors group">
+              <label
+                title={IS_VITRINE_DEMONSTRACAO ? AVISO_OPERACAO_DESABILITADA : undefined}
+                className={`flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-950 transition-colors group ${
+                  IS_VITRINE_DEMONSTRACAO
+                    ? "opacity-60 cursor-not-allowed"
+                    : "hover:border-purple-500 cursor-pointer"
+                }`}
+              >
                 <UploadCloud className="w-10 h-10 text-slate-400 group-hover:text-purple-500 transition-colors" />
                 <span className="mt-2 text-xs font-bold text-slate-800 dark:text-slate-200">
-                  Clique ou arraste um arquivo vetorial da sua área
+                  {IS_VITRINE_DEMONSTRACAO
+                    ? "Upload de Polígono Desabilitado no Mockup"
+                    : "Clique ou arraste um arquivo vetorial da sua área"}
                 </span>
                 <span className="text-[10px] text-slate-400 mt-1">
-                  Formatos aceitos: <strong>.geojson</strong>, <strong>.json</strong> ou <strong>.kml</strong> (WGS84)
+                  {IS_VITRINE_DEMONSTRACAO
+                    ? AVISO_OPERACAO_DESABILITADA
+                    : <>Formatos aceitos: <strong>.geojson</strong>, <strong>.json</strong> ou <strong>.kml</strong> (WGS84)</>}
                 </span>
                 <input
                   type="file"
                   accept=".geojson,.json,.kml"
+                  disabled={IS_VITRINE_DEMONSTRACAO}
                   onChange={handleUploadPoligono}
                   className="hidden"
                 />

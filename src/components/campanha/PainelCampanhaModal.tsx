@@ -5,6 +5,7 @@ import { X, ClipboardList } from "lucide-react";
 import { useSarelStore } from "@/store/useSarelStore";
 import { PainelCampanha } from "./PainelCampanha";
 import { useModalA11y } from "@/hooks/useModalA11y";
+import { VitrineAvisoModal } from "@/components/vitrine/VitrineAvisoModal";
 
 export const PainelCampanhaModal: React.FC = () => {
   const { modalAtiva, setModalAtiva } = useSarelStore();
@@ -50,7 +51,8 @@ export const PainelCampanhaModal: React.FC = () => {
         </div>
 
         {/* Conteúdo */}
-        <div className="p-5 overflow-y-auto custom-scrollbar flex-1">
+        <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+          <VitrineAvisoModal />
           <PainelCampanha />
         </div>
 

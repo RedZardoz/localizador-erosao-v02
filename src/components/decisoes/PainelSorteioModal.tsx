@@ -5,6 +5,7 @@ import { X, Dices } from "lucide-react";
 import { useSarelStore } from "@/store/useSarelStore";
 import { PainelSorteioD16 } from "./PainelSorteioD16";
 import { useModalA11y } from "@/hooks/useModalA11y";
+import { VitrineAvisoModal } from "@/components/vitrine/VitrineAvisoModal";
 
 export const PainelSorteioModal: React.FC = () => {
   const { modalAtiva, setModalAtiva } = useSarelStore();
@@ -53,7 +54,8 @@ export const PainelSorteioModal: React.FC = () => {
         </div>
 
         {/* Corpo: O mesmo PainelSorteioD16, sem alterá-lo */}
-        <div className="p-5 overflow-y-auto custom-scrollbar flex-1">
+        <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+          <VitrineAvisoModal />
           <PainelSorteioD16 />
         </div>
       </div>

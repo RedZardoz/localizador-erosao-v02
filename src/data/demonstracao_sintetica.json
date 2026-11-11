@@ -1,0 +1,1748 @@
+{
+  "__SAREL_AVISO__": "SINTETICO_NAO_VOAR - DADOS EXCLUSIVOS PARA DEMONSTRACAO ESTATICA NA INTERFACE WEB",
+  "ehPlanoSinteticoDemonstracao": true,
+  "geradoEm": "2026-11-11T15:31:17.421Z",
+  "totalPontos": 12,
+  "pontos": [
+    {
+      "id": "SINTETICO_NAO_VOAR_01",
+      "codigo": "SINTETICO_NAO_VOAR_01",
+      "latitude": -25.4,
+      "longitude": -54,
+      "origemSintetica": true,
+      "__SAREL_AVISO__": "SINTETICO_NAO_VOAR",
+      "blocoEspacial": "SINTETICO_BLOCO_DEMO",
+      "classeAmostral": "erosao",
+      "estratoId": "SINTETICO_ESTRATO_DEMO",
+      "criterioSelecao": {
+        "tercilS": 1,
+        "tercilE": 2,
+        "nivelK": 1,
+        "phiDiag": null,
+        "semente": 0
+      },
+      "espectral": {
+        "ndvi": {
+          "estado": "tabelado",
+          "valor": 0.18,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-01"
+        },
+        "bsi": {
+          "estado": "tabelado",
+          "valor": 0.22,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-01"
+        }
+      },
+      "localizacao": {
+        "municipio": {
+          "estado": "tabelado",
+          "valor": "Município Ilustrativo BP3 (Sintético)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-01"
+        },
+        "codigoIbge": {
+          "estado": "tabelado",
+          "valor": "4100000",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-01"
+        },
+        "bacia": {
+          "estado": "tabelado",
+          "valor": "Paraná 3 (Demonstração Sintética)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-01"
+        }
+      },
+      "terreno": {
+        "elevacao": {
+          "estado": "tabelado",
+          "valor": 310,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-01"
+        },
+        "declividadePct": {
+          "estado": "tabelado",
+          "valor": 4.2,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-01"
+        },
+        "declividadeGraus": {
+          "estado": "tabelado",
+          "valor": 2.41,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-01"
+        },
+        "curvaturaPerfil": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "curvaturaPlana": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "acumuloFluxo": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "twi": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        }
+      },
+      "solo": {
+        "ordem": {
+          "estado": "tabelado",
+          "valor": "LATOSSOLO VERMELHO",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-01"
+        },
+        "subOrdem": {
+          "estado": "tabelado",
+          "valor": "ILUSTRATIVO (SINTÉTICO)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-01"
+        },
+        "grandeGrupo": {
+          "estado": "tabelado",
+          "valor": "Demonstrativo (Sem Valor Científico)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-01"
+        },
+        "tipoUnidade": {
+          "estado": "tabelado",
+          "valor": "simples",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-01"
+        },
+        "confiancaPedologica": "indisponivel",
+        "erodibilidadeClasse": {
+          "estado": "tabelado",
+          "valor": "Baixa",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-01"
+        }
+      },
+      "temporal": {},
+      "fundiario": {
+        "status": "base-nao-disponivel",
+        "motivo": "Demonstracao estatica sintetica sem base fundiaria (CAR e titular omitidos)",
+        "consultadoEm": null,
+        "criterioAssociacao": null,
+        "codigoCar": null,
+        "titularMascarado": "OMITIDO_MOCKUP_SINTETICO",
+        "documentoMascarado": null,
+        "registroIncra": null,
+        "areaImovelHa": null,
+        "bases": {
+          "uf": "PR"
+        }
+      },
+      "rastreio": {
+        "versaoMotor": "SINTETICO_NAO_VOAR_VITRINE_2026-11-11",
+        "cenas": [],
+        "calculadoEm": "2026-11-11T15:31:17.421Z"
+      }
+    },
+    {
+      "id": "SINTETICO_NAO_VOAR_02",
+      "codigo": "SINTETICO_NAO_VOAR_02",
+      "latitude": -25.4,
+      "longitude": -53.85,
+      "origemSintetica": true,
+      "__SAREL_AVISO__": "SINTETICO_NAO_VOAR",
+      "blocoEspacial": "SINTETICO_BLOCO_DEMO",
+      "classeAmostral": "controle",
+      "estratoId": "SINTETICO_ESTRATO_DEMO",
+      "criterioSelecao": {
+        "tercilS": 2,
+        "tercilE": 3,
+        "nivelK": 2,
+        "phiDiag": null,
+        "semente": 0
+      },
+      "espectral": {
+        "ndvi": {
+          "estado": "tabelado",
+          "valor": 0.72,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-02"
+        },
+        "bsi": {
+          "estado": "tabelado",
+          "valor": -0.15,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-02"
+        }
+      },
+      "localizacao": {
+        "municipio": {
+          "estado": "tabelado",
+          "valor": "Município Ilustrativo BP3 (Sintético)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-02"
+        },
+        "codigoIbge": {
+          "estado": "tabelado",
+          "valor": "4100000",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-02"
+        },
+        "bacia": {
+          "estado": "tabelado",
+          "valor": "Paraná 3 (Demonstração Sintética)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-02"
+        }
+      },
+      "terreno": {
+        "elevacao": {
+          "estado": "tabelado",
+          "valor": 345,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-02"
+        },
+        "declividadePct": {
+          "estado": "tabelado",
+          "valor": 6.8,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-02"
+        },
+        "declividadeGraus": {
+          "estado": "tabelado",
+          "valor": 3.89,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-02"
+        },
+        "curvaturaPerfil": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "curvaturaPlana": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "acumuloFluxo": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "twi": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        }
+      },
+      "solo": {
+        "ordem": {
+          "estado": "tabelado",
+          "valor": "NITOSSOLO VERMELHO",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-02"
+        },
+        "subOrdem": {
+          "estado": "tabelado",
+          "valor": "ILUSTRATIVO (SINTÉTICO)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-02"
+        },
+        "grandeGrupo": {
+          "estado": "tabelado",
+          "valor": "Demonstrativo (Sem Valor Científico)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-02"
+        },
+        "tipoUnidade": {
+          "estado": "tabelado",
+          "valor": "simples",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-02"
+        },
+        "confiancaPedologica": "indisponivel",
+        "erodibilidadeClasse": {
+          "estado": "tabelado",
+          "valor": "Media",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-02"
+        }
+      },
+      "temporal": {},
+      "fundiario": {
+        "status": "base-nao-disponivel",
+        "motivo": "Demonstracao estatica sintetica sem base fundiaria (CAR e titular omitidos)",
+        "consultadoEm": null,
+        "criterioAssociacao": null,
+        "codigoCar": null,
+        "titularMascarado": "OMITIDO_MOCKUP_SINTETICO",
+        "documentoMascarado": null,
+        "registroIncra": null,
+        "areaImovelHa": null,
+        "bases": {
+          "uf": "PR"
+        }
+      },
+      "rastreio": {
+        "versaoMotor": "SINTETICO_NAO_VOAR_VITRINE_2026-11-11",
+        "cenas": [],
+        "calculadoEm": "2026-11-11T15:31:17.421Z"
+      }
+    },
+    {
+      "id": "SINTETICO_NAO_VOAR_03",
+      "codigo": "SINTETICO_NAO_VOAR_03",
+      "latitude": -25.4,
+      "longitude": -53.7,
+      "origemSintetica": true,
+      "__SAREL_AVISO__": "SINTETICO_NAO_VOAR",
+      "blocoEspacial": "SINTETICO_BLOCO_DEMO",
+      "classeAmostral": "erosao",
+      "estratoId": "SINTETICO_ESTRATO_DEMO",
+      "criterioSelecao": {
+        "tercilS": 3,
+        "tercilE": 1,
+        "nivelK": 1,
+        "phiDiag": null,
+        "semente": 0
+      },
+      "espectral": {
+        "ndvi": {
+          "estado": "tabelado",
+          "valor": 0.21,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-03"
+        },
+        "bsi": {
+          "estado": "tabelado",
+          "valor": 0.19,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-03"
+        }
+      },
+      "localizacao": {
+        "municipio": {
+          "estado": "tabelado",
+          "valor": "Município Ilustrativo BP3 (Sintético)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-03"
+        },
+        "codigoIbge": {
+          "estado": "tabelado",
+          "valor": "4100000",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-03"
+        },
+        "bacia": {
+          "estado": "tabelado",
+          "valor": "Paraná 3 (Demonstração Sintética)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-03"
+        }
+      },
+      "terreno": {
+        "elevacao": {
+          "estado": "tabelado",
+          "valor": 420,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-03"
+        },
+        "declividadePct": {
+          "estado": "tabelado",
+          "valor": 9.5,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-03"
+        },
+        "declividadeGraus": {
+          "estado": "tabelado",
+          "valor": 5.43,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-03"
+        },
+        "curvaturaPerfil": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "curvaturaPlana": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "acumuloFluxo": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "twi": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        }
+      },
+      "solo": {
+        "ordem": {
+          "estado": "tabelado",
+          "valor": "ARGISSOLO VERMELHO",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-03"
+        },
+        "subOrdem": {
+          "estado": "tabelado",
+          "valor": "ILUSTRATIVO (SINTÉTICO)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-03"
+        },
+        "grandeGrupo": {
+          "estado": "tabelado",
+          "valor": "Demonstrativo (Sem Valor Científico)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-03"
+        },
+        "tipoUnidade": {
+          "estado": "tabelado",
+          "valor": "simples",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-03"
+        },
+        "confiancaPedologica": "indisponivel",
+        "erodibilidadeClasse": {
+          "estado": "tabelado",
+          "valor": "Alta",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-03"
+        }
+      },
+      "temporal": {},
+      "fundiario": {
+        "status": "base-nao-disponivel",
+        "motivo": "Demonstracao estatica sintetica sem base fundiaria (CAR e titular omitidos)",
+        "consultadoEm": null,
+        "criterioAssociacao": null,
+        "codigoCar": null,
+        "titularMascarado": "OMITIDO_MOCKUP_SINTETICO",
+        "documentoMascarado": null,
+        "registroIncra": null,
+        "areaImovelHa": null,
+        "bases": {
+          "uf": "PR"
+        }
+      },
+      "rastreio": {
+        "versaoMotor": "SINTETICO_NAO_VOAR_VITRINE_2026-11-11",
+        "cenas": [],
+        "calculadoEm": "2026-11-11T15:31:17.421Z"
+      }
+    },
+    {
+      "id": "SINTETICO_NAO_VOAR_04",
+      "codigo": "SINTETICO_NAO_VOAR_04",
+      "latitude": -25.25,
+      "longitude": -53.85,
+      "origemSintetica": true,
+      "__SAREL_AVISO__": "SINTETICO_NAO_VOAR",
+      "blocoEspacial": "SINTETICO_BLOCO_DEMO",
+      "classeAmostral": "controle",
+      "estratoId": "SINTETICO_ESTRATO_DEMO",
+      "criterioSelecao": {
+        "tercilS": 1,
+        "tercilE": 2,
+        "nivelK": 2,
+        "phiDiag": null,
+        "semente": 0
+      },
+      "espectral": {
+        "ndvi": {
+          "estado": "tabelado",
+          "valor": 0.68,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-04"
+        },
+        "bsi": {
+          "estado": "tabelado",
+          "valor": -0.12,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-04"
+        }
+      },
+      "localizacao": {
+        "municipio": {
+          "estado": "tabelado",
+          "valor": "Município Ilustrativo BP3 (Sintético)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-04"
+        },
+        "codigoIbge": {
+          "estado": "tabelado",
+          "valor": "4100000",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-04"
+        },
+        "bacia": {
+          "estado": "tabelado",
+          "valor": "Paraná 3 (Demonstração Sintética)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-04"
+        }
+      },
+      "terreno": {
+        "elevacao": {
+          "estado": "tabelado",
+          "valor": 465,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-04"
+        },
+        "declividadePct": {
+          "estado": "tabelado",
+          "valor": 11.4,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-04"
+        },
+        "declividadeGraus": {
+          "estado": "tabelado",
+          "valor": 6.5,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-04"
+        },
+        "curvaturaPerfil": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "curvaturaPlana": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "acumuloFluxo": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "twi": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        }
+      },
+      "solo": {
+        "ordem": {
+          "estado": "tabelado",
+          "valor": "LATOSSOLO VERMELHO",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-04"
+        },
+        "subOrdem": {
+          "estado": "tabelado",
+          "valor": "ILUSTRATIVO (SINTÉTICO)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-04"
+        },
+        "grandeGrupo": {
+          "estado": "tabelado",
+          "valor": "Demonstrativo (Sem Valor Científico)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-04"
+        },
+        "tipoUnidade": {
+          "estado": "tabelado",
+          "valor": "simples",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-04"
+        },
+        "confiancaPedologica": "indisponivel",
+        "erodibilidadeClasse": {
+          "estado": "tabelado",
+          "valor": "Baixa",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-04"
+        }
+      },
+      "temporal": {},
+      "fundiario": {
+        "status": "base-nao-disponivel",
+        "motivo": "Demonstracao estatica sintetica sem base fundiaria (CAR e titular omitidos)",
+        "consultadoEm": null,
+        "criterioAssociacao": null,
+        "codigoCar": null,
+        "titularMascarado": "OMITIDO_MOCKUP_SINTETICO",
+        "documentoMascarado": null,
+        "registroIncra": null,
+        "areaImovelHa": null,
+        "bases": {
+          "uf": "PR"
+        }
+      },
+      "rastreio": {
+        "versaoMotor": "SINTETICO_NAO_VOAR_VITRINE_2026-11-11",
+        "cenas": [],
+        "calculadoEm": "2026-11-11T15:31:17.421Z"
+      }
+    },
+    {
+      "id": "SINTETICO_NAO_VOAR_05",
+      "codigo": "SINTETICO_NAO_VOAR_05",
+      "latitude": -25.25,
+      "longitude": -53.7,
+      "origemSintetica": true,
+      "__SAREL_AVISO__": "SINTETICO_NAO_VOAR",
+      "blocoEspacial": "SINTETICO_BLOCO_DEMO",
+      "classeAmostral": "erosao",
+      "estratoId": "SINTETICO_ESTRATO_DEMO",
+      "criterioSelecao": {
+        "tercilS": 2,
+        "tercilE": 3,
+        "nivelK": 1,
+        "phiDiag": null,
+        "semente": 0
+      },
+      "espectral": {
+        "ndvi": {
+          "estado": "tabelado",
+          "valor": 0.16,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-05"
+        },
+        "bsi": {
+          "estado": "tabelado",
+          "valor": 0.25,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-05"
+        }
+      },
+      "localizacao": {
+        "municipio": {
+          "estado": "tabelado",
+          "valor": "Município Ilustrativo BP3 (Sintético)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-05"
+        },
+        "codigoIbge": {
+          "estado": "tabelado",
+          "valor": "4100000",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-05"
+        },
+        "bacia": {
+          "estado": "tabelado",
+          "valor": "Paraná 3 (Demonstração Sintética)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-05"
+        }
+      },
+      "terreno": {
+        "elevacao": {
+          "estado": "tabelado",
+          "valor": 510,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-05"
+        },
+        "declividadePct": {
+          "estado": "tabelado",
+          "valor": 14.2,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-05"
+        },
+        "declividadeGraus": {
+          "estado": "tabelado",
+          "valor": 8.08,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-05"
+        },
+        "curvaturaPerfil": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "curvaturaPlana": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "acumuloFluxo": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "twi": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        }
+      },
+      "solo": {
+        "ordem": {
+          "estado": "tabelado",
+          "valor": "NITOSSOLO VERMELHO",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-05"
+        },
+        "subOrdem": {
+          "estado": "tabelado",
+          "valor": "ILUSTRATIVO (SINTÉTICO)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-05"
+        },
+        "grandeGrupo": {
+          "estado": "tabelado",
+          "valor": "Demonstrativo (Sem Valor Científico)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-05"
+        },
+        "tipoUnidade": {
+          "estado": "tabelado",
+          "valor": "simples",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-05"
+        },
+        "confiancaPedologica": "indisponivel",
+        "erodibilidadeClasse": {
+          "estado": "tabelado",
+          "valor": "Media",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-05"
+        }
+      },
+      "temporal": {},
+      "fundiario": {
+        "status": "base-nao-disponivel",
+        "motivo": "Demonstracao estatica sintetica sem base fundiaria (CAR e titular omitidos)",
+        "consultadoEm": null,
+        "criterioAssociacao": null,
+        "codigoCar": null,
+        "titularMascarado": "OMITIDO_MOCKUP_SINTETICO",
+        "documentoMascarado": null,
+        "registroIncra": null,
+        "areaImovelHa": null,
+        "bases": {
+          "uf": "PR"
+        }
+      },
+      "rastreio": {
+        "versaoMotor": "SINTETICO_NAO_VOAR_VITRINE_2026-11-11",
+        "cenas": [],
+        "calculadoEm": "2026-11-11T15:31:17.421Z"
+      }
+    },
+    {
+      "id": "SINTETICO_NAO_VOAR_06",
+      "codigo": "SINTETICO_NAO_VOAR_06",
+      "latitude": -25.1,
+      "longitude": -54.45,
+      "origemSintetica": true,
+      "__SAREL_AVISO__": "SINTETICO_NAO_VOAR",
+      "blocoEspacial": "SINTETICO_BLOCO_DEMO",
+      "classeAmostral": "controle",
+      "estratoId": "SINTETICO_ESTRATO_DEMO",
+      "criterioSelecao": {
+        "tercilS": 3,
+        "tercilE": 1,
+        "nivelK": 2,
+        "phiDiag": null,
+        "semente": 0
+      },
+      "espectral": {
+        "ndvi": {
+          "estado": "tabelado",
+          "valor": 0.75,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-06"
+        },
+        "bsi": {
+          "estado": "tabelado",
+          "valor": -0.18,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-06"
+        }
+      },
+      "localizacao": {
+        "municipio": {
+          "estado": "tabelado",
+          "valor": "Município Ilustrativo BP3 (Sintético)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-06"
+        },
+        "codigoIbge": {
+          "estado": "tabelado",
+          "valor": "4100000",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-06"
+        },
+        "bacia": {
+          "estado": "tabelado",
+          "valor": "Paraná 3 (Demonstração Sintética)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-06"
+        }
+      },
+      "terreno": {
+        "elevacao": {
+          "estado": "tabelado",
+          "valor": 540,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-06"
+        },
+        "declividadePct": {
+          "estado": "tabelado",
+          "valor": 16.5,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-06"
+        },
+        "declividadeGraus": {
+          "estado": "tabelado",
+          "valor": 9.37,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-06"
+        },
+        "curvaturaPerfil": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "curvaturaPlana": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "acumuloFluxo": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "twi": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        }
+      },
+      "solo": {
+        "ordem": {
+          "estado": "tabelado",
+          "valor": "ARGISSOLO VERMELHO",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-06"
+        },
+        "subOrdem": {
+          "estado": "tabelado",
+          "valor": "ILUSTRATIVO (SINTÉTICO)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-06"
+        },
+        "grandeGrupo": {
+          "estado": "tabelado",
+          "valor": "Demonstrativo (Sem Valor Científico)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-06"
+        },
+        "tipoUnidade": {
+          "estado": "tabelado",
+          "valor": "simples",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-06"
+        },
+        "confiancaPedologica": "indisponivel",
+        "erodibilidadeClasse": {
+          "estado": "tabelado",
+          "valor": "Alta",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-06"
+        }
+      },
+      "temporal": {},
+      "fundiario": {
+        "status": "base-nao-disponivel",
+        "motivo": "Demonstracao estatica sintetica sem base fundiaria (CAR e titular omitidos)",
+        "consultadoEm": null,
+        "criterioAssociacao": null,
+        "codigoCar": null,
+        "titularMascarado": "OMITIDO_MOCKUP_SINTETICO",
+        "documentoMascarado": null,
+        "registroIncra": null,
+        "areaImovelHa": null,
+        "bases": {
+          "uf": "PR"
+        }
+      },
+      "rastreio": {
+        "versaoMotor": "SINTETICO_NAO_VOAR_VITRINE_2026-11-11",
+        "cenas": [],
+        "calculadoEm": "2026-11-11T15:31:17.421Z"
+      }
+    },
+    {
+      "id": "SINTETICO_NAO_VOAR_07",
+      "codigo": "SINTETICO_NAO_VOAR_07",
+      "latitude": -25.1,
+      "longitude": -53.7,
+      "origemSintetica": true,
+      "__SAREL_AVISO__": "SINTETICO_NAO_VOAR",
+      "blocoEspacial": "SINTETICO_BLOCO_DEMO",
+      "classeAmostral": "erosao",
+      "estratoId": "SINTETICO_ESTRATO_DEMO",
+      "criterioSelecao": {
+        "tercilS": 1,
+        "tercilE": 2,
+        "nivelK": 1,
+        "phiDiag": null,
+        "semente": 0
+      },
+      "espectral": {
+        "ndvi": {
+          "estado": "tabelado",
+          "valor": 0.22,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-07"
+        },
+        "bsi": {
+          "estado": "tabelado",
+          "valor": 0.14,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-07"
+        }
+      },
+      "localizacao": {
+        "municipio": {
+          "estado": "tabelado",
+          "valor": "Município Ilustrativo BP3 (Sintético)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-07"
+        },
+        "codigoIbge": {
+          "estado": "tabelado",
+          "valor": "4100000",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-07"
+        },
+        "bacia": {
+          "estado": "tabelado",
+          "valor": "Paraná 3 (Demonstração Sintética)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-07"
+        }
+      },
+      "terreno": {
+        "elevacao": {
+          "estado": "tabelado",
+          "valor": 290,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-07"
+        },
+        "declividadePct": {
+          "estado": "tabelado",
+          "valor": 5.1,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-07"
+        },
+        "declividadeGraus": {
+          "estado": "tabelado",
+          "valor": 2.92,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-07"
+        },
+        "curvaturaPerfil": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "curvaturaPlana": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "acumuloFluxo": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "twi": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        }
+      },
+      "solo": {
+        "ordem": {
+          "estado": "tabelado",
+          "valor": "LATOSSOLO VERMELHO",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-07"
+        },
+        "subOrdem": {
+          "estado": "tabelado",
+          "valor": "ILUSTRATIVO (SINTÉTICO)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-07"
+        },
+        "grandeGrupo": {
+          "estado": "tabelado",
+          "valor": "Demonstrativo (Sem Valor Científico)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-07"
+        },
+        "tipoUnidade": {
+          "estado": "tabelado",
+          "valor": "simples",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-07"
+        },
+        "confiancaPedologica": "indisponivel",
+        "erodibilidadeClasse": {
+          "estado": "tabelado",
+          "valor": "Baixa",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-07"
+        }
+      },
+      "temporal": {},
+      "fundiario": {
+        "status": "base-nao-disponivel",
+        "motivo": "Demonstracao estatica sintetica sem base fundiaria (CAR e titular omitidos)",
+        "consultadoEm": null,
+        "criterioAssociacao": null,
+        "codigoCar": null,
+        "titularMascarado": "OMITIDO_MOCKUP_SINTETICO",
+        "documentoMascarado": null,
+        "registroIncra": null,
+        "areaImovelHa": null,
+        "bases": {
+          "uf": "PR"
+        }
+      },
+      "rastreio": {
+        "versaoMotor": "SINTETICO_NAO_VOAR_VITRINE_2026-11-11",
+        "cenas": [],
+        "calculadoEm": "2026-11-11T15:31:17.421Z"
+      }
+    },
+    {
+      "id": "SINTETICO_NAO_VOAR_08",
+      "codigo": "SINTETICO_NAO_VOAR_08",
+      "latitude": -24.95,
+      "longitude": -54.45,
+      "origemSintetica": true,
+      "__SAREL_AVISO__": "SINTETICO_NAO_VOAR",
+      "blocoEspacial": "SINTETICO_BLOCO_DEMO",
+      "classeAmostral": "controle",
+      "estratoId": "SINTETICO_ESTRATO_DEMO",
+      "criterioSelecao": {
+        "tercilS": 2,
+        "tercilE": 3,
+        "nivelK": 2,
+        "phiDiag": null,
+        "semente": 0
+      },
+      "espectral": {
+        "ndvi": {
+          "estado": "tabelado",
+          "valor": 0.71,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-08"
+        },
+        "bsi": {
+          "estado": "tabelado",
+          "valor": -0.14,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-08"
+        }
+      },
+      "localizacao": {
+        "municipio": {
+          "estado": "tabelado",
+          "valor": "Município Ilustrativo BP3 (Sintético)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-08"
+        },
+        "codigoIbge": {
+          "estado": "tabelado",
+          "valor": "4100000",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-08"
+        },
+        "bacia": {
+          "estado": "tabelado",
+          "valor": "Paraná 3 (Demonstração Sintética)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-08"
+        }
+      },
+      "terreno": {
+        "elevacao": {
+          "estado": "tabelado",
+          "valor": 380,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-08"
+        },
+        "declividadePct": {
+          "estado": "tabelado",
+          "valor": 8.3,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-08"
+        },
+        "declividadeGraus": {
+          "estado": "tabelado",
+          "valor": 4.74,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-08"
+        },
+        "curvaturaPerfil": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "curvaturaPlana": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "acumuloFluxo": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "twi": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        }
+      },
+      "solo": {
+        "ordem": {
+          "estado": "tabelado",
+          "valor": "NITOSSOLO VERMELHO",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-08"
+        },
+        "subOrdem": {
+          "estado": "tabelado",
+          "valor": "ILUSTRATIVO (SINTÉTICO)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-08"
+        },
+        "grandeGrupo": {
+          "estado": "tabelado",
+          "valor": "Demonstrativo (Sem Valor Científico)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-08"
+        },
+        "tipoUnidade": {
+          "estado": "tabelado",
+          "valor": "simples",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-08"
+        },
+        "confiancaPedologica": "indisponivel",
+        "erodibilidadeClasse": {
+          "estado": "tabelado",
+          "valor": "Media",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-08"
+        }
+      },
+      "temporal": {},
+      "fundiario": {
+        "status": "base-nao-disponivel",
+        "motivo": "Demonstracao estatica sintetica sem base fundiaria (CAR e titular omitidos)",
+        "consultadoEm": null,
+        "criterioAssociacao": null,
+        "codigoCar": null,
+        "titularMascarado": "OMITIDO_MOCKUP_SINTETICO",
+        "documentoMascarado": null,
+        "registroIncra": null,
+        "areaImovelHa": null,
+        "bases": {
+          "uf": "PR"
+        }
+      },
+      "rastreio": {
+        "versaoMotor": "SINTETICO_NAO_VOAR_VITRINE_2026-11-11",
+        "cenas": [],
+        "calculadoEm": "2026-11-11T15:31:17.421Z"
+      }
+    },
+    {
+      "id": "SINTETICO_NAO_VOAR_09",
+      "codigo": "SINTETICO_NAO_VOAR_09",
+      "latitude": -24.8,
+      "longitude": -54.45,
+      "origemSintetica": true,
+      "__SAREL_AVISO__": "SINTETICO_NAO_VOAR",
+      "blocoEspacial": "SINTETICO_BLOCO_DEMO",
+      "classeAmostral": "erosao",
+      "estratoId": "SINTETICO_ESTRATO_DEMO",
+      "criterioSelecao": {
+        "tercilS": 3,
+        "tercilE": 1,
+        "nivelK": 1,
+        "phiDiag": null,
+        "semente": 0
+      },
+      "espectral": {
+        "ndvi": {
+          "estado": "tabelado",
+          "valor": 0.19,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-09"
+        },
+        "bsi": {
+          "estado": "tabelado",
+          "valor": 0.21,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-09"
+        }
+      },
+      "localizacao": {
+        "municipio": {
+          "estado": "tabelado",
+          "valor": "Município Ilustrativo BP3 (Sintético)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-09"
+        },
+        "codigoIbge": {
+          "estado": "tabelado",
+          "valor": "4100000",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-09"
+        },
+        "bacia": {
+          "estado": "tabelado",
+          "valor": "Paraná 3 (Demonstração Sintética)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-09"
+        }
+      },
+      "terreno": {
+        "elevacao": {
+          "estado": "tabelado",
+          "valor": 415,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-09"
+        },
+        "declividadePct": {
+          "estado": "tabelado",
+          "valor": 12.1,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-09"
+        },
+        "declividadeGraus": {
+          "estado": "tabelado",
+          "valor": 6.9,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-09"
+        },
+        "curvaturaPerfil": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "curvaturaPlana": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "acumuloFluxo": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "twi": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        }
+      },
+      "solo": {
+        "ordem": {
+          "estado": "tabelado",
+          "valor": "ARGISSOLO VERMELHO",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-09"
+        },
+        "subOrdem": {
+          "estado": "tabelado",
+          "valor": "ILUSTRATIVO (SINTÉTICO)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-09"
+        },
+        "grandeGrupo": {
+          "estado": "tabelado",
+          "valor": "Demonstrativo (Sem Valor Científico)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-09"
+        },
+        "tipoUnidade": {
+          "estado": "tabelado",
+          "valor": "simples",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-09"
+        },
+        "confiancaPedologica": "indisponivel",
+        "erodibilidadeClasse": {
+          "estado": "tabelado",
+          "valor": "Alta",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-09"
+        }
+      },
+      "temporal": {},
+      "fundiario": {
+        "status": "base-nao-disponivel",
+        "motivo": "Demonstracao estatica sintetica sem base fundiaria (CAR e titular omitidos)",
+        "consultadoEm": null,
+        "criterioAssociacao": null,
+        "codigoCar": null,
+        "titularMascarado": "OMITIDO_MOCKUP_SINTETICO",
+        "documentoMascarado": null,
+        "registroIncra": null,
+        "areaImovelHa": null,
+        "bases": {
+          "uf": "PR"
+        }
+      },
+      "rastreio": {
+        "versaoMotor": "SINTETICO_NAO_VOAR_VITRINE_2026-11-11",
+        "cenas": [],
+        "calculadoEm": "2026-11-11T15:31:17.421Z"
+      }
+    },
+    {
+      "id": "SINTETICO_NAO_VOAR_10",
+      "codigo": "SINTETICO_NAO_VOAR_10",
+      "latitude": -24.65,
+      "longitude": -54.45,
+      "origemSintetica": true,
+      "__SAREL_AVISO__": "SINTETICO_NAO_VOAR",
+      "blocoEspacial": "SINTETICO_BLOCO_DEMO",
+      "classeAmostral": "controle",
+      "estratoId": "SINTETICO_ESTRATO_DEMO",
+      "criterioSelecao": {
+        "tercilS": 1,
+        "tercilE": 2,
+        "nivelK": 2,
+        "phiDiag": null,
+        "semente": 0
+      },
+      "espectral": {
+        "ndvi": {
+          "estado": "tabelado",
+          "valor": 0.64,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-10"
+        },
+        "bsi": {
+          "estado": "tabelado",
+          "valor": -0.09,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-10"
+        }
+      },
+      "localizacao": {
+        "municipio": {
+          "estado": "tabelado",
+          "valor": "Município Ilustrativo BP3 (Sintético)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-10"
+        },
+        "codigoIbge": {
+          "estado": "tabelado",
+          "valor": "4100000",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-10"
+        },
+        "bacia": {
+          "estado": "tabelado",
+          "valor": "Paraná 3 (Demonstração Sintética)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-10"
+        }
+      },
+      "terreno": {
+        "elevacao": {
+          "estado": "tabelado",
+          "valor": 495,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-10"
+        },
+        "declividadePct": {
+          "estado": "tabelado",
+          "valor": 15,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-10"
+        },
+        "declividadeGraus": {
+          "estado": "tabelado",
+          "valor": 8.53,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-10"
+        },
+        "curvaturaPerfil": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "curvaturaPlana": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "acumuloFluxo": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "twi": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        }
+      },
+      "solo": {
+        "ordem": {
+          "estado": "tabelado",
+          "valor": "LATOSSOLO VERMELHO",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-10"
+        },
+        "subOrdem": {
+          "estado": "tabelado",
+          "valor": "ILUSTRATIVO (SINTÉTICO)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-10"
+        },
+        "grandeGrupo": {
+          "estado": "tabelado",
+          "valor": "Demonstrativo (Sem Valor Científico)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-10"
+        },
+        "tipoUnidade": {
+          "estado": "tabelado",
+          "valor": "simples",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-10"
+        },
+        "confiancaPedologica": "indisponivel",
+        "erodibilidadeClasse": {
+          "estado": "tabelado",
+          "valor": "Baixa",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-10"
+        }
+      },
+      "temporal": {},
+      "fundiario": {
+        "status": "base-nao-disponivel",
+        "motivo": "Demonstracao estatica sintetica sem base fundiaria (CAR e titular omitidos)",
+        "consultadoEm": null,
+        "criterioAssociacao": null,
+        "codigoCar": null,
+        "titularMascarado": "OMITIDO_MOCKUP_SINTETICO",
+        "documentoMascarado": null,
+        "registroIncra": null,
+        "areaImovelHa": null,
+        "bases": {
+          "uf": "PR"
+        }
+      },
+      "rastreio": {
+        "versaoMotor": "SINTETICO_NAO_VOAR_VITRINE_2026-11-11",
+        "cenas": [],
+        "calculadoEm": "2026-11-11T15:31:17.421Z"
+      }
+    },
+    {
+      "id": "SINTETICO_NAO_VOAR_11",
+      "codigo": "SINTETICO_NAO_VOAR_11",
+      "latitude": -24.5,
+      "longitude": -54.45,
+      "origemSintetica": true,
+      "__SAREL_AVISO__": "SINTETICO_NAO_VOAR",
+      "blocoEspacial": "SINTETICO_BLOCO_DEMO",
+      "classeAmostral": "erosao",
+      "estratoId": "SINTETICO_ESTRATO_DEMO",
+      "criterioSelecao": {
+        "tercilS": 2,
+        "tercilE": 3,
+        "nivelK": 1,
+        "phiDiag": null,
+        "semente": 0
+      },
+      "espectral": {
+        "ndvi": {
+          "estado": "tabelado",
+          "valor": 0.24,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-11"
+        },
+        "bsi": {
+          "estado": "tabelado",
+          "valor": 0.17,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-11"
+        }
+      },
+      "localizacao": {
+        "municipio": {
+          "estado": "tabelado",
+          "valor": "Município Ilustrativo BP3 (Sintético)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-11"
+        },
+        "codigoIbge": {
+          "estado": "tabelado",
+          "valor": "4100000",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-11"
+        },
+        "bacia": {
+          "estado": "tabelado",
+          "valor": "Paraná 3 (Demonstração Sintética)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-11"
+        }
+      },
+      "terreno": {
+        "elevacao": {
+          "estado": "tabelado",
+          "valor": 360,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-11"
+        },
+        "declividadePct": {
+          "estado": "tabelado",
+          "valor": 7.4,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-11"
+        },
+        "declividadeGraus": {
+          "estado": "tabelado",
+          "valor": 4.23,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-11"
+        },
+        "curvaturaPerfil": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "curvaturaPlana": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "acumuloFluxo": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "twi": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        }
+      },
+      "solo": {
+        "ordem": {
+          "estado": "tabelado",
+          "valor": "NITOSSOLO VERMELHO",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-11"
+        },
+        "subOrdem": {
+          "estado": "tabelado",
+          "valor": "ILUSTRATIVO (SINTÉTICO)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-11"
+        },
+        "grandeGrupo": {
+          "estado": "tabelado",
+          "valor": "Demonstrativo (Sem Valor Científico)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-11"
+        },
+        "tipoUnidade": {
+          "estado": "tabelado",
+          "valor": "simples",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-11"
+        },
+        "confiancaPedologica": "indisponivel",
+        "erodibilidadeClasse": {
+          "estado": "tabelado",
+          "valor": "Media",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-11"
+        }
+      },
+      "temporal": {},
+      "fundiario": {
+        "status": "base-nao-disponivel",
+        "motivo": "Demonstracao estatica sintetica sem base fundiaria (CAR e titular omitidos)",
+        "consultadoEm": null,
+        "criterioAssociacao": null,
+        "codigoCar": null,
+        "titularMascarado": "OMITIDO_MOCKUP_SINTETICO",
+        "documentoMascarado": null,
+        "registroIncra": null,
+        "areaImovelHa": null,
+        "bases": {
+          "uf": "PR"
+        }
+      },
+      "rastreio": {
+        "versaoMotor": "SINTETICO_NAO_VOAR_VITRINE_2026-11-11",
+        "cenas": [],
+        "calculadoEm": "2026-11-11T15:31:17.421Z"
+      }
+    },
+    {
+      "id": "SINTETICO_NAO_VOAR_12",
+      "codigo": "SINTETICO_NAO_VOAR_12",
+      "latitude": -24.35,
+      "longitude": -54.45,
+      "origemSintetica": true,
+      "__SAREL_AVISO__": "SINTETICO_NAO_VOAR",
+      "blocoEspacial": "SINTETICO_BLOCO_DEMO",
+      "classeAmostral": "controle",
+      "estratoId": "SINTETICO_ESTRATO_DEMO",
+      "criterioSelecao": {
+        "tercilS": 3,
+        "tercilE": 1,
+        "nivelK": 2,
+        "phiDiag": null,
+        "semente": 0
+      },
+      "espectral": {
+        "ndvi": {
+          "estado": "tabelado",
+          "valor": 0.77,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-12"
+        },
+        "bsi": {
+          "estado": "tabelado",
+          "valor": -0.21,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-12"
+        }
+      },
+      "localizacao": {
+        "municipio": {
+          "estado": "tabelado",
+          "valor": "Município Ilustrativo BP3 (Sintético)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-12"
+        },
+        "codigoIbge": {
+          "estado": "tabelado",
+          "valor": "4100000",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-12"
+        },
+        "bacia": {
+          "estado": "tabelado",
+          "valor": "Paraná 3 (Demonstração Sintética)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-12"
+        }
+      },
+      "terreno": {
+        "elevacao": {
+          "estado": "tabelado",
+          "valor": 560,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-12"
+        },
+        "declividadePct": {
+          "estado": "tabelado",
+          "valor": 17.8,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-12"
+        },
+        "declividadeGraus": {
+          "estado": "tabelado",
+          "valor": 10.09,
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-12"
+        },
+        "curvaturaPerfil": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "curvaturaPlana": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "acumuloFluxo": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        },
+        "twi": {
+          "estado": "indisponivel",
+          "causa": "nao-calculado",
+          "motivo": "Dado sintetico demonstrativo"
+        }
+      },
+      "solo": {
+        "ordem": {
+          "estado": "tabelado",
+          "valor": "ARGISSOLO VERMELHO",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-12"
+        },
+        "subOrdem": {
+          "estado": "tabelado",
+          "valor": "ILUSTRATIVO (SINTÉTICO)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-12"
+        },
+        "grandeGrupo": {
+          "estado": "tabelado",
+          "valor": "Demonstrativo (Sem Valor Científico)",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-12"
+        },
+        "tipoUnidade": {
+          "estado": "tabelado",
+          "valor": "simples",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-12"
+        },
+        "confiancaPedologica": "indisponivel",
+        "erodibilidadeClasse": {
+          "estado": "tabelado",
+          "valor": "Alta",
+          "tabela": "VITRINE_SINTETICA_NAO_VOAR",
+          "chave": "DEMO-12"
+        }
+      },
+      "temporal": {},
+      "fundiario": {
+        "status": "base-nao-disponivel",
+        "motivo": "Demonstracao estatica sintetica sem base fundiaria (CAR e titular omitidos)",
+        "consultadoEm": null,
+        "criterioAssociacao": null,
+        "codigoCar": null,
+        "titularMascarado": "OMITIDO_MOCKUP_SINTETICO",
+        "documentoMascarado": null,
+        "registroIncra": null,
+        "areaImovelHa": null,
+        "bases": {
+          "uf": "PR"
+        }
+      },
+      "rastreio": {
+        "versaoMotor": "SINTETICO_NAO_VOAR_VITRINE_2026-11-11",
+        "cenas": [],
+        "calculadoEm": "2026-11-11T15:31:17.421Z"
+      }
+    }
+  ]
+}

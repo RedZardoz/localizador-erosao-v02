@@ -1,0 +1,5 @@
+# T6.1 Verificacao de Credenciais, Chaves e Tokens no Pacote Mockup
+Arquivos inspecionados: 26 (total no pacote: 28)
+Comando equivalente: grep -rl "private_key\|service_account\|access_token\|BEGIN PRIVATE KEY" docs/apresentacoes/mockup || echo "LIMPO"
+Resultado regex obrigatoria (hitsStrict=0): LIMPO
+Resultado regex estendida de tokens/chaves reais (hitsExtra=0): LIMPO (0 ocorrencias)

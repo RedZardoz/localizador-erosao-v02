@@ -11,6 +11,10 @@ import {
   Save,
 } from "lucide-react";
 import { useSarelStore } from "@/store/useSarelStore";
+import {
+  IS_VITRINE_DEMONSTRACAO,
+  AVISO_OPERACAO_DESABILITADA,
+} from "@/config/vitrineDemonstracao";
 
 export const DrawingToolbar: React.FC = () => {
   const {
@@ -55,15 +59,34 @@ export const DrawingToolbar: React.FC = () => {
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
         {!modoDesenhoAtivo ? (
           <button
-            onClick={() => setModoDesenhoAtivo(true)}
-            className="px-3.5 py-2 bg-white/95 dark:bg-slate-900/95 hover:bg-emerald-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 hover:border-emerald-500 rounded-xl shadow-lg backdrop-blur-md text-xs font-bold transition-all flex items-center gap-2 cursor-pointer group"
+            type="button"
+            disabled={IS_VITRINE_DEMONSTRACAO}
+            onClick={() => {
+              if (!IS_VITRINE_DEMONSTRACAO) setModoDesenhoAtivo(true);
+            }}
+            title={
+              IS_VITRINE_DEMONSTRACAO
+                ? AVISO_OPERACAO_DESABILITADA
+                : "Clique para desenhar talhão ou polígono diretamente no mapa"
+            }
+            className={`px-3.5 py-2 bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-xl shadow-lg backdrop-blur-md text-xs font-bold transition-all flex items-center gap-2 group ${
+              IS_VITRINE_DEMONSTRACAO
+                ? "opacity-65 cursor-not-allowed"
+                : "hover:bg-emerald-50 dark:hover:bg-slate-800 hover:border-emerald-500 cursor-pointer"
+            }`}
           >
             <PenTool className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
             <span>Delimitar Talhão / Polígono</span>
-            {talhoesExistentes.length > 0 && (
-              <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.2 rounded font-mono font-bold">
-                {talhoesExistentes.length}
+            {IS_VITRINE_DEMONSTRACAO ? (
+              <span className="text-[9px] bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.5 rounded font-bold uppercase">
+                Desab. Mockup
               </span>
+            ) : (
+              talhoesExistentes.length > 0 && (
+                <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.2 rounded font-mono font-bold">
+                  {talhoesExistentes.length}
+                </span>
+              )
             )}
           </button>
         ) : (

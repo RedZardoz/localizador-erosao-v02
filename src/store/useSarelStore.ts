@@ -17,6 +17,7 @@ import { PontoAmostral } from "@/types/ponto";
 import { RotuloConsolidado } from "@/types/rotulo";
 import { valorOuNulo } from "@/types/proveniencia";
 import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
+import { IS_VITRINE_DEMONSTRACAO } from "@/config/vitrineDemonstracao";
 import type {
   AreaEstudo,
   CredenciaisState,
@@ -79,6 +80,7 @@ interface SarelStoreState {
 
   // Métodos de Manipulação de Pontos
   carregarPontos: (novosPontos: PontoAmostral[]) => void;
+  carregarPontosDemonstracaoVitrine: (pontosDemo: PontoAmostral[]) => void;
   carregarPontosProvisorios: (novosPontos: PontoAmostral[]) => void;
   salvarPontosProvisorios: () => void;
   descartarPontosProvisorios: () => void;
@@ -303,6 +305,30 @@ export const useSarelStore = create<SarelStoreState>((set, get) => ({
         rotulosConsolidados: novosRotulos,
         pontoSelecionadoId: harmonizados.length > 0 ? harmonizados[0].id : null,
       };
+    });
+  },
+
+  carregarPontosDemonstracaoVitrine: (pontosDemo) => {
+    if (!IS_VITRINE_DEMONSTRACAO) {
+      throw new Error(
+        "Recusa de segurança: conjunto declaradamente sintético só pode ser carregado no build de vitrine demonstrativa."
+      );
+    }
+    const todosDeclarados = pontosDemo.every(
+      (p) =>
+        p.origemSintetica === true &&
+        p.__SAREL_AVISO__ === "SINTETICO_NAO_VOAR" &&
+        p.codigo.startsWith("SINTETICO_NAO_VOAR_")
+    );
+    if (!todosDeclarados) {
+      throw new Error(
+        "Recusa de segurança: todo registro de vitrine deve declarar origemSintetica: true, __SAREL_AVISO__: SINTETICO_NAO_VOAR e prefixo SINTETICO_NAO_VOAR_."
+      );
+    }
+    const harmonizados = pontosDemo.map(harmonizarClasseAmostral);
+    set({
+      pontos: harmonizados,
+      pontoSelecionadoId: harmonizados.length > 0 ? harmonizados[0].id : null,
     });
   },
 

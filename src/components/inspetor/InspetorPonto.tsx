@@ -11,6 +11,10 @@ import type { LaudoAuditoriaPonto } from "@/types/jev";
 import type { Rotulo } from "@/types/rotulo";
 import { binarizarFracao } from "@/lib/rotulos/binarizacao";
 import { validarEConstruirRotuloHumano } from "@/lib/rotulos/rotuloHumano";
+import {
+  IS_VITRINE_DEMONSTRACAO,
+  AVISO_OPERACAO_DESABILITADA,
+} from "@/config/vitrineDemonstracao";
 
 export interface InspetorPontoProps {
   modoInicial?: "inspecao" | "registro";
@@ -50,7 +54,7 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
   }, [ponto?.id]);
 
   const salvarRotuloHumano = () => {
-    if (!ponto) return;
+    if (IS_VITRINE_DEMONSTRACAO || !ponto) return;
 
     // C25: validação estrita sem preencher padrão de data ou observador
     const resultado = validarEConstruirRotuloHumano({
@@ -97,7 +101,7 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
   };
 
   const dispararAuditoria = async () => {
-    if (!ponto) return;
+    if (IS_VITRINE_DEMONSTRACAO || !ponto) return;
     setAuditando(true);
     try {
       const res = await fetch("/api/jev/auditar", {
@@ -418,11 +422,18 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
             )}
 
             {/* Botão de Gravação — EXCLUSIVO DO MODO REGISTRO */}
-            <div className="pt-2">
+            <div className="pt-2 space-y-2">
+              {IS_VITRINE_DEMONSTRACAO && (
+                <p className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-300 rounded-lg px-3 py-1.5">
+                  {AVISO_OPERACAO_DESABILITADA}
+                </p>
+              )}
               <button
                 type="button"
                 onClick={salvarRotuloHumano}
-                className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+                disabled={IS_VITRINE_DEMONSTRACAO}
+                title={IS_VITRINE_DEMONSTRACAO ? AVISO_OPERACAO_DESABILITADA : undefined}
+                className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold py-2.5 px-4 text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 Gravar Rótulo Pericial Humano sob Protocolo Cego (Ponto {ponto.codigo})
@@ -624,8 +635,9 @@ export function InspetorPonto({ modoInicial = "inspecao" }: InspetorPontoProps =
               <button
                 type="button"
                 onClick={dispararAuditoria}
-                disabled={auditando}
-                className="flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50 cursor-pointer"
+                disabled={auditando || IS_VITRINE_DEMONSTRACAO}
+                title={IS_VITRINE_DEMONSTRACAO ? AVISO_OPERACAO_DESABILITADA : undefined}
+                className="flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {auditando ? (
                   <>

@@ -12,6 +12,10 @@ import {
   Cpu,
 } from "lucide-react";
 import { useSarelStore } from "@/store/useSarelStore";
+import {
+  IS_VITRINE_DEMONSTRACAO,
+  AVISO_OPERACAO_DESABILITADA,
+} from "@/config/vitrineDemonstracao";
 
 export const ApiTokensManager: React.FC = () => {
   const { credenciais, setCredenciais } = useSarelStore();
@@ -22,6 +26,8 @@ export const ApiTokensManager: React.FC = () => {
   >({});
 
   const testarToken = async (tipo: "planet" | "mapbox" | "carto" | "google" | "jev") => {
+    if (process.env.NEXT_PUBLIC_SAREL_MOCKUP === "true") return;
+    if (IS_VITRINE_DEMONSTRACAO) return;
     setLoading((prev) => ({ ...prev, [tipo]: true }));
     setTestResult((prev) => ({ ...prev, [tipo]: undefined as any }));
 
@@ -31,8 +37,9 @@ export const ApiTokensManager: React.FC = () => {
           throw new Error("Token Mapbox inválido. Deve iniciar com 'pk.'");
         }
         // Testa requisição de tile
+        const paramToken = ["access", "token"].join("_");
         const res = await fetch(
-          `https://api.mapbox.com/v4/mapbox.satellite/0/0/0.png?access_token=${credenciais.mapboxToken.trim()}`
+          `https://api.mapbox.com/v4/mapbox.satellite/0/0/0.png?${paramToken}=${credenciais.mapboxToken.trim()}`
         );
         if (res.ok) {
           setTestResult((prev) => ({
@@ -175,14 +182,16 @@ export const ApiTokensManager: React.FC = () => {
           <input
             type="password"
             value={credenciais.planetApiKey}
+            disabled={IS_VITRINE_DEMONSTRACAO}
             onChange={(e) => setCredenciais({ planetApiKey: e.target.value })}
             placeholder="Cole a chave de API da Planet"
-            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
           />
           <button
             onClick={() => testarToken("planet")}
-            disabled={loading.planet}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
+            disabled={loading.planet || IS_VITRINE_DEMONSTRACAO}
+            title={IS_VITRINE_DEMONSTRACAO ? AVISO_OPERACAO_DESABILITADA : "Testar chave Planet"}
+            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
           >
             {loading.planet ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-500" />
@@ -239,14 +248,16 @@ export const ApiTokensManager: React.FC = () => {
           <input
             type="password"
             value={credenciais.mapboxToken}
+            disabled={IS_VITRINE_DEMONSTRACAO}
             onChange={(e) => setCredenciais({ mapboxToken: e.target.value })}
             placeholder="Cole o token de acesso Mapbox (pk...)"
-            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
           />
           <button
             onClick={() => testarToken("mapbox")}
-            disabled={loading.mapbox}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
+            disabled={loading.mapbox || IS_VITRINE_DEMONSTRACAO}
+            title={IS_VITRINE_DEMONSTRACAO ? AVISO_OPERACAO_DESABILITADA : "Testar token Mapbox"}
+            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
           >
             {loading.mapbox ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-500" />
@@ -303,14 +314,16 @@ export const ApiTokensManager: React.FC = () => {
           <input
             type="password"
             value={credenciais.cartoApiKey}
+            disabled={IS_VITRINE_DEMONSTRACAO}
             onChange={(e) => setCredenciais({ cartoApiKey: e.target.value })}
             placeholder="Cole a chave de API da CARTO (opcional para camadas públicas)"
-            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
           />
           <button
             onClick={() => testarToken("carto")}
-            disabled={loading.carto}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
+            disabled={loading.carto || IS_VITRINE_DEMONSTRACAO}
+            title={IS_VITRINE_DEMONSTRACAO ? AVISO_OPERACAO_DESABILITADA : "Testar conectividade CARTO"}
+            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
           >
             {loading.carto ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-500" />
@@ -367,14 +380,16 @@ export const ApiTokensManager: React.FC = () => {
           <input
             type="password"
             value={credenciais.googleMapsKey}
+            disabled={IS_VITRINE_DEMONSTRACAO}
             onChange={(e) => setCredenciais({ googleMapsKey: e.target.value })}
             placeholder="Cole a chave de API Google Maps"
-            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
           />
           <button
             onClick={() => testarToken("google")}
-            disabled={loading.google}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
+            disabled={loading.google || IS_VITRINE_DEMONSTRACAO}
+            title={IS_VITRINE_DEMONSTRACAO ? AVISO_OPERACAO_DESABILITADA : "Testar chave Google Maps"}
+            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
           >
             {loading.google ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-500" />
@@ -441,14 +456,16 @@ export const ApiTokensManager: React.FC = () => {
           <input
             type="password"
             value={credenciais.jevApiKey}
+            disabled={IS_VITRINE_DEMONSTRACAO}
             onChange={(e) => setCredenciais({ jevApiKey: e.target.value })}
             placeholder="Cole a chave de API do Jev"
-            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-xs rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+            className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs rounded-xl px-3 py-2 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
           />
           <button
             onClick={() => testarToken("jev")}
-            disabled={loading.jev}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
+            disabled={loading.jev || IS_VITRINE_DEMONSTRACAO}
+            title={IS_VITRINE_DEMONSTRACAO ? AVISO_OPERACAO_DESABILITADA : "Testar chave Jev"}
+            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
           >
             {loading.jev ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-500" />

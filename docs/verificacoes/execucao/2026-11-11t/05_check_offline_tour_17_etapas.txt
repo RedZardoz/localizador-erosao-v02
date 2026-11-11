@@ -1,0 +1,44 @@
+﻿[offline-check] Servidor estatico local em http://127.0.0.1:60985
+[offline-check] 1. Abrindo raiz do pacote sem rede externa...
+[offline-check]    Titulo da aba: [MOCKUP DEMONSTRATIVO] SAREL v2.0 — Demonstração Estática (PPGTCA 2026)
+[offline-check]    Faixa permanente visivel e conforme.
+[offline-check]    Tela inicial de boas-vindas visivel com data e declaracao.
+[offline-check]    Marca d'agua do mapa, DrawingToolbar desabilitada e pontos SINTETICO_NAO_VOAR_01..12 ativos.
+[offline-check] 2. Percorrendo tour metodologico completo (17 etapas)...
+  - Passo 01/17: Delimitação da Área de Estudo (AOI) -> spotlight 191x48px @ (397, 44)
+  - Passo 02/17: Visualização Topográfica 3D & MDE Copernicus -> spotlight 188x73px @ (6, 449)
+  - Passo 03/17: Central de Amostragem Biofísica GEE -> spotlight 153x48px @ (805, 44)
+  - Passo 04/17: Máscara de Solo Exposto GEOS3 (Sentinel-2) -> spotlight 207x53px @ (426, 100)
+  - Passo 05/17: Frequência Temporal de Solo Exposto (Dimensão Ê) -> spotlight 207x53px @ (426, 100)
+  - Passo 06/17: Descorrelação Espacial (Spatial Thinning) -> spotlight 169x48px @ (583, 44)
+  - Passo 07/17: Fator C de Cobertura do Solo (RUSLE) -> spotlight 188x73px @ (190, 518)
+  - Passo 08/17: Fator K de Erodibilidade do Solo (Embrapa SiBCS) -> spotlight 109x48px @ (571, 164)
+  - Passo 09/17: Desenho Amostral Realizado (Selo Público D16) -> spotlight 207x53px @ (647, 100)
+  - Passo 10/17: Central de Campanha & Ingestão de Rótulos -> spotlight 170x48px @ (955, 44)
+  - Passo 11/17: Central da Matriz de Treino (XGBoost) -> spotlight 145x48px @ (1121, 44)
+  - Passo 12/17: Livro de Decisões Metodológicas (D01 a D26) -> spotlight 248x60px @ (1092, 183)
+  - Passo 13/17: Cadeia de Verificação e Cegamento Amostral -> spotlight 207x53px @ (1239, 100)
+  - Passo 14/17: Dossiê Forense de Auditoria & Perda de Solo RUSLE -> spotlight 371x557px @ (6, 350)
+  - Passo 15/17: Configurações de Conexão & Chaves de API -> spotlight 248x60px @ (1092, 131)
+  - Passo 16/17: Diagnóstico e Integridade Científica -> spotlight 248x76px @ (1092, 235)
+  - Passo 17/17: Central de Exportação Oficial & Reprodutibilidade -> spotlight 107x48px @ (1339, 44)
+[offline-check] 3. Validando todas as telas da casca, modais e popup...
+  - Etapa 1 (Area / region): aberto + aviso mockup presente
+  - Etapa 2 (Triagem / candidates): aberto + 1 botoes desabilitados
+  - Etapa 3 (Medicao / medicao): aberto + leitura pura com aviso mockup
+  - Etapa 4 (Sorteio / sorteio): aberto + selo realizado visivel + 1 botoes desabilitados
+  - Etapa 5 (Voos): estado nao_implementada visivel na casca
+  - Etapa 6 (Campo / campanha): 4 abas testadas (4 VANT, 2 Coletor, 10 Exportacao, 1 Legado desabilitados + demonstracao ficticia offline OK)
+  - Etapa 7 (Matriz / matriz): aberto + guarda antissintetica assegurarApenasPontosReais ativa
+  - Etapa 8 (Auditoria / audit-dossier): aberto + Imprimir Dossie (.pdf) desabilitado + CAR omitido
+  - Modal Exportacao: aberto + 4 botoes de exportacao desabilitados
+  - Modal Configuracoes: 3 abas testadas (1 GEE, 5 Tokens desabilitados, Fundiario offline)
+  - Modal Decisoes Metodologicas: aberto (D01..D26 visiveis)
+  - Modal Diagnostico: aberto (Demonstração Estática)
+  - PointPopup (SINTETICO_NAO_VOAR_01): aberto + Google Earth & Maps desabilitados
+[offline-check] Requisicoes locais servidas: 11
+[offline-check] Tentativas de requisicao externa bloqueadas: 0
+[offline-check] Chamadas /api/* detectadas: 0
+[offline-check] Erros de pagina (pageerror): 0
+[offline-check] Console errors: 0
+[offline-check] SUCESSO TOTAL: 17 etapas, todas as telas, 0 externas, 0 /api/, 0 erros.

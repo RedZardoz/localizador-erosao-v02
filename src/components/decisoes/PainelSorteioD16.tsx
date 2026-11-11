@@ -11,6 +11,10 @@ import {
 import { valorOuNulo } from "@/types/proveniencia";
 import { CalculadoraDesenhoAmostral } from "./CalculadoraDesenhoAmostral";
 import { obterComparativoDesenhoD16 } from "@/lib/gee/seloPublicoD16";
+import {
+  IS_VITRINE_DEMONSTRACAO,
+  AVISO_OPERACAO_DESABILITADA,
+} from "@/config/vitrineDemonstracao";
 
 /**
  * Painel exclusivo do pesquisador para o sorteio único e irreversível dos polígonos
@@ -38,6 +42,8 @@ export const PainelSorteioD16: React.FC = () => {
   const { nominal, realizado } = useMemo(() => obterComparativoDesenhoD16(), []);
 
   useEffect(() => {
+    if (IS_VITRINE_DEMONSTRACAO) return;
+
     let cancelado = false;
     fetch("/api/gee/sorteio-d16")
       .then((r) => r.json())
@@ -172,6 +178,58 @@ export const PainelSorteioD16: React.FC = () => {
 
       {abaAtiva === "calculadora" ? (
         <CalculadoraDesenhoAmostral />
+      ) : IS_VITRINE_DEMONSTRACAO ? (
+        <div className="space-y-4">
+          {realizado.disponivel && (
+            <div className="p-4 rounded-xl border border-emerald-300 bg-emerald-50/80 space-y-2 text-xs">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2 font-bold text-emerald-900">
+                  <FileCheck2 className="w-4 h-4 text-emerald-600" />
+                  <span>Selo Público Redigido D16 — Sorteio Oficial Selado (D16 e D23)</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900 font-mono text-[10px] font-bold">
+                  SELADO ({realizado.totalPoligonosSorteados} POLÍGONOS REALIZADOS / {realizado.areaTotalHectares.toFixed(2).replace(".", ",")} ha [NOMINAL: {nominal.totalPoligonos} / {nominal.areaTotalArredondadaHa} ha])
+                </span>
+              </div>
+              <p className="text-slate-700 leading-relaxed">
+                O sorteio estratificado registrou <strong>{realizado.totalPoligonosSorteados} polígonos realizados ({realizado.areaTotalHectares.toFixed(2).replace(".", ",")} ha: {realizado.totalTreino} treino + {realizado.totalHeldOut} held-out)</strong> frente ao plano nominal de {nominal.totalPoligonos} polígonos ({nominal.areaTotalArredondadaHa} ha). Os agregados públicos não divulgam coordenadas, IDs nem alvos fundiários (cegamento preservado).
+              </p>
+              <div className="text-[11px] text-slate-600">
+                <strong>Déficit Estrutural:</strong> {realizado.motivoDeficit} {realizado.motivoEstratoVazio}
+              </div>
+              <div className="flex flex-wrap items-center gap-3 pt-1 font-mono text-[11px] text-emerald-900">
+                <span>• Selo Público Redigido (sem coordenadas)</span>
+                <span>• Semente: {realizado.semente}</span>
+                <span>• SHA-256 (selo): {realizado.sha256SeloCompleto.slice(0, 16)}...</span>
+                <span>• Gerado em: {realizado.geradoEm}</span>
+                <span>• Invariantes: {realizado.invariantesVerificados.length}/8</span>
+              </div>
+            </div>
+          )}
+
+          <div className="p-4 rounded-xl border border-amber-300 bg-amber-50/70 space-y-2.5 text-xs">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 font-bold text-slate-900">
+                <Lock className="w-4 h-4 text-amber-700" />
+                <span>Comando de Execução do Sorteio D16</span>
+              </div>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-200 text-amber-950">
+                Desabilitado no Mockup
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-700">
+              {AVISO_OPERACAO_DESABILITADA} O botão real permanece visível apenas para demonstração do fluxo metodológico irreversível (D16/D23).
+            </p>
+            <button
+              type="button"
+              disabled
+              title={AVISO_OPERACAO_DESABILITADA}
+              className="px-3.5 py-2 rounded-lg font-bold bg-slate-300 text-slate-600 cursor-not-allowed opacity-80"
+            >
+              Etapa 1/2 — Preparar Sorteio Irreversível de Polígonos (Desab. Mockup)
+            </button>
+          </div>
+        </div>
       ) : seloExistenteCaminho ? (
         <div className="p-4 rounded-xl border border-emerald-300 bg-emerald-50/80 dark:bg-emerald-950/30 dark:border-emerald-800 space-y-2 text-xs">
           <div className="flex items-center justify-between">

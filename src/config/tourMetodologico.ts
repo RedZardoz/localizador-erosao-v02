@@ -1005,6 +1005,8 @@ export const PASSOS_TOUR_APRESENTACAO: string[] = [
   "decisoes-metodologicas",
   "cadeia-verificacao",
   "dossie-auditoria",
+  "config-api",
+  "diagnostico",
   "exportacao-oficial",
 ];
 

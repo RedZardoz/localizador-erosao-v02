@@ -206,7 +206,14 @@ export function calcularEtapasFluxo(ctx: ContextoFluxo): EtapaFluxo[] {
 }
 
 export const BarraFluxoOperacional: React.FC = () => {
-  const { areas, pontos, rotulosConsolidados, setModalAtiva } = useSarelStore();
+  const {
+    areas,
+    pontos,
+    rotulosConsolidados,
+    pontoAuditoria,
+    setPontoAuditoria,
+    setModalAtiva,
+  } = useSarelStore();
   const { realizado } = useMemo(() => obterComparativoDesenhoD16(), []);
 
   const etapas = useMemo(
@@ -285,8 +292,16 @@ export const BarraFluxoOperacional: React.FC = () => {
             <React.Fragment key={etapa.numero}>
               <div
                 data-metodologia={etapa.dataMetodologia}
+                data-fluxo-modal={etapa.modalAlvo ?? "voos"}
                 onClick={() => {
                   if (etapa.clicavel && etapa.modalAlvo) {
+                    if (
+                      etapa.modalAlvo === "audit-dossier" &&
+                      !pontoAuditoria &&
+                      pontos.length > 0
+                    ) {
+                      setPontoAuditoria(pontos[0]);
+                    }
                     setModalAtiva(etapa.modalAlvo);
                   }
                 }}

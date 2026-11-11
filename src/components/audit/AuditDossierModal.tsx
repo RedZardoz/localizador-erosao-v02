@@ -16,6 +16,12 @@ import { useSarelStore } from "@/store/useSarelStore";
 import { formatToDMS } from "@/lib/export/dms";
 import { valorOuNulo } from "@/types/proveniencia";
 import { useModalA11y } from "@/hooks/useModalA11y";
+import { ehPontoSintetico } from "@/lib/seguranca/guardaSintetico";
+import {
+  IS_VITRINE_DEMONSTRACAO,
+  AVISO_EXPORTACAO_DESABILITADA,
+} from "@/config/vitrineDemonstracao";
+import { VitrineAvisoModal } from "@/components/vitrine/VitrineAvisoModal";
 
 export const AuditDossierModal: React.FC = () => {
   const { modalAtiva, setModalAtiva, pontoAuditoria } = useSarelStore();
@@ -31,6 +37,7 @@ export const AuditDossierModal: React.FC = () => {
   if (modalAtiva !== "audit-dossier" || !pontoAuditoria) return null;
 
   const p = pontoAuditoria;
+  const ehDemoSintetica = IS_VITRINE_DEMONSTRACAO || ehPontoSintetico(p);
   const dmsLat = formatToDMS(p.latitude, true);
   const dmsLon = formatToDMS(p.longitude, false);
   const elevacaoNum = valorOuNulo(p.terreno.elevacao);
@@ -49,9 +56,12 @@ export const AuditDossierModal: React.FC = () => {
   const fatorLSVal = valorOuNulo(p.linhaDeBase?.fatorLS);
 
   // Script GEE JavaScript Reprodutível Gerado para a Coordenada Exata
+  const avisoSinteticoScript = ehDemoSintetica
+    ? ` * [AVISO DE DEMONSTRAÇÃO ESTÁTICA]: PONTO SINTÉTICO (SINTETICO_NAO_VOAR_)\n * Coordenada deslocada apenas para ilustração metodológica — NÃO VOAR / NÃO USAR EM PESQUISA.\n * ----------------------------------------------------------------------------\n`
+    : "";
   const scriptGee = `/**
  * ============================================================================
- * Script de Reprodutibilidade GEE — SAREL v2 (PPGTCA 2026)
+${avisoSinteticoScript} * Script de Reprodutibilidade GEE — SAREL v2 (PPGTCA 2026)
  * Ponto Amostral: ${p.codigo}
  * Coordenadas: [${p.longitude.toFixed(6)}, ${p.latitude.toFixed(6)}] (WGS84)
  * Município: ${munNome} — Bacia: ${bacNome}
@@ -118,6 +128,7 @@ print('Amostra ${p.codigo}:', {
   };
 
   const dispararImpressao = () => {
+    if (IS_VITRINE_DEMONSTRACAO) return;
     window.print();
   };
 
@@ -134,17 +145,22 @@ print('Amostra ${p.codigo}:', {
         className="w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
       >
         {/* Header do Dossiê */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/80">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/80 gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h2 id="titulo-modal-audit" className="text-sm font-bold text-slate-900 dark:text-white">
                   Dossiê de Auditoria Científica &amp; Reprodutibilidade GEE
                 </h2>
                 <span className="font-mono text-xs px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold">
                   {p.codigo}
                 </span>
+                {ehDemoSintetica && (
+                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-400">
+                    SINTÉTICO — NÃO VOAR
+                  </span>
+                )}
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Memória de cálculo reprodutível e script Google Earth Engine — Dissertação PPGTCA 2026
@@ -155,7 +171,13 @@ print('Amostra ${p.codigo}:', {
           <div className="flex items-center gap-2">
             <button
               onClick={dispararImpressao}
-              className="h-8 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+              disabled={IS_VITRINE_DEMONSTRACAO}
+              title={
+                IS_VITRINE_DEMONSTRACAO
+                  ? AVISO_EXPORTACAO_DESABILITADA
+                  : "Imprimir ou salvar dossiê em PDF"
+              }
+              className="h-8 px-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Imprimir Dossiê (.pdf)</span>
@@ -173,6 +195,10 @@ print('Amostra ${p.codigo}:', {
 
         {/* Conteúdo Imprimível do Dossiê */}
         <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5 print:p-0 print:space-y-4 print:text-black">
+          <VitrineAvisoModal
+            textoCustom={`${AVISO_EXPORTACAO_DESABILITADA} A emissão de PDF oficial (Imprimir Dossiê) permanece desabilitada; a visualização e o script ilustrativo com ponto sintético permanecem abertos para inspeção.`}
+          />
+
           {/* Metadados Geográficos e Fundiários */}
           <div className="p-4 bg-slate-50 dark:bg-slate-950/70 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
@@ -208,10 +234,14 @@ print('Amostra ${p.codigo}:', {
               <div>
                 <span className="text-[10px] text-slate-400 block font-sans">Imóvel Rural (CAR)</span>
                 <span className="font-bold text-slate-900 dark:text-white truncate block">
-                  {p.fundiario?.codigoCar || "não consultado"}
+                  {ehDemoSintetica
+                    ? "OMITIDO_MOCKUP_SINTETICO"
+                    : p.fundiario?.codigoCar || "não consultado"}
                 </span>
                 <span className="text-[10px] text-slate-500 font-sans">
-                  {p.fundiario?.titularMascarado || "—"}
+                  {ehDemoSintetica
+                    ? "Sem CAR nem titular no mockup"
+                    : p.fundiario?.titularMascarado || "—"}
                 </span>
               </div>
             </div>

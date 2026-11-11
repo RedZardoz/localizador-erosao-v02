@@ -70,6 +70,7 @@ export interface PontoAmostral {
   latitude: number;                           // EPSG:4326
   longitude: number;
   origemSintetica: boolean;                   // obrigatorio
+  __SAREL_AVISO__?: "SINTETICO_NAO_VOAR";     // marcador obrigatorio em registros sinteticos de demonstracao
   blocoEspacial: string | null;               // null ate o variograma (plano secao 3.7)
   celulaId?: string;                          // identificador opaco da celula 10m (D16/D26)
   poligonoId?: string;                        // identificador opaco do poligono do sorteio D16

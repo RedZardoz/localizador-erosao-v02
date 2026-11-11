@@ -4,6 +4,7 @@ import React from "react";
 import { useSarelStore } from "@/store/useSarelStore";
 import { montarMatrizTreino } from "@/lib/matriz/montagem";
 import type { SeloSorteioD16 } from "@/lib/gee/sorteioPoligonosTipos";
+import { IS_VITRINE_DEMONSTRACAO } from "@/config/vitrineDemonstracao";
 
 /**
  * Painel da Matriz de Treino — SAREL (§19 e §12.4)
@@ -20,6 +21,8 @@ export function PainelMatrizTreino() {
 
   // S1-1: busca o selo D16 existente pela rota canônica (mesmo mecanismo de PainelSorteioD16)
   React.useEffect(() => {
+    if (IS_VITRINE_DEMONSTRACAO) return;
+
     let cancelado = false;
     fetch("/api/gee/sorteio-d16")
       .then((r) => r.json())
@@ -55,6 +58,12 @@ export function PainelMatrizTreino() {
           Para compor a matriz supervisionada, é necessário carregar pontos amostrais e registrar rótulos
           consolidados de observação humana (Fase A ou Fase B). Divergências pendentes são excluídas.
         </p>
+        {IS_VITRINE_DEMONSTRACAO && (
+          <p className="mt-3 max-w-lg rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-medium text-amber-950">
+            Guarda antissintética ativa neste mockup demonstrativo — <code>assegurarApenasPontosReais</code> bloqueia por
+            construção o ingresso dos 12 pontos declaradamente sintéticos na matriz de treino real.
+          </p>
+        )}
       </div>
     );
   }

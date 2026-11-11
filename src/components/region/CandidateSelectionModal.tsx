@@ -19,6 +19,12 @@ import type { PontoAmostral } from "@/types/ponto";
 import { gerarPlanilhaXLSX } from "@/lib/export/planilha";
 import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
 import { useModalA11y } from "@/hooks/useModalA11y";
+import { VitrineAvisoModal } from "@/components/vitrine/VitrineAvisoModal";
+import {
+  IS_VITRINE_DEMONSTRACAO,
+  AVISO_OPERACAO_DESABILITADA,
+  AVISO_EXPORTACAO_DESABILITADA,
+} from "@/config/vitrineDemonstracao";
 
 export const CandidateSelectionModal: React.FC = () => {
   const {
@@ -167,6 +173,8 @@ export const CandidateSelectionModal: React.FC = () => {
 
         {/* Conteúdo */}
         <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+          <VitrineAvisoModal />
+
           {/* AVISO OBRIGATÓRIO: API CONECTADA E ATIVA (Requisito Estrito) */}
           {!geeAtivo && (
             <div className="p-4 rounded-xl border border-amber-300 dark:border-amber-800/80 bg-amber-50 dark:bg-amber-950/40 text-xs text-amber-900 dark:text-amber-200 space-y-2">
@@ -401,24 +409,36 @@ export const CandidateSelectionModal: React.FC = () => {
 
               <div className="flex flex-wrap gap-2 pt-1">
                 <button
-                  onClick={salvarPontosProvisorios}
-                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  onClick={() => {
+                    if (!IS_VITRINE_DEMONSTRACAO) salvarPontosProvisorios();
+                  }}
+                  disabled={IS_VITRINE_DEMONSTRACAO}
+                  title={IS_VITRINE_DEMONSTRACAO ? AVISO_OPERACAO_DESABILITADA : undefined}
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-45 disabled:cursor-not-allowed text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" />
-                  Salvar em Projeto
+                  Salvar em Projeto {IS_VITRINE_DEMONSTRACAO ? "(Desab.)" : ""}
                 </button>
 
                 <button
-                  onClick={handleImprimirPlanilha}
-                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  onClick={() => {
+                    if (!IS_VITRINE_DEMONSTRACAO) handleImprimirPlanilha();
+                  }}
+                  disabled={IS_VITRINE_DEMONSTRACAO}
+                  title={IS_VITRINE_DEMONSTRACAO ? AVISO_EXPORTACAO_DESABILITADA : undefined}
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-45 disabled:cursor-not-allowed text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
                 >
                   <FileSpreadsheet className="w-3.5 h-3.5" />
-                  Imprimir em Planilha XLSX
+                  Imprimir em Planilha XLSX {IS_VITRINE_DEMONSTRACAO ? "(Desab.)" : ""}
                 </button>
 
                 <button
-                  onClick={descartarPontosProvisorios}
-                  className="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/70 dark:hover:bg-rose-900/70 text-rose-700 dark:text-rose-300 rounded-lg font-semibold text-xs flex items-center gap-1.5 border border-rose-300 dark:border-rose-800 cursor-pointer"
+                  onClick={() => {
+                    if (!IS_VITRINE_DEMONSTRACAO) descartarPontosProvisorios();
+                  }}
+                  disabled={IS_VITRINE_DEMONSTRACAO}
+                  title={IS_VITRINE_DEMONSTRACAO ? AVISO_OPERACAO_DESABILITADA : undefined}
+                  className="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 disabled:opacity-45 disabled:cursor-not-allowed dark:bg-rose-950/70 dark:hover:bg-rose-900/70 text-rose-700 dark:text-rose-300 rounded-lg font-semibold text-xs flex items-center gap-1.5 border border-rose-300 dark:border-rose-800 cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   Limpar Tela / Descartar
@@ -429,10 +449,14 @@ export const CandidateSelectionModal: React.FC = () => {
         </div>
 
         {/* Footer com Botão de Processar Bloqueado sem API */}
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/80">
+        <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-50 dark:bg-slate-900/80">
           <div className="text-[11px] text-slate-500 flex items-center gap-1">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>Regras 1 a 9 ativas: Zero dados sintéticos</span>
+            <span>
+              {IS_VITRINE_DEMONSTRACAO
+                ? AVISO_OPERACAO_DESABILITADA
+                : "Regras 1 a 9 ativas: Zero dados sintéticos"}
+            </span>
           </div>
 
           <div className="flex gap-2">
@@ -444,8 +468,9 @@ export const CandidateSelectionModal: React.FC = () => {
             </button>
             <button
               onClick={executarEleicaoAmostral}
-              disabled={!geeAtivo || processando}
-              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:hover:bg-indigo-600 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-600/30 flex items-center gap-2 cursor-pointer"
+              disabled={IS_VITRINE_DEMONSTRACAO || !geeAtivo || processando}
+              title={IS_VITRINE_DEMONSTRACAO ? AVISO_OPERACAO_DESABILITADA : undefined}
+              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:bg-indigo-600 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-600/30 flex items-center gap-2 cursor-pointer"
             >
               {processando ? (
                 <>
@@ -455,7 +480,11 @@ export const CandidateSelectionModal: React.FC = () => {
               ) : (
                 <>
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Eleger Pontos Reais no GEE</span>
+                  <span>
+                    {IS_VITRINE_DEMONSTRACAO
+                      ? "Eleger Pontos no GEE (Desab. Mockup)"
+                      : "Eleger Pontos Reais no GEE"}
+                  </span>
                 </>
               )}
             </button>

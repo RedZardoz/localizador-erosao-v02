@@ -7,6 +7,7 @@ import { RegionAndTopNSelector } from "./RegionAndTopNSelector";
 import { StatsOverview } from "./StatsOverview";
 import { FiltersPanel } from "./FiltersPanel";
 import { PointCardList } from "./PointCardList";
+import { IS_VITRINE_DEMONSTRACAO } from "@/config/vitrineDemonstracao";
 
 export const Sidebar: React.FC = () => {
   const {
@@ -62,7 +63,7 @@ export const Sidebar: React.FC = () => {
               }`}
             >
               <Activity className="w-3.5 h-3.5" />
-              Amostras ({pontosVisiveis.length})
+              {IS_VITRINE_DEMONSTRACAO ? "Sintéticas" : "Amostras"} ({pontosVisiveis.length})
             </button>
 
             <button

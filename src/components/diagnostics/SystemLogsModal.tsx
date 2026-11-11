@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useSarelStore } from "@/store/useSarelStore";
 import { useModalA11y } from "@/hooks/useModalA11y";
+import { IS_VITRINE_DEMONSTRACAO } from "@/config/vitrineDemonstracao";
+import { VitrineAvisoModal } from "@/components/vitrine/VitrineAvisoModal";
 
 export const SystemLogsModal: React.FC = () => {
   const { modalAtiva, setModalAtiva, systemLogs, credenciais, limparLogs } = useSarelStore();
@@ -92,7 +94,9 @@ export const SystemLogsModal: React.FC = () => {
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             <div>
               <span className="text-[10px] text-slate-400 block font-sans">Base Fundiária</span>
-              <span className="font-bold text-slate-900 dark:text-white">Local (SQLite)</span>
+              <span className="font-bold text-slate-900 dark:text-white">
+                {IS_VITRINE_DEMONSTRACAO ? "Demonstração Estática" : "Local (SQLite)"}
+              </span>
             </div>
           </div>
 
@@ -145,7 +149,8 @@ export const SystemLogsModal: React.FC = () => {
         </div>
 
         {/* Lista de Logs (Terminal Console em Fundo Negro) */}
-        <div className="p-4 bg-white overflow-y-auto custom-scrollbar flex-1">
+        <div className="p-4 bg-white overflow-y-auto custom-scrollbar flex-1 space-y-3">
+          <VitrineAvisoModal textoCustom="Modo demonstração estática (offline): conexões externas (GEE/Embrapa) e gravação de banco local permanecem inativas; guardas antissintéticas continuam ativas." />
           <div className="p-3.5 rounded-xl bg-[#050811] border-2 border-slate-800 space-y-2 font-mono text-xs shadow-inner">
             {logsFiltrados.length === 0 ? (
               <div className="p-6 text-center text-slate-400">

@@ -20,6 +20,10 @@ import {
   EntradasCalculadoraDesenho,
 } from "@/lib/fundiario/calculadoraDesenho";
 import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
+import {
+  IS_VITRINE_DEMONSTRACAO,
+  AVISO_EXPORTACAO_DESABILITADA,
+} from "@/config/vitrineDemonstracao";
 
 export const CalculadoraDesenhoAmostral: React.FC = () => {
   const [ladoMetros, setLadoMetros] = useState<number>(224);
@@ -94,11 +98,22 @@ export const CalculadoraDesenhoAmostral: React.FC = () => {
           )}
 
           <button
-            onClick={baixarRelatorioMd}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950/60 border border-emerald-700/60 rounded-lg hover:bg-emerald-900/60 transition shadow-sm"
+            type="button"
+            disabled={IS_VITRINE_DEMONSTRACAO}
+            onClick={() => {
+              if (!IS_VITRINE_DEMONSTRACAO) baixarRelatorioMd();
+            }}
+            title={
+              IS_VITRINE_DEMONSTRACAO
+                ? AVISO_EXPORTACAO_DESABILITADA
+                : "Exportar simulação exploratória em Markdown"
+            }
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950/60 border border-emerald-700/60 hover:bg-emerald-900/60 disabled:opacity-45 disabled:cursor-not-allowed rounded-lg transition shadow-sm"
           >
             <FileDown className="w-4 h-4" />
-            Exportar Relatório (.md)
+            {IS_VITRINE_DEMONSTRACAO
+              ? "Exportar Relatório (.md) (Desab.)"
+              : "Exportar Relatório (.md)"}
           </button>
         </div>
       </div>

@@ -1,0 +1,7 @@
+# T6.2 Verificacao de Ausencia de Coordenadas Reais dos 677
+Fonte local verificada em memoria: docs/verificacoes/sorteio/sorteio_d16_2026-11-10.json (67 poligonos sorteados do universo de 677)
+- Amostra #1 (indice=0, estrato=E_1_1_1): lat/lon mascarados (-24.4xxx, -54.2xxx) | 6d/5d isolados -> 0 ocorrencias; par (lat4, lon4) -> 0 ocorrencias
+- Amostra #2 (indice=22, estrato=E_2_1_1): lat/lon mascarados (-24.3xxx, -54.3xxx) | 6d/5d isolados -> 0 ocorrencias; par (lat4, lon4) -> 0 ocorrencias
+- Amostra #3 (indice=44, estrato=E_3_1_1): lat/lon mascarados (-24.4xxx, -54.1xxx) | 6d/5d isolados -> 0 ocorrencias; par (lat4, lon4) -> 0 ocorrencias
+Varredura exaustiva sobre todos os 67 centroides reais sorteados: 0 ocorrencias em 5d/6d isolados; 0 ocorrencias em par (lat4, lon4)
+Distancia minima geodesica entre os 12 pontos SINTETICO_NAO_VOAR_ e os 67 centroides reais: 3964.9 m (3.96 km)

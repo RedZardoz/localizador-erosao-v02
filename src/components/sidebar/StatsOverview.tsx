@@ -4,6 +4,8 @@ import React from "react";
 import { TrendingUp, Mountain, Percent, Layers, ShieldCheck } from "lucide-react";
 import { usePontosVisiveis, useSarelStore } from "@/store/useSarelStore";
 import { valorOuNulo } from "@/types/proveniencia";
+import { ehPontoSintetico } from "@/lib/seguranca/guardaSintetico";
+import { IS_VITRINE_DEMONSTRACAO } from "@/config/vitrineDemonstracao";
 
 export const StatsOverview: React.FC = () => {
   const pontosVisiveis = usePontosVisiveis();
@@ -72,16 +74,27 @@ export const StatsOverview: React.FC = () => {
       ? `${(somaRusle / pontosComRusle).toFixed(1)} t/ha·ano`
       : "Pendente (D07)";
 
+  const temSintetico =
+    IS_VITRINE_DEMONSTRACAO || pontosVisiveis.some((p) => ehPontoSintetico(p));
+
   return (
     <div className="space-y-2.5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          Métricas Reais ({pontosVisiveis.length} Focos)
+          {temSintetico
+            ? `Métricas Sintéticas (${pontosVisiveis.length} Demo)`
+            : `Métricas Reais (${pontosVisiveis.length} Focos)`}
         </span>
-        {pontosProvisorios.length > 0 && (
-          <span className="text-[10px] font-mono text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
-            Memória Provisória
+        {temSintetico ? (
+          <span className="text-[9px] font-black font-mono text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-400">
+            SINTÉTICO / NÃO VOAR
           </span>
+        ) : (
+          pontosProvisorios.length > 0 && (
+            <span className="text-[10px] font-mono text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+              Memória Provisória
+            </span>
+          )
         )}
       </div>
 

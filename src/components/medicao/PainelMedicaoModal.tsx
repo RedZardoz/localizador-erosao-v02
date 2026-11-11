@@ -5,6 +5,7 @@ import { X, Sparkles } from "lucide-react";
 import { useSarelStore } from "@/store/useSarelStore";
 import { PainelMedicaoDimensoes } from "./PainelMedicaoDimensoes";
 import { useModalA11y } from "@/hooks/useModalA11y";
+import { VitrineAvisoModal } from "@/components/vitrine/VitrineAvisoModal";
 
 export const PainelMedicaoModal: React.FC = () => {
   const { modalAtiva, setModalAtiva } = useSarelStore();
@@ -50,7 +51,8 @@ export const PainelMedicaoModal: React.FC = () => {
         </div>
 
         {/* Corpo do Painel */}
-        <div className="p-5 overflow-y-auto custom-scrollbar flex-1">
+        <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+          <VitrineAvisoModal />
           <PainelMedicaoDimensoes />
         </div>
       </div>

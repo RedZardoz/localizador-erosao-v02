@@ -25,6 +25,11 @@ import { gerarPacoteReprodutibilidadeZip } from "@/lib/export/pacoteReprodutibil
 import { assegurarApenasPontosReais } from "@/lib/seguranca/guardaSintetico";
 import { valorOuNulo } from "@/types/proveniencia";
 import { useModalA11y } from "@/hooks/useModalA11y";
+import { VitrineAvisoModal } from "@/components/vitrine/VitrineAvisoModal";
+import {
+  IS_VITRINE_DEMONSTRACAO,
+  AVISO_EXPORTACAO_DESABILITADA,
+} from "@/config/vitrineDemonstracao";
 
 export const ExportModal: React.FC = () => {
   const { modalAtiva, setModalAtiva, areas, rotulosConsolidados } = useSarelStore();
@@ -216,8 +221,14 @@ export const ExportModal: React.FC = () => {
 
         {/* Conteúdo */}
         <div className="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+          <VitrineAvisoModal textoCustom={AVISO_EXPORTACAO_DESABILITADA} />
+
           <div className="p-3 bg-slate-50 dark:bg-slate-950/70 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
-            <span className="text-slate-600 dark:text-slate-400">Amostras prontas para exportação:</span>
+            <span className="text-slate-600 dark:text-slate-400">
+              {IS_VITRINE_DEMONSTRACAO
+                ? "Registros sintéticos exibidos em tela (exportação bloqueada):"
+                : "Amostras prontas para exportação:"}
+            </span>
             <span className="font-mono font-bold text-slate-900 dark:text-white">
               {totalPontos} {totalPontos === 1 ? "registro" : "registros"}
             </span>
@@ -289,13 +300,26 @@ export const ExportModal: React.FC = () => {
               </div>
 
               <button
-                onClick={baixarPacoteReprodutibilidade}
-                disabled={exportando === "reprodutibilidade" || totalPontos === 0}
-                className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-40 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 shadow cursor-pointer"
+                onClick={() => {
+                  if (!IS_VITRINE_DEMONSTRACAO) baixarPacoteReprodutibilidade();
+                }}
+                disabled={
+                  IS_VITRINE_DEMONSTRACAO ||
+                  exportando === "reprodutibilidade" ||
+                  totalPontos === 0
+                }
+                title={
+                  IS_VITRINE_DEMONSTRACAO
+                    ? AVISO_EXPORTACAO_DESABILITADA
+                    : undefined
+                }
+                className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-45 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 shadow cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>
-                  {exportando === "reprodutibilidade"
+                  {IS_VITRINE_DEMONSTRACAO
+                    ? "Exportar Pacote .ZIP (Desab. Mockup)"
+                    : exportando === "reprodutibilidade"
                     ? "Compilando compêndio e calculando hashes SHA-256..."
                     : "Exportar Pacote de Reprodutibilidade Completo (.ZIP)"}
                 </span>
@@ -314,12 +338,27 @@ export const ExportModal: React.FC = () => {
                 Planilha Microsoft Excel oficial com abas Metadados, Dados com colunas duplas de proveniência e Dicionário.
               </p>
               <button
-                onClick={baixarXlsx}
-                disabled={exportando === "xlsx" || totalPontos === 0}
-                className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                onClick={() => {
+                  if (!IS_VITRINE_DEMONSTRACAO) baixarXlsx();
+                }}
+                disabled={
+                  IS_VITRINE_DEMONSTRACAO ||
+                  exportando === "xlsx" ||
+                  totalPontos === 0
+                }
+                title={
+                  IS_VITRINE_DEMONSTRACAO
+                    ? AVISO_EXPORTACAO_DESABILITADA
+                    : undefined
+                }
+                className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-45 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Baixar Planilha XLSX</span>
+                <span>
+                  {IS_VITRINE_DEMONSTRACAO
+                    ? "Baixar Planilha XLSX (Desab. Mockup)"
+                    : "Baixar Planilha XLSX"}
+                </span>
               </button>
             </div>
 
@@ -335,12 +374,27 @@ export const ExportModal: React.FC = () => {
                 Arquivo delimitado por vírgulas com bloco de conformidade LGPD e cabeçalho formal de proveniência.
               </p>
               <button
-                onClick={baixarCsv}
-                disabled={exportando === "csv" || totalPontos === 0}
-                className="w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                onClick={() => {
+                  if (!IS_VITRINE_DEMONSTRACAO) baixarCsv();
+                }}
+                disabled={
+                  IS_VITRINE_DEMONSTRACAO ||
+                  exportando === "csv" ||
+                  totalPontos === 0
+                }
+                title={
+                  IS_VITRINE_DEMONSTRACAO
+                    ? AVISO_EXPORTACAO_DESABILITADA
+                    : undefined
+                }
+                className="w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-45 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Baixar CSV</span>
+                <span>
+                  {IS_VITRINE_DEMONSTRACAO
+                    ? "Baixar CSV (Desab. Mockup)"
+                    : "Baixar CSV"}
+                </span>
               </button>
             </div>
 
@@ -356,12 +410,23 @@ export const ExportModal: React.FC = () => {
                 FeatureCollection contendo pontos amostrais com todos os atributos físicos e os polígonos de talhões delimitados.
               </p>
               <button
-                onClick={baixarGeoJson}
-                disabled={exportando === "geojson"}
-                className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                onClick={() => {
+                  if (!IS_VITRINE_DEMONSTRACAO) baixarGeoJson();
+                }}
+                disabled={IS_VITRINE_DEMONSTRACAO || exportando === "geojson"}
+                title={
+                  IS_VITRINE_DEMONSTRACAO
+                    ? AVISO_EXPORTACAO_DESABILITADA
+                    : undefined
+                }
+                className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-45 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Baixar GeoJSON</span>
+                <span>
+                  {IS_VITRINE_DEMONSTRACAO
+                    ? "Baixar GeoJSON (Desab. Mockup)"
+                    : "Baixar GeoJSON"}
+                </span>
               </button>
             </div>
           </div>

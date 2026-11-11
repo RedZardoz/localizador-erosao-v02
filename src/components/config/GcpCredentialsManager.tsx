@@ -11,6 +11,10 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useSarelStore } from "@/store/useSarelStore";
+import {
+  IS_VITRINE_DEMONSTRACAO,
+  AVISO_OPERACAO_DESABILITADA,
+} from "@/config/vitrineDemonstracao";
 
 export const GcpCredentialsManager: React.FC = () => {
   const { credenciais, setCredenciais, setGeeSessionActive, adicionarLog } =
@@ -21,6 +25,7 @@ export const GcpCredentialsManager: React.FC = () => {
   const [sucesso, setSucesso] = useState<string | null>(null);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (IS_VITRINE_DEMONSTRACAO) return;
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -85,6 +90,7 @@ export const GcpCredentialsManager: React.FC = () => {
   };
 
   const testarSessao = async () => {
+    if (IS_VITRINE_DEMONSTRACAO) return;
     setLoading(true);
     setErro(null);
     setSucesso(null);
@@ -126,14 +132,23 @@ export const GcpCredentialsManager: React.FC = () => {
                 : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
             }`}
           >
-            {credenciais.geeSessionActive
+            {IS_VITRINE_DEMONSTRACAO
+              ? "DESABILITADA NO MOCKUP"
+              : credenciais.geeSessionActive
               ? "ATIVADA - Autenticado GCP"
               : "DESATIVADA - Não Conectado"}
           </span>
         </div>
 
         {/* Upload Dropzone */}
-        <label className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 rounded-xl bg-white dark:bg-slate-950 cursor-pointer transition-colors group">
+        <label
+          title={IS_VITRINE_DEMONSTRACAO ? AVISO_OPERACAO_DESABILITADA : undefined}
+          className={`flex flex-col items-center justify-center p-5 border-2 border-dashed rounded-xl transition-colors group ${
+            IS_VITRINE_DEMONSTRACAO
+              ? "border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 opacity-60 cursor-not-allowed"
+              : "border-slate-300 dark:border-slate-700 hover:border-emerald-500 bg-white dark:bg-slate-950 cursor-pointer"
+          }`}
+        >
           <UploadCloud className="w-8 h-8 text-slate-400 group-hover:text-emerald-500 transition-colors" />
           <span className="mt-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
             Clique para selecionar o arquivo JSON da Service Account
@@ -144,6 +159,7 @@ export const GcpCredentialsManager: React.FC = () => {
           <input
             type="file"
             accept=".json,application/json"
+            disabled={IS_VITRINE_DEMONSTRACAO}
             onChange={handleFileUpload}
             className="hidden"
           />
@@ -183,11 +199,19 @@ export const GcpCredentialsManager: React.FC = () => {
         )}
 
         {/* Botão de Testar Conexão */}
-        <div className="flex justify-end pt-1">
+        <div className="flex items-center justify-between pt-1 gap-3">
+          {IS_VITRINE_DEMONSTRACAO ? (
+            <span className="text-[11px] text-amber-800 dark:text-amber-300">
+              Upload de chave JSON e autenticação GEE existem no sistema real e ficam desligados no mockup offline.
+            </span>
+          ) : (
+            <span />
+          )}
           <button
             onClick={testarSessao}
-            disabled={loading}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
+            disabled={loading || IS_VITRINE_DEMONSTRACAO}
+            title={IS_VITRINE_DEMONSTRACAO ? AVISO_OPERACAO_DESABILITADA : "Testar sessão GEE"}
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-800 dark:text-slate-200 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
           >
             {loading ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-500" />

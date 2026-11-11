@@ -1,0 +1,6 @@
+# T6.3 Verificacao de Ausencia de Codigo CAR Real e Nomes de Proprietarios
+Padrao CAR SICAR (PR-xxxxxxx-32hex): 0 ocorrencias
+Identificadores reais cand-NNN: 0 ocorrencias
+Identificadores opacos VANT-BLIND-*: 0 ocorrencias
+Tokens de tabelaCorrespondenciaOpaca / poligonos (201 verificados): 0 ocorrencias
+Marcacao sintetica presente: SINTETICO_NAO_VOAR_ (46) e OMITIDO_MOCKUP_SINTETICO (13)

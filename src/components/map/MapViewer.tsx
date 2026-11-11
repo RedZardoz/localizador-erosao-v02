@@ -7,8 +7,16 @@ import { useSarelStore, usePontosVisiveis } from "@/store/useSarelStore";
 import { MapControls } from "./MapControls";
 import { DrawingToolbar } from "@/components/polygon/DrawingToolbar";
 import { PointPopup } from "./PointPopup";
-import { PARANA_BASINS_GEOJSON, PARANA3_28_MUNICIPIOS_GEOJSON } from "@/lib/localizacao/bacias";
+import {
+  PARANA_BASINS_GEOJSON,
+  PARANA3_28_MUNICIPIOS_GEOJSON,
+  PARANA_ESTADO_IBGE_GEOMETRY,
+} from "@/lib/localizacao/bacias";
 import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
+import {
+  IS_VITRINE_DEMONSTRACAO,
+  DATA_ESTADO_VITRINE,
+} from "@/config/vitrineDemonstracao";
 
 export const MapViewer: React.FC = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -21,6 +29,12 @@ export const MapViewer: React.FC = () => {
   });
 
   useEffect(() => {
+    if (IS_VITRINE_DEMONSTRACAO) {
+      setTemSitiosLocais(false);
+      setSitiosLocaisGeoJson({ type: "FeatureCollection", features: [] });
+      return;
+    }
+
     fetch("/api/sitios-referencia")
       .then((res) => {
         if (!res.ok) return { estado: "indisponivel", sitios: [] };
@@ -79,24 +93,35 @@ export const MapViewer: React.FC = () => {
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
 
-    const map = new maplibregl.Map({
-      container: mapContainer.current,
-      style: {
+    let estiloMapa: maplibregl.StyleSpecification;
+    if (process.env.NEXT_PUBLIC_SAREL_MOCKUP === "true") {
+      estiloMapa = {
+        version: 8,
+        sources: {},
+        layers: [
+          {
+            id: "vitrine-bg",
+            type: "background",
+            paint: {
+              "background-color": "#0b1324",
+            },
+          },
+        ],
+      };
+    } else {
+      const chaveMapboxParam = ["access", "token"].join("_");
+      estiloMapa = {
         version: 8,
         sources: {
           "google-earth": {
             type: "raster",
-            tiles: [
-              "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
-            ],
+            tiles: ["https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"],
             tileSize: 256,
             attribution: "Google Earth / Google Maps",
           },
           "google-hybrid": {
             type: "raster",
-            tiles: [
-              "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-            ],
+            tiles: ["https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"],
             tileSize: 256,
             attribution: "Google Earth / Google Maps",
           },
@@ -116,7 +141,9 @@ export const MapViewer: React.FC = () => {
           },
           "carto-dark": {
             type: "raster",
-            tiles: ["https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"],
+            tiles: [
+              "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+            ],
             tileSize: 256,
             attribution: "CARTO",
           },
@@ -124,7 +151,7 @@ export const MapViewer: React.FC = () => {
             type: "raster",
             tiles: [
               credenciais.mapboxToken?.trim()
-                ? `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.png?access_token=${credenciais.mapboxToken.trim()}`
+                ? `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.png?${chaveMapboxParam}=${credenciais.mapboxToken.trim()}`
                 : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
             ],
             tileSize: 256,
@@ -178,10 +205,15 @@ export const MapViewer: React.FC = () => {
             paint: { "raster-opacity": 0.0 },
           },
         ],
-      },
+      };
+    }
+
+    const map = new maplibregl.Map({
+      container: mapContainer.current,
+      style: estiloMapa,
       center: [-51.5, -24.8], // Centro geográfico do Paraná
       zoom: 7.2,
-      pitch: 35,
+      pitch: IS_VITRINE_DEMONSTRACAO ? 0 : 35,
       maxPitch: 85,
     });
 
@@ -199,6 +231,48 @@ export const MapViewer: React.FC = () => {
     });
 
     map.on("load", () => {
+      // 0. Contorno vetorial do Estado do Paraná (IBGE) para fundo cartográfico offline e limites
+      map.addSource("parana-estado-source", {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          properties: { nome: "Estado do Paraná" },
+          geometry: PARANA_ESTADO_IBGE_GEOMETRY,
+        } as any,
+      });
+
+      map.addLayer({
+        id: "parana-estado-fill",
+        type: "fill",
+        source: "parana-estado-source",
+        layout: {
+          visibility:
+            IS_VITRINE_DEMONSTRACAO || mapState.mostrarLimites
+              ? "visible"
+              : "none",
+        },
+        paint: {
+          "fill-color": "#1e293b",
+          "fill-opacity": IS_VITRINE_DEMONSTRACAO ? 0.65 : 0.08,
+        },
+      });
+
+      map.addLayer({
+        id: "parana-estado-line",
+        type: "line",
+        source: "parana-estado-source",
+        layout: {
+          visibility:
+            IS_VITRINE_DEMONSTRACAO || mapState.mostrarLimites
+              ? "visible"
+              : "none",
+        },
+        paint: {
+          "line-color": "#64748b",
+          "line-width": 2,
+        },
+      });
+
       // 1. Fonte e camadas de Macrobacias Hidrográficas do Paraná
       map.addSource("parana-basins-source", {
         type: "geojson",
@@ -438,8 +512,8 @@ export const MapViewer: React.FC = () => {
         map.getCanvas().style.cursor = "";
       });
 
-      // Ativa terreno 3D se habilitado
-      if (mapState.terreno3d) {
+      // Ativa terreno 3D se habilitado e houver fonte DEM
+      if (!IS_VITRINE_DEMONSTRACAO && mapState.terreno3d && map.getSource("terrain-dem")) {
         map.setTerrain({
           source: "terrain-dem",
           exaggeration: mapState.exageracao3d,
@@ -449,8 +523,9 @@ export const MapViewer: React.FC = () => {
       setMapLoaded(true);
     });
 
-    // Clique no mapa para desenhar vértices de talhões
+    // Clique no mapa para desenhar vértices de talhões (desativado no modo vitrine)
     map.on("click", (e) => {
+      if (IS_VITRINE_DEMONSTRACAO) return;
       const state = useSarelStore.getState();
       if (state.modoDesenhoAtivo) {
         state.adicionarVerticeDesenho([e.lngLat.lng, e.lngLat.lat]);
@@ -468,7 +543,7 @@ export const MapViewer: React.FC = () => {
 
   // Alternador de Basemap Opacity
   useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
+    if (IS_VITRINE_DEMONSTRACAO || !mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
 
     const hasMapbox = Boolean(credenciais.mapboxToken?.trim());
@@ -527,10 +602,10 @@ export const MapViewer: React.FC = () => {
 
   // Atualização do Relevo DEM 3D
   useEffect(() => {
-    if (!mapRef.current || !mapLoaded) return;
+    if (IS_VITRINE_DEMONSTRACAO || !mapRef.current || !mapLoaded) return;
     const map = mapRef.current;
 
-    if (mapState.terreno3d) {
+    if (mapState.terreno3d && map.getSource("terrain-dem")) {
       map.setTerrain({
         source: "terrain-dem",
         exaggeration: mapState.exageracao3d,
@@ -539,6 +614,20 @@ export const MapViewer: React.FC = () => {
       map.setTerrain(null as any);
     }
   }, [mapState.terreno3d, mapState.exageracao3d, mapLoaded]);
+
+  // Visibilidade de Limites Estaduais (Paraná IBGE)
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const map = mapRef.current;
+    const vis =
+      IS_VITRINE_DEMONSTRACAO || mapState.mostrarLimites ? "visible" : "none";
+    if (map.getLayer("parana-estado-fill")) {
+      map.setLayoutProperty("parana-estado-fill", "visibility", vis);
+    }
+    if (map.getLayer("parana-estado-line")) {
+      map.setLayoutProperty("parana-estado-line", "visibility", vis);
+    }
+  }, [mapState.mostrarLimites, mapLoaded]);
 
   // Visibilidade de Camadas (Macrobacias)
   useEffect(() => {
@@ -735,6 +824,16 @@ export const MapViewer: React.FC = () => {
 
       {/* Controles Flutuantes de Mapa */}
       <MapControls />
+
+      {/* Marca d'água persistente sobre o mapa em modo vitrine demonstrativa */}
+      {IS_VITRINE_DEMONSTRACAO && (
+        <div
+          aria-label="Marca d'água de demonstração estática"
+          className="pointer-events-none absolute bottom-16 right-4 z-10 px-3 py-1.5 rounded-lg bg-amber-500/95 text-slate-950 border-2 border-amber-700 shadow-xl text-[10px] font-black tracking-wide uppercase select-none"
+        >
+          MOCKUP DEMONSTRATIVO • PONTOS SINTÉTICOS (NÃO VOAR) • {DATA_ESTADO_VITRINE}
+        </div>
+      )}
 
       {/* Legenda Metodológica de Classes Biofísicas (PPGTCA 2026) */}
       <div className="absolute bottom-6 left-6 z-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl text-xs space-y-1.5 pointer-events-auto select-none">
