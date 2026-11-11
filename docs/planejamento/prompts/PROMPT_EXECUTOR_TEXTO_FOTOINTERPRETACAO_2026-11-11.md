@@ -86,10 +86,26 @@ imagens de satélite (Fase A)"* — papel aposentado.
 que o papel de interpretação vigente é a **delineação sobre ortomosaico de VANT**, cujo perfil é
 `voo-cego`.
 
-**Registre como pendência** em `DECISOES_DE_CONVERSA.md`, entrada nova datada, a pergunta que o
-planejador não soube responder: **quem delineia sobre o ortomosaico é a mesma pessoa que voa?** Se
-forem distintas, há um papel que o desenho de cegamento ainda não nomeia. Se for a mesma,
-`voo-cego` cobre e `interpretacao-cega` é resíduo a decidir.
+**A pergunta foi respondida pelo pesquisador em 11/11/2026: é a mesma pessoa.** Quem voa é quem
+delineia sobre o ortomosaico. Portanto:
+
+- **`voo-cego` cobre o papel.** Suas quatro colunas — `Codigo`, `Latitude`, `Longitude`,
+  `Area_Voo_Poligono` — bastam para voar e para delinear, e não revelam estrato, titular,
+  probabilidade de inclusão nem partição treino/held-out. O cegamento do desfecho está preservado:
+  quem atribui a fração erodida não sabe de que estrato o polígono veio.
+- **`interpretacao-cega` não tem ocupante.** O papel de fotointerpretação de satélite da Fase A foi
+  aposentado por D16 item 4, e a interpretação vigente é a delineação sobre ortomosaico, coberta
+  por `voo-cego`.
+
+**Registre isso em `DECISOES_DE_CONVERSA.md`**, entrada nova datada, com as duas consequências
+acima, e **não remova o perfil** — a decisão sobre removê-lo ou mantê-lo como arquitetura
+construída é do pesquisador, como a do Modelo P e a dos módulos da Fase A.
+
+**Registre também, como pendência separada, um achado do levantamento:** a delineação ocorre **fora
+do SAREL**. O sistema apenas exige a presença de `Area_Delineada_m2` na exportação
+(`exigirDelineacaoD26`); não há rota nem módulo de ingestão de resultado de delineação. Como D26
+define o alvo do modelo **por delineação de VANT**, o desfecho entra por um caminho que o sistema
+não instrumenta — o que merece decisão própria antes da campanha.
 
 ---
 
@@ -119,7 +135,9 @@ módulos; a nota do perfil; a pendência da Tarefa 3; e o resultado da trava com
 - [ ] T1 — varredura gravada; cada ocorrência classificada em (i), (ii) ou (iii)
 - [ ] T1 — ocorrências (ii) e (iii) **intactas**; interface **não alterada**
 - [ ] T2 — cabeçalhos dos dois módulos corrigidos; **nenhum código removido**
-- [ ] T3 — descrição do perfil corrigida; colunas **inalteradas**; pendência registrada
+- [ ] T3 — descrição do perfil corrigida; colunas **inalteradas**; perfil **não** removido
+- [ ] T3 — resposta do pesquisador registrada: mesma pessoa voa e delineia; `voo-cego` cobre
+- [ ] T3 — registrada a pendência da ingestão de delineação, que ocorre fora do sistema
 - [ ] T4 — trava detecta vigência, não o termo; meta-teste acusa frase sintética
 - [ ] T5 — evidência escrita
 - [ ] `npm test` e `npx tsc --noEmit` gravados
