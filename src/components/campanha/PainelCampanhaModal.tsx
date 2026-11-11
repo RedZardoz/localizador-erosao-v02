@@ -36,7 +36,7 @@ export const PainelCampanhaModal: React.FC = () => {
                 Central de Campanha, SAREL Coletor &amp; Desenho Amostral (D16)
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                SAREL Coletor (Fase B), 72 Polígonos de VANT e Âncora de Prevalência [Kobo e Fotointerpretação aposentados por D16]
+                SAREL Coletor (Fase B), Polígonos de VANT (72 nominais / 67 realizados) e Âncora de Prevalência [Kobo e Fotointerpretação aposentados por D16]
               </p>
             </div>
           </div>

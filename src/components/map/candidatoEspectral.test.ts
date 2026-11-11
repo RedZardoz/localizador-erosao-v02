@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
+import { CRITERIOS_ESPECTRAIS } from "@/lib/gee/amostragemBiofisica";
 
-describe("C20 — Classe amostral exibida como candidato espectral, não rótulo", () => {
+describe("C20 — Classe amostral exibida como candidato espectral, não rótulo (Emenda D02)", () => {
   const dirComponents = path.resolve(process.cwd(), "src/components");
 
   function listarArquivosRecursivo(dir: string): string[] {
@@ -28,6 +29,8 @@ describe("C20 — Classe amostral exibida como candidato espectral, não rótulo
       "Erosão Laminar (Classe 1)",
       "Controle / SPD (Classe 0)",
       "Erosão (Classe 1)",
+      "Classe 1 (Erosão",
+      "Classe 0 (Controle",
     ];
 
     const violacoes: string[] = [];
@@ -42,6 +45,26 @@ describe("C20 — Classe amostral exibida como candidato espectral, não rótulo
     }
 
     expect(violacoes).toEqual([]);
+  });
+
+  it("proíbe 'Classe 1' e 'Classe 0' como rótulo de ponto biofísico em amostragemBiofisica.ts", () => {
+    expect(CRITERIOS_ESPECTRAIS.EROSAO.rotulo).not.toContain("Classe 1");
+    expect(CRITERIOS_ESPECTRAIS.EROSAO.rotulo).not.toContain("Classe 0");
+    expect(CRITERIOS_ESPECTRAIS.CONTROLE.rotulo).not.toContain("Classe 1");
+    expect(CRITERIOS_ESPECTRAIS.CONTROLE.rotulo).not.toContain("Classe 0");
+
+    expect(CRITERIOS_ESPECTRAIS.EROSAO.rotulo).toBe("Candidato espectral a erosão");
+    expect(CRITERIOS_ESPECTRAIS.CONTROLE.rotulo).toBe("Candidato espectral a controle");
+
+    const caminhoAmostragem = path.resolve(
+      process.cwd(),
+      "src/lib/gee/amostragemBiofisica.ts"
+    );
+    const conteudo = fs.readFileSync(caminhoAmostragem, "utf8");
+    expect(conteudo).not.toContain("Classe 1 (Erosão Laminar Ativa)");
+    expect(conteudo).not.toContain("Classe 0 (Controle / SPD Pleno)");
+    expect(conteudo).not.toContain('rotulo: "Erosão Laminar (Classe 1)"');
+    expect(conteudo).not.toContain('rotulo: "Controle / SPD (Classe 0)"');
   });
 
   it("presença de 'candidato espectral' e 'não é rótulo' em MapViewer.tsx e PointPopup.tsx", () => {

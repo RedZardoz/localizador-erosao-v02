@@ -3,14 +3,14 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 # Painel de Estado Atual do Projeto — SAREL
 
 ## 1. Controle de Versão (Git)
-- Commit HEAD: `027220468e9ed603487faeb4f167b5ba00f9928f`
-- Data do HEAD: 2026-11-10 22:17:31 -0300
+- Commit HEAD: `814e6f85b2a65f19e4cb8a7be24a351349ccbf71`
+- Data do HEAD: 2026-11-10 22:30:51 -0300
 - Últimos 5 commits:
-  1. `0272204 feat(sorteio-d16): implementar selo público redigido do sorteio D16 (Prompt L)`
-  2. `14e302f docs(planejamento): adicionar prompt L do selo publico redigido do sorteio D16`
-  3. `b368b50 feat(sorteio-d16): executar sorteio oficial D16 sob semente 20261110 e selar desenho amostral`
-  4. `3b54177 docs(planejamento): atualizar prompt J com --cache e a saida esperada do dry-run`
-  5. `74b138e feat(sorteio-d16): juntar frequencia de solo nu e proveniencia no CLI`
+  1. `814e6f8 Update Verificação e Validação SAREL 2026_11_11`
+  2. `7ecdfac docs(planejamento): adicionar prompt M de alinhamento da interface ao desenho medido`
+  3. `5047c72 docs(dissertacao): registrar verificacao e validacao do SAREL em documento Word`
+  4. `0133f4c docs(planejamento): sincronizar painel ESTADO.md com 109 arquivos de teste herméticos e evidências`
+  5. `0272204 feat(sorteio-d16): implementar selo público redigido do sorteio D16 (Prompt L)`
 
 ## 2. Testes Automatizados
 - Arquivos de teste versionados no repositório: 125
@@ -205,8 +205,8 @@ FONTE_DOS_DADOS	.git/HEAD	src/config/decisoes.ts	vitest.config.mts	vitest.vivo.c
 | `execucao/2026-11-11l/check_ignore_selo_publico.txt` | sem data no nome | 29 |
 | `execucao/2026-11-11l/estado_verificar.txt` | sem data no nome | 162 |
 | `execucao/2026-11-11l/gerar_selo_publico_saida.txt` | sem data no nome | 414 |
-| `execucao/2026-11-11l/git_log.txt` | sem data no nome | 281 |
-| `execucao/2026-11-11l/git_status.txt` | sem data no nome | 316 |
+| `execucao/2026-11-11l/git_log.txt` | sem data no nome | 280 |
+| `execucao/2026-11-11l/git_status.txt` | sem data no nome | 91 |
 | `execucao/2026-11-11l/npm_test.txt` | sem data no nome | 20974 |
 | `execucao/2026-11-11l/precondicao_estado_verificar.txt` | sem data no nome | 162 |
 | `execucao/2026-11-11l/precondicao_git_status.txt` | sem data no nome | 46 |

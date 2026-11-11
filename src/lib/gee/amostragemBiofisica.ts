@@ -7,9 +7,9 @@
  * - Realiza a separação objetiva, determinística e reprodutível de candidatos amostrais
  *   no espaço biofísico bidimensional composto pelo Índice de Vegetação por Diferença
  *   Normalizada (NDVI) e pelo Índice de Solo Exposto (BSI).
- * - Categoriza o pixel orbital em três estados disjuntos:
- *   1. Classe 1 (Erosão Laminar Ativa): BSI > 0.10 e NDVI < 0.40
- *   2. Classe 0 (Controle / SPD Pleno): BSI < 0.00 e NDVI > 0.65
+ * - Categoriza o pixel orbital em três estados disjuntos de triagem espectral (Emenda D02 de 06/10/2026):
+ *   1. Candidato espectral a erosão: BSI > 0.10 e NDVI < 0.40
+ *   2. Candidato espectral a controle: BSI < 0.00 e NDVI > 0.65
  *   3. Classe Indefinida (Zona de Transição / Mista): Retida fora do conjunto de treino.
  *
  * POR QUÊ ESTE PROCEDIMENTO É EXIGIDO NA METODOLOGIA (SEÇÃO 3.1 & DECISÃO D02):
@@ -37,13 +37,13 @@ export const CRITERIOS_ESPECTRAIS = {
   EROSAO: {
     BSI_MIN: exigirParametro(DECISOES.D02, "bsiMin").valor,
     NDVI_MAX: exigirParametro(DECISOES.D02, "ndviMax").valor,
-    rotulo: "Erosão Laminar (Classe 1)",
+    rotulo: "Candidato espectral a erosão",
     descricao: "Solo exposto e mineralizado sem cobertura vegetal ativa (Horizonte B exposto)",
   },
   CONTROLE: {
     BSI_MAX: exigirParametro(DECISOES.D02, "bsiMax").valor,
     NDVI_MIN: exigirParametro(DECISOES.D02, "ndviMin").valor,
-    rotulo: "Controle / SPD (Classe 0)",
+    rotulo: "Candidato espectral a controle",
     descricao: "Solo protegido por biomassa ativa ou palhada residual densa no Sistema Plantio Direto",
   },
 } as const;
@@ -80,12 +80,12 @@ export function classificarPontoEspectral(
     return "indefinido";
   }
 
-  // Classe 1: Erosão Laminar (BSI > 0.10 e NDVI < 0.40)
+  // Candidato espectral a erosão (BSI > 0.10 e NDVI < 0.40)
   if (bsi > CRITERIOS_ESPECTRAIS.EROSAO.BSI_MIN && ndvi < CRITERIOS_ESPECTRAIS.EROSAO.NDVI_MAX) {
     return "erosao";
   }
 
-  // Classe 0: Controle / SPD (BSI < 0.00 e NDVI > 0.65)
+  // Candidato espectral a controle (BSI < 0.00 e NDVI > 0.65)
   if (bsi < CRITERIOS_ESPECTRAIS.CONTROLE.BSI_MAX && ndvi > CRITERIOS_ESPECTRAIS.CONTROLE.NDVI_MIN) {
     return "controle";
   }

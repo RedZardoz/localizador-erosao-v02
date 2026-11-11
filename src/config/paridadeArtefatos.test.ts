@@ -308,4 +308,233 @@ describe("Portão de Paridade entre Artefatos (Fase 1)", () => {
     expect(conteudoDecisoesMd).toContain("Zhu, Z. (2013)");
     expect(conteudoDecisoesMd).toContain("Cochran, W. G. (1977)");
   });
+
+  // --------------------------------------------------------------------------
+  // 5. Trava de Paridade entre Registro e Interface (Prompt M — Tarefa 4)
+  // --------------------------------------------------------------------------
+
+  interface ExcecaoDesenhoInterface {
+    arquivo: string;
+    linha: number;
+    trecho: string;
+    justificativa: string;
+  }
+
+  const LISTA_EXCECOES_DESENHO_INTERFACE: ExcecaoDesenhoInterface[] = [
+    {
+      arquivo: "src/components/campanha/PainelCampanha.tsx",
+      linha: 419,
+      trecho: "ao longo dos 18 estratos biofísicos",
+      justificativa: "18 estratos biofísicos da partição de D12 consumindo unidades de CONFIGURACAO_REGISTRADA_D16.",
+    },
+    {
+      arquivo: "src/components/campanha/PainelCampanha.tsx",
+      linha: 445,
+      trecho: "Desenho nominal de 4 polígonos por estrato nos 18 estratos de D12",
+      justificativa: "Desenho nominal explicitamente rotulado como tal em contraste com o realizado.",
+    },
+    {
+      arquivo: "src/components/campanha/PainelCampanha.tsx",
+      linha: 906,
+      trecho: "dos polígonos de VANT (72 nominais / 67 realizados no selo D16)",
+      justificativa: "Amostragem de VANT declarando nominal 72 e realizado 67 no selo D16.",
+    },
+    {
+      arquivo: "src/components/campanha/PainelCampanhaModal.tsx",
+      linha: 39,
+      trecho: "Polígonos de VANT (72 nominais / 67 realizados)",
+      justificativa: "Subtítulo do modal declarando nominal 72 e realizado 67.",
+    },
+    {
+      arquivo: "src/components/decisoes/CalculadoraDesenhoAmostral.tsx",
+      linha: 190,
+      trecho: "361 ha (Nominal D16)",
+      justificativa: "Marcador de slider da calculadora rotulado explicitamente como Nominal D16.",
+    },
+    {
+      arquivo: "src/components/decisoes/CalculadoraDesenhoAmostral.tsx",
+      linha: 238,
+      trecho: "Polígonos por Estrato (18 estratos nominais D12)",
+      justificativa: "Rótulo de linha da calculadora rotulado como 18 estratos nominais D12.",
+    },
+    {
+      arquivo: "src/components/decisoes/PainelCriterioRefutacaoD25.tsx",
+      linha: 63,
+      trecho: 'unidadesRotulo: "72 (polígonos nominais; n efetivo < 72)"',
+      justificativa: "72 nominal rotulado explicitamente na tabela de tetos de preditores de D24.",
+    },
+    {
+      arquivo: "src/components/decisoes/PainelCriterioRefutacaoD25.tsx",
+      linha: 64,
+      trecho: 'alcanceEspacial: "1 unidade por polígono (72 polígonos nominais; n efetivo reduzido por compartilhamento de unidade pedológica)"',
+      justificativa: "72 nominal, rotulado como tal em PainelCriterioRefutacaoD25.tsx:64 (modelo canônico).",
+    },
+    {
+      arquivo: "src/components/decisoes/PainelCriterioRefutacaoD25.tsx",
+      linha: 66,
+      trecho: "72 polígonos nominais; n efetivo menor por manchas compartilhadas",
+      justificativa: "72 nominal rotulado na justificativa física de solo.",
+    },
+    {
+      arquivo: "src/components/decisoes/PainelCriterioRefutacaoD25.tsx",
+      linha: 73,
+      trecho: 'unidadesRotulo: "72 (polígonos nominais; n efetivo < 72)"',
+      justificativa: "72 nominal rotulado na linha de chuva.",
+    },
+    {
+      arquivo: "src/components/decisoes/PainelCriterioRefutacaoD25.tsx",
+      linha: 74,
+      trecho: 'Grade regional (5 a 10 km de resolução nativa; 72 polígonos nominais)',
+      justificativa: "72 nominal rotulado no alcance espacial de chuva.",
+    },
+    {
+      arquivo: "src/components/decisoes/PainelCriterioRefutacaoD25.tsx",
+      linha: 76,
+      trecho: "72 nominais; polígonos próximos compartilham a mesma célula de chuva",
+      justificativa: "72 nominais rotulados na justificativa física de chuva.",
+    },
+    {
+      arquivo: "src/components/decisoes/PainelCriterioRefutacaoD25.tsx",
+      linha: 139,
+      trecho: "36 polígonos held-out reservados de VANT",
+      justificativa: "36 polígonos held-out nominais de D25 referenciados na descrição metodológica da avaliação.",
+    },
+    {
+      arquivo: "src/components/decisoes/PainelCriterioRefutacaoD25.tsx",
+      linha: 227,
+      trecho: "IC 95% Bootstrap em 36 Clusters Held-Out",
+      justificativa: "36 clusters held-out nominais de D25 no cabeçalho do bootstrap.",
+    },
+    {
+      arquivo: "src/components/decisoes/PainelSorteioD16.tsx",
+      linha: 231,
+      trecho: "Comando de Sorteio dos Polígonos de Drone (Nominal: 72 / 361 ha",
+      justificativa: "Comando de gatilho de sorteio explicitamente rotulado como Nominal: 72 / 361 ha.",
+    },
+    {
+      arquivo: "src/components/decisoes/PainelSorteioD16.tsx",
+      linha: 311,
+      trecho: "Preparar Sorteio Irreversível de Polígonos (Nominal: 72 / 361 ha)",
+      justificativa: "Botão de preparo do sorteio rotulado como Nominal: 72 / 361 ha.",
+    },
+    {
+      arquivo: "src/components/decisoes/PainelSorteioD16.tsx",
+      linha: 318,
+      trecho: "desenho nominal de 72 polígonos / 361 ha",
+      justificativa: "Texto de confirmação irreversível rotulado como desenho nominal de 72 polígonos / 361 ha.",
+    },
+    {
+      arquivo: "src/components/decisoes/PainelSorteioD16.tsx",
+      linha: 329,
+      trecho: "Confirmar e Selar Sorteio Irreversível (Nominal: 72 Polígonos)",
+      justificativa: "Botão de confirmação de selagem rotulado como Nominal: 72 Polígonos.",
+    },
+  ];
+
+  const REGEX_NUMEROS_DESENHO = /\b(72|36|18|361|360|67|34|33|336)\b/;
+  const REGEX_CONTEXTO_METODOLOGICO = /\b(pol[íi]gonos?|estratos?|hectares?|ha|treino|held-?out)\b/i;
+
+  function verificarLinhaContextoDesenho(linha: string): {
+    detectado: boolean;
+    numero?: string;
+    contexto?: string;
+  } {
+    const matchNum = REGEX_NUMEROS_DESENHO.exec(linha);
+    const matchCtx = REGEX_CONTEXTO_METODOLOGICO.exec(linha);
+    if (matchNum && matchCtx) {
+      return {
+        detectado: true,
+        numero: matchNum[0],
+        contexto: matchCtx[0],
+      };
+    }
+    return { detectado: false };
+  }
+
+  function coletarArquivosComponentes(dir: string): string[] {
+    const entradas = fs.readdirSync(dir, { withFileTypes: true });
+    const arquivos: string[] = [];
+    for (const entrada of entradas) {
+      const res = path.resolve(dir, entrada.name);
+      if (entrada.isDirectory()) {
+        arquivos.push(...coletarArquivosComponentes(res));
+      } else if (
+        (entrada.name.endsWith(".ts") || entrada.name.endsWith(".tsx")) &&
+        !entrada.name.includes(".test.")
+      ) {
+        arquivos.push(res);
+      }
+    }
+    return arquivos;
+  }
+
+  it("G08 — Trava de Paridade: proíbe números de desenho soltos em contexto metodológico sem justificativa", () => {
+    const dirComponents = path.resolve(process.cwd(), "src/components");
+    const arquivos = coletarArquivosComponentes(dirComponents);
+    const violacoes: string[] = [];
+
+    for (const arq of arquivos) {
+      const relPath = path.relative(process.cwd(), arq).replace(/\\/g, "/");
+      const linhas = fs.readFileSync(arq, "utf-8").split(/\r?\n/);
+
+      linhas.forEach((linha, idx) => {
+        const numLinha = idx + 1;
+        const analise = verificarLinhaContextoDesenho(linha);
+        if (!analise.detectado) return;
+
+        // Verifica se a ocorrência está autorizada na lista de exceções
+        const autorizada = LISTA_EXCECOES_DESENHO_INTERFACE.find(
+          (exc) =>
+            exc.arquivo === relPath &&
+            (exc.linha === numLinha || linha.includes(exc.trecho)) &&
+            Boolean(exc.justificativa && exc.justificativa.trim().length > 10)
+        );
+
+        if (!autorizada) {
+          violacoes.push(
+            `[DERIVA_DESENHO] Ocorrência não autorizada em ${relPath}:${numLinha}\n` +
+            `  Número detectado: ${analise.numero} | Contexto: '${analise.contexto}'\n` +
+            `  Linha: "${linha.trim()}"\n` +
+            `  Ação exigida: importar de seloPublicoD16.ts ou justificar na lista de exceções.`
+          );
+        }
+      });
+    }
+
+    expect(violacoes).toEqual([]);
+  });
+
+  it("G09 — Meta-teste da trava de paridade: prova que acusa violação sintética e aceita linha autorizada", () => {
+    // 1. Prova que linha sintética com número de desenho em contexto metodológico é detectada
+    const linhaComViolacao = 'const aviso = "Amostragem estratificada com 72 polígonos de validação";';
+    const analise1 = verificarLinhaContextoDesenho(linhaComViolacao);
+    expect(analise1.detectado).toBe(true);
+    expect(analise1.numero).toBe("72");
+    expect(analise1.contexto).toMatch(/polígonos/i);
+
+    // 2. Prova que linha com número fora de contexto metodológico NÃO dispara falso positivo
+    const linhaSemContexto = "const largura = 72; // pixels no layout de botão";
+    const analise2 = verificarLinhaContextoDesenho(linhaSemContexto);
+    expect(analise2.detectado).toBe(false);
+
+    // 3. Prova que linha com contexto metodológico sem número de desenho NÃO dispara falso positivo
+    const linhaSemNumero = "const tipo = 'polígono de amostragem';";
+    const analise3 = verificarLinhaContextoDesenho(linhaSemNumero);
+    expect(analise3.detectado).toBe(false);
+
+    // 4. Prova que linha contendo trecho da lista de exceções com justificativa é reconhecida como autorizada
+    const excExemplo = LISTA_EXCECOES_DESENHO_INTERFACE[0];
+    const linhaAutorizada = `<span>${excExemplo.trecho}</span>`;
+    const analise4 = verificarLinhaContextoDesenho(linhaAutorizada);
+    expect(analise4.detectado).toBe(true);
+
+    const autorizada = LISTA_EXCECOES_DESENHO_INTERFACE.find(
+      (exc) =>
+        exc.arquivo === excExemplo.arquivo &&
+        linhaAutorizada.includes(exc.trecho) &&
+        Boolean(exc.justificativa)
+    );
+    expect(autorizada).toBeDefined();
+    expect(autorizada?.justificativa.length).toBeGreaterThan(10);
+  });
 });

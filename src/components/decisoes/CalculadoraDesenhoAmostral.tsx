@@ -187,7 +187,7 @@ export const CalculadoraDesenhoAmostral: React.FC = () => {
           />
           <div className="flex justify-between text-[11px] text-slate-500 font-mono">
             <span>100 ha</span>
-            <span className="text-sky-400 font-bold">361 ha (D16)</span>
+            <span className="text-sky-400 font-bold">361 ha (Nominal D16)</span>
             <span>800 ha</span>
           </div>
           <p className="text-[11px] text-slate-400 leading-tight">
@@ -202,7 +202,7 @@ export const CalculadoraDesenhoAmostral: React.FC = () => {
           <thead className="bg-slate-950 text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
             <tr>
               <th className="py-3 px-4">Métrica de Desenho</th>
-              <th className="py-3 px-4 text-center">Registrado em D16</th>
+              <th className="py-3 px-4 text-center">Registrado em D16 (Nominal)</th>
               <th className="py-3 px-4 text-center">Configuração Simulada</th>
               <th className="py-3 px-4 text-center">Delta</th>
             </tr>
@@ -222,7 +222,7 @@ export const CalculadoraDesenhoAmostral: React.FC = () => {
             </tr>
 
             <tr>
-              <td className="py-2.5 px-4 font-medium text-slate-200">Número de Polígonos Total</td>
+              <td className="py-2.5 px-4 font-medium text-slate-200">Número de Polígonos Total (Nominal)</td>
               <td className="py-2.5 px-4 text-center font-mono">72</td>
               <td className="py-2.5 px-4 text-center font-mono font-semibold text-sky-400">
                 {saidas.numPoligonosTotal}
@@ -235,7 +235,7 @@ export const CalculadoraDesenhoAmostral: React.FC = () => {
             </tr>
 
             <tr>
-              <td className="py-2.5 px-4 font-medium text-slate-200">Polígonos por Estrato (18 estratos D12)</td>
+              <td className="py-2.5 px-4 font-medium text-slate-200">Polígonos por Estrato (18 estratos nominais D12)</td>
               <td className="py-2.5 px-4 text-center font-mono">4,0 (2+2)</td>
               <td className="py-2.5 px-4 text-center font-mono font-semibold text-sky-400">
                 {saidas.poligonosPorEstrato}

@@ -1,0 +1,12 @@
+﻿ M docs/planejamento/ESTADO.md
+ M src/components/campanha/PainelCampanha.tsx
+ M src/components/campanha/PainelCampanhaModal.tsx
+ M src/components/decisoes/CalculadoraDesenhoAmostral.tsx
+ M src/components/decisoes/PainelSorteioD16.tsx
+ M src/components/map/candidatoEspectral.test.ts
+ M src/config/paridadeArtefatos.test.ts
+ M src/lib/gee/amostragemBiofisica.ts
+?? docs/verificacoes/2026-11-11m_interface_alinhada.md
+?? docs/verificacoes/execucao/2026-11-11m/
+?? src/lib/gee/seloPublicoD16.test.ts
+?? src/lib/gee/seloPublicoD16.ts

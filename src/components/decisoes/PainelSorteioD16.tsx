@@ -10,6 +10,7 @@ import {
 } from "@/lib/gee/sorteioPoligonosTipos";
 import { valorOuNulo } from "@/types/proveniencia";
 import { CalculadoraDesenhoAmostral } from "./CalculadoraDesenhoAmostral";
+import { obterComparativoDesenhoD16 } from "@/lib/gee/seloPublicoD16";
 
 /**
  * Painel exclusivo do pesquisador para o sorteio único e irreversível dos polígonos
@@ -34,6 +35,7 @@ export const PainelSorteioD16: React.FC = () => {
   const [executando, setExecutando] = useState(false);
   const [erroExecucao, setErroExecucao] = useState<string | null>(null);
   const [abaAtiva, setAbaAtiva] = useState<"sorteio" | "calculadora">("sorteio");
+  const { nominal, realizado } = useMemo(() => obterComparativoDesenhoD16(), []);
 
   useEffect(() => {
     let cancelado = false;
@@ -178,12 +180,27 @@ export const PainelSorteioD16: React.FC = () => {
               <span>Sorteio D16 Selado e Irreversível (Decisões D16 e D23)</span>
             </div>
             <span className="px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900 font-mono text-[10px] font-bold">
-              SELADO (72 POLÍGONOS / 361 ha)
+              {realizado.disponivel
+                ? `SELADO (${realizado.totalPoligonosSorteados} POLÍGONOS REALIZADOS / ${realizado.areaTotalHectares.toFixed(2).replace(".", ",")} ha [NOMINAL: ${nominal.totalPoligonos} / ${nominal.areaTotalArredondadaHa} ha])`
+                : "SELADO (SELO PÚBLICO INDISPONÍVEL)"}
             </span>
           </div>
           <p className="text-slate-700 dark:text-slate-300">
-            O sorteio estratificado de 72 polígonos de 5,02 ha (36 treino + 36 held-out) já foi executado e selado.
-            Conforme a Decisão D23, as probabilidades de inclusão (<code>pi_i</code>) registradas não podem ser descartadas nem sobrescritas.
+            {realizado.disponivel ? (
+              <>
+                O sorteio estratificado registrou <strong>{realizado.totalPoligonosSorteados} polígonos realizados ({realizado.areaTotalHectares.toFixed(2).replace(".", ",")} ha: {realizado.totalTreino} treino + {realizado.totalHeldOut} held-out)</strong> frente ao plano <strong>nominal de {nominal.totalPoligonos} polígonos ({nominal.areaTotalArredondadaHa} ha: {nominal.totalTreino} treino + {nominal.totalHeldOut} held-out)</strong>.
+                <br />
+                <span className="text-[11px] text-slate-600 dark:text-slate-400">
+                  <strong>Déficit Estrutural da Bacia:</strong> {realizado.motivoDeficit} {realizado.motivoEstratoVazio}
+                </span>
+                <br />
+                Conforme a Decisão D23, as probabilidades de inclusão (<code>pi_i</code>) registradas não podem ser descartadas nem sobrescritas.
+              </>
+            ) : (
+              <>
+                Selo público de sorteio D16 declarado indisponível. Conforme a Decisão D23, as probabilidades de inclusão (<code>pi_i</code>) registradas não podem ser descartadas nem sobrescritas.
+              </>
+            )}
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-1 font-mono text-[11px] text-emerald-900 dark:text-emerald-300">
             <span>
@@ -211,7 +228,7 @@ export const PainelSorteioD16: React.FC = () => {
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
               <ShieldAlert className="w-4 h-4 text-amber-600" />
-              <span>Comando de Sorteio dos 72 Polígonos de Drone (FASE A1 — D16 / D23)</span>
+              <span>Comando de Sorteio dos Polígonos de Drone (Nominal: 72 / 361 ha — FASE A1 / D16 / D23)</span>
             </div>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
@@ -231,9 +248,13 @@ export const PainelSorteioD16: React.FC = () => {
           </div>
 
           <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-            <b>Escopo e Irreversibilidade:</b> Sorteia exatamente <b>72 polígonos de 5,02 ha</b> (<b>4 por estrato</b> sobre os{" "}
-            <b>18 estratos</b> de D12, totalizando <b>361 ha</b>: 36 para treino e 36 reservados em held-out para avaliação única de D25).
-            Esta ação é <b>irreversível</b> (D23 proíbe descartar <code>pi_i</code> registrado).
+            <b>Escopo e Irreversibilidade:</b> Desenho nominal de <b>{nominal.totalPoligonos} polígonos de {nominal.areaPoligonoArredondadaHa.toFixed(2).replace(".", ",")} ha</b> (<b>{nominal.poligonosPorEstrato} por estrato</b> nos <b>{nominal.totalEstratos} estratos</b> de D12, totalizando <b>{nominal.areaTotalArredondadaHa} ha</b>: {nominal.totalTreino} treino e {nominal.totalHeldOut} mantidos em held-out para avaliação de D25).
+            {realizado.disponivel && (
+              <>
+                {" "}No sorteio realizado pelo selo oficial, são <b>{realizado.totalPoligonosSorteados} polígonos ({realizado.areaTotalHectares.toFixed(2).replace(".", ",")} ha: {realizado.totalTreino} treino e {realizado.totalHeldOut} em held-out)</b>, com 4 estratos em censo e 1 estrato vazio (E_1_3_2: 9 candidatos planos de K̂=2 na bacia, todos com Ê ≤ 0,0331 &lt; corte 0,0490).
+              </>
+            )}
+            {" "}Esta ação é <b>irreversível</b> (D23 proíbe descartar <code>pi_i</code> registrado).
           </p>
 
           <div className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
@@ -287,14 +308,14 @@ export const PainelSorteioD16: React.FC = () => {
               {bloqueioENaoMedido
                 ? "Sorteio Bloqueado (Ê não medido — P12)"
                 : relatorioPre.aprovado
-                ? "Etapa 1/2 — Preparar Sorteio Irreversível de 72 Polígonos (361 ha)"
+                ? "Etapa 1/2 — Preparar Sorteio Irreversível de Polígonos (Nominal: 72 / 361 ha)"
                 : `Sorteio Desabilitado (${relatorioPre.condicaoFalha})`}
             </button>
           ) : (
             <div className="p-3 rounded-lg border border-amber-400 bg-amber-100/80 dark:bg-amber-900/40 space-y-2">
               <p className="font-bold text-amber-950 dark:text-amber-100 flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-amber-700" />
-                Confirmação Explícita (Etapa 2/2): Deseja selar definitivamente os 72 polígonos (4 por estrato, 361 ha) e gravar os pi_i de D23?
+                Confirmação Explícita (Etapa 2/2): Deseja selar definitivamente os polígonos (desenho nominal de 72 polígonos / 361 ha) e gravar os pi_i de D23?
               </p>
               <div className="flex items-center gap-2">
                 <button
@@ -305,7 +326,7 @@ export const PainelSorteioD16: React.FC = () => {
                 >
                   {executando
                     ? "Gravando Selo D16..."
-                    : "Confirmar e Selar Sorteio Irreversível (72 Polígonos)"}
+                    : "Confirmar e Selar Sorteio Irreversível (Nominal: 72 Polígonos)"}
                 </button>
                 <button
                   type="button"

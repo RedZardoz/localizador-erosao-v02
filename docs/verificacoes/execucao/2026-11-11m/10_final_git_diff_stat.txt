@@ -1,0 +1,9 @@
+﻿ docs/planejamento/ESTADO.md                        |  18 +-
+ src/components/campanha/PainelCampanha.tsx         |  29 ++-
+ src/components/campanha/PainelCampanhaModal.tsx    |   2 +-
+ .../decisoes/CalculadoraDesenhoAmostral.tsx        |   8 +-
+ src/components/decisoes/PainelSorteioD16.tsx       |  41 +++-
+ src/components/map/candidatoEspectral.test.ts      |  25 ++-
+ src/config/paridadeArtefatos.test.ts               | 229 +++++++++++++++++++++
+ src/lib/gee/amostragemBiofisica.ts                 |  14 +-
+ 8 files changed, 327 insertions(+), 39 deletions(-)

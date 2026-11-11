@@ -23,6 +23,7 @@ import {
 } from "@/lib/rotulos/ingestaoKobo";
 import { AREA_INTERESSE_PADRAO } from "@/config/areaInteresse";
 import { CONFIGURACAO_REGISTRADA_D16 } from "@/lib/fundiario/calculadoraDesenho";
+import { obterComparativoDesenhoD16 } from "@/lib/gee/seloPublicoD16";
 import {
   FileSpreadsheet,
   CheckCircle2,
@@ -50,6 +51,10 @@ export function PainelCampanha() {
     adicionarLog,
   } = useSarelStore();
   const pontosAtivos = pontos.length > 0 ? pontos : pontosProvisorios;
+  const { nominal: desenhoNominal, realizado: desenhoRealizado } = React.useMemo(
+    () => obterComparativoDesenhoD16(),
+    []
+  );
 
   // J2: Alinhamento das abas à metodologia vigente (D16)
   const [abaInterna, setAbaInterna] = useState<"vant-d16" | "coletor" | "exportacao" | "legado">("vant-d16");
@@ -347,7 +352,9 @@ export function PainelCampanha() {
           <Plane className="w-4 h-4 text-cyan-500" />
           VANT &amp; Desenho Amostral (D16)
           <span className="bg-cyan-100 dark:bg-cyan-950/60 text-cyan-800 dark:text-cyan-300 text-[10px] px-1.5 py-0.5 rounded-full font-mono">
-            72 Polígonos
+            {desenhoRealizado.disponivel
+              ? `Nominal: ${desenhoNominal.totalPoligonos} | Realizado: ${desenhoRealizado.totalPoligonosSorteados} Polígonos`
+              : `Nominal: ${desenhoNominal.totalPoligonos} Polígonos`}
           </span>
         </button>
 
@@ -423,17 +430,25 @@ export function PainelCampanha() {
                 <span className="font-mono text-[10px] font-bold uppercase bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded">
                   Conjunto 1 (D16)
                 </span>
-                <span className="font-bold text-xs text-slate-900 dark:text-white font-mono">361 ha Total</span>
+                <span className="font-bold text-xs text-slate-900 dark:text-white font-mono">
+                  {desenhoRealizado.disponivel
+                    ? `Nominal: ${desenhoNominal.areaTotalArredondadaHa} ha | Realizado: ${desenhoRealizado.areaTotalHectares.toFixed(2).replace(".", ",")} ha`
+                    : `Nominal: ${desenhoNominal.areaTotalArredondadaHa} ha Total`}
+                </span>
               </div>
               <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                72 Polígonos de VANT (5,02 ha)
+                {desenhoRealizado.disponivel
+                  ? `Polígonos de VANT (Nominal: ${desenhoNominal.totalPoligonos} | Realizado: ${desenhoRealizado.totalPoligonosSorteados})`
+                  : `Polígonos de VANT (Nominal: ${desenhoNominal.totalPoligonos})`}
               </h4>
               <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                4 polígonos por estrato nos 18 estratos de D12 (~224 x 224 m compatíveis com minifúndios da BP3). 
-                De cada quarteto, <strong>2 vão para treino</strong> e <strong>2 para held-out</strong>, garantindo replicação interna.
+                Desenho nominal de 4 polígonos por estrato nos 18 estratos de D12 (~224 x 224 m compatíveis com minifúndios da BP3: 36 treino + 36 held-out).
+                No realizado, dois estratos de K̂=2 não atingem o piso de 4 polígonos (E_1_2_2 com 3 candidatos em censo) e um é vazio (E_1_3_2 vazio: a bacia possui apenas 9 candidatos em relevo plano e K̂=2, e o maior Ê é 0,0331 &lt; corte 0,0490).
               </p>
               <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-500 font-mono">
-                • 36 Treino | 36 Held-out (D25)
+                {desenhoRealizado.disponivel
+                  ? `• Realizado: ${desenhoRealizado.totalTreino} Treino | ${desenhoRealizado.totalHeldOut} Held-out (Nominal: ${desenhoNominal.totalTreino} / ${desenhoNominal.totalHeldOut})`
+                  : `• Nominal: ${desenhoNominal.totalTreino} Treino | ${desenhoNominal.totalHeldOut} Held-out (D25)`}
               </div>
             </div>
 
@@ -888,7 +903,7 @@ export function PainelCampanha() {
               </div>
               <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
                 A fotointerpretação humana sobre pixels de 10 m do Sentinel-2 foi aposentada pela Decisão D16 item 4. 
-                Sua única utilidade residual (alcançar pontos remotos sem sobrevoo) foi superada pela amostragem probabilística estratificada dos 72 polígonos de VANT, 
+                Sua única utilidade residual (alcançar pontos remotos sem sobrevoo) foi superada pela amostragem probabilística estratificada dos polígonos de VANT (72 nominais / 67 realizados no selo D16), 
                 eliminando o ruído de concordância inter-avaliadores sobre pixels orbitais grosseiros.
               </p>
               <div className="pt-2 border-t border-slate-200/80 text-[10px] text-slate-500 font-mono flex items-center gap-1">
