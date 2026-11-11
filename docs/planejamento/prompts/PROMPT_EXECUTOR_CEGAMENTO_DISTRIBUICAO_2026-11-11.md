@@ -115,6 +115,28 @@ Transcreva a decisão em `docs/planejamento/DECISOES_DE_CONVERSA.md`, no formato
 
 ---
 
+## TAREFA 5.1 — fechar as pendências que este prompt resolve
+
+A entrada **15** de `docs/planejamento/DECISOES_DE_CONVERSA.md`, registrada em `d7284c9`, lista
+quatro pendências da etapa 5. **Duas delas são resolvidas por este prompt:**
+
+| Pendência da entrada 15 | O que fazer |
+|---|---|
+| 1 — a interface gera ou apenas baixa os `.plan` | **permanece aberta** |
+| 2 — criar perfil `autorizacao`, com ou sem `estrato_id` | **resolvida pela Tarefa 2**: criado, **sem** estrato |
+| 3 — ligar `csvAutorizacoes.ts` | **permanece aberta** — fora do escopo deste prompt, por decisão |
+| 4 — mecanismo de blindagem do cegamento | **resolvida pelas Tarefas 1, 3, 4 e 5**: por distribuição, não por seletor |
+
+Atualize a entrada 15 marcando 2 e 4 como resolvidas, **apontando o commit desta rodada e a
+decisão da Tarefa 5**, e mantendo 1 e 3 abertas. Não apague o texto original: acrescente a
+resolução abaixo dele, como foi feito na correção da entrada 14.
+
+Deixar a entrada afirmando pendência sobre o que já está feito é o mesmo defeito que a entrada 14
+teve no sentido inverso, quando dizia `IMPLEMENTADA` para um sorteio que não ocorrera. O registro
+de decisões é o documento que a banca lê; ele não pode descrever um estado que não é o atual.
+
+---
+
 ## TAREFA 6 — evidência e commit
 
 `docs/verificacoes/2026-11-11q_cegamento_distribuicao.md`:
@@ -139,6 +161,7 @@ Transcreva a decisão em `docs/planejamento/DECISOES_DE_CONVERSA.md`, no formato
 - [ ] T4 — diário versionado; destinatário **opcional**; `git check-ignore -v` gravado
 - [ ] T5 — emenda registrada em `decisoes.ts` e no registro de conversa; recusa do seletor declarada
 - [ ] T5 — **nenhum seletor de papel foi implementado**
+- [ ] T5.1 — entrada 15 atualizada: 2 e 4 resolvidas com apontamento; 1 e 3 mantidas abertas
 - [ ] T6 — evidência escrita
 - [ ] `npm test` e `npx tsc --noEmit` gravados
 - [ ] `npm run estado:verificar`, `git status --short`, `git log --oneline -3` gravados
