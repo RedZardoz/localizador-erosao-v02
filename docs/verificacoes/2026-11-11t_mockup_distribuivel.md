@@ -117,3 +117,23 @@
 | `npm test` (`vitest run`) | `07_npm_test.txt` | **exit 0** — **114** arquivos de teste aprovados (`1007 passed`, `3 skipped` pré-existentes em `src/lib/fundiario/matcher.test.ts` por ausência do SQLite local fora do git) |
 | `npx tsc --noEmit` | `08_tsc_noEmit.txt` | **exit 0** — zero erros de tipagem |
 | `npm run lint` (`next lint`) | `09_npm_lint.txt` | **exit 0** — apenas os 2 avisos pré-existentes de `react-hooks/exhaustive-deps` em `MapViewer.tsx:601` e `PointPopup.tsx:77` |
+
+---
+
+## Empacotamento em Executável Único Windows (`.exe` e `.zip`)
+
+Atendendo à solicitação de distribuição simplificada em arquivo único para Windows (sem exigir Node.js, Python ou extração prévia do servidor estático):
+
+1. **Gerador e Lançador:**
+   - Código-fonte do lançador Windows (.NET Framework 4.x / WinForms + servidor HTTP em memória restrito a `127.0.0.1`): `scripts/installer/VitrineMockupLauncher.cs`
+   - Script de empacotamento: `scripts/build_mockup_exe.mjs` (comando npm: `npm run mockup:exe`, log em `10_mockup_exe_build.txt`)
+   - Empacota exclusivamente os 28 arquivos auditados de `docs/apresentacoes/mockup/` dentro do recurso `VitrinePayload.zip` (1,26 MB comprimido), servidos em RAM sem gravação temporária no disco e encerrados ao fechar a janela do lançador.
+2. **Artefatos Gerados:**
+   - **Executável único Windows:** `docs/apresentacoes/SAREL_Mockup_Demonstrativo_2026-11-11.exe` (**1,41 MB / 1.481.728 bytes**)
+   - **Pacote compactado para envio por e-mail (Gmail/Outlook bloqueiam `.exe` solto):** `docs/apresentacoes/SAREL_Mockup_Demonstrativo_2026-11-11.zip` (**1,40 MB / 1.470.586 bytes**), contendo o `.exe` e instruções curtas (`LEIA-ME_MOCKUP_EXE.txt`, incluindo orientação do aviso SmartScreen por ausência de certificado comercial).
+3. **Verificação Isolada do Executável (`11_check_exe_isolado_offline.txt`):**
+   - O arquivo `SAREL_Mockup_Demonstrativo_2026-11-11.exe` foi copiado para diretório temporário isolado fora do repositório (`%TEMP%\sarel-exe-isolado-*`), iniciado no servidor em memória (`127.0.0.1`, 28 arquivos) e navegado via Playwright Chromium sem acesso externo: **17/17 etapas do tour**, modais e botões desabilitados validados com **0 requisições externas**, **0 `/api/*`**, **0 `pageerror`** e **0 `console.error`**.
+4. **Portões obrigatórios reexecutados com o `.exe` no repositório (`07_npm_test.txt`, `08_tsc_noEmit.txt`, `09_npm_lint.txt`):**
+   - `npm test`: **exit 0** (`114` arquivos aprovados, `1007 passed`, `3 skipped` pré-existentes sem SQLite local).
+   - `npx tsc --noEmit`: **exit 0**.
+   - `npm run lint`: **exit 0**.

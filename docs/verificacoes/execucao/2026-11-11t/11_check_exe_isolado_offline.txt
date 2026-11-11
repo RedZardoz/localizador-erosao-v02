@@ -1,0 +1,7 @@
+﻿[exe-check] Executavel isolado em: C:\Users\lalfr\AppData\Local\Temp\sarel-exe-isolado-mzeOvf\SAREL_Mockup_Demonstrativo_2026-11-11.exe
+[exe-check] Servidor em memoria ativo em: http://127.0.0.1:60802/ (28 arquivos)
+[exe-check] Interface carregada do .exe sem rede externa.
+[exe-check] Tour completo (17/17 etapas + spotlight) validado diretamente do .exe.
+[exe-check] Requisicoes locais servidas pelo .exe em memoria: 11
+[exe-check] Requisicoes externas: 0 | /api/*: 0 | pageerror: 0 | console.error: 0
+[exe-check] SUCESSO: Executavel isolado validado ponta a ponta!

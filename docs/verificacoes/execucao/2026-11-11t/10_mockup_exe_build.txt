@@ -1,0 +1,11 @@
+﻿
+> sarel@2.0.0 mockup:exe
+> node scripts/build_mockup_exe.mjs
+
+[vitrine-exe] 1/3 Empacotando 28 ativos estáticos de docs/apresentacoes/mockup...
+[vitrine-exe]     Payload comprimido: 1.26 MB
+[vitrine-exe] 2/3 Compilando executável único autônomo (.NET WinExe)...
+[vitrine-exe] 3/3 Gerando pacote .zip complementar para envio por e-mail (1.41 MB EXE)...
+[vitrine-exe] CONCLUIDO:
+  - docs\apresentacoes\SAREL_Mockup_Demonstrativo_2026-11-11.exe (1.41 MB / 1481728 bytes)
+  - docs\apresentacoes\SAREL_Mockup_Demonstrativo_2026-11-11.zip (1.40 MB / 1470586 bytes)

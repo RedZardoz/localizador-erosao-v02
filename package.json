@@ -10,6 +10,7 @@
     "dev": "next dev -H 127.0.0.1",
     "build": "next build",
     "mockup:build": "node scripts/build_mockup.mjs",
+    "mockup:exe": "node scripts/build_mockup_exe.mjs",
     "check:build": "node scripts/check-build-freshness.mjs",
     "start": "next start -H 127.0.0.1",
     "lint": "next lint",
