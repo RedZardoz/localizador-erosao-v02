@@ -27,22 +27,37 @@ A produtividade registrada é **área reconstruída por minuto**, não área sob
 
 O valor de 2,2 min por polígono citado em D16 reproduz-se aqui a partir do dado bruto.
 
-## Sortidas de bateria
+## Baterias e autonomia
 
-As duas missões duraram **13,0 min** e **9,3 min** de voo. Tomando essa faixa como
-comprimento de sortida, os 145 min de mapeamento do melhor caso exigem **11 a 16 sortidas**.
+**Proveniência: informado pelo pesquisador que executou os voos (12/11/2026).** Não é medição
+extraída de arquivo deste repositório, e fica distinguido do que está acima.
 
-**Não medido:** o repositório não registra capacidade nominal de bateria, número de baterias
-disponíveis nem tempo de troca e de recarga. As 11 a 16 sortidas saem da duração observada
-dos dois voos, não de uma especificação. Enquanto o dado não existir, o número de baterias
-necessário por jornada permanece indeterminado.
+- 3 baterias, autonomia de cerca de **40 min** cada → **120 min por carga completa do conjunto**.
+
+| Cenário | Tempo de voo | Cargas completas |
+|---|---|---|
+| Melhor caso medido (2,32 ha/min) | 145 min | **1,2** |
+| Pior caso medido (0,53 ha/min) | 639 min | **5,3** |
+
+### A conclusão que esse dado inverte
+
+Mapear um polígono custa **2,17 min**, ou **5,4 % de uma bateria de 40 min**. Só de mapeamento,
+uma bateria cobriria cerca de **18 polígonos**.
+
+Logo, a energia **não é o gargalo**. Com 67 sítios dispersos pela bacia, cada bateria é trocada
+porque a equipe se desloca, não porque descarregou. O que consome a bateria em campo não é o
+mapeamento: é decolagem, subida, posicionamento, retorno e pouso a cada sítio — e esse custo por
+sítio **não foi medido**.
+
+As duas missões já voadas confirmam o ponto: duraram 13,0 e 9,3 min contra 40 min disponíveis,
+isto é, pousaram com cerca de dois terços da carga intactos.
 
 ## O que domina a campanha — e não é a bateria
 
-D16 registra a correção de uma subestimação anterior: a cifra de 3 jornadas de voo derivava
+O dado de autonomia reforça o que D16 já registrava. D16 corrige uma subestimação anterior: a cifra de 3 jornadas de voo derivava
 da produtividade de **mapeamento**, mas uma campanha de sítios dispersos é dominada por
 **deslocamento e montagem**, não por bateria. O número de dias de campo é portanto maior que
-o tempo de voo sugere, e não foi medido.
+o tempo de voo sugere, e não foi medido — nem o tempo de troca e recarga das três baterias.
 
 ## O risco real: reconstrução, não tempo de voo
 

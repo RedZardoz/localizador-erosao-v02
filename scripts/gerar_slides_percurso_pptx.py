@@ -338,19 +338,20 @@ def slide_proximos_passos(prs):
          "Missão 009 (Medianeira): 21,56 ha reconstruídos em 9,3 min = 2,32 ha/min.\n"
          "Missão 000 (Céu Azul): 6,84 ha em 13,0 min = 0,53 ha/min.\n\n"
          "67 polígonos × 5,02 ha = 336,34 ha\n"
-         "→ 145 min de voo (2,4 h), 2,2 min por polígono.\n"
-         "→ 11 a 16 sortidas, pela duração observada dos dois voos.",
+         "→ 145 min de voo (2,4 h), 2,2 min por polígono.\n\n"
+         "3 baterias de ~40 min = 120 min por carga (informado pelo\n"
+         "pesquisador) → 1,2 carga no melhor caso, 5,3 no pior.",
          tam=10, cor=C_TEXT_DARK, espaco=1)
 
     _caixa(s, 6.9, 4.15, 5.6, 2.35, C_AMBER_BG, C_AMBER_DARK)
-    _txt(s, 7.17, 4.32, 5.1, 0.3, "O QUE AINDA NÃO ESTÁ MEDIDO", tam=9.5,
+    _txt(s, 7.17, 4.32, 5.1, 0.3, "ONDE ESTÁ O GARGALO REAL", tam=9.5,
          cor=C_AMBER_DARK, bold=True)
     _txt(s, 7.17, 4.66, 5.1, 1.75,
-         "Capacidade e número de baterias, tempo de troca e de recarga não constam do "
-         "repositório: as sortidas saem da duração dos voos, não de especificação.\n\n"
-         "A campanha é dominada por deslocamento e montagem, não por bateria — e esse "
-         "tempo não foi medido. O risco maior é a reconstrução: entre as duas missões ela "
-         "varia 4,4×, e é daí que vem a diferença de produtividade.",
+         "A energia não é o gargalo: mapear um polígono custa 2,17 min, ou 5,4 % de uma "
+         "bateria. Só de mapeamento, uma bateria cobriria 18 polígonos.\n\n"
+         "A bateria é trocada porque a equipe se desloca, não porque descarregou — os dois "
+         "voos já feitos pousaram com dois terços da carga. Não medidos: o custo por sítio "
+         "(decolagem, pouso, montagem), o deslocamento e o tempo de recarga.",
          tam=10, cor=C_TEXT_DARK, espaco=1)
 
     _rodape(s, "Fonte: docs/verificacoes/voo/cobertura_voos.geojson e docs/verificacoes/voo/rendimento_voo_67_poligonos_2026-11-12.md. Os pontos do SAREL Coletor não treinam o modelo: ancoram a prevalência real e calibram a acurácia posicional.")
