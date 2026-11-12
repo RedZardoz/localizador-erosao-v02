@@ -340,18 +340,20 @@ def slide_proximos_passos(prs):
          "67 polígonos × 5,02 ha = 336,34 ha\n"
          "→ 145 min de voo (2,4 h), 2,2 min por polígono.\n\n"
          "3 baterias de ~40 min = 120 min por carga (informado pelo\n"
-         "pesquisador) → 1,2 carga no melhor caso, 5,3 no pior.",
+         "pesquisador). A energia não limita: 57 min de mapeamento\n"
+         "por dia contra 120 min de carga.",
          tam=10, cor=C_TEXT_DARK, espaco=1)
 
     _caixa(s, 6.9, 4.15, 5.6, 2.35, C_AMBER_BG, C_AMBER_DARK)
-    _txt(s, 7.17, 4.32, 5.1, 0.3, "ONDE ESTÁ O GARGALO REAL", tam=9.5,
+    _txt(s, 7.17, 4.32, 5.1, 0.3, "CRONOGRAMA DE CAMPO — DIMENSIONAR PELO PESSIMISTA", tam=9,
          cor=C_AMBER_DARK, bold=True)
     _txt(s, 7.17, 4.66, 5.1, 1.75,
-         "A energia não é o gargalo: mapear um polígono custa 2,17 min, ou 5,4 % de uma "
-         "bateria. Só de mapeamento, uma bateria cobriria 18 polígonos.\n\n"
-         "A bateria é trocada porque a equipe se desloca, não porque descarregou — os dois "
-         "voos já feitos pousaram com dois terços da carga. Não medidos: o custo por sítio "
-         "(decolagem, pouso, montagem), o deslocamento e o tempo de recarga.",
+         "Sítios de bacia inteira — o corredor Foz–Céu Azul não se aplica aos 67. "
+         "Perna de rota ~7,6 km; rota total ~512 km.\n\n"
+         "Chuva medida em 40 anos (Floriano e Matelândia): 23 % dos dias, 18 % de abril a "
+         "setembro.\n\n"
+         "→ 15 dias de campo no cenário moderado, 30 (~6 semanas) no pessimista, que supõe "
+         "25 % de re-voo e 20 % de visita perdida.",
          tam=10, cor=C_TEXT_DARK, espaco=1)
 
     _rodape(s, "Fonte: docs/verificacoes/voo/cobertura_voos.geojson e docs/verificacoes/voo/rendimento_voo_67_poligonos_2026-11-12.md. Os pontos do SAREL Coletor não treinam o modelo: ancoram a prevalência real e calibram a acurácia posicional.")
